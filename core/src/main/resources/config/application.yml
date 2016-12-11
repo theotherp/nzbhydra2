@@ -1,0 +1,19 @@
+indexers:
+  -
+    name: newznab1
+    host: http://127.0.0.1:5000
+    apikey: a
+    searchModuleType: newznab
+categories:
+  -
+    name: "all"
+    newznabCategories:
+  -
+    name: "n/a"
+    newznabCategories:
+  -
+    name: "category1"
+    newznabCategories: 1000,2000
+  -
+    name: "category2"
+    newznabCategories: 3000,4000
