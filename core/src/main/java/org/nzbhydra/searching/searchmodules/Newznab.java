@@ -1,6 +1,7 @@
 package org.nzbhydra.searching.searchmodules;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
@@ -29,6 +30,7 @@ import java.util.Random;
 
 @Data
 @Component
+@EqualsAndHashCode(callSuper = false)
 public class Newznab extends AbstractSearchModule {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);

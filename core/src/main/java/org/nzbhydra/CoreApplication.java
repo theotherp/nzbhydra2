@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfigurati
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -29,10 +28,9 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
-@RestController
 public class CoreApplication {
 
-    private static final Logger logger = LoggerFactory.getLogger(CoreApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(CoreApplication.class);
 
     List<SearchResultEntity> results = new ArrayList<>();
 

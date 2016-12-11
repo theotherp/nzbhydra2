@@ -17,7 +17,7 @@ public class RssChannel {
     private String language;
     private String webMaster;
 
-    @XmlElement(name="response", namespace="http://www.newznab.com/DTD/2010/feeds/attributes/")
+    @XmlElement(name = "response", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
     private NewznabResponse newznabResponse;
 
 

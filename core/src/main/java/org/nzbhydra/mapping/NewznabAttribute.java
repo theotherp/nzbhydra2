@@ -7,7 +7,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "newznab:attr", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
+
+@XmlRootElement(name = "attr", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
 public class NewznabAttribute {
