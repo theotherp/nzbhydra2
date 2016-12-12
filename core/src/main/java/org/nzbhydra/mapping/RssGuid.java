@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement(name = "guid")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
-
 public class RssGuid {
 
     public RssGuid() {

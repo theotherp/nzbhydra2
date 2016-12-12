@@ -29,7 +29,19 @@ public class RssItem {
     @XmlElement(name= "guid")
     private RssGuid rssGuid;
 
+    @XmlElement(name = "description")
+    private String description;
+
+    @XmlElement(name = "comments")
+    private String comments;
+
+    @XmlElement(name = "category")
+    private String category;
+
     @XmlElement(name = "attr", namespace="http://www.newznab.com/DTD/2010/feeds/attributes/")
     private List<NewznabAttribute> attributes;
+
+    @XmlElement(name = "enclosure")
+    private Enclosure enclosure;
 
 }

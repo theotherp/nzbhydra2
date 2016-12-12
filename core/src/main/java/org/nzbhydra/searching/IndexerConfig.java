@@ -11,5 +11,6 @@ public class IndexerConfig {
     private String host;
     private String apikey;
     private String searchModuleType;
+    private Integer score;
 
 }

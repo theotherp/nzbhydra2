@@ -1,9 +1,11 @@
+#Edit the other one!
 indexers:
   -
-    name: newznab1
+    name: newznab2
     host: http://127.0.0.1:5000
     apikey: a
     searchModuleType: newznab
+    score: 1
 categories:
   -
     name: "all"

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class SearchResultItem extends SearchResultEntity {
+public class SearchResultItem extends SearchResultEntity implements Comparable<SearchResultItem> {
 
     protected int id;
 
@@ -24,6 +24,8 @@ public class SearchResultItem extends SearchResultEntity {
     private String details;
     
     private Indexer indexer;
+
+    private Integer indexerScore;
 
     private Instant pubDate;
 
@@ -51,6 +53,12 @@ public class SearchResultItem extends SearchResultEntity {
     }
 
 
-
-
+    @Override
+    public int compareTo(SearchResultItem o) {
+        int scoreComparison = Integer.compare(indexerScore, o.getIndexerScore());
+        if (scoreComparison != 0) {
+            return scoreComparison;
+        }
+        return pubDate.compareTo(o.getPubDate());
+    }
 }

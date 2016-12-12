@@ -3,14 +3,17 @@ package org.nzbhydra.mapping;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class JaxbPubdateAdapter extends XmlAdapter<String, Instant> {
     private static final DateTimeFormatter FORMAT2 = DateTimeFormatter.RFC_1123_DATE_TIME;
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z").withZone(ZoneId.of("UTC"));
+
 
     @Override
     public String marshal(Instant date) throws Exception {
-        return date.toString();
+        return formatter.format(date);
     }
 
     @Override

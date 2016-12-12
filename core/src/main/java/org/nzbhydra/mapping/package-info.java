@@ -2,7 +2,7 @@
         elementFormDefault = XmlNsForm.QUALIFIED,
         xmlns = {
                 @XmlNs(prefix = "newznab", namespaceURI = "http://www.newznab.com/DTD/2010/feeds/attributes/"),
-                @XmlNs(prefix = "content", namespaceURI = "http://purl.org/rss/1.0/modules/content/")
+                @XmlNs(prefix = "atom", namespaceURI = "http://www.w3.org/2005/Atom")
         }
 )
 package org.nzbhydra.mapping;

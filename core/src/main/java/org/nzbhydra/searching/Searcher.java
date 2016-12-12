@@ -39,7 +39,7 @@ public class Searcher {
         searchEntity.setSeason(searchRequest.getSeason());
         searchEntity.setEpisode(searchRequest.getEpisode());
         searchEntity.setSearchType(searchRequest.getSearchType());
-        searchEntity.setUsername("");//TODO
+        searchEntity.setUsername(null);//TODO
         searchEntity.setTitle(searchRequest.getTitle());
         searchEntity.setAuthor(searchRequest.getAuthor());
         searchRepository.save(searchEntity);
@@ -59,7 +59,7 @@ public class Searcher {
                 try {
                     indexerSearchResults.add(future.get());
                 } catch (ExecutionException e) {
-                    logger.error("Error while searching",e);
+                    logger.error("Error while searching", e);
                     //TODO Handle error, searchInternal modules should always catch as much as possible, so this is probably a bug
                 }
             }
@@ -68,12 +68,13 @@ public class Searcher {
             //TODO Don't think this will happen often, should return results if available
         }
 
-        List<SearchResultItem> searchResultItems = indexerSearchResults.stream().flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
-        duplicateDetector.detectDuplicates(searchResultItems);
+        List<SearchResultItem> searchResultItems = indexerSearchResults.stream().filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
+        DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
+
 
         org.nzbhydra.searching.SearchResult searchResult = new org.nzbhydra.searching.SearchResult();
         //TODO Offset, total, rejected, etc
-        searchResult.setSearchResultItems(searchResultItems);
+        searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
         return searchResult;
     }
 

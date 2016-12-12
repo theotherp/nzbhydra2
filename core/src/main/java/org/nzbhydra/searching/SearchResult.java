@@ -8,6 +8,6 @@ import java.util.List;
 @Data
 public class SearchResult {
 
-    private List<SearchResultItem> searchResultItems = new ArrayList<>();
+    private DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult;
     private List<IndexerSearchInfo> indexerSearchInfos = new ArrayList<>();
 }

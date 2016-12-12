@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+    <channel>
+        <atom:link href="https://indexer.com/api?apikey=apikey&amp;t=search&amp;q=avengers" rel="self"
+                   type="application/rss+xml"/>
+        <title>indexer(dot)com API Search</title>
+        <description>indexer(dot)com Feed</description>
+        <link>https://indexer.com/</link>
+        <language>en-gb</language>
+        <webMaster>admin@indexer.com (indexer(dot)com)</webMaster>
+        <category></category>
+        <image>
+            <url>https://indexer.com//templates/default/images/banner.jpg</url>
+            <title>indexer(dot)com</title>
+            <link>https://indexer.com/</link>
+            <description>Visit indexer(dot)com</description>
+        </image>
+
+        <newznab:response offset="0" total="1000"/>
+        <item>
+            <title>testtitle1</title>
+            <guid isPermaLink="false">eff551fbdb69d6777d5030c209ee5d4b</guid>
+            <link>https://indexer.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&amp;i=1692&amp;r=apikey</link>
+            <comments>https://indexer.com/details/eff551fbdb69d6777d5030c209ee5d4b#comments</comments>
+            <pubDate>Sun, 11 Oct 2015 17:34:17 +0000</pubDate>
+            <category>Other-Misc</category>
+            <description>testtitle1</description>
+            <enclosure url="https://indexer.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&amp;i=1692&amp;r=apikey"
+                       length="2893890900" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="7000"/>
+            <newznab:attr name="category" value="7010"/>
+            <newznab:attr name="size" value="2893890900"/>
+            <newznab:attr name="guid" value="eff551fbdb69d6777d5030c209ee5d4b"/>
+            <newznab:attr name="poster" value="chuck@norris.com"/>
+            <newznab:attr name="group" value="alt.binaries.mom"/>
+
+        </item>
+        <item>
+            <title>English testtitle2</title>
+            <guid isPermaLink="false">59ca5184e4174a9bd084e9b2ff8d806b</guid>
+            <link>https://indexer.com/getnzb/59ca5184e4174a9bd084e9b2ff8d806b.nzb&amp;i=1692&amp;r=apikey</link>
+            <comments>https://indexer.com/details/59ca5184e4174a9bd084e9b2ff8d806b#comments</comments>
+            <pubDate>Sat, 03 Oct 2015 23:46:31 +0000</pubDate>
+            <category>Movies-DVD</category>
+            <description><![CDATA[
+							  <div class="row-fluid">
+								  <table cellpadding=0 cellspacing=0>
+									  <tr valign="top">
+
+										  <td>
+											  <b>Name:</b> testtitle2<br /><b>Category:</b> TV > HD<br /><b>Size:</b> 922 MB<br /><b>Post Date:</b> October 22, 2015 9:18 PM<br /><b>Group:</b> alt.binaries.hdtv.x264<br />
+											  <b>Rating:</b> 65<br /> <b>Genre:</b> Comedy<br />
+										  </td>
+									  </tr>
+								  </table>
+							  </div>
+							  ]]></description>
+            <enclosure url="https://indexer.com/getnzb/59ca5184e4174a9bd084e9b2ff8d806b.nzb&amp;i=1692&amp;r=apikey"
+                       length="5480922420" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2010"/>
+            <newznab:attr name="size" value="5480922420"/>
+            <newznab:attr name="guid" value="59ca5184e4174a9bd084e9b2ff8d806b"/>
+            <newznab:attr name="usenetdate" value="Sat, 03 Oct 2015 22:22:22 +0000"/>
+            <newznab:attr name="info" value="https://indexer.com/details/59ca5184e4174a9bd084e9b2ff8d806b"/>
+
+
+        </item>
+        <item>
+            <title>testtitle3 English</title>
+            <guid isPermaLink="false">41905ed0cdaad65266098558fc158471</guid>
+            <link>https://indexer.com/getnzb/41905ed0cdaad65266098558fc158471.nzb&amp;i=1692&amp;r=apikey</link>
+            <comments>https://indexer.com/details/41905ed0cdaad65266098558fc158471#comments</comments>
+            <pubDate>Sat, 03 Oct 2015 00:18:31 +0000</pubDate>
+            <category>Movies-DVD</category>
+            <description>testtitle3 English</description>
+            <enclosure url="https://indexer.com/getnzb/41905ed0cdaad65266098558fc158471.nzb&amp;i=1692&amp;r=apikey"
+                       length="5161012720" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2010"/>
+            <newznab:attr name="size" value="5161012720"/>
+            <newznab:attr name="guid" value="41905ed0cdaad65266098558fc158471"/>
+            <newznab:attr name="poster" value="Ramer@marmer.com (Clown_nez)"/>
+            <newznab:attr name="group" value="not available"/>
+
+        </item>
+
+
+    </channel>
+</rss>

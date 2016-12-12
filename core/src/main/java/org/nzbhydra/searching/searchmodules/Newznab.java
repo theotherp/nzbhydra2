@@ -1,5 +1,6 @@
 package org.nzbhydra.searching.searchmodules;
 
+import com.google.common.base.Stopwatch;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.nzbhydra.database.IndexerEntity;
@@ -27,6 +28,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Data
 @Component
@@ -48,6 +50,7 @@ public class Newznab extends AbstractSearchModule {
     private SearchModuleConfigProvider searchModuleConfigProvider;
 
     private Random random = new Random();
+    private RestTemplate restTemplate = new RestTemplate();
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());
@@ -64,6 +67,7 @@ public class Newznab extends AbstractSearchModule {
             indexerSearchResult.setWasSuccessful(true);
         } catch (Exception e) {
             //TODO handle indexer failure
+            logger.error("Error while searching", e);
             return new IndexerSearchResult(false);
         }
         return indexerSearchResult;
@@ -112,14 +116,17 @@ public class Newznab extends AbstractSearchModule {
         String url = buildSearchUrl(searchRequest).build().toString();
 
         RssRoot rssRoot;
-        RestTemplate restTemplate = new RestTemplate();
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
+            logger.info("Successfully loaded results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (HttpClientErrorException e) {
             logger.error("Unable to call URL " + url);
             return null; //TODO handle error
         }
 
+        stopwatch.reset();
+        stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
         indexerSearchResult.setSearchResultItems(getSearchResultItems(rssRoot));
         indexerSearchResult.setWasSuccessful(true);
@@ -133,6 +140,8 @@ public class Newznab extends AbstractSearchModule {
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
         }
+
+        logger.info("Processed search results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return indexerSearchResult;
     }
@@ -164,6 +173,7 @@ public class Newznab extends AbstractSearchModule {
             //Set all data not saved in the db
             searchResultItem.setSize(random.nextLong());
             searchResultItem.setPubDate(item.getPubDate());
+            searchResultItem.setIndexerScore(config.getScore());
             searchResultItem.setGuid("todoHash");
             for (NewznabAttribute attribute : item.getAttributes()) {
                 searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());

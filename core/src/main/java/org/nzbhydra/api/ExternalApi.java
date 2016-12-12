@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,10 +23,10 @@ public class ExternalApi {
     private static final Logger logger = LoggerFactory.getLogger(CoreApplication.class);
 
     @Autowired
-    private Searcher searcher;
+    protected Searcher searcher;
 
     @Autowired
-    CategoryProvider categoryProvider;
+    private CategoryProvider categoryProvider;
 
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
@@ -33,14 +34,20 @@ public class ExternalApi {
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             SearchResult searchResult = search(params);
-            RssRoot rssRoot = transformResultsToRss(searchResult);
 
-            return rssRoot;
+            return transformResults(searchResult);
         }
         return new RssRoot();
     }
 
-    private RssRoot transformResultsToRss(SearchResult searchResult) {
+    protected RssRoot transformResults(SearchResult searchResult) {
+        List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
+
+        //TODO Pick results from duplicate groups by indexer score etc
+        //Assuming for now results were already sorted by score, then age
+        List<SearchResultItem> searchResultItems = duplicateGroups.stream().map(x -> x.iterator().next()).collect(Collectors.toList());
+
+
         RssRoot rssRoot = new RssRoot();
 
         RssChannel rssChannel = new RssChannel();
@@ -52,7 +59,7 @@ public class ExternalApi {
 
         rssRoot.setRssChannel(rssChannel);
         List<RssItem> items = new ArrayList<>();
-        for (SearchResultItem searchResultItem : searchResult.getSearchResultItems()) {
+        for (SearchResultItem searchResultItem : searchResultItems) {
             RssItem item = new RssItem();
             item.setLink(searchResultItem.getLink());
             item.setTitle(searchResultItem.getTitle());
