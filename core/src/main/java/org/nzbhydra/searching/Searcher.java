@@ -20,7 +20,7 @@ public class Searcher {
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
     @Autowired
-    private DuplicateDetector duplicateDetector;
+    protected DuplicateDetector duplicateDetector;
 
     @Autowired
     private SearchModuleProvider searchModuleProvider;
@@ -44,6 +44,21 @@ public class Searcher {
         searchEntity.setAuthor(searchRequest.getAuthor());
         searchRepository.save(searchEntity);
 
+        List<IndexerSearchResult> indexerSearchResults = callSearchModules(searchRequest);
+
+        List<SearchResultItem> searchResultItems = indexerSearchResults.stream().filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
+        DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
+        //TODO Search until we have as many results as we want or need
+
+
+        org.nzbhydra.searching.SearchResult searchResult = new org.nzbhydra.searching.SearchResult();
+        //TODO Offset, total, rejected, etc
+        searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
+
+        return searchResult;
+    }
+
+    protected List<IndexerSearchResult> callSearchModules(SearchRequest searchRequest) {
         List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
 
         ExecutorService executor = Executors.newFixedThreadPool(15); //TODO Adapt number of threads to indexers
@@ -67,15 +82,7 @@ public class Searcher {
             logger.error("Error while searching", e);
             //TODO Don't think this will happen often, should return results if available
         }
-
-        List<SearchResultItem> searchResultItems = indexerSearchResults.stream().filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
-        DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
-
-
-        org.nzbhydra.searching.SearchResult searchResult = new org.nzbhydra.searching.SearchResult();
-        //TODO Offset, total, rejected, etc
-        searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
-        return searchResult;
+        return indexerSearchResults;
     }
 
 }

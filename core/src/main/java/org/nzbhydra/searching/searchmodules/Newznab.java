@@ -49,8 +49,11 @@ public class Newznab extends AbstractSearchModule {
     @Autowired
     private SearchModuleConfigProvider searchModuleConfigProvider;
 
+    @Autowired
+    protected RestTemplate restTemplate;
+
     private Random random = new Random();
-    private RestTemplate restTemplate = new RestTemplate();
+
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());

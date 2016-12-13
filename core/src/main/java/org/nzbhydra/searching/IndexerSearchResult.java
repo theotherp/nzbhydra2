@@ -10,6 +10,7 @@ import java.util.Map;
 public class IndexerSearchResult {
 
     private boolean wasSuccessful;
+    private String errorMessage;
     private List<SearchResultItem> searchResultItems;
     private int totalResults;
     private boolean totalResultsKnown;
