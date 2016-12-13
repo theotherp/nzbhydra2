@@ -12,7 +12,7 @@ public class IndexerEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    protected int id;
 
     private String name;
 

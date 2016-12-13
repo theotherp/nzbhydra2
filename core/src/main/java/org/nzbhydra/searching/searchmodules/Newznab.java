@@ -3,7 +3,6 @@ package org.nzbhydra.searching.searchmodules;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
@@ -24,6 +23,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.Transient;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,25 +37,28 @@ public class Newznab extends AbstractSearchModule {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
-    private String apikey;
-    private IndexerEntity indexer;
 
     @Autowired
+    @Transient
     private SearchResultRepository searchResultRepository;
 
     @Autowired
+    @Transient
     private IndexerRepository indexerRepository;
 
     @Autowired
+    @Transient
     private SearchModuleConfigProvider searchModuleConfigProvider;
 
     @Autowired
+    @Transient
     protected RestTemplate restTemplate;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
 
-    protected UriComponentsBuilder getBaseUri() {
+    @Transient
+    protected final UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());
         return builder.path("/api").queryParam("apikey", config.getApikey());
     }
@@ -157,7 +160,7 @@ public class Newznab extends AbstractSearchModule {
             String guid = item.getRssGuid().getGuid();
 
             SearchResultItem searchResultItem;
-            SearchResultEntity searchResultEntity = searchResultRepository.findByIndexerEntityAndIndexerGuid(indexer, guid);
+            SearchResultEntity searchResultEntity = searchResultRepository.findByIndexerEntityAndIndexerGuid(this, guid);
             if (searchResultEntity == null) {
                 searchResultEntity = new SearchResultEntity();
 
@@ -166,7 +169,7 @@ public class Newznab extends AbstractSearchModule {
                 searchResultEntity.setDetails("somedetails");
                 searchResultEntity.setIndexerGuid(guid);
                 searchResultEntity.setFirstFound(Instant.now());
-                searchResultEntity.setIndexerEntity(indexer);
+                searchResultEntity.setIndexer(this);
                 searchResultEntity.setTitle(item.getTitle());
                 searchResultEntitiesToSave.add(searchResultEntity);
 
@@ -192,12 +195,7 @@ public class Newznab extends AbstractSearchModule {
     public void initialize(IndexerConfig config) {
         this.config = config;
 
-        indexer = indexerRepository.findByName(config.getName());
-        if (indexer == null) {
-            indexer = new IndexerEntity();
-            indexer.setName(config.getName());
-            indexer = indexerRepository.save(indexer);
-        }
+
     }
 
 }

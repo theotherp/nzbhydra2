@@ -1,5 +1,7 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.searching.searchmodules.AbstractSearchModule;
 import org.nzbhydra.searching.searchmodules.Newznab;
 import org.nzbhydra.searching.searchmodules.SearchModule;
@@ -25,6 +27,9 @@ public class SearchModuleProvider {
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
+    private IndexerRepository indexerRepository;
+
+    @Autowired
     private SearchModuleConfigProvider searchModuleConfigProvider;
 
     private Map<String, SearchModule> searchModuleInstances = new HashMap<>();
@@ -37,8 +42,18 @@ public class SearchModuleProvider {
 
             AbstractSearchModule searchModule = null;
             try {
-                searchModule = searchModuleClasses.get(config.getSearchModuleType()).newInstance();
-                beanFactory.autowireBean(searchModule);
+                //searchModule = searchModuleClasses.get(config.getSearchModuleType()).newInstance();
+                searchModule = beanFactory.createBean(searchModuleClasses.get(config.getSearchModuleType()));
+
+                IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
+                if (indexerEntity == null) {
+                    searchModule = indexerRepository.save(searchModule);
+                } else {
+                    searchModule.setId(indexerEntity.getId());
+                    searchModule.setName(indexerEntity.getName());
+                }
+
+
                 searchModule.initialize(config);
             } catch (Exception e) {
                 e.printStackTrace();

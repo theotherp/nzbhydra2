@@ -1,56 +1,30 @@
 package org.nzbhydra.searching;
 
-import lombok.Data;
 import org.nzbhydra.database.SearchResultEntity;
-import org.nzbhydra.mapping.Indexer;
 
+import javax.persistence.Transient;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
 public class SearchResultItem extends SearchResultEntity implements Comparable<SearchResultItem> {
 
-    protected int id;
-
-    private Instant firstFound;
-
-    private String title;
-
-    private String guid;
-
-    private String link;
-
-    private String details;
-    
-    private Indexer indexer;
-
+    @Transient
     private Integer indexerScore;
-
+    @Transient
     private Instant pubDate;
-
+    @Transient
     private boolean agePrecise;
-
+    @Transient
     private Long size;
-
+    @Transient
     private String description;
-
+    @Transient
     private String poster;
-
+    @Transient
     private String group;
-
+    @Transient
     private Map<String, String> attributes = new HashMap<>();
-
-
-    public SearchResultItem(SearchResultEntity entity) {
-        id = entity.getId();
-        firstFound = entity.getFirstFound();
-        details = entity.getDetails();
-        title = entity.getTitle();
-        indexer = new Indexer(entity.getIndexerEntity());
-
-        //TODO calculate guid
-    }
 
 
     @Override
@@ -60,5 +34,69 @@ public class SearchResultItem extends SearchResultEntity implements Comparable<S
             return scoreComparison;
         }
         return pubDate.compareTo(o.getPubDate());
+    }
+
+    public Integer getIndexerScore() {
+        return indexerScore;
+    }
+
+    public void setIndexerScore(Integer indexerScore) {
+        this.indexerScore = indexerScore;
+    }
+
+    public Instant getPubDate() {
+        return pubDate;
+    }
+
+    public void setPubDate(Instant pubDate) {
+        this.pubDate = pubDate;
+    }
+
+    public boolean isAgePrecise() {
+        return agePrecise;
+    }
+
+    public void setAgePrecise(boolean agePrecise) {
+        this.agePrecise = agePrecise;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getPoster() {
+        return poster;
+    }
+
+    public void setPoster(String poster) {
+        this.poster = poster;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 }
