@@ -3,7 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.mapping.Indexer;
+import org.nzbhydra.database.IndexerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,7 +62,7 @@ public class DuplicateDetector {
             }
             duplicateGroups.addAll(listOfBuckets);
         }
-        Map<Indexer, Integer> uniqueResultsPerIndexer = new HashMap<>();
+        Map<IndexerEntity, Integer> uniqueResultsPerIndexer = new HashMap<>();
         for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
             int count = 0;
             if (uniqueResultsPerIndexer.containsKey(result.getIndexer())) {
@@ -125,7 +125,7 @@ public class DuplicateDetector {
     public class DuplicateDetectionResult {
 
         private List<TreeSet<SearchResultItem>> duplicateGroups;
-        private Map<Indexer, Integer> uniqueResultsPerIndexer;
+        private Map<IndexerEntity, Integer> uniqueResultsPerIndexer;
 
     }
 }

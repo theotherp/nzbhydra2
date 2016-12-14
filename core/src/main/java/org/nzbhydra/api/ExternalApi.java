@@ -63,7 +63,7 @@ public class ExternalApi {
             RssItem item = new RssItem();
             item.setLink(searchResultItem.getLink());
             item.setTitle(searchResultItem.getTitle());
-            item.setRssGuid(new RssGuid(searchResultItem.getGuid(), false));
+            item.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
             item.setPubDate(searchResultItem.getPubDate());
             List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
             item.setAttributes(newznabAttributes);
@@ -79,9 +79,8 @@ public class ExternalApi {
     private SearchResult search(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
         SearchRequest searchRequest = buildBaseSearchRequest(params).searchType(searchType).query(params.getQ()).build();
-        SearchResult searchResult = searcher.search(searchRequest);
 
-        return searchResult;
+        return searcher.search(searchRequest);
     }
 
     private SearchRequest.SearchRequestBuilder buildBaseSearchRequest(ApiCallParameters params) {

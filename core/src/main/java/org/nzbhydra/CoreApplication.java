@@ -1,6 +1,7 @@
 package org.nzbhydra;
 
 import org.nzbhydra.api.CategoryConverter;
+import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfigurati
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
+@RestController
 public class CoreApplication {
 
     private static final Logger log = LoggerFactory.getLogger(CoreApplication.class);
@@ -82,9 +85,22 @@ public class CoreApplication {
     }
 
 
+    @RequestMapping("/test")
+    public String test() {
+        IndexerEntity indexerEntity = new IndexerEntity();
+        indexerEntity.setName("name");
+        indexerEntity = indexerRepository.save(indexerEntity);
+        SearchResultEntity entity = new SearchResultEntity();
+        entity.setTitle("title");
+        entity.setIndexerGuid("indexerguid");
+        entity.setIndexer(indexerEntity);
+        searchResultRepository.save(entity);
+        return searchModuleConfigProvider.getIndexers().get(0).getName();
+    }
+
 
     @RequestMapping("/testconfig")
-    public String test() {
+    public String testconfig() {
         return searchModuleConfigProvider.getIndexers().get(0).getName();
     }
 

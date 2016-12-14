@@ -57,21 +57,21 @@ public class SearcherUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(searchResultEntityMock.getIndexerEntity()).thenReturn(indexerEntity);
+        when(searchResultEntityMock.getIndexer()).thenReturn(indexerEntity);
         searcher.duplicateDetector = duplicateDetector;
     }
 
 
     @Test
     public void shouldTransformToRssXml() throws Exception {
-        SearchResultItem searchResultItem1 = new SearchResultItem(searchResultEntityMock);
+        SearchResultItem searchResultItem1 = new SearchResultItem();
         searchResultItem1.setTitle("searchResultItem1Title");
         searchResultItem1.setIndexerScore(0);
         searchResultItem1.setPubDate(Instant.ofEpochMilli(0));
         when(searchResultMock1.getSearchResultItems()).thenReturn(Arrays.asList(searchResultItem1));
         when(searchResultMock1.isWasSuccessful()).thenReturn(true);
 
-        SearchResultItem searchResultItem2 = new SearchResultItem(searchResultEntityMock);
+        SearchResultItem searchResultItem2 = new SearchResultItem();
         searchResultItem2.setTitle("searchResultItem2Title");
         searchResultItem2.setIndexerScore(0);
         searchResultItem2.setPubDate(Instant.ofEpochMilli(1000));

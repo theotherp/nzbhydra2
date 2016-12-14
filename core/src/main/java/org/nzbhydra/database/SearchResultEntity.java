@@ -1,61 +1,51 @@
 package org.nzbhydra.database;
 
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Data
 @Entity
 @Table(name="searchresult"
         ,indexes = {
-        @Index(columnList = "indexer_entity_id,indexerguid", unique = true),
-        @Index(columnList = "guid", unique = true)}
+        @Index(columnList = "indexer_id,indexerguid", unique = true)}
         )
 public class SearchResultEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GenericGenerator(
+            name = "search-result-sequence",
+            strategy = "org.nzbhydra.database.SearchResultSequenceGenerator",
+            parameters = @org.hibernate.annotations.Parameter(
+                    name = "sequence_name",
+                    value = "hibernate_sequence"
+            )
+    )
+
+    @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
     protected int id;
 
-    protected String guid;
-
     @ManyToOne
+    @NotNull
     protected IndexerEntity indexer;
 
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     protected Instant firstFound;
 
+    @NotNull
     protected String title;
 
     @Column(name = "indexerguid")
+    @NotNull
     protected String indexerGuid;
 
     protected String link;
 
     protected String details;
-
-    @Transient
-    private Integer indexerScore;
-    @Transient
-    private Instant pubDate;
-    @Transient
-    private boolean agePrecise;
-    @Transient
-    private Long size;
-    @Transient
-    private String description;
-    @Transient
-    private String poster;
-    @Transient
-    private String group;
-    @Transient
-    private Map<String, String> attributes = new HashMap<>();
-
-
 
 
 }

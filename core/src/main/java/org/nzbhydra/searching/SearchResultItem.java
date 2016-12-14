@@ -1,29 +1,29 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.database.SearchResultEntity;
+import lombok.Data;
+import org.nzbhydra.database.IndexerEntity;
 
-import javax.persistence.Transient;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SearchResultItem extends SearchResultEntity implements Comparable<SearchResultItem> {
+@Data
+public class SearchResultItem implements Comparable<SearchResultItem> {
 
-    @Transient
+    private Integer guid;
+    private IndexerEntity indexer;
+    private Instant firstFound;
+    private String title;
+    private String indexerGuid;
+    private String link;
+    private String details;
     private Integer indexerScore;
-    @Transient
     private Instant pubDate;
-    @Transient
     private boolean agePrecise;
-    @Transient
     private Long size;
-    @Transient
     private String description;
-    @Transient
     private String poster;
-    @Transient
     private String group;
-    @Transient
     private Map<String, String> attributes = new HashMap<>();
 
 
@@ -36,67 +36,4 @@ public class SearchResultItem extends SearchResultEntity implements Comparable<S
         return pubDate.compareTo(o.getPubDate());
     }
 
-    public Integer getIndexerScore() {
-        return indexerScore;
-    }
-
-    public void setIndexerScore(Integer indexerScore) {
-        this.indexerScore = indexerScore;
-    }
-
-    public Instant getPubDate() {
-        return pubDate;
-    }
-
-    public void setPubDate(Instant pubDate) {
-        this.pubDate = pubDate;
-    }
-
-    public boolean isAgePrecise() {
-        return agePrecise;
-    }
-
-    public void setAgePrecise(boolean agePrecise) {
-        this.agePrecise = agePrecise;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public void setSize(Long size) {
-        this.size = size;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPoster() {
-        return poster;
-    }
-
-    public void setPoster(String poster) {
-        this.poster = poster;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public Map<String, String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
-    }
 }

@@ -5,7 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SearchResultRepository extends JpaRepository<SearchResultEntity, Integer>{
 
-    SearchResultEntity findByIndexerEntityAndIndexerGuid(IndexerEntity indexerEntity, String indexerGuid);
-
-    SearchResultEntity findByIndexerEntityIdAndIndexerGuid(int indexerEntityId, String indexerGuid);
+    SearchResultEntity findByIndexerAndIndexerGuid(IndexerEntity indexer, String indexerGuid);
 }

@@ -23,6 +23,7 @@ public class SearchModuleProvider {
         searchModuleClasses.put("newznab", Newznab.class);
     }
 
+
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
@@ -34,41 +35,32 @@ public class SearchModuleProvider {
 
     private Map<String, SearchModule> searchModuleInstances = new HashMap<>();
 
-
-
     @PostConstruct
     public void init() {
         for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
 
-            AbstractSearchModule searchModule = null;
             try {
-                //searchModule = searchModuleClasses.get(config.getSearchModuleType()).newInstance();
-                searchModule = beanFactory.createBean(searchModuleClasses.get(config.getSearchModuleType()));
+                AbstractSearchModule searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
                 if (indexerEntity == null) {
-                    searchModule = indexerRepository.save(searchModule);
-                } else {
-                    searchModule.setId(indexerEntity.getId());
-                    searchModule.setName(indexerEntity.getName());
+                    indexerEntity = new IndexerEntity();
+                    indexerEntity.setName(config.getName());
+                    indexerEntity = indexerRepository.save(indexerEntity);
                 }
 
-
-                searchModule.initialize(config);
+                searchModule.initialize(config, indexerEntity);
+                searchModuleInstances.put(config.getName(), searchModule);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            searchModuleInstances.put(config.getName(), searchModule);
         }
     }
 
     public Collection<SearchModule> getIndexers() {
         return searchModuleInstances.values();
     }
-
-
-
 
 
 }

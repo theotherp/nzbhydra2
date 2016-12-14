@@ -3,16 +3,11 @@ package org.nzbhydra.searching.searchmodules;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.nzbhydra.database.IndexerRepository;
-import org.nzbhydra.database.SearchResultEntity;
-import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.mapping.NewznabAttribute;
 import org.nzbhydra.mapping.NewznabResponse;
 import org.nzbhydra.mapping.RssItem;
 import org.nzbhydra.mapping.RssRoot;
-import org.nzbhydra.searching.IndexerConfig;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -23,7 +18,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.Transient;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,28 +31,13 @@ public class Newznab extends AbstractSearchModule {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
-
     @Autowired
-    @Transient
-    private SearchResultRepository searchResultRepository;
-
-    @Autowired
-    @Transient
-    private IndexerRepository indexerRepository;
-
-    @Autowired
-    @Transient
-    private SearchModuleConfigProvider searchModuleConfigProvider;
-
-    @Autowired
-    @Transient
     protected RestTemplate restTemplate;
 
     private final Random random = new Random();
 
 
-    @Transient
-    protected final UriComponentsBuilder getBaseUri() {
+    protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());
         return builder.path("/api").queryParam("apikey", config.getApikey());
     }
@@ -154,48 +133,30 @@ public class Newznab extends AbstractSearchModule {
 
     private List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
-        List<SearchResultEntity> searchResultEntitiesToSave = new ArrayList<>();
 
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
-            String guid = item.getRssGuid().getGuid();
+            SearchResultItem searchResultItem = new SearchResultItem();
 
-            SearchResultItem searchResultItem;
-            SearchResultEntity searchResultEntity = searchResultRepository.findByIndexerEntityAndIndexerGuid(this, guid);
-            if (searchResultEntity == null) {
-                searchResultEntity = new SearchResultEntity();
-
-                //Set all entity relevant data
-                searchResultEntity.setLink(item.getLink());
-                searchResultEntity.setDetails("somedetails");
-                searchResultEntity.setIndexerGuid(guid);
-                searchResultEntity.setFirstFound(Instant.now());
-                searchResultEntity.setIndexer(this);
-                searchResultEntity.setTitle(item.getTitle());
-                searchResultEntitiesToSave.add(searchResultEntity);
-
-            }
-            searchResultItem = new SearchResultItem(searchResultEntity);
-
-            //Set all data not saved in the db
-            searchResultItem.setSize(random.nextLong());
+            searchResultItem.setLink(item.getLink());
+            searchResultItem.setDetails("somedetails");
+            searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+            searchResultItem.setFirstFound(Instant.now());
+            searchResultItem.setIndexer(indexer);
+            searchResultItem.setTitle(item.getTitle());
+            searchResultItem.setSize(searchResultItem.getSize());
             searchResultItem.setPubDate(item.getPubDate());
             searchResultItem.setIndexerScore(config.getScore());
-            searchResultItem.setGuid("todoHash");
+            searchResultItem.setGuid(hashItem(searchResultItem));
             for (NewznabAttribute attribute : item.getAttributes()) {
                 searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             }
             searchResultItems.add(searchResultItem);
+
         }
-        //Save entities in bulk
-        searchResultRepository.save(searchResultEntitiesToSave);
+        persistSearchResults(searchResultItems);
+
         return searchResultItems;
     }
 
-    @Override
-    public void initialize(IndexerConfig config) {
-        this.config = config;
-
-
-    }
 
 }
