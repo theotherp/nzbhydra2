@@ -98,6 +98,14 @@
             <version>4.2.4.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.karneim</groupId>
+            <artifactId>pojobuilder</artifactId>
+            <version>3.4.3</version>
+            <!-- 'provided' scope because this is only needed during compilation -->
+            <scope>provided</scope>
+        </dependency>
+
         <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -128,6 +136,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.6</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 

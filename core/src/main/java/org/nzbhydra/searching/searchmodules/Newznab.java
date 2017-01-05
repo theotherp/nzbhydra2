@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 @Data
 @Component
 @EqualsAndHashCode(callSuper = false)
-public class Newznab extends AbstractSearchModule {
+public class Newznab extends AbstractIndexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
 
     @Autowired
     protected RestTemplate restTemplate;
@@ -43,7 +43,7 @@ public class Newznab extends AbstractSearchModule {
     }
 
     @Override
-    public IndexerSearchResult search(SearchRequest searchRequest) {
+    public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) {
 
         IndexerSearchResult indexerSearchResult;
         try {
@@ -115,15 +115,21 @@ public class Newznab extends AbstractSearchModule {
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
         indexerSearchResult.setSearchResultItems(getSearchResultItems(rssRoot));
         indexerSearchResult.setWasSuccessful(true);
+        indexerSearchResult.setIndexer(this);
 
         NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + searchRequest.getOffset());
+            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size()); //TODO Not all indexers report an offset
+            indexerSearchResult.setOffset(newznabResponse.getOffset());
+            indexerSearchResult.setLimit(100); //TODO
         } else {
+            //TODO see above
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
+            indexerSearchResult.setOffset(0);
+            indexerSearchResult.setLimit(0);
         }
 
         logger.info("Processed search results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));

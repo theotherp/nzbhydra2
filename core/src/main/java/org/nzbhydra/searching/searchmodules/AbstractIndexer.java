@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public abstract class AbstractSearchModule implements SearchModule {
+public abstract class AbstractIndexer implements Indexer {
     protected IndexerEntity indexer;
     protected IndexerConfig config;
 

@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,7 +27,7 @@ public class CategoryProvider {
     protected Map<String, Category> categoryMap;
 
     @PostConstruct
-    private void fillMap() {
+    protected void fillMap() {
         categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
     }
 
@@ -69,7 +72,7 @@ public class CategoryProvider {
      * @return The matching configured category or "All" if none is found
      */
     public Category fromNewznabCategories(List<Integer> cats) {
-        if (cats.size() == 0) {
+        if (cats == null || cats.size() == 0) {
             return getByName("all");
         }
 

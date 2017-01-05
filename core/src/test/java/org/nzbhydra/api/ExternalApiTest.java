@@ -72,7 +72,7 @@ public class ExternalApiTest {
         when(externalApiMock.api(any(ApiCallParameters.class))).thenReturn(rssRoot);
 
         String expectedContent = Resources.toString(Resources.getResource(ExternalApiTest.class, "simplesearchresult.xml"), Charsets.UTF_8);
-        mockMvc.perform(MockMvcRequestBuilders.get("/api").accept(MediaType.ALL)).andExpect(content().string(expectedContent));
+        mockMvc.perform(MockMvcRequestBuilders.get("/api").accept(MediaType.ALL)).andExpect(content().xml(expectedContent));
     }
 
 }

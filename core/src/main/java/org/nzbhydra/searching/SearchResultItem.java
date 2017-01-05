@@ -29,11 +29,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
 
     @Override
     public int compareTo(SearchResultItem o) {
-        int scoreComparison = Integer.compare(indexerScore, o.getIndexerScore());
-        if (scoreComparison != 0) {
-            return scoreComparison;
-        }
-        return pubDate.compareTo(o.getPubDate());
+        return o.getPubDate().compareTo(pubDate);
     }
 
 }

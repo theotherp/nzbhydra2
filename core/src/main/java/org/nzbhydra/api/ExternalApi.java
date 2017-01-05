@@ -35,17 +35,23 @@ public class ExternalApi {
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             SearchResult searchResult = search(params);
 
-            return transformResults(searchResult);
+            return transformResults(searchResult, params);
         }
+        //TODO handle missing or wrong parameters
         return new RssRoot();
     }
 
-    protected RssRoot transformResults(SearchResult searchResult) {
+    protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
         List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
 
         //TODO Pick results from duplicate groups by indexer score etc
         //Assuming for now results were already sorted by score, then age
-        List<SearchResultItem> searchResultItems = duplicateGroups.stream().map(x -> x.iterator().next()).collect(Collectors.toList());
+        List<SearchResultItem> searchResultItems = duplicateGroups.stream().map(x -> x.iterator().next()).sorted().collect(Collectors.toList());
+
+        //Account for offset and limit
+        int maxIndex = searchResultItems.size();
+        logger.info("Returning items {} to {} of {} items", params.getOffset(), params.getOffset() + params.getLimit(), searchResultItems.size());
+        searchResultItems = searchResultItems.subList(Math.min(params.getOffset(), maxIndex), Math.min(params.getOffset() + params.getLimit(), maxIndex));
 
 
         RssRoot rssRoot = new RssRoot();
@@ -78,28 +84,30 @@ public class ExternalApi {
 
     private SearchResult search(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = buildBaseSearchRequest(params).searchType(searchType).query(params.getQ()).build();
+
+        SearchRequest searchRequest = buildBaseSearchRequest(params);
+        searchRequest.setSearchType(searchType);
+
 
         return searcher.search(searchRequest);
     }
 
-    private SearchRequest.SearchRequestBuilder buildBaseSearchRequest(ApiCallParameters params) {
-        SearchRequest.SearchRequestBuilder builder = SearchRequest.builder();
+    private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
+
         //TODO categories
         //TODO ID searches
-        //@formatter:off
-        return builder
-                .query(params.getQ())
-                .limit(params.getLimit())
-                .offset(params.getOffset())
-                .maxage(params.getMaxage())
-                .author(params.getAuthor())
-                .title(params.getTitle())
-                .season(params.getSeason())
-                .episode(params.getEp())
-                .category(categoryProvider.fromNewznabCategories(params.getCat()))
-                ;
-        //@formatter:on
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(params.getQ());
+        searchRequest.setLimit(params.getLimit());
+        searchRequest.setOffset(params.getOffset());
+        searchRequest.setMaxage(params.getMaxage());
+        searchRequest.setAuthor(params.getAuthor());
+        searchRequest.setTitle(params.getTitle());
+        searchRequest.setSeason(params.getSeason());
+        searchRequest.setEpisode(params.getEp());
+        searchRequest.setCategory(categoryProvider.fromNewznabCategories(params.getCat()));
+        return searchRequest;
     }
 
 }

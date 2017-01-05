@@ -6,7 +6,7 @@ import org.mockito.*;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.database.SearchResultEntity;
-import org.nzbhydra.searching.searchmodules.Newznab;
+import org.nzbhydra.searching.searchmodules.AbstractIndexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.time.Instant;
@@ -16,6 +16,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +34,10 @@ public class SearcherUnitTest {
     private DuplicateDetector duplicateDetector;
 
     @Mock
-    private Newznab newznabMock;
+    private AbstractIndexer newznabMock1;
+
+    @Mock
+    private AbstractIndexer newznabMock2;
 
     @Mock
     private IndexerSearchResult searchResultMock1;
@@ -70,6 +74,8 @@ public class SearcherUnitTest {
         searchResultItem1.setPubDate(Instant.ofEpochMilli(0));
         when(searchResultMock1.getSearchResultItems()).thenReturn(Arrays.asList(searchResultItem1));
         when(searchResultMock1.isWasSuccessful()).thenReturn(true);
+        when(searchResultMock1.getIndexer()).thenReturn(newznabMock1);
+        when(searchResultMock1.isHasMoreResults()).thenReturn(false);
 
         SearchResultItem searchResultItem2 = new SearchResultItem();
         searchResultItem2.setTitle("searchResultItem2Title");
@@ -77,13 +83,16 @@ public class SearcherUnitTest {
         searchResultItem2.setPubDate(Instant.ofEpochMilli(1000));
         when(searchResultMock2.getSearchResultItems()).thenReturn(Arrays.asList(searchResultItem2));
         when(searchResultMock2.isWasSuccessful()).thenReturn(true);
+        when(searchResultMock2.getIndexer()).thenReturn(newznabMock2);
+        when(searchResultMock2.isHasMoreResults()).thenReturn(false);
 
-        when(newznabMock.search(any())).thenReturn(searchResultMock1, searchResultMock2);
+        when(newznabMock1.search(any(), eq(0), eq(0))).thenReturn(searchResultMock1);
+        when(newznabMock2.search(any(), eq(0), eq(0))).thenReturn(searchResultMock2);
 
 
-        when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(newznabMock, newznabMock));
+        when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(newznabMock1, newznabMock2));
 
-        SearchResult searchResult = searcher.search(SearchRequest.builder().build());
+        SearchResult searchResult = searcher.search(new SearchRequest());
         verify(duplicateDetector).detectDuplicates(searchResultItemsCaptor.capture());
 
         assertThat(searchResultItemsCaptor.getValue().size(), is(2));

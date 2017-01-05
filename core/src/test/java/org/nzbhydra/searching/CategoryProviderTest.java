@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class CategoryProviderTest {
@@ -19,6 +18,16 @@ public class CategoryProviderTest {
     public void setUp() throws Exception {
         List<Category> categories = new ArrayList<>();
         Category category = new Category();
+        category.setName("all");
+        category.setNewznabCategories(Collections.emptyList());
+        categories.add(category);
+
+        category = new Category();
+        category.setName("n/a");
+        category.setNewznabCategories(Collections.emptyList());
+        categories.add(category);
+
+        category = new Category();
         category.setName("3000,3030");
         category.setNewznabCategories(Arrays.asList(3000,3030));
         categories.add(category);
@@ -38,6 +47,7 @@ public class CategoryProviderTest {
         category.setNewznabCategories(Arrays.asList(7020, 8010));
         categories.add(category);
         testee.setCategories(categories);
+        testee.fillMap();
     }
 
     @Test
@@ -59,15 +69,15 @@ public class CategoryProviderTest {
         assertThat(testee.fromNewznabCategories(Arrays.asList(4090)).getName(), is("4090"));
 
         //None found
-        assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is(nullValue()));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is("all"));
 
         //String input
         assertThat(testee.fromNewznabCategories("4000").getName(), is("4000"));
         assertThat(testee.fromNewznabCategories("7020,8010").getName(), is("7020,8010"));
 
         //No cats
-        assertThat(testee.fromNewznabCategories(Collections.emptyList()).getName(), is(nullValue()));
-        assertThat(testee.fromNewznabCategories("").getName(), is(nullValue()));
+        assertThat(testee.fromNewznabCategories(Collections.emptyList()).getName(), is("all"));
+        assertThat(testee.fromNewznabCategories("").getName(), is("n/a"));
 
     }
 

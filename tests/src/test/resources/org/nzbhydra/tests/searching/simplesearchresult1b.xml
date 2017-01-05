@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<rss xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/"
-     version="2.0">
+<rss
+        xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" version="2.0">
     <channel>
         <title>channelTitle</title>
         <description>channelDescription</description>
         <link>channelLink</link>
         <language>language</language>
         <webMaster>webmaster</webMaster>
+        <newznab:response offset="1" total="2"/>
         <item>
-            <title>itemTitle</title>
+            <title>itemTitle1b</title>
             <link>link</link>
-            <pubDate>Do, 01 Jan 1970 00:16:40 +0000</pubDate>
+            <pubDate>Sat, 10 Oct 2015 17:34:17 +0000</pubDate>
             <guid isPermaLink="false">guidLink</guid>
             <description>itemDescription</description>
             <comments>comments</comments>

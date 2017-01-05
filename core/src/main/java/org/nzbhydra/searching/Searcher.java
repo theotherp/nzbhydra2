@@ -2,7 +2,7 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
-import org.nzbhydra.searching.searchmodules.SearchModule;
+import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -28,44 +30,80 @@ public class Searcher {
     @Autowired
     private SearchRepository searchRepository;
 
+    private final ConcurrentHashMap<Integer, CachedSearchResults> searchRequestCache = new ConcurrentHashMap<>();
+
 
     public SearchResult search(SearchRequest searchRequest) {
-        SearchEntity searchEntity = new SearchEntity();
-        searchEntity.setInternal(searchRequest.isInternal());
-        searchEntity.setCategory(searchRequest.getCategory());
-        searchEntity.setQuery(searchRequest.getQuery());
-        searchEntity.setIdentifierKey(searchRequest.getIdentifierKey());
-        searchEntity.setIdentifierValue(searchRequest.getIdentifierValue());
-        searchEntity.setSeason(searchRequest.getSeason());
-        searchEntity.setEpisode(searchRequest.getEpisode());
-        searchEntity.setSearchType(searchRequest.getSearchType());
-        searchEntity.setUsername(null);//TODO
-        searchEntity.setTitle(searchRequest.getTitle());
-        searchEntity.setAuthor(searchRequest.getAuthor());
-        searchRepository.save(searchEntity);
+        CachedSearchResults cachedSearchResults = getCachedSearchResults(searchRequest);
 
-        List<IndexerSearchResult> indexerSearchResults = callSearchModules(searchRequest);
+        SearchResult searchResult = new SearchResult();
+        int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
+        List<IndexerSearchResult> indexerSearchResultsToSearch = getIndexerSearchResultsToSearch(cachedSearchResults);
+        while (indexerSearchResultsToSearch.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
 
-        List<SearchResultItem> searchResultItems = indexerSearchResults.stream().filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
-        DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
-        //TODO Search until we have as many results as we want or need
+            List<IndexerSearchResult> indexerSearchResults = callSearchModules(searchRequest, indexerSearchResultsToSearch);
+
+            for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
+                cachedSearchResults.getIndexerSearchProcessingDatas().get(indexerSearchResult.getIndexer()).add(indexerSearchResult);
+            }
+
+            searchRequestCache.put(searchRequest.hashCode(), cachedSearchResults);
+
+            List<SearchResultItem> searchResultItems = cachedSearchResults.getIndexerSearchProcessingDatas().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
+            DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
 
-        org.nzbhydra.searching.SearchResult searchResult = new org.nzbhydra.searching.SearchResult();
-        //TODO Offset, total, rejected, etc
-        searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
+            //TODO Offset, total, rejected, etc
+            searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
+            indexerSearchResultsToSearch = getIndexerSearchResultsToSearch(cachedSearchResults);
+        }
 
         return searchResult;
     }
 
-    protected List<IndexerSearchResult> callSearchModules(SearchRequest searchRequest) {
+    protected CachedSearchResults getCachedSearchResults(SearchRequest searchRequest) {
+        CachedSearchResults cachedSearchResults;
+        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) { //TODO Timeout
+            //New search
+            SearchEntity searchEntity = new SearchEntity();
+            searchEntity.setInternal(searchRequest.isInternal());
+            searchEntity.setCategory(searchRequest.getCategory());
+            searchEntity.setQuery(searchRequest.getQuery());
+            searchEntity.setIdentifierKey(searchRequest.getIdentifierKey());
+            searchEntity.setIdentifierValue(searchRequest.getIdentifierValue());
+            searchEntity.setSeason(searchRequest.getSeason());
+            searchEntity.setEpisode(searchRequest.getEpisode());
+            searchEntity.setSearchType(searchRequest.getSearchType());
+            searchEntity.setUsername(null);//TODO
+            searchEntity.setTitle(searchRequest.getTitle());
+            searchEntity.setAuthor(searchRequest.getAuthor());
+            searchRepository.save(searchEntity);
+
+            //TODO pick indexers
+            List<Indexer> indexersToCall = searchModuleProvider.getIndexers();
+            cachedSearchResults = new CachedSearchResults(searchRequest, indexersToCall);
+        } else {
+            cachedSearchResults = searchRequestCache.get(searchRequest.hashCode());
+
+        }
+        return cachedSearchResults;
+    }
+
+    protected List<IndexerSearchResult> getIndexerSearchResultsToSearch(CachedSearchResults cachedSearchResults) {
+        return cachedSearchResults.getIndexerSearchProcessingDatas().values().stream().map(x -> x.get(x.size() - 1)).filter(IndexerSearchResult::isHasMoreResults).collect(Collectors.toList());
+    }
+
+    protected List<IndexerSearchResult> callSearchModules(SearchRequest searchRequest, List<IndexerSearchResult> indexersToSearch) {
         List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
 
-        ExecutorService executor = Executors.newFixedThreadPool(15); //TODO Adapt number of threads to indexers
+        ExecutorService executor = Executors.newFixedThreadPool(indexersToSearch.size());
 
         List<Callable<IndexerSearchResult>> callables = new ArrayList<>();
-        for (SearchModule searchModule : searchModuleProvider.getIndexers()) {
-            callables.add(() -> searchModule.search(searchRequest));
+        //TODO Only search those where the last call was successful, which are enabled and have more results
+        for (IndexerSearchResult indexerToSearch : indexersToSearch) {
+            int offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();
+            int limit = indexerToSearch.getLimit();
+            callables.add(() -> indexerToSearch.getIndexer().search(searchRequest, offset, limit));
         }
 
         try {
@@ -76,6 +114,11 @@ public class Searcher {
                 } catch (ExecutionException e) {
                     logger.error("Error while searching", e);
                     //TODO Handle error, searchInternal modules should always catch as much as possible, so this is probably a bug
+                    IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
+                    indexerSearchResult.setWasSuccessful(false);
+                    indexerSearchResult.setErrorMessage(e.getMessage());
+                    indexerSearchResult.setHasMoreResults(false);
+                    indexerSearchResult.setSearchResultItems(Collections.emptyList());
                 }
             }
         } catch (InterruptedException e) {
@@ -84,5 +127,6 @@ public class Searcher {
         }
         return indexerSearchResults;
     }
+
 
 }
