@@ -2,9 +2,13 @@ package org.nzbhydra.searching.infos;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.database.MovieInfoRepository;
+import org.nzbhydra.database.TvInfo;
+import org.nzbhydra.database.TvInfoRepository;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,6 +26,10 @@ public class InfoProviderTest {
     TmdbHandler tmdbHandlerMock;
     @Mock
     TvMazeHandler tvMazeHandlerMock;
+    @Mock
+    private TvInfoRepository tvInfoRepositoryMock;
+    @Mock
+    private MovieInfoRepository movieInfoRepository;
 
     @InjectMocks
     private InfoProvider testee = new InfoProvider();
@@ -30,10 +38,19 @@ public class InfoProviderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        when(tvMazeHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TvMazeSearchResult("", "", "", "", null, ""));
-        when(tvMazeHandlerMock.search(anyString())).thenReturn(Collections.singletonList(new TvMazeSearchResult("", "", "", "", null, "")));
+        when(tvMazeHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TvMazeSearchResult("tvMazeId", "tvRageId", "tvDbId", "title", 0, "posterUrl"));
+        when(tvMazeHandlerMock.search(anyString())).thenReturn(Collections.singletonList(new TvMazeSearchResult("tvMazeId", "tvRageId", "tvDbId", "title", 0, "posterUrl")));
         when(tmdbHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TmdbSearchResult(null, null, null, null, null));
         when(tmdbHandlerMock.search(anyString(), anyInt())).thenReturn(Collections.singletonList(new TmdbSearchResult(null, null, null, null, null)));
+
+        when(tvInfoRepositoryMock.findByTitle(anyString())).thenReturn(null);
+        when(tvInfoRepositoryMock.findByTvDbId(anyString())).thenReturn(null);
+        when(tvInfoRepositoryMock.findByTvMazeId(anyString())).thenReturn(null);
+        when(tvInfoRepositoryMock.findByTvRageId(anyString())).thenReturn(null);
+
+        when(movieInfoRepository.findByTitle(anyString())).thenReturn(null);
+        when(movieInfoRepository.findByImdbId(anyString())).thenReturn(null);
+        when(movieInfoRepository.findByTmdbId(anyString())).thenReturn(null);
     }
 
     @Test
@@ -66,12 +83,24 @@ public class InfoProviderTest {
 
     @Test
     public void shouldCallTvMaze() throws Exception {
+        ArgumentCaptor<TvInfo> tvInfoArgumentCaptor = ArgumentCaptor.forClass(TvInfo.class);
         for (InfoProvider.IdType type : Arrays.asList(InfoProvider.IdType.TVMAZE, InfoProvider.IdType.TVDB, InfoProvider.IdType.TVRAGE, InfoProvider.IdType.TVTITLE)) {
             reset(tvMazeHandlerMock);
-            when(tvMazeHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TvMazeSearchResult("", "", "", "", null, ""));
+            when(tvMazeHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TvMazeSearchResult("tvMazeId", "tvRageId", "tvDbId", "title", 0, "posterUrl"));
             testee.convert("value", type);
             verify(tvMazeHandlerMock).getInfos("value", type);
         }
+
+        verify(tvInfoRepositoryMock).findByTvDbId("value");
+        verify(tvInfoRepositoryMock).findByTvRageId("value");
+        verify(tvInfoRepositoryMock).findByTvMazeId("value");
+        verify(tvInfoRepositoryMock, times(4)).save(tvInfoArgumentCaptor.capture());
+        assertEquals(4, tvInfoArgumentCaptor.getAllValues().size());
+        assertEquals("title", tvInfoArgumentCaptor.getValue().getTitle());
+        assertEquals("tvDbId", tvInfoArgumentCaptor.getValue().getTvDbId());
+        assertEquals("tvMazeId", tvInfoArgumentCaptor.getValue().getTvMazeId());
+        assertEquals("tvRageId", tvInfoArgumentCaptor.getValue().getTvRageId());
+        assertEquals(Integer.valueOf(0), tvInfoArgumentCaptor.getValue().getYear());
     }
 
     @Test
@@ -82,6 +111,8 @@ public class InfoProviderTest {
             testee.convert("value", type);
             verify(tmdbHandlerMock).getInfos("value", type);
         }
+        verify(movieInfoRepository).findByTmdbId("value");
+        verify(movieInfoRepository).findByImdbId("value");
     }
 
     @Test

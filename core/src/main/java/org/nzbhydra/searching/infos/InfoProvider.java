@@ -2,6 +2,10 @@ package org.nzbhydra.searching.infos;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
+import org.nzbhydra.database.MovieInfo;
+import org.nzbhydra.database.MovieInfoRepository;
+import org.nzbhydra.database.TvInfo;
+import org.nzbhydra.database.TvInfoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +50,11 @@ public class InfoProvider {
     @Autowired
     protected TmdbHandler tmdbHandler;
     @Autowired
+    private MovieInfoRepository movieInfoRepository;
+    @Autowired
     protected TvMazeHandler tvMazeHandler;
+    @Autowired
+    private TvInfoRepository tvInfoRepository;
 
 
     public boolean canConvert(IdType from, IdType to) {
@@ -60,11 +68,41 @@ public class InfoProvider {
         try {
             Info info;
             if (fromType == TMDB || fromType == IMDB || fromType == MOVIETITLE) {
-                TmdbSearchResult result = tmdbHandler.getInfos(value, fromType);
-                info = new Info(result);
+                MovieInfo movieInfo;
+                if (fromType == TMDB) {
+                    movieInfo = movieInfoRepository.findByTmdbId(value);
+                } else if (fromType == IMDB) {
+                    movieInfo = movieInfoRepository.findByImdbId(value);
+                } else {
+                    movieInfo = movieInfoRepository.findByTitle(value);
+                }
+                if (movieInfo != null) {
+                    info = new Info(movieInfo);
+                } else {
+                    TmdbSearchResult result = tmdbHandler.getInfos(value, fromType);
+                    info = new Info(result);
+                    movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
+                    movieInfoRepository.save(movieInfo);
+                }
             } else if (fromType == TVMAZE || fromType == TVDB || fromType == TVRAGE || fromType == TVTITLE) {
-                TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
-                info = new Info(result);
+                TvInfo tvInfo;
+                if (fromType == TVMAZE) {
+                    tvInfo = tvInfoRepository.findByTvMazeId(value);
+                } else if (fromType == TVDB) {
+                    tvInfo = tvInfoRepository.findByTvDbId(value);
+                } else if (fromType == TVRAGE) {
+                    tvInfo = tvInfoRepository.findByTvRageId(value);
+                } else {
+                    tvInfo = tvInfoRepository.findByTitle(value);
+                }
+                if (tvInfo != null) {
+                    info = new Info(tvInfo);
+                } else {
+                    TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
+                    info = new Info(result);
+                    tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
+                    tvInfoRepository.save(tvInfo);
+                }
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
             }

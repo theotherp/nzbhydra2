@@ -2,6 +2,8 @@ package org.nzbhydra.searching.infos;
 
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
+import org.nzbhydra.database.MovieInfo;
+import org.nzbhydra.database.TvInfo;
 
 import java.util.Optional;
 
@@ -41,6 +43,10 @@ public class Info {
         return Optional.ofNullable(title);
     }
 
+    public Optional<Integer> getYear() {
+        return Optional.ofNullable(year);
+    }
+
     public Optional<String> getPosterUrl() {
         return Optional.ofNullable(posterUrl);
     }
@@ -60,6 +66,23 @@ public class Info {
         title = searchResult.getTitle();
         year = searchResult.getYear();
         posterUrl = searchResult.getPosterUrl();
+    }
+
+    public Info(MovieInfo movieInfo) {
+        imdbId = movieInfo.getImdbId();
+        tmdbId = movieInfo.getTmdbId();
+        title = movieInfo.getTitle();
+        year = movieInfo.getYear();
+        posterUrl = movieInfo.getPosterUrl();
+    }
+
+    public Info(TvInfo tvInfo) {
+        tvRageId = tvInfo.getTvRageId();
+        tvMazeId = tvInfo.getTvMazeId();
+        tvDbId = tvInfo.getTvDbId();
+        title = tvInfo.getTitle();
+        year = tvInfo.getYear();
+        posterUrl = tvInfo.getPosterUrl();
     }
 
     public Info() {

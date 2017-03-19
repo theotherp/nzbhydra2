@@ -25,6 +25,7 @@ public class NewznabTest {
     @Mock
     private InfoProvider infoProviderMock;
 
+
     @InjectMocks
     private Newznab testee = new Newznab();
 
@@ -57,6 +58,8 @@ public class NewznabTest {
         assertTrue(params.containsKey("tmdbid"));
         assertTrue(params.containsKey("rid"));
         assertTrue(params.containsKey("tvmazeid"));
+
+        verify(infoProviderMock, times(1)).convert(anyString(), any(IdType.class));
     }
 
     @Test

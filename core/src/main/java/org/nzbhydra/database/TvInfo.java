@@ -18,6 +18,18 @@ public class TvInfo {
     private String tvRageId;
     private String tvMazeId;
     private String title;
+    private Integer year;
+    private String posterUrl;
 
+    public TvInfo(String tvDbId, String tvRageId, String tvMazeId, String title, Integer year, String posterUrl) {
+        this.tvDbId = tvDbId;
+        this.tvRageId = tvRageId;
+        this.tvMazeId = tvMazeId;
+        this.title = title;
+        this.year = year;
+        this.posterUrl = posterUrl;
+    }
 
+    public TvInfo() {
+    }
 }
