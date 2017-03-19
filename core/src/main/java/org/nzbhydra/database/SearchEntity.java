@@ -18,7 +18,6 @@ public class SearchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
-
     private boolean internal;
     @Convert(converter = CategoryConverter.class)
     private Category category;
