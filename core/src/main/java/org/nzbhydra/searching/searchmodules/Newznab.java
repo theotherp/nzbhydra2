@@ -172,5 +172,9 @@ public class Newznab extends AbstractIndexer {
         return searchResultItems;
     }
 
+    protected Logger getLogger() {
+        return logger;
+    }
+
 
 }

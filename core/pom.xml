@@ -18,7 +18,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>1.4.2.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent getInfos repository -->
     </parent>
 
     <properties>
@@ -62,12 +62,17 @@
             <version>1.5.1</version>
         </dependency>
 
-        <!--
-                <dependency>
+        <dependency>
+            <groupId>com.uwetrottmann.tmdb2</groupId>
+            <artifactId>tmdb-java</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-cache</artifactId>
                 </dependency>
-                -->
+
         <!--<dependency>-->
             <!--<groupId>org.springframework.retry</groupId>-->
             <!--<artifactId>spring-retry</artifactId>-->

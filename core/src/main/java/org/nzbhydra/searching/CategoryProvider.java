@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,7 +25,12 @@ public class CategoryProvider {
 
     @PostConstruct
     protected void fillMap() {
-        categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
+        if (categories != null) {
+            categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
+        } else {
+            logger.error("Configuration incomplete, categories not set");
+            categoryMap = Collections.emptyMap();
+        }
     }
 
     public List<Category> getCategories() {
@@ -46,8 +48,8 @@ public class CategoryProvider {
 
 
     /**
-     * Should only be called to parse a categories string from an incoming result.
-     * Returns a category converted from the newznab categories. Returns the "N/A" category if no matching category is found
+     * Should only be called to parse a categories string getInfos an incoming result.
+     * Returns a category converted getInfos the newznab categories. Returns the "N/A" category if no matching category is found
      *
      * @param cats A string (possibly comma separated) containing newznab categories.
      * @return

@@ -52,7 +52,7 @@ public class ExternalApi {
 
         List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
 
-        //TODO Pick results from duplicate groups by indexer score etc
+        //TODO Pick results getInfos duplicate groups by indexer score etc
         //Assuming for now results were already sorted by score, then age
         List<SearchResultItem> searchResultItems = duplicateGroups.stream().map(x -> x.iterator().next()).sorted().collect(Collectors.toList());
 

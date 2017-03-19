@@ -7,6 +7,7 @@ import org.nzbhydra.database.*;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.slf4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,11 @@ public class AbstractIndexerTest {
 
     @InjectMocks
     private AbstractIndexer testee = new AbstractIndexer() {
+        @Override
+        protected Logger getLogger() {
+            return null;
+        }
+
         @Override
         public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) {
             return null;

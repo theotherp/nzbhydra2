@@ -59,3 +59,29 @@ indexers:
     apikey: j
     searchModuleType: newznab
     score: 1
+categories:
+  -
+    name: "all"
+    newznabCategories:
+  -
+    name: "n/a"
+    newznabCategories:
+  -
+    name: "category1"
+    newznabCategories: 1000,2000
+  -
+    name: "category2"
+    newznabCategories: 3000,4000
+
+spring:
+  datasource:
+    url: jdbc:hsqldb:file:nzbhydra.db
+    #url: jdbc:hsqldb:hsql://localhost:9001/xdb;shutdown=true
+    username: sa
+    password:
+    driverClassName: org.hsqldb.jdbc.JDBCDriver
+
+logging:
+  level:
+    org:
+      nzbhydra: DEBUG

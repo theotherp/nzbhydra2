@@ -56,7 +56,7 @@ public abstract class AbstractIndexer implements Indexer {
             }
         }
         searchResultRepository.save(searchResultEntities);
-        logger.debug("Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        getLogger().debug("Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     protected void handleSuccess() {
@@ -84,4 +84,6 @@ public abstract class AbstractIndexer implements Indexer {
     protected int hashItem(SearchResultItem item) {
         return (indexer.getName() + item.getIndexerGuid()).hashCode();
     }
+
+    protected abstract Logger getLogger();
 }
