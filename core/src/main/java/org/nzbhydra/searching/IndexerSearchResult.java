@@ -23,7 +23,6 @@ public class IndexerSearchResult {
     private Map<String, Integer> rejectionReasonsCount;
 
     public IndexerSearchResult() {
-
     }
 
     public IndexerSearchResult(Indexer indexer) {
@@ -31,7 +30,8 @@ public class IndexerSearchResult {
         hasMoreResults = true;
     }
 
-    public IndexerSearchResult(boolean wasSuccessful) {
+    public IndexerSearchResult(Indexer indexer, boolean wasSuccessful) {
         this.wasSuccessful = wasSuccessful;
+        this.indexer = indexer;
     }
 }

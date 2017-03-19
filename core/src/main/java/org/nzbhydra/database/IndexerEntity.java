@@ -16,6 +16,13 @@ public class IndexerEntity {
 
     private String name;
 
+    @OneToOne(cascade = {CascadeType.ALL})
+    private IndexerStatusEntity status;
+
+    public IndexerEntity() {
+        //status = new IndexerStatusEntity();
+    }
+
 
 
 

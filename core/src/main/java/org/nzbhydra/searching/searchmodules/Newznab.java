@@ -15,11 +15,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @EqualsAndHashCode(callSuper = false)
 public class Newznab extends AbstractIndexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
     @Autowired
     protected RestTemplate restTemplate;
@@ -48,12 +51,12 @@ public class Newznab extends AbstractIndexer {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest);
-            //TODO handle indexer success
+            handleSuccess();
             indexerSearchResult.setWasSuccessful(true);
         } catch (Exception e) {
-            //TODO handle indexer failure
+            handleFailure(e.getMessage(), false); //TODO depending on type of error
             logger.error("Error while searching", e);
-            return new IndexerSearchResult(false);
+            return new IndexerSearchResult(this, false);
         }
         return indexerSearchResult;
     }
@@ -103,16 +106,21 @@ public class Newznab extends AbstractIndexer {
         RssRoot rssRoot;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            logger.info("Calling {}", url);
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
             logger.info("Successfully loaded results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        } catch (HttpClientErrorException e) {
-            logger.error("Unable to call URL " + url);
-            return null; //TODO handle error
+        } catch (HttpServerErrorException | HttpClientErrorException | ResourceAccessException e) {
+            logger.error("Unable to call URL " + url, e);
+            handleFailure(e.getMessage(), false); //TODO depending on type of error
+            IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
+            errorResult.setErrorMessage(e.getMessage());
+            errorResult.setSearchResultItems(Collections.emptyList());
+            return errorResult;
         }
 
         stopwatch.reset();
         stopwatch.start();
-        IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this);
         indexerSearchResult.setSearchResultItems(getSearchResultItems(rssRoot));
         indexerSearchResult.setWasSuccessful(true);
         indexerSearchResult.setIndexer(this);

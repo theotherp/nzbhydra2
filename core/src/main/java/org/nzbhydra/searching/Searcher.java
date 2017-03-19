@@ -9,10 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +31,6 @@ public class Searcher {
 
     private final ConcurrentHashMap<Integer, CachedSearchResults> searchRequestCache = new ConcurrentHashMap<>();
 
-
     public SearchResult search(SearchRequest searchRequest) {
         CachedSearchResults cachedSearchResults = getCachedSearchResults(searchRequest);
 
@@ -41,10 +39,11 @@ public class Searcher {
         List<IndexerSearchResult> indexerSearchResultsToSearch = getIndexerSearchResultsToSearch(cachedSearchResults);
         while (indexerSearchResultsToSearch.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
 
-            List<IndexerSearchResult> indexerSearchResults = callSearchModules(searchRequest, indexerSearchResultsToSearch);
+            List<IndexerSearchResult> indexerSearchResultsFromLatestSearch = callSearchModules(searchRequest, indexerSearchResultsToSearch);
 
-            for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
-                cachedSearchResults.getIndexerSearchProcessingDatas().get(indexerSearchResult.getIndexer()).add(indexerSearchResult);
+            for (IndexerSearchResult indexerSearchResult : indexerSearchResultsFromLatestSearch) {
+                List<IndexerSearchResult> indexerSearchResultsFromCache = cachedSearchResults.getIndexerSearchProcessingDatas().get(indexerSearchResult.getIndexer());
+                indexerSearchResultsFromCache.add(indexerSearchResult);
             }
 
             searchRequestCache.put(searchRequest.hashCode(), cachedSearchResults);
@@ -52,8 +51,6 @@ public class Searcher {
             List<SearchResultItem> searchResultItems = cachedSearchResults.getIndexerSearchProcessingDatas().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
             DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
-
-            //TODO Offset, total, rejected, etc
             searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
             indexerSearchResultsToSearch = getIndexerSearchResultsToSearch(cachedSearchResults);
         }
@@ -63,7 +60,17 @@ public class Searcher {
 
     protected CachedSearchResults getCachedSearchResults(SearchRequest searchRequest) {
         CachedSearchResults cachedSearchResults;
-        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) { //TODO Timeout
+
+        //Remove entries older than 5 minutes
+        Iterator<Map.Entry<Integer, CachedSearchResults>> iterator = searchRequestCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, CachedSearchResults> next = iterator.next();
+            if (next.getValue().getLastAccessed().plus(5, ChronoUnit.MINUTES).isAfter(Instant.now())) {
+                searchRequestCache.remove(next.getKey());
+            }
+        }
+
+        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
             //New search
             SearchEntity searchEntity = new SearchEntity();
             searchEntity.setInternal(searchRequest.isInternal());
@@ -84,6 +91,7 @@ public class Searcher {
             cachedSearchResults = new CachedSearchResults(searchRequest, indexersToCall);
         } else {
             cachedSearchResults = searchRequestCache.get(searchRequest.hashCode());
+            cachedSearchResults.setLastAccessed(Instant.now());
 
         }
         return cachedSearchResults;
@@ -114,8 +122,7 @@ public class Searcher {
                 } catch (ExecutionException e) {
                     logger.error("Error while searching", e);
                     //TODO Handle error, searchInternal modules should always catch as much as possible, so this is probably a bug
-                    IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
-                    indexerSearchResult.setWasSuccessful(false);
+                    IndexerSearchResult indexerSearchResult = new IndexerSearchResult(null, false);
                     indexerSearchResult.setErrorMessage(e.getMessage());
                     indexerSearchResult.setHasMoreResults(false);
                     indexerSearchResult.setSearchResultItems(Collections.emptyList());

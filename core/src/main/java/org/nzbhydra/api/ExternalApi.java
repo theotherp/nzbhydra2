@@ -1,5 +1,6 @@
 package org.nzbhydra.api;
 
+import com.google.common.base.Stopwatch;
 import org.nzbhydra.CoreApplication;
 import org.nzbhydra.mapping.*;
 import org.nzbhydra.searching.*;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,17 +33,23 @@ public class ExternalApi {
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
     public RssRoot api(ApiCallParameters params) {
-
+        logger.info("Received external API call: " + params);
+        Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             SearchResult searchResult = search(params);
 
-            return transformResults(searchResult, params);
+            RssRoot transformedResults = transformResults(searchResult, params);
+            logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            return transformedResults;
         }
+
         //TODO handle missing or wrong parameters
+
         return new RssRoot();
     }
 
     protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
+
         List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
 
         //TODO Pick results from duplicate groups by indexer score etc
@@ -60,7 +68,7 @@ public class ExternalApi {
         rssChannel.setTitle("NZB Hydra 2");
         rssChannel.setLink("link");
         rssChannel.setWebMaster("todo");
-        rssChannel.setNewznabResponse(new NewznabResponse(1, 100)); //TODO
+        rssChannel.setNewznabResponse(new NewznabResponse( params.getOffset(), searchResultItems.size())); //TODO
 
 
         rssRoot.setRssChannel(rssChannel);
@@ -77,7 +85,6 @@ public class ExternalApi {
         }
 
         rssChannel.setItems(items);
-
 
         return rssRoot;
     }

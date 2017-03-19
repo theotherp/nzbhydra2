@@ -1,5 +1,6 @@
 package org.nzbhydra.api;
 
+import com.google.common.base.MoreObjects;
 import lombok.Data;
 
 import java.util.List;
@@ -36,4 +37,31 @@ public class ApiCallParameters {
     private String genre;
     private List<String> attrs;
     private boolean extended;
+
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("t", t)
+                .add("q", q)
+                .add("cat", cat)
+                .add("rid", rid)
+                .add("imdbid", imdbid)
+                .add("tvdbid", tvdbid)
+                .add("season", season)
+                .add("ep", ep)
+                .add("author", author)
+                .add("title", title)
+                .add("offset", offset)
+                .add("limit", limit)
+                .add("maxage", maxage)
+                .add("id", id)
+                .add("raw", raw)
+                .add("o", o)
+                .add("genre", genre)
+                .add("attrs", attrs)
+                .add("extended", extended)
+                .omitNullValues()
+                .toString();
+    }
 }

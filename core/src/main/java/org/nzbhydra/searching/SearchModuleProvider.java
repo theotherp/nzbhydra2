@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.searching.searchmodules.AbstractIndexer;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchmodules.Newznab;
@@ -47,6 +48,7 @@ public class SearchModuleProvider {
                 if (indexerEntity == null) {
                     indexerEntity = new IndexerEntity();
                     indexerEntity.setName(config.getName());
+                    indexerEntity.setStatus(new IndexerStatusEntity());
                     indexerEntity = indexerRepository.save(indexerEntity);
                 }
 

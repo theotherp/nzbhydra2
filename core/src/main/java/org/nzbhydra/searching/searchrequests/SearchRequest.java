@@ -7,6 +7,7 @@ import org.nzbhydra.searching.Category;
 import org.nzbhydra.searching.SearchType;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @ToString
@@ -61,20 +62,7 @@ public class SearchRequest {
 
     @Override
     public int hashCode() {
-        int result = (internal ? 1 : 0);
-        result = 31 * result + (searchType != null ? searchType.hashCode() : 0);
-        result = 31 * result + (category != null ? category.hashCode() : 0);
-        result = 31 * result + (minsize != null ? minsize.hashCode() : 0);
-        result = 31 * result + (maxsize != null ? maxsize.hashCode() : 0);
-        result = 31 * result + (minage != null ? minage.hashCode() : 0);
-        result = 31 * result + (maxage != null ? maxage.hashCode() : 0);
-        result = 31 * result + (query != null ? query.hashCode() : 0);
-        result = 31 * result + (identifierKey != null ? identifierKey.hashCode() : 0);
-        result = 31 * result + (identifierValue != null ? identifierValue.hashCode() : 0);
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (season != null ? season.hashCode() : 0);
-        result = 31 * result + (episode != null ? episode.hashCode() : 0);
-        result = 31 * result + (author != null ? author.hashCode() : 0);
-        return result;
+        return Objects.hash(searchType, category, minsize, maxsize, minage, maxage, query, identifierKey, identifierValue, title, season, episode, author);
+
     }
 }

@@ -24,7 +24,7 @@ public class SearchEntity {
     private Category category;
     private String query;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
-    private Instant time = Instant.now();
+    private Instant time;
     private String identifierKey;
     private String identifierValue;
     private Integer season;
@@ -34,4 +34,8 @@ public class SearchEntity {
     private String username;
     private String title;
     private String author;
+
+    public SearchEntity() {
+        time = Instant.now();
+    }
 }
