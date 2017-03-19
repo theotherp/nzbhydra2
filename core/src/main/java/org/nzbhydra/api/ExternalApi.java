@@ -1,9 +1,11 @@
 package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import org.nzbhydra.CoreApplication;
 import org.nzbhydra.mapping.*;
 import org.nzbhydra.searching.*;
+import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
@@ -49,12 +52,8 @@ public class ExternalApi {
     }
 
     protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
-
-        List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
-
-        //TODO Pick results getInfos duplicate groups by indexer score etc
-        //Assuming for now results were already sorted by score, then age
-        List<SearchResultItem> searchResultItems = duplicateGroups.stream().map(x -> x.iterator().next()).sorted().collect(Collectors.toList());
+        logger.debug("Transforming results");
+        List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
         //Account for offset and limit
         int maxIndex = searchResultItems.size();
@@ -85,8 +84,16 @@ public class ExternalApi {
         }
 
         rssChannel.setItems(items);
-
+        logger.debug("Finished transforming");
         return rssRoot;
+    }
+
+    protected List<SearchResultItem> pickSearchResultItemsFromDuplicateGroups(SearchResult searchResult) {
+        List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
+
+        return duplicateGroups.stream().map(x -> {
+            return x.stream().sorted(Comparator.comparingInt(SearchResultItem::getIndexerScore).reversed().thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getPubDate().getEpochSecond()).reversed())).iterator().next();
+        }).collect(Collectors.toList());
     }
 
     private SearchResult search(ApiCallParameters params) {
@@ -95,15 +102,10 @@ public class ExternalApi {
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         searchRequest.setSearchType(searchType);
 
-
         return searcher.search(searchRequest);
     }
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
-
-        //TODO categories
-        //TODO ID searches
-
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
@@ -114,6 +116,23 @@ public class ExternalApi {
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
         searchRequest.setCategory(categoryProvider.fromNewznabCategories(params.getCat()));
+
+        if (!Strings.isNullOrEmpty(params.getTvdbid())) {
+            searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());
+        }
+        if (!Strings.isNullOrEmpty(params.getTvmazeid())) {
+            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeid());
+        }
+        if (!Strings.isNullOrEmpty(params.getRid())) {
+            searchRequest.getIdentifiers().put(IdType.TVRAGE, params.getRid());
+        }
+        if (!Strings.isNullOrEmpty(params.getImdbid())) {
+            searchRequest.getIdentifiers().put(IdType.IMDB, params.getImdbid());
+        }
+        if (!Strings.isNullOrEmpty(params.getTmdbid())) {
+            searchRequest.getIdentifiers().put(IdType.TMDB, params.getTmdbid());
+        }
+
         return searchRequest;
     }
 

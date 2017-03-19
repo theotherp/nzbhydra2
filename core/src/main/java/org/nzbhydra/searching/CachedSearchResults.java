@@ -37,8 +37,7 @@ public class CachedSearchResults {
                 Objects.equal(searchRequest.getQuery(), other.getSearchRequest().getQuery())
                         && Objects.equal(searchRequest.getSeason(), other.getSearchRequest().getSeason())
                         && Objects.equal(searchRequest.getEpisode(), other.getSearchRequest().getEpisode())
-                        && Objects.equal(searchRequest.getIdentifierKey(), other.getSearchRequest().getIdentifierKey())
-                        && Objects.equal(searchRequest.getIdentifierValue(), other.getSearchRequest().getIdentifierValue())
+                        && Objects.equal(searchRequest.getIdentifiers(), other.getSearchRequest().getIdentifiers())
                         && Objects.equal(searchRequest.getAuthor(), other.getSearchRequest().getAuthor())
                         && Objects.equal(searchRequest.getTitle(), other.getSearchRequest().getTitle())
                         && Objects.equal(searchRequest.getMinage(), other.getSearchRequest().getMinage())
@@ -54,8 +53,7 @@ public class CachedSearchResults {
                 searchRequest.getQuery(),
                 searchRequest.getSeason(),
                 searchRequest.getEpisode(),
-                searchRequest.getIdentifierKey(),
-                searchRequest.getIdentifierValue(),
+                searchRequest.getIdentifiers(),
                 searchRequest.getAuthor(),
                 searchRequest.getTitle(),
                 searchRequest.getMinage(),

@@ -4,61 +4,63 @@ indexers:
     host: http://127.0.0.1:5000
     apikey: a
     searchModuleType: newznab
+    supportedSearchIds: TVRAGE
     score: 1
   -
     name: newznab2
     host: http://127.0.0.1:5000
     apikey: b
     searchModuleType: newznab
-    score: 1
-  -
-    name: newznab3
-    host: http://127.0.0.1:5000
-    apikey: c
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab4
-    host: http://127.0.0.1:5000
-    apikey: d
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab5
-    host: http://127.0.0.1:5000
-    apikey: e
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab6
-    host: http://127.0.0.1:5000
-    apikey: f
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab7
-    host: http://127.0.0.1:5000
-    apikey: g
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab8
-    host: http://127.0.0.1:5000
-    apikey: h
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab9
-    host: http://127.0.0.1:5000
-    apikey: i
-    searchModuleType: newznab
-    score: 1
-  -
-    name: newznab10
-    host: http://127.0.0.1:5000
-    apikey: j
-    searchModuleType: newznab
-    score: 1
+    supportedSearchIds: IMDB, TMDB
+    score: 2
+#  -
+#    name: newznab3
+#    host: http://127.0.0.1:5000
+#    apikey: c
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab4
+#    host: http://127.0.0.1:5000
+#    apikey: d
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab5
+#    host: http://127.0.0.1:5000
+#    apikey: e
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab6
+#    host: http://127.0.0.1:5000
+#    apikey: f
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab7
+#    host: http://127.0.0.1:5000
+#    apikey: g
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab8
+#    host: http://127.0.0.1:5000
+#    apikey: h
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab9
+#    host: http://127.0.0.1:5000
+#    apikey: i
+#    searchModuleType: newznab
+#    score: 1
+#  -
+#    name: newznab10
+#    host: http://127.0.0.1:5000
+#    apikey: j
+#    searchModuleType: newznab
+#    score: 1
 categories:
   -
     name: "all"

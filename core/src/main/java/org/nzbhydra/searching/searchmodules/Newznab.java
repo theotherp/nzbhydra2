@@ -9,6 +9,10 @@ import org.nzbhydra.mapping.RssItem;
 import org.nzbhydra.mapping.RssRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.infos.Info;
+import org.nzbhydra.searching.infos.InfoProvider;
+import org.nzbhydra.searching.infos.InfoProvider.IdType;
+import org.nzbhydra.searching.infos.InfoProviderException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Data
@@ -34,11 +35,20 @@ public class Newznab extends AbstractIndexer {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
+    private static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
+
+    static {
+        idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
+        idTypeToParamValueMap.put(IdType.TMDB, "tmdbid");
+        idTypeToParamValueMap.put(IdType.TVRAGE, "rid");
+        idTypeToParamValueMap.put(IdType.TVDB, "tvdbid");
+        idTypeToParamValueMap.put(IdType.TVMAZE, "tvmazeid");
+    }
+
     @Autowired
     protected RestTemplate restTemplate;
-
-    private final Random random = new Random();
-
+    @Autowired
+    private InfoProvider infoProvider;
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());
@@ -66,29 +76,32 @@ public class Newznab extends AbstractIndexer {
 
         if (searchRequest.getQuery() != null) {
             componentsBuilder.queryParam("q", searchRequest.getQuery());
-        } else if (searchRequest.getIdentifierKey() != null) {
-            //TODO ID conversion
-            componentsBuilder.queryParam(searchRequest.getIdentifierKey(), searchRequest.getIdentifierValue());
-            if (searchRequest.getSeason() != null) {
-                componentsBuilder.queryParam("season", searchRequest.getSeason());
-            }
-            if (searchRequest.getEpisode() != null) {
-                componentsBuilder.queryParam("ep", searchRequest.getEpisode());
-            }
         }
-        
+
+        //TODO query generation
+        componentsBuilder = extendQueryWithSearchIds(searchRequest, componentsBuilder);
+
+        if (searchRequest.getSeason() != null) {
+            componentsBuilder.queryParam("season", searchRequest.getSeason());
+        }
+        if (searchRequest.getEpisode() != null) {
+            componentsBuilder.queryParam("ep", searchRequest.getEpisode());
+        }
+
         if (searchRequest.getMinage() != null) {
             componentsBuilder.queryParam("minage", searchRequest.getMinage());
         }
         if (searchRequest.getMaxage() != null) {
             componentsBuilder.queryParam("maxage", searchRequest.getMaxage());
         }
+
         if (searchRequest.getMinsize() != null) {
             componentsBuilder.queryParam("minsize", searchRequest.getMinsize());
         }
         if (searchRequest.getMaxsize() != null) {
             componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize());
         }
+
         if (searchRequest.getTitle() != null) {
             componentsBuilder.queryParam("title", searchRequest.getTitle());
         }
@@ -96,7 +109,47 @@ public class Newznab extends AbstractIndexer {
             componentsBuilder.queryParam("author", searchRequest.getAuthor());
         }
 
+        return componentsBuilder;
+    }
 
+    protected UriComponentsBuilder extendQueryWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
+        if (!searchRequest.getIdentifiers().isEmpty()) {
+            Map<IdType, String> params = new HashMap<>();
+            boolean indexerDoesNotSupportAnyOfProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x.name()));
+            if (indexerDoesNotSupportAnyOfProvidedIds) {
+                boolean canConvertAnyId = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().stream().anyMatch(y -> infoProvider.canConvert(x, IdType.valueOf(y.toUpperCase()))));
+                if (canConvertAnyId) {
+                    for (Map.Entry<IdType, String> providedId : searchRequest.getIdentifiers().entrySet()) {
+                        if (!params.containsKey(providedId.getKey())) {
+                            try {
+                                Info info = infoProvider.convert(providedId.getValue(), providedId.getKey());
+                                if (info.getImdbId().isPresent()) {
+                                    params.put(IdType.IMDB, info.getImdbId().get());
+                                }
+                                if (info.getTmdbId().isPresent()) {
+                                    params.put(IdType.TMDB, info.getTmdbId().get());
+                                }
+                                if (info.getTvRageId().isPresent()) {
+                                    params.put(IdType.TVRAGE, info.getTvRageId().get());
+                                }
+                                if (info.getTvMazeId().isPresent()) {
+                                    params.put(IdType.TVMAZE, info.getTvMazeId().get());
+                                }
+                                if (info.getTvDbId().isPresent()) {
+                                    params.put(IdType.TVDB, info.getTvDbId().get());
+                                }
+                            } catch (InfoProviderException e) {
+                                logger.error("Error while converting search ID", e);
+                            }
+                        }
+                    }
+                }
+            }
+            params.putAll(searchRequest.getIdentifiers());
+            for (Map.Entry<IdType, String> entry : params.entrySet()) {
+                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue());
+            }
+        }
         return componentsBuilder;
     }
 

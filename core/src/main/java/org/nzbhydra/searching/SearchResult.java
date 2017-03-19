@@ -7,7 +7,7 @@ import java.util.TreeSet;
 @Data
 public class SearchResult {
 
-    private DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult;
+    private DuplicateDetectionResult duplicateDetectionResult;
     //private List<IndexerSearchInfo> indexerSearchInfos = new ArrayList<>();
 
     public int calculateNumberOfResults() {

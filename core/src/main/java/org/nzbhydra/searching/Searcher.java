@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.searching.searchmodules.Indexer;
@@ -49,7 +50,7 @@ public class Searcher {
             searchRequestCache.put(searchRequest.hashCode(), cachedSearchResults);
 
             List<SearchResultItem> searchResultItems = cachedSearchResults.getIndexerSearchProcessingDatas().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
-            DuplicateDetector.DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
+            DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
             searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
             indexerSearchResultsToSearch = getIndexerSearchResultsToSearch(cachedSearchResults);
@@ -76,8 +77,7 @@ public class Searcher {
             searchEntity.setInternal(searchRequest.isInternal());
             searchEntity.setCategory(searchRequest.getCategory());
             searchEntity.setQuery(searchRequest.getQuery());
-            searchEntity.setIdentifierKey(searchRequest.getIdentifierKey());
-            searchEntity.setIdentifierValue(searchRequest.getIdentifierValue());
+            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toList()));
             searchEntity.setSeason(searchRequest.getSeason());
             searchEntity.setEpisode(searchRequest.getEpisode());
             searchEntity.setSearchType(searchRequest.getSearchType());

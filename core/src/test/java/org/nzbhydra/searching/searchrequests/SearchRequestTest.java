@@ -29,8 +29,7 @@ public class SearchRequestTest {
                     && Objects.equal(searchRequest.getQuery(), other.getSearchRequest().getQuery())
                     && Objects.equal(searchRequest.getEpisode(), other.getSearchRequest().getEpisode())
                     && Objects.equal(searchRequest.getSeason(), other.getSearchRequest().getSeason())
-                    && Objects.equal(searchRequest.getIdentifierKey(), other.getSearchRequest().getIdentifierKey())
-                    && Objects.equal(searchRequest.getIdentifierValue(), other.getSearchRequest().getIdentifierValue())
+                    && Objects.equal(searchRequest.getIdentifiers(), other.getSearchRequest().getIdentifiers())
                     && Objects.equal(searchRequest.getMinage(), other.getSearchRequest().getMinage())
                     && Objects.equal(searchRequest.getMaxage(), other.getSearchRequest().getMaxage())
                     && Objects.equal(searchRequest.getMinsize(), other.getSearchRequest().getMinsize())
@@ -40,7 +39,7 @@ public class SearchRequestTest {
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(searchRequest.getAuthor(), searchRequest.getTitle(), searchRequest.getQuery(), searchRequest.getEpisode(), searchRequest.getSeason(), searchRequest.getIdentifierKey(), searchRequest.getIdentifierValue(), searchRequest.getMinage(), searchRequest.getMaxage(), searchRequest.getMinsize(), searchRequest.getMaxsize());
+            return Objects.hashCode(searchRequest.getAuthor(), searchRequest.getTitle(), searchRequest.getQuery(), searchRequest.getEpisode(), searchRequest.getSeason(), searchRequest.getIdentifiers(), searchRequest.getMinage(), searchRequest.getMaxage(), searchRequest.getMinsize(), searchRequest.getMaxsize());
         }
     }
 

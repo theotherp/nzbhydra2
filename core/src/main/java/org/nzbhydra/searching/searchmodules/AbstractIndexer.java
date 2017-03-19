@@ -79,6 +79,11 @@ public abstract class AbstractIndexer implements Indexer {
         status.setDisabledUntil(Instant.now().plus(1, ChronoUnit.HOURS));//TODO calculate
         status.setReason(reason);
         indexerRepository.save(indexer);
+        if (disablePermanently) {
+            getLogger().warn("{} will be permanently disabled until reenabled by the user", indexer.getName());
+        } else {
+            getLogger().info("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
+        }
     }
 
     protected int hashItem(SearchResultItem item) {

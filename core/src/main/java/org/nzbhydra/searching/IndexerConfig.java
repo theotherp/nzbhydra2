@@ -3,6 +3,9 @@ package org.nzbhydra.searching;
 import lombok.Data;
 import lombok.ToString;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @ToString
 public class IndexerConfig {
@@ -12,5 +15,6 @@ public class IndexerConfig {
     private String apikey;
     private String searchModuleType;
     private Integer score;
+    private Set<String> supportedSearchIds = new HashSet<>();
 
 }

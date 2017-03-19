@@ -11,7 +11,6 @@ import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.infos.InfoProvider;
 import org.nzbhydra.searching.infos.InfoProviderException;
 import org.nzbhydra.searching.infos.TmdbHandler;
-import org.nzbhydra.searching.infos.TmdbSearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,9 +105,7 @@ public class CoreApplication {
 
     @RequestMapping("/test")
     public String test() throws InfoProviderException {
-
-        TmdbSearchResult searchResult2 = tmdbHandler.getInfos("american beauty", InfoProvider.IdType.MOVIETITLE);
-        return searchResult2.toString();
+        return "";
     }
 
 

@@ -1,8 +1,6 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.nzbhydra.database.IndexerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,12 +118,4 @@ public class DuplicateDetector {
     }
 
 
-    @Data
-    @AllArgsConstructor
-    public class DuplicateDetectionResult {
-
-        private List<TreeSet<SearchResultItem>> duplicateGroups;
-        private Map<IndexerEntity, Integer> uniqueResultsPerIndexer;
-
-    }
 }

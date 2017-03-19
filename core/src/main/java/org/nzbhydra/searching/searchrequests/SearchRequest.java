@@ -4,13 +4,17 @@ import lombok.Data;
 import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.nzbhydra.searching.Category;
 import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.infos.InfoProvider;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Data
 @GeneratePojoBuilder
 public class SearchRequest {
+
 
     protected List<String> indexers;
     protected boolean internal;
@@ -25,8 +29,7 @@ public class SearchRequest {
 
     protected String query;
 
-    protected String identifierKey;
-    protected String identifierValue;
+    protected Map<InfoProvider.IdType, String> identifiers = new HashMap<>();
     protected String title;
     protected Integer season;
     protected Integer episode;
@@ -46,8 +49,7 @@ public class SearchRequest {
                 Objects.equals(minage, that.minage) &&
                 Objects.equals(maxage, that.maxage) &&
                 Objects.equals(query, that.query) &&
-                Objects.equals(identifierKey, that.identifierKey) &&
-                Objects.equals(identifierValue, that.identifierValue) &&
+                Objects.equals(identifiers, that.identifiers) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(season, that.season) &&
                 Objects.equals(episode, that.episode) &&
@@ -56,6 +58,6 @@ public class SearchRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(internal, searchType, category, minsize, maxsize, minage, maxage, query, identifierKey, identifierValue, title, season, episode, author);
+        return Objects.hash(internal, searchType, category, minsize, maxsize, minage, maxage, query, identifiers, title, season, episode, author);
     }
 }
