@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class TmdbSearchResult {
+class TmdbSearchResult {
 
     private String tmdbId;
     private String imdbId;
