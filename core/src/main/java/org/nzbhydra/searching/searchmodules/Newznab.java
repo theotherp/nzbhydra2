@@ -3,6 +3,8 @@ package org.nzbhydra.searching.searchmodules;
 import com.google.common.base.Stopwatch;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.mapping.NewznabAttribute;
 import org.nzbhydra.mapping.NewznabResponse;
 import org.nzbhydra.mapping.RssItem;
@@ -18,9 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -61,10 +61,10 @@ public class Newznab extends AbstractIndexer {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest);
-            handleSuccess();
             indexerSearchResult.setWasSuccessful(true);
         } catch (Exception e) {
-            handleFailure(e.getMessage(), false); //TODO depending on type of error
+            handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+            //If not handle as failure still save the API access
             logger.error("Error while searching", e);
             return new IndexerSearchResult(this, false);
         }
@@ -162,9 +162,12 @@ public class Newznab extends AbstractIndexer {
             logger.info("Calling {}", url);
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
             logger.info("Successfully loaded results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        } catch (HttpServerErrorException | HttpClientErrorException | ResourceAccessException e) {
+            handleSuccess(IndexerApiAccessType.SEARCH, stopwatch.elapsed(TimeUnit.MILLISECONDS), IndexerApiAccessResult.SUCCESSFUL, url);
+        } catch (HttpStatusCodeException e) {
+            //TODO try and find out what specifically went wrong, e.g. wrong api key, missing params, etc
             logger.error("Unable to call URL " + url, e);
-            handleFailure(e.getMessage(), false); //TODO depending on type of error
+            handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, url); //TODO depending on type of error
+
             IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
             errorResult.setErrorMessage(e.getMessage());
             errorResult.setSearchResultItems(Collections.emptyList());

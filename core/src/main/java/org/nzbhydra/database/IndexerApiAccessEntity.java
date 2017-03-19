@@ -23,7 +23,7 @@ public class IndexerApiAccessEntity {
     private IndexerApiAccessResult result;
     @Convert(converter = EnumDatabaseConverter.class)
     private IndexerApiAccessType accessType;
-    private Integer responseTime;
+    private Long responseTime;
     private String error;
     private String url;
     //TODO username / user

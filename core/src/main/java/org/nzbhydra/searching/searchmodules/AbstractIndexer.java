@@ -5,7 +5,6 @@ import org.nzbhydra.database.*;
 import org.nzbhydra.searching.IndexerConfig;
 import org.nzbhydra.searching.SearchResultItem;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
 public abstract class AbstractIndexer implements Indexer {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractIndexer.class);
+    protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 15, 30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60);
 
     protected IndexerEntity indexer;
     protected IndexerConfig config;
@@ -59,24 +59,34 @@ public abstract class AbstractIndexer implements Indexer {
         getLogger().debug("Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
-    protected void handleSuccess() {
+    protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerApiAccessResult accessResult, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         status.setLevel(0);
         status.setDisabledPermanently(false);
         status.setDisabledUntil(null);
         status.setReason(null); //TODO Check if should be deleted or kept and displayed even when enabled
         indexerRepository.save(indexer);
+
+        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();
+        apiAccess.setIndexer(indexer);
+        apiAccess.setAccessType(accessType);
+        apiAccess.setResponseTime(responseTime);
+        apiAccess.setResult(accessResult);
+        apiAccess.setTime(Instant.now());
+        apiAccess.setUrl(url);
+        indexerApiAccessRepository.save(apiAccess);
     }
 
-    protected void handleFailure(String reason, Boolean disablePermanently) {
+    protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerApiAccessResult accessResult, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         if (status.getLevel() == 0) {
             status.setFirstFailure(Instant.now());
         }
-        status.setLevel(status.getLevel()+1);
+        status.setLevel(status.getLevel() + 1);
         status.setDisabledPermanently(disablePermanently);
         status.setLastFailure(Instant.now());
-        status.setDisabledUntil(Instant.now().plus(1, ChronoUnit.HOURS));//TODO calculate
+        long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, status.getLevel() + 1));
+        status.setDisabledUntil(Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES));
         status.setReason(reason);
         indexerRepository.save(indexer);
         if (disablePermanently) {
@@ -84,7 +94,17 @@ public abstract class AbstractIndexer implements Indexer {
         } else {
             getLogger().info("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
         }
+
+        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();
+        apiAccess.setIndexer(indexer);
+        apiAccess.setAccessType(accessType);
+        apiAccess.setResponseTime(responseTime);
+        apiAccess.setResult(accessResult);
+        apiAccess.setTime(Instant.now());
+        apiAccess.setUrl(url);
+        indexerApiAccessRepository.save(apiAccess);
     }
+
 
     protected int hashItem(SearchResultItem item) {
         return (indexer.getName() + item.getIndexerGuid()).hashCode();

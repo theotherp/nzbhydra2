@@ -8,13 +8,17 @@ import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +33,8 @@ public class AbstractIndexerTest {
     @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
+    private IndexerApiAccessRepository indexerApiAccessRepositoryMock;
+    @Mock
     private SearchResultRepository searchResultRepositoryMock;
     @Captor
     private ArgumentCaptor<List<SearchResultEntity>> searchResultEntitiesCaptor;
@@ -38,7 +44,7 @@ public class AbstractIndexerTest {
     private AbstractIndexer testee = new AbstractIndexer() {
         @Override
         protected Logger getLogger() {
-            return null;
+            return LoggerFactory.getLogger("test");
         }
 
         @Override
@@ -92,7 +98,7 @@ public class AbstractIndexerTest {
 
     @Test
     public void handleSuccess() throws Exception {
-        testee.handleSuccess();
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0, IndexerApiAccessResult.API_ERROR, "url");
 
         verify(statusMock).setReason(null);
         verify(statusMock).setDisabledPermanently(false);
@@ -104,11 +110,16 @@ public class AbstractIndexerTest {
 
     @Test
     public void handleFailure() throws Exception {
-        testee.handleFailure("reason", true);
+        testee.handleFailure("reason", true, null, null, null, null);
+        ArgumentCaptor<Instant> captor = ArgumentCaptor.forClass(Instant.class);
 
         verify(statusMock).setReason("reason");
         verify(statusMock).setDisabledPermanently(true);
+        verify(statusMock).setDisabledUntil(captor.capture());
         verify(statusMock).setLevel(1);
+
+        assertTrue(captor.getValue().minus(AbstractIndexer.DISABLE_PERIODS.get(1) - 1, ChronoUnit.MINUTES).isAfter(Instant.now()));
+        assertTrue(captor.getValue().minus(AbstractIndexer.DISABLE_PERIODS.get(1) + 1, ChronoUnit.MINUTES).isBefore(Instant.now()));
 
 
         verify(indexerRepositoryMock).save(indexerEntityMock);
