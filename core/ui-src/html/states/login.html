@@ -1,0 +1,20 @@
+<div class="row">
+    <div class="center-form panel">
+        <div class="panel-body">
+            <h2 class="text-center">Log in</h2>
+            <form method="post" ng-submit="login()" name="loginForm">
+                <div class="form-group has-feedback">
+                    <input class="form-control input-lg" type="text" name="username" ng-model="user.username" placeholder="Username" required autofocus auto-focus>
+                    <span class="ion-at form-control-feedback"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input class="form-control input-lg" type="password" name="password" ng-model="user.password" placeholder="Password" required>
+                    <span class="ion-key form-control-feedback"></span>
+                </div>
+                <button type="submit" ng-disabled="loginForm.$invalid" class="btn btn-lg  btn-block btn-success">Log in</button>
+                You will be forwarded to the search area.
+            </form>
+
+        </div>
+    </div>
+</div>

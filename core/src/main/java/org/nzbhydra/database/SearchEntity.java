@@ -26,7 +26,7 @@ public class SearchEntity {
     private String query;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time;
-    @ManyToMany
+    @OneToMany
     private List<IdentifierKeyValuePair> identifiers = new ArrayList<>();
     private Integer season;
     private Integer episode;

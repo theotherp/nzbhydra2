@@ -1,0 +1,39 @@
+<ul class="nav nav-tabs" role="tablist">
+    <li ng-repeat="tab in allTabs" ng-class="{'active': $index == activeTab}">
+        <a href="" ng-click="goToSystemState($index)">{{ tab.name }}</a>
+    </li>
+
+</ul>
+
+<div class="tab-content" style="text-align: center">
+
+    <div class="system-tab-content" ng-if="activeTab==0">
+        <button class="btn btn-default" type="button" ng-click="shutdown()">Shutdown</button>
+        <button class="btn btn-default" type="button" ng-click="restart()">Restart</button>
+        <br>
+        <button class="btn btn-danger" type="button" ng-click="deleteLogAndDatabase()" style="margin-top: 20px">Delete log and database</button>
+        <br>
+        <button class="btn btn-info" type="button" ng-click="forceUpdate()" style="margin-top: 20px">Force update</button>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==1">
+        <hydraupdates></hydraupdates>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==2">
+        <hydralog></hydralog>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==3" style="text-align: center">
+        <hydrabackup></hydrabackup>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==4">
+        <ng-include src="'html/bugreport.html'"></ng-include>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==5">
+        <ng-include src="'html/about.html'"></ng-include>
+    </div>
+</div>
+

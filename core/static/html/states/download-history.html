@@ -1,0 +1,67 @@
+<div class="row" style="margin-top: 30px; margin-bottom: 20px">
+    <div class="col-md-5"></div>
+    <div class="col-md-10" style="text-align: center">
+        <dir-pagination-controls on-page-change="update()" pagination-id="downloads"></dir-pagination-controls>
+    </div>
+</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th class="col-md-2">
+            <column-sortable column="time" style="width: 10%">Time
+            </column-sortable>
+            <column-filter-wrapper>
+                <time-filter column="time" selected="preselectedTimeInterval"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-3">
+            <column-sortable column="indexer" style="width: 15%">Indexer
+            </column-sortable>
+            <column-filter-wrapper>
+                <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-8" style="width: 48%">
+            <column-sortable column="title">Title
+            </column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="title"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-1" style="width: 9%">
+            <column-sortable column="successful">Successful
+            </column-sortable>
+            <column-filter-wrapper>
+                <checkboxes-filter column="successful" entries="successfulForFiltering" preselect="true" show-invert="false" is-boolean="true"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-1" style="width: 8%">
+            <column-sortable column="access">Access
+            </column-sortable>
+            <column-filter-wrapper>
+                <boolean-filter column="access" options="accessOptionsForFiltering" preselect="0"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-2" style="width: 10%">
+            <column-sortable column="username">Username</column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="username"/>
+            </column-filter-wrapper>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage: limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
+        <td class="narrow-row">{{ nzbDownload.time | reformatDateEpoch }}</td>
+        <td class="narrow-row">{{ nzbDownload.indexerName }}</td>
+        <td class="narrow-row">
+            <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>
+            <a target="_blank" href="{{ nzbDownload.detailsLink | dereferer }}" ng-if="nzbDownload.detailsLink">{{ nzbDownload.title }}</a><span ng-if="!nzbDownload.detailsLink">{{ nzbDownload.title }}</span>
+        </td>
+        <td class="narrow-row"><span class="glyphicon" ng-class="{'glyphicon-ok': nzbDownload.response_successful == true, 'glyphicon-remove': nzbDownload.response_successful == false, 'glyphicon-question-sign': nzbDownload.response_successful == null}"></span></td>
+        <td class="narrow-row">{{ nzbDownload.internal ? "Internal" : "API"}}</td>
+        <td class="narrow-row">{{ nzbDownload.username }}</td>
+    </tr>
+    </tbody>
+</table>
+<dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="downloads"></dir-pagination-controls>

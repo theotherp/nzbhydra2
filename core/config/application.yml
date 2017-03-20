@@ -87,3 +87,6 @@ logging:
   level:
     org:
       nzbhydra: DEBUG
+
+server:
+  contextPath: / #Set for reverse proxy support

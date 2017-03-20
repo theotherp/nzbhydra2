@@ -1,0 +1,18 @@
+<div cg-busy="{promise:loadingPromise,message:'Loading versions and changelog'}">
+    Current version: {{ currentVersion }}
+    <br>
+    Latest version: {{ repVersion }}
+    <br>
+<span ng-if="updateAvailable">
+            <button class="btn btn-default" type="button" ng-click="showChangelog()">See what's new!</button>
+        <button class="btn btn-default" type="button" ng-click="update()">Update!</button>
+        </span>
+    <span ng-if="!updateAvailable">You're up to date!</span>
+
+    <div class="panel panel-default" style="margin-top: 50px; text-align: left">
+        <div class="panel-heading"><h3>Version history</h3></div>
+        <div class="panel-body" ng-bind-html="versionHistory">
+        </div>
+    </div>
+
+</div>

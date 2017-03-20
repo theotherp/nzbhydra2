@@ -115,11 +115,5 @@ public class CoreApplication {
     }
 
 
-    @RequestMapping("/")
-    public String index() {
-
-
-        return "Greetings getInfos Spring Boot!";
-    }
 
 }

@@ -1,0 +1,43 @@
+<td class="col-md-1 search-results-cell result-indexer" style="text-align: right">
+    {{ ::result.indexer }}
+</td>
+<td class="col-md-1 search-results-cell result-category" style="text-align: right">
+    {{ ::result.category }}
+</td>
+<td class="col-md-1 search-results-cell result-size" style="text-align: right">
+    {{ ::result.size | byteFmt: 2 }}
+</td>
+<td class="col-md-1 search-results-cell result-details" style="text-align: right">
+    {{ ::(result.grabs ? result.grabs : '-') }}
+</td>
+<td class="col-md-1 search-results-cell result-age" style="text-align: right">
+    {{ ::result.age }}
+</td>
+<td class="col-md-3 search-results-cell result-links">
+    <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.has_nfo == 0}" class="no-underline"
+       uib-tooltip="{{ getNfoTooltip() }}"
+       tooltip-placement="top"
+       tooltip-trigger="mouseenter">
+        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.has_nfo == 2}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+    </a>
+    <span ng-if="showDetailsDl">
+        <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link}}" target="_blank" class="no-underline"
+           uib-tooltip="Comments"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-comment" aria-hidden="true" style="margin-left:0px; margin-right:3px;"></i>
+        </a>
+        <a target="_blank" href="{{ ::result.details_link | dereferer}}" ng-class="::{'no-nfo': !result.details_link}" style="vertical-align: middle" class="no-underline"
+           uib-tooltip="Details"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-info" aria-hidden="true" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        </a>
+        <a target="_self" href="getnzb?searchresultid={{ ::result.searchResultId }}&internal=true" style="vertical-align: middle; margin-left: 3px; margin-right: 3px" class="no-underline"
+           uib-tooltip="Download NZB"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter"><span>{{ ::result.downloadType == 'nzb' ? 'NZB' : 'Torrent' }}</span>
+        </a>
+    </span>
+    <addable-nzbs search-result-id="result.searchResultId" download-type="result.downloadType"></addable-nzbs>
+</td>

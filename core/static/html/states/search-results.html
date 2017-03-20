@@ -1,0 +1,185 @@
+<div class="row" ng-if="indexersearches" style="margin-top: 25px">
+
+    <div class="col-md-5"></div>
+    <div class="col-md-10" style="padding-right: 0px">
+        <!-- TODO: Make box smaller if no error messages exist-->
+        <uib-accordion close-others="oneAtATime">
+            <div uib-accordion-group panel-class="panel-indexer-statuses" is-open="foo.indexerStatusesExpanded" is-disabled="true" class="">
+                <uib-accordion-heading>
+                    <span class="indexer-statuses-accordion">
+                        <span ng-click="toggleIndexerStatuses()">Indexer statuses</span><span ng-if="countRejected > 0"> / Rejected results</span> <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': foo.indexerStatusesExpanded, 'glyphicon-chevron-right': !foo.indexerStatusesExpanded}" ng-click="toggleIndexerStatuses()"></i>
+                    </span>
+                </uib-accordion-heading>
+
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="col-md-6 text-left">
+                            Indexer
+                        </th>
+                        <th class="col-md-2 text-left">
+                            Results
+                        </th>
+                        <th class="col-md-4 text-left">
+                            Response time
+                        </th>
+                        <th class="col-md-9 text-left">
+                            Status
+                        </th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    <tr ng-repeat-start="ps in indexersearches " ng-if="0"></tr>
+                    <!-- First result in the list, show regularly -->
+                    <tr>
+                        <td class="text-left">
+                            <input ng-disabled="!ps.successful" type="checkbox" ng-model="indexerDisplayState[ps.indexer.toLowerCase()]" ng-click="toggleIndexerDisplay(ps.indexer)"
+                                   uib-tooltip="Uncheck to hide results from this indexer"
+                                   tooltip-placement="top"
+                                   tooltip-trigger="mouseenter"
+                            />{{ ps.indexer }}
+                        </td>
+                        <td class="text-left">
+                    <span ng-if="ps.did_search">
+                        <span ng-if="!ps.total_known && ps.total > 0">&gt;</span>{{ ps.total }}
+                    </span>
+                        </td>
+                        <td class="text-left">
+                    <span ng-if="ps.did_search">
+                        {{ ps.averageResponseTime }}ms
+                    </span>
+                        </td>
+                        <td class="text-left">
+                    <span ng-if="ps.did_search">
+                        <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.successful, 'glyphicon-remove' : !ps.successful}"></span>
+                        <span ng-repeat="apiaccess in ps.apiAccesses">
+                            <span ng-if="$index == 0">{{ apiaccess.error }}</span>
+                            <div ng-if="$index > 0">{{ apiaccess.error }}</div>
+                        </span>
+                    </span>
+                            <span ng-if="!ps.did_search">
+                        Did not search.
+                    </span>
+                        </td>
+                    </tr>
+
+                    <tr ng-repeat-end ng-if="0"></tr>
+                    </tbody>
+                </table>
+
+
+                <table class="table" style="margin-bottom: 0px; margin-top: 5px" ng-if="countRejected > 0">
+                    <thead>
+                    <tr>
+                        <th class="col-md-5 text-left">
+
+                        </th>
+                        <th class="col-md-5 text-left" style="text-align: right">
+                            Reject reason
+                        </th>
+                        <th class="col-md-5 text-left">
+                            Count
+                        </th>
+                        <th class="col-md-5 text-left">
+
+                        </th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="entry in rejected | filter: filterRejectedZero(entry)">
+                        <td>
+                        </td>
+                        <td style="text-align: right">
+                            {{ entry[0] }}
+                        </td>
+                        <td >
+                            {{ entry[1] }}
+                        </td>
+                        <td >
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </uib-accordion>
+    </div>
+</div>
+
+
+<div class="row" ng-if="indexersearches" style="margin-top: 10px">
+    <div class="col-md-8" style="text-align: left;">
+        <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default">Include duplicates</input>
+        <button class="btn btn-default" ng-click="invertSelection()">Invert selection</button>
+        <download-nzbs-button search-results="selected"></download-nzbs-button>
+        <download-nzbzip-button search-results="selected" search-title="searchTitle"></download-nzbzip-button>
+    </div>
+
+    <div class="col-md-4" style="margin-top: 20px">
+        <dir-pagination-controls auto-hide="false"></dir-pagination-controls>
+    </div>
+    <div class="col-md-8" style="text-align: right;">
+        <span class="badge">Loaded {{ resultsCount }} of {{ total }} results (rejected {{ countRejected }})</span>
+
+        <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
+            <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="resultsCount >= total"
+                    uib-tooltip="Click to load more results from the indexers"
+                    tooltip-placement="top"
+                    tooltip-trigger="mouseenter"
+            >Load more</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="resultsCount >= total">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="#" ng-click="loadMore(true)"
+                       uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."
+                       tooltip-placement="top"
+                       tooltip-trigger="mouseenter"
+                >Load all results</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <table class="search-results-table table">
+        <thead class="search-results-header">
+        <tr class="search-results-row">
+            <th class="col-md-12 cursor-default search-results-cell result-title">
+                <!--<input type="checkbox" ng-click="invertSelection()" display="float:left; width:1%" uib-tooltip="Invert selection." tooltip-placement="top" tooltip-trigger="mouseenter"/>-->
+
+                <span ng-click="setSorting('title', false)" style="vertical-align: top; float:right; width:98%">
+                Title <span ng-show="sortPredicate=='title'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+                    </span>
+            </th>
+            <th class="col-md-1 cursor-default search-results-cell result-indexer" ng-click="setSorting('indexer', false)" style="text-align: right">
+                Indexer <span ng-show="sortPredicate=='indexer'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            </th>
+            <th class="col-md-1 cursor-default search-results-cell result-category" ng-click="setSorting('category', false)" style="vertical-align: top; text-align: right">
+                Category <span ng-show="sortPredicate=='category'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            </th>
+            <th class="col-md-1 cursor-default search-results-cell result-size" ng-click="setSorting('size', true)" style="vertical-align: top; text-align: right">
+                Size <span ng-show="sortPredicate=='size'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            </th>
+            <th class="col-md-1 cursor-default search-results-cell result-details" ng-click="setSorting('grabs', true)" style="vertical-align: top; text-align: right">
+                Grabs <span ng-show="sortPredicate=='grabs'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            </th>
+            <th class="col-md-1 cursor-default search-results-cell result-age" ng-click="setSorting('epoch', true)" style="vertical-align: top; text-align: right">
+                Age <span ng-show="sortPredicate=='epoch'" class="caret" ng-class="{'caret-reversed': sortReversed}"></span>
+            </th>
+            <th class="col-md-3 search-results-cell result-links" style="vertical-align: top">
+                Links
+            </th>
+        </tr>
+        </thead>
+
+        <tbody dir-paginate-start="titleGroup in filteredResults | itemsPerPage:limitTo track by groupId(titleGroup)" ng-show="0"></tbody>
+
+        <tbody title-group titles="titleGroup" selected="selected" style="display: table-row-group" row-index="$index" do-show-duplicates="foo.duplicatesDisplayed"></tbody>
+
+        <tbody dir-paginate-end ng-show="0"></tbody>
+
+    </table>
+    <dir-pagination-controls auto-hide="false"></dir-pagination-controls>
+</div>

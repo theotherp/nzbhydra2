@@ -1,0 +1,32 @@
+<table class="table" style="margin:0">
+    <tr ng-init="result=duplicates[0]" class="search-results-row" ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}">
+        <td class="col-md-12 search-results-cell result-title" ng-init="result = duplicates[0]" style="margin:0;">
+            <input type="checkbox" data-checklist-model="selected" data-checklist-value="result" ng-click="clickCheckbox($event)" data-checkbox-index="0"/>
+
+            <a href="" ng-click="toggleTitleExpansion()" ng-class="{'visibility-hidden': !displayTitleToggle}"
+               uib-tooltip="Click to see or hide all results with the same title"
+               tooltip-placement="top"
+               tooltip-trigger="mouseenter"
+            ><span class="glyphicon"
+                                                                                                                     ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a>
+
+            <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()" ng-class="{'visibility-hidden': duplicates.length == 1}"
+               uib-tooltip="Click to see or hide all duplicates of this result"
+               tooltip-placement="right"
+               tooltip-trigger="mouseenter"
+            ><span class="glyphicon"
+                                                                                                                            ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span></a>
+            <span ng-if="isFirstRow">{{ ::result.title }}</span>
+        </td>
+        <td other-columns result="result"></td>
+    </tr>
+
+    <tr ng-if="duplicatesExpanded" ng-repeat="duplicate in duplicatesToShow() track by duplicate.searchResultId" class="search-results-row duplicate" ng-class="{ 'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}">
+        <td class="col-md-12 search-results-cell result-title" style="margin:0;">
+            <input type="checkbox" data-checklist-model="selected" data-checklist-value="duplicate" ng-click="clickCheckbox($event)" data-checkbox-index="{{ ::$index+1 }}"/>
+
+        </td>
+        <td other-columns result="duplicate"></td>
+    </tr>
+
+</table>

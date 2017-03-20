@@ -1,0 +1,12 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{ headline }}</h3>
+</div>
+<div class="modal-body">
+    <span ng-bind-html="message | unsafe"></span>
+    
+</div>
+<div class="modal-footer">
+    <button class="btn btn-success" type="button" ng-click="yes()">{{ params.yes.text }}</button>
+    <button class="btn btn-danger" type="button" ng-if="showNo" ng-click="no()">{{ params.no.text }}</button>
+    <button class="btn btn-warning" type="button" ng-if="showCancel" ng-click="cancel()">{{ params.cancel.text }}</button>
+</div>

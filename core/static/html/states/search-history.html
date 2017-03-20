@@ -1,0 +1,69 @@
+<div id="content">
+<div class="row" style="margin-top: 30px; margin-bottom: 20px">
+    <div class="col-md-5"></div>
+    <div class="col-md-10" style="text-align: center">
+        <dir-pagination-controls on-page-change="update()" pagination-id="searches"></dir-pagination-controls>
+    </div>
+</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th class="col-md-2">
+            <column-sortable column="time" style="width: 10%">Time
+            </column-sortable>
+            <column-filter-wrapper>
+                <time-filter column="time" selected="preselectedTimeInterval"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-8" style="width: 30%">
+            <column-sortable column="query">Query
+            </column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="query"/>
+            </column-filter-wrapper>
+        </th>
+        <th style="width: 10%">
+            <column-sortable column="category">Category
+            </column-sortable>
+            <column-filter-wrapper>
+                <checkboxes-filter column="category" entries="categoriesForFiltering" preselect="true" show-invert="true"/>
+            </column-filter-wrapper>
+        </th>
+        <th style="width: 32%">
+            Additional parameters
+        </th>
+        <th class="col-md-1" style="width: 8%">
+            <column-sortable column="access">Access
+            </column-sortable>
+            <column-filter-wrapper>
+                <boolean-filter column="access" options="accessOptionsForFiltering" preselect="0"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-2" style="width: 10%">
+            <column-sortable column="username">Username</column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="username"/>
+            </column-filter-wrapper>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr dir-paginate="request in searchRequests | itemsPerPage: limit" total-items="totalRequests" current-page="pagination.current" pagination-id="searches">
+        <td class="narrow-row">{{ request.time | reformatDate }}</td>
+        <td class="narrow-row">
+            <a href="" ng-click="openSearch(request)"><span class="glyphicon glyphicon-search"></span></a>
+            <span ng-class="{'history-title': request.movietitle != null || request.tvtitle != null || (request.query == null && request.identifier_key == null && request.season ==null && request.episode ==null)}">
+                {{ formatQuery(request) }}
+
+            </span>
+        </td>
+        <td class="narrow-row">{{ request.category }}</td>
+        <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
+        <td class="narrow-row">{{ request.internal ? "Internal" : "API"}}</td>
+        <td class="narrow-row">{{ request.username }}</td>
+    </tr>
+    </tbody>
+</table>
+<dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="searches"></dir-pagination-controls>
+
+</div>

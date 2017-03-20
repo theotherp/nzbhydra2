@@ -1,0 +1,157 @@
+<script type="text/ng-template" id="autocompleteTemplate.html">
+    <a>
+        <img src="{{ match.model.poster }}" ng-if="match.model.poster" style="width: 50px"> {{ match.label }} <span ng-if="match.model.year">( {{ match.model.year }} )</span>
+    </a>
+</script>
+
+<div class="row">
+    <div class="col-md-3"></div>
+
+    <div class="">
+        <form class="form-horizontal">
+            <div class="form-group">
+
+                <label for="inputEmail3" class="col-sm-2 control-label">Search</label>
+
+                <div class="col-sm-10">
+                    <div class="input-group">
+                        <span class="input-group-btn input-group-btn2">
+                              <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
+                                      ng-cloak>
+                                  {{ category.pretty }} <span class="caret"></span>
+                              </button>
+                                <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
+                                    
+                                    <li ng-repeat="category in categories">
+                                        <a href="" class="searchCategoryButton" ng-click="toggle(category)">{{ category.pretty }}</a>
+                                    </li>
+                                </ul>
+                              
+                            </span>
+
+                        <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                              <input type="text" class="form-control season-input" placeholder="S" name="season" id="seriesSearchS" style="width:40px; " ng-model="season"
+                                     ng-enter="submitSearch(selectedItem)"
+                                     uib-tooltip="Enter a season to search for."
+                                     tooltip-placement="top"
+                                     tooltip-trigger="mouseenter">
+                          </span>
+
+                        <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                              <input type="text" class="form-control episode-input" placeholder="E" name="episode" id="seriesSearchE" style="width:40px;" ng-model="episode"
+                                     ng-enter="submitSearch(selectedItem)"
+                                     uib-tooltip="Enter an episode to search for."
+                                     tooltip-placement="top"
+                                     tooltip-trigger="mouseenter">
+                          </span>
+
+
+                        <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
+                              uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top" tooltip-trigger="mouseenter"
+                              style="border-right-width: 0; width: 40px">
+                            <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
+                    </span>
+
+
+                        <script type="text/ng-template" id="movieAutocompleteEntry">
+                            <a>{{ match.label }}</a>
+                        </script>
+                        <input id="searchfield" type="search" ngtype="search" ng-model="query" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait"
+                               uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
+                               ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems"
+                               typeahead-on-select="selectAutocompleteItem($item)" ng-enter="startQuerySearch()" class="form-control"
+                               focus-on="focus-query-box"
+                               uib-tooltip="Prefix terms with -- to exclude"
+                               tooltip-placement="top"
+                               tooltip-trigger="mouseenter"
+                               ng-change="searchInputChanged()"
+                        >
+                        <span class="input-group-btn input-group-btn1">
+                            <div class="btn-group" uib-dropdown is-open="status.isopen">
+                              <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle
+                                      uib-tooltip="Search history"
+                                      tooltip-placement="top"
+                                      tooltip-trigger="mouseenter"
+                              >
+                                <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span class="caret"></span>
+                              </button>
+                                <ul class="dropdown-menu" uib-dropdown-menu template-url="html/search-searchhistory-dropdown.html" aria-labelledby="button-template-url">
+                                </ul>
+                            </div>
+                        </span>
+
+                        <span class="input-group-btn input-group-btn2" style="width:51px;">
+                            <button class="btn btn-default" type="button" ng-click="goToSearchUrl()">Go!</button>
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+        <span ng-if="::showIndexerSelection">
+            <div class="col-md-3"></div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="" class="col-sm-2 control-label">Indexers</label>
+
+                    <div class="col-md-10">
+                        <div class="input-group" style="padding-top: 10px;">
+                            <button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>
+                            <span style="margin-right: 10px;"></span>
+                            <label ng-repeat="indexer in availableIndexers">
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" ng-model="indexer.activated"
+                                       ng-click="availableIndexers[indexer.name].activated=!availableIndexers[indexer.name].activated"> {{ indexer.name }}
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </span>
+
+        <div class="col-md-3"></div>
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Age</label>
+
+                <div class="col-sm-3" style="width: 11%">
+                    <div class="input-group">
+                        <span class="input-group-addon">Min</span>
+                        <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
+                    </div>
+                </div>
+                <div class="col-sm-3" style="width: 11%">
+                    <div class="input-group">
+                        <span class="input-group-addon">Max</span>
+                        <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
+                    </div>
+                </div>
+                <label for="inputEmail3" class="col-sm-5 control-label" style="width:5%">Size</label>
+
+                <div class="col-sm-3" style="width: 11%">
+                    <div class="input-group">
+                        <span class="input-group-addon">Min</span>
+                        <input type="number" class="form-control" id="minsize" ng-model="minsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
+                    </div>
+                </div>
+                <div class="col-sm-3" style="width: 11%">
+                    <div class="input-group">
+                        <span class="input-group-addon">Max</span>
+                        <input type="number" class="form-control" id="maxsize" ng-model="maxsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <div class="col-md-3"></div>
+</div>
+
+<!-- Search results go here -->
+<div ui-view="results"></div>

@@ -1,0 +1,15 @@
+<button ng-if="showInvert" type="button" class="btn btn-primary" ng-click="invert()" style="margin-left: 5px; margin-top: 5px; margin-bottom: 5px">
+    Invert selection
+</button>
+<li ng-repeat="entry in entries" style="margin-left: 5px; margin-right: 5px">
+        <span style="white-space:nowrap">
+            <label class="dropdown-label">
+                <input type="checkbox" data-checklist-model="selected.entries" data-checklist-value="entry"> {{ entry.label }}
+            </label>
+        </span>
+
+</li>
+
+<button type="button" class="btn btn-primary" ng-click="apply()" style="margin-left: 5px; margin-bottom: 5px">
+    Apply
+</button>

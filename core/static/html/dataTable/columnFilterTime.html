@@ -1,0 +1,23 @@
+<span>
+            <p class="input-group" style="margin-left: 5px; margin-right: 5px;">
+                <span class="input-group-addon" id="basic-addon3" style="min-width: 70px">After</span>
+                <input type="text" class="form-control" uib-datepicker-popup ng-model="selected.afterDate" is-open="after.opened" datepicker-options="dateOptions" close-text="Close" style="min-width: 110px"/>
+                <span class="input-group-btn input-group-btn2">
+            <button type="button" class="btn btn-default" ng-click="openAfter()"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </p>
+
+
+            <p class="input-group" style="margin-left: 5px; margin-right: 5px;">
+                <span class="input-group-addon" id="basic-addon3" style="min-width: 70px">Before</span>
+                <input type="text" class="form-control" uib-datepicker-popup ng-model="selected.beforeDate" is-open="before.opened" datepicker-options="dateOptions" close-text="Close" style="min-width: 110px"/>
+                <span class="input-group-btn input-group-btn2">
+                    <button type="button" class="btn btn-default" ng-click="openBefore()"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </p>
+
+
+    <button type="button" class="btn btn-primary" ng-click="apply()" style="margin-left: 5px; margin-bottom: 5px">
+        Apply
+    </button>
+</span>

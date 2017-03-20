@@ -1,0 +1,60 @@
+GUI
+- Showing any page
+- Reverse proxy support
+- Config (getting, setting)
+- Update notification
+- basic Searching
+- searching with exclusion
+- searching by ID, autocomplete
+
+Searching
+- pick indexers
+- exclusions
+- rejecting search results
+- ID conversion
+- query generation
+
+
+Config
+- Loading
+- Updating
+- Setting via web call
+
+Downloader support
+- sabnzbd
+- nzbget
+
+NZB handling
+- downloading
+- referral, proxying
+- get details
+
+Indexer support
+- binsearch
+- nzbindex
+- anizb
+- nzbclub
+
+Torrent support
+- jackett / cardigann
+- special handling
+
+Updater
+- update notification
+- self updating
+
+Process control
+- Restart
+- Shutdown
+
+Authorization
+- Basic
+- Form
+- Remember me
+
+Log / config sanitation
+
+
+
+
+

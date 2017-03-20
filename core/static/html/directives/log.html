@@ -1,0 +1,16 @@
+<div cg-busy="{promise:logPromise,message:'Loading log file'}">
+    <div style="margin-bottom: 15px">
+        <button class="btn btn-default" ng-click="update()">Update</button>
+        <button class="btn btn-default" ng-click="scrollToBottom()">Scroll to bottom</button>
+        <label>
+            <input type="checkbox" ng-model="doUpdateLog" ng-change="toggleUpdate()">
+            Update every five seconds...
+        </label>
+        <label>
+            <input type="checkbox" ng-model="doTailLog" ng-change="toggleTailLog()">
+            and scroll to end
+        </label>
+    </div>
+
+    <pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>
+</div>

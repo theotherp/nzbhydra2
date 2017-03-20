@@ -1,0 +1,32 @@
+<div style="text-align: left; margin: auto; width: 800px">
+
+    <button class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>
+
+    <br>
+    <br>
+    <button type="file" ngf-select="uploadBackupFile($file, $invalidFiles)" class="btn btn-primary">
+        Upload and restore from file
+    </button>
+    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded" class="progress-striped active" style="margin-top: 10px"><span style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span></uib-progressbar>
+
+
+
+
+    <div style="margin-top: 50px">
+        <span style="text-align: center"><h3>Existing backups</h3></span>
+        <table class="table">
+            <tr class="row">
+                <th class="col-md-15" style="text-align: left">Filename</th>
+                <th class="col-md-4" style="text-align: left">Created</th>
+                <th class="col-md-1" style="text-align: left">Restore</th>
+            </tr>
+            <tr ng-repeat="backup in backups" class="row">
+                <td class="col-md-15" style="text-align: left"><a href="internalapi/getbackupfile?filename={{ backup.filename }}" target="_self">{{ backup.filename }}</a></td>
+                <td class="col-md-4" style="text-align: left">{{ backup.age }}</td>
+                <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat" ng-click="restoreFromFile(backup.filename)"></span></td>
+            </tr>
+
+        </table>
+    </div>
+
+</div>

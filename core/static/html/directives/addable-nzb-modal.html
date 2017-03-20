@@ -1,0 +1,14 @@
+
+    <div class="modal-header">
+        <h3 class="modal-title">Please select the category</h3>
+    </div>
+    <div class="modal-body" style="text-align: left">
+        <ul>
+            <li>
+                <a href="#" ng-click="$event.preventDefault(); select('')">No category</a>
+            </li>
+            <li ng-repeat="category in categories">
+                <a href="#" ng-click="$event.preventDefault(); select(category)">{{ category }}</a>
+            </li>
+        </ul>
+    </div>

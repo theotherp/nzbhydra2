@@ -1,0 +1,19 @@
+<div class="btn-group" style="margin-top:20px; margin-bottom:20px;" ng-if="downloaders.length > 0">
+    <span ng-if="downloaders.length == 1">
+        <button ng-if="downloaders.length == 1" class="btn btn-default" ng-click="download(downloaders[0])"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span> {{ ::downloaders[0].name }}</button>
+    </span>
+    <span ng-if="downloaders.length > 1">
+        
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>Add to ...</span>
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <ul class="dropdown-menu">
+            <li ng-repeat="downloader in downloaders">
+                <a ng-click="download(downloader)">{{ ::downloader.name }}</a>
+            </li>
+        </ul>
+    </span>
+
+</div>

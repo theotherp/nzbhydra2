@@ -1,0 +1,10 @@
+<form class="form-inline" style="margin-bottom: 30px;">
+    <button ng-click="onClick(indexer, model)" class="btn btn-secondary indexer-button indexer-input btn-default" style="margin-right: 10px;">{{ indexer.name }} </button>
+    <input bs-switch type="checkbox" ng-model="indexer.enabled"/>
+    <div class="form-group" style="margin-left: 10px">
+        <div class="input-group">
+            <input type="number" keep-focus ng-model="indexer.score" class="form-control" style="width: 43px; height: 34px;">
+            <span class="input-group-addon">Priority</span>
+        </div>
+    </div>
+</form>

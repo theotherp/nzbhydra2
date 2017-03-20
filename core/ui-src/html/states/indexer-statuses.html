@@ -1,0 +1,28 @@
+<table class="table">
+    <caption>Indexer statuses</caption>
+    <thead>
+    <tr>
+        <th>Indexer</th>
+        <th>Latest failure</th>
+        <th>Disabled until</th>
+        <th>Reason</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="indexerStatus in statuses">
+        <td class="col-md-2">{{ indexerStatus.name }}</td>
+        <td class="col-md-3">{{ indexerStatus.latest_failure | formatDate:false}}</td>
+        <td class="col-md-4">
+            <a href="" ng-click="enable(indexerStatus.name)"
+               uib-tooltip="Click to enable the indexer again"
+               tooltip-placement="right"
+               tooltip-trigger="mouseenter"
+            ><span ng-if="!isInPast(indexerStatus.disabled_until)||indexerStatus.disabled_permanently" class="glyphicon glyphicon-ok"></span></a>
+            <span ng-if="!indexerStatus.disabled_permanently">{{ indexerStatus.disabled_until | formatDate:true}}</span>
+            <span ng-if="indexerStatus.disabled_permanently">Permanently</span>
+
+        </td>
+        <td class="col-md-11">{{ indexerStatus.reason }}</td>
+    </tr>
+    </tbody>
+</table>
