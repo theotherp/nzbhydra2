@@ -7,4 +7,4 @@ target/
 *.ipr
 bower_components
 node_modules
-nzbhydra.db*
+nzbhydra.db.*

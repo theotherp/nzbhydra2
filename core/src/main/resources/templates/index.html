@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html ng-app="nzbhydraApp" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <!--<title ng-bind="'NZB Hydra' + ((' - ' + title) || '')">NZB Hydra</title>-->
+    <title th:text="${session.baseUrl}"></title>
+    <base th:href="${session.baseUrl}"/>
+
+
+    <meta name="robots" content="noindex"/>
+    <meta name="referrer" content="no-referrer"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="css/alllibs.css" rel="stylesheet"/>
+    <!--<link href="css/{{ theme }}" rel="stylesheet">-->
+    <link href="css/grey.css" rel="stylesheet"/>
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico"/>
+    <meta charset="utf-8"/>
+
+</head>
+<body style="text-align: center">
+<div growl=""></div>
+
+<div id="wrap" ng-cloak="">
+
+    <div ui-view="header"></div>
+
+
+    <div style="margin: auto; max-width: 1400px;">
+        <div id="banner"></div>
+        <div class="container-fluid" block-ui="main" ui-view="container">
+        </div>
+    </div>
+    <div id="push"></div>
+</div>
+
+<span ng-controller="UpdateFooterController">
+    <div id="footer" ng-if="updateAvailable" ng-cloak="">
+        <div class="container">
+            Yay, there's an update available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="repVersion"></span>.
+            <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!</button>
+            <button class="btn btn-default" type="button" ng-click="update()" style="margin-top: 5px;">Update now!</button>
+        </div>
+
+    </div>
+</span>
+
+</body>
+
+<script charset="utf-8" src="js/alllibs.js"></script>
+<script charset="utf-8" src="js/nzbhydra.js"></script>
+<script type="application/javascript">
+    apiCheck.globalConfig.disabled = true;
+    //window.onProd = {{ onProd }};
+    window.onProd = false;
+</script>
+<script th:inline="javascript">
+    var bootstrap = /*[[${session.bootstrap}]]*/ null;
+    angular.module("nzbhydraApp").constant("bootstrapped", bootstrap);
+</script>
+
+
+</html>

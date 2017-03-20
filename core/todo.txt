@@ -1,6 +1,5 @@
 GUI
-- Showing any page
-- Reverse proxy support
+- Reverse proxy support (done in settings)
 - Config (getting, setting)
 - Update notification
 - basic Searching
