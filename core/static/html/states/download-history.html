@@ -58,7 +58,9 @@
             <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>
             <a target="_blank" href="{{ nzbDownload.detailsLink | dereferer }}" ng-if="nzbDownload.detailsLink">{{ nzbDownload.title }}</a><span ng-if="!nzbDownload.detailsLink">{{ nzbDownload.title }}</span>
         </td>
-        <td class="narrow-row"><span class="glyphicon" ng-class="{'glyphicon-ok': nzbDownload.response_successful == true, 'glyphicon-remove': nzbDownload.response_successful == false, 'glyphicon-question-sign': nzbDownload.response_successful == null}"></span></td>
+        <td class="narrow-row"><span class="glyphicon"
+                                     ng-class="{'glyphicon-ok': nzbDownload.response_successful == true, 'glyphicon-remove': nzbDownload.response_successful == false, 'glyphicon-question-sign': nzbDownload.response_successful == null}"></span>
+        </td>
         <td class="narrow-row">{{ nzbDownload.internal ? "Internal" : "API"}}</td>
         <td class="narrow-row">{{ nzbDownload.username }}</td>
     </tr>

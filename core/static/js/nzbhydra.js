@@ -299,15 +299,16 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     templateUrl: "html/states/system.html",
                     controller: "SystemController",
                     resolve: {
-                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
-                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
-                        }],
-                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
-                            return ConfigService.getSafe();
-                        }],
-                        askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
-                            return $http.get("internalapi/askadmin");
-                        }],
+                        // loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                        //     return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        // }],
+                        // safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                        //     return ConfigService.getSafe();
+                        // }],
+                        // askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
+                        //     return $http.get("internalapi/askadmin");
+                        // }],
+
                         activeTab: [function () {
                             return 0;
                         }],
@@ -759,8 +760,8 @@ function hydraupdates() {
             $scope.updateAvailable = data.data.updateAvailable;
             $scope.changelog = data.data.changelog;
         });
-        
-        UpdateService.getVersionHistory().then(function(data) {
+
+        UpdateService.getVersionHistory().then(function (data) {
             $scope.versionHistory = $sce.trustAsHtml(data.data.versionHistory);
         });
 
@@ -771,8 +772,7 @@ function hydraupdates() {
         $scope.showChangelog = function () {
             UpdateService.showChanges($scope.changelog);
         };
-        
-        
+
 
     }
 }
@@ -841,7 +841,7 @@ function titleGroup() {
         function titlesToShow() {
             return $scope.titles.slice(1);
         }
-        
+
     }
 }
 angular
@@ -851,7 +851,7 @@ angular
 function tabOrChart() {
     return {
         templateUrl: 'html/directives/tab-or-chart.html',
-        transclude:  {
+        transclude: {
             "chartSlot": "chart",
             "tableSlot": "table"
         },
@@ -896,7 +896,7 @@ function searchResult() {
 
         $scope.groupingRowDuplicatesToShow = groupingRowDuplicatesToShow;
         function groupingRowDuplicatesToShow() {
-            if ($scope.showDuplicates &&  $scope.titleGroup[0].length > 1 && $scope.hashGroupExpanded[$scope.titleGroup[0][0].hash]) {
+            if ($scope.showDuplicates && $scope.titleGroup[0].length > 1 && $scope.hashGroupExpanded[$scope.titleGroup[0][0].hash]) {
                 return $scope.titleGroup[0].slice(1);
             } else {
                 return [];
@@ -912,7 +912,7 @@ function searchResult() {
                 return [];
             }
         }
-        
+
         $scope.hashGroupDuplicatesToShow = hashGroupDuplicatesToShow;
         function hashGroupDuplicatesToShow(hashGroup) {
             if ($scope.showDuplicates && $scope.hashGroupExpanded[hashGroup[0].hash]) {
@@ -984,15 +984,15 @@ function otherColumns($http, $templateCache, $compile, $window) {
 
             modalInstance.result.then();
         }
-        
+
         $scope.downloadNzb = downloadNzb;
-        
+
         function downloadNzb(resultItem) {
             //href = "{{ result.link }}"
             $window.location.href = resultItem.link;
         }
 
-        $scope.getNfoTooltip = function() {
+        $scope.getNfoTooltip = function () {
             if ($scope.result.has_nfo == 1) {
                 return "Show NFO"
             } else if ($scope.result.has_nfo == 2) {
@@ -1031,12 +1031,12 @@ angular
 
 function onFinishRender($timeout) {
     function linkFunction(scope, element, attr) {
-        
+
         if (scope.$last === true) {
-                $timeout(function () {
-                    scope.$evalAsync(attr.onFinishRender);
-                });
-            }
+            $timeout(function () {
+                scope.$evalAsync(attr.onFinishRender);
+            });
+        }
     }
 
     return {
@@ -1088,7 +1088,7 @@ function hydralog() {
             }, 5000);
         }
 
-        $scope.toggleUpdate = function() {
+        $scope.toggleUpdate = function () {
             if ($scope.doUpdateLog) {
                 startUpdateLogInterval();
             } else if ($scope.tailInterval != null) {
@@ -1105,7 +1105,7 @@ function hydralog() {
         };
 
         if ($scope.doUpdateLog) {
-          startUpdateLogInterval();
+            startUpdateLogInterval();
         }
 
     }
@@ -1152,15 +1152,15 @@ function indexerInput() {
 
     function controller($scope) {
         $scope.isFocused = false;
-        
-        $scope.onFocus = function() {
+
+        $scope.onFocus = function () {
             $scope.isFocused = true;
         };
 
         $scope.onBlur = function () {
-            $scope.isFocused = false;    
+            $scope.isFocused = false;
         };
-        
+
     }
 }
 
@@ -1575,7 +1575,7 @@ function columnSortable() {
             $scope.sortMode = 0;
         }
 
-        $scope.$on("newSortColumn", function(event, column) {
+        $scope.$on("newSortColumn", function (event, column) {
             if (column != $scope.column) {
                 $scope.sortMode = 0;
             }
@@ -1716,7 +1716,7 @@ function hydrabackup() {
         $scope.uploadActive = false;
 
 
-        $scope.createAndDownloadBackupFile = function() {
+        $scope.createAndDownloadBackupFile = function () {
             FileDownloadService.downloadFile("internalapi/getbackup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip");
         };
 
@@ -1749,13 +1749,13 @@ function hydrabackup() {
             });
         };
 
-        $scope.restoreFromFile = function(filename) {
-            BackupService.restoreFromFile(filename).then(function() {
-                RestartService.restart("Restore successful.");
-            },
-            function(response) {
-                growl.error(response.data);
-            })
+        $scope.restoreFromFile = function (filename) {
+            BackupService.restoreFromFile(filename).then(function () {
+                    RestartService.restart("Restore successful.");
+                },
+                function (response) {
+                    growl.error(response.data);
+                })
         }
 
     }
@@ -1779,7 +1779,7 @@ function addableNzbs() {
     };
 
     function controller($scope, NzbDownloadService) {
-        $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function(downloader) {
+        $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
             if ($scope.downloadType != "nzb") {
                 return downloader.downloadType == $scope.downloadType
             }
@@ -1805,11 +1805,11 @@ function addableNzb() {
 
     function controller($scope, NzbDownloadService, growl) {
         if ($scope.downloader.iconCssClass) {
-            $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-","").replace("fa ", ""); 
+            $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
         } else {
             $scope.cssClass = $scope.downloader.type == "sabnzbd" ? "sabnzbd" : "nzbget";
         }
-            
+
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
@@ -1824,8 +1824,7 @@ function addableNzb() {
                 growl.error("An unexpected error occurred while trying to contact NZB Hydra or add the NZB.");
             })
         };
-        
-        
+
 
     }
 }
@@ -1841,7 +1840,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
     var updateAvailable;
     var changelog;
     var versionHistory;
-    
+
     return {
         update: update,
         showChanges: showChanges,
@@ -1849,9 +1848,8 @@ function UpdateService($http, growl, blockUI, RestartService) {
         getChangelog: getChangelog,
         getVersionHistory: getVersionHistory
     };
-    
-    
-    
+
+
     function getVersions() {
         return $http.get("internalapi/get_versions").then(function (data) {
             currentVersion = data.data.currentVersion;
@@ -1867,7 +1865,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
             return data;
         });
     }
-    
+
     function getVersionHistory() {
         return $http.get("internalapi/get_version_history").then(function (data) {
             versionHistory = data.data.versionHistory;
@@ -1902,7 +1900,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
 
         modalInstance.result.then();
     }
-    
+
 
     function update() {
         blockUI.start("Updating. Please stand by...");
@@ -1989,7 +1987,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.deleteLogAndDatabase = function () {
-        ModalService.open("Delete log and db", "Are you absolutely sure you want to delete your database and log files? Hydra will restart to do that.",  {
+        ModalService.open("Delete log and db", "Are you absolutely sure you want to delete your database and log files? Hydra will restart to do that.", {
             yes: {
                 onYes: function () {
                     NzbHydraControlService.deleteLogAndDb();
@@ -2006,10 +2004,10 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         });
     };
 
-    $scope.forceUpdate = function() {
+    $scope.forceUpdate = function () {
         UpdateService.update()
     };
-    
+
 
     $scope.allTabs = [
         {
@@ -2049,14 +2047,14 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         $state.go($scope.allTabs[index].state, {activeTab: index}, {inherit: false, notify: true, reload: true});
     };
 
-    $scope.downloadDebuggingInfos = function() {
+    $scope.downloadDebuggingInfos = function () {
         $http({method: 'GET', url: 'internalapi/getdebugginginfos', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
             var filename = "nzbhydra-debuginfo-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
             a.download = filename;
-            
+
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -2064,7 +2062,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
             console.log("Error:" + status);
         });
     }
-    
+
 }
 SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "ModalService", "UpdateService", "NzbHydraControlService"];
 
@@ -2080,7 +2078,7 @@ function StatsService($http) {
     };
 
     function getStats(after, before) {
-        return $http.get("internalapi/getstats", {params: {after:after, before:before}}).success(function (response) {
+        return $http.get("internalapi/getstats", {params: {after: after, before: before}}).success(function (response) {
             return response.data;
         });
     }
@@ -2104,7 +2102,7 @@ function StatsService($http) {
                 nzbDownloads: response.nzbDownloads,
                 totalDownloads: response.totalDownloads
             };
-            
+
         });
     }
 
@@ -2147,8 +2145,8 @@ function StatsController($scope, $filter, StatsService, blockUI) {
     function updateStats() {
         blockUI.start("Updating stats...");
         var after = $scope.afterDate != null ? Math.floor($scope.afterDate.getTime() / 1000) : null;
-        var before = $scope.beforeDate != null ? Math.floor($scope.beforeDate.getTime() / 1000)  : null;
-        StatsService.get(after, before).then(function(stats) {
+        var before = $scope.beforeDate != null ? Math.floor($scope.beforeDate.getTime() / 1000) : null;
+        StatsService.get(after, before).then(function (stats) {
             $scope.setStats(stats);
         });
 
@@ -2411,7 +2409,7 @@ function SearchService($http) {
         getLastResults: getLastResults,
         loadMore: loadMore
     };
-    
+
 
     function search(category, query, tmdbid, imdbid, title, tvdbid, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri;
@@ -2464,7 +2462,7 @@ function SearchService($http) {
         if (!angular.isUndefined(indexers)) {
             uri.addQuery("indexers", decodeURIComponent(indexers));
         }
-        
+
 
         uri.addQuery("category", category);
         lastExecutedQuery = uri;
@@ -2498,11 +2496,11 @@ function SearchService($http) {
                 ps.averageResponseTime = ps.averageResponseTime / ps.apiAccesses.length;
             }
         });
-        
+
         lastResults = {"results": results, "indexersearches": indexersearches, "total": total, "resultsCount": resultsCount, "rejected": rejected};
         return lastResults;
     }
-    
+
     function getLastResults() {
         return lastResults;
     }
@@ -2804,7 +2802,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.lastClickedValue = newCheckedValue;
     });
 
-    $scope.filterRejectedZero = function() {
+    $scope.filterRejectedZero = function () {
         return function (entry) {
             return entry[1] > 0;
         }
@@ -3123,8 +3121,6 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         }
         return $sce.trustAsHtml(result.join(", "));
     };
-
-
 
 
 }
@@ -3458,11 +3454,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         getAndSetSearchRequests();
     }
 
-    $scope.$on("searchResultsShown", function() {
+    $scope.$on("searchResultsShown", function () {
         getAndSetSearchRequests();
     });
-
-
 
 
 }
@@ -3494,7 +3488,7 @@ function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlServic
             }, 1000);
         }
     }
-    
+
     function countdown() {
         internalCaR("", 15);
     }
@@ -3556,11 +3550,11 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
         }
         return $http.put("internalapi/addnzbs", params);
     }
-    
+
     function download(downloader, searchresultids) {
-        
+
         var category = downloader.defaultCategory;
-        
+
         if ((_.isUndefined(category) || category == "" || category == null) && category != "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchresultids, category)
@@ -3571,7 +3565,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
             return sendNzbAddCommand(downloader, searchresultids, category)
         }
     }
-    
+
     function getEnabledDownloaders() {
         return _.filter(ConfigService.getSafe().downloaders, "enabled");
     }
@@ -3584,32 +3578,32 @@ angular
     .factory('ModalService', ModalService);
 
 function ModalService($uibModal, $q) {
-    
+
     return {
         open: open
     };
-    
+
     function open(headline, message, params, size) {
         //params example:
         /*
-        var p =
-        {
-            yes: {
-                text: "Yes",    //default: Ok
-                onYes: function() {}
-            },
-            no: {               //default: Empty
-                text: "No",
-                onNo: function () {
-                }
-            },
-            cancel: {           
-                text: "Cancel", //default: Cancel
-                onCancel: function () {
-                }
-            }
-        };
-        */
+         var p =
+         {
+         yes: {
+         text: "Yes",    //default: Ok
+         onYes: function() {}
+         },
+         no: {               //default: Empty
+         text: "No",
+         onNo: function () {
+         }
+         },
+         cancel: {
+         text: "Cancel", //default: Cancel
+         onCancel: function () {
+         }
+         }
+         };
+         */
         var modalInstance = $uibModal.open({
             templateUrl: 'html/modal.html',
             controller: 'ModalInstanceCtrl',
@@ -3618,22 +3612,22 @@ function ModalService($uibModal, $q) {
                 headline: function () {
                     return headline;
                 },
-                message: function(){ 
+                message: function () {
                     return message;
                 },
-                params: function() {
+                params: function () {
                     return params;
                 }
             }
         });
 
-        modalInstance.result.then(function() {
-            
-        }, function() {
-            
+        modalInstance.result.then(function () {
+
+        }, function () {
+
         });
     }
-    
+
 }
 ModalService.$inject = ["$uibModal", "$q"];
 
@@ -3658,18 +3652,18 @@ function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params)
     } else if (angular.isUndefined(params.yes.text)) {
         params.yes.text = "Yes";
     }
-    
+
     if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isUndefined($scope.params.no.text)) {
         $scope.params.no.text = "No";
     }
-    
+
     if (angular.isDefined(params) && angular.isDefined(params.cancel) && angular.isUndefined($scope.params.cancel.text)) {
         $scope.params.cancel.text = "Cancel";
     }
 
     $scope.yes = function () {
         $uibModalInstance.close();
-        if(angular.isDefined(params) && angular.isDefined(params.yes) && angular.isDefined($scope.params.yes.onYes)) {
+        if (angular.isDefined(params) && angular.isDefined(params.yes) && angular.isDefined($scope.params.yes.onYes)) {
             $scope.params.yes.onYes();
         }
     };
@@ -3701,16 +3695,16 @@ angular
     .service('GeneralModalService', GeneralModalService);
 
 function GeneralModalService() {
-    
-    
+
+
     this.open = function (msg, template, templateUrl, size, data) {
-        
+
         //Prevent circular dependency
         var myInjector = angular.injector(["ng", "ui.bootstrap"]);
         var $uibModal = myInjector.get("$uibModal");
         var params = {};
-        
-        if(angular.isUndefined(size)) {
+
+        if (angular.isUndefined(size)) {
             params["size"] = size;
         }
         if (angular.isUndefined(template)) {
@@ -3722,20 +3716,20 @@ function GeneralModalService() {
         } else {
             params["template"] = template;
         }
-        params["resolve"] = 
-        {
-            data: function () {
-                return data;
-            }
-        };
-        
+        params["resolve"] =
+            {
+                data: function () {
+                    return data;
+                }
+            };
+
         var modalInstance = $uibModal.open(params);
 
         modalInstance.result.then();
 
     };
-    
-   
+
+
 }
 angular
     .module('nzbhydraApp')
@@ -3761,21 +3755,21 @@ angular
     .module('nzbhydraApp')
     .controller('IndexerStatusesController', IndexerStatusesController);
 
-    function IndexerStatusesController($scope, $http, statuses) {
-        $scope.statuses = statuses.data.indexerStatuses;
-        
-        $scope.isInPast = function (timestamp) {
-            return timestamp * 1000 < (new Date).getTime();
-        };
-        
-        $scope.enable = function(indexerName) {
-            $http.get("internalapi/enableindexer", {params: {name: indexerName}}).then(function(response){
-                $scope.statuses = response.data.indexerStatuses;
-            });
-        }
+function IndexerStatusesController($scope, $http, statuses) {
+    $scope.statuses = statuses.data.indexerStatuses;
 
+    $scope.isInPast = function (timestamp) {
+        return timestamp * 1000 < (new Date).getTime();
+    };
+
+    $scope.enable = function (indexerName) {
+        $http.get("internalapi/enableindexer", {params: {name: indexerName}}).then(function (response) {
+            $scope.statuses = response.data.indexerStatuses;
+        });
     }
-    IndexerStatusesController.$inject = ["$scope", "$http", "statuses"];
+
+}
+IndexerStatusesController.$inject = ["$scope", "$http", "statuses"];
 
 
 angular
@@ -3783,12 +3777,12 @@ angular
     .filter('formatDate', formatDate);
 
 function formatDate(dateFilter) {
-    return function(timestamp, hidePast) {
+    return function (timestamp, hidePast) {
         if (timestamp) {
             if (timestamp * 1000 < (new Date).getTime() && hidePast) {
                 return ""; //
             }
-            
+
             var t = timestamp * 1000;
             t = dateFilter(t, 'yyyy-MM-dd HH:mm');
             return t;
@@ -3807,7 +3801,7 @@ function reformatDate() {
     return function (date) {
         //Date in database is saved as UTC without timezone information
         return moment.utc(date, "ddd, D MMM YYYY HH:mm:ss z").local().format("YYYY-MM-DD HH:mm");
-        
+
     }
 }
 angular
@@ -3828,7 +3822,7 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
 
     var loggedIn = bootstrapped.username;
 
-    
+
     return {
         isLoggedIn: isLoggedIn,
         login: login,
@@ -3842,30 +3836,29 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
     };
 
 
-
     function getUserInfos() {
         return bootstrapped;
     }
 
-    
+
     function isLoggedIn() {
         return bootstrapped.username;
     }
-    
+
     function setLoggedInByForm() {
         $rootScope.$broadcast("user:loggedIn");
     }
 
     function setLoggedInByBasic(_maySeeStats, _maySeeAdmin, _username) {
     }
-    
+
     function login(username, password) {
         var deferred = $q.defer();
         return $http.post("auth/login", data = {username: username, password: password}).then(function (data) {
             bootstrapped = data.data;
             loggedIn = true;
             $rootScope.$broadcast("user:loggedIn");
-           deferred.resolve();
+            deferred.resolve();
         });
         return deferred;
     }
@@ -3877,10 +3870,10 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
         });
 
     }
-    
+
     function logout() {
         var deferred = $q.defer();
-        return $http.post("auth/logout").then(function(data) {
+        return $http.post("auth/logout").then(function (data) {
             $rootScope.$broadcast("user:loggedOut");
             bootstrapped = data.data;
             loggedIn = false;
@@ -3888,21 +3881,17 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
         });
         return deferred;
     }
-    
+
     function getUserRights() {
         var userInfos = getUserInfos();
         return {maySeeStats: userInfos.maySeeStats, maySeeAdmin: userInfos.maySeeAdmin, maySeeSearch: userInfos.maySeeSearch};
     }
-    
+
     function getUserName() {
         return bootstrapped.username;
     }
 
 
-    
-    
-    
-   
 }
 HydraAuthService.$inject = ["$q", "$rootScope", "$http", "bootstrapped"];
 angular
@@ -3991,7 +3980,7 @@ HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService"];
 var HEADER_NAME = 'MyApp-Handle-Errors-Generically';
 var specificallyHandleInProgress = false;
 
-nzbhydraapp.factory('RequestsErrorHandler',  ["$q", "growl", "blockUI", "GeneralModalService", function ($q, growl, blockUI, GeneralModalService) {
+nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralModalService", function ($q, growl, blockUI, GeneralModalService) {
     return {
         // --- The user's API for claiming responsiblity for requests ---
         specificallyHandled: function (specificallyHandledBlock) {
@@ -4259,8 +4248,7 @@ angular
 
         formlyConfigProvider.setType({
             name: 'switch',
-            template: 
-                '<div style="text-align:left"><input bs-switch type="checkbox" ng-model="model[options.key]"/></div>'
+            template: '<div style="text-align:left"><input bs-switch type="checkbox" ng-model="model[options.key]"/></div>'
         });
 
 
@@ -4297,7 +4285,9 @@ angular
                     ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search',
                     valueProp: 'id',
                     labelProp: 'label',
-                    getPlaceholder: function() {return "";}
+                    getPlaceholder: function () {
+                        return "";
+                    }
                 }
             },
             templateUrl: 'ui-select-multiple.html',
@@ -4448,12 +4438,12 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
     $scope.allowDelete = data.allowDeleteFunction(model);
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
-    
+
     $scope.obSubmit = function () {
         console.log($scope);
         if ($scope.form.$valid) {
-            
-            var a = data.checkBeforeClose($scope, model).then(function() {
+
+            var a = data.checkBeforeClose($scope, model).then(function () {
                 $uibModalInstance.close($scope);
             });
         } else {
@@ -4555,18 +4545,18 @@ ConfigBoxService.$inject = ["$http", "$q"];
 
 var filters = angular.module('filters', []);
 
-filters.filter('bytes', function() {
-	return function(bytes) {
-		return filesize(bytes);
-	}
+filters.filter('bytes', function () {
+    return function (bytes) {
+        return filesize(bytes);
+    }
 });
 
-filters.filter('unsafe', 
-	["$sce", function ($sce) {
-		return function (value, type) {
-			return $sce.trustAs(type || 'html', text);
-		};
-	}]
+filters.filter('unsafe',
+    ["$sce", function ($sce) {
+        return function (value, type) {
+            return $sce.trustAs(type || 'html', text);
+        };
+    }]
 );
 
 
@@ -4574,14 +4564,14 @@ angular
     .module('nzbhydraApp')
     .factory('FileDownloadService', FileDownloadService);
 
-function FileDownloadService($http, growl ) {
+function FileDownloadService($http, growl) {
 
     var service = {
         downloadFile: downloadFile
     };
 
     return service;
-    
+
     function downloadFile(link, filename) {
         $http({method: 'GET', url: link, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
@@ -4597,7 +4587,7 @@ function FileDownloadService($http, growl ) {
         });
 
     }
-    
+
 
 }
 FileDownloadService.$inject = ["$http", "growl"];
@@ -4632,10 +4622,10 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
                 deferred.resolve(categories.downloader);
                 return deferred.promise;
             }
-            
+
             return $http.get('internalapi/getcategories', {params: {downloader: downloader.name}})
                 .then(function (categoriesResponse) {
-                    
+
                     console.log("Updating downloader categories cache");
                     var categories = {downloader: categoriesResponse.data.categories};
                     return categoriesResponse.data.categories;
@@ -7013,11 +7003,11 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     ConfigFields.setRestartWatcher(function () {
         $scope.restartRequired = true;
     });
-    
+
 
     function submit() {
         if ($scope.form.$valid) {
-            
+
             ConfigService.set($scope.config);
             $scope.form.$setPristine();
             DownloaderCategoriesService.invalidate();
@@ -7037,7 +7027,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             }
         } else {
             growl.error("Config invalid. Please check your settings.");
-            
+
             //Ridiculously hacky way to make the error messages appear
             try {
                 if (angular.isDefined(form.$error.required)) {
@@ -7046,23 +7036,23 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                             _.each(item.$error.required, function (item2) {
                                 item2.$setTouched();
                             });
-                        } 
+                        }
                     });
                 }
                 angular.forEach($scope.form.$error.required, function (field) {
                     field.$setTouched();
                 });
-            } catch(err) {
+            } catch (err) {
                 //
             }
-            
+
         }
     }
 
     ConfigModel = config;
 
     $scope.fields = ConfigFields.getFields($scope.config);
-    
+
     $scope.allTabs = [
         {
             active: false,
@@ -7113,17 +7103,17 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     };
 
     $scope.goToConfigState = function (index) {
-        $state.go($scope.allTabs[index].state, {activeTab:index}, {inherit: false, notify: true, reload: true});
+        $state.go($scope.allTabs[index].state, {activeTab: index}, {inherit: false, notify: true, reload: true});
     };
 
-    $scope.help = function() {
-        $http.get("internalapi/gethelp", {params: {id: $scope.activeTab.name}}).then(function(result) {
+    $scope.help = function () {
+        $http.get("internalapi/gethelp", {params: {id: $scope.activeTab.name}}).then(function (result) {
                 var html = '<span style="text-align: left;">' + result.data + "</span>";
                 ModalService.open($scope.activeTab.name + " - Help", html, {}, "lg");
-        },
-        function() {
-            growl.error("Error while loading help")
-        })
+            },
+            function () {
+                growl.error("Error while loading help")
+            })
     };
 
     $scope.$on('$stateChangeStart',
@@ -7132,7 +7122,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 event.preventDefault();
                 ModalService.open("Unsaved changed", "Do you want to save before leaving?", {
                     yes: {
-                        onYes: function() {
+                        onYes: function () {
                             $scope.submit();
                             $state.go(toState);
                         },
@@ -7153,7 +7143,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                         text: "Cancel"
                     }
                 });
-            }            
+            }
         })
 }
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "$state", "growl"];
@@ -7181,11 +7171,11 @@ function CategoriesService(ConfigService) {
             }
         }
     }
-    
+
     function getAll() {
         return ConfigService.getSafe().categories;
     }
-    
+
     function getDefault() {
         return getAll()[1];
     }
@@ -7202,7 +7192,7 @@ function BackupService($http) {
         getBackupsList: getBackupsList,
         restoreFromFile: restoreFromFile
     };
-    
+
 
     function getBackupsList() {
         return $http.get('internalapi/getbackups').then(function (data) {
@@ -7211,7 +7201,7 @@ function BackupService($http) {
     }
 
     function restoreFromFile(filename) {
-        return $http.get('internalapi/restorefrombackupfile', {params:{filename: filename}}).then(function (response) {
+        return $http.get('internalapi/restorefrombackupfile', {params: {filename: filename}}).then(function (response) {
             return response;
         });
     }

@@ -7,9 +7,8 @@
     <button type="file" ngf-select="uploadBackupFile($file, $invalidFiles)" class="btn btn-primary">
         Upload and restore from file
     </button>
-    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded" class="progress-striped active" style="margin-top: 10px"><span style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span></uib-progressbar>
-
-
+    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded" class="progress-striped active" style="margin-top: 10px"><span style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span>
+    </uib-progressbar>
 
 
     <div style="margin-top: 50px">

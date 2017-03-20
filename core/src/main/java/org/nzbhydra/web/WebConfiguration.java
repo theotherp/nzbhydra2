@@ -19,7 +19,7 @@ public class WebConfiguration extends WebMvcConfigurerAdapter {
 
         registry.addResourceHandler("/**")
                 .addResourceLocations(staticFile.toURI().toString().replace("file:/", "file:///")) //Doesn't work with simple file URL for some weird reason
-                .setCachePeriod(3600).resourceChain(true);
+                .setCachePeriod(0).resourceChain(true);
 
     }
 

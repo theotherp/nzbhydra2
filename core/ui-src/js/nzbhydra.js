@@ -299,15 +299,16 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                     templateUrl: "html/states/system.html",
                     controller: "SystemController",
                     resolve: {
-                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
-                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
-                        }],
-                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
-                            return ConfigService.getSafe();
-                        }],
-                        askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
-                            return $http.get("internalapi/askadmin");
-                        }],
+                        // loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                        //     return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        // }],
+                        // safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                        //     return ConfigService.getSafe();
+                        // }],
+                        // askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
+                        //     return $http.get("internalapi/askadmin");
+                        // }],
+
                         activeTab: [function () {
                             return 0;
                         }],

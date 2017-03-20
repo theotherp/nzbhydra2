@@ -7,7 +7,9 @@
             <div uib-accordion-group panel-class="panel-indexer-statuses" is-open="foo.indexerStatusesExpanded" is-disabled="true" class="">
                 <uib-accordion-heading>
                     <span class="indexer-statuses-accordion">
-                        <span ng-click="toggleIndexerStatuses()">Indexer statuses</span><span ng-if="countRejected > 0"> / Rejected results</span> <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': foo.indexerStatusesExpanded, 'glyphicon-chevron-right': !foo.indexerStatusesExpanded}" ng-click="toggleIndexerStatuses()"></i>
+                        <span ng-click="toggleIndexerStatuses()">Indexer statuses</span><span ng-if="countRejected > 0"> / Rejected results</span> <i class="pull-right glyphicon"
+                                                                                                                                                      ng-class="{'glyphicon-chevron-down': foo.indexerStatusesExpanded, 'glyphicon-chevron-right': !foo.indexerStatusesExpanded}"
+                                                                                                                                                      ng-click="toggleIndexerStatuses()"></i>
                     </span>
                 </uib-accordion-heading>
 
@@ -95,10 +97,10 @@
                         <td style="text-align: right">
                             {{ entry[0] }}
                         </td>
-                        <td >
+                        <td>
                             {{ entry[1] }}
                         </td>
-                        <td >
+                        <td>
                         </td>
                     </tr>
                     </tbody>
@@ -128,7 +130,8 @@
                     uib-tooltip="Click to load more results from the indexers"
                     tooltip-placement="top"
                     tooltip-trigger="mouseenter"
-            >Load more</button>
+            >Load more
+            </button>
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="resultsCount >= total">
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>

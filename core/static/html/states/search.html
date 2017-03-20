@@ -16,7 +16,8 @@
                 <div class="col-sm-10">
                     <div class="input-group">
                         <span class="input-group-btn input-group-btn2">
-                              <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton" ng-cloak>
+                              <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
+                                      ng-cloak>
                                   {{ category.pretty }} <span class="caret"></span>
                               </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
@@ -45,7 +46,8 @@
                           </span>
 
 
-                        <span class="input-group-addon by-id-checkbox" ng-if="isAskById" uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top" tooltip-trigger="mouseenter"
+                        <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
+                              uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top" tooltip-trigger="mouseenter"
                               style="border-right-width: 0; width: 40px">
                             <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
                     </span>
@@ -54,8 +56,10 @@
                         <script type="text/ng-template" id="movieAutocompleteEntry">
                             <a>{{ match.label }}</a>
                         </script>
-                        <input id="searchfield" type="search" ngtype="search" ng-model="query" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait" uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
-                               ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems" typeahead-on-select="selectAutocompleteItem($item)" ng-enter="startQuerySearch()" class="form-control"
+                        <input id="searchfield" type="search" ngtype="search" ng-model="query" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait"
+                               uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
+                               ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems"
+                               typeahead-on-select="selectAutocompleteItem($item)" ng-enter="startQuerySearch()" class="form-control"
                                focus-on="focus-query-box"
                                uib-tooltip="Prefix terms with -- to exclude"
                                tooltip-placement="top"
@@ -96,7 +100,8 @@
                             <button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" ng-model="indexer.activated" ng-click="availableIndexers[indexer.name].activated=!availableIndexers[indexer.name].activated"> {{ indexer.name }}
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" ng-model="indexer.activated"
+                                       ng-click="availableIndexers[indexer.name].activated=!availableIndexers[indexer.name].activated"> {{ indexer.name }}
                             </label>
 
                         </div>
@@ -113,13 +118,15 @@
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
                         <span class="input-group-addon">Min</span>
-                        <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()" ng-model-options='{ debounce: 500 }'>
+                        <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
                     </div>
                 </div>
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
                         <span class="input-group-addon">Max</span>
-                        <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()" ng-model-options='{ debounce: 500 }'>
+                        <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
                     </div>
                 </div>
                 <label for="inputEmail3" class="col-sm-5 control-label" style="width:5%">Size</label>
@@ -127,13 +134,15 @@
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
                         <span class="input-group-addon">Min</span>
-                        <input type="number" class="form-control" id="minsize" ng-model="minsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()" ng-model-options='{ debounce: 500 }'>
+                        <input type="number" class="form-control" id="minsize" ng-model="minsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
                     </div>
                 </div>
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
                         <span class="input-group-addon">Max</span>
-                        <input type="number" class="form-control" id="maxsize" ng-model="maxsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()" ng-model-options='{ debounce: 500 }'>
+                        <input type="number" class="form-control" id="maxsize" ng-model="maxsize" style="width: 90px" ng-enter="startSearch()" ng-change="searchInputChanged()"
+                               ng-model-options='{ debounce: 500 }'>
                     </div>
                 </div>
             </div>

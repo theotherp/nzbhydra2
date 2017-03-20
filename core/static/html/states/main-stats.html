@@ -9,7 +9,8 @@
     <div class="col-md-4">
         <p class="input-group">
             <span class="input-group-addon" id="basic-addon3">After</span>
-            <input type="text" class="form-control" uib-datepicker-popup ng-model="afterDate" is-open="after.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" ng-keypress="onKeypress($event)"/>
+            <input type="text" class="form-control" uib-datepicker-popup ng-model="afterDate" is-open="after.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
+                   ng-keypress="onKeypress($event)"/>
             <span class="input-group-btn input-group-btn2">
             <button type="button" class="btn btn-default" ng-click="openAfter()"><i class="glyphicon glyphicon-calendar"></i></button>
           </span>
@@ -18,7 +19,8 @@
     <div class="col-md-4">
         <p class="input-group">
             <span class="input-group-addon" id="basic-addon3">Before</span>
-            <input type="text" class="form-control" uib-datepicker-popup ng-model="beforeDate" is-open="before.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" ng-keypress="onKeypress($event)"/>
+            <input type="text" class="form-control" uib-datepicker-popup ng-model="beforeDate" is-open="before.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
+                   ng-keypress="onKeypress($event)"/>
             <span class="input-group-btn input-group-btn2">
             <button type="button" class="btn btn-default" ng-click="openBefore()"><i class="glyphicon glyphicon-calendar"></i></button>
           </span>
@@ -93,7 +95,9 @@
 <div class="row" style="margin-bottom: 50px">
     <div class="col-md-10">
         <table class="table" style="margin-top: 9px">
-            <caption>Indexer API accesses <span class="glyphicon glyphicon-question-sign" tooltip-placement="top" uib-tooltip="An API access is considered failed when the indexer could not be reached, authentication failed or parsing of the results failed"></span></caption>
+            <caption>Indexer API accesses <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
+                                                uib-tooltip="An API access is considered failed when the indexer could not be reached, authentication failed or parsing of the results failed"></span>
+            </caption>
             <thead>
             <tr>
                 <th>Indexer</th>

@@ -31,12 +31,14 @@
 </script>
 
 <script type="text/ng-template" id="button-test-connection.html">
-    <span style="text-align: left;"><button class="btn btn-default" id="button-test-connection-{{ uniqueId }}" type="button" ng-click="testConnection()"><span class="glyphicon glyphicon-refresh"></span></button> <span id="message-test-connection-{{ uniqueId }}"></span></span>
+    <span style="text-align: left;"><button class="btn btn-default" id="button-test-connection-{{ uniqueId }}" type="button" ng-click="testConnection()"><span
+            class="glyphicon glyphicon-refresh"></span></button> <span id="message-test-connection-{{ uniqueId }}"></span></span>
 </script>
 
 
 <script type="text/ng-template" id="button-check-caps.html">
-    <span style="text-align: left;"><button class="btn btn-default" id="button-check-caps-{{ uniqueId }}" type="button" ng-click="checkCaps()"><span class="glyphicon glyphicon-refresh"></span></button> <span id="message-check-caps-{{ uniqueId }}"></span></span>
+    <span style="text-align: left;"><button class="btn btn-default" id="button-check-caps-{{ uniqueId }}" type="button" ng-click="checkCaps()"><span
+            class="glyphicon glyphicon-refresh"></span></button> <span id="message-check-caps-{{ uniqueId }}"></span></span>
 </script>
 
 
@@ -79,7 +81,9 @@
     <div class="row">
 
         <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
-            <button ng-if="!options.data.presetsOnly" class="btn btn-info" ng-click="addEntry(model)"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{ options.data.addNewText }}</button>
+            <button ng-if="!options.data.presetsOnly" class="btn btn-info" ng-click="addEntry(model)"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{
+                options.data.addNewText }}
+            </button>
             <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span ng-if="options.data.presetsOnly"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{ options.data.addNewText }}</span>
                 <span class="caret"></span>
@@ -139,7 +143,7 @@
 <script type="text/ng-template" id="downloaderEntry.html">
     <div style="margin-bottom: 30px;">
         <form class="form-inline">
-            <button ng-click="showBox(entry, model)" class="btn btn-secondary indexer-button indexer-input btn-default" style="margin-right: 10px;">{{ entry.name }} </button>
+            <button ng-click="showBox(entry, model)" class="btn btn-secondary indexer-button indexer-input btn-default" style="margin-right: 10px;">{{ entry.name }}</button>
             <input bs-switch type="checkbox" ng-model="entry.enabled"/>
         </form>
     </div>
