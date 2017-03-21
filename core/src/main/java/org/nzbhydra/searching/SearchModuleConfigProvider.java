@@ -20,6 +20,7 @@ public class SearchModuleConfigProvider implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchModuleConfigProvider.class);
 
+
     private List<IndexerConfig> indexers;
     private Map<String, IndexerConfig> configsByname;
 
@@ -27,6 +28,7 @@ public class SearchModuleConfigProvider implements InitializingBean {
     public void setIndexers(List<IndexerConfig> indexers) {
         this.indexers = indexers;
     }
+
 
     public List<IndexerConfig> getIndexers() {
         return indexers;

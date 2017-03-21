@@ -1,42 +1,26 @@
 package org.nzbhydra.api;
 
-import org.nzbhydra.searching.SearchType;
-
 import javax.persistence.AttributeConverter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-public class EnumDatabaseConverter implements AttributeConverter<Enum, Integer> {
+public class EnumDatabaseConverter implements AttributeConverter<Enum, String> {
 
-    private static Map<Class<? extends Enum>, Map<String, Integer>> mapClassToValue = new HashMap<>();
-    private static Map<Integer, Enum> mapValueToClass = new HashMap<>();
 
-    {
-        addToMap(SearchType.class, 1);
+
+    @Override
+    public String convertToDatabaseColumn(Enum attribute) {
+        return attribute.getClass() + "#" + attribute.name();
 
     }
 
-    private static void addToMap(Class<? extends Enum> enumToMap, int startKey) {
-        Map<String, Integer> map = new HashMap<>();
+    @Override
+    public Enum convertToEntityAttribute(String dbData) {
+        String[] split = dbData.split("#");
 
-        for (Enum e : Arrays.stream(enumToMap.getEnumConstants()).sorted(Comparator.comparing(Enum::name)).collect(Collectors.toList())) {
-            int key = startKey++;
-            map.put(e.name(), key);
-            mapValueToClass.put(key, e);
+        try {
+            Class<? extends Enum> enumClass = (Class<? extends Enum>) Class.forName(split[0]);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-        mapClassToValue.put(enumToMap, map);
-    }
-
-    @Override
-    public Integer convertToDatabaseColumn(Enum attribute) {
-        return mapClassToValue.get(attribute.getClass()).get(attribute.name());
-    }
-
-    @Override
-    public Enum convertToEntityAttribute(Integer dbData) {
-        return mapValueToClass.get(dbData);
+        return null;
     }
 }

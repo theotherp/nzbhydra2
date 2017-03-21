@@ -2825,7 +2825,7 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/getsearchrequestsforsearching").success(function (response) {
+        return $http.get("internalapi/getsearchrequestsforsearching").success(function (response) {
             return {
                 searchRequests: response.searchRequests,
                 totalRequests: response.totalRequests
@@ -3147,7 +3147,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
     $scope.categories = _.filter(CategoriesService.getAll(), function (c) {
-        return c.mayBeSelected && c.ignoreResults != "internal" && c.ignoreResults != "always";
+        return c.mayBeSelected && c.ignoreResults != "INTERNAL" && c.ignoreResults != "BOTH";
     });
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);

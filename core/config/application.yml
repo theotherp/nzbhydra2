@@ -63,17 +63,27 @@ indexers:
 #    score: 1
 categories:
   -
-    name: "all"
+    name: n/a
+    pretty: N/A
     newznabCategories:
   -
-    name: "n/a"
+    name: all
+    pretty: All
     newznabCategories:
+    mayBeSelected: true
+    ignoreResults: NONE
   -
-    name: "category1"
+    name: category1
     newznabCategories: 1000,2000
+    pretty: category1
+    mayBeSelected: true
+    ignoreResults: NONE
   -
-    name: "category2"
+    name: category2
     newznabCategories: 3000,4000
+    pretty: category2
+    mayBeSelected: true
+    ignoreResults: NONE
 
 spring:
   datasource:

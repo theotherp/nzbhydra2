@@ -2,7 +2,7 @@
 <html ng-app="nzbhydraApp" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <!--<title ng-bind="'NZB Hydra' + ((' - ' + title) || '')">NZB Hydra</title>-->
-    <title th:text="${session.baseUrl}"></title>
+    <title ng-bind="'NZB Hydra' + ((' - ' + title) || '')">NZB Hydra</title>
     <base th:href="${session.baseUrl}"/>
 
 

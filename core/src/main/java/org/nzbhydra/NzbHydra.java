@@ -38,9 +38,9 @@ import java.util.stream.Collectors;
 @ComponentScan
 @RestController
 @EnableCaching
-public class CoreApplication {
+public class NzbHydra {
 
-    private static final Logger log = LoggerFactory.getLogger(CoreApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(NzbHydra.class);
 
     List<SearchResultEntity> results = new ArrayList<>();
 
@@ -69,7 +69,7 @@ public class CoreApplication {
 
     public static void main(String[] args) {
 
-        SpringApplication.run(CoreApplication.class, args);
+        SpringApplication.run(NzbHydra.class, args);
 
     }
 

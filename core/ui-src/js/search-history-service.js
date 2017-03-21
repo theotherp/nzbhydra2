@@ -12,7 +12,7 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/getsearchrequestsforsearching").success(function (response) {
+        return $http.get("internalapi/getsearchrequestsforsearching").success(function (response) {
             return {
                 searchRequests: response.searchRequests,
                 totalRequests: response.totalRequests

@@ -1,12 +1,18 @@
 package org.nzbhydra.searching;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
+@ConfigurationProperties(prefix = "categories")
 @Data
 public class Category {
 
+
+    /**
+     * Internal name
+     */
     private String name;
     private String pretty;
     private boolean mayBeSelected;

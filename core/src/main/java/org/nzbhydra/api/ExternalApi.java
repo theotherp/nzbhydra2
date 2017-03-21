@@ -2,7 +2,7 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import org.nzbhydra.CoreApplication;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.mapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 @RestController
 public class ExternalApi {
 
-    private static final Logger logger = LoggerFactory.getLogger(CoreApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(NzbHydra.class);
 
     @Autowired
     protected Searcher searcher;

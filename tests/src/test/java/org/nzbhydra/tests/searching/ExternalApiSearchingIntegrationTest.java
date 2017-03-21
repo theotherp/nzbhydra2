@@ -12,7 +12,7 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.Parameter;
-import org.nzbhydra.CoreApplication;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.ActionAttribute;
 import org.nzbhydra.api.ApiCallParameters;
 import org.nzbhydra.api.ExternalApi;
@@ -30,7 +30,7 @@ import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = CoreApplication.class)
+@SpringBootTest(classes = NzbHydra.class)
 //@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class, Newznab.class, SearchModuleConfigProvider.class, SearchModuleProvider.class, AppConfig.class, SearchResultRepository.class, IndexerRepository.class})
 //@Configuration
 @DataJpaTest

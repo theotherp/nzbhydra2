@@ -2,7 +2,6 @@ package org.nzbhydra.database;
 
 import lombok.Data;
 import org.nzbhydra.api.CategoryConverter;
-import org.nzbhydra.api.EnumDatabaseConverter;
 import org.nzbhydra.searching.Category;
 import org.nzbhydra.searching.SearchType;
 
@@ -30,7 +29,8 @@ public class SearchEntity {
     private List<IdentifierKeyValuePair> identifiers = new ArrayList<>();
     private Integer season;
     private Integer episode;
-    @Convert(converter = EnumDatabaseConverter.class)
+    //@Convert(converter = EnumDatabaseConverter.class)
+    @Enumerated(EnumType.STRING)
     private SearchType searchType;
     private String username;
     private String title;

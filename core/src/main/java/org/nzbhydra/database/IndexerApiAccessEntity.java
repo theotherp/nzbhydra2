@@ -1,7 +1,6 @@
 package org.nzbhydra.database;
 
 import lombok.Data;
-import org.nzbhydra.api.EnumDatabaseConverter;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -19,9 +18,11 @@ public class IndexerApiAccessEntity {
     private IndexerEntity indexer;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time;
-    @Convert(converter = EnumDatabaseConverter.class)
+    //@Convert(converter = EnumDatabaseConverter.class)
+    @Enumerated(EnumType.STRING)
     private IndexerApiAccessResult result;
-    @Convert(converter = EnumDatabaseConverter.class)
+    //@Convert(converter = EnumDatabaseConverter.class)
+    @Enumerated(EnumType.STRING)
     private IndexerApiAccessType accessType;
     private Long responseTime;
     private String error;

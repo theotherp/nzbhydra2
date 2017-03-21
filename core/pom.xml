@@ -7,7 +7,7 @@
     <artifactId>core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>../tests</module>
+        <!--<module>../tests</module>-->
     </modules>
     <packaging>pom</packaging>
 
@@ -79,6 +79,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
