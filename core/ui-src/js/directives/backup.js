@@ -4,7 +4,7 @@ angular
 
 function hydrabackup() {
     return {
-        templateUrl: 'html/directives/backup.html',
+        templateUrl: 'static/html/directives/backup.html',
         controller: controller
     };
 

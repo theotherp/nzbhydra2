@@ -17,11 +17,11 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             },
             views: {
                 'header': {
-                    templateUrl: 'html/states/header.html',
+                    templateUrl: 'static/html/states/header.html',
                     controller: 'HeaderController'
                 },
                 'footer': {
-                    templateUrl: 'html/states/footer.html'
+                    templateUrl: 'static/html/states/footer.html'
                 }
             }
         })
@@ -34,7 +34,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/main",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     controllerAs: 'ctrl',
                     resolve: {
@@ -61,7 +61,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/auth",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -87,7 +87,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/searching",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -113,7 +113,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/categories",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -139,7 +139,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/downloader",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -165,7 +165,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/indexers",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -192,7 +192,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             abstract: true,
             views: {
                 'container@': {
-                    templateUrl: "html/states/stats.html",
+                    templateUrl: "static/html/states/stats.html",
                     controller: function ($scope, $state) {
                         $scope.$state = $state;
                     },
@@ -212,7 +212,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/stats",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/main-stats.html",
+                    templateUrl: "static/html/states/main-stats.html",
                     controller: "StatsController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -229,7 +229,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/indexers",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/indexer-statuses.html",
+                    templateUrl: "static/html/states/indexer-statuses.html",
                     controller: IndexerStatusesController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -251,7 +251,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/searches",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/search-history.html",
+                    templateUrl: "static/html/states/search-history.html",
                     controller: SearchHistoryController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -271,7 +271,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/downloads",
             views: {
                 'stats@root.stats': {
-                    templateUrl: 'html/states/download-history.html',
+                    templateUrl: 'static/html/states/download-history.html',
                     controller: DownloadHistoryController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -296,7 +296,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/control",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         // loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -323,7 +323,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/updates",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -346,7 +346,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/log",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -369,7 +369,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/backup",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -392,7 +392,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/bugreport",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -415,7 +415,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/about",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -439,7 +439,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/?category&query&imdbid&tvdbid&title&season&episode&minsize&maxsize&minage&maxage&offsets&rid&mode&tmdbid&indexers",
             views: {
                 'container@': {
-                    templateUrl: "html/states/search.html",
+                    templateUrl: "static/html/states/search.html",
                     controller: "SearchController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -458,7 +458,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
         .state("root.search.results", {
             views: {
                 'results@root.search': {
-                    templateUrl: "html/states/search-results.html",
+                    templateUrl: "static/html/states/search-results.html",
                     controller: "SearchResultsController",
                     controllerAs: "srController",
                     options: {
@@ -489,7 +489,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             url: "/login",
             views: {
                 'container@': {
-                    templateUrl: "html/states/login.html",
+                    templateUrl: "static/html/states/login.html",
                     controller: "LoginController",
                     resolve: {
                         loginRequired: function () {
@@ -591,7 +591,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
 
 
 nzbhydraapp.config(function (paginationTemplateProvider) {
-    paginationTemplateProvider.setPath('html/dirPagination.tpl.html');
+    paginationTemplateProvider.setPath('static/html/dirPagination.tpl.html');
 });
 
 nzbhydraapp.config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {

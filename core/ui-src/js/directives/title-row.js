@@ -4,7 +4,7 @@ angular
 
 function titleRow() {
     return {
-        templateUrl: 'html/directives/title-row.html',
+        templateUrl: 'static/html/directives/title-row.html',
         scope: {
             duplicates: "<",
             selected: "<",

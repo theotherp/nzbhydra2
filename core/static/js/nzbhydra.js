@@ -17,11 +17,11 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             },
             views: {
                 'header': {
-                    templateUrl: 'html/states/header.html',
+                    templateUrl: 'static/html/states/header.html',
                     controller: 'HeaderController'
                 },
                 'footer': {
-                    templateUrl: 'html/states/footer.html'
+                    templateUrl: 'static/html/states/footer.html'
                 }
             }
         })
@@ -34,7 +34,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/main",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     controllerAs: 'ctrl',
                     resolve: {
@@ -61,7 +61,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/auth",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -87,7 +87,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/searching",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -113,7 +113,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/categories",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -139,7 +139,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/downloader",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -165,7 +165,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/indexers",
             views: {
                 'container@': {
-                    templateUrl: "html/states/config.html",
+                    templateUrl: "static/html/states/config.html",
                     controller: "ConfigController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -192,7 +192,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             abstract: true,
             views: {
                 'container@': {
-                    templateUrl: "html/states/stats.html",
+                    templateUrl: "static/html/states/stats.html",
                     controller: ["$scope", "$state", function ($scope, $state) {
                         $scope.$state = $state;
                     }],
@@ -212,7 +212,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/stats",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/main-stats.html",
+                    templateUrl: "static/html/states/main-stats.html",
                     controller: "StatsController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -229,7 +229,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/indexers",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/indexer-statuses.html",
+                    templateUrl: "static/html/states/indexer-statuses.html",
                     controller: IndexerStatusesController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -251,7 +251,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/searches",
             views: {
                 'stats@root.stats': {
-                    templateUrl: "html/states/search-history.html",
+                    templateUrl: "static/html/states/search-history.html",
                     controller: SearchHistoryController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -271,7 +271,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/downloads",
             views: {
                 'stats@root.stats': {
-                    templateUrl: 'html/states/download-history.html',
+                    templateUrl: 'static/html/states/download-history.html',
                     controller: DownloadHistoryController,
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -296,7 +296,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/control",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         // loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -323,7 +323,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/updates",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -346,7 +346,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/log",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -369,7 +369,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/backup",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -392,7 +392,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/bugreport",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -415,7 +415,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/about",
             views: {
                 'container@': {
-                    templateUrl: "html/states/system.html",
+                    templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -439,7 +439,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/?category&query&imdbid&tvdbid&title&season&episode&minsize&maxsize&minage&maxage&offsets&rid&mode&tmdbid&indexers",
             views: {
                 'container@': {
-                    templateUrl: "html/states/search.html",
+                    templateUrl: "static/html/states/search.html",
                     controller: "SearchController",
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -458,7 +458,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         .state("root.search.results", {
             views: {
                 'results@root.search': {
-                    templateUrl: "html/states/search-results.html",
+                    templateUrl: "static/html/states/search-results.html",
                     controller: "SearchResultsController",
                     controllerAs: "srController",
                     options: {
@@ -489,7 +489,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             url: "/login",
             views: {
                 'container@': {
-                    templateUrl: "html/states/login.html",
+                    templateUrl: "static/html/states/login.html",
                     controller: "LoginController",
                     resolve: {
                         loginRequired: function () {
@@ -591,7 +591,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
 
 
 nzbhydraapp.config(["paginationTemplateProvider", function (paginationTemplateProvider) {
-    paginationTemplateProvider.setPath('html/dirPagination.tpl.html');
+    paginationTemplateProvider.setPath('static/html/dirPagination.tpl.html');
 }]);
 
 nzbhydraapp.config(['cfpLoadingBarProvider', function (cfpLoadingBarProvider) {
@@ -748,7 +748,7 @@ angular
 function hydraupdates() {
     controller.$inject = ["$scope", "UpdateService", "$sce"];
     return {
-        templateUrl: 'html/directives/updates.html',
+        templateUrl: 'static/html/directives/updates.html',
         controller: controller
     };
 
@@ -784,7 +784,7 @@ angular
 
 function titleRow() {
     return {
-        templateUrl: 'html/directives/title-row.html',
+        templateUrl: 'static/html/directives/title-row.html',
         scope: {
             duplicates: "<",
             selected: "<",
@@ -815,7 +815,7 @@ angular
 
 function titleGroup() {
     return {
-        templateUrl: 'html/directives/title-group.html',
+        templateUrl: 'static/html/directives/title-group.html',
         scope: {
             titles: "<",
             selected: "=",
@@ -850,7 +850,7 @@ angular
 
 function tabOrChart() {
     return {
-        templateUrl: 'html/directives/tab-or-chart.html',
+        templateUrl: 'static/html/directives/tab-or-chart.html',
         transclude: {
             "chartSlot": "chart",
             "tableSlot": "table"
@@ -871,7 +871,7 @@ angular
 
 function searchResult() {
     return {
-        templateUrl: 'html/directives/search-result.html',
+        templateUrl: 'static/html/directives/search-result.html',
         require: '^titleGroup',
         scope: {
             titleGroup: "<",
@@ -936,7 +936,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
         multiElement: true,
 
         link: function (scope, element, attrs) {
-            $http.get('html/directives/search-result-non-title-columns.html', {cache: $templateCache}).success(function (templateContent) {
+            $http.get('static/html/directives/search-result-non-title-columns.html', {cache: $templateCache}).success(function (templateContent) {
                 element.replaceWith($compile(templateContent)(scope));
             });
 
@@ -1051,7 +1051,7 @@ angular
 function hydralog() {
     controller.$inject = ["$scope", "$http", "$sce", "$interval", "localStorageService"];
     return {
-        templateUrl: "html/directives/log.html",
+        templateUrl: "static/html/directives/log.html",
         controller: controller
     };
 
@@ -1140,7 +1140,7 @@ angular
 function indexerInput() {
     controller.$inject = ["$scope"];
     return {
-        templateUrl: 'html/directives/indexer-input.html',
+        templateUrl: 'static/html/directives/indexer-input.html',
         scope: {
             indexer: "=",
             model: "=",
@@ -1186,7 +1186,7 @@ angular
 function duplicateGroup() {
     titleRowController.$inject = ["$scope", "localStorageService"];
     return {
-        templateUrl: 'html/directives/duplicate-group.html',
+        templateUrl: 'static/html/directives/duplicate-group.html',
         scope: {
             duplicates: "<",
             selected: "=",
@@ -1291,7 +1291,7 @@ angular
 function downloadNzbzipButton() {
     controller.$inject = ["$scope", "growl", "FileDownloadService"];
     return {
-        templateUrl: 'html/directives/download-nzbzip-button.html',
+        templateUrl: 'static/html/directives/download-nzbzip-button.html',
         require: ['^searchResults'],
         scope: {
             searchResults: "<",
@@ -1332,7 +1332,7 @@ angular
 function downloadNzbsButton() {
     controller.$inject = ["$scope", "NzbDownloadService", "growl"];
     return {
-        templateUrl: 'html/directives/download-nzbs-button.html',
+        templateUrl: 'static/html/directives/download-nzbs-button.html',
         require: ['^searchResults'],
         scope: {
             searchResults: "<"
@@ -1377,7 +1377,7 @@ function columnFilterWrapper() {
     controller.$inject = ["$scope"];
     return {
         restrict: "E",
-        templateUrl: 'html/dataTable/columnFilterOuter.html',
+        templateUrl: 'static/html/dataTable/columnFilterOuter.html',
         transclude: true,
         controllerAs: 'columnFilterWrapperCtrl',
         scope: true,
@@ -1412,7 +1412,7 @@ angular
 function freetextFilter() {
     controller.$inject = ["$scope", "focus"];
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterFreetext.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
         require: "^columnFilterWrapper",
         controllerAs: 'innerController',
         scope: {
@@ -1442,7 +1442,7 @@ angular
 function checkboxesFilter() {
     controller.$inject = ["$scope"];
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterCheckboxes.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterCheckboxes.html\'"/>',
         controllerAs: 'checkboxesFilterController',
         scope: {
             column: "@",
@@ -1481,7 +1481,7 @@ angular
 function booleanFilter() {
     controller.$inject = ["$scope"];
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterBoolean.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
         controllerAs: 'booleanFilterController',
         scope: {
             column: "@",
@@ -1508,7 +1508,7 @@ angular
 function timeFilter() {
     controller.$inject = ["$scope"];
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterTime.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterTime.html\'"/>',
         scope: {
             column: "@",
             selected: "<"
@@ -1560,7 +1560,7 @@ function columnSortable() {
     controller.$inject = ["$scope"];
     return {
         restrict: "E",
-        templateUrl: "html/dataTable/columnSortable.html",
+        templateUrl: "static/html/dataTable/columnSortable.html",
         transclude: true,
         scope: {
             sortMode: "@", //0: no sorting, 1: asc, 2: desc
@@ -1595,7 +1595,7 @@ angular
 function connectionTest() {
     controller.$inject = ["$scope"];
     return {
-        templateUrl: 'html/directives/connection-test.html',
+        templateUrl: 'static/html/directives/connection-test.html',
         require: ['^type', '^data'],
         scope: {
             type: "=",
@@ -1678,7 +1678,7 @@ angular
 
 function cfgFormEntry() {
     return {
-        templateUrl: 'html/directives/cfg-form-entry.html',
+        templateUrl: 'static/html/directives/cfg-form-entry.html',
         require: ["^title", "^cfg"],
         scope: {
             title: "@",
@@ -1700,7 +1700,7 @@ angular
 function hydrabackup() {
     controller.$inject = ["$scope", "BackupService", "Upload", "FileDownloadService", "RequestsErrorHandler", "growl", "RestartService"];
     return {
-        templateUrl: 'html/directives/backup.html',
+        templateUrl: 'static/html/directives/backup.html',
         controller: controller
     };
 
@@ -1769,7 +1769,7 @@ angular
 function addableNzbs() {
     controller.$inject = ["$scope", "NzbDownloadService"];
     return {
-        templateUrl: 'html/directives/addable-nzbs.html',
+        templateUrl: 'static/html/directives/addable-nzbs.html',
         require: ['^searchResultId'],
         scope: {
             searchResultId: "<",
@@ -1795,7 +1795,7 @@ angular
 function addableNzb() {
     controller.$inject = ["$scope", "NzbDownloadService", "growl"];
     return {
-        templateUrl: 'html/directives/addable-nzb.html',
+        templateUrl: 'static/html/directives/addable-nzb.html',
         scope: {
             searchResultId: "<",
             downloader: "<"
@@ -1879,7 +1879,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
         var $uibModal = myInjector.get("$uibModal");
         var params = {
             size: "lg",
-            templateUrl: "html/changelog.html",
+            templateUrl: "static/html/changelog.html",
             resolve: {
                 changelog: function () {
                     return changelog;
@@ -3605,7 +3605,7 @@ function ModalService($uibModal, $q) {
          };
          */
         var modalInstance = $uibModal.open({
-            templateUrl: 'html/modal.html',
+            templateUrl: 'static/html/modal.html',
             controller: 'ModalInstanceCtrl',
             size: angular.isDefined(size) ? size : "md",
             resolve: {
@@ -4645,7 +4645,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function openCategorySelection(downloader) {
         $uibModal.open({
-            templateUrl: 'html/directives/addable-nzb-modal.html',
+            templateUrl: 'static/html/directives/addable-nzb-modal.html',
             controller: 'DownloaderCategorySelectionController',
             size: "sm",
             resolve: {

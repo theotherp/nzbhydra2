@@ -50,7 +50,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function openCategorySelection(downloader) {
         $uibModal.open({
-            templateUrl: 'html/directives/addable-nzb-modal.html',
+            templateUrl: 'static/html/directives/addable-nzb-modal.html',
             controller: 'DownloaderCategorySelectionController',
             size: "sm",
             resolve: {

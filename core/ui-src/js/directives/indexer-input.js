@@ -4,7 +4,7 @@ angular
 
 function indexerInput() {
     return {
-        templateUrl: 'html/directives/indexer-input.html',
+        templateUrl: 'static/html/directives/indexer-input.html',
         scope: {
             indexer: "=",
             model: "=",

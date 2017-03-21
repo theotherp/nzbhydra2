@@ -4,7 +4,7 @@ angular
 
 function hydralog() {
     return {
-        templateUrl: "html/directives/log.html",
+        templateUrl: "static/html/directives/log.html",
         controller: controller
     };
 

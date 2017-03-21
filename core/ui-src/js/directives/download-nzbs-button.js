@@ -4,7 +4,7 @@ angular
 
 function downloadNzbsButton() {
     return {
-        templateUrl: 'html/directives/download-nzbs-button.html',
+        templateUrl: 'static/html/directives/download-nzbs-button.html',
         require: ['^searchResults'],
         scope: {
             searchResults: "<"

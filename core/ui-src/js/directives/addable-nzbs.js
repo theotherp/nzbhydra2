@@ -4,7 +4,7 @@ angular
 
 function addableNzbs() {
     return {
-        templateUrl: 'html/directives/addable-nzbs.html',
+        templateUrl: 'static/html/directives/addable-nzbs.html',
         require: ['^searchResultId'],
         scope: {
             searchResultId: "<",

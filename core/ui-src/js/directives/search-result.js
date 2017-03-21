@@ -4,7 +4,7 @@ angular
 
 function searchResult() {
     return {
-        templateUrl: 'html/directives/search-result.html',
+        templateUrl: 'static/html/directives/search-result.html',
         require: '^titleGroup',
         scope: {
             titleGroup: "<",

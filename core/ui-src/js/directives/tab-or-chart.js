@@ -4,7 +4,7 @@ angular
 
 function tabOrChart() {
     return {
-        templateUrl: 'html/directives/tab-or-chart.html',
+        templateUrl: 'static/html/directives/tab-or-chart.html',
         transclude: {
             "chartSlot": "chart",
             "tableSlot": "table"

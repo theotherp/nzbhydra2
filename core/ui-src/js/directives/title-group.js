@@ -4,7 +4,7 @@ angular
 
 function titleGroup() {
     return {
-        templateUrl: 'html/directives/title-group.html',
+        templateUrl: 'static/html/directives/title-group.html',
         scope: {
             titles: "<",
             selected: "=",

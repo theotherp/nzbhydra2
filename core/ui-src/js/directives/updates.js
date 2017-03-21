@@ -4,7 +4,7 @@ angular
 
 function hydraupdates() {
     return {
-        templateUrl: 'html/directives/updates.html',
+        templateUrl: 'static/html/directives/updates.html',
         controller: controller
     };
 

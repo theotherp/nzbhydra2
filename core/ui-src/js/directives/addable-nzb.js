@@ -4,7 +4,7 @@ angular
 
 function addableNzb() {
     return {
-        templateUrl: 'html/directives/addable-nzb.html',
+        templateUrl: 'static/html/directives/addable-nzb.html',
         scope: {
             searchResultId: "<",
             downloader: "<"

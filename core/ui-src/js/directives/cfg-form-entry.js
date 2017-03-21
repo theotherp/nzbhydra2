@@ -4,7 +4,7 @@ angular
 
 function cfgFormEntry() {
     return {
-        templateUrl: 'html/directives/cfg-form-entry.html',
+        templateUrl: 'static/html/directives/cfg-form-entry.html',
         require: ["^title", "^cfg"],
         scope: {
             title: "@",

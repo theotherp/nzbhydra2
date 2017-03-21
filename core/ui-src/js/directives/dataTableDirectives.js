@@ -4,7 +4,7 @@ angular
 function columnFilterWrapper() {
     return {
         restrict: "E",
-        templateUrl: 'html/dataTable/columnFilterOuter.html',
+        templateUrl: 'static/html/dataTable/columnFilterOuter.html',
         transclude: true,
         controllerAs: 'columnFilterWrapperCtrl',
         scope: true,
@@ -38,7 +38,7 @@ angular
 
 function freetextFilter() {
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterFreetext.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
         require: "^columnFilterWrapper",
         controllerAs: 'innerController',
         scope: {
@@ -67,7 +67,7 @@ angular
 
 function checkboxesFilter() {
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterCheckboxes.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterCheckboxes.html\'"/>',
         controllerAs: 'checkboxesFilterController',
         scope: {
             column: "@",
@@ -105,7 +105,7 @@ angular
 
 function booleanFilter() {
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterBoolean.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
         controllerAs: 'booleanFilterController',
         scope: {
             column: "@",
@@ -131,7 +131,7 @@ angular
 
 function timeFilter() {
     return {
-        template: '<ng-include src="\'html/dataTable/columnFilterTime.html\'"/>',
+        template: '<ng-include src="\'static/html/dataTable/columnFilterTime.html\'"/>',
         scope: {
             column: "@",
             selected: "<"
@@ -182,7 +182,7 @@ angular
 function columnSortable() {
     return {
         restrict: "E",
-        templateUrl: "html/dataTable/columnSortable.html",
+        templateUrl: "static/html/dataTable/columnSortable.html",
         transclude: true,
         scope: {
             sortMode: "@", //0: no sorting, 1: asc, 2: desc

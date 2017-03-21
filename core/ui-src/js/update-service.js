@@ -48,7 +48,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
         var $uibModal = myInjector.get("$uibModal");
         var params = {
             size: "lg",
-            templateUrl: "html/changelog.html",
+            templateUrl: "static/html/changelog.html",
             resolve: {
                 changelog: function () {
                     return changelog;

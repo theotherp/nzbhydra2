@@ -4,7 +4,7 @@ angular
 
 function duplicateGroup() {
     return {
-        templateUrl: 'html/directives/duplicate-group.html',
+        templateUrl: 'static/html/directives/duplicate-group.html',
         scope: {
             duplicates: "<",
             selected: "=",

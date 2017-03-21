@@ -4,7 +4,7 @@ angular
 
 function connectionTest() {
     return {
-        templateUrl: 'html/directives/connection-test.html',
+        templateUrl: 'static/html/directives/connection-test.html',
         require: ['^type', '^data'],
         scope: {
             type: "=",

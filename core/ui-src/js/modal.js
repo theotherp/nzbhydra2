@@ -30,7 +30,7 @@ function ModalService($uibModal, $q) {
          };
          */
         var modalInstance = $uibModal.open({
-            templateUrl: 'html/modal.html',
+            templateUrl: 'static/html/modal.html',
             controller: 'ModalInstanceCtrl',
             size: angular.isDefined(size) ? size : "md",
             resolve: {

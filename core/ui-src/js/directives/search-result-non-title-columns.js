@@ -10,7 +10,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
         multiElement: true,
 
         link: function (scope, element, attrs) {
-            $http.get('html/directives/search-result-non-title-columns.html', {cache: $templateCache}).success(function (templateContent) {
+            $http.get('static/html/directives/search-result-non-title-columns.html', {cache: $templateCache}).success(function (templateContent) {
                 element.replaceWith($compile(templateContent)(scope));
             });
 
