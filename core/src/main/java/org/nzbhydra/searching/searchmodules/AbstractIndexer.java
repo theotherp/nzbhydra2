@@ -1,5 +1,6 @@
 package org.nzbhydra.searching.searchmodules;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.database.*;
 import org.nzbhydra.searching.IndexerConfig;
@@ -108,6 +109,19 @@ public abstract class AbstractIndexer implements Indexer {
 
     protected int hashItem(SearchResultItem item) {
         return (indexer.getName() + item.getIndexerGuid()).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractIndexer that = (AbstractIndexer) o;
+        return Objects.equal(indexer.getName(), that.indexer.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return config == null ? 0 : Objects.hashCode(config.getName());
     }
 
     protected abstract Logger getLogger();

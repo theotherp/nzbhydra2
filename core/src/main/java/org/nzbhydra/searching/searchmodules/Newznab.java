@@ -1,8 +1,8 @@
 package org.nzbhydra.searching.searchmodules;
 
 import com.google.common.base.Stopwatch;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.mapping.NewznabAttribute;
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,9 +29,9 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@Data
+@Getter
+@Setter
 @Component
-@EqualsAndHashCode(callSuper = false)
 public class Newznab extends AbstractIndexer {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
@@ -63,10 +64,16 @@ public class Newznab extends AbstractIndexer {
             indexerSearchResult = searchInternal(searchRequest);
             indexerSearchResult.setWasSuccessful(true);
         } catch (Exception e) {
-            handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
-            //If not handle as failure still save the API access
             logger.error("Error while searching", e);
-            return new IndexerSearchResult(this, false);
+            try {
+                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+            } catch (Exception e1) {
+                logger.error("Error while handling indexer failure", e1);
+            }
+            //If not handle as failure still save the API access
+            IndexerSearchResult searchResult = new IndexerSearchResult(this, false);
+            searchResult.setErrorMessage(e.getMessage());
+            return searchResult;
         }
         return indexerSearchResult;
     }
@@ -163,9 +170,9 @@ public class Newznab extends AbstractIndexer {
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
             logger.info("Successfully loaded results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             handleSuccess(IndexerApiAccessType.SEARCH, stopwatch.elapsed(TimeUnit.MILLISECONDS), IndexerApiAccessResult.SUCCESSFUL, url);
-        } catch (HttpStatusCodeException e) {
+        } catch (HttpStatusCodeException | ResourceAccessException e) {
             //TODO try and find out what specifically went wrong, e.g. wrong api key, missing params, etc
-            logger.error("Unable to call URL " + url, e);
+            logger.error("Unable to call URL {}: {}", url, e.getMessage());
             handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, url); //TODO depending on type of error
 
             IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
