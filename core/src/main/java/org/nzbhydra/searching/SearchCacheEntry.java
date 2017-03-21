@@ -12,19 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class CachedSearchResults {
+public class SearchCacheEntry {
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
-    private Map<Indexer, List<IndexerSearchResult>> indexerSearchProcessingDatas = new HashMap<>();
+    private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultsByIndexer = new HashMap<>();
 
-    public CachedSearchResults(SearchRequest searchRequest, List<Indexer> indexers) {
+    public SearchCacheEntry(SearchRequest searchRequest, List<Indexer> indexers) {
         this.searchRequest = searchRequest;
         lastAccessed = Instant.now();
         for (Indexer indexer : indexers) {
-            ArrayList<IndexerSearchResult> list = new ArrayList<>();
-            list.add(new IndexerSearchResult(indexer));
-            indexerSearchProcessingDatas.put(indexer, list);
+            indexerSearchResultsByIndexer.put(indexer, new ArrayList<>());
         }
     }
 
@@ -32,7 +30,7 @@ public class CachedSearchResults {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
 
-        final CachedSearchResults other = (CachedSearchResults) obj;
+        final SearchCacheEntry other = (SearchCacheEntry) obj;
         return
                 Objects.equal(searchRequest.getQuery(), other.getSearchRequest().getQuery())
                         && Objects.equal(searchRequest.getSeason(), other.getSearchRequest().getSeason())
