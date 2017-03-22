@@ -7,10 +7,11 @@
         <link>channelLink</link>
         <language>language</language>
         <webMaster>webmaster</webMaster>
+        <newznab:response offset="0" total="1"/>
         <item>
             <title>itemTitle2</title>
             <link>link</link>
-            <pubDate>Mon, 12 Oct 2015 17:34:17 +0000</pubDate>
+            <pubDate>Tue, 13 Oct 2015 17:34:17 +0000</pubDate>
             <guid isPermaLink="false">guidLink2</guid>
             <description>itemDescription</description>
             <comments>comments</comments>

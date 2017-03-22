@@ -26,6 +26,10 @@ public class SearchCacheEntry {
         }
     }
 
+    public void updateCache(Map<Indexer, List<IndexerSearchResult>> newEntries) {
+        indexerSearchResultsByIndexer.putAll(newEntries);
+    }
+
     public boolean equals(Object obj) {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;

@@ -2,7 +2,6 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import org.nzbhydra.NzbHydra;
 import org.nzbhydra.mapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
@@ -25,7 +24,7 @@ import java.util.stream.Stream;
 @RestController
 public class ExternalApi {
 
-    private static final Logger logger = LoggerFactory.getLogger(NzbHydra.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
     @Autowired
     protected Searcher searcher;
@@ -57,8 +56,10 @@ public class ExternalApi {
 
         //Account for offset and limit
         int maxIndex = searchResultItems.size();
-        logger.info("Returning items {} to {} of {} items", params.getOffset(), params.getOffset() + params.getLimit(), searchResultItems.size());
-        searchResultItems = searchResultItems.subList(Math.min(params.getOffset(), maxIndex), Math.min(params.getOffset() + params.getLimit(), maxIndex));
+        int fromIndex = Math.min(params.getOffset(), maxIndex);
+        int toIndex = Math.min(params.getOffset() + params.getLimit(), maxIndex);
+        logger.info("Returning items {} to {} of {} items", fromIndex, toIndex, searchResultItems.size());
+        searchResultItems = searchResultItems.subList(fromIndex, toIndex);
 
 
         RssRoot rssRoot = new RssRoot();
@@ -93,7 +94,7 @@ public class ExternalApi {
 
         return duplicateGroups.stream().map(x -> {
             return x.stream().sorted(Comparator.comparingInt(SearchResultItem::getIndexerScore).reversed().thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getPubDate().getEpochSecond()).reversed())).iterator().next();
-        }).collect(Collectors.toList());
+        }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
     private SearchResult search(ApiCallParameters params) {

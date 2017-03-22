@@ -81,39 +81,39 @@ public class Newznab extends AbstractIndexer {
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) {
         UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
 
-        if (searchRequest.getQuery() != null) {
-            componentsBuilder.queryParam("q", searchRequest.getQuery());
+        if (searchRequest.getQuery().isPresent()) {
+            componentsBuilder.queryParam("q", searchRequest.getQuery().get());
         }
 
         //TODO query generation
         componentsBuilder = extendQueryWithSearchIds(searchRequest, componentsBuilder);
 
-        if (searchRequest.getSeason() != null) {
-            componentsBuilder.queryParam("season", searchRequest.getSeason());
+        if (searchRequest.getSeason().isPresent()) {
+            componentsBuilder.queryParam("season", searchRequest.getSeason().get());
         }
-        if (searchRequest.getEpisode() != null) {
-            componentsBuilder.queryParam("ep", searchRequest.getEpisode());
-        }
-
-        if (searchRequest.getMinage() != null) {
-            componentsBuilder.queryParam("minage", searchRequest.getMinage());
-        }
-        if (searchRequest.getMaxage() != null) {
-            componentsBuilder.queryParam("maxage", searchRequest.getMaxage());
+        if (searchRequest.getEpisode().isPresent()) {
+            componentsBuilder.queryParam("ep", searchRequest.getEpisode().get());
         }
 
-        if (searchRequest.getMinsize() != null) {
-            componentsBuilder.queryParam("minsize", searchRequest.getMinsize());
+        if (searchRequest.getMinage().isPresent()) {
+            componentsBuilder.queryParam("minage", searchRequest.getMinage().get());
         }
-        if (searchRequest.getMaxsize() != null) {
-            componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize());
+        if (searchRequest.getMaxage().isPresent()) {
+            componentsBuilder.queryParam("maxage", searchRequest.getMaxage().get());
         }
 
-        if (searchRequest.getTitle() != null) {
-            componentsBuilder.queryParam("title", searchRequest.getTitle());
+        if (searchRequest.getMinsize().isPresent()) {
+            componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
         }
-        if (searchRequest.getMaxsize() != null) {
-            componentsBuilder.queryParam("author", searchRequest.getAuthor());
+        if (searchRequest.getMaxsize().isPresent()) {
+            componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize().get());
+        }
+
+        if (searchRequest.getTitle().isPresent()) {
+            componentsBuilder.queryParam("title", searchRequest.getTitle().get());
+        }
+        if (searchRequest.getAuthor().isPresent()) {
+            componentsBuilder.queryParam("author", searchRequest.getAuthor().get());
         }
 
         return componentsBuilder;
@@ -230,7 +230,7 @@ public class Newznab extends AbstractIndexer {
             searchResultItems.add(searchResultItem);
 
         }
-        persistSearchResults(searchResultItems);
+        searchResultItems = persistSearchResults(searchResultItems);
 
         return searchResultItems;
     }

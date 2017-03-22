@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.database.IndexerEntity;
 
@@ -25,6 +26,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String poster;
     private String group;
     private Map<String, String> attributes = new HashMap<>();
+    private Integer searchResultId;
 
 
     @Override
@@ -32,4 +34,14 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         return o.getPubDate().compareTo(pubDate);
     }
 
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("guid", guid)
+                .add("indexer", indexer.getName())
+                .add("title", title)
+                .add("pubDate", pubDate)
+                .add("size", size)
+                .toString();
+    }
 }

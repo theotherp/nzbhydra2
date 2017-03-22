@@ -41,13 +41,13 @@ public class Searcher {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
         SearchResult searchResult = new SearchResult();
-        int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
+        int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //TODO default for limit
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
         while (indexersToSearchAndTheirResults.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
 
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
-            searchCacheEntry.setIndexerSearchResultsByIndexer(indexersToSearchAndTheirResults);
+            searchCacheEntry.updateCache(indexersToSearchAndTheirResults);
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
 
             //Use search result items from the cache which contains *all* search results, not just the latest. That allows finding duplicates that were in different searches
@@ -68,24 +68,25 @@ public class Searcher {
         Iterator<Map.Entry<Integer, SearchCacheEntry>> iterator = searchRequestCache.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Integer, SearchCacheEntry> next = iterator.next();
-            if (next.getValue().getLastAccessed().plus(5, ChronoUnit.MINUTES).isAfter(Instant.now())) {
+            if (next.getValue().getLastAccessed().plus(5, ChronoUnit.MINUTES).isBefore(Instant.now())) {
                 searchRequestCache.remove(next.getKey());
             }
         }
 
-        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
+        if (searchRequest.getOffset().orElse(0) == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
             //New search
             SearchEntity searchEntity = new SearchEntity();
             searchEntity.setInternal(searchRequest.isInternal());
             searchEntity.setCategory(searchRequest.getCategory());
-            searchEntity.setQuery(searchRequest.getQuery());
+            searchEntity.setQuery(searchRequest.getQuery().orElse(null));
             searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toList()));
-            searchEntity.setSeason(searchRequest.getSeason());
-            searchEntity.setEpisode(searchRequest.getEpisode());
+            searchEntity.setSeason(searchRequest.getSeason().orElse(null));
+            searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
             searchEntity.setSearchType(searchRequest.getSearchType());
             searchEntity.setUsername(null);//TODO
-            searchEntity.setTitle(searchRequest.getTitle());
-            searchEntity.setAuthor(searchRequest.getAuthor());
+            searchEntity.setTitle(searchRequest.getTitle().orElse(null));
+            searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
+
             searchRepository.save(searchEntity);
 
             //TODO pick indexers

@@ -94,7 +94,7 @@ public class ExternalApiSearchingIntegrationTest {
         apiSearchResult = externalApi.api(apiCallParameters);
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
 
     }
 

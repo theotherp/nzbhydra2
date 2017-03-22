@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.database.*;
 import org.nzbhydra.searching.IndexerConfig;
+import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public abstract class AbstractIndexer implements Indexer {
     }
 
     @Transactional
-    protected void persistSearchResults(List<SearchResultItem> searchResultItems) {
+    protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
         for (SearchResultItem item : searchResultItems) {
@@ -55,9 +56,11 @@ public abstract class AbstractIndexer implements Indexer {
                 searchResultEntity.setFirstFound(Instant.now());
                 searchResultEntities.add(searchResultEntity);
             }
+            item.setSearchResultId(SearchResultIdCalculator.calculateSearchResultId(item));
         }
         searchResultRepository.save(searchResultEntities);
         getLogger().debug("Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return searchResultItems;
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerApiAccessResult accessResult, String url) {

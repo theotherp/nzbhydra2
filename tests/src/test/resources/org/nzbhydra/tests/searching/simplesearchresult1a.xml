@@ -9,7 +9,7 @@
         <webMaster>webmaster</webMaster>
         <newznab:response offset="0" total="2"/>
         <item>
-            <title>itemTitle1</title>
+            <title>itemTitle1a</title>
             <link>link</link>
             <pubDate>Sun, 11 Oct 2015 17:34:17 +0000</pubDate>
             <guid isPermaLink="false">guidLink</guid>
