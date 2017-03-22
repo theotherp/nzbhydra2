@@ -165,11 +165,13 @@ public class Newznab extends AbstractIndexer {
 
         RssRoot rssRoot;
         Stopwatch stopwatch = Stopwatch.createStarted();
+        Long responseTime;
         try {
             logger.info("Calling {}", url);
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
-            logger.info("Successfully loaded results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            handleSuccess(IndexerApiAccessType.SEARCH, stopwatch.elapsed(TimeUnit.MILLISECONDS), IndexerApiAccessResult.SUCCESSFUL, url);
+            responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+            logger.info("Successfully loaded results in {}ms", responseTime);
+            handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerApiAccessResult.SUCCESSFUL, url);
         } catch (HttpStatusCodeException | ResourceAccessException e) {
             //TODO try and find out what specifically went wrong, e.g. wrong api key, missing params, etc
             logger.error("Unable to call URL {}: {}", url, e.getMessage());
@@ -187,6 +189,7 @@ public class Newznab extends AbstractIndexer {
         indexerSearchResult.setSearchResultItems(getSearchResultItems(rssRoot));
         indexerSearchResult.setWasSuccessful(true);
         indexerSearchResult.setIndexer(this);
+        indexerSearchResult.setResponseTime(responseTime);
 
         NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {

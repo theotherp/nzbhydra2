@@ -20,7 +20,6 @@ public class IndexerEntity {
     private IndexerStatusEntity status;
 
     public IndexerEntity() {
-        //status = new IndexerStatusEntity();
     }
 
 

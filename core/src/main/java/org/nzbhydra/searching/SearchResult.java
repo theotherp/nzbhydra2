@@ -1,18 +1,19 @@
 package org.nzbhydra.searching;
 
 import lombok.Data;
+import org.nzbhydra.searching.searchmodules.Indexer;
 
-import java.util.Collections;
-import java.util.TreeSet;
+import java.util.*;
 
 @Data
 public class SearchResult {
 
 
     private DuplicateDetectionResult duplicateDetectionResult;
+    private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultMap = new HashMap<>();
 
     public SearchResult() {
-        duplicateDetectionResult = new DuplicateDetectionResult(Collections.emptyList(), Collections.emptyMap());
+        duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), new HashMap<>());
     }
 
     public int calculateNumberOfResults() {

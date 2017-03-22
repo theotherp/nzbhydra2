@@ -9,6 +9,7 @@ public class IndexerSearch {
 
     private List<ApiAccess> apiAccesses;
     private boolean did_search;
+    private String notPickedReason;
     private boolean has_more;
     private String indexer;
     private Integer offset;

@@ -29,7 +29,6 @@ public class SearchEntity {
     private List<IdentifierKeyValuePair> identifiers = new ArrayList<>();
     private Integer season;
     private Integer episode;
-    //@Convert(converter = EnumDatabaseConverter.class)
     @Enumerated(EnumType.STRING)
     private SearchType searchType;
     private String username;

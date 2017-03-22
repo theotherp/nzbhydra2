@@ -49,6 +49,22 @@ public class Search {
         searchRequest.setCategory(categoryProvider.getByName(category));
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
+        List<SearchResult> transformedSearchResults = transformSearchResults(searchResult);
+
+
+        SearchResponse response = new SearchResponse();
+        response.setRejected(Collections.emptyList());
+
+        IndexerSearch indexerSearch = new IndexerSearch();
+        indexerSearch.setIndexer("newznab1");
+        response.setIndexersearches(Collections.singletonList(indexerSearch));
+
+        response.setResults(transformedSearchResults);
+
+        return response;
+    }
+
+    private List<SearchResult> transformSearchResults(org.nzbhydra.searching.SearchResult searchResult) {
         List<SearchResult> transformedSearchResults = new ArrayList<>();
         List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
         for (TreeSet<SearchResultItem> duplicateGroup : duplicateGroups) {
@@ -64,19 +80,7 @@ public class Search {
                 result.setSearchResultId(item.getSearchResultId());
                 transformedSearchResults.add(result);
             }
-
         }
-
-
-        SearchResponse response = new SearchResponse();
-        response.setRejected(Collections.emptyList());
-
-        IndexerSearch indexerSearch = new IndexerSearch();
-        indexerSearch.setIndexer("newznab1");
-        response.setIndexersearches(Collections.singletonList(indexerSearch));
-
-        response.setResults(transformedSearchResults);
-
-        return response;
+        return transformedSearchResults;
     }
 }

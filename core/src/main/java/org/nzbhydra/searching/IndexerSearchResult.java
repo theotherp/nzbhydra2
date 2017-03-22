@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.nzbhydra.searching.searchmodules.Indexer;
 
@@ -13,12 +14,14 @@ public class IndexerSearchResult {
     private Indexer indexer;
     private boolean wasSuccessful;
     private String errorMessage;
+    @JsonIgnore
     private List<SearchResultItem> searchResultItems;
     private int totalResults;
     private int offset;
     private int limit;
     private boolean totalResultsKnown;
     private boolean hasMoreResults;
+    private long responseTime;
 
     private Map<String, Integer> rejectionReasonsCount;
 

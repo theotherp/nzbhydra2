@@ -7,12 +7,12 @@ GUI
 - searching by ID, autocomplete
 
 Searching
+- return indexer access data to show in GUI
 - pick indexers
 - exclusions
 - rejecting search results
 - ID conversion
 - query generation
-
 
 Config
 - Loading

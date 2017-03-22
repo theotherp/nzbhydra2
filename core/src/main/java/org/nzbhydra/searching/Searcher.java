@@ -47,8 +47,9 @@ public class Searcher {
         while (indexersToSearchAndTheirResults.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
 
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
-            searchCacheEntry.updateCache(indexersToSearchAndTheirResults);
+            searchCacheEntry.getIndexerSearchResultsByIndexer().putAll(indexersToSearchAndTheirResults);
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
+            searchResult.getIndexerSearchResultMap().putAll(indexersToSearchAndTheirResults);
 
             //Use search result items from the cache which contains *all* search results, not just the latest. That allows finding duplicates that were in different searches
             List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
