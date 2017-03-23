@@ -25,7 +25,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String link;
     private String poster;
     private Instant pubDate;
-    private Integer searchResultId;
+    private Long searchResultId;
     private Long size;
     private String title;
     private Instant usenetDate;

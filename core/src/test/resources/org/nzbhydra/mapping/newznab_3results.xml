@@ -26,7 +26,7 @@
             <pubDate>Sun, 11 Oct 2015 17:34:17 +0000</pubDate>
             <category>Other-Misc</category>
             <description>testtitle1</description>
-            <enclosure url="https://indexer.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&amp;i=1692&amp;r=apikey"
+            <enclosure url="https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&amp;i=1692&amp;r=apikey"
                        length="2893890900" type="application/x-nzb"/>
 
             <newznab:attr name="category" value="7000"/>

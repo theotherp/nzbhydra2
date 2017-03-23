@@ -10,10 +10,10 @@ public class EnumDatabaseConverterTest {
     @Test
     public void convertToDatabaseColumn() throws Exception {
         EnumDatabaseConverter converter = new EnumDatabaseConverter();
-        assertThat(converter.convertToDatabaseColumn(SearchType.BOOK), is(1));
-        assertThat(converter.convertToDatabaseColumn(SearchType.MOVIE), is(2));
-        assertThat(converter.convertToDatabaseColumn(SearchType.SEARCH), is(3));
-        assertThat(converter.convertToDatabaseColumn(SearchType.TVSEARCH), is(4));
+        assertThat(converter.convertToDatabaseColumn(SearchType.BOOK), is("BOOK"));
+        assertThat(converter.convertToDatabaseColumn(SearchType.MOVIE), is("MOVIE"));
+        assertThat(converter.convertToDatabaseColumn(SearchType.SEARCH), is("SEARCH"));
+        assertThat(converter.convertToDatabaseColumn(SearchType.TVSEARCH), is("TVSEARCH"));
     }
 
 
@@ -21,7 +21,7 @@ public class EnumDatabaseConverterTest {
     @Test
     public void convertToEntityAttribute() throws Exception {
         EnumDatabaseConverter converter = new EnumDatabaseConverter();
-        //assertThat(converter.convertToEntityAttribute(1), is(SearchType.BOOK));
+        assertThat(converter.convertToEntityAttribute("BOOK"), is(SearchType.BOOK));
     }
 
 }

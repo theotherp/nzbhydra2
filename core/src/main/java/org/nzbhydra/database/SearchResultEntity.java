@@ -27,7 +27,7 @@ public class SearchResultEntity {
     )
 
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
-    protected int id;
+    protected long id;
 
     @ManyToOne
     @NotNull
