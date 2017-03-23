@@ -5,7 +5,7 @@
                 @XmlNs(prefix = "atom", namespaceURI = "http://www.w3.org/2005/Atom")
         }
 )
-package org.nzbhydra.mapping;
+package org.nzbhydra.rssmapping;
 
 import javax.xml.bind.annotation.XmlNs;
 import javax.xml.bind.annotation.XmlNsForm;

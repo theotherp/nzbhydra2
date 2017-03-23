@@ -51,7 +51,7 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvMazeId");
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
         builder = testee.extendQueryWithSearchIds(searchRequest, builder);
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
@@ -69,7 +69,7 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
         builder = testee.extendQueryWithSearchIds(searchRequest, builder);
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));

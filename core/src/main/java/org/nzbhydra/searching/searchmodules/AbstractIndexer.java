@@ -59,7 +59,7 @@ public abstract class AbstractIndexer implements Indexer {
             item.setSearchResultId(SearchResultIdCalculator.calculateSearchResultId(item));
         }
         searchResultRepository.save(searchResultEntities);
-        getLogger().debug("Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        getLogger().debug("Persisting {} search searchResults took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;
     }
 
@@ -109,6 +109,18 @@ public abstract class AbstractIndexer implements Indexer {
         indexerApiAccessRepository.save(apiAccess);
     }
 
+    @Override
+    public String getName() {
+        return config.getName();
+    }
+
+    public IndexerConfig getConfig() {
+        return config;
+    }
+
+    public IndexerEntity getIndexerEntity() {
+        return indexer;
+    }
 
     protected int hashItem(SearchResultItem item) {
         return (indexer.getName() + item.getIndexerGuid()).hashCode();

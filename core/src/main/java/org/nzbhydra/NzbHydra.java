@@ -4,7 +4,7 @@ import org.nzbhydra.api.CategoryConverter;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
-import org.nzbhydra.mapping.RssRoot;
+import org.nzbhydra.rssmapping.RssRoot;
 import org.nzbhydra.searching.Category;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchModuleConfigProvider;

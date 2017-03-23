@@ -37,31 +37,30 @@
                     <!-- First result in the list, show regularly -->
                     <tr>
                         <td class="text-left">
-                            <input ng-disabled="!ps.successful" type="checkbox" ng-model="indexerDisplayState[ps.indexer.toLowerCase()]" ng-click="toggleIndexerDisplay(ps.indexer)"
+                            <input ng-disabled="!ps.wasSuccessful" type="checkbox" ng-model="indexerDisplayState[ps.indexer.toLowerCase()]" ng-click="toggleIndexerDisplay(ps.indexerName)"
                                    uib-tooltip="Uncheck to hide results from this indexer"
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"
-                            />{{ ps.indexer }}
+                            />{{ ps.indexerName }}
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.did_search">
-                        <span ng-if="!ps.total_known && ps.total > 0">&gt;</span>{{ ps.total }}
+                    <span ng-if="ps.didSearch">
+                        <span ng-if="!ps.totalResultsKnown && ps.numberOfAvailableResults > 0">&gt;</span>{{ ps.numberOfAvailableResults }}
                     </span>
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.did_search">
-                        {{ ps.averageResponseTime }}ms
+                    <span ng-if="ps.didSearch">
+                        {{ ps.responseTime }}ms
                     </span>
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.did_search">
-                        <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.successful, 'glyphicon-remove' : !ps.successful}"></span>
-                        <span ng-repeat="apiaccess in ps.apiAccesses">
-                            <span ng-if="$index == 0">{{ apiaccess.error }}</span>
-                            <div ng-if="$index > 0">{{ apiaccess.error }}</div>
+                    <span ng-if="ps.didSearch">
+                        <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.wasSuccessful, 'glyphicon-remove' : !ps.wasSuccessful}"></span>
+
+                            <span ng-if="$index == 0">{{ ps.errorMessage }}</span>
                         </span>
                     </span>
-                            <span ng-if="!ps.did_search">
+                            <span ng-if="!ps.didSearch">
                         Did not search.
                     </span>
                         </td>
@@ -123,7 +122,7 @@
         <dir-pagination-controls auto-hide="false"></dir-pagination-controls>
     </div>
     <div class="col-md-8" style="text-align: right;">
-        <span class="badge">Loaded {{ resultsCount }} of {{ total }} results (rejected {{ countRejected }})</span>
+        <span class="badge">Loaded {{ numberOfResults }} of {{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})</span>
 
         <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
             <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="resultsCount >= total"

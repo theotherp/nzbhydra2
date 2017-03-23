@@ -27,6 +27,8 @@ public class AbstractIndexerTest {
     @Mock
     private IndexerEntity indexerEntityMock;
     @Mock
+    private AbstractIndexer indexerMock;
+    @Mock
     private IndexerStatusEntity statusMock;
     @Mock
     private SearchResultEntity searchResultEntityMock;
@@ -56,16 +58,19 @@ public class AbstractIndexerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerEntityMock.getStatus()).thenReturn(statusMock);
         when(statusMock.getLevel()).thenReturn(0);
         when(indexerEntityMock.getName()).thenReturn("indexerName");
+        when(indexerMock.getName()).thenReturn("indexerName");
+
         testee.indexer = indexerEntityMock;
     }
 
     @Test
     public void shouldCreateNewSearchResultEntityWhenNoneIsFound() throws Exception {
         SearchResultItem item = new SearchResultItem();
-        item.setIndexer(indexerEntityMock);
+        item.setIndexer(indexerMock);
         item.setTitle("title");
         item.setDetails("details");
         item.setIndexerGuid("guid");
@@ -85,7 +90,9 @@ public class AbstractIndexerTest {
     public void shouldNotCreateNewSearchResultEntityWhenOneExists() throws Exception {
         SearchResultItem item = new SearchResultItem();
         item.setIndexerGuid("guid");
+        item.setIndexer(indexerMock);
         when(searchResultRepositoryMock.findByIndexerAndIndexerGuid(indexerEntityMock, "guid")).thenReturn(searchResultEntityMock);
+
 
         testee.persistSearchResults(Collections.singletonList(item));
 
@@ -127,8 +134,6 @@ public class AbstractIndexerTest {
 
     @Test
     public void hashItem() throws Exception {
-
-
         SearchResultItem item1 = new SearchResultItem();
         item1.setIndexerGuid("a");
         SearchResultItem item2 = new SearchResultItem();

@@ -49,11 +49,11 @@ public class SearchModuleProvider {
         for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
             try {
                 AbstractIndexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
-                logger.info("Found indexer {}", config.getName());
+                logger.info("Found indexerName {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
                 if (indexerEntity == null) {
-                    logger.info("Did not find indexer with name {} in database. Adding it", config.getName());
+                    logger.info("Did not find indexerName with name {} in database. Adding it", config.getName());
                     indexerEntity = new IndexerEntity();
                     indexerEntity.setName(config.getName());
                     indexerEntity.setStatus(new IndexerStatusEntity());
@@ -63,7 +63,7 @@ public class SearchModuleProvider {
                 searchModule.initialize(config, indexerEntity);
                 searchModuleInstances.put(config.getName(), searchModule);
             } catch (Exception e) {
-                logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType());
+                logger.error("Unable to instantiate indexerName with name {} and type {}", config.getName(), config.getSearchModuleType());
             }
         }
     }

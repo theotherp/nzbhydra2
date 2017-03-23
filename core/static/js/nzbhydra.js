@@ -2479,25 +2479,22 @@ function SearchService($http) {
     }
 
     function processData(response) {
-        var results = response.data.results;
-        var indexersearches = response.data.indexersearches;
-        var total = response.data.total;
-        var rejected = response.data.rejected;
-        var resultsCount = results.length;
+        var searchResults = response.data.searchResults;
+        var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
+        var numberOfAvailableResults = response.data.numberOfAvailableResults;
+        var numberOfRejectedResults = response.data.numberOfRejectedResults;
+        var numberOfResults = response.data.numberOfResults;
+        var rejectedReasonsMap = response.data.rejectedReasonsMap
 
 
-        //Sum up response times of indexers from individual api accesses
-        //TODO: Move this to search result controller because we need to update it every time we loaded more results
-        _.each(indexersearches, function (ps) {
-            if (ps.did_search) {
-                ps.averageResponseTime = _.reduce(ps.apiAccesses, function (memo, rp) {
-                    return memo + rp.response_time;
-                }, 0);
-                ps.averageResponseTime = ps.averageResponseTime / ps.apiAccesses.length;
-            }
-        });
-
-        lastResults = {"results": results, "indexersearches": indexersearches, "total": total, "resultsCount": resultsCount, "rejected": rejected};
+        lastResults = {
+            "searchResults": searchResults,
+            "indexerSearchMetaDatas": indexerSearchMetaDatas,
+            "numberOfAvailableResults": numberOfAvailableResults,
+            "numberOfResults": numberOfResults,
+            "numberOfRejectedResults": numberOfRejectedResults,
+            "rejectedReasonsMap": rejectedReasonsMap
+        };
         return lastResults;
     }
 
@@ -2531,11 +2528,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.offset = 0;
     //Handle incoming data
 
-    $scope.indexersearches = _.sortBy(SearchService.getLastResults().indexersearches, function (i) {
-        return i.indexer.toLowerCase()
-    });
-    $scope.indexerDisplayState = []; //Stores if a indexer's results should be displayed or not
-    $scope.indexerResultsInfo = {}; //Stores information about the indexer's results like how many we already retrieved
+    $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
+    $scope.indexerDisplayState = []; //Stores if a indexerName's searchResults should be displayed or not
+    $scope.indexerResultsInfo = {}; //Stores information about the indexerName's searchResults like how many we already retrieved
     $scope.groupExpanded = {};
     $scope.selected = [];
     if ($stateParams.title) {
@@ -2562,19 +2557,19 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     //Initially set visibility of all found indexers to true, they're needed for initial filtering / sorting
     _.forEach($scope.indexersearches, function (ps) {
-        $scope.indexerDisplayState[ps.indexer.toLowerCase()] = true;
+        $scope.indexerDisplayState[ps.indexerName.toLowerCase()] = true;
     });
 
     _.forEach($scope.indexersearches, function (ps) {
-        $scope.indexerResultsInfo[ps.indexer.toLowerCase()] = {loadedResults: ps.loaded_results};
+        $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
     });
 
-    //Process results
-    $scope.results = SearchService.getLastResults().results;
-    $scope.total = SearchService.getLastResults().total;
-    $scope.resultsCount = SearchService.getLastResults().resultsCount;
-    $scope.rejected = SearchService.getLastResults().rejected;
-    $scope.countRejected = sumRejected($scope.rejected);
+    //Process searchResults
+    $scope.results = SearchService.getLastResults().searchResults;
+    $scope.numberOfAvailableResults = SearchService.getLastResults().numberOfAvailableResults;
+    $scope.numberOfResults = SearchService.getLastResults().numberOfResults;
+    $scope.rejected = SearchService.getLastResults().rejectedReasonsMap;
+    $scope.numberOfRejectedResults = SearchService.getLastResults().numberOfRejectedResults;
     $scope.filteredResults = sortAndFilter($scope.results);
 
     $scope.$emit("searchResultsShown");
@@ -2586,7 +2581,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         return item[0][$scope.sortPredicate];
     }
 
-    //Returns the unique group identifier which allows angular to keep track of the grouped search results even after filtering, making filtering by indexers a lot faster (albeit still somewhat slow...)  
+    //Returns the unique group identifier which allows angular to keep track of the grouped search results even after filtering, making filtering by indexers a lot faster (albeit still somewhat slow...)
     $scope.groupId = groupId;
     function groupId(item) {
         return item[0][0].searchResultId;
@@ -2603,7 +2598,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     //Set sorting according to the predicate. If it's the same as the old one, reverse, if not sort by the given default (so that age is descending, name ascending, etc.)
-    //Sorting (and filtering) are really slow (about 2 seconds for 1000 results from 5 indexers) but I haven't found any way of making it faster, apart from the tracking 
+    //Sorting (and filtering) are really slow (about 2 seconds for 1000 results from 5 indexers) but I haven't found any way of making it faster, apart from the tracking
     $scope.setSorting = setSorting;
     function setSorting(predicate, reversedDefault) {
         if (predicate == $scope.sortPredicate) {
@@ -2660,6 +2655,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
 
         function getItemIndexerDisplayState(item) {
+            return true;
             return $scope.indexerDisplayState[item.indexer.toLowerCase()];
         }
 
@@ -2716,9 +2712,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         var filtered = _.chain(results)
         //Filter by age, size and title
             .filter(filterByAgeAndSize)
-            //Remove elements of which the indexer is currently hidden    
+            //Remove elements of which the indexer is currently hidden
             .filter(getItemIndexerDisplayState)
-            //Make groups of results with the same title    
+            //Make groups of results with the same title
             .groupBy(getCleanedTitle)
             //For every title group make subgroups of duplicates and sort the group    
             .map(createSortedHashgroups)

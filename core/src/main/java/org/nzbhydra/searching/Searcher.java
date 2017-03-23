@@ -51,7 +51,7 @@ public class Searcher {
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
             searchResult.getIndexerSearchResultMap().putAll(indexersToSearchAndTheirResults);
 
-            //Use search result items from the cache which contains *all* search results, not just the latest. That allows finding duplicates that were in different searches
+            //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates that were in different searches
             List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
             DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
@@ -102,7 +102,7 @@ public class Searcher {
     }
 
     protected Map<Indexer, List<IndexerSearchResult>> getIndexerSearchResultsToSearch(Map<Indexer, List<IndexerSearchResult>> map) {
-        //TODO Do all relevant checks again in case the state of the indexer was changed in the background (use only basic checks, errors, disabled, etc)
+        //TODO Do all relevant checks again in case the state of the indexerName was changed in the background (use only basic checks, errors, disabled, etc)
         return map.entrySet().stream().filter(x -> {
             if (x.getValue().isEmpty()) {
                 return true;
@@ -169,7 +169,7 @@ public class Searcher {
         int limit;
         if (entry.getValue().isEmpty()) {
             offset = 0;
-            limit = 100; //TODO Set either global default or get from indexer or implement possibility to keep this unset and let indexer decide
+            limit = 100; //TODO Set either global default or get from indexerName or implement possibility to keep this unset and let indexerName decide
         } else {
             IndexerSearchResult indexerToSearch = Iterables.getLast(entry.getValue());
             offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();

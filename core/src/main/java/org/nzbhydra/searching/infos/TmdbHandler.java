@@ -88,7 +88,7 @@ public class TmdbHandler {
                 throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
             }
             if (response.body().total_results == 0) {
-                throw new InfoProviderException(String.format("TMDB query for title %s returned no results", title));
+                throw new InfoProviderException(String.format("TMDB query for title %s returned no searchResults", title));
             }
             movies = response.body().results;
         } catch (IOException e) {
@@ -108,9 +108,9 @@ public class TmdbHandler {
                 throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
             }
             if (response.body().movie_results.size() == 0) {
-                throw new InfoProviderException(String.format("TMDB query for IMDB ID %s returned no results", imdbId));
+                throw new InfoProviderException(String.format("TMDB query for IMDB ID %s returned no searchResults", imdbId));
             }
-            //logger.error("TMDB query for IMDB ID {} returned no results", imdbId);
+            //logger.error("TMDB query for IMDB ID {} returned no searchResults", imdbId);
             movie = response.body().movie_results.get(0);
         } catch (IOException e) {
             //logger.error("Error while contacting TMDB", e);

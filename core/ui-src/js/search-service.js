@@ -84,25 +84,22 @@ function SearchService($http) {
     }
 
     function processData(response) {
-        var results = response.data.results;
-        var indexersearches = response.data.indexersearches;
-        var total = response.data.total;
-        var rejected = response.data.rejected;
-        var resultsCount = results.length;
+        var searchResults = response.data.searchResults;
+        var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
+        var numberOfAvailableResults = response.data.numberOfAvailableResults;
+        var numberOfRejectedResults = response.data.numberOfRejectedResults;
+        var numberOfResults = response.data.numberOfResults;
+        var rejectedReasonsMap = response.data.rejectedReasonsMap
 
 
-        //Sum up response times of indexers from individual api accesses
-        //TODO: Move this to search result controller because we need to update it every time we loaded more results
-        _.each(indexersearches, function (ps) {
-            if (ps.did_search) {
-                ps.averageResponseTime = _.reduce(ps.apiAccesses, function (memo, rp) {
-                    return memo + rp.response_time;
-                }, 0);
-                ps.averageResponseTime = ps.averageResponseTime / ps.apiAccesses.length;
-            }
-        });
-
-        lastResults = {"results": results, "indexersearches": indexersearches, "total": total, "resultsCount": resultsCount, "rejected": rejected};
+        lastResults = {
+            "searchResults": searchResults,
+            "indexerSearchMetaDatas": indexerSearchMetaDatas,
+            "numberOfAvailableResults": numberOfAvailableResults,
+            "numberOfResults": numberOfResults,
+            "numberOfRejectedResults": numberOfRejectedResults,
+            "rejectedReasonsMap": rejectedReasonsMap
+        };
         return lastResults;
     }
 

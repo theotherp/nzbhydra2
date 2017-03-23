@@ -1,8 +1,8 @@
 package org.nzbhydra.fortests;
 
 import org.nzbhydra.api.ApiCallParameters;
-import org.nzbhydra.mapping.*;
-import org.nzbhydra.mapping.NewznabResponse;
+import org.nzbhydra.rssmapping.*;
+import org.nzbhydra.rssmapping.NewznabResponse;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

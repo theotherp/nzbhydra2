@@ -11,6 +11,7 @@ public class SearchResult {
 
     private DuplicateDetectionResult duplicateDetectionResult;
     private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultMap = new HashMap<>();
+    private Map<String, Integer> rejectedReaonsMap = new HashMap<>();
 
     public SearchResult() {
         duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), new HashMap<>());

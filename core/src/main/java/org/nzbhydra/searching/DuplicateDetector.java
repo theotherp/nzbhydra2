@@ -1,7 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.searching.searchmodules.AbstractIndexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class DuplicateDetector {
@@ -22,23 +24,23 @@ public class DuplicateDetector {
 
         List<TreeSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 
-        //In each list of results with the same title we want to find the duplicates
+        //In each list of searchResults with the same title we want to find the duplicates
         int countDetectedDuplicates = 0;
         for (List<SearchResultItem> titleGroup : groupedByTitle.values()) {
-            //TODO We can do that in parallel for every title group
+            //TODO We can do that in parallel for every title group, but performance doesn't seem to be an issue
             titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getPubDate).reversed()).collect(Collectors.toList());
-            //So we start with a bucket with the first (later we have a list of buckets where all results in a bucket are duplicates)
+            //So we start with a bucket with the first (later we have a list of buckets where all searchResults in a bucket are duplicates)
             List<TreeSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
-            listOfBuckets.add(new TreeSet<>(Arrays.asList(titleGroup.get(0))));
+            listOfBuckets.add(new TreeSet<>(newArrayList(titleGroup.get(0))));
             //And iterate over every other item in the list
             for (int i = 1; i < titleGroup.size(); i++) {
                 SearchResultItem searchResultItem = titleGroup.get(i);
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
                 for (TreeSet<SearchResultItem> bucket : listOfBuckets) {
-                    //And all results in those buckets
+                    //And all searchResults in those buckets
                     for (SearchResultItem other : bucket) {
-                        //Now we can check if the two results are duplicates
+                        //Now we can check if the two searchResults are duplicates
                         boolean same = testForSameness(searchResultItem, other);
                         if (same) {
                             //If they are the same we found a bucket for the result. We add it and continue
@@ -55,12 +57,12 @@ public class DuplicateDetector {
                 }
                 //If we didn't find a bucket for the result we start a new one
                 if (!foundBucket) {
-                    listOfBuckets.add(new TreeSet<>(Arrays.asList(searchResultItem)));
+                    listOfBuckets.add(new TreeSet<>(newArrayList(searchResultItem)));
                 }
             }
             duplicateGroups.addAll(listOfBuckets);
         }
-        Map<IndexerEntity, Integer> uniqueResultsPerIndexer = new HashMap<>();
+        Map<AbstractIndexer, Integer> uniqueResultsPerIndexer = new HashMap<>();
         for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
             int count = 0;
             if (uniqueResultsPerIndexer.containsKey(result.getIndexer())) {
@@ -69,7 +71,7 @@ public class DuplicateDetector {
             uniqueResultsPerIndexer.put(result.getIndexer(), count);
         }
 
-        logger.info("Duplicate detection for {} results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
+        logger.info("Duplicate detection for {} searchResults took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, uniqueResultsPerIndexer);
     }
@@ -103,7 +105,6 @@ public class DuplicateDetector {
         if (result1.getPubDate() == null || result2.getPubDate() == null) {
             return false;
         }
-
         return Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60*60) <= duplicateAgeThreshold;
     }
 

@@ -2,7 +2,7 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import org.nzbhydra.mapping.*;
+import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -51,7 +51,7 @@ public class ExternalApi {
     }
 
     protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
-        logger.debug("Transforming results");
+        logger.debug("Transforming searchResults");
         List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
         //Account for offset and limit
@@ -79,7 +79,7 @@ public class ExternalApi {
             item.setTitle(searchResultItem.getTitle());
             item.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
             item.setPubDate(searchResultItem.getPubDate());
-            List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+            List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
             item.setAttributes(newznabAttributes);
             items.add(item);
         }

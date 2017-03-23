@@ -5,10 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
-import org.nzbhydra.mapping.NewznabAttribute;
-import org.nzbhydra.mapping.NewznabResponse;
-import org.nzbhydra.mapping.RssItem;
-import org.nzbhydra.mapping.RssRoot;
+import org.nzbhydra.rssmapping.NewznabAttribute;
+import org.nzbhydra.rssmapping.NewznabResponse;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.infos.Info;
@@ -68,7 +68,7 @@ public class Newznab extends AbstractIndexer {
             try {
                 handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
             } catch (Exception e1) {
-                logger.error("Error while handling indexer failure", e1);
+                logger.error("Error while handling indexerName failure", e1);
             }
             //If not handle as failure still save the API access
             IndexerSearchResult searchResult = new IndexerSearchResult(this, false);
@@ -170,7 +170,7 @@ public class Newznab extends AbstractIndexer {
             logger.info("Calling {}", url);
             rssRoot = restTemplate.getForObject(url, RssRoot.class);
             responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-            logger.info("Successfully loaded results in {}ms", responseTime);
+            logger.info("Successfully loaded searchResults in {}ms", responseTime);
             handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerApiAccessResult.SUCCESSFUL, url);
         } catch (HttpStatusCodeException | ResourceAccessException e) {
             //TODO try and find out what specifically went wrong, e.g. wrong api key, missing params, etc
@@ -206,7 +206,7 @@ public class Newznab extends AbstractIndexer {
             indexerSearchResult.setLimit(0);
         }
 
-        logger.info("Processed search results in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.info("Processed search searchResults in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return indexerSearchResult;
     }
@@ -221,9 +221,9 @@ public class Newznab extends AbstractIndexer {
             searchResultItem.setDetails("somedetails");
             searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
             searchResultItem.setFirstFound(Instant.now());
-            searchResultItem.setIndexer(indexer);
+            searchResultItem.setIndexer(this);
             searchResultItem.setTitle(item.getTitle());
-            searchResultItem.setSize(searchResultItem.getSize());
+            searchResultItem.setSize(item.getEnclosure().getLength());
             searchResultItem.setPubDate(item.getPubDate());
             searchResultItem.setIndexerScore(config.getScore());
             searchResultItem.setGuid(hashItem(searchResultItem));

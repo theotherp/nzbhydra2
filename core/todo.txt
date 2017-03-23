@@ -7,10 +7,10 @@ GUI
 - searching by ID, autocomplete
 
 Searching
-- return indexer access data to show in GUI
+- return indexerName access data to show in GUI
 - pick indexers
 - exclusions
-- rejecting search results
+- rejecting search searchResults
 - ID conversion
 - query generation
 
@@ -46,7 +46,7 @@ Process control
 - Restart
 - Shutdown
 
-Authorization
+Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - Basic
 - Form
 - Remember me
@@ -54,6 +54,10 @@ Authorization
 Log / config sanitation
 
 
+5 runs with 5 parallel calls to Hydra which will call 5 indexers
+Hydra Python: 163s
+Hydra Java: 32s
 
-
-
+1 run with 1 parallel call to Hydra which will call 5 indexers
+Hydra Python: 7911ms
+Hydra Java: 3233ms

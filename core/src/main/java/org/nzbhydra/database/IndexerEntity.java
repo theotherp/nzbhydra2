@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name="indexer")
+@Table(name = "indexerName")
 public class IndexerEntity {
 
     @Id

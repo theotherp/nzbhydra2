@@ -5,6 +5,7 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nzbhydra.rssmapping.*;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -34,10 +35,10 @@ public class RssMappingTest {
 
         RssRoot rssRoot = restTemplate.getForObject("/api", RssRoot.class);
         RssChannel channel = rssRoot.getRssChannel();
-        assertThat(channel.getDescription(), is("indexer(dot)com Feed"));
-        assertThat(channel.getLink(), is("https://indexer.com/"));
+        assertThat(channel.getDescription(), is("indexerName(dot)com Feed"));
+        assertThat(channel.getLink(), is("https://indexerName.com/"));
         assertThat(channel.getLanguage(), is("en-gb"));
-        assertThat(channel.getWebMaster(), is("admin@indexer.com (indexer(dot)com)"));
+        assertThat(channel.getWebMaster(), is("admin@indexerName.com (indexerName(dot)com)"));
 
         NewznabResponse newznabResponse = channel.getNewznabResponse();
         assertThat(newznabResponse.getOffset(), is(0));
@@ -47,17 +48,17 @@ public class RssMappingTest {
         assertThat(items.size(), is(3));
 
         RssItem item = items.get(0);
-        assertThat(item.getLink(), is("https://indexer.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
+        assertThat(item.getLink(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
         assertThat(item.getPubDate(), is(Instant.ofEpochSecond(1444584857)));
         assertThat(item.getDescription(), is("testtitle1"));
-        assertThat(item.getComments(), is("https://indexer.com/details/eff551fbdb69d6777d5030c209ee5d4b#comments"));
+        assertThat(item.getComments(), is("https://indexerName.com/details/eff551fbdb69d6777d5030c209ee5d4b#comments"));
 
         RssGuid rssGuid = item.getRssGuid();
         assertThat(rssGuid.getGuid(), is("eff551fbdb69d6777d5030c209ee5d4b"));
         assertThat(rssGuid.getIsPermaLink(), is(false));
 
         Enclosure enclosure = item.getEnclosure();
-        assertThat(enclosure.getUrl(), is("https://indexer.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
+        assertThat(enclosure.getUrl(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
         assertThat(enclosure.getLength(), is(2893890900L));
 
         List<NewznabAttribute> attributes = item.getAttributes();
