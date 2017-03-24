@@ -2,7 +2,7 @@ package org.nzbhydra.searching.searchrequests;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
-import org.nzbhydra.searching.Category;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.InfoProvider;
 

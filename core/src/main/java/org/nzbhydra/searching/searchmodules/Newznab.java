@@ -68,7 +68,7 @@ public class Newznab extends AbstractIndexer {
             try {
                 handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
             } catch (Exception e1) {
-                logger.error("Error while handling indexerName failure", e1);
+                logger.error("Error while handling indexer failure", e1);
             }
             //If not handle as failure still save the API access
             IndexerSearchResult searchResult = new IndexerSearchResult(this, false);

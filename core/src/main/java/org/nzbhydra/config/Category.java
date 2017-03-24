@@ -1,6 +1,7 @@
-package org.nzbhydra.searching;
+package org.nzbhydra.config;
 
 import lombok.Data;
+import org.nzbhydra.searching.SearchRestrictionType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;

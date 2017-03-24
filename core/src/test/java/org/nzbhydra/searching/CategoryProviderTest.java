@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.nzbhydra.config.Category;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class CategoryProviderTest {
         category.setNewznabCategories(Arrays.asList(7020, 8010));
         categories.add(category);
         testee.setCategories(categories);
-        testee.fillMap();
+        testee.afterPropertiesSet();
     }
 
     @Test

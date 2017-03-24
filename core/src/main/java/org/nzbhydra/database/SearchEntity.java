@@ -2,7 +2,7 @@ package org.nzbhydra.database;
 
 import lombok.Data;
 import org.nzbhydra.api.CategoryConverter;
-import org.nzbhydra.searching.Category;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.SearchType;
 
 import javax.persistence.*;

@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
-import org.nzbhydra.searching.IndexerConfig;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.Info;
 import org.nzbhydra.searching.infos.InfoProvider;

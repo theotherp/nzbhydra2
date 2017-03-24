@@ -1,8 +1,10 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.searching.searchmodules.AbstractIndexer;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchmodules.Newznab;
@@ -12,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,40 +38,55 @@ public class SearchModuleProvider {
 
     @Autowired
     private SearchModuleConfigProvider searchModuleConfigProvider;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
 
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
 
-    @PostConstruct
-    public void init() {
-        if (searchModuleConfigProvider.getIndexers() == null) {
-            logger.error("Indexers not set. Check your configuration");
-            return;
-        }
-        for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
-            try {
-                AbstractIndexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
-                logger.info("Found indexerName {}", config.getName());
 
-                IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
-                if (indexerEntity == null) {
-                    logger.info("Did not find indexerName with name {} in database. Adding it", config.getName());
-                    indexerEntity = new IndexerEntity();
-                    indexerEntity.setName(config.getName());
-                    indexerEntity.setStatus(new IndexerStatusEntity());
-                    indexerEntity = indexerRepository.save(indexerEntity);
-                }
-
-                searchModule.initialize(config, indexerEntity);
-                searchModuleInstances.put(config.getName(), searchModule);
-            } catch (Exception e) {
-                logger.error("Unable to instantiate indexerName with name {} and type {}", config.getName(), config.getSearchModuleType());
-            }
-        }
+    /**
+     * Called after indexer config has been updated
+     */
+    public void reloadIndexers() {
+        logger.info("Reloading indexers");
+        loadIndexers();
     }
+
 
     public List<Indexer> getIndexers() {
         return new ArrayList<>(searchModuleInstances.values());
     }
 
 
+    /**
+     * Must be called by <tt>{@link SearchModuleConfigProvider}</tt> when config is loaded.
+     */
+    void loadIndexers() {
+        if (searchModuleConfigProvider.getIndexers() == null) {
+            logger.error("Indexers not set. Check your configuration");
+            return;
+        }
+        searchModuleInstances.clear();
+        for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
+            try {
+                AbstractIndexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
+                logger.info("Found indexer {}", config.getName());
+
+                IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
+                if (indexerEntity == null) {
+                    logger.info("Indexer with name {} not yet in database. Adding it", config.getName());
+                    indexerEntity = new IndexerEntity();
+                    indexerEntity.setName(config.getName());
+                    indexerEntity.setStatus(new IndexerStatusEntity());
+                    indexerEntity = indexerRepository.save(indexerEntity);
+                    logger.info("Now {} indexers in database", indexerRepository.count());
+                }
+
+                searchModule.initialize(config, indexerEntity);
+                searchModuleInstances.put(config.getName(), searchModule);
+            } catch (Exception e) {
+                logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType());
+            }
+        }
+    }
 }

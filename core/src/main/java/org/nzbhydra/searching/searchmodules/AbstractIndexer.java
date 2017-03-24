@@ -2,8 +2,8 @@ package org.nzbhydra.searching.searchmodules;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.*;
-import org.nzbhydra.searching.IndexerConfig;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.slf4j.Logger;

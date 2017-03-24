@@ -28,7 +28,7 @@ public class Config {
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
     public String setConfig(@RequestBody BaseConfig config) {
         logger.info("Received new config");
-        System.out.println(config);
+        baseConfig.replace(config);
         return "OK";
     }
 

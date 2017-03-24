@@ -1,3 +1,82 @@
+auth:
+  authType: none
+  rememberUsers: true
+  restrictAdmin: true
+  restrictDetailsDl: true
+  restrictIndexerSelection: true
+  restrictSearch: true
+  restrictStats: true
+  users:
+  - maySeeAdmin: true
+    maySeeDetailsDl: true
+    maySeeStats: true
+    password: apass
+    showIndexerSelection: true
+    username: auser
+  - maySeeAdmin: false
+    maySeeDetailsDl: false
+    maySeeStats: false
+    password: bpass
+    showIndexerSelection: false
+    username: bpass
+  - maySeeAdmin: false
+    maySeeDetailsDl: true
+    maySeeStats: true
+    password: cpass
+    showIndexerSelection: true
+    username: cuser
+
+downloaders:
+- defaultCategory: No category
+  downloadType: nzb
+  enabled: true
+  host: 127.0.0.1
+  iconCssClass: ''
+  name: NZBGet
+  nzbAddingType: link
+  nzbaccesstype: serve
+  password: nzbget
+  port: 6789
+  ssl: false
+  type: nzbget
+  username: nzbget
+- apikey: 63e1c248a4a84c63e44b5a2ce9153cfe
+  defaultCategory: No category
+  downloadType: nzb
+  enabled: false
+  iconCssClass: ''
+  name: SABnzbd
+  nzbAddingType: link
+  nzbaccesstype: serve
+  password:
+  type: sabnzbd
+  url: http://127.0.0.1:8085/sabnzbd/
+  username: ''
+- downloadType: nzb
+  enabled: false
+  host: 127.0.0.1
+  iconCssClass: ''
+  name: NZBGet2
+  nzbAddingType: link
+  nzbaccesstype: serve
+  password: tegbzn6789x
+  port: 6789
+  ssl: false
+  type: nzbget
+  username: nzbgetx
+- downloadType: nzb
+  enabled: false
+  host: 127.0.0.1
+  iconCssClass: ''
+  name: NZBGet4
+  nzbAddingType: link
+  nzbaccesstype: redirect
+  password: tegbzn6789x
+  port: 6789
+  ssl: false
+  type: nzbget
+  username: nzbgetx
+
 indexers:
   -
     name: newznab1
@@ -87,20 +166,77 @@ categories:
 
 
 main:
-  apiKey: myapikey
+  apiKey: apikey
+  branch: develop
   configVersion: 1
-  debug: false
-  externalUrl: foobar
-  baseUrl: /
+  debug: true
+  dereferer: http://www.dereferer.org/?$s
+  externalUrl: ''
+  #firstStart: null
+  gitPath: c:\Program Files (x86)\Git\bin\git.exe
+  host: 127.0.0.1
+  httpProxy:
+  httpsProxy:
+  isFirstStart: false
+  keepSearchResultsForDays: 7
+  logging:
+    consolelevel: DEBUG
+    keepLogFiles: 25
+    logIpAddresses: true
+    logMaxSize: 1000
+    logRotateAfterDays:
+    logfilelevel: DEBUG
+    logfilename: nzbhydra.log
+    rolloverAtStart: false
+  port: 5076
+  repositoryBase: https://github.com/theotherp
+  runThreaded: true
+  secret: 6UH5FZH8VI4KQ5H1
+  shutdownForRestart: true
+  socksProxy: ''
+  ssl: false
+  sslcert: nzbhydra.crt
+  sslkey: nzbhydra.key
+  startupBrowser: false
+  theme: grey
+  urlBase: ''
+  useLocalUrlForApiAccess: true
+
+
+searching:
+  alwaysShowDuplicates: true
+  applyRestrictions: BOTH
+  categorySettings: {}
+  duplicateAgeThreshold: 2
+  duplicateSizeThresholdInPercent: 1
+  forbiddenGroups: ''
+  forbiddenPosters: ''
+  forbiddenRegex: ''
+  forbiddenWords: ''
+  generateQueries: []
+  idFallbackToTitle: NONE
+  idFallbackToTitlePerIndexer: false
+  ignorePassworded: true
+  ignoreTemporarilyDisabled: true
+  maxAge: null
+  nzbAccessType: redirect
+  removeLanguage: true
+  removeObfuscated: false
+  requiredRegex:
+  requiredWords: ''
+  timeout: 20
+  userAgent: Chrome
+
+
 
 
 
 spring:
   datasource:
-    url: jdbc:hsqldb:file:nzbhydra.db
+    url: jdbc:hsqldb:file:nzbhydra.db;shutdown=true;
     #url: jdbc:hsqldb:hsql://localhost:9001/xdb;shutdown=true
-    username: sa
-    password:
+#    username: sa
+#    password:
     driverClassName: org.hsqldb.jdbc.JDBCDriver
 
 

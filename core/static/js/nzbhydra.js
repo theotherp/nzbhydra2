@@ -3513,15 +3513,15 @@ function NzbHydraControlService($http) {
     };
 
     function restart() {
-        return $http.get("internalapi/restart");
+        return $http.get("internalapi/control/restart");
     }
 
     function shutdown() {
-        return $http.get("internalapi/shutdown");
+        return $http.get("internalapi/control/shutdown");
     }
 
     function deleteLogAndDb() {
-        return $http.get("internalapi/deleteloganddb");
+        return $http.get("internalapi/control/deleteloganddb");
     }
 }
 NzbHydraControlService.$inject = ["$http"];
@@ -5547,7 +5547,7 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'generate_queries',
+                            key: 'generateQueries',
                             type: 'horizontalMultiselect',
                             templateOptions: {
                                 label: 'Generate queries',

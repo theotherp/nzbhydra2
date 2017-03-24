@@ -18,6 +18,24 @@ public class MainConfig {
     private String dereferer;
     private String externalUrl;
     private Instant firstStart;
+    private String gitPath;
     private String host;
+    private String httpProxy;
+    private String httpsProxy;
+    private boolean isFirstStart = false;
+    private LoggingConfig logging;
+    private int keepSearchResultsForDays = 7;
+    private int port = 5075;
+    private String repositoryBase = "https://github.com/theotherp";
+    private String secret = "TODO generate";
+    private boolean shutdownForRestart = true;
+    private String socksProxy;
+    private boolean ssl = false;
+    private String sslcert;
+    private String sslkey;
+    private boolean startupBrowser = false;
+    private String theme = "grey";
+    private String urlBase = "/";
+    private boolean useLocalUrlForApiAccess = true;
 
 }

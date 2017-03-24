@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.searching.Category;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.CategoryProvider;
 
 import static org.hamcrest.Matchers.is;

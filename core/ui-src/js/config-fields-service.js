@@ -718,7 +718,7 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'generate_queries',
+                            key: 'generateQueries',
                             type: 'horizontalMultiselect',
                             templateOptions: {
                                 label: 'Generate queries',

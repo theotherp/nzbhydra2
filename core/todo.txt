@@ -69,3 +69,8 @@ Hydra Java: 32s
 1 run with 1 parallel call to Hydra which will call 5 indexers
 Hydra Python: 7911ms
 Hydra Java: 3233ms
+
+
+Check out:
+https://github.com/google/FreeBuilder
+https://github.com/amaembo/streamex/blob/master/CHEATSHEET.md and/or http://www.javaslang.io/

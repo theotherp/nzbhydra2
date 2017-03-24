@@ -1,13 +1,15 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.config.Category;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,21 +18,27 @@ import java.util.stream.Collectors;
 @Component
 @ConfigurationProperties
 @EnableConfigurationProperties
-public class CategoryProvider {
+public class CategoryProvider implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryProvider.class);
 
     private List<Category> categories;
     protected Map<String, Category> categoryMap;
 
-    @PostConstruct
-    protected void fillMap() {
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
         if (categories != null) {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
         } else {
             logger.error("Configuration incomplete, categories not set");
             categoryMap = Collections.emptyMap();
         }
+    }
+
+    @org.springframework.context.event.EventListener
+    public void handleNewConfig(ConfigChangedEvent newConfig) {
+        categoryMap = newConfig.getNewConfig().getCategories().stream().collect(Collectors.toMap(Category::getName, Function.identity()));
     }
 
     public List<Category> getCategories() {
@@ -99,5 +107,6 @@ public class CategoryProvider {
         }
         return null;
     }
+
 
 }
