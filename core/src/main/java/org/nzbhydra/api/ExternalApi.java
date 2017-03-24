@@ -2,6 +2,7 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
@@ -10,13 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,12 +29,19 @@ public class ExternalApi {
     protected Searcher searcher;
 
     @Autowired
+    BaseConfig baseConfig;
+
+    @Autowired
     private CategoryProvider categoryProvider;
 
-
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public RssRoot api(ApiCallParameters params) {
+    public Xml api(ApiCallParameters params) throws Exception {
         logger.info("Received external API call: " + params);
+
+        if (!Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
+            throw new WrongApiKeyException("Wrong api key");
+        }
+
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             SearchResult searchResult = search(params);
@@ -45,9 +51,17 @@ public class ExternalApi {
             return transformedResults;
         }
 
-        //TODO handle missing or wrong parameters
+        //TODO handle missing or wrong parameters, api key
 
         return new RssRoot();
+    }
+
+    @ExceptionHandler(value = ExternalApiException.class)
+    public Xml handler(ExternalApiException e) {
+        RssError error = new RssError();
+        error.setCode(e.getStatusCode());
+        error.setDescription(e.getMessage());
+        return error;
     }
 
     protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
@@ -98,16 +112,13 @@ public class ExternalApi {
     }
 
     private SearchResult search(ApiCallParameters params) {
-        SearchType searchType = SearchType.valueOf(params.getT().name());
-
         SearchRequest searchRequest = buildBaseSearchRequest(params);
-        searchRequest.setSearchType(searchType);
-
         return searcher.search(searchRequest);
     }
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
-        SearchRequest searchRequest = new SearchRequest();
+        SearchType searchType = SearchType.valueOf(params.getT().name());
+        SearchRequest searchRequest = new SearchRequest(searchType, params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());

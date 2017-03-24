@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.searching.IndexerConfig;
+import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.Info;
 import org.nzbhydra.searching.infos.InfoProvider;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
@@ -48,7 +49,7 @@ public class NewznabTest {
 
     @Test
     public void shouldGetIdsIfNoneOfTheProvidedAreSupported() throws Exception {
-        SearchRequest searchRequest = new SearchRequest();
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvMazeId");
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
@@ -66,7 +67,7 @@ public class NewznabTest {
     public void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Sets.newSet("imdb"));
-        SearchRequest searchRequest = new SearchRequest();
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");

@@ -10,7 +10,7 @@ Searching
 - return indexerName access data to show in GUI
 - pick indexers
 - exclusions
-- rejecting search searchResults
+- rejecting search results
 - ID conversion
 - query generation
 
@@ -18,6 +18,9 @@ Config
 - Loading
 - Updating
 - Setting via web call
+- reloading config:
+        Explicitly reload property files and probably send events http://stackoverflow.com/a/32903212
+        Perhaps use http://projects.spring.io/spring-cloud/spring-cloud.html#_refresh_scope but that's a new whopping dependency
 
 Downloader support
 - sabnzbd
@@ -50,6 +53,11 @@ Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - Basic
 - Form
 - Remember me
+
+History & stats
+- Search history
+- Download history
+- Stats
 
 Log / config sanitation
 

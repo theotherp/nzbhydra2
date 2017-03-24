@@ -39,9 +39,7 @@ public class Search {
                                  @RequestParam(value = "loadAll", required = false) Boolean loadAll,
                                  @RequestParam(value = "category", required = false) String category
     ) {
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setQuery(query);
-        searchRequest.setLimit(limit);
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, offset, limit);
         searchRequest.setOffset(offset);
         searchRequest.setMinage(minage);
         searchRequest.setMaxage(maxage);
@@ -95,7 +93,6 @@ public class Search {
         for (TreeSet<SearchResultItem> duplicateGroup : duplicateGroups) {
             int groupResultsIdentifier = random.nextInt();
             for (SearchResultItem item : duplicateGroup) {
-
 
                 SearchResultBuilder builder = SearchResult.builder()
                         .category("todo")

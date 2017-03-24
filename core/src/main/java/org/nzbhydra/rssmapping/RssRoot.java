@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement(name = "rss")
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
-public class RssRoot {
+public class RssRoot extends Xml {
 
     @XmlAttribute
     private String version = "2.0";

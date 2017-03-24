@@ -85,6 +85,16 @@ categories:
     mayBeSelected: true
     ignoreResults: NONE
 
+
+main:
+  apiKey: myapikey
+  configVersion: 1
+  debug: false
+  externalUrl: foobar
+  baseUrl: /
+
+
+
 spring:
   datasource:
     url: jdbc:hsqldb:file:nzbhydra.db
@@ -93,10 +103,11 @@ spring:
     password:
     driverClassName: org.hsqldb.jdbc.JDBCDriver
 
+
+
+
 logging:
   level:
     org:
       nzbhydra: DEBUG
 
-server:
-  contextPath: / #Set for reverse proxy support

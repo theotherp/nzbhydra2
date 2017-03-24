@@ -81,10 +81,10 @@ public class DuplicateDetector {
             return false;
         }
 
-        boolean groupKnown = result1.getGroup() != null && result2.getGroup() != null;
-        boolean sameGroup = Objects.equals(result1.getGroup(), result2.getGroup());
-        boolean posterKnown = result1.getPoster() != null && result2.getPoster() != null;
-        boolean samePoster = Objects.equals(result1.getPoster(), result2.getPoster());
+        boolean groupKnown = result1.getGroup().isPresent() && result2.getGroup().isPresent();
+        boolean sameGroup = Objects.equals(result1.getGroup().get(), result2.getGroup().get());
+        boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
+        boolean samePoster = Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
         float duplicateAgeThresthold = 0.1f;
         float duplicateSizeThreshold = 0.1f;

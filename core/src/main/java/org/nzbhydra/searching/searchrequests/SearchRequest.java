@@ -2,7 +2,6 @@ package org.nzbhydra.searching.searchrequests;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
-import net.karneim.pojobuilder.GeneratePojoBuilder;
 import org.nzbhydra.searching.Category;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.InfoProvider;
@@ -10,7 +9,6 @@ import org.nzbhydra.searching.infos.InfoProvider;
 import java.util.*;
 
 @Data
-@GeneratePojoBuilder
 public class SearchRequest {
 
 
@@ -34,6 +32,11 @@ public class SearchRequest {
 
     private InternalData internalData = new InternalData();
 
+    public SearchRequest(SearchType searchType, Integer offset, Integer limit) {
+        this.searchType = searchType;
+        this.offset = offset == null ? 0 : offset;
+        this.limit = limit == null ? 100 : limit;
+    }
 
     public Optional<Integer> getOffset() {
         return Optional.ofNullable(offset);

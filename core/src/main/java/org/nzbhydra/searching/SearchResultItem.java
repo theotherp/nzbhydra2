@@ -17,21 +17,29 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String description;
     private String details;
     private Instant firstFound;
-    private String group;
+    private String group = null;
     private Integer guid;
     private AbstractIndexer indexer;
     private String indexerGuid;
     private Integer indexerScore;
     private String link;
-    private String poster;
+    private String poster = null;
     private Instant pubDate;
     private Long searchResultId;
     private Long size;
     private String title;
-    private Instant usenetDate;
+    private Instant usenetDate = null;
 
     public Optional<Instant> getUsenetDate() {
         return Optional.ofNullable(usenetDate);
+    }
+
+    public Optional<String> getGroup() {
+        return Optional.ofNullable(group);
+    }
+
+    public Optional<String> getPoster() {
+        return Optional.ofNullable(poster);
     }
 
     @Override

@@ -17,7 +17,7 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
 
 
     function set(newConfig) {
-        $http.put('internalapi/setsettings', newConfig)
+        $http.put('internalapi/config', newConfig)
             .then(function (successresponse) {
                 console.log("Settings saved. Updating cache");
                 cache.put("config", newConfig);
@@ -32,7 +32,7 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     function get() {
         var config = cache.get("config");
         if (angular.isUndefined(config)) {
-            config = $http.get('internalapi/getconfig').then(function (data) {
+            config = $http.get('internalapi/config').then(function (data) {
                 return data.data;
             });
             cache.put("config", config);
@@ -46,7 +46,7 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     }
 
     function invalidateSafe() {
-        $http.get('internalapi/getsafeconfig').then(function (data) {
+        $http.get('internalapi/config/safe').then(function (data) {
             safeConfig = data.data;
         });
     }

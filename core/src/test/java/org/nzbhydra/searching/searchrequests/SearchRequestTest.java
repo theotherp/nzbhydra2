@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.junit.Test;
+import org.nzbhydra.searching.SearchType;
 
 public class SearchRequestTest {
     private class SearchRequestCacheKey {
@@ -53,9 +54,9 @@ public class SearchRequestTest {
             }
         });
 
-        SearchRequest a = new SearchRequest();
+        SearchRequest a = new SearchRequest(SearchType.SEARCH, 0, 100);
         a.setQuery("query");
-        SearchRequest b = new SearchRequest();
+        SearchRequest b = new SearchRequest(SearchType.SEARCH, 0, 100);
         b.setQuery("query");
         SearchRequestCacheKey cacheKeyA = new SearchRequestCacheKey(a);
         SearchRequestCacheKey cacheKeyB = new SearchRequestCacheKey(b);

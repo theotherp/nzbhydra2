@@ -75,4 +75,5 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             }
         }
     }
+
 }

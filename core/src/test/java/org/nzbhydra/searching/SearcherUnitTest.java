@@ -92,7 +92,7 @@ public class SearcherUnitTest {
 
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(newznabMock1, newznabMock2));
 
-        SearchResult searchResult = searcher.search(new SearchRequest());
+        SearchResult searchResult = searcher.search(new SearchRequest(SearchType.SEARCH, 0, 100));
         verify(duplicateDetector).detectDuplicates(searchResultItemsCaptor.capture());
 
         assertThat(searchResultItemsCaptor.getValue().size(), is(2));
