@@ -4,6 +4,8 @@ import com.google.common.collect.Iterables;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.Source;
+import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.web.searching.mapping.IndexerSearchMetaData;
 import org.nzbhydra.web.searching.mapping.SearchResponse;
 import org.nzbhydra.web.searching.mapping.SearchResult;
@@ -25,8 +27,10 @@ public class Search {
     private Searcher searcher;
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private SearchRequestFactory searchRequestFactory;
 
-    Random random = new Random();
+    private Random random = new Random();
 
     @RequestMapping(value = "/internalapi/search", produces = "application/json")
     public SearchResponse search(@RequestParam(value = "query", required = false) String query,
@@ -39,7 +43,8 @@ public class Search {
                                  @RequestParam(value = "loadAll", required = false) Boolean loadAll,
                                  @RequestParam(value = "category", required = false) String category
     ) {
-        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, offset, limit);
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, Source.INTERNAL, categoryProvider.getByName(category), offset, limit);
+        searchRequest.setQuery(query);
         searchRequest.setOffset(offset);
         searchRequest.setMinage(minage);
         searchRequest.setMaxage(maxage);
@@ -47,7 +52,7 @@ public class Search {
         searchRequest.setMaxsize(maxsize);
         searchRequest.setSearchType(SearchType.SEARCH);
         searchRequest.getInternalData().setLoadAll(loadAll == null ? false : loadAll);
-        searchRequest.setCategory(categoryProvider.getByName(category));
+
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
         SearchResponse response = new SearchResponse();
@@ -96,12 +101,12 @@ public class Search {
 
                 SearchResultBuilder builder = SearchResult.builder()
                         .category("todo")
-                        .comments(0) //TODO
+                        .comments(item.getComments())
                         .details_link(item.getDetails())
-                        .downloadType("downloadType") //TODO
-                        .files(0) //TODO
-                        .grabs(0) //TODO
-                        .has_nfo(0) //TODO
+                        .downloadType(item.getDownloadType().name()) //TODO
+                        .files(item.getFiles())
+                        .grabs(item.getGrabs())
+                        .has_nfo(item.getHasNfo().name())
                         .hash(groupResultsIdentifier)
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
@@ -118,18 +123,18 @@ public class Search {
     }
 
     private SearchResultBuilder setSearchResultDateRelatedValues(SearchResultBuilder builder, SearchResultItem item) {
-        long ageInDays = item.getPubDate().until(Instant.now(), ChronoUnit.DAYS);
+        Instant date = item.getUsenetDate().orElse(item.getPubDate());
+        long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
         if (ageInDays > 0) {
             builder.age(ageInDays + "d");
         } else {
             long ageInHours = item.getPubDate().until(Instant.now(), ChronoUnit.HOURS);
             builder.age(ageInHours + "d");
         }
-        //TODO: Use usenet date if availabke
         builder = builder
-                .age_precise(true) //TODO
-                .epoch(item.getPubDate().getEpochSecond())
-                .pubdate_utc("todo");
+                .age_precise(item.isAgePrecise())
+                .epoch(date.getEpochSecond())
+                .pubdate_utc("todo"); //TODO Check if needed at all
         return builder;
     }
 }

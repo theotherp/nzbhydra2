@@ -1,6 +1,7 @@
 package org.nzbhydra.config;
 
 import lombok.Data;
+import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchmodules.AbstractIndexer.BACKEND_TYPE;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -28,7 +29,7 @@ public class IndexerConfig {
     private Integer score;
     private String searchModuleType;
     private boolean showOnSearch;
-    private Set<String> supportedSearchIds = new HashSet<>();
+    private Set<IdType> supportedSearchIds = new HashSet<>();
     private Integer timeout;
     private String type;
     private String username;

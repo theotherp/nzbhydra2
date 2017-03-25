@@ -10,7 +10,7 @@ import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
-import org.nzbhydra.searching.SearchResultItem.HAS_NFO;
+import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.exceptions.*;
 import org.nzbhydra.searching.infos.Info;
 import org.nzbhydra.searching.infos.InfoProvider;
@@ -128,15 +128,20 @@ public class Newznab extends AbstractIndexer {
             componentsBuilder.queryParam("author", searchRequest.getAuthor().get());
         }
 
+        if (baseConfig.getSearching().isIgnorePassworded()) {
+            componentsBuilder.queryParam("password", "0");
+        }
+
+
         return componentsBuilder;
     }
 
     protected UriComponentsBuilder extendQueryWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<IdType, String> params = new HashMap<>();
-            boolean indexerDoesNotSupportAnyOfProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x.name()));
-            if (indexerDoesNotSupportAnyOfProvidedIds) {
-                boolean canConvertAnyId = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().stream().anyMatch(y -> infoProvider.canConvert(x, IdType.valueOf(y.toUpperCase()))));
+            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().contains(x));
+            if (!indexerSupportsAnyOfTheProvidedIds) {
+                boolean canConvertAnyId = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().stream().anyMatch(y -> infoProvider.canConvert(x, y)));
                 if (canConvertAnyId) {
                     for (Map.Entry<IdType, String> providedId : searchRequest.getIdentifiers().entrySet()) {
                         if (!params.containsKey(providedId.getKey())) {
@@ -220,9 +225,8 @@ public class Newznab extends AbstractIndexer {
             indexerSearchResult.setTotalResults(newznabResponse.getTotal());
             indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size()); //TODO Not all indexers report an offset
             indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(100); //TODO
+            indexerSearchResult.setLimit(newznabResponse.getOffset()); //TODO
         } else {
-            //TODO Something...
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setOffset(0);
@@ -303,10 +307,10 @@ public class Newznab extends AbstractIndexer {
                 } else if (attribute.getName().equals("password") && !attribute.getValue().equals("0")) {
                     searchResultItem.setPassworded(true);
                 } else if (attribute.getName().equals("nfo")) {
-                    searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HAS_NFO.YES : HAS_NFO.NO);
+                    searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HasNfo.YES : HasNfo.NO);
                 } else if (attribute.getName().equals("info") && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
                     //Info attribute is always a link to an NFO
-                    searchResultItem.setHasNfo(HAS_NFO.YES);
+                    searchResultItem.setHasNfo(HasNfo.YES);
                 } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
                     searchResultItem.setGroup(attribute.getValue());
                 } else if (attribute.getName().equals("files")) {
@@ -320,9 +324,9 @@ public class Newznab extends AbstractIndexer {
                 }
             }
 
-            if (searchResultItem.getHasNfo() == HAS_NFO.MAYBE && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
+            if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
                 //For these backends if not specified it doesn't exist
-                searchResultItem.setHasNfo(HAS_NFO.NO);
+                searchResultItem.setHasNfo(HasNfo.NO);
             }
             if (!Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
                 //Dog has the group in the description, perhaps others too

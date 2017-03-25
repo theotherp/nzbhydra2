@@ -17,8 +17,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 //@RunWith(SpringRunner.class)
 //@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class})
@@ -92,7 +91,7 @@ public class SearcherUnitTest {
 
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(newznabMock1, newznabMock2));
 
-        SearchResult searchResult = searcher.search(new SearchRequest(SearchType.SEARCH, 0, 100));
+        SearchResult searchResult = searcher.search(mock(SearchRequest.class));
         verify(duplicateDetector).detectDuplicates(searchResultItemsCaptor.capture());
 
         assertThat(searchResultItemsCaptor.getValue().size(), is(2));

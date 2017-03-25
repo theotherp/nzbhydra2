@@ -7,13 +7,21 @@ import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.InfoProvider;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 public class SearchRequest {
 
+    public enum Source {
+        INTERNAL,
+        API
+    }
+
+    private static final Pattern EXCLUSION_PATTERN = Pattern.compile("[\\s|\b](\\-\\-|!)(?<term>\\w+)");
 
     protected List<String> indexers = new ArrayList<>();
-    protected boolean internal;
+    protected Source source;
     protected SearchType searchType;
     protected Category category;
     protected Integer offset = 0;
@@ -126,11 +134,22 @@ public class SearchRequest {
         this.author = author;
     }
 
+    public SearchRequest extractExcludedWordsFromQuery() {
+        Matcher matcher = EXCLUSION_PATTERN.matcher(query);
+        Set<String> exclusions = new HashSet<>();
+        while (matcher.find()) {
+            exclusions.add(matcher.group("term"));
+        }
+        query = matcher.replaceAll("");
+        internalData.getExcludedWords().addAll(exclusions);
+        return this;
+    }
+
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("indexers", indexers)
-                .add("internal", internal)
+                .add("source", source)
                 .add("searchType", searchType)
                 .add("category", category.getName())
                 .add("offset", offset)
@@ -154,7 +173,7 @@ public class SearchRequest {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SearchRequest that = (SearchRequest) o;
-        return internal == that.internal &&
+        return source == that.source &&
                 searchType == that.searchType &&
                 Objects.equals(category, that.category) &&
                 Objects.equals(minsize, that.minsize) &&
@@ -171,6 +190,6 @@ public class SearchRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(internal, searchType, category, minsize, maxsize, minage, maxage, query, identifiers, title, season, episode, author);
+        return Objects.hash(source, searchType, category, minsize, maxsize, minage, maxage, query, identifiers, title, season, episode, author);
     }
 }

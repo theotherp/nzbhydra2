@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "downloaders")
 public class DownloaderConfig {
 
+    private String apiKey;
     private String defaultCategory;
     private String downloadType;
     private boolean enabled;

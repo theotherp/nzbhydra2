@@ -372,14 +372,14 @@ function ConfigFields($injector) {
                     fieldGroup: [
 
                         {
-                            key: 'apikey',
+                            key: 'apiKey',
                             type: 'horizontalApiKeyInput',
                             templateOptions: {
                                 label: 'API key',
                                 help: 'Remove to disable. Alphanumeric only'
                             },
                             validators: {
-                                apikey: regexValidator(/^[a-zA-Z0-9]*$/, "API key must only contain numbers and digits", false)
+                                apiKey: regexValidator(/^[a-zA-Z0-9]*$/, "API key must only contain numbers and digits", false)
                             }
                         },
                         {
@@ -899,7 +899,7 @@ function ConfigFields($injector) {
                             downloadLimit: null,
                             loadLimitOnRandom: null,
                             host: null,
-                            apikey: null,
+                            apiKey: null,
                             hitLimit: null,
                             hitLimitResetTime: 0,
                             timeout: null,
@@ -1393,7 +1393,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     if (model.type == 'newznab' || model.type == 'jackett') {
         fieldset.push(
             {
-                key: 'apikey',
+                key: 'apiKey',
                 type: 'horizontalInput',
                 templateOptions: {
                     type: 'text',
@@ -1710,7 +1710,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         fieldset.push(
             {
                 type: 'horizontalCheckCaps',
-                hideExpression: '!model.host || !model.apikey || !model.name',
+                hideExpression: '!model.host || !model.apiKey || !model.name',
                 templateOptions: {
                     label: 'Check capabilities',
                     help: 'Find out what search types the indexer supports. Done automatically for new indexers.'
@@ -1869,7 +1869,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
 
     if (model.type == "sabnzbd") {
         fieldset.push({
-            key: 'apikey',
+            key: 'apiKey',
             type: 'horizontalInput',
             templateOptions: {
                 type: 'text',
@@ -2024,7 +2024,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
             blockUI.start("Testing connection...");
             scope.spinnerActive = true;
             var url = "internalapi/test_newznab";
-            var settings = {host: model.host, apikey: model.apikey};
+            var settings = {host: model.host, apiKey: model.apiKey};
             if (angular.isDefined(model.username)) {
                 settings["username"] = model.username;
                 settings["password"] = model.password;
@@ -2056,7 +2056,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
     function checkCaps(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/test_caps";
-        var settings = {indexer: model.name, apikey: model.apikey, host: model.host};
+        var settings = {indexer: model.name, apiKey: model.apiKey, host: model.host};
         if (angular.isDefined(model.username)) {
             settings["username"] = model.username;
             settings["password"] = model.password;

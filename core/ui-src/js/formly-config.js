@@ -130,7 +130,7 @@ angular
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
 
                     var url = "internalapi/test_caps";
-                    var params = {indexer: $scope.model.name, apikey: $scope.model.apikey, host: $scope.model.host};
+                    var params = {indexer: $scope.model.name, apiKey: $scope.model.apiKey, host: $scope.model.host};
                     if (angular.isDefined($scope.model.username)) {
                         params["username"] = $scope.model.username;
                         params["password"] = $scope.model.password;

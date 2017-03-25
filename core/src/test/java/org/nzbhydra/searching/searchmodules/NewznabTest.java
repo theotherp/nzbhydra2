@@ -4,14 +4,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
 import org.mockito.internal.util.collections.Sets;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.database.*;
 import org.nzbhydra.rssmapping.RssError;
 import org.nzbhydra.rssmapping.Xml;
+import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.infos.Info;
 import org.nzbhydra.searching.infos.InfoProvider;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
+import org.nzbhydra.searching.infos.InfoProviderException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("ALL")
 public class NewznabTest {
 
     @Mock
@@ -37,18 +42,25 @@ public class NewznabTest {
     @Mock
     private IndexerStatusEntity indexerStatusEntityMock;
     @Mock
+    private CategoryProvider categoryProviderMock;
+    @Mock
     private IndexerSearchRepository indexerSearchRepositoryMock;
     @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
     private IndexerApiAccessRepository indexerApiAccessRepositoryMock;
+    @Mock
+    private UriComponentsBuilder uriComponentsBuilderMock;
     @Captor
     ArgumentCaptor<String> errorMessageCaptor;
     @Captor
     ArgumentCaptor<Boolean> disabledPermanentlyCaptor;
     @Captor
     ArgumentCaptor<? extends IndexerApiAccessResult> indexerApiAccessResultCaptor;
-
+    @Mock
+    BaseConfig baseConfigMock;
+    @Mock
+    SearchingConfig searchingConfigMock;
 
     @InjectMocks
     private Newznab testee = new Newznab();
@@ -71,8 +83,10 @@ public class NewznabTest {
         when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Sets.newSet("tmdb", "tvrage"));
+        testee.config.setSupportedSearchIds(Sets.newSet(IdType.TMDB, IdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
+
+        when(baseConfigMock.getSearching()).thenReturn(searchingConfigMock);
     }
 
     @Test
@@ -94,7 +108,7 @@ public class NewznabTest {
     @Test
     public void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Sets.newSet("imdb"));
+        testee.config.setSupportedSearchIds(Sets.newSet(IdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
 
@@ -154,6 +168,27 @@ public class NewznabTest {
         assertEquals("Error calling URL http://127.0.0.1:1234/api?apikey&t=search: 400 errorMessage", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
         assertEquals(IndexerApiAccessResult.CONNECTION_ERROR, indexerApiAccessResultCaptor.getValue());
+    }
+
+    @Test
+    public void shouldConvertIdIfNecessary() throws InfoProviderException {
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 100);
+        searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
+        testee.config.getSupportedSearchIds().add(IdType.TMDB);
+
+        testee.extendQueryWithSearchIds(searchRequest, uriComponentsBuilderMock);
+
+        verify(uriComponentsBuilderMock).queryParam("tmdbid", "tmdbId");
+    }
+
+    @Test
+    public void shouldNotConvertIdIfNotNecessary() throws InfoProviderException {
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 100);
+        searchRequest.getIdentifiers().put(IdType.TMDB, "tmdbId");
+
+        testee.extendQueryWithSearchIds(searchRequest, uriComponentsBuilderMock);
+
+        verify(infoProviderMock, never()).convert(anyString(), eq(IdType.TMDB));
     }
 
 

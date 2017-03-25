@@ -7,6 +7,8 @@ import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.Source;
+import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +29,8 @@ public class ExternalApi {
 
     @Autowired
     protected Searcher searcher;
-
+    @Autowired
+    private SearchRequestFactory searchRequestFactory;
     @Autowired
     private
     BaseConfig baseConfig;
@@ -117,7 +120,7 @@ public class ExternalApi {
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = new SearchRequest(searchType, params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, Source.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());
@@ -126,7 +129,7 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-        searchRequest.setCategory(categoryProvider.fromNewznabCategories(params.getCat()));
+
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());

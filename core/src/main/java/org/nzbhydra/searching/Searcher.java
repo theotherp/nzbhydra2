@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
@@ -25,12 +26,12 @@ public class Searcher {
 
     @Autowired
     protected DuplicateDetector duplicateDetector;
-
     @Autowired
     private SearchModuleProvider searchModuleProvider;
-
     @Autowired
     private SearchRepository searchRepository;
+    @Autowired
+    private BaseConfig baseConfig;
 
     /**
      * Maps a search request's hash to its cache entry
@@ -77,7 +78,7 @@ public class Searcher {
         if (searchRequest.getOffset().orElse(0) == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
             //New search
             SearchEntity searchEntity = new SearchEntity();
-            searchEntity.setInternal(searchRequest.isInternal());
+            searchEntity.setSource(searchRequest.getSource());
             searchEntity.setCategory(searchRequest.getCategory());
             searchEntity.setQuery(searchRequest.getQuery().orElse(null));
             searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toList()));
@@ -88,10 +89,16 @@ public class Searcher {
             searchEntity.setTitle(searchRequest.getTitle().orElse(null));
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 
+            //Extend search request
+            searchRequest.extractExcludedWordsFromQuery();
+
+
+
+
             searchRepository.save(searchEntity);
 
-            //TODO pick indexers
-            List<Indexer> indexersToCall = searchModuleProvider.getIndexers();
+
+            List<Indexer> indexersToCall = pickIndexers();
             searchCacheEntry = new SearchCacheEntry(searchRequest, indexersToCall);
         } else {
             searchCacheEntry = searchRequestCache.get(searchRequest.hashCode());
@@ -99,6 +106,13 @@ public class Searcher {
             searchCacheEntry.setSearchRequest(searchRequest); //Update to latest to keep offset and limit updated
         }
         return searchCacheEntry;
+    }
+
+    private List<Indexer> pickIndexers() {
+        //List<Indexer> availableIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.);
+
+
+        return searchModuleProvider.getIndexers();
     }
 
     protected Map<Indexer, List<IndexerSearchResult>> getIndexerSearchResultsToSearch(Map<Indexer, List<IndexerSearchResult>> map) {

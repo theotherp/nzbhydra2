@@ -44,7 +44,7 @@ function connectionTest() {
                 url = "internalapi/test_downloader";
                 params = {name: $scope.downloader, username: $scope.data.username, password: $scope.data.password};
                 if ($scope.downloader == "sabnzbd") {
-                    params.apikey = $scope.data.apikey;
+                    params.apiKey = $scope.data.apiKey;
                     params.url = $scope.data.url;
                 } else {
                     params.host = $scope.data.host;
@@ -53,7 +53,7 @@ function connectionTest() {
                 }
             } else if ($scope.data.type == "newznab") {
                 url = "internalapi/test_newznab";
-                params = {host: $scope.data.host, apikey: $scope.data.apikey};
+                params = {host: $scope.data.host, apiKey: $scope.data.apiKey};
                 if (angular.isDefined($scope.data.username)) {
                     params["username"] = $scope.data.username;
                     params["password"] = $scope.data.password;

@@ -18,7 +18,7 @@ public class SearchResult {
     private Long epoch;
     private Integer files;
     private Integer grabs;
-    private Integer has_nfo;
+    private String has_nfo;
     private Integer hash;
     private String indexer;
     private String indexerguid;

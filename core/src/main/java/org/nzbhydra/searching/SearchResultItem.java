@@ -13,10 +13,15 @@ import java.util.Optional;
 @Data
 public class SearchResultItem implements Comparable<SearchResultItem> {
 
-    public enum HAS_NFO {
+    public enum HasNfo {
         NO,
         YES,
         MAYBE
+    }
+
+    public enum DownloadType {
+        NZB,
+        TORRENT
     }
 
     private boolean agePrecise;
@@ -25,12 +30,13 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private Integer comments;
     private String description;
     private String details;
+    private DownloadType downloadType;
     private Integer files;
     private Instant firstFound;
     private Integer grabs;
     private String group = null;
     private Long guid;
-    private HAS_NFO hasNfo = HAS_NFO.MAYBE;
+    private HasNfo hasNfo = HasNfo.MAYBE;
     private AbstractIndexer indexer;
     private String indexerGuid;
     private Integer indexerScore;
