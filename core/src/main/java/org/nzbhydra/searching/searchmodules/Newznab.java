@@ -10,6 +10,7 @@ import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.exceptions.*;
 import org.nzbhydra.searching.infos.Info;
@@ -36,7 +37,7 @@ import java.util.stream.Stream;
 @Getter
 @Setter
 @Component
-public class Newznab extends AbstractIndexer {
+public class Newznab extends Indexer {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
@@ -45,6 +46,7 @@ public class Newznab extends AbstractIndexer {
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile("Group:</b> ?([\\w\\.]+)<br ?/>");
     private static Pattern GUID_PATTERN = Pattern.compile("(.*/)?([a-zA-Z0-9@\\.]+)");
+
 
     static {
         idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
@@ -272,92 +274,91 @@ public class Newznab extends AbstractIndexer {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
-            SearchResultItem searchResultItem = new SearchResultItem();
-
-            searchResultItem.setLink(item.getLink());
-
-            searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
-            if (item.getRssGuid().getIsPermaLink()) {
-                searchResultItem.setDetails(item.getRssGuid().getGuid());
-                Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
-                if (matcher.matches()) {
-                    searchResultItem.setIndexerGuid(matcher.group(2));
-                }
-            } else {
-                if (!Strings.isNullOrEmpty(item.getComments())) {
-                    searchResultItem.setDetails(item.getComments().replace("#comments", ""));
-                }
-            }
-
-
-            searchResultItem.setFirstFound(Instant.now());
-            searchResultItem.setIndexer(this);
-            searchResultItem.setTitle(item.getTitle());
-            searchResultItem.setSize(item.getEnclosure().getLength());
-            searchResultItem.setPubDate(item.getPubDate());
-            searchResultItem.setIndexerScore(config.getScore());
-            searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
-            searchResultItem.setAgePrecise(true);
-            searchResultItem.setDescription(item.getDescription());
-
-            for (NewznabAttribute attribute : item.getAttributes()) {
-                searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
-                if (attribute.getName().equals("usenetdate")) {
-                    searchResultItem.setUsenetDate(Instant.parse(attribute.getName()));
-                } else if (attribute.getName().equals("password") && !attribute.getValue().equals("0")) {
-                    searchResultItem.setPassworded(true);
-                } else if (attribute.getName().equals("nfo")) {
-                    searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HasNfo.YES : HasNfo.NO);
-                } else if (attribute.getName().equals("info") && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
-                    //Info attribute is always a link to an NFO
-                    searchResultItem.setHasNfo(HasNfo.YES);
-                } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
-                    searchResultItem.setGroup(attribute.getValue());
-                } else if (attribute.getName().equals("files")) {
-                    searchResultItem.setFiles(Integer.valueOf(attribute.getValue()));
-                } else if (attribute.getName().equals("comments")) {
-                    searchResultItem.setComments(Integer.valueOf(attribute.getValue()));
-                } else if (attribute.getName().equals("grabs")) {
-                    searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
-                } else if (attribute.getName().equals("guid")) {
-                    searchResultItem.setIndexerGuid(attribute.getValue());
-                }
-            }
-
-            if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
-                //For these backends if not specified it doesn't exist
-                searchResultItem.setHasNfo(HasNfo.NO);
-            }
-            if (!Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
-                //Dog has the group in the description, perhaps others too
-                Matcher matcher = GROUP_PATTERN.matcher(item.getDescription());
-                if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
-                    searchResultItem.setGroup(matcher.group(1));
-                }
-            }
-
-            searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
-
-            if (config.getHost().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
-                searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
-            }
-            if (baseConfig.getSearching().isRemoveLanguage()) {
-                for (String language : LANGUAGES) {
-                    if (searchResultItem.getTitle().endsWith(language)) {
-                        logger.debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
-                        searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
-                    }
-                }
-            }
-
-
+            SearchResultItem searchResultItem = createSearchResultItem(item);
             searchResultItems.add(searchResultItem);
-
         }
 
         searchResultItems = persistSearchResults(searchResultItems);
 
         return searchResultItems;
+    }
+
+    private SearchResultItem createSearchResultItem(RssItem item) {
+        SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setLink(item.getLink());
+        searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+        if (item.getRssGuid().getIsPermaLink()) {
+            searchResultItem.setDetails(item.getRssGuid().getGuid());
+            Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
+            if (matcher.matches()) {
+                searchResultItem.setIndexerGuid(matcher.group(2));
+            }
+        } else if (!Strings.isNullOrEmpty(item.getComments())) {
+            searchResultItem.setDetails(item.getComments().replace("#comments", ""));
+        }
+
+
+        searchResultItem.setFirstFound(Instant.now());
+        searchResultItem.setIndexer(this);
+        searchResultItem.setTitle(item.getTitle());
+        searchResultItem.setSize(item.getEnclosure().getLength());
+        searchResultItem.setPubDate(item.getPubDate());
+        searchResultItem.setIndexerScore(config.getScore().orElse(null));
+        searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
+        searchResultItem.setAgePrecise(true);
+        searchResultItem.setDescription(item.getDescription());
+        searchResultItem.setDownloadType(DownloadType.NZB);
+
+        for (NewznabAttribute attribute : item.getAttributes()) {
+            searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
+            if (attribute.getName().equals("usenetdate")) {
+                tryParseDate(attribute.getValue()).ifPresent(searchResultItem::setUsenetDate);
+            } else if (attribute.getName().equals("password") && !attribute.getValue().equals("0")) {
+                searchResultItem.setPassworded(true);
+            } else if (attribute.getName().equals("nfo")) {
+                searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HasNfo.YES : HasNfo.NO);
+            } else if (attribute.getName().equals("info") && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
+                //Info attribute is always a link to an NFO
+                searchResultItem.setHasNfo(HasNfo.YES);
+            } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
+                searchResultItem.setGroup(attribute.getValue());
+            } else if (attribute.getName().equals("files")) {
+                searchResultItem.setFiles(Integer.valueOf(attribute.getValue()));
+            } else if (attribute.getName().equals("comments")) {
+                searchResultItem.setComments(Integer.valueOf(attribute.getValue()));
+            } else if (attribute.getName().equals("grabs")) {
+                searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
+            } else if (attribute.getName().equals("guid")) {
+                searchResultItem.setIndexerGuid(attribute.getValue());
+            }
+        }
+
+        if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
+            //For these backends if not specified it doesn't exist
+            searchResultItem.setHasNfo(HasNfo.NO);
+        }
+        if (!Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
+            //Dog has the group in the description, perhaps others too
+            Matcher matcher = GROUP_PATTERN.matcher(item.getDescription());
+            if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
+                searchResultItem.setGroup(matcher.group(1));
+            }
+        }
+
+        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
+
+        if (config.getHost().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
+            searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
+        }
+        if (baseConfig.getSearching().isRemoveLanguage()) {
+            for (String language : LANGUAGES) {
+                if (searchResultItem.getTitle().endsWith(language)) {
+                    logger.debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
+                    searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
+                }
+            }
+        }
+        return searchResultItem;
     }
 
     protected Logger getLogger() {

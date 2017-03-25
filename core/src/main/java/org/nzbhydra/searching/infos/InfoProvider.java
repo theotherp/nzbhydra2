@@ -61,6 +61,10 @@ public class InfoProvider {
         return canConvertMap.get(from).contains(to);
     }
 
+    public boolean canConvertAny(Set<IdType> from, Set<IdType> to) {
+        return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
+    }
+
 
     @Cacheable(cacheNames = "infos", sync = true)
     public Info convert(String value, IdType fromType) throws InfoProviderException {

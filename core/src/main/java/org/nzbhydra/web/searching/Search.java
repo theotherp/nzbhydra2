@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.Source;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.web.searching.mapping.IndexerSearchMetaData;
 import org.nzbhydra.web.searching.mapping.SearchResponse;
@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 @RestController
 public class Search {
@@ -43,7 +44,7 @@ public class Search {
                                  @RequestParam(value = "loadAll", required = false) Boolean loadAll,
                                  @RequestParam(value = "category", required = false) String category
     ) {
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, Source.INTERNAL, categoryProvider.getByName(category), offset, limit);
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, SearchSource.INTERNAL, categoryProvider.getByName(category), offset, limit);
         searchRequest.setQuery(query);
         searchRequest.setOffset(offset);
         searchRequest.setMinage(minage);
@@ -88,6 +89,7 @@ public class Search {
         response.setNumberOfRejectedResults(searchResult.getRejectedReaonsMap().values().stream().mapToInt(x -> x).sum());
         response.setNumberOfResults(transformedSearchResults.size());
         response.setRejectedReasonsMap(new HashMap<>()); //TODO
+        response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
 
         return response;
     }
@@ -110,7 +112,7 @@ public class Search {
                         .hash(groupResultsIdentifier)
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
-                        .indexerscore(item.getIndexer().getConfig().getScore())
+                        .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
                         .link(item.getLink())
                         .searchResultId(item.getSearchResultId())
                         .size(item.getSize())

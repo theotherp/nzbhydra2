@@ -12,6 +12,7 @@ public class SearchResponse {
 
     private List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();
     private Map<String, Integer> rejectedReasonsMap = new HashMap<>();
+    private Map<String, String> notPickedIndexersWithReason;
     private int numberOfRejectedResults;
     private List<SearchResult> searchResults = new ArrayList<>();
     private int numberOfAvailableResults;

@@ -1,10 +1,10 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
+import org.nzbhydra.searching.IndexerPicker.PickingResult;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -26,12 +26,11 @@ public class Searcher {
 
     @Autowired
     protected DuplicateDetector duplicateDetector;
-    @Autowired
-    private SearchModuleProvider searchModuleProvider;
+
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
-    private BaseConfig baseConfig;
+    private IndexerPicker indexerPicker;
 
     /**
      * Maps a search request's hash to its cache entry
@@ -43,6 +42,7 @@ public class Searcher {
 
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //TODO default for limit
+        searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
         while (indexersToSearchAndTheirResults.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
@@ -92,14 +92,10 @@ public class Searcher {
             //Extend search request
             searchRequest.extractExcludedWordsFromQuery();
 
-
-
-
             searchRepository.save(searchEntity);
 
-
-            List<Indexer> indexersToCall = pickIndexers();
-            searchCacheEntry = new SearchCacheEntry(searchRequest, indexersToCall);
+            PickingResult pickingResult = indexerPicker.pickIndexers(searchRequest);
+            searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult);
         } else {
             searchCacheEntry = searchRequestCache.get(searchRequest.hashCode());
             searchCacheEntry.setLastAccessed(Instant.now());
@@ -108,12 +104,6 @@ public class Searcher {
         return searchCacheEntry;
     }
 
-    private List<Indexer> pickIndexers() {
-        //List<Indexer> availableIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.);
-
-
-        return searchModuleProvider.getIndexers();
-    }
 
     protected Map<Indexer, List<IndexerSearchResult>> getIndexerSearchResultsToSearch(Map<Indexer, List<IndexerSearchResult>> map) {
         //TODO Do all relevant checks again in case the state of the indexerName was changed in the background (use only basic checks, errors, disabled, etc)

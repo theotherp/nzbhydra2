@@ -1552,7 +1552,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         {
             key: 'preselect',
             type: 'horizontalSwitch',
-            hideExpression: 'model.accessType == "external"',
+            hideExpression: 'model.enabledForSearchSource == "external"',
             templateOptions: {
                 type: 'switch',
                 label: 'Preselect',

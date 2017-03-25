@@ -1,7 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.searching.searchmodules.AbstractIndexer;
+import org.nzbhydra.searching.searchmodules.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -62,7 +62,7 @@ public class DuplicateDetector {
             }
             duplicateGroups.addAll(listOfBuckets);
         }
-        Map<AbstractIndexer, Integer> uniqueResultsPerIndexer = new HashMap<>();
+        Map<Indexer, Integer> uniqueResultsPerIndexer = new HashMap<>();
         for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
             int count = 0;
             if (uniqueResultsPerIndexer.containsKey(result.getIndexer())) {

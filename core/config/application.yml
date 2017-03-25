@@ -81,35 +81,45 @@ indexers:
   -
     name: newznab1
     host: http://127.0.0.1:5000
+    enabled: true
     apikey: a
     searchModuleType: newznab
     supportedSearchIds: TVRAGE
     score: 1
+    enabledForSearchSource: BOTH
   -
     name: newznab2
     host: http://127.0.0.1:5000
+    enabled: true
     apikey: b
     searchModuleType: newznab
     supportedSearchIds: IMDB, TMDB
     score: 2
-#  -
-#    name: newznab3
-#    host: http://127.0.0.1:5000
-#    apikey: c
-#    searchModuleType: newznab
-#    score: 1
-#  -
-#    name: newznab4
-#    host: http://127.0.0.1:5000
-#    apikey: d
-#    searchModuleType: newznab
-#    score: 1
-#  -
-#    name: newznab5
-#    host: http://127.0.0.1:5000
-#    apikey: e
-#    searchModuleType: newznab
-#    score: 1
+    enabledForSearchSource: BOTH
+  -
+    name: newznab3
+    host: http://127.0.0.1:5000
+    enabled: true
+    apikey: c
+    searchModuleType: newznab
+    score: 1
+    enabledForSearchSource: INTERNAL
+  -
+    name: newznab4
+    host: http://127.0.0.1:5000
+    enabled: false
+    apikey: d
+    searchModuleType: newznab
+    score: 1
+    enabledForSearchSource: BOTH
+  -
+    name: newznab5
+    host: http://127.0.0.1:5000
+    enabled: true
+    apikey: e
+    searchModuleType: newznab
+    score: 1
+    enabledForSearchSource: API
 #  -
 #    name: newznab6
 #    host: http://127.0.0.1:5000

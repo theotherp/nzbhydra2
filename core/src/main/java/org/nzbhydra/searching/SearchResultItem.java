@@ -3,7 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.Category;
-import org.nzbhydra.searching.searchmodules.AbstractIndexer;
+import org.nzbhydra.searching.searchmodules.Indexer;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String group = null;
     private Long guid;
     private HasNfo hasNfo = HasNfo.MAYBE;
-    private AbstractIndexer indexer;
+    private Indexer indexer;
     private String indexerGuid;
     private Integer indexerScore;
     private String link;

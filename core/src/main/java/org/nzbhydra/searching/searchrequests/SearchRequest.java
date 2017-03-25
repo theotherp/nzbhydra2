@@ -13,15 +13,15 @@ import java.util.regex.Pattern;
 @Data
 public class SearchRequest {
 
-    public enum Source {
+    public enum SearchSource {
         INTERNAL,
         API
     }
 
     private static final Pattern EXCLUSION_PATTERN = Pattern.compile("[\\s|\b](\\-\\-|!)(?<term>\\w+)");
 
-    protected List<String> indexers = new ArrayList<>();
-    protected Source source;
+    protected List<String> indexers;
+    protected SearchSource source;
     protected SearchType searchType;
     protected Category category;
     protected Integer offset = 0;
@@ -44,6 +44,10 @@ public class SearchRequest {
         this.searchType = searchType;
         this.offset = offset == null ? 0 : offset;
         this.limit = limit == null ? 100 : limit;
+    }
+
+    public Optional<List<String>> getIndexers() {
+        return Optional.ofNullable(indexers);
     }
 
     public Optional<Integer> getOffset() {

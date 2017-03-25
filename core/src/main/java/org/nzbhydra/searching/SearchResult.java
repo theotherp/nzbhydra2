@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import lombok.Data;
+import org.nzbhydra.searching.IndexerPicker.PickingResult;
 import org.nzbhydra.searching.searchmodules.Indexer;
 
 import java.util.*;
@@ -12,6 +13,7 @@ public class SearchResult {
     private DuplicateDetectionResult duplicateDetectionResult;
     private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultMap = new HashMap<>();
     private Map<String, Integer> rejectedReaonsMap = new HashMap<>();
+    private PickingResult pickingResult;
 
     public SearchResult() {
         duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), new HashMap<>());

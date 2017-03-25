@@ -21,12 +21,12 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AbstractIndexerTest {
+public class IndexerTest {
 
     @Mock
     private IndexerEntity indexerEntityMock;
     @Mock
-    private AbstractIndexer indexerMock;
+    private Indexer indexerMock;
     @Mock
     private IndexerStatusEntity statusMock;
     @Mock
@@ -42,7 +42,7 @@ public class AbstractIndexerTest {
 
 
     @InjectMocks
-    private AbstractIndexer testee = new AbstractIndexer() {
+    private Indexer testee = new Indexer() {
         @Override
         protected Logger getLogger() {
             return LoggerFactory.getLogger("test");
@@ -124,8 +124,8 @@ public class AbstractIndexerTest {
         verify(statusMock).setDisabledUntil(captor.capture());
         verify(statusMock).setLevel(1);
 
-        assertTrue(captor.getValue().minus(AbstractIndexer.DISABLE_PERIODS.get(1) - 1, ChronoUnit.MINUTES).isAfter(Instant.now()));
-        assertTrue(captor.getValue().minus(AbstractIndexer.DISABLE_PERIODS.get(1) + 1, ChronoUnit.MINUTES).isBefore(Instant.now()));
+        assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) - 1, ChronoUnit.MINUTES).isAfter(Instant.now()));
+        assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) + 1, ChronoUnit.MINUTES).isBefore(Instant.now()));
 
 
         verify(indexerRepositoryMock).save(indexerEntityMock);

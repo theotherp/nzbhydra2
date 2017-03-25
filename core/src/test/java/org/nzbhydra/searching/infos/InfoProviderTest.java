@@ -6,9 +6,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.database.MovieInfoRepository;
 import org.nzbhydra.database.TvInfo;
 import org.nzbhydra.database.TvInfoRepository;
+import org.nzbhydra.searching.infos.InfoProvider.IdType;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +68,18 @@ public class InfoProviderTest {
                 assertTrue("Should be able to convert " + type + " to " + type2, testee.canConvert(type, type2));
             }
         }
+    }
+
+    @Test
+    public void canConvertAny() throws Exception {
+        assertTrue(testee.canConvertAny(Sets.newSet(InfoProvider.IdType.TVMAZE, InfoProvider.IdType.TVDB), Sets.newSet(IdType.TVRAGE)));
+        assertTrue(testee.canConvertAny(Sets.newSet(InfoProvider.IdType.TVMAZE, InfoProvider.IdType.TVDB), Sets.newSet(IdType.TVMAZE)));
+        assertTrue(testee.canConvertAny(Sets.newSet(InfoProvider.IdType.TVMAZE), Sets.newSet(IdType.TVMAZE, InfoProvider.IdType.TVDB)));
+
+        assertFalse(testee.canConvertAny(Sets.newSet(), Sets.newSet(IdType.TVMAZE, InfoProvider.IdType.TVDB)));
+        assertFalse(testee.canConvertAny(Sets.newSet(IdType.TVMAZE, InfoProvider.IdType.TVDB), Sets.newSet()));
+
+        assertFalse(testee.canConvertAny(Sets.newSet(IdType.TVMAZE, InfoProvider.IdType.TVDB), Sets.newSet(IdType.TMDB)));
     }
 
     @Test

@@ -7,7 +7,7 @@ import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.Source;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,7 +120,7 @@ public class ExternalApi {
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, Source.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());
