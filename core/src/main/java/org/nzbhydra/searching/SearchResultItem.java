@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.searchmodules.AbstractIndexer;
 
 import java.time.Instant;
@@ -12,17 +13,29 @@ import java.util.Optional;
 @Data
 public class SearchResultItem implements Comparable<SearchResultItem> {
 
+    public enum HAS_NFO {
+        NO,
+        YES,
+        MAYBE
+    }
+
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();
+    private Category category;
+    private Integer comments;
     private String description;
     private String details;
+    private Integer files;
     private Instant firstFound;
+    private Integer grabs;
     private String group = null;
-    private Integer guid;
+    private Long guid;
+    private HAS_NFO hasNfo = HAS_NFO.MAYBE;
     private AbstractIndexer indexer;
     private String indexerGuid;
     private Integer indexerScore;
     private String link;
+    private boolean passworded;
     private String poster = null;
     private Instant pubDate;
     private Long searchResultId;
@@ -57,4 +70,6 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
                 .add("size", size)
                 .toString();
     }
+
+
 }

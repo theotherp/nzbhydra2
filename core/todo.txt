@@ -1,6 +1,6 @@
 GUI
 - Reverse proxy support (done in settings)
-- Config (getting, setting)
+- Config (getting, setting): Mostly done
 - Update notification
 - basic Searching
 - searching with exclusion
@@ -11,16 +11,15 @@ Searching
 - pick indexers
 - exclusions
 - rejecting search results
-- ID conversion
+- ID conversion: Infos can be retrieved, must be used
 - query generation
+- search history
 
 Config
 - Loading
 - Updating
 - Setting via web call
-- reloading config:
-        Explicitly reload property files and probably send events http://stackoverflow.com/a/32903212
-        Perhaps use http://projects.spring.io/spring-cloud/spring-cloud.html#_refresh_scope but that's a new whopping dependency
+- reloading config: Mostly done
 
 Downloader support
 - sabnzbd
@@ -46,8 +45,8 @@ Updater
 - self updating
 
 Process control
-- Restart
-- Shutdown
+- Restart: With help of updater, loses console 
+- Shutdown: Works
 
 Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - Basic

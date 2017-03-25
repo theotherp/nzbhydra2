@@ -15,7 +15,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -132,22 +131,5 @@ public class AbstractIndexerTest {
         verify(indexerRepositoryMock).save(indexerEntityMock);
     }
 
-    @Test
-    public void hashItem() throws Exception {
-        SearchResultItem item1 = new SearchResultItem();
-        item1.setIndexerGuid("a");
-        SearchResultItem item2 = new SearchResultItem();
-        item2.setIndexerGuid("b");
-        when(indexerEntityMock.getName()).thenReturn("indexerName1", "indexerName1");
-        assertThat(testee.hashItem(item1), is(testee.hashItem(item1)));
-        when(indexerEntityMock.getName()).thenReturn("indexerName1", "indexerName1");
-        assertThat(testee.hashItem(item1), not(testee.hashItem(item2)));
-
-        when(indexerEntityMock.getName()).thenReturn("indexerName1", "indexerName2");
-        assertThat(testee.hashItem(item1), not(testee.hashItem(item1)));
-        when(indexerEntityMock.getName()).thenReturn("indexerName1", "indexerName2");
-        assertThat(testee.hashItem(item1), not(testee.hashItem(item2)));
-
-    }
 
 }

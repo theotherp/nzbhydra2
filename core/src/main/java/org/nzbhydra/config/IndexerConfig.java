@@ -1,6 +1,7 @@
 package org.nzbhydra.config;
 
 import lombok.Data;
+import org.nzbhydra.searching.searchmodules.AbstractIndexer.BACKEND_TYPE;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.HashSet;
@@ -13,7 +14,7 @@ public class IndexerConfig {
 
     private SearchSource accessType;
     private String apikey;
-    private String backend;
+    private BACKEND_TYPE backend;
     private List<String> categories;
     private Integer downloadLimit;
     private boolean enabled;

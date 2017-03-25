@@ -84,18 +84,32 @@ public class ExternalApiSearchingIntegrationTest {
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = externalApi.api(apiCallParameters);
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = externalApi.api(apiCallParameters);
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
 
+    }
+
+    @Test
+    public void shouldHandleErrorCodes() throws Exception {
+
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey"))).respond(HttpResponse.response().withBody("<error code=\"100\" description=\"a description\">").withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        apiCallParameters.setT(ActionAttribute.SEARCH);
+        apiCallParameters.setApikey("apikey");
+
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
+        System.out.println("");
     }
 
 }

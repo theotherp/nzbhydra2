@@ -6,6 +6,12 @@ import java.util.Arrays;
 public class Updater {
 
     public static void main(String[] args) throws FileNotFoundException {
+        //TODO Provide work folder in args
+        //Use xmx/xms etc settings as configured
+        //Actually do the update...
+        //Test on ubuntu
+        //Test with spaces in paths
+
         try (PrintWriter out = new PrintWriter("hydraUpdater.log")) {
             try {
                 if (args == null || args.length == 0) {

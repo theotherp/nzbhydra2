@@ -14,4 +14,7 @@ public class RssRoot extends Xml {
 
     @XmlElement(name = "channel")
     private RssChannel rssChannel;
+
+    @XmlElement(name = "error")
+    private RssError error;
 }

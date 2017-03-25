@@ -1,6 +1,8 @@
 package org.nzbhydra.api;
 
-public abstract class ExternalApiException extends Exception {
+import org.nzbhydra.NzbHydraException;
+
+public abstract class ExternalApiException extends NzbHydraException {
 
     public ExternalApiException() {
         super();

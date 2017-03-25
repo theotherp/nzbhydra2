@@ -21,6 +21,11 @@ import java.util.concurrent.TimeUnit;
 @Component
 public abstract class AbstractIndexer implements Indexer {
 
+    public enum BACKEND_TYPE {
+        NZEDB,
+        NNTMUX
+    }
+
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 15, 30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60);
 
     protected IndexerEntity indexer;
@@ -122,9 +127,6 @@ public abstract class AbstractIndexer implements Indexer {
         return indexer;
     }
 
-    protected int hashItem(SearchResultItem item) {
-        return (indexer.getName() + item.getIndexerGuid()).hashCode();
-    }
 
     @Override
     public boolean equals(Object o) {

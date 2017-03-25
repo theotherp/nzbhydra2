@@ -56,7 +56,7 @@ public class CategoryProvider implements InitializingBean {
 
 
     /**
-     * Should only be called to parse a categories string getInfos an incoming result.
+     * Should only be called to parse a categories string for an incoming result.
      * Returns a category converted getInfos the newznab categories. Returns the "N/A" category if no matching category is found
      *
      * @param cats A string (possibly comma separated) containing newznab categories.

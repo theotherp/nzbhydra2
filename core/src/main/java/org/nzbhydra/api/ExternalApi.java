@@ -10,10 +10,8 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,13 +29,14 @@ public class ExternalApi {
     protected Searcher searcher;
 
     @Autowired
+    private
     BaseConfig baseConfig;
 
     @Autowired
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public Xml api(ApiCallParameters params, @RequestHeader HttpHeaders headers) throws Exception {
+    public Xml api(ApiCallParameters params) throws Exception {
         logger.info("Received external API call: " + params);
 
         if (!Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
@@ -60,9 +59,7 @@ public class ExternalApi {
 
     @ExceptionHandler(value = ExternalApiException.class)
     public Xml handler(ExternalApiException e) {
-        RssError error = new RssError();
-        error.setCode(e.getStatusCode());
-        error.setDescription(e.getMessage());
+        RssError error = new RssError(e.getStatusCode(), e.getMessage());
         return error;
     }
 

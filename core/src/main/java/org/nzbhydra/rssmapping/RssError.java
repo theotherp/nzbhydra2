@@ -17,4 +17,9 @@ public class RssError extends Xml {
 
     @XmlAttribute
     private String description;
+
+    public RssError(String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 }

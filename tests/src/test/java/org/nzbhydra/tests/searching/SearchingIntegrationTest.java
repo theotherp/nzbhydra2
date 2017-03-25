@@ -80,9 +80,7 @@ public class SearchingIntegrationTest {
         ));
 
 
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setSearchType(SearchType.SEARCH);
-        searchRequest.setLimit(2);
+        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 2);
         SearchResult searchResult = searcher.search(searchRequest);
 
         assertThat(searchResult.getDuplicateDetectionResult().getDuplicateGroups().size(), is(2));
