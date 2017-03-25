@@ -155,24 +155,29 @@ categories:
     name: n/a
     pretty: N/A
     newznabCategories:
+    ignoreResultsFrom: NONE
+    applyRestrictionsType: NONE
   -
     name: all
     pretty: All
     newznabCategories:
     mayBeSelected: true
     ignoreResultsFrom: NONE
+    applyRestrictionsType: NONE
   -
     name: category1
     newznabCategories: 1000,2000
     pretty: category1
     mayBeSelected: true
     ignoreResultsFrom: NONE
+    applyRestrictionsType: NONE
   -
     name: category2
     newznabCategories: 3000,4000
     pretty: category2
     mayBeSelected: true
     ignoreResultsFrom: NONE
+    applyRestrictionsType: NONE
 
 
 main:
@@ -219,10 +224,10 @@ searching:
   categorySettings: {}
   duplicateAgeThreshold: 2
   duplicateSizeThresholdInPercent: 1
-  forbiddenGroups: ''
-  forbiddenPosters: ''
+  forbiddenGroups: []
+  forbiddenPosters: []
   forbiddenRegex: ''
-  forbiddenWords: ''
+  forbiddenWords: 'title200'
   generateQueries: []
   idFallbackToTitle: NONE
   idFallbackToTitlePerIndexer: false
@@ -232,8 +237,8 @@ searching:
   nzbAccessType: redirect
   removeLanguage: true
   removeObfuscated: false
-  requiredRegex:
-  requiredWords: ''
+  requiredRegex: ''
+  requiredWords: []
   timeout: 20
   userAgent: Chrome
 

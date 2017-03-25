@@ -211,7 +211,7 @@ public class Newznab extends Indexer {
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        logger.info("Successfully loaded searchResults in {}ms", responseTime);
+        logger.info("Successfully executed search call in {}ms", responseTime);
         handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerApiAccessResult.SUCCESSFUL, url);
         //noinspection ConstantConditions Actually checked above
         RssRoot rssRoot = (RssRoot) response;
@@ -313,6 +313,7 @@ public class Newznab extends Indexer {
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
+        searchResultItem.setCategory(categoryProvider.getNotAvailable());
 
         for (NewznabAttribute attribute : item.getAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());

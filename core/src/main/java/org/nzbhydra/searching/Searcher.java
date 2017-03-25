@@ -45,12 +45,15 @@ public class Searcher {
         searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
-        while (indexersToSearchAndTheirResults.size() > 0 && searchResult.calculateNumberOfResults() < numberOfWantedResults) { //TODO load all
+        int numberOfResultsAlreadyFound = searchResult.calculateNumberOfResults();
+        while (indexersToSearchAndTheirResults.size() > 0 && numberOfResultsAlreadyFound < numberOfWantedResults) { //TODO load all
+            logger.debug("Going to call {} indexer because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), numberOfResultsAlreadyFound, numberOfWantedResults);
 
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
             searchCacheEntry.getIndexerSearchResultsByIndexer().putAll(indexersToSearchAndTheirResults);
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
             searchResult.getIndexerSearchResultMap().putAll(indexersToSearchAndTheirResults);
+
 
             //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates that were in different searches
             List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
@@ -58,6 +61,10 @@ public class Searcher {
 
             searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
             indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
+            //Set the rejection counts from all searches, this and previous
+            searchResult.getReasonsForRejection().clear();
+            indexersToSearchAndTheirResults.values().stream().forEach(x -> x.stream().forEach(y -> y.getReasonsForRejection().entrySet().stream().forEach(z -> searchResult.getReasonsForRejection().add(z.getElement(), z.getCount()))));
+            numberOfResultsAlreadyFound = searchResult.calculateNumberOfResults();
         }
 
         return searchResult;

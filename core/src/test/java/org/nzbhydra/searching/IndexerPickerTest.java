@@ -120,14 +120,14 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckForCategory() {
         when(searchRequest.getCategory()).thenReturn(category);
-        when(indexerConfig.getCategories()).thenReturn(Collections.emptyList());
+        when(indexerConfig.getCategories()).thenReturn(Collections.emptySet());
 
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfig.getCategories()).thenReturn(Arrays.asList("anotherCategory"));
+        when(indexerConfig.getCategories()).thenReturn(Sets.newSet("anotherCategory"));
         assertFalse(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfig.getCategories()).thenReturn(Arrays.asList("category"));
+        when(indexerConfig.getCategories()).thenReturn(Sets.newSet(("category")));
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
     }
 

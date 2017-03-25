@@ -3,6 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Multiset.Entry;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
@@ -37,19 +38,19 @@ public class ResultAcceptor {
             if (!checkForPassword(reasonsForRejection, item)) {
                 continue;
             }
-            if (checkForForbiddenGroup(reasonsForRejection, item)) {
+            if (!checkForForbiddenGroup(reasonsForRejection, item)) {
                 continue;
             }
-            if (checkForForbiddenPoster(reasonsForRejection, item)) {
+            if (!checkForForbiddenPoster(reasonsForRejection, item)) {
                 continue;
             }
-            if (checkForSize(searchRequest, reasonsForRejection, item)) {
+            if (!checkForSize(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
-            if (checkForAge(searchRequest, reasonsForRejection, item)) {
+            if (!checkForAge(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
-            if (checkForCategory(searchRequest, reasonsForRejection, item)) {
+            if (!checkForCategory(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
 
@@ -95,8 +96,12 @@ public class ResultAcceptor {
 
 
             acceptedResults.add(item);
-
         }
+        logger.info("Rejected {} out of {} search results", items.size() - acceptedResults.size(), items.size());
+        for (Entry<String> entry : reasonsForRejection.entrySet()) {
+            logger.info("Rejected {} search results for the following reason: {}", entry.getCount(), entry.getElement());
+        }
+
         return new AcceptorResult(acceptedResults, reasonsForRejection);
 
     }

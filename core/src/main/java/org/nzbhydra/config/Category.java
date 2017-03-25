@@ -1,5 +1,6 @@
 package org.nzbhydra.config;
 
+import com.google.common.collect.Sets;
 import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -21,9 +22,9 @@ public class Category {
     private Set<Integer> newznabCategories;
     private SearchRestrictionType applyRestrictionsType;
     private SearchRestrictionType ignoreResultsFrom;
-    private Set<String> forbiddenWords;
+    private Set<String> forbiddenWords = Sets.newHashSet();
     private String forbiddenRegex;
-    private Set<String> requiredWords;
+    private Set<String> requiredWords = Sets.newHashSet();
     private String requiredRegex;
 
 

@@ -10,7 +10,7 @@ Searching
 - return indexerName access data to show in GUI
 - pick indexers
 - exclusions
-- rejecting search results
+- rejecting search results: mostly done
 - ID conversion: Infos can be retrieved, must be used
 - query generation
 - search history
@@ -36,6 +36,8 @@ Indexer support
 - nzbindex
 - anizb
 - nzbclub
+- checking caps
+- checking auth / connection
 
 Torrent support
 - jackett / cardigann
@@ -59,7 +61,14 @@ History & stats
 - Download history
 - Stats
 
-Log / config sanitation
+- Log / config sanitation
+- Initialize config
+- overwrite config file
+- timeout for indexer accesses is "global" (max time spent for access)
+- migrating from old installation (config and database), either via web call or via loading from file system
+- restart dialog pings until recognizes successful restart
+
+
 
 
 5 runs with 5 parallel calls to Hydra which will call 5 indexers

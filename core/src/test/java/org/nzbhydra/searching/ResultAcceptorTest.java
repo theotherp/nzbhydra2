@@ -54,6 +54,11 @@ public class ResultAcceptorTest {
     }
 
     @Test
+    public void shouldCallSubroutines() {
+
+    }
+
+    @Test
     public void shouldCheckForRequiredWords() throws Exception {
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc.def");

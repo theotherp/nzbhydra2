@@ -5,7 +5,9 @@ import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchmodules.Indexer.BACKEND_TYPE;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
@@ -20,7 +22,7 @@ public class IndexerConfig {
     private SourceEnabled enabledForSearchSource;
     private String apikey;
     private BACKEND_TYPE backend;
-    private List<String> categories = new ArrayList<>();
+    private Set<String> categories = new HashSet<>();
     private Integer downloadLimit;
     private boolean enabled;
     private Integer hitLimit = null;

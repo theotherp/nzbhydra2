@@ -54,6 +54,10 @@ public class CategoryProvider implements InitializingBean {
         return categoryMap.get(name);
     }
 
+    public Category getNotAvailable() {
+        return getByName("n/a");
+    }
+
 
     /**
      * Should only be called to parse a categories string for an incoming result.

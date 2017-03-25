@@ -2,6 +2,7 @@ package org.nzbhydra.web.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -95,7 +96,7 @@ public class Search {
         response.setLimit(searchRequest.getLimit().orElse(100)); //TODO: Can this ever be actually null?
         response.setOffset(searchRequest.getOffset().orElse(0)); //TODO: Can this ever be actually null?
         response.setNumberOfAvailableResults(searchResult.getIndexerSearchResultMap().values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum()); //TODO
-        response.setNumberOfRejectedResults(searchResult.getRejectedReaonsMap().values().stream().mapToInt(x -> x).sum());
+        response.setNumberOfRejectedResults(searchResult.getReasonsForRejection().entrySet().stream().mapToInt(Multiset.Entry::getCount).sum());
         response.setNumberOfResults(transformedSearchResults.size());
         response.setRejectedReasonsMap(new HashMap<>()); //TODO
         response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
