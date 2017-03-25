@@ -95,10 +95,10 @@ public class Search {
 
         response.setLimit(searchRequest.getLimit().orElse(100)); //TODO: Can this ever be actually null?
         response.setOffset(searchRequest.getOffset().orElse(0)); //TODO: Can this ever be actually null?
-        response.setNumberOfAvailableResults(searchResult.getIndexerSearchResultMap().values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum()); //TODO
+        response.setNumberOfAvailableResults(searchResult.getIndexerSearchResultMap().values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum()); //TODO?
         response.setNumberOfRejectedResults(searchResult.getReasonsForRejection().entrySet().stream().mapToInt(Multiset.Entry::getCount).sum());
         response.setNumberOfResults(transformedSearchResults.size());
-        response.setRejectedReasonsMap(new HashMap<>()); //TODO
+        response.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
         response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
 
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));

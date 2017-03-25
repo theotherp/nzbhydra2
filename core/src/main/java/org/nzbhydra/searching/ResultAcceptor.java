@@ -118,12 +118,12 @@ public class ResultAcceptor {
     protected boolean checkForSize(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (searchRequest.getMinsize().isPresent() && item.getSize() / (1024 * 1024) < searchRequest.getMinsize().get()) {
             logger.debug("{} is smaller than {}", item.getTitle(), searchRequest.getMinsize().get());
-            reasonsForRejection.add("In forbidden group");
+            reasonsForRejection.add("Wrong size");
             return false;
         }
         if (searchRequest.getMaxsize().isPresent() && item.getSize() / (1024 * 1024) > searchRequest.getMaxsize().get()) {
             logger.debug("{} is bigger than {}", item.getTitle(), searchRequest.getMaxsize().get());
-            reasonsForRejection.add("In forbidden group");
+            reasonsForRejection.add("Wrong size");
             return false;
         }
         return true;

@@ -63,7 +63,7 @@ public class Searcher {
             indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
             //Set the rejection counts from all searches, this and previous
             searchResult.getReasonsForRejection().clear();
-            indexersToSearchAndTheirResults.values().stream().forEach(x -> x.stream().forEach(y -> y.getReasonsForRejection().entrySet().stream().forEach(z -> searchResult.getReasonsForRejection().add(z.getElement(), z.getCount()))));
+            indexersToSearchAndTheirResults.values().forEach(x -> x.forEach(y -> y.getReasonsForRejection().entrySet().forEach(z -> searchResult.getReasonsForRejection().add(z.getElement(), z.getCount()))));
             numberOfResultsAlreadyFound = searchResult.calculateNumberOfResults();
         }
 
