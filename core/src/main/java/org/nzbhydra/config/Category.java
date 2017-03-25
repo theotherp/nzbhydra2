@@ -4,7 +4,7 @@ import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
+import java.util.Set;
 
 @ConfigurationProperties(prefix = "categories")
 @Data
@@ -18,12 +18,12 @@ public class Category {
     private String pretty;
     private boolean mayBeSelected;
     private boolean supportyById;
-    private List<Integer> newznabCategories;
+    private Set<Integer> newznabCategories;
     private SearchRestrictionType applyRestrictionsType;
-    private SearchRestrictionType ignoreResults;
-    private List<String> forbiddenWords;
+    private SearchRestrictionType ignoreResultsFrom;
+    private Set<String> forbiddenWords;
     private String forbiddenRegex;
-    private List<String> requiredWords;
+    private Set<String> requiredWords;
     private String requiredRegex;
 
 

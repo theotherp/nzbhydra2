@@ -160,19 +160,19 @@ categories:
     pretty: All
     newznabCategories:
     mayBeSelected: true
-    ignoreResults: NONE
+    ignoreResultsFrom: NONE
   -
     name: category1
     newznabCategories: 1000,2000
     pretty: category1
     mayBeSelected: true
-    ignoreResults: NONE
+    ignoreResultsFrom: NONE
   -
     name: category2
     newznabCategories: 3000,4000
     pretty: category2
     mayBeSelected: true
-    ignoreResults: NONE
+    ignoreResultsFrom: NONE
 
 
 main:

@@ -1,11 +1,12 @@
 package org.nzbhydra.searching;
 
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import lombok.Data;
 import org.nzbhydra.searching.searchmodules.Indexer;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 public class IndexerSearchResult {
@@ -21,7 +22,7 @@ public class IndexerSearchResult {
     private boolean hasMoreResults;
     private long responseTime;
 
-    private Map<String, Integer> rejectionReasonsCount;
+    private Multiset<String> reasonsForRejection = HashMultiset.create();
 
     public IndexerSearchResult() {
     }

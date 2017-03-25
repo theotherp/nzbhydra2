@@ -152,8 +152,8 @@ public class SearchRequest {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("indexers", indexers)
                 .add("source", source)
+                .add("indexers", indexers)
                 .add("searchType", searchType)
                 .add("category", category.getName())
                 .add("offset", offset)

@@ -10,6 +10,7 @@ import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
+import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.exceptions.*;
@@ -64,6 +65,8 @@ public class Newznab extends Indexer {
     private CategoryProvider categoryProvider;
     @Autowired
     private BaseConfig baseConfig;
+    @Autowired
+    private ResultAcceptor resultAcceptor;
 
 
     protected UriComponentsBuilder getBaseUri() {
@@ -215,10 +218,14 @@ public class Newznab extends Indexer {
 
         stopwatch.reset();
         stopwatch.start();
-        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this);
-        indexerSearchResult.setSearchResultItems(getSearchResultItems(rssRoot));
-        indexerSearchResult.setWasSuccessful(true);
-        indexerSearchResult.setIndexer(this);
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
+        List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot);
+        AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
+        searchResultItems = acceptorResult.getAcceptedResults();
+        indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
+
+        searchResultItems = persistSearchResults(searchResultItems);
+        indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
         NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
@@ -277,8 +284,6 @@ public class Newznab extends Indexer {
             SearchResultItem searchResultItem = createSearchResultItem(item);
             searchResultItems.add(searchResultItem);
         }
-
-        searchResultItems = persistSearchResults(searchResultItems);
 
         return searchResultItems;
     }

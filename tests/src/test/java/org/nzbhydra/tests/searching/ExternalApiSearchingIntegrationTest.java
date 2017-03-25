@@ -81,6 +81,7 @@ public class ExternalApiSearchingIntegrationTest {
 
 
         ApiCallParameters apiCallParameters = new ApiCallParameters();
+        apiCallParameters.setApikey("apikey");
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);

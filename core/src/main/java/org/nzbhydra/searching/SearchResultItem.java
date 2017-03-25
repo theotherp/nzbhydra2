@@ -6,6 +6,7 @@ import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.searchmodules.Indexer;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -59,6 +60,12 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
 
     public Optional<String> getPoster() {
         return Optional.ofNullable(poster);
+    }
+
+    public long getAgeInDays() {
+        Instant date = getUsenetDate().orElse(getPubDate());
+        long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
+        return ageInDays;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.nzbhydra.web.searching;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchmodules.Indexer;
@@ -10,6 +11,8 @@ import org.nzbhydra.web.searching.mapping.IndexerSearchMetaData;
 import org.nzbhydra.web.searching.mapping.SearchResponse;
 import org.nzbhydra.web.searching.mapping.SearchResult;
 import org.nzbhydra.web.searching.mapping.SearchResult.SearchResultBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,10 +22,13 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
 public class Search {
+
+    private static final Logger logger = LoggerFactory.getLogger(Search.class);
 
     @Autowired
     private Searcher searcher;
@@ -44,6 +50,8 @@ public class Search {
                                  @RequestParam(value = "loadAll", required = false) Boolean loadAll,
                                  @RequestParam(value = "category", required = false) String category
     ) {
+
+        Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, SearchSource.INTERNAL, categoryProvider.getByName(category), offset, limit);
         searchRequest.setQuery(query);
         searchRequest.setOffset(offset);
@@ -54,6 +62,7 @@ public class Search {
         searchRequest.setSearchType(SearchType.SEARCH);
         searchRequest.getInternalData().setLoadAll(loadAll == null ? false : loadAll);
 
+        logger.info("New search request: " + searchRequest);
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
         SearchResponse response = new SearchResponse();
@@ -90,6 +99,8 @@ public class Search {
         response.setNumberOfResults(transformedSearchResults.size());
         response.setRejectedReasonsMap(new HashMap<>()); //TODO
         response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
+
+        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return response;
     }

@@ -3,6 +3,8 @@ package org.nzbhydra.config;
 import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
 
+import java.util.Set;
+
 
 @Data
 public class SearchingConfig {
@@ -12,10 +14,10 @@ public class SearchingConfig {
     //categorySettings ;
     private int duplicateAgeThreshold;
     private int duplicateSizeThresholdInPercent;
-    private String forbiddenGroups;
-    private String forbiddenPosters;
+    private Set<String> forbiddenGroups;
+    private Set<String> forbiddenPosters;
     private String forbiddenRegex;
-    private String forbiddenWords;
+    private Set<String> forbiddenWords;
     private boolean generateQueries;
     private SearchRestrictionType idFallbackToTitle;
     private boolean idFallbackToTitlePerIndexer;
@@ -26,7 +28,7 @@ public class SearchingConfig {
     private boolean removeLanguage;
     private boolean removeObfuscated;
     private String requiredRegex;
-    private String requiredWords;
+    private Set<String> requiredWords;
     private int timeout;
     private String userAgent;
 };
