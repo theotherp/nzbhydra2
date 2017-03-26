@@ -25,6 +25,9 @@ public class Main {
         safeConfig.put("key", "value");
         safeConfig.put("keyInt", 123);
         safeConfig.put("categories", categoryProvider.getCategories());
+        Map<String, Object> searchingConfig = new HashMap<>();
+        searchingConfig.put("enableCategorySises", true);
+        safeConfig.put("searching", searchingConfig);
         bootstrappedData.put("safeConfig", safeConfig);
         session.setAttribute("bootstrap", bootstrappedData);
         return "index";

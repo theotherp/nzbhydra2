@@ -164,6 +164,7 @@ categories:
     mayBeSelected: true
     ignoreResultsFrom: NONE
     applyRestrictionsType: NONE
+    enableCategorySizes: false
   -
     name: category1
     newznabCategories: 1000,2000
@@ -171,13 +172,15 @@ categories:
     mayBeSelected: true
     ignoreResultsFrom: NONE
     applyRestrictionsType: NONE
+    enableCategorySizes: false
   -
-    name: category2
+    name: movies
     newznabCategories: 3000,4000
-    pretty: category2
+    pretty: Movies
     mayBeSelected: true
     ignoreResultsFrom: NONE
     applyRestrictionsType: NONE
+    enableCategorySizes: false
 
 
 main:

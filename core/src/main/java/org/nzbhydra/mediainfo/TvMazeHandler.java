@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;
@@ -12,10 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,8 +59,7 @@ public class TvMazeHandler {
     }
 
     private TvMazeSearchResult getSearchResultFromShow(TvmazeShow show) {
-        Instant premiered = Instant.parse(show.premiered);
-        Integer year = premiered != null ? LocalDateTime.ofInstant(premiered, ZoneId.systemDefault()).get(ChronoField.YEAR) : null;
+        Integer year = show.premiered != null ? Integer.valueOf(show.premiered.substring(0, 4)) : null;
         return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getName(), year, show.getMediumPosterUrl());
     }
 

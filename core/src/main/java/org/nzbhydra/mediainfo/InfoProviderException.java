@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 public class InfoProviderException extends Exception {
 

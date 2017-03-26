@@ -149,23 +149,14 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         }
 
         if ($scope.category.name.indexOf("movies") > -1) {
-            return $http.get('internalapi/autocomplete?type=movie', {
-                params: {
-                    input: val
-                }
-            }).then(function (response) {
+            return $http.get('internalapi/autocomplete/MOVIE/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
-                return response.data.results;
+                return response.data;
             });
         } else if ($scope.category.name.indexOf("tv") > -1) {
-
-            return $http.get('internalapi/autocomplete?type=tv', {
-                params: {
-                    input: val
-                }
-            }).then(function (response) {
+            return $http.get('internalapi/autocomplete/type/TV/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
-                return response.data.results;
+                return response.data;
             });
         } else {
             return {};
@@ -237,9 +228,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         $scope.selectedItem = $item;
         $scope.title = $item.title;
         if ($scope.category.name.indexOf("movies") > -1) {
-            $scope.tmdbid = $item.value;
+            $scope.tmdbid = $item.tmdbId;
         } else if ($scope.category.name.indexOf("tv") > -1) {
-            $scope.tvdbid = $item.value;
+            $scope.tvdbid = $item.tvdbId;
         }
         $scope.query = "";
         $scope.goToSearchUrl();

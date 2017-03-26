@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.AllArgsConstructor;

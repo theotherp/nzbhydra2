@@ -1,4 +1,4 @@
-package org.nzbhydra.web.searching.mapping;
+package org.nzbhydra.web.mapping;
 
 import lombok.Data;
 

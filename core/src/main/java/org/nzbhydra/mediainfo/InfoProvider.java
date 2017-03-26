@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.searching.infos.InfoProvider.IdType.*;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
 
 @Component
 public class InfoProvider {
@@ -67,10 +67,10 @@ public class InfoProvider {
 
 
     @Cacheable(cacheNames = "infos", sync = true)
-    public Info convert(String value, IdType fromType) throws InfoProviderException {
+    public MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
         logger.info("Conversion of {} {} requested", fromType, value);
         try {
-            Info info;
+            MediaInfo info;
             if (fromType == TMDB || fromType == IMDB || fromType == MOVIETITLE) {
                 MovieInfo movieInfo;
                 if (fromType == TMDB) {
@@ -81,10 +81,10 @@ public class InfoProvider {
                     movieInfo = movieInfoRepository.findByTitle(value);
                 }
                 if (movieInfo != null) {
-                    info = new Info(movieInfo);
+                    info = new MediaInfo(movieInfo);
                 } else {
                     TmdbSearchResult result = tmdbHandler.getInfos(value, fromType);
-                    info = new Info(result);
+                    info = new MediaInfo(result);
                     movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
                     movieInfoRepository.save(movieInfo);
                 }
@@ -100,10 +100,10 @@ public class InfoProvider {
                     tvInfo = tvInfoRepository.findByTitle(value);
                 }
                 if (tvInfo != null) {
-                    info = new Info(tvInfo);
+                    info = new MediaInfo(tvInfo);
                 } else {
                     TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
-                    info = new Info(result);
+                    info = new MediaInfo(result);
                     tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
                     tvInfoRepository.save(tvInfo);
                 }
@@ -120,15 +120,15 @@ public class InfoProvider {
     }
 
     @Cacheable(cacheNames = "titles", sync = true)
-    public List<Info> search(String title, IdType titleType) throws InfoProviderException {
+    public List<MediaInfo> search(String title, IdType titleType) throws InfoProviderException {
         try {
-            List<Info> infos;
+            List<MediaInfo> infos;
             if (titleType == TVTITLE) {
                 List<TvMazeSearchResult> results = tvMazeHandler.search(title);
-                infos = results.stream().map(Info::new).collect(Collectors.toList());
+                infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
             } else if (titleType == MOVIETITLE) {
                 List<TmdbSearchResult> results = tmdbHandler.search(title, null);
-                infos = results.stream().map(Info::new).collect(Collectors.toList());
+                infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
             }

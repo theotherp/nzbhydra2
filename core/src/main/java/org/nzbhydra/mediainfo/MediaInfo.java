@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import org.nzbhydra.database.TvInfo;
 import java.util.Optional;
 
 @Setter
-public class Info {
+public class MediaInfo {
     private String imdbId;
     private String tmdbId;
     private String tvMazeId;
@@ -51,7 +51,7 @@ public class Info {
         return Optional.ofNullable(posterUrl);
     }
 
-    public Info(TvMazeSearchResult searchResult) {
+    public MediaInfo(TvMazeSearchResult searchResult) {
         tvRageId = searchResult.getTvRageId();
         tvMazeId = searchResult.getTvMazeId();
         tvDbId = searchResult.getTvdbId();
@@ -60,7 +60,7 @@ public class Info {
         posterUrl = searchResult.getPosterUrl();
     }
 
-    public Info(TmdbSearchResult searchResult) {
+    public MediaInfo(TmdbSearchResult searchResult) {
         imdbId = searchResult.getImdbId();
         tmdbId = searchResult.getTmdbId();
         title = searchResult.getTitle();
@@ -68,7 +68,7 @@ public class Info {
         posterUrl = searchResult.getPosterUrl();
     }
 
-    public Info(MovieInfo movieInfo) {
+    public MediaInfo(MovieInfo movieInfo) {
         imdbId = movieInfo.getImdbId();
         tmdbId = movieInfo.getTmdbId();
         title = movieInfo.getTitle();
@@ -76,7 +76,7 @@ public class Info {
         posterUrl = movieInfo.getPosterUrl();
     }
 
-    public Info(TvInfo tvInfo) {
+    public MediaInfo(TvInfo tvInfo) {
         tvRageId = tvInfo.getTvRageId();
         tvMazeId = tvInfo.getTvMazeId();
         tvDbId = tvInfo.getTvDbId();
@@ -85,7 +85,7 @@ public class Info {
         posterUrl = tvInfo.getPosterUrl();
     }
 
-    public Info() {
+    public MediaInfo() {
 
     }
 
@@ -96,7 +96,7 @@ public class Info {
                 .add("tmdbId", tmdbId)
                 .add("tvMazeId", tvMazeId)
                 .add("tvRageId", tvRageId)
-                .add("tvDbId", tvDbId)
+                .add("tvdbId", tvDbId)
                 .add("title", title)
                 .add("posterUrl", posterUrl)
                 .omitNullValues()

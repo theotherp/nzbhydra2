@@ -14,8 +14,8 @@ import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.searching.infos.InfoProvider;
-import org.nzbhydra.searching.infos.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 

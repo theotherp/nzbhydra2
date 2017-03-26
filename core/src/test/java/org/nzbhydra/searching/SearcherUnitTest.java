@@ -8,7 +8,7 @@ import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.searching.infos.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.time.Instant;

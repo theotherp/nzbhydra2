@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.uwetrottmann.tmdb2.Tmdb;
 import org.junit.Before;

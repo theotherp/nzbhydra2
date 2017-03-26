@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchingConfig.NzbAccessType;
 import org.nzbhydra.database.*;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
@@ -23,8 +22,6 @@ public class NzbDownloader {
 
     @Autowired
     private SearchResultRepository searchResultRepository;
-    @Autowired
-    private BaseConfig baseConfig;
     @Autowired
     private IndexerApiAccessRepository apiAccessRepository;
     @Autowired

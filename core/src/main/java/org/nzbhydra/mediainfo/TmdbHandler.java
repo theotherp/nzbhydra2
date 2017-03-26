@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.infos;
+package org.nzbhydra.mediainfo;
 
 import com.uwetrottmann.tmdb2.Tmdb;
 import com.uwetrottmann.tmdb2.entities.FindResults;
@@ -64,7 +64,7 @@ public class TmdbHandler {
     }
 
     private TmdbSearchResult getSearchResultFromMovie(Movie movie) {
-        String fullPosterUrl = "https://image.tmdb.org/t/p/w500/" + movie.poster_path;
+        String fullPosterUrl = movie.poster_path != null ? ("https://image.tmdb.org/t/p/w500/" + movie.poster_path) : null;
         Integer year = movie.release_date != null ? LocalDateTime.ofInstant(movie.release_date.toInstant(), ZoneId.systemDefault()).get(ChronoField.YEAR) : null;
         return new TmdbSearchResult(String.valueOf(movie.id), movie.imdb_id, movie.title, fullPosterUrl, year);
     }
@@ -75,7 +75,6 @@ public class TmdbHandler {
         TmdbSearchResult movie = movies.get(0);
         //Unfortunately IMDB ID is not filled here, so we need to make a new query using the TMDB ID
         return getMovieByTmdbId(String.valueOf(movie.getTmdbId()));
-
     }
 
     public List<TmdbSearchResult> search(String title, Integer year) throws InfoProviderException {

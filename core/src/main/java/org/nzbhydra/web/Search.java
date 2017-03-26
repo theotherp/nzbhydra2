@@ -1,4 +1,4 @@
-package org.nzbhydra.web.searching;
+package org.nzbhydra.web;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
@@ -8,10 +8,10 @@ import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
-import org.nzbhydra.web.searching.mapping.IndexerSearchMetaData;
-import org.nzbhydra.web.searching.mapping.SearchResponse;
-import org.nzbhydra.web.searching.mapping.SearchResult;
-import org.nzbhydra.web.searching.mapping.SearchResult.SearchResultBuilder;
+import org.nzbhydra.web.mapping.IndexerSearchMetaData;
+import org.nzbhydra.web.mapping.SearchResponse;
+import org.nzbhydra.web.mapping.SearchResult;
+import org.nzbhydra.web.mapping.SearchResult.SearchResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -8,16 +8,16 @@ import lombok.Setter;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.exceptions.*;
-import org.nzbhydra.searching.infos.Info;
-import org.nzbhydra.searching.infos.InfoProvider;
-import org.nzbhydra.searching.infos.InfoProvider.IdType;
-import org.nzbhydra.searching.infos.InfoProviderException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +151,7 @@ public class Newznab extends Indexer {
                     for (Map.Entry<IdType, String> providedId : searchRequest.getIdentifiers().entrySet()) {
                         if (!params.containsKey(providedId.getKey())) {
                             try {
-                                Info info = infoProvider.convert(providedId.getValue(), providedId.getKey());
+                                MediaInfo info = infoProvider.convert(providedId.getValue(), providedId.getKey());
                                 if (info.getImdbId().isPresent()) {
                                     params.put(IdType.IMDB, info.getImdbId().get());
                                 }

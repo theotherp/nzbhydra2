@@ -3,8 +3,8 @@ package org.nzbhydra.searching.searchrequests;
 import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.SearchType;
-import org.nzbhydra.searching.infos.InfoProvider;
 
 import java.util.*;
 import java.util.regex.Matcher;

@@ -7,7 +7,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig.SourceEnabled;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.searching.infos.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.slf4j.Logger;
