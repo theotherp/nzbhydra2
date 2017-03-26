@@ -14,7 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,13 +102,14 @@ public class ResultAcceptor {
 
             acceptedResults.add(item);
         }
-        logger.info("Rejected {} out of {} search results", items.size() - acceptedResults.size(), items.size());
-        for (Entry<String> entry : reasonsForRejection.entrySet()) {
-            logger.info("Rejected {} search results for the following reason: {}", entry.getCount(), entry.getElement());
+        if (acceptedResults.size() < items.size()) {
+            logger.info("Rejected {} out of {} search results from indexer {}", items.size() - acceptedResults.size(), items.size(), indexerConfig.getName());
+            for (Entry<String> entry : reasonsForRejection.entrySet()) {
+                logger.info("Rejected {} search results for the following reason: {}", entry.getCount(), entry.getElement());
+            }
         }
 
         return new AcceptorResult(acceptedResults, reasonsForRejection);
-
     }
 
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {

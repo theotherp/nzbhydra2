@@ -1,12 +1,19 @@
 package org.nzbhydra.searching.searchrequests;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.SearchType;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -139,6 +146,9 @@ public class SearchRequest {
     }
 
     public SearchRequest extractExcludedWordsFromQuery() {
+        if (Strings.isNullOrEmpty(query)) {
+            return this;
+        }
         Matcher matcher = EXCLUSION_PATTERN.matcher(query);
         Set<String> exclusions = new HashSet<>();
         while (matcher.find()) {

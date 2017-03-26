@@ -6,7 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -71,7 +77,7 @@ public class DuplicateDetector {
             uniqueResultsPerIndexer.put(result.getIndexer(), count);
         }
 
-        logger.info("Duplicate detection for {} searchResults took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
+        logger.info("Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, uniqueResultsPerIndexer);
     }
@@ -86,19 +92,19 @@ public class DuplicateDetector {
         boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
         boolean samePoster = Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
-        float duplicateAgeThresthold = 0.1f;
-        float duplicateSizeThreshold = 0.1f;
+        float duplicateAgeThreshold = 0.1f; //TODO Get from config
+        float duplicateSizeThreshold = 0.1f; //TODO Get from config
 
         if ((groupKnown && !sameGroup) || (posterKnown && !samePoster)) {
             return false;
         }
 
         if ((sameGroup && !posterKnown) || (samePoster && !groupKnown)) {
-            duplicateAgeThresthold *= 2;
-            duplicateSizeThreshold *= 2;
+            duplicateAgeThreshold *= 2; //TODO Get from config
+            duplicateSizeThreshold *= 2; //TODO Get from config
         }
 
-        return testForDuplicateAge(result1, result2, duplicateAgeThresthold) && testForDuplicateSize(result1, result2, duplicateSizeThreshold);
+        return testForDuplicateAge(result1, result2, duplicateAgeThreshold) && testForDuplicateSize(result1, result2, duplicateSizeThreshold);
     }
 
     private boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {

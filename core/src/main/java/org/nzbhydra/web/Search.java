@@ -1,28 +1,43 @@
 package org.nzbhydra.web;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.searching.*;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
+import org.nzbhydra.web.mapping.BasicSearchRequestParameters;
 import org.nzbhydra.web.mapping.IndexerSearchMetaData;
+import org.nzbhydra.web.mapping.MovieSearchRequestParameters;
 import org.nzbhydra.web.mapping.SearchResponse;
 import org.nzbhydra.web.mapping.SearchResult;
 import org.nzbhydra.web.mapping.SearchResult.SearchResultBuilder;
+import org.nzbhydra.web.mapping.TvSearchRequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -40,29 +55,50 @@ public class Search {
 
     private Random random = new Random();
 
-    @RequestMapping(value = "/internalapi/search", produces = "application/json")
-    public SearchResponse search(@RequestParam(value = "query", required = false) String query,
-                                 @RequestParam(value = "offset", required = false) Integer offset,
-                                 @RequestParam(value = "limit", required = false) Integer limit,
-                                 @RequestParam(value = "minsize", required = false) Integer minsize,
-                                 @RequestParam(value = "maxsize", required = false) Integer maxsize,
-                                 @RequestParam(value = "minage", required = false) Integer minage,
-                                 @RequestParam(value = "maxage", required = false) Integer maxage,
-                                 @RequestParam(value = "loadAll", required = false) Boolean loadAll,
-                                 @RequestParam(value = "category", required = false) String category
-    ) {
+    @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters) {
 
+        SearchRequest searchRequest = createSearchRequest(parameters);
+
+        return handleSearchRequest(searchRequest);
+    }
+
+    @RequestMapping(value = "/internalapi/search/movie", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public SearchResponse movieSearch(@RequestBody MovieSearchRequestParameters parameters) {
+
+        SearchRequest searchRequest = createSearchRequest(parameters);
+
+        if (!Strings.isNullOrEmpty(parameters.getImdbId())) {
+            searchRequest.getIdentifiers().put(IdType.IMDB, parameters.getImdbId());
+        }
+        if (!Strings.isNullOrEmpty(parameters.getTmdbId())) {
+            searchRequest.getIdentifiers().put(IdType.TMDB, parameters.getTmdbId());
+        }
+
+        return handleSearchRequest(searchRequest);
+    }
+
+
+    @RequestMapping(value = "/internalapi/search/tv", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public SearchResponse tvSearch(@RequestBody TvSearchRequestParameters parameters) {
+
+        SearchRequest searchRequest = createSearchRequest(parameters);
+
+        if (!Strings.isNullOrEmpty(parameters.getTvrageId())) {
+            searchRequest.getIdentifiers().put(IdType.TVRAGE, parameters.getTvrageId());
+        }
+        if (!Strings.isNullOrEmpty(parameters.getTvdbId())) {
+            searchRequest.getIdentifiers().put(IdType.TVDB, parameters.getTvdbId());
+        }
+        if (!Strings.isNullOrEmpty(parameters.getTvmazeId())) {
+            searchRequest.getIdentifiers().put(IdType.TVMAZE, parameters.getTvmazeId());
+        }
+
+        return handleSearchRequest(searchRequest);
+    }
+
+    private SearchResponse handleSearchRequest(SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, AccessSource.INTERNAL, categoryProvider.getByName(category), offset, limit);
-        searchRequest.setQuery(query);
-        searchRequest.setOffset(offset);
-        searchRequest.setMinage(minage);
-        searchRequest.setMaxage(maxage);
-        searchRequest.setMinsize(minsize);
-        searchRequest.setMaxsize(maxsize);
-        searchRequest.setSearchType(SearchType.SEARCH);
-        searchRequest.getInternalData().setLoadAll(loadAll == null ? false : loadAll);
-
         logger.info("New search request: " + searchRequest);
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
@@ -70,7 +106,6 @@ public class Search {
 
         List<SearchResult> transformedSearchResults = transformSearchResults(searchResult);
         response.setSearchResults(transformedSearchResults);
-
 
         for (Entry<Indexer, List<IndexerSearchResult>> entry : searchResult.getIndexerSearchResultMap().entrySet()) {
             //For now it's enough to get the data from the last metadata entry (even if multiple were done to get the needed amount of results)
@@ -81,7 +116,6 @@ public class Search {
             indexerSearchMetaData.setHasMoreResults(indexerSearchResult.isHasMoreResults());
             indexerSearchMetaData.setIndexerName(indexerSearchResult.getIndexer().getName());
             indexerSearchMetaData.setLimit(indexerSearchResult.getLimit());
-            indexerSearchMetaData.setNotPickedReason("TODO"); //TODO
             indexerSearchMetaData.setNumberOfAvailableResults(indexerSearchResult.getTotalResults());
             indexerSearchMetaData.setNumberOfResults(indexerSearchResult.getSearchResultItems().size());
             indexerSearchMetaData.setOffset(indexerSearchResult.getOffset());
@@ -89,8 +123,9 @@ public class Search {
             indexerSearchMetaData.setTotalResultsKnown(indexerSearchResult.isTotalResultsKnown());
             indexerSearchMetaData.setWasSuccessful(indexerSearchResult.isWasSuccessful());
             response.getIndexerSearchMetaDatas().add(indexerSearchMetaData);
-
         }
+        //TODO: Not picked handlers and why
+
         response.getIndexerSearchMetaDatas().sort(Comparator.comparing(IndexerSearchMetaData::getIndexerName));
 
         response.setLimit(searchRequest.getLimit().orElse(100)); //TODO: Can this ever be actually null?
@@ -151,4 +186,16 @@ public class Search {
                 .pubdate_utc("todo"); //TODO Check if needed at all
         return builder;
     }
+
+    private SearchRequest createSearchRequest(@RequestBody BasicSearchRequestParameters parameters) {
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, AccessSource.INTERNAL, categoryProvider.getByName(parameters.getCategory()), parameters.getOffset(), parameters.getLimit());
+        searchRequest.setQuery(parameters.getQuery());
+        searchRequest.setMinage(parameters.getMinage());
+        searchRequest.setMaxage(parameters.getMaxage());
+        searchRequest.setMinsize(parameters.getMinsize());
+        searchRequest.setMaxsize(parameters.getMaxsize());
+        searchRequest.getInternalData().setLoadAll(parameters.getLoadAll() == null ? false : parameters.getLoadAll()); //TODO Should make sure that's never null...
+        return searchRequest;
+    }
+
 }

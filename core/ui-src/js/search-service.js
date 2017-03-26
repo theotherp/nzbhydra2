@@ -7,6 +7,7 @@ function SearchService($http) {
 
 
     var lastExecutedQuery;
+    var lastExecutedSearchRequestParameters;
     var lastResults;
 
     return {
@@ -18,69 +19,46 @@ function SearchService($http) {
 
     function search(category, query, tmdbid, imdbid, title, tvdbid, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri;
+        var searchRequestParameters = {};
+        searchRequestParameters.query = query;
+        searchRequestParameters.title = title;
+        searchRequestParameters.minsize = minsize;
+        searchRequestParameters.maxsize = maxsize;
+        searchRequestParameters.minage = minage;
+        searchRequestParameters.maxage = maxage;
+        if (!angular.isUndefined(indexers) && indexers !== null) {
+            searchRequestParameters.indexers = indexers.split(",");
+        }
+
+        searchRequestParameters.category = category;
+
         if (category.indexOf("Movies") > -1 || (category.indexOf("20") == 0) || mode == "movie") {
-            uri = new URI("internalapi/moviesearch");
-            if (angular.isDefined(tmdbid)) {
-                uri.addQuery("tmdbid", tmdbid);
-            } else if (angular.isDefined(imdbid)) {
-                uri.addQuery("imdbid", imdbid);
-            } else {
-                uri.addQuery("query", query);
-            }
+            uri = new URI("internalapi/search/movie");
+
+            searchRequestParameters.tmdbId = tmdbid;
+            searchRequestParameters.imdbId = imdbid;
 
         } else if (category.indexOf("TV") > -1 || (category.indexOf("50") == 0) || mode == "tvsearch") {
-            uri = new URI("internalapi/tvsearch");
-            if (angular.isDefined(tvdbid)) {
-                uri.addQuery("tvdbid", tvdbid);
-            }
-            if (angular.isDefined(rid)) {
-                uri.addQuery("rid", rid);
-            } else {
-                uri.addQuery("query", query);
-            }
+            uri = new URI("internalapi/search/tv");
 
-            if (angular.isDefined(season)) {
-                uri.addQuery("season", season);
-            }
-            if (angular.isDefined(episode)) {
-                uri.addQuery("episode", episode);
-            }
+            searchRequestParameters.tvdbId = tvdbid;
+            searchRequestParameters.tvrageId = rid;
+            searchRequestParameters.season = season;
+            searchRequestParameters.episode = episode;
         } else {
             uri = new URI("internalapi/search");
-            uri.addQuery("query", query);
-        }
-        if (angular.isDefined(title)) {
-            uri.addQuery("title", title);
-        }
-        if (_.isNumber(minsize)) {
-            uri.addQuery("minsize", minsize);
-        }
-        if (_.isNumber(maxsize)) {
-            uri.addQuery("maxsize", maxsize);
-        }
-        if (_.isNumber(minage)) {
-            uri.addQuery("minage", minage);
-        }
-        if (_.isNumber(maxage)) {
-            uri.addQuery("maxage", maxage);
-        }
-        if (!angular.isUndefined(indexers)) {
-            uri.addQuery("indexers", decodeURIComponent(indexers));
         }
 
-
-        uri.addQuery("category", category);
         lastExecutedQuery = uri;
-        return $http.get(uri.toString()).then(processData);
-
+        lastExecutedSearchRequestParameters = searchRequestParameters;
+        return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
     function loadMore(offset, loadAll) {
-        lastExecutedQuery.removeQuery("offset");
-        lastExecutedQuery.addQuery("offset", offset);
-        lastExecutedQuery.addQuery("loadAll", loadAll ? true : false);
+        lastExecutedSearchRequestParameters.offset = offset;
+        lastExecutedSearchRequestParameters.loadAll = loadAll;
 
-        return $http.get(lastExecutedQuery.toString()).then(processData);
+        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData); //TODO: loadMore/loadAll: see above
     }
 
     function processData(response) {

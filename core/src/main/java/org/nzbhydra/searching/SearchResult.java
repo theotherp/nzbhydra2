@@ -2,13 +2,20 @@ package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerPicker.PickingResult;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 
-@Data
+@Getter
+@Setter
+//@Builder
 public class SearchResult {
 
     private DuplicateDetectionResult duplicateDetectionResult;

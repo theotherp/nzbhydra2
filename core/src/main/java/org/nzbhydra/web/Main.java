@@ -19,6 +19,7 @@ public class Main {
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)
     public String index(HttpSession session) {
+        //TODO improve bootstrapping / safe config handling, extract to own class, derive from base config and let spring do the REST (haha)
         session.setAttribute("baseUrl", "/");
         Map<String, Object> bootstrappedData = new HashMap<>();
         Map<String, Object> safeConfig = new HashMap<>();

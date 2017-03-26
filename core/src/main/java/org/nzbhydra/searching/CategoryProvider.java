@@ -10,7 +10,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -51,7 +55,7 @@ public class CategoryProvider implements InitializingBean {
 
     public Category getByName(String name) {
         //TODO do something if not found
-        return categoryMap.get(name);
+        return categoryMap.get(name) != null ? categoryMap.get(name) : getNotAvailable();
     }
 
     public Category getNotAvailable() {

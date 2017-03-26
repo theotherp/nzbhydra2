@@ -206,6 +206,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
         stateParams.tmdbid = $scope.tmdbid;
         stateParams.tvdbid = $scope.tvdbid;
+        stateParams.tvrageid = $scope.tvrageId;
+        stateParams.tvmazeid = $scope.tvmazeId;
         stateParams.title = $scope.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;

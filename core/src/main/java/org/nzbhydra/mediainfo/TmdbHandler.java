@@ -57,7 +57,7 @@ public class TmdbHandler {
         return result;
     }
 
-    protected TmdbSearchResult fromTitle(String title, Integer year) throws InfoProviderException {
+    TmdbSearchResult fromTitle(String title, Integer year) throws InfoProviderException {
         Movie movie = getMovieByTitle(title, year);
         TmdbSearchResult result = getSearchResultFromMovie(movie);
         return result;
@@ -68,7 +68,6 @@ public class TmdbHandler {
         Integer year = movie.release_date != null ? LocalDateTime.ofInstant(movie.release_date.toInstant(), ZoneId.systemDefault()).get(ChronoField.YEAR) : null;
         return new TmdbSearchResult(String.valueOf(movie.id), movie.imdb_id, movie.title, fullPosterUrl, year);
     }
-
 
     private Movie getMovieByTitle(String title, Integer year) throws InfoProviderException {
         List<TmdbSearchResult> movies = search(title, year);

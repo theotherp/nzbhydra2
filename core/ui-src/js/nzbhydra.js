@@ -436,7 +436,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
         })
 
         .state("root.search", {
-            url: "/?category&query&imdbid&tvdbid&title&season&episode&minsize&maxsize&minage&maxage&offsets&rid&mode&tmdbid&indexers",
+            url: "/?category&query&imdbid&tvdbd&title&season&episode&minsize&maxsize&minage&maxage&offsets&rid&mode&tmdbid&indexers&tvmazeid",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/search.html",
