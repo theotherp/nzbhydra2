@@ -314,6 +314,7 @@ public class Newznab extends Indexer {
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
         searchResultItem.setCategory(categoryProvider.getNotAvailable());
+        searchResultItem.setCommentsLink(item.getComments());
 
         for (NewznabAttribute attribute : item.getAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
@@ -331,7 +332,7 @@ public class Newznab extends Indexer {
             } else if (attribute.getName().equals("files")) {
                 searchResultItem.setFiles(Integer.valueOf(attribute.getValue()));
             } else if (attribute.getName().equals("comments")) {
-                searchResultItem.setComments(Integer.valueOf(attribute.getValue()));
+                searchResultItem.setCommentsCount(Integer.valueOf(attribute.getValue()));
             } else if (attribute.getName().equals("grabs")) {
                 searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
             } else if (attribute.getName().equals("guid")) {

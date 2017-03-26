@@ -90,14 +90,20 @@ public class ExternalApi {
         rssRoot.setRssChannel(rssChannel);
         List<RssItem> items = new ArrayList<>();
         for (SearchResultItem searchResultItem : searchResultItems) {
-            RssItem item = new RssItem();
-            item.setLink(searchResultItem.getLink());
-            item.setTitle(searchResultItem.getTitle());
-            item.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
-            item.setPubDate(searchResultItem.getPubDate());
+            RssItem rssItem = new RssItem();
+            String link = searchResultItem.getLink(); //TODO Construct
+            rssItem.setLink(link);
+            rssItem.setTitle(searchResultItem.getTitle());
+            rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
+            rssItem.setPubDate(searchResultItem.getPubDate());
             List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
-            item.setAttributes(newznabAttributes);
-            items.add(item);
+            rssItem.setAttributes(newznabAttributes);
+            rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
+            rssItem.setComments(searchResultItem.getCommentsLink());
+            rssItem.setDescription(searchResultItem.getDescription());
+            rssItem.setDescription(searchResultItem.getCategory().getName());
+
+            items.add(rssItem);
         }
 
         rssChannel.setItems(items);

@@ -70,10 +70,14 @@ public abstract class Indexer {
                 searchResultEntity.setFirstFound(Instant.now());
                 searchResultEntities.add(searchResultEntity);
             }
-            item.setSearchResultId(SearchResultIdCalculator.calculateSearchResultId(item));
+            //TODO Unify guid and searchResultId which are the same
+            long guid = SearchResultIdCalculator.calculateSearchResultId(item);
+            item.setGuid(guid);
+            item.setSearchResultId(guid);
         }
         searchResultRepository.save(searchResultEntities);
-        getLogger().debug("Persisting {} search searchResults took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+        getLogger().debug("Persisting {} search search results took {}ms", searchResultEntities.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;
     }
 

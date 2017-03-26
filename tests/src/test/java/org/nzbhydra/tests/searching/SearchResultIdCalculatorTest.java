@@ -36,10 +36,10 @@ public class SearchResultIdCalculatorTest {
         searchResultEntity.setIndexerGuid("indexerGuid");
         searchResultEntity = searchResultRepository.save(searchResultEntity);
 
-        assertEquals(-1682031170, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
-        assertEquals(-1682031170, searchResultEntity.getId());
+        assertEquals(-5635017076782426087L, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
+        assertEquals(-5635017076782426087L, searchResultEntity.getId());
 
-        assertEquals(searchResultEntity, searchResultRepository.findOne(-1682031170));
+        assertEquals(searchResultEntity, searchResultRepository.findOne(-5635017076782426087L));
     }
 
 }

@@ -115,7 +115,7 @@ public class Search {
 
                 SearchResultBuilder builder = SearchResult.builder()
                         .category("todo")
-                        .comments(item.getComments())
+                        .comments(item.getCommentsCount())
                         .details_link(item.getDetails())
                         .downloadType(item.getDownloadType().name()) //TODO
                         .files(item.getFiles())
@@ -125,7 +125,7 @@ public class Search {
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
                         .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                        .link(item.getLink())
+                        .link("http://127.0.0.1:5076/internalapi/getnzb/" + item.getGuid()) //TODO construct using scheme, host, url base or external url
                         .searchResultId(item.getSearchResultId())
                         .size(item.getSize())
                         .title(item.getTitle());

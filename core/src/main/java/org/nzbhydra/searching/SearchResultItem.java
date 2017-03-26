@@ -28,7 +28,8 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();
     private Category category;
-    private Integer comments;
+    private Integer commentsCount;
+    private String commentsLink;
     private String description;
     private String details;
     private DownloadType downloadType;

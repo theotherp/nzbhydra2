@@ -96,30 +96,30 @@ indexers:
     supportedSearchIds: IMDB, TMDB
     score: 2
     enabledForSearchSource: BOTH
-  -
-    name: newznab3
-    host: http://127.0.0.1:5000
-    enabled: true
-    apikey: c
-    searchModuleType: newznab
-    score: 1
-    enabledForSearchSource: INTERNAL
-  -
-    name: newznab4
-    host: http://127.0.0.1:5000
-    enabled: false
-    apikey: d
-    searchModuleType: newznab
-    score: 1
-    enabledForSearchSource: BOTH
-  -
-    name: newznab5
-    host: http://127.0.0.1:5000
-    enabled: true
-    apikey: e
-    searchModuleType: newznab
-    score: 1
-    enabledForSearchSource: API
+#  -
+#    name: newznab3
+#    host: http://127.0.0.1:5000
+#    enabled: true
+#    apikey: c
+#    searchModuleType: newznab
+#    score: 1
+#    enabledForSearchSource: INTERNAL
+#  -
+#    name: newznab4
+#    host: http://127.0.0.1:5000
+#    enabled: false
+#    apikey: d
+#    searchModuleType: newznab
+#    score: 1
+#    enabledForSearchSource: BOTH
+#  -
+#    name: newznab5
+#    host: http://127.0.0.1:5000
+#    enabled: true
+#    apikey: e
+#    searchModuleType: newznab
+#    score: 1
+#    enabledForSearchSource: API
 #  -
 #    name: newznab6
 #    host: http://127.0.0.1:5000

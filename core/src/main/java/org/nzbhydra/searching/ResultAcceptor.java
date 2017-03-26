@@ -94,7 +94,6 @@ public class ResultAcceptor {
                 }
             }
 
-
             acceptedResults.add(item);
         }
         logger.info("Rejected {} out of {} search results", items.size() - acceptedResults.size(), items.size());
