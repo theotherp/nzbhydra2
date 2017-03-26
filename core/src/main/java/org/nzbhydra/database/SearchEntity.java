@@ -4,7 +4,7 @@ import lombok.Data;
 import org.nzbhydra.api.CategoryConverter;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -21,7 +21,7 @@ public class SearchEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @Enumerated(EnumType.STRING)
-    private SearchSource source;
+    private AccessSource source;
     @Convert(converter = CategoryConverter.class)
     private Category category;
     private String query;

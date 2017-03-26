@@ -1,10 +1,11 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.database.SearchResultEntity;
-import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.NzbDownloader;
+import org.nzbhydra.config.BaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,17 +16,28 @@ public class NzbHandling {
     private static final Logger logger = LoggerFactory.getLogger(NzbHandling.class);
 
     @Autowired
-    private SearchResultRepository searchResultRepository;
+    private NzbDownloader nzbDownloader;
+    @Autowired
+    private BaseConfig baseConfig;
 
+    /**
+     * Provides an internal access to NZBs via GUID
+     *
+     * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
+     */
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
-    public String search(@PathVariable("guid") long guid) {
-
-        SearchResultEntity result = searchResultRepository.findOne(guid);
-        if (result == null) {
-            logger.error("NZB download request with invalid/outdated GUID " + guid);
-            return "NZB download request with invalid/outdated GUID " + guid;
-        }
-
-        return "Download GUID " + guid + " which is " + result.getTitle();
+    public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
+        return nzbDownloader.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
     }
+
+    /**
+     * Provides an external access to NZBs via GUID
+     *
+     * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
+     */
+    @RequestMapping(value = "/getnzb/{guid}", produces = "application/x-nzb")
+    public ResponseEntity<String> downloadNzb(@PathVariable("guid") long guid) {
+        return nzbDownloader.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+    }
+
 }

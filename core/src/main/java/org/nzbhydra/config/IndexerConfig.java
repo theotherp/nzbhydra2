@@ -1,8 +1,8 @@
 package org.nzbhydra.config;
 
 import lombok.Data;
+import org.nzbhydra.indexers.Indexer.BACKEND_TYPE;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
-import org.nzbhydra.searching.searchmodules.Indexer.BACKEND_TYPE;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.HashSet;

@@ -8,7 +8,9 @@ import org.nzbhydra.rssmapping.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -69,7 +71,8 @@ public class ExternalApiSpringTest {
         channel.setItems(Arrays.asList(item));
 
         rssRoot.setRssChannel(channel);
-        when(externalApiMock.api(any(ApiCallParameters.class))).thenReturn(rssRoot);
+        ResponseEntity x = new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        when(externalApiMock.api(any(ApiCallParameters.class))).thenReturn(x);
 
         String expectedContent = Resources.toString(Resources.getResource(ExternalApiSpringTest.class, "simplesearchresult.xml"), Charsets.UTF_8);
         mockMvc.perform(MockMvcRequestBuilders.get("/api").accept(MediaType.ALL)).andExpect(content().xml(expectedContent));

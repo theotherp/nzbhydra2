@@ -2,17 +2,21 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import org.nzbhydra.NzbDownloadResult;
+import org.nzbhydra.NzbDownloader;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.rssmapping.*;
 import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,17 +36,19 @@ public class ExternalApi {
     @Autowired
     private SearchRequestFactory searchRequestFactory;
     @Autowired
-    private
-    BaseConfig baseConfig;
+    private NzbDownloader nzbDownloader;
+    @Autowired
+    private BaseConfig baseConfig;
 
     @Autowired
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public Xml api(ApiCallParameters params) throws Exception {
+    public ResponseEntity<? extends Object> api(ApiCallParameters params) throws Exception {
         logger.info("Received external API call: " + params);
 
         if (!Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
+            logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
 
@@ -52,12 +58,24 @@ public class ExternalApi {
 
             RssRoot transformedResults = transformResults(searchResult, params);
             logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            return transformedResults;
+            return new ResponseEntity<>(transformedResults, HttpStatus.OK);
         }
 
-        //TODO handle missing or wrong parameters, api key
+        if (params.getT() == ActionAttribute.GET) {
+            if (Strings.isNullOrEmpty(params.getId())) {
+                throw new MissingParameterException("Missing ID/GUID");
+            }
+            NzbDownloadResult downloadResult = nzbDownloader.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType());
+            if (!downloadResult.isSuccessful()) {
+                throw new UnknownErrorException(downloadResult.getError());
+            }
 
-        return new RssRoot();
+            return downloadResult.getAsResponseEntity();
+        }
+
+        //TODO handle missing or wrong parameters
+
+        return new ResponseEntity<Object>(new RssRoot(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -126,7 +144,7 @@ public class ExternalApi {
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, AccessSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());

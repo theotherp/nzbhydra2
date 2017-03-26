@@ -3,8 +3,8 @@ package org.nzbhydra.searching;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.Data;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerPicker.PickingResult;
-import org.nzbhydra.searching.searchmodules.Indexer;
 
 import java.util.*;
 

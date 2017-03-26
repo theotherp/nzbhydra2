@@ -2,7 +2,7 @@ package org.nzbhydra.searching;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.searching.searchmodules.Indexer;
+import org.nzbhydra.indexers.Indexer;
 
 import java.util.List;
 import java.util.Map;

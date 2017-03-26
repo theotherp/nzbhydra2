@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.searchmodules;
+package org.nzbhydra.indexers;
 
 import org.junit.Before;
 import org.junit.Test;

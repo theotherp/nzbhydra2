@@ -55,11 +55,18 @@ Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - Basic
 - Form
 - Remember me
+- log user name for appropriate actions
 
 History & stats
 - Search history
 - Download history
 - Stats
+
+Backups
+- Save
+- Restore
+- create periodically
+- create before updating
 
 - Log / config sanitation
 - Initialize config
@@ -67,6 +74,9 @@ History & stats
 - timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system
 - restart dialog pings until recognizes successful restart
+- clean up old search results
+
+- backu
 
 
 

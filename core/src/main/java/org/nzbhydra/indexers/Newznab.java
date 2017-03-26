@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.searchmodules;
+package org.nzbhydra.indexers;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;

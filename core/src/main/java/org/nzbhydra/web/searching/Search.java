@@ -3,10 +3,10 @@ package org.nzbhydra.web.searching;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.*;
-import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.web.searching.mapping.IndexerSearchMetaData;
 import org.nzbhydra.web.searching.mapping.SearchResponse;
@@ -53,7 +53,7 @@ public class Search {
     ) {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, SearchSource.INTERNAL, categoryProvider.getByName(category), offset, limit);
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, AccessSource.INTERNAL, categoryProvider.getByName(category), offset, limit);
         searchRequest.setQuery(query);
         searchRequest.setOffset(offset);
         searchRequest.setMinage(minage);

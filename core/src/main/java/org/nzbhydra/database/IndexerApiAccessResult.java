@@ -5,5 +5,6 @@ public enum IndexerApiAccessResult {
     CONNECTION_ERROR,
     API_ERROR,
     AUTH_ERROR,
-    HYDRA_ERROR
+    HYDRA_ERROR,
+    UNKNOWN
 }

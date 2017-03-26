@@ -10,6 +10,12 @@ import java.util.Set;
 @Data
 public class SearchingConfig {
 
+    public enum NzbAccessType {
+        REDIRECT,
+        PROXY
+    }
+
+
     private boolean alwaysShowDuplicates;
     private SearchRestrictionType applyRestrictions;
     //categorySettings ;
@@ -25,7 +31,7 @@ public class SearchingConfig {
     private boolean ignorePassworded;
     private boolean ignoreTemporarilyDisabled;
     private Integer maxAge;
-    private String nzbAccessType;
+    private NzbAccessType nzbAccessType;
     private boolean removeLanguage;
     private boolean removeObfuscated;
     private String requiredRegex;

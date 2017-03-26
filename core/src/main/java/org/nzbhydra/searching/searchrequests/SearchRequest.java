@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @Data
 public class SearchRequest {
 
-    public enum SearchSource {
+    public enum AccessSource {
         INTERNAL,
         API
     }
@@ -21,7 +21,7 @@ public class SearchRequest {
     private static final Pattern EXCLUSION_PATTERN = Pattern.compile("[\\s|\b](\\-\\-|!)(?<term>\\w+)");
 
     protected List<String> indexers;
-    protected SearchSource source;
+    protected AccessSource source;
     protected SearchType searchType;
     protected Category category;
     protected Integer offset = 0;

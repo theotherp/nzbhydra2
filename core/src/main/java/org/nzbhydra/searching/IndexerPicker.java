@@ -6,10 +6,10 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig.SourceEnabled;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.infos.InfoProvider;
-import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,7 +124,7 @@ public class IndexerPicker {
     }
 
     protected boolean checkIndexerSelectedByUser(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {
-        boolean indexerNotSelectedByUser = searchRequest.getSource() == SearchSource.INTERNAL && searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().contains(indexer.getName());
+        boolean indexerNotSelectedByUser = searchRequest.getSource() == AccessSource.INTERNAL && searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().contains(indexer.getName());
         if (indexerNotSelectedByUser) {
             logger.info("Not picking {} because it was not selected by the user", indexer.getName());
             count.put(indexer, "Not selected by the user");

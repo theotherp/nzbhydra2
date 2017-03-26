@@ -13,11 +13,11 @@ import org.nzbhydra.config.IndexerConfig.SourceEnabled;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.infos.InfoProvider;
 import org.nzbhydra.searching.infos.InfoProvider.IdType;
-import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -71,21 +71,21 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckIfSelectedByUser() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
-        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Arrays.asList("anotherIndexer")));
 
         assertFalse(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        when(searchRequest.getSource()).thenReturn(AccessSource.API);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
 
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Arrays.asList("indexer")));
 
-        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        when(searchRequest.getSource()).thenReturn(AccessSource.API);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
     }
 
@@ -152,12 +152,12 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckContext() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
-        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
         when(indexerConfig.getEnabledForSearchSource()).thenReturn(SourceEnabled.API);
 
         assertFalse(testee.checkSearchSource(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        when(searchRequest.getSource()).thenReturn(AccessSource.API);
         assertTrue(testee.checkSearchSource(searchRequest, count, indexer));
     }
 

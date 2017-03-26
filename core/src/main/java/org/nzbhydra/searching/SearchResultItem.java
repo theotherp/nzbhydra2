@@ -3,7 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.Category;
-import org.nzbhydra.searching.searchmodules.Indexer;
+import org.nzbhydra.indexers.Indexer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

@@ -1,7 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.searching.searchmodules.Indexer;
+import org.nzbhydra.indexers.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

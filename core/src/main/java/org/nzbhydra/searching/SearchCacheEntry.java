@@ -2,8 +2,8 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Objects;
 import lombok.Data;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerPicker.PickingResult;
-import org.nzbhydra.searching.searchmodules.Indexer;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.time.Instant;

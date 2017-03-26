@@ -85,14 +85,14 @@ public class ExternalApiSearchingIntegrationTest {
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
@@ -109,7 +109,7 @@ public class ExternalApiSearchingIntegrationTest {
         apiCallParameters.setT(ActionAttribute.SEARCH);
         apiCallParameters.setApikey("apikey");
 
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters);
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
         System.out.println("");
     }
 
