@@ -49,7 +49,7 @@
         </thead>
         <tbody>
         <tr dir-paginate="request in searchRequests | itemsPerPage: limit" total-items="totalRequests" current-page="pagination.current" pagination-id="searches">
-            <td class="narrow-row">{{ request.time | reformatDate }}</td>
+            <td class="narrow-row">{{ request.time.epochSecond | reformatDate }}</td>
             <td class="narrow-row">
                 <a href="" ng-click="openSearch(request)"><span class="glyphicon glyphicon-search"></span></a>
                 <span ng-class="{'history-title': request.movietitle != null || request.tvtitle != null || (request.query == null && request.identifier_key == null && request.season ==null && request.episode ==null)}">
@@ -57,9 +57,9 @@
 
             </span>
             </td>
-            <td class="narrow-row">{{ request.category }}</td>
+            <td class="narrow-row">{{ request.category.pretty }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
-            <td class="narrow-row">{{ request.internal ? "Internal" : "API"}}</td>
+            <td class="narrow-row">{{ request.source === "INTERNAL" ? "Internal" : "API"}}</td>
             <td class="narrow-row">{{ request.username }}</td>
         </tr>
         </tbody>

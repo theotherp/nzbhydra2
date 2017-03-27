@@ -23,13 +23,13 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
 
     //Preloaded data
-    $scope.searchRequests = history.data.searchRequests;
-    $scope.totalRequests = history.data.totalRequests;
+    $scope.searchRequests = history.data.content;
+    $scope.totalRequests = history.data.totalElements;
 
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (history) {
-            $scope.searchRequests = history.data.searchRequests;
-            $scope.totalRequests = history.data.totalRequests;
+            $scope.searchRequests = history.data.content;
+            $scope.totalRequests = history.data.totalElements;
         });
     };
 
@@ -47,7 +47,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     });
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {
-        if (filterModel.filter) {
+        if (filterModel.filterValue) {
             $scope.filterModel[column] = filterModel;
         } else {
             delete $scope.filterModel[column];

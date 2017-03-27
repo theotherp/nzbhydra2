@@ -29,10 +29,10 @@ function StatsService($http) {
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
         }
-        return $http.post("internalapi/getnzbdownloads", params).success(function (response) {
+        return $http.post("internalapi/history/downloads", params).success(function (response) {
             return {
-                nzbDownloads: response.nzbDownloads,
-                totalDownloads: response.totalDownloads
+                nzbDownloads: response.content,
+                totalDownloads: response.totalElements
             };
 
         });

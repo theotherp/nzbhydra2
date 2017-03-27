@@ -56,7 +56,7 @@ function freetextFilter() {
 
         $scope.onKeypress = function (keyEvent) {
             if (keyEvent.which === 13) {
-                $scope.$emit("filter", $scope.column, {filter: $scope.data.filter, filtertype: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
+                $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
         }
     }
@@ -95,7 +95,7 @@ function checkboxesFilter() {
         $scope.apply = function () {
             console.log($scope.selected);
             var isActive = $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filter: _.pluck($scope.selected.entries, "id"), filtertype: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
+            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }
     }
 }
@@ -121,7 +121,7 @@ function booleanFilter() {
 
         $scope.apply = function () {
             console.log($scope.selected);
-            $scope.$emit("filter", $scope.column, {filter: $scope.selected.value, filtertype: "boolean"}, $scope.selected.value != $scope.options[0].value)
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value != $scope.options[0].value)
         }
     }
 }
@@ -170,7 +170,7 @@ function timeFilter() {
 
         $scope.apply = function () {
             var isActive = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filter: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filtertype: "time"}, isActive)
+            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, isActive)
         }
     }
 }

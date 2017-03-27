@@ -1,6 +1,8 @@
 package org.nzbhydra.database;
 
 import lombok.Data;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.api.CategoryConverter;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.SearchType;
@@ -37,6 +39,7 @@ public class SearchEntity {
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time;
     @OneToMany(cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<IdentifierKeyValuePair> identifiers = new ArrayList<>();
     private Integer season;
     private Integer episode;

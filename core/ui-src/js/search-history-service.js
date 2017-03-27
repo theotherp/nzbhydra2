@@ -40,10 +40,10 @@ function SearchHistoryService($filter, $http) {
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
         }
-        return $http.post("internalapi/getsearchrequests", params).success(function (response) {
+        return $http.post("internalapi/history/searches", params).success(function (response) {
             return {
-                searchRequests: response.searchRequests,
-                totalRequests: response.totalRequests
+                searchRequests: response.content,
+                totalRequests: response.totalElements
             }
         });
     }

@@ -31,8 +31,8 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (downloads) {
-            $scope.nzbDownloads = downloads.data.nzbDownloads;
-            $scope.totalDownloads = downloads.data.totalDownloads;
+            $scope.nzbDownloads = downloads.data.content;
+            $scope.totalDownloads = downloads.data.totalElements;
         });
     };
 
@@ -49,6 +49,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.$broadcast("newSortColumn", column);
         $scope.update();
     });
+
+    $scope.accessResult = function (result) {
+        if (result === 'UNKNOWN') {
+            return 'glyphicon-question-sign';
+        } else if (result === 'SUCCESSFUL') {
+            return 'glyphicon-ok';
+        } else {
+            return 'glyphicon-remove';
+        }
+    };
 
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {

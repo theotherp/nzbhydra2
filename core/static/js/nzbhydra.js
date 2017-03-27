@@ -1430,7 +1430,7 @@ function freetextFilter() {
 
         $scope.onKeypress = function (keyEvent) {
             if (keyEvent.which === 13) {
-                $scope.$emit("filter", $scope.column, {filter: $scope.data.filter, filtertype: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
+                $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
         }
     }
@@ -1470,7 +1470,7 @@ function checkboxesFilter() {
         $scope.apply = function () {
             console.log($scope.selected);
             var isActive = $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filter: _.pluck($scope.selected.entries, "id"), filtertype: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
+            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }
     }
 }
@@ -1497,7 +1497,7 @@ function booleanFilter() {
 
         $scope.apply = function () {
             console.log($scope.selected);
-            $scope.$emit("filter", $scope.column, {filter: $scope.selected.value, filtertype: "boolean"}, $scope.selected.value != $scope.options[0].value)
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value != $scope.options[0].value)
         }
     }
 }
@@ -1547,7 +1547,7 @@ function timeFilter() {
 
         $scope.apply = function () {
             var isActive = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filter: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filtertype: "time"}, isActive)
+            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, isActive)
         }
     }
 }
@@ -2097,10 +2097,10 @@ function StatsService($http) {
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
         }
-        return $http.post("internalapi/getnzbdownloads", params).success(function (response) {
+        return $http.post("internalapi/history/downloads", params).success(function (response) {
             return {
-                nzbDownloads: response.nzbDownloads,
-                totalDownloads: response.totalDownloads
+                nzbDownloads: response.content,
+                totalDownloads: response.totalElements
             };
 
         });
@@ -2827,10 +2827,10 @@ function SearchHistoryService($filter, $http) {
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
         }
-        return $http.post("internalapi/getsearchrequests", params).success(function (response) {
+        return $http.post("internalapi/history/searches", params).success(function (response) {
             return {
-                searchRequests: response.searchRequests,
-                totalRequests: response.totalRequests
+                searchRequests: response.content,
+                totalRequests: response.totalElements
             }
         });
     }
@@ -2962,13 +2962,13 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
 
     //Preloaded data
-    $scope.searchRequests = history.data.searchRequests;
-    $scope.totalRequests = history.data.totalRequests;
+    $scope.searchRequests = history.data.content;
+    $scope.totalRequests = history.data.totalElements;
 
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (history) {
-            $scope.searchRequests = history.data.searchRequests;
-            $scope.totalRequests = history.data.totalRequests;
+            $scope.searchRequests = history.data.content;
+            $scope.totalRequests = history.data.totalElements;
         });
     };
 
@@ -2986,7 +2986,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     });
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {
-        if (filterModel.filter) {
+        if (filterModel.filterValue) {
             $scope.filterModel[column] = filterModel;
         } else {
             delete $scope.filterModel[column];
@@ -3767,7 +3767,7 @@ angular
 function reformatDate() {
     return function (date) {
         //Date in database is saved as UTC without timezone information
-        return moment.utc(date, "ddd, D MMM YYYY HH:mm:ss z").local().format("YYYY-MM-DD HH:mm");
+        return moment.unix(date).local().format("YYYY-MM-DD HH:mm");
 
     }
 }
@@ -4680,8 +4680,8 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (downloads) {
-            $scope.nzbDownloads = downloads.data.nzbDownloads;
-            $scope.totalDownloads = downloads.data.totalDownloads;
+            $scope.nzbDownloads = downloads.data.content;
+            $scope.totalDownloads = downloads.data.totalElements;
         });
     };
 
@@ -4698,6 +4698,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.$broadcast("newSortColumn", column);
         $scope.update();
     });
+
+    $scope.accessResult = function (result) {
+        if (result === 'UNKNOWN') {
+            return 'glyphicon-question-sign';
+        } else if (result === 'SUCCESSFUL') {
+            return 'glyphicon-ok';
+        } else {
+            return 'glyphicon-remove';
+        }
+    };
 
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {
