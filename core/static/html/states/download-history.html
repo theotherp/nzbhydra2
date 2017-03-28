@@ -29,17 +29,17 @@
             </column-filter-wrapper>
         </th>
         <th class="col-md-1" style="width: 9%">
-            <column-sortable column="successful">Successful
+            <column-sortable column="successful">Result
             </column-sortable>
             <column-filter-wrapper>
-                <checkboxes-filter column="successful" entries="successfulForFiltering" preselect="true" show-invert="false" is-boolean="true"/>
+                <checkboxes-filter column="result" entries="successfulForFiltering" preselect="true" show-invert="false"/>
             </column-filter-wrapper>
         </th>
         <th class="col-md-1" style="width: 8%">
-            <column-sortable column="access">Access
+            <column-sortable column="access_source">Source
             </column-sortable>
             <column-filter-wrapper>
-                <boolean-filter column="access" options="accessOptionsForFiltering" preselect="0"/>
+                <boolean-filter column="source" options="accessOptionsForFiltering" preselect="0"/>
             </column-filter-wrapper>
         </th>
         <th class="col-md-2" style="width: 10%">
@@ -52,8 +52,8 @@
     </thead>
     <tbody>
     <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage: limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
-        <td class="narrow-row">{{ request.time.epochSecond | reformatDate }}</td>
-        <td class="narrow-row">{{ nzbDownload.indexer.name }}</td>
+        <td class="narrow-row">{{ nzbDownload.indexerApiAccess.time.epochSecond | reformatDate }}</td>
+        <td class="narrow-row">{{ nzbDownload.indexerApiAccess.indexer.name }}</td>
         <td class="narrow-row">
             <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>
             <a target="_blank" href="{{ nzbDownload.detailsLink | dereferer }}" ng-if="nzbDownload.detailsLink">{{ nzbDownload.title }}</a><span ng-if="!nzbDownload.detailsLink">{{ nzbDownload.title }}</span>

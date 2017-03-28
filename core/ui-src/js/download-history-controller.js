@@ -20,13 +20,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.successfulForFiltering = [{label: "Succesful", id: true}, {label: "Unsuccesful", id: false}, {label: "Unknown", id: null}];
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
+    $scope.successfulForFiltering = [{label: "Succesful", id: 'SUCCESSFUL'}, {label: "Connection error", id: 'CONNECTION_ERROR'}, {label: "API error", id: 'API_ERROR'}, {
+        label: "Auth error",
+        id: 'AUTH_ERROR'
+    }, {label: "Hydra error", id: 'HYDRA_ERROR'}, {label: "Unknown", id: 'UNKNOWN'}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
 
     //Preloaded data
-    $scope.nzbDownloads = downloads.data.nzbDownloads;
-    $scope.totalDownloads = downloads.data.totalDownloads;
+    $scope.nzbDownloads = downloads.data.content;
+    $scope.totalDownloads = downloads.data.totalElements;
 
 
     $scope.update = function () {
@@ -62,7 +65,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {
-        if (filterModel.filter) {
+        if (filterModel.filterValue) {
             $scope.filterModel[column] = filterModel;
         } else {
             delete $scope.filterModel[column];

@@ -17,10 +17,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     //Filter options
     $scope.categoriesForFiltering = [];
     _.forEach(ConfigService.getSafe().categories, function (category) {
-        $scope.categoriesForFiltering.push({label: category.pretty, id: category.pretty})
+        $scope.categoriesForFiltering.push({label: category.pretty, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
     //Preloaded data
     $scope.searchRequests = history.data.content;

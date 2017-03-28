@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.Objects;
 
 
 @Data
@@ -26,4 +27,24 @@ public class IdentifierKeyValuePair {
     private String identifierValue;
 
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        IdentifierKeyValuePair that = (IdentifierKeyValuePair) o;
+        return Objects.equals(identifierKey, that.identifierKey) &&
+                Objects.equals(identifierValue, that.identifierValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), identifierKey, identifierValue);
+    }
 }

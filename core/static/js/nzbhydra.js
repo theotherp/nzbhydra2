@@ -236,8 +236,8 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: ["$http", function ($http) {
-                            return $http.get("internalapi/getindexerstatuses").success(function (response) {
-                                return response.indexerStatuses;
+                            return $http.get("internalapi/indexerstatuses").success(function (response) {
+                                return response;
                             });
                         }],
                         $title: ["$stateParams", function ($stateParams) {
@@ -2096,6 +2096,11 @@ function StatsService($http) {
         }
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
+        } else {
+            params.sortModel = {
+                column: "time",
+                sortMode: 2
+            };
         }
         return $http.post("internalapi/history/downloads", params).success(function (response) {
             return {
@@ -2799,10 +2804,9 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.get("internalapi/getsearchrequestsforsearching").success(function (response) {
+        return $http.post("internalapi/history/searches/distinct").success(function (response) {
             return {
-                searchRequests: response.searchRequests,
-                totalRequests: response.totalRequests
+                searchRequests: response
             }
         });
     }
@@ -2826,6 +2830,11 @@ function SearchHistoryService($filter, $http) {
         }
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
+        } else {
+            params.sortModel = {
+                column: "time",
+                sortMode: 2
+            };
         }
         return $http.post("internalapi/history/searches", params).success(function (response) {
             return {
@@ -2836,6 +2845,7 @@ function SearchHistoryService($filter, $http) {
     }
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
+        //TODO
         var result = [];
         //ID key: ID value
         //season
@@ -2956,10 +2966,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     //Filter options
     $scope.categoriesForFiltering = [];
     _.forEach(ConfigService.getSafe().categories, function (category) {
-        $scope.categoriesForFiltering.push({label: category.pretty, id: category.pretty})
+        $scope.categoriesForFiltering.push({label: category.pretty, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
     //Preloaded data
     $scope.searchRequests = history.data.content;
@@ -3410,7 +3420,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     function getAndSetSearchRequests() {
         SearchHistoryService.getSearchHistoryForSearching().success(function (data) {
-            $scope.searchHistory = data.searchRequests;
+            $scope.searchHistory = data;
         });
     }
 
@@ -3723,10 +3733,10 @@ angular
     .controller('IndexerStatusesController', IndexerStatusesController);
 
 function IndexerStatusesController($scope, $http, statuses) {
-    $scope.statuses = statuses.data.indexerStatuses;
+    $scope.statuses = statuses.data;
 
-    $scope.isInPast = function (timestamp) {
-        return timestamp * 1000 < (new Date).getTime();
+    $scope.isInPast = function (epochSeconds) {
+        return epochSeconds < (new Date).getTime();
     };
 
     $scope.enable = function (indexerName) {
@@ -4669,13 +4679,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.successfulForFiltering = [{label: "Succesful", id: true}, {label: "Unsuccesful", id: false}, {label: "Unknown", id: null}];
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: false}, {label: "Internal", value: true}];
+    $scope.successfulForFiltering = [{label: "Succesful", id: 'SUCCESSFUL'}, {label: "Connection error", id: 'CONNECTION_ERROR'}, {label: "API error", id: 'API_ERROR'}, {
+        label: "Auth error",
+        id: 'AUTH_ERROR'
+    }, {label: "Hydra error", id: 'HYDRA_ERROR'}, {label: "Unknown", id: 'UNKNOWN'}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
 
     //Preloaded data
-    $scope.nzbDownloads = downloads.data.nzbDownloads;
-    $scope.totalDownloads = downloads.data.totalDownloads;
+    $scope.nzbDownloads = downloads.data.content;
+    $scope.totalDownloads = downloads.data.totalElements;
 
 
     $scope.update = function () {
@@ -4711,7 +4724,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
 
     $scope.$on("filter", function (event, column, filterModel, isActive) {
-        if (filterModel.filter) {
+        if (filterModel.filterValue) {
             $scope.filterModel[column] = filterModel;
         } else {
             delete $scope.filterModel[column];

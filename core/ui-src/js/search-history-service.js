@@ -12,10 +12,9 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.get("internalapi/getsearchrequestsforsearching").success(function (response) {
+        return $http.post("internalapi/history/searches/distinct").success(function (response) {
             return {
-                searchRequests: response.searchRequests,
-                totalRequests: response.totalRequests
+                searchRequests: response
             }
         });
     }
@@ -39,6 +38,11 @@ function SearchHistoryService($filter, $http) {
         }
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
+        } else {
+            params.sortModel = {
+                column: "time",
+                sortMode: 2
+            };
         }
         return $http.post("internalapi/history/searches", params).success(function (response) {
             return {
@@ -49,6 +53,7 @@ function SearchHistoryService($filter, $http) {
     }
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
+        //TODO
         var result = [];
         //ID key: ID value
         //season

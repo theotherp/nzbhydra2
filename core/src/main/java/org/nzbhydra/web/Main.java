@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -33,15 +32,6 @@ public class Main {
         session.setAttribute("bootstrap", bootstrappedData);
         return "index";
     }
-
-    @RequestMapping(value = "/internalapi/getsearchrequestsforsearching") //TODO There might be a reason why this was POST originally
-    @ResponseBody
-    public String getSearchRequestsForSearching() {
-        return "{}";
-    }
-
-
-
 
 
 }

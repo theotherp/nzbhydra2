@@ -236,8 +236,8 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: function ($http) {
-                            return $http.get("internalapi/getindexerstatuses").success(function (response) {
-                                return response.indexerStatuses;
+                            return $http.get("internalapi/indexerstatuses").success(function (response) {
+                                return response;
                             });
                         },
                         $title: function ($stateParams) {

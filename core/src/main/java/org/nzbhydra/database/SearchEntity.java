@@ -19,8 +19,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 
 @Data
@@ -40,7 +41,7 @@ public class SearchEntity {
     private Instant time;
     @OneToMany(cascade = CascadeType.ALL)
     @LazyCollection(LazyCollectionOption.FALSE)
-    private List<IdentifierKeyValuePair> identifiers = new ArrayList<>();
+    private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
     private Integer season;
     private Integer episode;
     @Enumerated(EnumType.STRING)
@@ -52,4 +53,18 @@ public class SearchEntity {
     public SearchEntity() {
         time = Instant.now();
     }
+
+
+    public boolean equalsSearchEntity(SearchEntity that) {
+
+        return Objects.equals(category, that.category) &&
+                Objects.equals(query, that.query) &&
+                Objects.equals(identifiers, that.identifiers) &&
+                Objects.equals(season, that.season) &&
+                Objects.equals(episode, that.episode) &&
+                Objects.equals(title, that.title) &&
+                Objects.equals(author, that.author);
+    }
+
+
 }

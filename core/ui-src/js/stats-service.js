@@ -28,6 +28,11 @@ function StatsService($http) {
         }
         if (!angular.isUndefined(sortModel)) {
             params.sortModel = sortModel;
+        } else {
+            params.sortModel = {
+                column: "time",
+                sortMode: 2
+            };
         }
         return $http.post("internalapi/history/downloads", params).success(function (response) {
             return {

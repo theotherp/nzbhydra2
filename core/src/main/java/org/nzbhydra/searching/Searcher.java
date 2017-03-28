@@ -14,9 +14,19 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Component
@@ -88,7 +98,7 @@ public class Searcher {
             searchEntity.setSource(searchRequest.getSource());
             searchEntity.setCategory(searchRequest.getCategory());
             searchEntity.setQuery(searchRequest.getQuery().orElse(null));
-            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toList()));
+            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toSet()));
             searchEntity.setSeason(searchRequest.getSeason().orElse(null));
             searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
             searchEntity.setSearchType(searchRequest.getSearchType());

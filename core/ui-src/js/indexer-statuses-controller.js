@@ -3,10 +3,10 @@ angular
     .controller('IndexerStatusesController', IndexerStatusesController);
 
 function IndexerStatusesController($scope, $http, statuses) {
-    $scope.statuses = statuses.data.indexerStatuses;
+    $scope.statuses = statuses.data;
 
-    $scope.isInPast = function (timestamp) {
-        return timestamp * 1000 < (new Date).getTime();
+    $scope.isInPast = function (epochSeconds) {
+        return epochSeconds < (new Date).getTime();
     };
 
     $scope.enable = function (indexerName) {
