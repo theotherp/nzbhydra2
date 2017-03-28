@@ -69,6 +69,9 @@ public class Searcher {
             List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
             DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
+            //TODO Save IndexerSearchEntity
+
+
             searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
             indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
             //Set the rejection counts from all searches, this and previous

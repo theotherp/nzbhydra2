@@ -9,6 +9,7 @@ import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.IndexerSearchEntity;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
@@ -91,6 +92,17 @@ public abstract class Indexer {
 
         getLogger().debug("Persisting {} search search results took {}ms", searchResultEntities.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;
+    }
+
+    protected void saveIndexerSearch() {
+        IndexerSearchEntity entity = new IndexerSearchEntity();
+        entity.setIndexerEntity(indexer);
+        entity.setProcessedResults(null);
+        entity.setResultsCount(null);
+        entity.setSearchEntity(null);
+        entity.setSuccessful(true);
+        entity.setTime(Instant.now());
+        entity.setUniqueResults(null);
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerApiAccessResult accessResult, String url) {

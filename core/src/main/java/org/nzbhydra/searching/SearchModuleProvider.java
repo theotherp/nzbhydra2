@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class SearchModuleProvider {
@@ -54,6 +55,10 @@ public class SearchModuleProvider {
 
     public List<Indexer> getIndexers() {
         return new ArrayList<>(searchModuleInstances.values());
+    }
+
+    public List<Indexer> getEnabledIndexers() {
+        return searchModuleInstances.values().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
     }
 
 

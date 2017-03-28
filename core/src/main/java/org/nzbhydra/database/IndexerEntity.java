@@ -8,8 +8,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -27,6 +30,11 @@ public class IndexerEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @JsonBackReference
     private IndexerStatusEntity status;
+
+    @OneToMany(orphanRemoval = true)
+    @JsonBackReference
+    @OrderBy("time desc")
+    private List<IndexerApiAccessEntity> apiAccesses;
 
     public IndexerEntity() {
     }
