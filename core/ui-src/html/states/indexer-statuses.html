@@ -3,7 +3,7 @@
     <thead>
     <tr>
         <th>Indexer</th>
-        <th>Latest failure</th>
+        <th>Last failure</th>
         <th>Disabled until</th>
         <th>Reason</th>
     </tr>
@@ -24,7 +24,7 @@
                 </a>
             </span>
 
-            <span ng-if="!indexerStatus.disabledPermanently">{{ indexerStatus.disabledUntil.epochSecond | reformatDate}}</span>
+            <span ng-if="indexerStatus.disabledUntil">{{ indexerStatus.disabledUntil.epochSecond | reformatDate}}</span>
             <span ng-if="indexerStatus.disabledPermanently">Permanently</span>
 
         </td>

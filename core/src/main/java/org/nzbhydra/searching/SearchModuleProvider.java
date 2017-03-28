@@ -84,7 +84,7 @@ public class SearchModuleProvider {
                 searchModule.initialize(config, indexerEntity);
                 searchModuleInstances.put(config.getName(), searchModule);
             } catch (Exception e) {
-                logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType());
+                logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType(), e);
             }
         }
         if (searchModuleInstances.isEmpty()) {

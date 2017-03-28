@@ -3,7 +3,15 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.database.*;
+import org.nzbhydra.database.IndexerApiAccessEntity;
+import org.nzbhydra.database.IndexerApiAccessRepository;
+import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.SearchResultEntity;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
@@ -18,7 +26,11 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -114,7 +126,7 @@ public abstract class Indexer {
         if (disablePermanently) {
             getLogger().warn("{} will be permanently disabled until reenabled by the user", indexer.getName());
         } else {
-            getLogger().info("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
+            getLogger().warn("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
         }
 
         IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();

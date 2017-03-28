@@ -3736,12 +3736,12 @@ function IndexerStatusesController($scope, $http, statuses) {
     $scope.statuses = statuses.data;
 
     $scope.isInPast = function (epochSeconds) {
-        return epochSeconds < (new Date).getTime();
+        return epochSeconds < moment().unix();
     };
 
     $scope.enable = function (indexerName) {
-        $http.get("internalapi/enableindexer", {params: {name: indexerName}}).then(function (response) {
-            $scope.statuses = response.data.indexerStatuses;
+        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
+            $scope.statuses = response.data;
         });
     }
 

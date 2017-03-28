@@ -3,6 +3,7 @@ package org.nzbhydra.database;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,7 +24,7 @@ public class IndexerEntity {
 
     private String name;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JsonBackReference
     private IndexerStatusEntity status;
 
