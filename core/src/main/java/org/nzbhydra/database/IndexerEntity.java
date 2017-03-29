@@ -31,7 +31,7 @@ public class IndexerEntity {
     @JsonBackReference
     private IndexerStatusEntity status;
 
-    @OneToMany(orphanRemoval = true)
+    @OneToMany
     @JsonBackReference
     @OrderBy("time desc")
     private List<IndexerApiAccessEntity> apiAccesses;

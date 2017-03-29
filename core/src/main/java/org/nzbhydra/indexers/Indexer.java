@@ -9,7 +9,6 @@ import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
-import org.nzbhydra.database.IndexerSearchEntity;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
@@ -94,23 +93,11 @@ public abstract class Indexer {
         return searchResultItems;
     }
 
-    protected void saveIndexerSearch() {
-        IndexerSearchEntity entity = new IndexerSearchEntity();
-        entity.setIndexerEntity(indexer);
-        entity.setProcessedResults(null);
-        entity.setResultsCount(null);
-        entity.setSearchEntity(null);
-        entity.setSuccessful(true);
-        entity.setTime(Instant.now());
-        entity.setUniqueResults(null);
-    }
-
     protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerApiAccessResult accessResult, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         status.setLevel(0);
         status.setDisabledPermanently(false);
         status.setDisabledUntil(null);
-        status.setReason(null); //TODO Check if should be deleted or kept and displayed even when enabled
         indexerRepository.save(indexer);
 
         IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();

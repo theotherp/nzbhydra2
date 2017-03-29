@@ -2,6 +2,8 @@ package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
 import org.nzbhydra.database.IdentifierKeyValuePair;
+import org.nzbhydra.database.IndexerSearchEntity;
+import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.indexers.Indexer;
@@ -36,6 +38,8 @@ public class Searcher {
 
     @Autowired
     protected DuplicateDetector duplicateDetector;
+    @Autowired
+    private IndexerSearchRepository indexerSearchRepository;
 
     @Autowired
     private SearchRepository searchRepository;
@@ -69,8 +73,7 @@ public class Searcher {
             List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
             DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
-            //TODO Save IndexerSearchEntity
-
+            createOrUpdateIndexerSearchEntity(searchCacheEntry, indexersToSearchAndTheirResults, duplicateDetectionResult);
 
             searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
             indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
@@ -81,6 +84,22 @@ public class Searcher {
         }
 
         return searchResult;
+    }
+
+    private void createOrUpdateIndexerSearchEntity(SearchCacheEntry searchCacheEntry, Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults, DuplicateDetectionResult duplicateDetectionResult) {
+        for (IndexerSearchResult indexerSearchResult : indexersToSearchAndTheirResults.values().stream().flatMap(List::stream).collect(Collectors.toList())) {
+            IndexerSearchEntity entity = indexerSearchRepository.findByIndexerEntityAndSearchEntity(indexerSearchResult.getIndexer().getIndexerEntity(), searchCacheEntry.getSearchEntity());
+            if (entity == null) {
+                entity = new IndexerSearchEntity();
+                entity.setIndexerEntity(indexerSearchResult.getIndexer().getIndexerEntity());
+                entity.setSearchEntity(searchCacheEntry.getSearchEntity());
+                entity.setResultsCount(indexerSearchResult.getTotalResults());
+                entity.setSuccessful(indexerSearchResult.isWasSuccessful());
+            }
+            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
+            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().get(indexerSearchResult.getIndexer()));
+            indexerSearchRepository.save(entity);
+        }
     }
 
     protected SearchCacheEntry getSearchCacheEntry(SearchRequest searchRequest) {
@@ -115,7 +134,7 @@ public class Searcher {
             searchRepository.save(searchEntity);
 
             PickingResult pickingResult = indexerPicker.pickIndexers(searchRequest);
-            searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult);
+            searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult, searchEntity);
         } else {
             searchCacheEntry = searchRequestCache.get(searchRequest.hashCode());
             searchCacheEntry.setLastAccessed(Instant.now());

@@ -12,12 +12,26 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
-import org.nzbhydra.rssmapping.*;
-import org.nzbhydra.searching.*;
+import org.nzbhydra.rssmapping.NewznabAttribute;
+import org.nzbhydra.rssmapping.NewznabResponse;
+import org.nzbhydra.rssmapping.RssError;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.rssmapping.Xml;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.ResultAcceptor;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultIdCalculator;
+import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.exceptions.*;
+import org.nzbhydra.searching.UnknownResponseException;
+import org.nzbhydra.searching.exceptions.IndexerAccessException;
+import org.nzbhydra.searching.exceptions.IndexerAuthException;
+import org.nzbhydra.searching.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.searching.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.searching.exceptions.IndexerUnreachableException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +43,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +100,6 @@ public class Newznab extends Indexer {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest);
-            indexerSearchResult.setWasSuccessful(true);
         } catch (Exception e) {
             logger.error("Unexpected error while searching", e);
             try {
@@ -208,6 +227,7 @@ public class Newznab extends Indexer {
             IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
             errorResult.setErrorMessage(e.getMessage());
             errorResult.setSearchResultItems(Collections.emptyList());
+
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);

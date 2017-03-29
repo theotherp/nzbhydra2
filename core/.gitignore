@@ -9,4 +9,5 @@ bower_components
 node_modules
 nzbhydra.db.*
 *.log
+*.pid
 logs/*

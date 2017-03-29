@@ -24,7 +24,7 @@ public class IndexerStatusEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
 
-    @OneToOne
+    @OneToOne(mappedBy = "status")
     @PrimaryKeyJoinColumn
     @JsonManagedReference
     private IndexerEntity indexer;

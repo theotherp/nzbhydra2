@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Objects;
 import lombok.Data;
+import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerPicker.PickingResult;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -19,9 +20,11 @@ public class SearchCacheEntry {
     private SearchRequest searchRequest;
     private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultsByIndexer = new HashMap<>();
     private PickingResult pickingResult;
+    private SearchEntity searchEntity;
 
-    public SearchCacheEntry(SearchRequest searchRequest, PickingResult pickingResult) {
+    public SearchCacheEntry(SearchRequest searchRequest, PickingResult pickingResult, SearchEntity searchEntity) {
         this.searchRequest = searchRequest;
+        this.searchEntity = searchEntity;
         lastAccessed = Instant.now();
         for (Indexer indexer : pickingResult.getSelectedIndexers()) {
             indexerSearchResultsByIndexer.put(indexer, new ArrayList<>());
