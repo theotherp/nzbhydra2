@@ -2127,7 +2127,7 @@ function StatsController($scope, $filter, StatsService, blockUI) {
     var initializingAfter = true;
     var initializingBefore = true;
     $scope.afterDate = moment().subtract(30, "days").toDate();
-    $scope.beforeDate = moment().toDate();
+    $scope.beforeDate = moment().add(1, "days").toDate();
     updateStats();
 
 
@@ -2234,7 +2234,7 @@ function StatsController($scope, $filter, StatsService, blockUI) {
                     type: 'pieChart',
                     height: 500,
                     x: function (d) {
-                        return d.name;
+                        return d.indexerName;
                     },
                     y: function (d) {
                         return d.share;
@@ -2381,13 +2381,13 @@ function StatsController($scope, $filter, StatsService, blockUI) {
                 {
                     key: "Results",
                     values: _.map($scope.avgIndexerSearchResultsShares, function (stats) {
-                        return {series: 0, y: stats.avgResultsShare, x: stats.name}
+                        return {series: 0, y: stats.totalShare, x: stats.indexerName}
                     })
                 },
                 {
                     key: "Unique results",
                     values: _.map($scope.avgIndexerSearchResultsShares, function (stats) {
-                        return {series: 1, y: stats.avgUniqueResults, x: stats.name}
+                        return {series: 1, y: stats.uniqueShare, x: stats.indexerName}
                     })
                 }
             ]

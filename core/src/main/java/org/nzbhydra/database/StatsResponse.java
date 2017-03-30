@@ -5,6 +5,8 @@ import org.nzbhydra.web.mapping.stats.AverageResponseTime;
 import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
 import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
+import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -18,11 +20,11 @@ public class StatsResponse {
 
     private List<IndexerApiAccessStatsEntry> indexerApiAccessStats;
 
-    private List<Object> avgIndexerSearchResultsShares = new ArrayList<>();
+    private List<IndexerSearchResultsShare> avgIndexerSearchResultsShares = new ArrayList<>();
 
     private List<AverageResponseTime> avgResponseTimes = new ArrayList<>();
 
-    private List<Object> indexerDownloadShares = new ArrayList<>();
+    private List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
 
     private List<CountPerDayOfWeek> downloadsPerDayOfWeek = new ArrayList<>();
     private List<CountPerHourOfDay> downloadsPerHourOfDay = new ArrayList<>();

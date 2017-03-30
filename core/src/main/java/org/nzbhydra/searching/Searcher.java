@@ -97,7 +97,7 @@ public class Searcher {
                 entity.setSuccessful(indexerSearchResult.isWasSuccessful());
             }
             entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
-            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().get(indexerSearchResult.getIndexer()));
+            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer()));
             indexerSearchRepository.save(entity);
         }
     }

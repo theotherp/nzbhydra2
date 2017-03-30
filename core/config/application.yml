@@ -104,14 +104,14 @@ indexers:
     searchModuleType: newznab
     score: 1
     enabledForSearchSource: BOTH
-#  -
-#    name: newznab4
-#    host: http://127.0.0.1:5000
-#    enabled: false
-#    apikey: d
-#    searchModuleType: newznab
-#    score: 1
-#    enabledForSearchSource: BOTH
+  -
+    name: newznab4
+    host: http://127.0.0.1:5000
+    enabled: true
+    apikey: d
+    searchModuleType: newznab
+    score: 1
+    enabledForSearchSource: BOTH
 #  -
 #    name: newznab5
 #    host: http://127.0.0.1:5000

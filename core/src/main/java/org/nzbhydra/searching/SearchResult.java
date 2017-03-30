@@ -24,7 +24,7 @@ public class SearchResult {
     private PickingResult pickingResult;
 
     public SearchResult() {
-        duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), new HashMap<>());
+        duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), HashMultiset.create());
     }
 
     public int calculateNumberOfResults() {

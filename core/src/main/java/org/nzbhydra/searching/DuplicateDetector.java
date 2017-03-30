@@ -1,6 +1,9 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
 import org.nzbhydra.indexers.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +29,7 @@ public class DuplicateDetector {
     public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().replaceFirst("[ .\\-_]", "")));
-
+        Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
         List<TreeSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 
         //In each list of searchResults with the same title we want to find the duplicates
@@ -66,20 +68,21 @@ public class DuplicateDetector {
                     listOfBuckets.add(new TreeSet<>(newArrayList(searchResultItem)));
                 }
             }
+            TreeSet<SearchResultItem> lastBucket = Iterables.getLast(listOfBuckets);
+            if (lastBucket.size() == 1) {
+                countUniqueResultsPerIndexer.add(lastBucket.first().getIndexer());
+            }
             duplicateGroups.addAll(listOfBuckets);
         }
-        Map<Indexer, Integer> uniqueResultsPerIndexer = new HashMap<>();
-        for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
-            int count = 0;
-            if (uniqueResultsPerIndexer.containsKey(result.getIndexer())) {
-                count = uniqueResultsPerIndexer.get(result.getIndexer());
-            }
-            uniqueResultsPerIndexer.put(result.getIndexer(), count);
-        }
+
+//        for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
+//            int count = uniqueResultsPerIndexer.get(result.getIndexer());
+//            uniqueResultsPerIndexer.put(result.getIndexer(), count);
+//        }
 
         logger.info("Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
-        return new DuplicateDetectionResult(duplicateGroups, uniqueResultsPerIndexer);
+        return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer);
     }
 
     private boolean testForSameness(SearchResultItem result1, SearchResultItem result2) {
@@ -88,9 +91,9 @@ public class DuplicateDetector {
         }
 
         boolean groupKnown = result1.getGroup().isPresent() && result2.getGroup().isPresent();
-        boolean sameGroup = Objects.equals(result1.getGroup().get(), result2.getGroup().get());
+        boolean sameGroup = groupKnown && Objects.equals(result1.getGroup().get(), result2.getGroup().get());
         boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
-        boolean samePoster = Objects.equals(result1.getPoster().get(), result2.getPoster().get());
+        boolean samePoster = posterKnown && Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
         float duplicateAgeThreshold = 0.1f; //TODO Get from config
         float duplicateSizeThreshold = 0.1f; //TODO Get from config

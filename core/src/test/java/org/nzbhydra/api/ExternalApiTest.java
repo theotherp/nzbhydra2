@@ -1,5 +1,6 @@
 package org.nzbhydra.api;
 
+import com.google.common.collect.HashMultiset;
 import org.junit.Test;
 import org.nzbhydra.searching.DuplicateDetectionResult;
 import org.nzbhydra.searching.SearchResult;
@@ -54,7 +55,7 @@ public class ExternalApiTest {
         itemSet.add(item4);
 
 
-        DuplicateDetectionResult detectionResult = new DuplicateDetectionResult(Collections.singletonList(itemSet), Collections.emptyMap());
+        DuplicateDetectionResult detectionResult = new DuplicateDetectionResult(Collections.singletonList(itemSet), HashMultiset.create());
         result.setDuplicateDetectionResult(detectionResult);
 
         List<SearchResultItem> items = testee.pickSearchResultItemsFromDuplicateGroups(result);
