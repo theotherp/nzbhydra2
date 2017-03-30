@@ -2078,7 +2078,7 @@ function StatsService($http) {
     };
 
     function getStats(after, before) {
-        return $http.get("internalapi/getstats", {params: {after: after, before: before}}).success(function (response) {
+        return $http.post("internalapi/stats", {after: after, before: before}).success(function (response) {
             return response.data;
         });
     }
@@ -2149,8 +2149,8 @@ function StatsController($scope, $filter, StatsService, blockUI) {
 
     function updateStats() {
         blockUI.start("Updating stats...");
-        var after = $scope.afterDate != null ? Math.floor($scope.afterDate.getTime() / 1000) : null;
-        var before = $scope.beforeDate != null ? Math.floor($scope.beforeDate.getTime() / 1000) : null;
+        var after = $scope.afterDate != null ? $scope.afterDate : null;
+        var before = $scope.beforeDate != null ? $scope.beforeDate : null;
         StatsService.get(after, before).then(function (stats) {
             $scope.setStats(stats);
         });
@@ -2191,17 +2191,17 @@ function StatsController($scope, $filter, StatsService, blockUI) {
         $scope.nzbDownloads = null;
         $scope.avgResponseTimes = stats.avgResponseTimes;
         $scope.avgIndexerSearchResultsShares = stats.avgIndexerSearchResultsShares;
-        $scope.avgIndexerAccessSuccesses = stats.avgIndexerAccessSuccesses;
+        $scope.indexerApiAccessStats = stats.indexerApiAccessStats;
         $scope.indexerDownloadShares = stats.indexerDownloadShares;
-        $scope.downloadsPerHourOfDay = stats.timeBasedDownloadStats.perHourOfDay;
-        $scope.downloadsPerDayOfWeek = stats.timeBasedDownloadStats.perDayOfWeek;
-        $scope.searchesPerHourOfDay = stats.timeBasedSearchStats.perHourOfDay;
-        $scope.searchesPerDayOfWeek = stats.timeBasedSearchStats.perDayOfWeek;
+        $scope.downloadsPerHourOfDay = stats.downloadsPerHourOfDay;
+        $scope.downloadsPerDayOfWeek = stats.downloadsPerDayOfWeek;
+        $scope.searchesPerHourOfDay = stats.searchesPerHourOfDay;
+        $scope.searchesPerDayOfWeek = stats.searchesPerDayOfWeek;
 
 
         var numIndexers = $scope.avgResponseTimes.length;
 
-        $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.avgResponseTimes, "name", "avgResponseTime", "", "Response time");
+        $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
         $scope.avgResponseTimesChart.options.chart.margin.left = 100;
         $scope.avgResponseTimesChart.options.chart.yAxis.rotateLabels = -30;
         var avgResponseTimesChartHeight = Math.max(numIndexers * 30, 350);

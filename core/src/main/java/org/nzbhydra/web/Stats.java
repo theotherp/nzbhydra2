@@ -3,12 +3,14 @@ package org.nzbhydra.web;
 import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.StatsResponse;
 import org.nzbhydra.searching.SearchModuleProvider;
-import org.nzbhydra.web.mapping.AverageResponseTime;
-import org.nzbhydra.web.mapping.CountPerDayOfWeek;
-import org.nzbhydra.web.mapping.IndexerApiAccessStatsEntry;
-import org.nzbhydra.web.mapping.SqlCounter;
-import org.nzbhydra.web.mapping.StatsRequest;
+import org.nzbhydra.web.mapping.stats.AverageResponseTime;
+import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
+import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
+import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.web.mapping.stats.SqlCounter;
+import org.nzbhydra.web.mapping.stats.StatsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -164,12 +166,13 @@ public class Stats {
     }
 
 
-    @RequestMapping(value = "/internalapi/stats/searchesPerDayOfWeek")
-    public List<CountPerDayOfWeek> searchesPerDayOfWeek() {
-        String sql = "SELECT\n" +
-                "  DAYOFWEEK(time) AS dayofweek,\n" +
-                "  count(*)        AS counter\n" +
-                "FROM SEARCH\n" +
+    @RequestMapping(value = "/internalapi/stats/countPerDayOfWeek")
+    public List<CountPerDayOfWeek> countPerDayOfWeek(final String table) {
+        String sql = "SELECT \n" +
+                "  DAYOFWEEK(time) AS dayofweek, \n" +
+                "  count(*)        AS counter \n" +
+                "FROM " + table + " \n" +
+                (table.equals("INDEXERNZBDOWNLOAD") ? " LEFT JOIN INDEXERAPIACCESS ON INDEXERNZBDOWNLOAD.INDEXER_API_ACCESS_ID = INDEXERAPIACCESS.ID \n" : "") +
                 "GROUP BY DAYOFWEEK(time)";
 
         List<CountPerDayOfWeek> dayOfWeekCounts = new ArrayList<>();
@@ -193,8 +196,50 @@ public class Stats {
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
 
-
         return dayOfWeekCounts;
+    }
+
+    @RequestMapping(value = "/internalapi/stats/countPerHourOfDay")
+    public List<CountPerHourOfDay> countPerHourOfDay(final String table) {
+        String sql = "SELECT \n" +
+                "  HOUR(time) AS hourofday, \n" +
+                "  count(*)        AS counter \n" +
+                "FROM " + table + " \n" +
+                (table.equals("INDEXERNZBDOWNLOAD") ? " LEFT JOIN INDEXERAPIACCESS ON INDEXERNZBDOWNLOAD.INDEXER_API_ACCESS_ID = INDEXERAPIACCESS.ID \n" : " ") +
+                "GROUP BY HOUR(time)";
+
+        List<CountPerHourOfDay> hourOfDayCounts = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            hourOfDayCounts.add(new CountPerHourOfDay(i, 0));
+        }
+        Query query = entityManager.createNativeQuery(sql);
+        List<Object> resultList = query.getResultList();
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            Integer index = (Integer) o2[0];
+            BigInteger counter = (BigInteger) o2[1];
+            hourOfDayCounts.get(index).setCount(counter.intValue());
+        }
+
+        return hourOfDayCounts;
+    }
+
+    @RequestMapping(value = "/internalapi/stats")
+    public StatsResponse getAllStats(@RequestBody StatsRequest statsRequest) {
+        StatsResponse statsResponse = new StatsResponse();
+        statsResponse.setAfter(statsRequest.getAfter());
+        statsResponse.setBefore(statsRequest.getBefore());
+
+        statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest));
+        statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH"));
+        statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD"));
+
+        statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH"));
+        statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD"));
+
+        statsResponse.setIndexerApiAccessStats(indexerApiAccesses());
+
+        return statsResponse;
     }
 
     public void apiAccessesPerDayOnAverage() {

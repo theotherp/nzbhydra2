@@ -1,4 +1,4 @@
-package org.nzbhydra.web.mapping;
+package org.nzbhydra.web.mapping.stats;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package org.nzbhydra.web.mapping;
+package org.nzbhydra.web.mapping.stats;
 
 import lombok.Data;
 
@@ -10,11 +10,6 @@ import java.util.Locale;
 public class CountPerDayOfWeek {
     private String day = null;
     private Integer count = null;
-
-    public CountPerDayOfWeek(String dayName, Integer counter) {
-        this.day = dayName;
-        this.count = counter;
-    }
 
     /**
      * @param dayIndex 1 for "Mon", 2 for "Tue", etc.

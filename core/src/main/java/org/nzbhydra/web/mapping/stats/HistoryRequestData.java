@@ -1,6 +1,8 @@
-package org.nzbhydra.web.mapping;
+package org.nzbhydra.web.mapping.stats;
 
 import lombok.Data;
+import org.nzbhydra.web.mapping.FilterModel;
+import org.nzbhydra.web.mapping.SortModel;
 
 @Data
 

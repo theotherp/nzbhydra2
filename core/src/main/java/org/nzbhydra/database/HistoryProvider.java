@@ -1,8 +1,8 @@
 package org.nzbhydra.database;
 
 import org.nzbhydra.web.mapping.FilterDefinition;
-import org.nzbhydra.web.mapping.HistoryRequestData;
 import org.nzbhydra.web.mapping.SortModel;
+import org.nzbhydra.web.mapping.stats.HistoryRequestData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;

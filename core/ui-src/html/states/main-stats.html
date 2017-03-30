@@ -8,7 +8,7 @@
     </div>
     <div class="col-md-4">
         <p class="input-group">
-            <span class="input-group-addon" id="basic-addon3">After</span>
+            <span class="input-group-addon" id="after-addon">After</span>
             <input type="text" class="form-control" uib-datepicker-popup ng-model="afterDate" is-open="after.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
                    ng-keypress="onKeypress($event)"/>
             <span class="input-group-btn input-group-btn2">
@@ -18,7 +18,7 @@
     </div>
     <div class="col-md-4">
         <p class="input-group">
-            <span class="input-group-addon" id="basic-addon3">Before</span>
+            <span class="input-group-addon" id="before-addon">Before</span>
             <input type="text" class="form-control" uib-datepicker-popup ng-model="beforeDate" is-open="before.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
                    ng-keypress="onKeypress($event)"/>
             <span class="input-group-btn input-group-btn2">
@@ -43,7 +43,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="avgResponseTime in avgResponseTimes">
-                    <td>{{ avgResponseTime.name }}</td>
+                    <td>{{ avgResponseTime.indexer }}</td>
                     <td>{{ avgResponseTime.avgResponseTime }}</td>
                     <td>{{ avgResponseTime.delta }}</td>
                 </tr>
@@ -76,7 +76,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="avgIndexerSearchResultsShare in avgIndexerSearchResultsShares">
-                    <td>{{ avgIndexerSearchResultsShare.name }}</td>
+                    <td>{{ avgIndexerSearchResultsShare.indexerName }}</td>
                     <td>{{ avgIndexerSearchResultsShare.avgResultsShare }}</td>
                     <td>{{ avgIndexerSearchResultsShare.avgUniqueResults }}</td>
 
@@ -96,7 +96,7 @@
     <div class="col-md-10">
         <table class="table" style="margin-top: 9px">
             <caption>Indexer API accesses <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
-                                                uib-tooltip="An API access is considered failed when the indexer could not be reached, authentication failed or parsing of the results failed"></span>
+                                                uib-tooltip="An API access is considered failed only when the indexer could not be reached, not if auth was unsuccessful or Hydra had an unexpected error"></span>
             </caption>
             <thead>
             <tr>
@@ -107,11 +107,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="avgIndexerAccessSuccess in avgIndexerAccessSuccesses">
-                <td>{{ avgIndexerAccessSuccess.name }}</td>
-                <td>{{ avgIndexerAccessSuccess.averagePerDay }}</td>
-                <td>{{ avgIndexerAccessSuccess.successPercent | number: 0}}</td>
-                <td>{{ avgIndexerAccessSuccess.failedPercent | number: 0 }}</td>
+            <tr ng-repeat="avgIndexerAccessSuccess in indexerApiAccessStats">
+                <td>{{ avgIndexerAccessSuccess.indexerName }}</td>
+                <td>{{ avgIndexerAccessSuccess.averageAccessesPerDay }}</td>
+                <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 0}}</td>
+                <td>{{ avgIndexerAccessSuccess.percentConnectionError | number: 0 }}</td>
             </tr>
             </tbody>
         </table>
@@ -132,7 +132,7 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="indexerDownloads in indexerDownloadShares">
-                        <td>{{ indexerDownloads.name }}</td>
+                        <td>{{ indexerDownloads.indexerName }}</td>
                         <td>{{ indexerDownloads.total | number: 0}}</td>
                         <td>{{ indexerDownloads.share | number: 0 }}</td>
                     </tr>
@@ -163,7 +163,7 @@
                 <tbody>
                 <tr ng-repeat="stat in searchesPerDayOfWeek">
                     <td>{{ stat.day }}</td>
-                    <td>{{ stat.counter }}</td>
+                    <td>{{ stat.count }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -189,7 +189,7 @@
                     <tbody>
                     <tr ng-repeat="stat in searchesPerHourOfDay">
                         <td>{{ stat.hour }}</td>
-                        <td>{{ stat.counter }}</td>
+                        <td>{{ stat.count }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -218,7 +218,7 @@
                 <tbody>
                 <tr ng-repeat="stat in downloadsPerDayOfWeek">
                     <td>{{ stat.day }}</td>
-                    <td>{{ stat.counter }}</td>
+                    <td>{{ stat.count }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -244,7 +244,7 @@
                     <tbody>
                     <tr ng-repeat="stat in downloadsPerHourOfDay">
                         <td>{{ stat.hour }}</td>
-                        <td>{{ stat.counter }}</td>
+                        <td>{{ stat.count }}</td>
                     </tr>
                     </tbody>
                 </table>

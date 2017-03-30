@@ -100,8 +100,7 @@ public abstract class Indexer {
         status.setDisabledUntil(null);
         indexerRepository.save(indexer);
 
-        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();
-        apiAccess.setIndexer(indexer);
+        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(indexer);
         apiAccess.setAccessType(accessType);
         apiAccess.setResponseTime(responseTime);
         apiAccess.setResult(accessResult);
@@ -128,8 +127,7 @@ public abstract class Indexer {
             getLogger().warn("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
         }
 
-        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();
-        apiAccess.setIndexer(indexer);
+        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(indexer);
         apiAccess.setAccessType(accessType);
         apiAccess.setResponseTime(responseTime);
         apiAccess.setResult(accessResult);

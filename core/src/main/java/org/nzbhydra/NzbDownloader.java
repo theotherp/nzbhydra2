@@ -5,7 +5,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.nzbhydra.config.SearchingConfig.NzbAccessType;
-import org.nzbhydra.database.*;
+import org.nzbhydra.database.IndexerApiAccessEntity;
+import org.nzbhydra.database.IndexerApiAccessRepository;
+import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.database.NzbDownloadEntity;
+import org.nzbhydra.database.NzbDownloadRepository;
+import org.nzbhydra.database.SearchResultEntity;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +74,8 @@ public class NzbDownloader {
     }
 
     private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, AccessSource source, IndexerApiAccessResult accessResult, Long responseTime, String error) {
-        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity();
+        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(result.getIndexer());
         apiAccess.setAccessType(IndexerApiAccessType.NZB);
-        apiAccess.setIndexer(result.getIndexer());
         apiAccess.setResult(accessResult);
         apiAccess.setUrl(result.getLink());
         apiAccess.setResponseTime(responseTime);

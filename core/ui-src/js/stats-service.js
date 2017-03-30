@@ -10,7 +10,7 @@ function StatsService($http) {
     };
 
     function getStats(after, before) {
-        return $http.get("internalapi/getstats", {params: {after: after, before: before}}).success(function (response) {
+        return $http.post("internalapi/stats", {after: after, before: before}).success(function (response) {
             return response.data;
         });
     }

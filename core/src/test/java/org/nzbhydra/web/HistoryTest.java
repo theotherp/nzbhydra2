@@ -6,8 +6,8 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.web.mapping.FilterDefinition;
 import org.nzbhydra.web.mapping.FilterModel;
-import org.nzbhydra.web.mapping.HistoryRequestData;
 import org.nzbhydra.web.mapping.SortModel;
+import org.nzbhydra.web.mapping.stats.HistoryRequestData;
 
 import java.time.Instant;
 import java.util.Arrays;
