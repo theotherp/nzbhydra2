@@ -115,6 +115,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         return request.query;
     };
 
+    //TODO Reenable
     $scope.formatAdditional = function (request) {
         var result = [];
         //ID key: ID value

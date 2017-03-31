@@ -2,10 +2,12 @@ package org.nzbhydra.web;
 
 import org.nzbhydra.searching.CategoryProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +19,12 @@ public class Main {
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)
-    public String index(HttpSession session) {
+    @Secured({"ROLE_USER"})
+    public String index(HttpSession session, HttpServletRequest request) {
         //TODO improve bootstrapping / safe config handling, extract to own class, derive from base config and let spring do the REST (haha)
         session.setAttribute("baseUrl", "/");
         Map<String, Object> bootstrappedData = new HashMap<>();
         Map<String, Object> safeConfig = new HashMap<>();
-        safeConfig.put("key", "value");
-        safeConfig.put("keyInt", 123);
         safeConfig.put("categories", categoryProvider.getCategories());
         Map<String, Object> searchingConfig = new HashMap<>();
         searchingConfig.put("enableCategorySises", true);

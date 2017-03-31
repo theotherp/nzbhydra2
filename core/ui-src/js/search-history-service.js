@@ -12,7 +12,7 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/history/searches/distinct").success(function (response) {
+        return $http.post("internalapi/history/searches/forsearching").success(function (response) {
             return {
                 searchRequests: response
             }

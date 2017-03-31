@@ -2804,7 +2804,7 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/history/searches/distinct").success(function (response) {
+        return $http.post("internalapi/history/searches/forsearching").success(function (response) {
             return {
                 searchRequests: response
             }
@@ -3064,6 +3064,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         return request.query;
     };
 
+    //TODO Reenable
     $scope.formatAdditional = function (request) {
         var result = [];
         //ID key: ID value

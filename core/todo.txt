@@ -8,12 +8,12 @@ GUI
 
 Searching
 - return indexerName access data to show in GUI
-- pick indexers
-- exclusions
+- pick indexers: show in GUI
+- exclusions: mostly done
 - rejecting search results: mostly done
 - ID conversion: Infos can be retrieved, must be used
 - query generation
-- search history
+- search history: mostly done
 - hitlimit and downloadlimit
 
 Config
@@ -27,8 +27,8 @@ Downloader support
 - nzbget
 
 NZB handling
-- downloading
-- referral, proxying
+- downloading: partly done
+- referral, proxying: partly done
 - get details
 
 Indexer support
@@ -58,9 +58,9 @@ Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - log user name for appropriate actions
 
 History & stats
-- Search history
-- Download history
-- Stats
+- Search history: mostly done
+- Download history: mostly done
+- Stats: mostly done
 
 Backups
 - Save
@@ -78,8 +78,6 @@ Backups
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 
-
-- backu
 
 
 

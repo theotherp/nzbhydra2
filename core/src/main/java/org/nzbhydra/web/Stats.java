@@ -177,7 +177,7 @@ public class Stats {
                 "                                                         FROM SEARCH\n" +
                 "                                                           LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
                 "                                                         WHERE\n" +
-                "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL) \n" +
+                "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "                      )\n" +
                 "   )) FORINDEXER,\n" +
@@ -198,8 +198,7 @@ public class Stats {
                 "                                                                FROM SEARCH\n" +
                 "                                                                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
                 "                                                                WHERE\n" +
-                "                                                                  (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR\n" +
-                "                                                                   SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL) \n" +
+                "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "          )) AND INDEXERSEARCH.successful\n" +
                 "         )) FORALL";
@@ -225,7 +224,6 @@ public class Stats {
                     uniqueShare = 100 / (allUniqueResultsSum.floatValue() / indexerUniqueResultsSum.floatValue());
                 }
             }
-
             indexerSearchResultsShares.add(new IndexerSearchResultsShare(indexer.getName(), allShare, uniqueShare));
         }
 

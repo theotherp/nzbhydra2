@@ -1,5 +1,5 @@
 auth:
-  authType: none
+  authType: NONE
   rememberUsers: true
   restrictAdmin: true
   restrictDetailsDl: true
@@ -10,21 +10,21 @@ auth:
   - maySeeAdmin: true
     maySeeDetailsDl: true
     maySeeStats: true
-    password: apass
+    password: a
     showIndexerSelection: true
-    username: auser
+    username: a
   - maySeeAdmin: false
     maySeeDetailsDl: false
     maySeeStats: false
-    password: bpass
+    password: u
     showIndexerSelection: false
-    username: bpass
+    username: u
   - maySeeAdmin: false
     maySeeDetailsDl: true
     maySeeStats: true
-    password: cpass
+    password: s
     showIndexerSelection: true
-    username: cuser
+    username: s
 
 downloaders:
 - defaultCategory: No category

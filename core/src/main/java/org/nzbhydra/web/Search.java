@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -55,6 +56,7 @@ public class Search {
 
     private Random random = new Random();
 
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters) {
 
@@ -63,6 +65,7 @@ public class Search {
         return handleSearchRequest(searchRequest);
     }
 
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/movie", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse movieSearch(@RequestBody MovieSearchRequestParameters parameters) {
 
@@ -78,7 +81,7 @@ public class Search {
         return handleSearchRequest(searchRequest);
     }
 
-
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/tv", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse tvSearch(@RequestBody TvSearchRequestParameters parameters) {
 
