@@ -44,7 +44,6 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
             $rootScope.$broadcast("user:loggedIn");
             deferred.resolve();
         });
-        return deferred;
     }
 
     function askForPassword(params) {
@@ -63,7 +62,6 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
             loggedIn = false;
             deferred.resolve();
         });
-        return deferred;
     }
 
     function getUserRights() {

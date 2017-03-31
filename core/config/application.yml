@@ -1,5 +1,5 @@
 auth:
-  authType: NONE
+  authType: BASIC
   rememberUsers: true
   restrictAdmin: true
   restrictDetailsDl: true

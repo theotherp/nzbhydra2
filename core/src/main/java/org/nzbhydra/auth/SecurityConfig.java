@@ -5,8 +5,11 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.UserAuthConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.UserDetailsManagerConfigurer.UserDetailsBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,8 +45,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http.httpBasic();
+            http.addFilter(new AfterBasicAuthFilter(authenticationManagerBean()));
+        } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
+            http.formLogin().loginPage("/login").permitAll().and().logout().permitAll();
+            http.authorizeRequests().and().formLogin().loginPage("/login");
+
+
+            //http.addFilterAfter(afterBasicAuthFilter, BasicAuthenticationFilter.class);
         }
+
+
     }
+
+    @Bean(name = BeanIds.AUTHENTICATION_MANAGER)
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -65,6 +84,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
             userRoles.add("USER");
             userDetailsBuilder.roles(userRoles.toArray(new String[userRoles.size()]));
+
         }
 
     }

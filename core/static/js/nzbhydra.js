@@ -299,15 +299,15 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     templateUrl: "static/html/states/system.html",
                     controller: "SystemController",
                     resolve: {
-                        // loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
-                        //     return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
-                        // }],
-                        // safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
-                        //     return ConfigService.getSafe();
-                        // }],
-                        // askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
-                        //     return $http.get("internalapi/askadmin");
-                        // }],
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        }],
+                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.getSafe();
+                        }],
+                        askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
+                            return $http.get("internalapi/askadmin");
+                        }],
 
                         activeTab: [function () {
                             return 0;
@@ -711,6 +711,24 @@ nzbhydraapp.directive('autoFocus', ["$timeout", function ($timeout) {
             }, 0);
         }
     };
+}]);
+
+nzbhydraapp.factory('responseObserver', ["$q", "$window", "growl", function responseObserver($q, $window, growl) {
+    return {
+        'responseError': function (errorResponse) {
+            switch (errorResponse.status) {
+                case 403:
+                    growl.info("You are not allowed to visit that section.");
+                    break;
+            }
+            errorResponse.config.alreadyHandled = true;
+            return $q.reject(errorResponse);
+        }
+    };
+}]);
+
+nzbhydraapp.config(["$httpProvider", function ($httpProvider) {
+    $httpProvider.interceptors.push('responseObserver');
 }]);
 
 
@@ -3838,7 +3856,6 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
             $rootScope.$broadcast("user:loggedIn");
             deferred.resolve();
         });
-        return deferred;
     }
 
     function askForPassword(params) {
@@ -3857,7 +3874,6 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
             loggedIn = false;
             deferred.resolve();
         });
-        return deferred;
     }
 
     function getUserRights() {
@@ -3973,7 +3989,7 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
         // --- Response interceptor for handling errors generically ---
         responseError: function (rejection) {
             blockUI.reset();
-            var shouldHandle = (rejection && rejection.config && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror"));
+            var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
                 var message = "An error occured :<br>" + rejection.status + ": " + rejection.statusText;
 

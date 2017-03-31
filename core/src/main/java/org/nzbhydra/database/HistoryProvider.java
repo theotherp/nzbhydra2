@@ -78,9 +78,6 @@ public class HistoryProvider {
         String selectQuerySql = "SELECT * FROM " + tableName + " " + join + " " + whereConditions + sort + paging;
         String countQuerySql = "SELECT COUNT(*) FROM " + tableName + " " + join + " " + whereConditions;
 
-        logger.debug("Constructed query: {}", selectQuerySql);
-        logger.debug("Constructed query: {}", countQuerySql);
-
         Query selectQuery = entityManager.createNativeQuery(selectQuerySql, resultClass);
         Query countQuery = entityManager.createNativeQuery(countQuerySql);
         for (Entry<String, Object> entry : parameters.entrySet()) {
