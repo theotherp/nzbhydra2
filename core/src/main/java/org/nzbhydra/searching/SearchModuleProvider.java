@@ -4,7 +4,6 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
-import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.Newznab;
 import org.slf4j.Logger;
@@ -38,8 +37,6 @@ public class SearchModuleProvider {
 
     @Autowired
     private SearchModuleConfigProvider searchModuleConfigProvider;
-    @Autowired
-    private SearchResultRepository searchResultRepository;
 
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
 

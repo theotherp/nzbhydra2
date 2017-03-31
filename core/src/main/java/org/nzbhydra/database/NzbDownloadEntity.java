@@ -5,7 +5,15 @@ import lombok.NoArgsConstructor;
 import org.nzbhydra.config.SearchingConfig.NzbAccessType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Entity
@@ -18,14 +26,16 @@ public class NzbDownloadEntity {
     protected int id;
 
     @ManyToOne
+    @NotNull
     private IndexerApiAccessEntity indexerApiAccess;
     @ManyToOne
     private SearchResultEntity searchResult;
-    private String title;
     @Enumerated(EnumType.STRING)
     private NzbAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
     private AccessSource accessSource;
+
+    private String title;
 
     public NzbDownloadEntity(IndexerApiAccessEntity indexerApiAccess, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, AccessSource accessSource) {
         this.indexerApiAccess = indexerApiAccess;
@@ -33,5 +43,9 @@ public class NzbDownloadEntity {
         this.title = title;
         this.nzbAccessType = nzbAccessType;
         this.accessSource = accessSource;
+    }
+
+    public NzbDownloadEntity(IndexerApiAccessEntity indexerApiAccess) {
+        this.indexerApiAccess = indexerApiAccess;
     }
 }

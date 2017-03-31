@@ -7,6 +7,6 @@ public class IndexerApiAccessStatsEntry {
     private String indexerName = null;
     private Double percentSuccessful = null;
     private Double percentConnectionError = null;
-    private Integer averageAccessesPerDay = null;
+    private Double averageAccessesPerDay = null;
 
 }

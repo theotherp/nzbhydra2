@@ -1,6 +1,5 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.StatsResponse;
@@ -12,7 +11,6 @@ import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
 import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
-import org.nzbhydra.web.mapping.stats.SqlCounter;
 import org.nzbhydra.web.mapping.stats.StatsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +36,6 @@ public class Stats {
 
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
 
-    @Autowired
-    private IndexerApiAccessRepository indexerApiAccessRepository;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
@@ -70,6 +66,11 @@ public class Stats {
     }
 
     private List<IndexerDownloadShare> getIndexerDownloadShares(final StatsRequest statsRequest) {
+        if (searchModuleProvider.getEnabledIndexers().size() == 0) {
+            logger.warn("Unable to generate any stats without any enabled indexers");
+            return Collections.emptyList();
+        }
+
         List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
         String sql = "SELECT\n" +
                 "  indexer.name,\n" +
@@ -108,7 +109,7 @@ public class Stats {
         return indexerDownloadShares;
     }
 
-    private List<AverageResponseTime> averageResponseTimes(final StatsRequest statsRequest) {
+    List<AverageResponseTime> averageResponseTimes(final StatsRequest statsRequest) {
         List<AverageResponseTime> averageResponseTimes = new ArrayList<>();
         String sql = "SELECT\n" +
                 "  i.NAME,\n" +
@@ -147,15 +148,15 @@ public class Stats {
     /**
      * Calculates how much of the search results indexers provide to searches on average and how much the share of unique results is. Excludes:
      * <ul>
-     * <li>>raw search engines from uniqe shares because they return result names that are rarely matched as duplicates</li
-     * <li>>"update queries" because here some indexers return a "total" of 1000 and some of 1000000 or something like that</li
+     * <li>raw search engines from uniqe shares because they return result names that are rarely matched as duplicates</li>
+     * <li>"update queries" because here some indexers return a "total" of 1000 and some of 1000000 or something like that</li>
      * <p>
      * </ul>
      *
      * @param statsRequest
      * @return
      */
-    private List<IndexerSearchResultsShare> getIndexerSearchShares(final StatsRequest statsRequest) {
+    List<IndexerSearchResultsShare> getIndexerSearchShares(final StatsRequest statsRequest) {
         List<IndexerSearchResultsShare> indexerSearchResultsShares = new ArrayList<>();
         String countResultsSql = "SELECT\n" +
                 "  INDEXERRESULTSSUM,\n" +
@@ -167,35 +168,44 @@ public class Stats {
                 "     SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,\n" +
                 "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM\n" +
                 "   FROM indexersearch\n" +
-                "   WHERE ID IN (SELECT INDEXERSEARCH.ID\n" +
+                "   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID\n" +
                 "                FROM indexersearch\n" +
                 "                  LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
                 "                WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId\n" +
                 "                      AND INDEXERSEARCH.successful AND\n" +
-                "                      (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR INDEXER_ENTITY_ID IS NOT NULL) " +
+                "                      INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                                         FROM SEARCH\n" +
+                "                                                           LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                                         WHERE\n" +
+                "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "                     )) FORINDEXER,\n" +
+                "                      )\n" +
+                "   )) FORINDEXER,\n" +
                 "  (SELECT\n" +
                 "     sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
                 "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
                 "   FROM INDEXERSEARCH\n" +
-                "   WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN\n" +
+                "   WHERE INDEXERSEARCH.ID IN\n" +
                 "         (SELECT INDEXERSEARCH.ID\n" +
                 "          FROM INDEXERSEARCH\n" +
-                "          WHERE ID IN (SELECT SEARCH.ID\n" +
+                "          WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
                 "                       FROM indexersearch\n" +
                 "                         LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
                 "                         LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
                 "                       WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId\n" +
                 "                             AND INDEXERSEARCH.successful AND\n" +
-                "                             (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR INDEXER_ENTITY_ID IS NOT NULL) " +
+                "                             INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                                                FROM SEARCH\n" +
+                "                                                                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                                                WHERE\n" +
+                "                                                                  (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR\n" +
+                "                                                                   SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "                            ))) FORALL;";
+                "          )) AND INDEXERSEARCH.successful\n" +
+                "         )) FORALL";
 
         for (Indexer indexer : searchModuleProvider.getEnabledIndexers()) {
-            Query countQuery = entityManager.createNativeQuery(countResultsSql);
-            countQuery.setParameter("indexerId", indexer.getIndexerEntity().getId());
+            Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerId", indexer.getIndexerEntity().getId());
 
             Object[] resultSet = (Object[]) countQuery.getSingleResult();
             Float allShare = null;
@@ -223,64 +233,65 @@ public class Stats {
     }
 
 
-    private List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
+    List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         List<Integer> enabledIndexerIds = searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList());
-        String countByResultSql = "SELECT\n" +
+        String countByResultSql = "SELECT \n" +
                 "  INDEXER.ID AS indexerid,\n" +
-                "  x.counter\n" +
-                "FROM INDEXER\n" +
-                "  LEFT JOIN\n" +
-                "  (SELECT\n" +
+                "  x.counter as counter \n" +
+                "FROM INDEXER \n" +
+                "  LEFT JOIN \n" +
+                "  (SELECT \n" +
                 "     INDEXER_ID,\n" +
-                "     count(*) AS counter\n" +
-                "   FROM INDEXERAPIACCESS\n" +
-                "   WHERE INDEXER_ID IN (:indexerIds) AND RESULT IN (:resultTypes)\n " +
+                "     count(*) AS counter \n" +
+                "   FROM INDEXERAPIACCESS \n" +
+                "   WHERE INDEXER_ID IN (:indexerIds) AND RESULT IN (:resultTypes) \n " +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "   GROUP BY INDEXER_ID) x ON x.INDEXER_ID = INDEXER.ID ORDER BY INDEXER_ID NULLS LAST";
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
-                "  x.INDEXER_ID AS indexerid,\n" +
-                "  (sum(x.accesses) / count(x.INDEXER_ID)) AS counter\n" +
-                "FROM (\n" +
-                "       SELECT\n" +
-                "         count(*) AS accesses,\n" +
-                "         indexer_id,\n" +
-                "         DAYOFYEAR(time),\n" +
-                "         year(time)\n" +
-                "       FROM INDEXERAPIACCESS\n" +
-                "       WHERE INDEXER_ID IN (:indexerIds)\n" +
-                "       GROUP BY INDEXER_ID, year(time), DAYOFYEAR(time)\n" +
-                "     ) x\n" +
-                "WHERE x.INDEXER_ID IN (:indexerIds)\n" +
-                "GROUP BY x.INDEXER_ID ORDER BY INDEXER_ID";
+                "  indexer_id,\n" +
+                "  avg(accesses) AS accessesPerDay \n" +
+                "FROM ( \n" +
+                "  SELECT \n" +
+                "    indexer_id, \n" +
+                "    CAST(count(*) AS FLOAT) AS accesses, \n" +
+                "    DAYOFYEAR(time), \n" +
+                "    year(time) \n" +
+                "  FROM INDEXERAPIACCESS \n" +
+                buildWhereFromStatsRequest(false, statsRequest) +
+                "  GROUP BY INDEXER_ID, year(time), DAYOFYEAR(time) \n" +
+                ") \n" +
+                "WHERE INDEXER_ID IN (:indexerIds) \n" +
+                "GROUP BY INDEXER_ID \n" +
+                "ORDER BY INDEXER_ID NULLS LAST";
 
-        Query countQuery = entityManager.createNativeQuery(countByResultSql, SqlCounter.class);
+        Query countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
         countQuery.setParameter("resultTypes", Arrays.asList(IndexerApiAccessResult.SUCCESSFUL.name()));
 
-        Map<Integer, BigDecimal> successCountMap = ((List<SqlCounter>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put(i.getIndexerid(), i.getCounter()),
+        Map<Integer, BigInteger> successCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
+                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
 
-        countQuery = entityManager.createNativeQuery(countByResultSql, SqlCounter.class);
+        countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
         countQuery.setParameter("resultTypes", Arrays.asList(IndexerApiAccessResult.CONNECTION_ERROR.name()));
-        Map<Integer, BigDecimal> connectionErrorCountMap = ((List<SqlCounter>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put(i.getIndexerid(), i.getCounter()),
+        Map<Integer, BigInteger> connectionErrorCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
+                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
-        countQuery = entityManager.createNativeQuery(countByResultSql, SqlCounter.class);
+        countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
         countQuery.setParameter("resultTypes", Arrays.stream(IndexerApiAccessResult.values()).map(Enum::name).collect(Collectors.toList()));
-        Map<Integer, BigDecimal> allAccessesCountMap = ((List<SqlCounter>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put(i.getIndexerid(), i.getCounter()),
+        Map<Integer, BigInteger> allAccessesCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
+                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
-        countQuery = entityManager.createNativeQuery(averageIndexerAccessesPerDay, SqlCounter.class);
+        countQuery = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
-        Map<Integer, BigDecimal> accessesPerDayCountMap = ((List<SqlCounter>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put(i.getIndexerid(), i.getCounter()),
+        Map<Integer, Double> accessesPerDayCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
+                (map, i) -> map.put((Integer) i[0], (Double) i[1]),
                 HashMap::putAll);
 
 
@@ -301,8 +312,8 @@ public class Stats {
                 }
             }
 
-            if (accessesPerDayCountMap.containsKey(id)) {
-                entry.setAverageAccessesPerDay(accessesPerDayCountMap.get(id).intValue());
+            if (accessesPerDayCountMap.containsKey(id) && accessesPerDayCountMap.get(id) != null) {
+                entry.setAverageAccessesPerDay(accessesPerDayCountMap.get(id));
             }
 
             indexerApiAccessStatsEntries.add(entry);
@@ -311,7 +322,7 @@ public class Stats {
         return indexerApiAccessStatsEntries;
     }
 
-    private List<CountPerDayOfWeek> countPerDayOfWeek(final String table, final StatsRequest statsRequest) {
+    List<CountPerDayOfWeek> countPerDayOfWeek(final String table, final StatsRequest statsRequest) {
         String sql = "SELECT \n" +
                 "  DAYOFWEEK(time) AS dayofweek, \n" +
                 "  count(*)        AS counter \n" +
@@ -345,7 +356,7 @@ public class Stats {
     }
 
 
-    private List<CountPerHourOfDay> countPerHourOfDay(final String table, final StatsRequest statsRequest) {
+    List<CountPerHourOfDay> countPerHourOfDay(final String table, final StatsRequest statsRequest) {
         String sql = "SELECT \n" +
                 "  HOUR(time) AS hourofday, \n" +
                 "  count(*)        AS counter \n" +

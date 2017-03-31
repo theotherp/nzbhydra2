@@ -44,6 +44,11 @@ public class IndexerSearchEntity {
     public IndexerSearchEntity() {
     }
 
+    public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity) {
+        this.indexerEntity = indexerEntity;
+        this.searchEntity = searchEntity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

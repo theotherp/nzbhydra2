@@ -164,26 +164,73 @@ FROM
      SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,
      SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM
    FROM indexersearch
-   WHERE ID IN (SELECT INDEXERSEARCH.ID
-                FROM indexersearch
+   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID
+                              FROM indexersearch
                   LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID
-                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
                 WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId
                       AND INDEXERSEARCH.successful AND
-                      (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR INDEXER_ENTITY_ID IS NOT NULL) AND SEARCH.time > TIMESTAMP(:AFTER) AND
-                      SEARCH.time < TIMESTAMP(:BEFORE))) FORINDEXER,
+                      INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                         FROM SEARCH
+                                                           LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
+                                                         WHERE
+                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL)
+                                                           AND (SEARCH.time > TIMESTAMP(:AFTER) AND SEARCH.time < TIMESTAMP(:BEFORE))
+                      )
+   )) FORINDEXER,
   (SELECT
      sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,
      SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM
    FROM INDEXERSEARCH
-   WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN
+   WHERE INDEXERSEARCH.ID IN
          (SELECT INDEXERSEARCH.ID
           FROM INDEXERSEARCH
-          WHERE ID IN (SELECT SEARCH.ID
-                       FROM indexersearch
+          WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                   FROM indexersearch
                          LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID
                          LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
                        WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId
                              AND INDEXERSEARCH.successful AND
-                             (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR INDEXER_ENTITY_ID IS NOT NULL) AND SEARCH.time > TIMESTAMP(:AFTER) AND
-                             SEARCH.time < TIMESTAMP(:BEFORE)))) FORALL;
+                             INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID
+                                                                FROM SEARCH
+                                                                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID
+                                                                WHERE
+                                                                  (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR
+                                                                   SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL)
+                                                                  AND (SEARCH.time > TIMESTAMP(:AFTER) AND SEARCH.time < TIMESTAMP(:BEFORE))
+                             )) AND INDEXERSEARCH.successful
+         )) FORALL;
+
+
+DELETE FROM IDENTIFIER_KEY_VALUE_PAIR;
+DELETE FROM SEARCH_IDENTIFIERS;
+
+
+DELETE FROM INDEXERSEARCH;
+DELETE FROM SEARCH;
+DELETE FROM INDEXERAPIACCESS;
+DELETE FROM SEARCHRESULT;
+DELETE FROM indexer;
+DELETE FROM INDEXERSTATUS;
+
+INSERT INTO INDEXERSTATUS (ID) VALUES (1);
+INSERT INTO INDEXERSTATUS (ID) VALUES (2);
+INSERT INTO INDEXER VALUES (1, 'indexe1', 1);
+INSERT INTO INDEXER VALUES (2, 'indexe2', 2);
+
+--Regular query search, all successful indexer searches should be included
+INSERT INTO SEARCH (ID, TIME, QUERY) VALUES (1, CURRENT_TIMESTAMP, 'somequery');
+--Search 1 for indexer 1
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (1, TRUE, 900, 100, 7, 1, 1);
+--Search 2 for indexer 1, ignored because unsuccessful
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (2, FALSE, 99, 99, 99, 1, 1);
+--Search 1 for indexer 2
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (3, TRUE, 300, 100, 3, 2, 1);
+
+--Update search, no indexer searches should be included
+INSERT INTO SEARCH (ID, TIME, QUERY) VALUES (2, CURRENT_TIMESTAMP, NULL);
+--Search 1 for indexer 1
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (4, TRUE, 789, 654, 7, 1, 2);
+--Search 2 for indexer 1, ignored because unsuccessful
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (5, FALSE, 77, 77, 77, 1, 2);
+--Search 1 for indexer 2
+INSERT INTO INDEXERSEARCH (ID, SUCCESSFUL, RESULTS_COUNT, PROCESSED_RESULTS, UNIQUE_RESULTS, INDEXER_ENTITY_ID, SEARCH_ENTITY_ID) VALUES (6, TRUE, 123, 456, 3, 2, 2);
