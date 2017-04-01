@@ -4,6 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.auth.HydraUserDetailsManager;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
@@ -28,8 +31,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/auth/allRestrictedWithBasicStatsAndAdminUser.properties")
 public class HttpBasicAuthTest {
+
     @Autowired
     private WebApplicationContext context;
+    @Autowired
+    private BaseConfig baseConfig;
+    @Autowired
+    private HydraUserDetailsManager userDetailsManager;
 
     private MockMvc mvc;
 
@@ -39,6 +47,10 @@ public class HttpBasicAuthTest {
                 .webAppContextSetup(context)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+
+        baseConfig.getAuth().getUsers().get(0).setMaySeeStats(false);
+        baseConfig.getAuth().getUsers().get(0).setMaySeeAdmin(false);
+        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
     }
 
 
@@ -53,6 +65,15 @@ public class HttpBasicAuthTest {
         checkMainStatsAndConfig("a", "a", 200, 200, 200);
 
         checkMainStatsAndConfig("wrong", "wrong", 401, 401, 401);
+    }
+
+    @Test
+    public void shouldAllowChangingUserRolesAtRuntime() throws Exception {
+        checkMainStatsAndConfig("u", "u", 200, 403, 403);
+        baseConfig.getAuth().getUsers().get(0).setMaySeeStats(true);
+        baseConfig.getAuth().getUsers().get(0).setMaySeeAdmin(true);
+        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
+        checkMainStatsAndConfig("u", "u", 200, 200, 200);
     }
 
     @Test

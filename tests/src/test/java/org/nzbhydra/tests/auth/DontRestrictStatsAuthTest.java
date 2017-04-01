@@ -4,6 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.auth.HydraAnonymousAuthenticationFilter;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -29,6 +32,11 @@ public class DontRestrictStatsAuthTest {
     @Autowired
     private WebApplicationContext context;
 
+    @Autowired
+    private HydraAnonymousAuthenticationFilter authenticationFilter;
+    @Autowired
+    private BaseConfig baseConfig;
+
     private MockMvc mvc;
 
     @Before
@@ -40,7 +48,7 @@ public class DontRestrictStatsAuthTest {
     }
 
     @Test
-    public void shouldFollowRoles() throws Exception {
+    public void shouldAllowSearchingAndStatsForAllButRestrictConfig() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/").with(csrf())).andExpect(status().is(200));
         mvc.perform(MockMvcRequestBuilders.get("/stats").with(csrf())).andExpect(status().is(200));
         mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(401));
@@ -48,6 +56,14 @@ public class DontRestrictStatsAuthTest {
         checkMainStatsAndConfig("a", "a", 200, 200, 200);
 
         checkMainStatsAndConfig("wrong", "wrong", 401, 401, 401);
+    }
+
+    @Test
+    public void shouldAllowChangingRestrictionsAtRuntime() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(401));
+        baseConfig.getAuth().setRestrictAdmin(false);
+        authenticationFilter.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
+        mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(200));
     }
 
     private void checkMainStatsAndConfig(String username, String password, int statusMain, int statusConfig, int statusStats) throws Exception {
