@@ -78,8 +78,14 @@ Backups
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 
-
-
+++++
+Improvements
+- Way faster (searching, database handling, processing, stats). TODO: Get some numbers
+- Hopefully more stable in the long run
+- Fully unicode compatible TODO: Test this ;-)
+- In the future: Background processes, cancel searches
+...
+++++
 
 
 5 runs with 5 parallel calls to Hydra which will call 5 indexers

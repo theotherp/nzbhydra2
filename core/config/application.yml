@@ -4,7 +4,7 @@ auth:
   restrictAdmin: true
   restrictDetailsDl: true
   restrictIndexerSelection: true
-  restrictSearch: true
+  restrictSearch: false
   restrictStats: true
   users:
   - maySeeAdmin: true
@@ -218,6 +218,7 @@ main:
   startupBrowser: false
   theme: grey
   urlBase: ''
+  useCsrf: true
   useLocalUrlForApiAccess: true
 
 

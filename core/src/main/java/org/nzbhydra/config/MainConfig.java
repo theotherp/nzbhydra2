@@ -36,6 +36,7 @@ public class MainConfig {
     private boolean startupBrowser = false;
     private String theme = "grey";
     private String urlBase = "/";
+    private boolean useCsrf = true;
     private boolean useLocalUrlForApiAccess = true;
 
 }

@@ -31,6 +31,7 @@ main:
   debug: false
   externalUrl:
   host: 0.0.0.0
+  useCsrf: true
 
 spring:
   datasource:

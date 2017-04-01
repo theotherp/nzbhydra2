@@ -79,6 +79,11 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
             <version>0.0.1-SNAPSHOT</version>

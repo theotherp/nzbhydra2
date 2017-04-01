@@ -1,12 +1,14 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
 @Data
+@ConfigurationProperties
 public class AuthConfig {
-    ;
 
     private AuthType authType;
     private boolean rememberUsers;
@@ -18,4 +20,9 @@ public class AuthConfig {
 
     private List<UserAuthConfig> users;
 
-};
+    @JsonIgnore
+    public boolean isAuthConfigured() {
+        return authType != AuthType.NONE;
+    }
+
+}

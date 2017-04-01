@@ -34,4 +34,6 @@ public class HydraGlobalMethodSecurityConfiguration extends GlobalMethodSecurity
         }
         return null;
     }
+
+
 }

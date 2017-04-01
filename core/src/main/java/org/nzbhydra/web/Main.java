@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
+import java.util.Objects;
 import java.util.Optional;
 
 @Controller
@@ -44,28 +45,28 @@ public class Main {
     }
 
     @RequestMapping(value = "/config", method = RequestMethod.GET)
-    @Secured({"ADMIN"})
+    @Secured({"ROLE_ADMIN"})
     public String config(HttpSession session, HttpServletRequest request, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
     @RequestMapping(value = "/system", method = RequestMethod.GET)
-    @Secured({"ADMIN"})
+    @Secured({"ROLE_ADMIN"})
     public String system(HttpSession session, HttpServletRequest request, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
     @RequestMapping(value = "/stats", method = RequestMethod.GET)
-    @Secured({"STATS"})
+    @Secured({"ROLE_STATS"})
     public String stats(HttpSession session, HttpServletRequest request, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
     }
 
     @RequestMapping(value = "internalapi/askadmin", method = RequestMethod.GET)
-    @Secured({"ADMIN"})
+    @Secured({"ROLE_ADMIN"})
     public String askForAdmin(HttpSession session, HttpServletRequest request, Principal principal) {
         setSessionAttributes(session, principal);
         return "index";
@@ -110,7 +111,7 @@ public class Main {
         boolean maySeeAdmin;
         boolean maySeeStats;
         boolean maySeeDetailsDl;
-        Optional<UserAuthConfig> user = auth.getUsers().stream().filter(x -> x.getUsername().equals(principal.getName())).findFirst();
+        Optional<UserAuthConfig> user = principal == null ? Optional.empty() : auth.getUsers().stream().filter(x -> Objects.equals(x.getUsername(), principal.getName())).findFirst();
         if (user.isPresent()) {
             maySeeAdmin = user.get().isMaySeeAdmin();
             maySeeStats = user.get().isMaySeeStats() || user.get().isMaySeeAdmin();
