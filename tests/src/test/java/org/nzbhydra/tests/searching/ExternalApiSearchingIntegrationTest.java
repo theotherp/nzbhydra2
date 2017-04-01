@@ -22,7 +22,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -31,20 +30,12 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
-//@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class, Newznab.class, SearchModuleConfigProvider.class, SearchModuleProvider.class, AppConfig.class, SearchResultRepository.class, IndexerRepository.class})
-//@Configuration
 @DataJpaTest
-//@ConfigurationProperties
-//@EnableConfigurationProperties
-@TestPropertySource(locations = "classpath:/org/nzbhydra/tests/searching/application.properties")
+@TestPropertySource(locations = "classpath:org/nzbhydra/tests/searching/externalApiTest.properties")
 public class ExternalApiSearchingIntegrationTest {
 
     @Autowired
     private ExternalApi externalApi;
-
-
-    @Autowired
-    private RestTemplate restTemplateMock;
 
     private ClientAndProxy proxy;
     private ClientAndServer mockServer;
