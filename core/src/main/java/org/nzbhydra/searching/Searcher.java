@@ -54,12 +54,14 @@ public class Searcher {
     public SearchResult search(SearchRequest searchRequest) {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
+
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //TODO default for limit
         searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
         int numberOfResultsAlreadyFound = searchResult.calculateNumberOfResults();
+
         while (indexersToSearchAndTheirResults.size() > 0 && numberOfResultsAlreadyFound < numberOfWantedResults) { //TODO load all
             logger.debug("Going to call {} indexer because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), numberOfResultsAlreadyFound, numberOfWantedResults);
 
@@ -82,8 +84,9 @@ public class Searcher {
             indexersToSearchAndTheirResults.values().forEach(x -> x.forEach(y -> y.getReasonsForRejection().entrySet().forEach(z -> searchResult.getReasonsForRejection().add(z.getElement(), z.getCount()))));
             numberOfResultsAlreadyFound = searchResult.calculateNumberOfResults();
         }
+        searchCacheEntry.setLastSearchResult(searchResult);
 
-        return searchResult;
+        return searchCacheEntry.getLastSearchResult();
     }
 
     private void createOrUpdateIndexerSearchEntity(SearchCacheEntry searchCacheEntry, Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults, DuplicateDetectionResult duplicateDetectionResult) {

@@ -21,6 +21,7 @@ public class SearchCacheEntry {
     private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultsByIndexer = new HashMap<>();
     private PickingResult pickingResult;
     private SearchEntity searchEntity;
+    private SearchResult lastSearchResult;
 
     public SearchCacheEntry(SearchRequest searchRequest, PickingResult pickingResult, SearchEntity searchEntity) {
         this.searchRequest = searchRequest;

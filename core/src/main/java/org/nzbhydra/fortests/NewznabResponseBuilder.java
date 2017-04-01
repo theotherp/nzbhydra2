@@ -1,25 +1,24 @@
 package org.nzbhydra.fortests;
 
-import org.nzbhydra.api.ApiCallParameters;
-import org.nzbhydra.rssmapping.*;
+import org.nzbhydra.rssmapping.Enclosure;
+import org.nzbhydra.rssmapping.NewznabAttribute;
 import org.nzbhydra.rssmapping.NewznabResponse;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.nzbhydra.rssmapping.RssChannel;
+import org.nzbhydra.rssmapping.RssGuid;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@RestController
 public class NewznabResponseBuilder {
 
 
     private static int numberOfDifferentTitles = 10;
     private static int numberOfDuplicatesPerTitle = 2;
 
-    @RequestMapping(value = "/tests/api", produces = MediaType.TEXT_XML_VALUE)
-    public RssRoot getTestResult(ApiCallParameters parameters) {
+    public RssRoot getTestResult(int startCount, int endCount) {
 
         RssRoot rssRoot = new RssRoot();
         rssRoot.setVersion("2.0");
@@ -32,7 +31,7 @@ public class NewznabResponseBuilder {
         channel.setNewznabResponse(new NewznabResponse(0, 100));
 
         List<RssItem> items = new ArrayList<>();
-        for (int i = 1; i <= 100; i++) {
+        for (int i = startCount; i <= startCount + endCount; i++) {
 
             RssItem item = new RssItem();
             item.setDescription("Some longer itemDescription that whatever" + i);
