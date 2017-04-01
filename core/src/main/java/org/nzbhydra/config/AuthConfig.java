@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -18,7 +19,7 @@ public class AuthConfig {
     private boolean restrictSearch;
     private boolean restrictStats;
 
-    private List<UserAuthConfig> users;
+    private List<UserAuthConfig> users = new ArrayList<>();
 
     @JsonIgnore
     public boolean isAuthConfigured() {

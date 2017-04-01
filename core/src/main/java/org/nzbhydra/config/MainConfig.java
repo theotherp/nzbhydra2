@@ -12,7 +12,7 @@ import java.time.Instant;
 public class MainConfig {
 
     private String apiKey;
-    private String branch;
+    private String branch = "master";
     private Integer configVersion;
     private boolean debug;
     private String dereferer;
@@ -23,7 +23,7 @@ public class MainConfig {
     private String httpProxy;
     private String httpsProxy;
     private boolean isFirstStart = false;
-    private LoggingConfig logging;
+    private LoggingConfig logging = new LoggingConfig();
     private int keepSearchResultsForDays = 7;
     private int port = 5075;
     private String repositoryBase = "https://github.com/theotherp";
@@ -33,7 +33,7 @@ public class MainConfig {
     private boolean ssl = false;
     private String sslcert;
     private String sslkey;
-    private boolean startupBrowser = false;
+    private boolean startupBrowser = true;
     private String theme = "grey";
     private String urlBase = "/";
     private boolean useCsrf = true;

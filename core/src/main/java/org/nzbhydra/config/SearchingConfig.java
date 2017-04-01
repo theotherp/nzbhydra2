@@ -15,27 +15,26 @@ public class SearchingConfig {
         PROXY
     }
 
-
-    private boolean alwaysShowDuplicates;
-    private SearchRestrictionType applyRestrictions;
+    private boolean alwaysShowDuplicates = false;
+    private SearchRestrictionType applyRestrictions = SearchRestrictionType.NONE;
     //categorySettings ;
-    private int duplicateAgeThreshold;
-    private int duplicateSizeThresholdInPercent;
+    private float duplicateAgeThreshold = 2F;
+    private float duplicateSizeThresholdInPercent = 1F;
     private Set<String> forbiddenGroups = new HashSet<>();
     private Set<String> forbiddenPosters = new HashSet<>();
     private String forbiddenRegex;
     private Set<String> forbiddenWords = new HashSet<>();
     private boolean generateQueries;
-    private SearchRestrictionType idFallbackToTitle;
-    private boolean idFallbackToTitlePerIndexer;
-    private boolean ignorePassworded;
-    private boolean ignoreTemporarilyDisabled;
+    private SearchRestrictionType idFallbackToTitle = SearchRestrictionType.NONE;
+    private boolean idFallbackToTitlePerIndexer = false;
+    private boolean ignorePassworded = false;
+    private boolean ignoreTemporarilyDisabled = false;
     private Integer maxAge;
-    private NzbAccessType nzbAccessType;
-    private boolean removeLanguage;
-    private boolean removeObfuscated;
+    private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
+    private boolean removeLanguage = false;
+    private boolean removeObfuscated = false;
     private String requiredRegex;
     private Set<String> requiredWords = new HashSet<>();
-    private int timeout;
-    private String userAgent;
+    private Integer timeout;
+    private String userAgent = "NZBHydra";
 };

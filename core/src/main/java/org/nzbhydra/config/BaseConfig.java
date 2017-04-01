@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -22,12 +23,12 @@ public class BaseConfig {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private ApplicationEventPublisher applicationEventPublisher;
-    private AuthConfig auth;
+    private AuthConfig auth = new AuthConfig();
     private List<Category> categories;
-    private List<DownloaderConfig> downloaders;
-    private List<IndexerConfig> indexers;
-    private MainConfig main;
-    private SearchingConfig searching;
+    private List<DownloaderConfig> downloaders = new ArrayList<>();
+    private List<IndexerConfig> indexers = new ArrayList<>();
+    private MainConfig main = new MainConfig();
+    private SearchingConfig searching = new SearchingConfig();
 
     public void replace(BaseConfig newConfig) {
         main = newConfig.getMain();

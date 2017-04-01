@@ -19,7 +19,7 @@ public class IndexerConfig {
         BOTH
     }
 
-    private SourceEnabled enabledForSearchSource;
+    private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
     private String apikey;
     private BACKEND_TYPE backend;
     private Set<String> categories = new HashSet<>();

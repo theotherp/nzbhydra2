@@ -10,7 +10,7 @@ public class DownloaderConfig {
     private String apiKey;
     private String defaultCategory;
     private String downloadType;
-    private boolean enabled;
+    private boolean enabled = true;
     private String host;
     private String iconCssClass;
     private String name;
