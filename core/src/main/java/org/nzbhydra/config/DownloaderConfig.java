@@ -20,6 +20,7 @@ public class DownloaderConfig {
     private Integer port;
     private boolean ssl;
     private String type;
+    private String url;
     private String username;
 
 }

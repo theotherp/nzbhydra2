@@ -2108,7 +2108,7 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         } else {
             scope.spinnerActive = true;
             blockUI.start("Testing connection...");
-            var url = "internalapi/test_downloader";
+            var url = "internalapi/downloader/checkconnection";
             ConfigBoxService.checkConnection(url, JSON.stringify(model)).then(function () {
                     blockUI.reset();
                     scope.spinnerActive = false;

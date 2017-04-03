@@ -1,5 +1,7 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,6 +13,7 @@ import java.util.List;
 @ConfigurationProperties
 public class AuthConfig {
 
+    @JsonFormat(shape = Shape.STRING)
     private AuthType authType;
     private boolean rememberUsers;
     private boolean restrictAdmin;

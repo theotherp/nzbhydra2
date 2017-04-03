@@ -417,7 +417,7 @@ function ConfigBoxService($http, $q) {
 
         $http.post(url, settings).success(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (result.result) {
+            if (result.successful) {
                 deferred.resolve();
             } else {
                 deferred.reject({checked: true, message: result.message});

@@ -9,16 +9,19 @@ import org.nzbhydra.rssmapping.RssItem;
 import org.nzbhydra.rssmapping.RssRoot;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class NewznabResponseBuilder {
 
 
     private static int numberOfDifferentTitles = 10;
     private static int numberOfDuplicatesPerTitle = 2;
+    Random random = new Random();
 
-    public RssRoot getTestResult(int startCount, int endCount) {
+    public RssRoot getTestResult(int startCount, int endCount, String itemTitleBase, Integer offset, Integer total) {
 
         RssRoot rssRoot = new RssRoot();
         rssRoot.setVersion("2.0");
@@ -28,15 +31,15 @@ public class NewznabResponseBuilder {
         channel.setLanguage("en-gb");
         channel.setWebMaster("webmaster@master.com");
         channel.setLink("http://www.link.xyz");
-        channel.setNewznabResponse(new NewznabResponse(0, 100));
+        channel.setNewznabResponse(new NewznabResponse(offset == null ? startCount - 1 : offset, total == null ? endCount : total));
 
         List<RssItem> items = new ArrayList<>();
-        for (int i = startCount; i <= startCount + endCount; i++) {
+        for (int i = startCount; i <= endCount; i++) {
 
             RssItem item = new RssItem();
             item.setDescription("Some longer itemDescription that whatever" + i);
-            item.setTitle("itemTitle" + i);
-            item.setPubDate(Instant.ofEpochSecond(1000));
+            item.setTitle(itemTitleBase + i);
+            item.setPubDate(Instant.now().minus(random.nextInt(1000), ChronoUnit.HOURS));
             item.setEnclosure(new Enclosure("enclosureUrl", 5L));
             item.setComments("http://www.comments.com/" + i);
             item.setLink("http://www.link.com/" + i);
@@ -45,7 +48,7 @@ public class NewznabResponseBuilder {
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", "7000"));
-            attributes.add(new NewznabAttribute("size", "5"));
+            attributes.add(new NewznabAttribute("size", String.valueOf(random.nextInt())));
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));

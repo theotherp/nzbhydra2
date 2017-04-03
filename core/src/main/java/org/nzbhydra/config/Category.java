@@ -1,5 +1,7 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
@@ -21,7 +23,9 @@ public class Category {
     private boolean mayBeSelected = true;
     private boolean supportyById;
     private Set<Integer> newznabCategories = new HashSet<>();
+    @JsonFormat(shape = Shape.STRING)
     private SearchRestrictionType applyRestrictionsType = SearchRestrictionType.NONE;
+    @JsonFormat(shape = Shape.STRING)
     private SearchRestrictionType ignoreResultsFrom = SearchRestrictionType.NONE;
     private Set<String> forbiddenWords = Sets.newHashSet();
     private String forbiddenRegex;

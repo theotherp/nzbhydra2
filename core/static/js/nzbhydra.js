@@ -1670,7 +1670,7 @@ function connectionTest() {
             }
             $http.get(url, {params: params}).success(function (result) {
                 //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-                if (result.result) {
+                if (result.successful) {
                     angular.element(testMessage).text("");
                     showSuccess();
                 } else {
@@ -1798,7 +1798,7 @@ function addableNzbs() {
 
     function controller($scope, NzbDownloadService) {
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
-            if ($scope.downloadType != "nzb") {
+            if ($scope.downloadType != "NZB") {
                 return downloader.downloadType == $scope.downloadType
             }
             return true;
@@ -3540,11 +3540,11 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
     return service;
 
     function sendNzbAddCommand(downloader, searchresultids, category) {
-        var params = {downloader: downloader.name, searchresultids: angular.toJson(searchresultids)};
+        var params = {downloaderName: downloader.name, searchResultIds: angular.toJson(searchresultids)};
         if (category != "No category") {
             params["category"] = category;
         }
-        return $http.put("internalapi/addnzbs", params);
+        return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function download(downloader, searchresultids) {
@@ -4488,7 +4488,7 @@ function ConfigBoxService($http, $q) {
 
         $http.post(url, settings).success(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (result.result) {
+            if (result.successful) {
                 deferred.resolve();
             } else {
                 deferred.reject({checked: true, message: result.message});
@@ -4617,7 +4617,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
                 return deferred.promise;
             }
 
-            return $http.get('internalapi/getcategories', {params: {downloader: downloader.name}})
+            return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
 
                     console.log("Updating downloader categories cache");
@@ -6950,7 +6950,7 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         } else {
             scope.spinnerActive = true;
             blockUI.start("Testing connection...");
-            var url = "internalapi/test_downloader";
+            var url = "internalapi/downloader/checkconnection";
             ConfigBoxService.checkConnection(url, JSON.stringify(model)).then(function () {
                     blockUI.reset();
                     scope.spinnerActive = false;

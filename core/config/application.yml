@@ -1,10 +1,10 @@
 auth:
-  authType: BASIC
+  authType: NONE
   rememberUsers: true
   restrictAdmin: true
   restrictDetailsDl: true
   restrictIndexerSelection: true
-  restrictSearch: false
+  restrictSearch: true
   restrictStats: true
   users:
   - maySeeAdmin: true
@@ -27,23 +27,23 @@ auth:
     username: s
 
 downloaders:
-- defaultCategory: No category
-  downloadType: nzb
-  enabled: true
-  host: 127.0.0.1
-  iconCssClass: ''
-  name: NZBGet
-  nzbAddingType: link
-  nzbaccesstype: serve
-  password: nzbget
-  port: 6789
-  ssl: false
-  type: nzbget
-  username: nzbget
+#- defaultCategory: No category
+#  downloadType: nzb
+#  enabled: true
+#  host: 127.0.0.1
+#  iconCssClass: ''
+#  name: NZBGet
+#  nzbAddingType: link
+#  nzbaccesstype: serve
+#  password: nzbget
+#  port: 6789
+#  ssl: false
+#  type: nzbget
+#  username: nzbget
 - apikey: 63e1c248a4a84c63e44b5a2ce9153cfe
   defaultCategory: No category
   downloadType: nzb
-  enabled: false
+  enabled: true
   iconCssClass: ''
   name: SABnzbd
   nzbAddingType: link
@@ -52,30 +52,30 @@ downloaders:
   type: sabnzbd
   url: http://127.0.0.1:8085/sabnzbd/
   username: ''
-- downloadType: nzb
-  enabled: false
-  host: 127.0.0.1
-  iconCssClass: ''
-  name: NZBGet2
-  nzbAddingType: link
-  nzbaccesstype: serve
-  password: tegbzn6789x
-  port: 6789
-  ssl: false
-  type: nzbget
-  username: nzbgetx
-- downloadType: nzb
-  enabled: false
-  host: 127.0.0.1
-  iconCssClass: ''
-  name: NZBGet4
-  nzbAddingType: link
-  nzbaccesstype: redirect
-  password: tegbzn6789x
-  port: 6789
-  ssl: false
-  type: nzbget
-  username: nzbgetx
+#- downloadType: nzb
+#  enabled: false
+#  host: 127.0.0.1
+#  iconCssClass: ''
+#  name: NZBGet2
+#  nzbAddingType: link
+#  nzbaccesstype: serve
+#  password: tegbzn6789x
+#  port: 6789
+#  ssl: false
+#  type: nzbget
+#  username: nzbgetx
+#- downloadType: nzb
+#  enabled: false
+#  host: 127.0.0.1
+#  iconCssClass: ''
+#  name: NZBGet4
+#  nzbAddingType: link
+#  nzbaccesstype: redirect
+#  password: tegbzn6789x
+#  port: 6789
+#  ssl: false
+#  type: nzbget
+#  username: nzbgetx
 
 indexers:
   -

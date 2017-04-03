@@ -80,7 +80,7 @@ public class StatsComponentTest {
         indexerConfig2.setSearchModuleType("newznab");
         indexerConfig2.setEnabled(false);
         searchModuleConfigProvider.setIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
-        searchModuleProvider.reloadIndexers();
+        searchModuleProvider.loadIndexers();
         indexer1 = indexerRepository.findByName("indexer1");
         indexer2 = indexerRepository.findByName("indexer2");
     }
@@ -237,7 +237,7 @@ public class StatsComponentTest {
         //Enable indexer 2 first
         indexerConfig2.setEnabled(true);
         searchModuleConfigProvider.setIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
-        searchModuleProvider.reloadIndexers();
+        searchModuleProvider.loadIndexers();
         {
             //Search with a query, two indexers involved, both returned results, one had an unsuccessful additional search
             SearchEntity search1 = new SearchEntity();

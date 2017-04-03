@@ -1,5 +1,7 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
 
@@ -16,6 +18,7 @@ public class SearchingConfig {
     }
 
     private boolean alwaysShowDuplicates = false;
+    @JsonFormat(shape = Shape.STRING)
     private SearchRestrictionType applyRestrictions = SearchRestrictionType.NONE;
     //categorySettings ;
     private float duplicateAgeThreshold = 2F;
@@ -25,11 +28,13 @@ public class SearchingConfig {
     private String forbiddenRegex;
     private Set<String> forbiddenWords = new HashSet<>();
     private boolean generateQueries;
+    @JsonFormat(shape = Shape.STRING)
     private SearchRestrictionType idFallbackToTitle = SearchRestrictionType.NONE;
     private boolean idFallbackToTitlePerIndexer = false;
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
     private Integer maxAge;
+    @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
     private boolean removeLanguage = false;
     private boolean removeObfuscated = false;

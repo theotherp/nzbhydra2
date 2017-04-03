@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public abstract class Indexer {
 
-    public enum BACKEND_TYPE {
+    public enum BackendType {
         NZEDB,
         NNTMUX
     }

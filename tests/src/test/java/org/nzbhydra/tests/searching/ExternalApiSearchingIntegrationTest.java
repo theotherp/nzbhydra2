@@ -16,6 +16,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.ActionAttribute;
 import org.nzbhydra.api.ApiCallParameters;
 import org.nzbhydra.api.ExternalApi;
+import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.rssmapping.RssRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -87,10 +88,80 @@ public class ExternalApiSearchingIntegrationTest {
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
-
     }
 
     @Test
+    public void test2() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+
+        String xml1 = builder.getTestResult(1, 2, "indexer1", 0, 3).toXmlString();
+        String xml2 = builder.getTestResult(3, 3, "indexer1", 2, 3).toXmlString();
+        String xml3 = builder.getTestResult(1, 0, "indexer2", 0, 0).toXmlString();
+
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml1).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml2).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(xml3).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+
+        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        apiCallParameters.setApikey("apikey");
+        apiCallParameters.setOffset(0);
+        apiCallParameters.setLimit(2);
+        apiCallParameters.setT(ActionAttribute.SEARCH);
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+
+        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
+
+        apiCallParameters.setLimit(100);
+        apiCallParameters.setOffset(2);
+
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+
+        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle13"));
+    }
+
+    @Test
+    public void shouldCallNewznabTwice() throws Exception {
+        NewznabResponseBuilder builder = new NewznabResponseBuilder();
+
+        String xml1 = builder.getTestResult(1, 100, "indexer1", 0, 150).toXmlString();
+        String xml2 = builder.getTestResult(101, 150, "indexer1", 100, 150).toXmlString();
+        String xml3 = builder.getTestResult(1, 0, "indexer2", 0, 0).toXmlString();
+
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml1).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml2).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(xml3).withHeaders(
+                new Header("Content-Type", "application/xml; charset=utf-8")
+        ));
+
+        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        apiCallParameters.setApikey("apikey");
+        apiCallParameters.setOffset(0);
+        apiCallParameters.setLimit(100);
+        apiCallParameters.setT(ActionAttribute.SEARCH);
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+
+        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(100));
+
+        apiCallParameters.setLimit(100);
+        apiCallParameters.setOffset(100);
+
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+
+        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(50));
+    }
+
+    //TODO
     public void shouldHandleErrorCodes() throws Exception {
 
         mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey"))).respond(HttpResponse.response().withBody("<error code=\"100\" description=\"a description\">").withHeaders(
@@ -100,8 +171,6 @@ public class ExternalApiSearchingIntegrationTest {
         apiCallParameters.setT(ActionAttribute.SEARCH);
         apiCallParameters.setApikey("apikey");
 
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
-        System.out.println("");
     }
 
 }

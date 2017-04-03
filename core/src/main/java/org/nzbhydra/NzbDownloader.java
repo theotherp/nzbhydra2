@@ -46,7 +46,7 @@ public class NzbDownloader {
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
             saveDownloadToDatabase(result, NzbAccessType.REDIRECT, AccessSource.INTERNAL, IndexerApiAccessResult.UNKNOWN);
-            return NzbDownloadResult.createSuccessfulRedirectResult(result.getLink());
+            return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink());
         } else {
             String nzbContent;
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -64,7 +64,7 @@ public class NzbDownloader {
 
             saveDownloadToDatabase(result, NzbAccessType.PROXY, AccessSource.INTERNAL, IndexerApiAccessResult.SUCCESSFUL, responseTime, null);
 
-            return NzbDownloadResult.createSuccessfulDownloadResult(nzbContent);
+            return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent);
         }
     }
 

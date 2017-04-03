@@ -1,7 +1,9 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
-import org.nzbhydra.indexers.Indexer.BACKEND_TYPE;
+import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -19,9 +21,11 @@ public class IndexerConfig {
         BOTH
     }
 
+    @JsonFormat(shape = Shape.STRING)
     private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
     private String apikey;
-    private BACKEND_TYPE backend;
+    @JsonFormat(shape = Shape.STRING)
+    private BackendType backend;
     private Set<String> categories = new HashSet<>();
     private Integer downloadLimit;
     private boolean enabled;
@@ -35,9 +39,11 @@ public class IndexerConfig {
     private Integer score = null;
     private String searchModuleType;
     private boolean showOnSearch;
+    @JsonFormat(shape = Shape.STRING)
     private Set<IdType> supportedSearchIds = new HashSet<>();
     private Integer timeout = null;
     private String type;
+
     private String username = null;
 
     public Optional<Integer> getHitLimit() {

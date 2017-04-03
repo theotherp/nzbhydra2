@@ -61,7 +61,7 @@ function connectionTest() {
             }
             $http.get(url, {params: params}).success(function (result) {
                 //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-                if (result.result) {
+                if (result.successful) {
                     angular.element(testMessage).text("");
                     showSuccess();
                 } else {

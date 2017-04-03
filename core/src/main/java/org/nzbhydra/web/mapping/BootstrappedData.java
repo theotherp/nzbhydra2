@@ -1,6 +1,7 @@
 package org.nzbhydra.web.mapping;
 
 import lombok.Data;
+import org.nzbhydra.config.safeconfig.SafeConfig;
 
 @Data
 public class BootstrappedData {

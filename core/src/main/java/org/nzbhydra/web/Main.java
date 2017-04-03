@@ -3,13 +3,14 @@ package org.nzbhydra.web;
 import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.UserAuthConfig;
-import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.web.mapping.BootstrappedData;
-import org.nzbhydra.web.mapping.SafeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,16 +27,29 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    @Autowired
-    private CategoryProvider categoryProvider;
+
     @Autowired
     private BaseConfig baseConfig;
+    private SafeConfig safeConfig = null;
+
+    private SafeConfig getSafeConfig() {
+        if (safeConfig == null) {
+            safeConfig = new SafeConfig(baseConfig);
+        }
+        return safeConfig;
+    }
+
+
+    @EventListener
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
+        baseConfig = configChangedEvent.getNewConfig();
+        safeConfig = new SafeConfig(baseConfig);
+    }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(HttpSession session, HttpServletRequest request, Principal principal) {
         return "login";
     }
-
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
@@ -77,23 +91,9 @@ public class Main {
         bootstrappedData = setUserInfos(bootstrappedData, principal);
         bootstrappedData.setBaseUrl("/"); //TODO
 
-        SafeConfig safeConfig = new SafeConfig();
-        safeConfig.setCategories(categoryProvider.getCategories());
-        safeConfig.setSearching(baseConfig.getSearching());
-        bootstrappedData.setSafeConfig(safeConfig);
+        bootstrappedData.setSafeConfig(getSafeConfig());
 
         session.setAttribute("baseUrl", "/");
-
-        /*
-        Map<String, Object> safeConfig = new HashMap<>();
-        safeConfig.put("categories", categoryProvider.getCategories());
-        Map<String, Object> searchingConfig = new HashMap<>();
-        searchingConfig.put("enableCategorySizes", true);
-        safeConfig.put("searching", searchingConfig);
-        bootstrappedData.put("safeConfig", safeConfig);
-        session.setAttribute("bootstrap", bootstrappedData);
-        */
-
         session.setAttribute("bootstrap", bootstrappedData);
     }
 

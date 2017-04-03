@@ -45,7 +45,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String link;
     private boolean passworded;
     private String poster = null;
-    private Instant pubDate;
+    private Instant pubDate = null;
     private Long searchResultId;
     private Long size;
     private String title;
@@ -71,6 +71,18 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
 
     @Override
     public int compareTo(SearchResultItem o) {
+        if (o == null) {
+            return 1;
+        }
+        if (o.pubDate == null && pubDate != null) {
+            return 1;
+        }
+        if (pubDate == null && o.pubDate != null) {
+            return -1;
+        }
+        if (pubDate == null && o.pubDate == null) {
+            return 0;
+        }
         return o.getPubDate().compareTo(pubDate);
     }
 

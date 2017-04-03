@@ -34,8 +34,8 @@ public class MainConfig {
     private String sslcert;
     private String sslkey;
     private boolean startupBrowser = true;
-    private String theme = "grey";
-    private String urlBase = "/";
+    protected String theme = "grey";
+    protected String urlBase = "/";
     private boolean useCsrf = true;
     private boolean useLocalUrlForApiAccess = true;
 

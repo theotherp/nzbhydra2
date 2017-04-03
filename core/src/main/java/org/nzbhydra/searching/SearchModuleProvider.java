@@ -41,15 +41,6 @@ public class SearchModuleProvider {
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
 
 
-    /**
-     * Called after indexer config has been updated
-     */
-    public void reloadIndexers() {
-        logger.info("Reloading indexers");
-        loadIndexers();
-    }
-
-
     public List<Indexer> getIndexers() {
         return new ArrayList<>(searchModuleInstances.values());
     }
@@ -62,11 +53,12 @@ public class SearchModuleProvider {
     /**
      * Must be called by <tt>{@link SearchModuleConfigProvider}</tt> when config is loaded.
      */
-    void loadIndexers() {
+    public void loadIndexers() {
         if (searchModuleConfigProvider.getIndexers() == null) {
             logger.error("Indexers not set. Check your configuration");
             return;
         }
+        logger.info("Loading indexers");
         searchModuleInstances.clear();
         for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
             try {

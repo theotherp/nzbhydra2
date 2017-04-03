@@ -11,10 +11,11 @@ import java.net.URI;
 public class NzbDownloadResult {
     private String nzbContent;
     private String url;
+    private String title;
     private boolean successful;
     private String error;
 
-    private NzbDownloadResult(String nzbContent, String url, boolean successful, String error) {
+    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error) {
         this.nzbContent = nzbContent;
         this.url = url;
         this.successful = successful;
@@ -37,16 +38,16 @@ public class NzbDownloadResult {
         return response;
     }
 
-    public static NzbDownloadResult createSuccessfulDownloadResult(String nzbContent) {
-        return new NzbDownloadResult(nzbContent, null, true, null);
+    public static NzbDownloadResult createSuccessfulDownloadResult(String title, String nzbContent) {
+        return new NzbDownloadResult(title, nzbContent, null, true, null);
     }
 
-    public static NzbDownloadResult createSuccessfulRedirectResult(String url) {
-        return new NzbDownloadResult(null, url, true, null);
+    public static NzbDownloadResult createSuccessfulRedirectResult(String title, String url) {
+        return new NzbDownloadResult(title, null, url, true, null);
     }
 
     public static NzbDownloadResult createErrorResult(String error) {
-        return new NzbDownloadResult(null, null, false, error);
+        return new NzbDownloadResult(null, null, null, false, error);
     }
 
 

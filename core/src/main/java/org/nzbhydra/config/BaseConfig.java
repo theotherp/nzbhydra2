@@ -23,6 +23,7 @@ public class BaseConfig {
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private ApplicationEventPublisher applicationEventPublisher;
+
     private AuthConfig auth = new AuthConfig();
     private List<Category> categories;
     private List<DownloaderConfig> downloaders = new ArrayList<>();

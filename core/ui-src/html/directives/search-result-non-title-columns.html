@@ -36,7 +36,7 @@
         <a target="_self" href="getnzb?searchresultid={{ ::result.searchResultId }}&internal=true" style="vertical-align: middle; margin-left: 3px; margin-right: 3px" class="no-underline"
            uib-tooltip="Download NZB"
            tooltip-placement="top"
-           tooltip-trigger="mouseenter"><span>{{ ::result.downloadType == 'nzb' ? 'NZB' : 'Torrent' }}</span>
+           tooltip-trigger="mouseenter"><span>{{ ::result.downloadType == 'NZB' ? 'NZB' : 'Torrent' }}</span>
         </a>
     </span>
     <addable-nzbs search-result-id="result.searchResultId" download-type="result.downloadType"></addable-nzbs>

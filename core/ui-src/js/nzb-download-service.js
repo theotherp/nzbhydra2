@@ -12,11 +12,11 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
     return service;
 
     function sendNzbAddCommand(downloader, searchresultids, category) {
-        var params = {downloader: downloader.name, searchresultids: angular.toJson(searchresultids)};
+        var params = {downloaderName: downloader.name, searchResultIds: angular.toJson(searchresultids)};
         if (category != "No category") {
             params["category"] = category;
         }
-        return $http.put("internalapi/addnzbs", params);
+        return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function download(downloader, searchresultids) {

@@ -28,7 +28,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
                 return deferred.promise;
             }
 
-            return $http.get('internalapi/getcategories', {params: {downloader: downloader.name}})
+            return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
 
                     console.log("Updating downloader categories cache");

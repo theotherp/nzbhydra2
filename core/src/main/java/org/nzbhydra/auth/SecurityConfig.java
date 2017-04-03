@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.authentication.rememberme.InMemoryTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
@@ -38,15 +37,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private HydraUserDetailsManager hydraUserDetailsManager;
 
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
                     .httpBasic()
-                    .and()
-            ;
+                    .and();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http.formLogin().loginPage("/login").permitAll()
                     .and()
@@ -56,9 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             enableAnonymousAccessIfConfigured(http);
             if (baseConfig.getAuth().isRememberUsers()) {
                 JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-                tokenRepository.setCreateTableOnStartup(true);
                 tokenRepository.setDataSource(dataSource());
-                http = http.rememberMe().alwaysRemember(true).tokenRepository(new InMemoryTokenRepositoryImpl()).and();
+                http = http.rememberMe().alwaysRemember(true).tokenRepository(tokenRepository).and();
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
         }
@@ -67,13 +63,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
         //Create an anonymous auth filter. If any of the areas are not restricted the anonymous user will get its role
         try {
-            //HydraAnonymousAuthenticationFilter authenticationFilter = new HydraAnonymousAuthenticationFilter(baseConfig.getAuth());
             if (!hydraAnonymousAuthenticationFilter.getAuthorities().isEmpty()) {
                 http.anonymous().authenticationFilter(hydraAnonymousAuthenticationFilter);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unable to configure anonymous access", e);
         }
     }
 
@@ -86,29 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        //Chaining the user configurations is important because otherwise multiple configurers will exist and cause remember-me to fail
         auth.userDetailsService(hydraUserDetailsManager);
-        /*
-        InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configurer = auth.inMemoryAuthentication();
-        for (UserAuthConfig userAuthConfig : baseConfig.getAuth().getUsers()) {
-            //Add roles either if it's actively assigned to him or if the right isn't restricted at all
-            List<String> userRoles = new ArrayList<>();
-            if (userAuthConfig.isMaySeeAdmin() || !baseConfig.getAuth().isRestrictAdmin()) {
-                userRoles.add("ADMIN");
-            }
-            if (userAuthConfig.isMaySeeStats() || !baseConfig.getAuth().isRestrictStats()) {
-                userRoles.add("STATS");
-            }
-            if (userAuthConfig.isMaySeeDetailsDl() || !baseConfig.getAuth().isRestrictDetailsDl()) {
-                userRoles.add("DETAILS");
-            }
-            if (userAuthConfig.isShowIndexerSelection() || !baseConfig.getAuth().isRestrictIndexerSelection()) {
-                userRoles.add("SHOW_INDEXERS");
-            }
-            userRoles.add("USER");
-            configurer = configurer.withUser(userAuthConfig.getUsername()).password(userAuthConfig.getPassword()).roles(userRoles.toArray(new String[userRoles.size()])).and();
-        }
-        */
     }
 
     @ConfigurationProperties(prefix = "spring.datasource")

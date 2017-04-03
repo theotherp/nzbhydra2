@@ -344,7 +344,7 @@ public class Newznab extends Indexer {
                 searchResultItem.setPassworded(true);
             } else if (attribute.getName().equals("nfo")) {
                 searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HasNfo.YES : HasNfo.NO);
-            } else if (attribute.getName().equals("info") && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
+            } else if (attribute.getName().equals("info") && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
                 //Info attribute is always a link to an NFO
                 searchResultItem.setHasNfo(HasNfo.YES);
             } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
@@ -360,7 +360,7 @@ public class Newznab extends Indexer {
             }
         }
 
-        if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BACKEND_TYPE.NNTMUX || config.getBackend() == BACKEND_TYPE.NZEDB)) {
+        if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
             //For these backends if not specified it doesn't exist
             searchResultItem.setHasNfo(HasNfo.NO);
         }
