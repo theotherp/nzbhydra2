@@ -117,8 +117,9 @@ public class ExternalApi {
         RssChannel rssChannel = new RssChannel();
         rssChannel.setTitle("NZB Hydra 2");
         rssChannel.setLink("link");
-        rssChannel.setWebMaster("todo");
+        rssChannel.setWebMaster("theotherp@gmx.de");
         rssChannel.setNewznabResponse(new NewznabResponse( params.getOffset(), searchResultItems.size())); //TODO
+        rssChannel.setGenerator("NZBHydra");
 
 
         rssRoot.setRssChannel(rssChannel);

@@ -11,24 +11,43 @@ import org.nzbhydra.config.Category;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.IndexerConfig.SourceEnabled;
 import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.springframework.data.domain.PageImpl;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class IndexerPickerTest {
 
+    @Mock
+    private IndexerApiAccessRepository indexerApiAccessRepository;
+    @Mock
+    private NzbDownloadRepository nzbDownloadRepository;
     @Mock
     private SearchModuleProvider searchModuleProviderMock;
     @Mock
@@ -42,7 +61,7 @@ public class IndexerPickerTest {
     @Mock
     private SearchRequest searchRequest;
     @Mock
-    private IndexerConfig indexerConfig;
+    private IndexerConfig indexerConfigMock;
     @Mock
     private BaseConfig baseConfig;
     @Mock
@@ -60,7 +79,7 @@ public class IndexerPickerTest {
         MockitoAnnotations.initMocks(this);
         count = new HashMap<>();
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
-        when(indexer.getConfig()).thenReturn(indexerConfig);
+        when(indexer.getConfig()).thenReturn(indexerConfigMock);
         when(indexer.getName()).thenReturn("indexer");
         when(indexer.getIndexerEntity()).thenReturn(indexerEntity);
         when(indexerEntity.getStatus()).thenReturn(indexerStatusEntity);
@@ -120,28 +139,28 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckForCategory() {
         when(searchRequest.getCategory()).thenReturn(category);
-        when(indexerConfig.getCategories()).thenReturn(Collections.emptySet());
+        when(indexerConfigMock.getCategories()).thenReturn(Collections.emptySet());
 
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfig.getCategories()).thenReturn(Sets.newSet("anotherCategory"));
+        when(indexerConfigMock.getCategories()).thenReturn(Sets.newSet("anotherCategory"));
         assertFalse(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfig.getCategories()).thenReturn(Sets.newSet(("category")));
+        when(indexerConfigMock.getCategories()).thenReturn(Sets.newSet(("category")));
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
     }
 
     @Test
     public void shouldCheckForLoadLimiting() {
-        when(indexerConfig.getLoadLimitOnRandom()).thenReturn(Optional.empty());
+        when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.empty());
         assertTrue(testee.checkLoadLimiting(count, indexer));
 
-        when(indexerConfig.getLoadLimitOnRandom()).thenReturn(Optional.of(1));
+        when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.of(1));
         for (int i = 0; i < 50; i++) {
             assertTrue(testee.checkLoadLimiting(count, indexer));
         }
 
-        when(indexerConfig.getLoadLimitOnRandom()).thenReturn(Optional.of(2));
+        when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.of(2));
         int countNotPicked = 0;
         for (int i = 0; i < 500; i++) {
             countNotPicked += testee.checkLoadLimiting(count, indexer) ? 0 : 1;
@@ -153,7 +172,7 @@ public class IndexerPickerTest {
     public void shouldCheckContext() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
         when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
-        when(indexerConfig.getEnabledForSearchSource()).thenReturn(SourceEnabled.API);
+        when(indexerConfigMock.getEnabledForSearchSource()).thenReturn(SourceEnabled.API);
 
         assertFalse(testee.checkSearchSource(searchRequest, count, indexer));
 
@@ -180,6 +199,71 @@ public class IndexerPickerTest {
         when(searchRequest.getQuery()).thenReturn(Optional.empty());
         verify(infoProviderMock, never()).canConvertAny(provided, supported);
         assertTrue(testee.checkSearchId(searchRequest, count, indexer));
+    }
+
+    @Test
+    public void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
+        when(indexerConfigMock.getHitLimit()).thenReturn(Optional.empty());
+        when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.empty());
+        testee.checkIndexerHitLimit(count, indexer);
+        verify(nzbDownloadRepository, never()).findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(any(), any());
+        verify(indexerApiAccessRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
+    }
+
+    @Test
+    public void shouldIgnoreHitLimitIfNotYetReached() {
+        when(indexerConfigMock.getHitLimit()).thenReturn(Optional.of(10));
+        when(indexerApiAccessRepository.findByIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        boolean result = testee.checkIndexerHitLimit(count, indexer);
+        assertTrue(result);
+        verify(indexerApiAccessRepository).findByIndexerOrderByTimeDesc(any(), any());
+    }
+
+    @Test
+    public void shouldIgnoreDownloadLimitIfNotYetReached() {
+        when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.of(10));
+        when(nzbDownloadRepository.findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        boolean result = testee.checkIndexerHitLimit(count, indexer);
+        assertTrue(result);
+        verify(nzbDownloadRepository).findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(any(), any());
+    }
+
+    @Test
+    public void shouldCalculateNextHitWithRollingTimeWindows() throws Exception {
+        indexerConfigMock.setHitLimitResetTime(null);
+        Instant firstInWindow = Instant.now().minus(12, ChronoUnit.HOURS);
+        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
+        assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(24, ChronoUnit.HOURS), nextHit);
+    }
+
+    @Test
+    public void shouldCalculateNextHitWithFixedResetTime() throws Exception {
+        //Time is in past
+        Instant base;
+        if (LocalDateTime.now().get(ChronoField.HOUR_OF_DAY) < 12) {
+            indexerConfigMock.setHitLimitResetTime(14);
+            base = LocalDateTime.now().minus(1, ChronoUnit.DAYS).with(ChronoField.HOUR_OF_DAY, 23).toInstant(ZoneOffset.UTC);
+        } else {
+            indexerConfigMock.setHitLimitResetTime(10);
+            base = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, 9).toInstant(ZoneOffset.UTC);
+        }
+        Instant firstInWindow = base;
+        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
+        //24 hours after the last hit
+        assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS), nextHit);
+
+        //Time is in future
+        if (LocalDateTime.now().get(ChronoField.HOUR_OF_DAY) < 12) {
+            indexerConfigMock.setHitLimitResetTime(14);
+            base = LocalDateTime.now().plus(1, ChronoUnit.DAYS).with(ChronoField.HOUR_OF_DAY, 23).toInstant(ZoneOffset.UTC);
+        } else {
+            indexerConfigMock.setHitLimitResetTime(10);
+            base = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, 9).toInstant(ZoneOffset.UTC);
+        }
+        firstInWindow = base;
+        nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
+        //24 hours after the last hit
+        assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS), nextHit);
     }
 
 

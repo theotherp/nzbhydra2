@@ -1,6 +1,7 @@
 package org.nzbhydra.database;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.google.common.base.MoreObjects;
 import lombok.Data;
 
 import javax.persistence.CascadeType;
@@ -49,5 +50,13 @@ public class IndexerEntity {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), id, name);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .add("name", name)
+                .toString();
     }
 }

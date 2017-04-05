@@ -121,7 +121,7 @@ public class Searcher {
             //New search
             SearchEntity searchEntity = new SearchEntity();
             searchEntity.setSource(searchRequest.getSource());
-            searchEntity.setCategory(searchRequest.getCategory());
+            searchEntity.setCategoryName(searchRequest.getCategory().getName());
             searchEntity.setQuery(searchRequest.getQuery().orElse(null));
             searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toSet()));
             searchEntity.setSeason(searchRequest.getSeason().orElse(null));

@@ -1928,13 +1928,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
         } else {
             blockUI.start("Testing connection...");
             scope.spinnerActive = true;
-            var url = "internalapi/test_newznab"; //TODO
-            var settings = {host: model.host, apiKey: model.apiKey};
-            if (angular.isDefined(model.username)) {
-                settings["username"] = model.username;
-                settings["password"] = model.password;
-            }
-            ConfigBoxService.checkConnection(url, JSON.stringify(settings)).then(function () {
+            var url = "internalapi/indexer/checkConnection"; //TODO
+            ConfigBoxService.checkConnection(url, model).then(function () {
                     checkCaps(scope, model).then(function () {
                         blockUI.reset();
                         scope.spinnerActive = false;
@@ -1960,16 +1955,11 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     function checkCaps(scope, model) {
         var deferred = $q.defer();
-        var url = "internalapi/test_caps"; //TODO
-        var settings = {indexer: model.name, apiKey: model.apiKey, host: model.host};
-        if (angular.isDefined(model.username)) {
-            settings["username"] = model.username;
-            settings["password"] = model.password;
-        }
+        var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.searchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
-            ConfigBoxService.checkCaps(url, JSON.stringify(settings), model).then(
+            ConfigBoxService.checkCaps(url, model).then(
                 function (data, model) {
                     blockUI.reset();
                     scope.spinnerActive = false;
@@ -2013,7 +2003,7 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         } else {
             scope.spinnerActive = true;
             blockUI.start("Testing connection...");
-            var url = "internalapi/downloader/checkconnection";
+            var url = "internalapi/downloader/checkConnection";
             ConfigBoxService.checkConnection(url, JSON.stringify(model)).then(function () {
                     blockUI.reset();
                     scope.spinnerActive = false;

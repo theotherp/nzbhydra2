@@ -2,12 +2,22 @@ package org.nzbhydra.indexers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.database.*;
+import org.nzbhydra.database.IndexerApiAccessRepository;
+import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.IndexerSearchRepository;
+import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
@@ -28,7 +38,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SuppressWarnings("ALL")
 public class NewznabTest {

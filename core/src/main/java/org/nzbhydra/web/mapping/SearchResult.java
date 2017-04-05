@@ -25,7 +25,7 @@ public class SearchResult {
     private Integer indexerscore;
     private String link;
     private String pubdate_utc;
-    private Long searchResultId;
+    private String searchResultId;
     private Long size;
     private String title;
 

@@ -1,0 +1,60 @@
+<caps>
+    <server version="1.0" title="omgwtfnzbs.me" strapline="omgwtfnzbs" email="omgstaff@omgwtfnzbs.me" url="https://omgwtfnzbs.me" image="https://omgwtfnzbs.me/favicon.ico"/>
+    <limits max="500" default="500"/>
+
+    <retention days="2000"/>
+
+    <registration available="no" open="no"/>
+
+    <searching>
+        <search available="yes" supportedParams="q,cat,limit,offset,maxage"/>
+        <tv-search available="yes" supportedParams="q,rid,tvdbid,tvmazeid,season,ep,cat,limit,offset,maxage"/>
+        <movie-search available="yes" supportedParams="q,imdbid,cat,limit,offset,maxage"/>
+        <audio-search available="no" supportedParams="artist"/>
+    </searching>
+
+    <categories>
+        <category id="2000" name="Movies">
+            <subcat id="2020" name="Other"/>
+            <subcat id="2030" name="SD"/>
+            <subcat id="2040" name="HD"/>
+            <subcat id="2070" name="DVD"/>
+        </category>
+        <category id="3000" name="Music">
+            <subcat id="3040" name="FLAC"/>
+            <subcat id="3010" name="MP3"/>
+            <subcat id="3020" name="Mvid"/>
+            <subcat id="3050" name="Other"/>
+            <subcat id="3030" name="Audiobook"/>
+        </category>
+        <category id="4000" name="Apps">
+            <subcat id="4010" name="PC"/>
+            <subcat id="4030" name="Mac"/>
+            <subcat id="4040" name="Phone"/>
+            <subcat id="4080" name="Linux"/>
+            <subcat id="4090" name="Other"/>
+        </category>
+        <category id="5000" name="TV">
+            <subcat id="5040" name="HD"/>
+            <subcat id="5060" name="Other"/>
+            <subcat id="5030" name="SD"/>
+        </category>
+        <category id="6000" name="XXX">
+            <subcat id="6020" name="SD-Clip"/>
+            <subcat id="6050" name="HD-Clip"/>
+            <subcat id="6010" name="DVD"/>
+            <subcat id="6030" name="Movies-SD"/>
+            <subcat id="6040" name="Movies-HD"/>
+            <subcat id="6060" name="Other"/>
+        </category>
+        <category id="7000" name="Other">
+            <subcat id="7020" name="EBook"/>
+            <subcat id="7010" name="Other"/>
+        </category>
+        <category id="8000" name="Games">
+            <subcat id="8010" name="PC"/>
+            <subcat id="8020" name="Mac"/>
+            <subcat id="8030" name="Other"/>
+        </category>
+    </categories>
+</caps>

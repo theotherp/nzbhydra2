@@ -3,8 +3,6 @@ package org.nzbhydra.database;
 import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.nzbhydra.api.CategoryConverter;
-import org.nzbhydra.config.Category;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 
@@ -34,8 +32,8 @@ public class SearchEntity {
     private int id;
     @Enumerated(EnumType.STRING)
     private AccessSource source;
-    @Convert(converter = CategoryConverter.class)
-    private Category category;
+
+    private String categoryName;
     private String query;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time;
@@ -57,7 +55,7 @@ public class SearchEntity {
 
     public boolean equalsSearchEntity(SearchEntity that) {
 
-        return Objects.equals(category, that.category) &&
+        return Objects.equals(categoryName, that.categoryName) &&
                 Objects.equals(query, that.query) &&
                 Objects.equals(identifiers, that.identifiers) &&
                 Objects.equals(season, that.season) &&

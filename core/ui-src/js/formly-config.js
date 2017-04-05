@@ -129,13 +129,8 @@ angular
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
 
-                    var url = "internalapi/test_caps";
-                    var params = {indexer: $scope.model.name, apiKey: $scope.model.apiKey, host: $scope.model.host};
-                    if (angular.isDefined($scope.model.username)) {
-                        params["username"] = $scope.model.username;
-                        params["password"] = $scope.model.password;
-                    }
-                    ConfigBoxService.checkCaps(url, params, $scope.model).then(function (data, model) {
+                    var url = "internalapi/indexer/checkCaps";
+                    ConfigBoxService.checkCaps(url, $scope.model).then(function (data, model) {
                         angular.element(testMessage).text("Supports: " + data.supportedIds + "," ? data.supportedIds && data.supportedTypes : "" + data.supportedTypes);
                         showSuccess();
                     }, function (message) {
@@ -429,29 +424,28 @@ function ConfigBoxService($http, $q) {
         return deferred.promise;
     }
 
-    function checkCaps(url, params, model) {
+    function checkCaps(url, model) {
         var deferred = $q.defer();
 
-        $http.post(url, params).success(function (data) {
+        $http.post(url, model).success(function (data) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (data.success) {
-                model.search_ids = data.supportedIds;
-                model.searchTypes = data.supportedTypes;
-                if (data.supportsAllCategories) {   //Don't display all the categories, will be replaced with placeholder "All categories"
-                    model.categories = [];
-                } else {
-                    model.categories = data.supportedCategories;
-                }
-                model.animeCategory = data.animeCategory;
-                model.audiobookCategory = data.audiobookCategory;
-                model.comicCategory = data.comicCategory;
-                model.ebookCategory = data.ebookCategory;
-                model.magazineCategory = data.magazineCategory;
-                model.backend = data.backend;
-                deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+
+            model.supportedSearchIds = data.supportedIds;
+            model.searchTypes = data.supportedTypes;
+            if (data.supportsAllCategories) {   //Don't display all the categories, will be replaced with placeholder "All categories"
+                model.categories = [];
             } else {
-                deferred.reject(data.message);
+                model.categories = data.supportedCategories;
             }
+            //TODO: Find out categories and backend
+            model.animeCategory = data.animeCategory;
+            model.audiobookCategory = data.audiobookCategory;
+            model.comicCategory = data.comicCategory;
+            model.ebookCategory = data.ebookCategory;
+            model.magazineCategory = data.magazineCategory;
+            model.backend = data.backend;
+            deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+
         }).error(function () {
             deferred.reject("Unknown error");
         });

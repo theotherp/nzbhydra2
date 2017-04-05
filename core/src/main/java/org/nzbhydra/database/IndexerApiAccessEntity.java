@@ -1,6 +1,8 @@
 package org.nzbhydra.database;
 
+import com.google.common.base.MoreObjects;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -19,6 +21,7 @@ import java.util.Objects;
 
 @Data
 @Entity
+@NoArgsConstructor
 @Table(name="indexerapiaccess")
 public class IndexerApiAccessEntity {
 
@@ -67,5 +70,17 @@ public class IndexerApiAccessEntity {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), id);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("time", time)
+                .add("result", result)
+                .add("accessType", accessType)
+                .add("responseTime", responseTime)
+                .add("error", error)
+                .add("url", url)
+                .toString();
     }
 }

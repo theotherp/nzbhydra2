@@ -1,11 +1,17 @@
 package org.nzbhydra.searching;
 
+import com.google.common.collect.Iterables;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.IndexerConfig.SourceEnabled;
+import org.nzbhydra.database.IndexerApiAccessEntity;
+import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.NzbDownloadEntity;
+import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -13,10 +19,21 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,6 +45,10 @@ public class IndexerPicker {
     private InfoProvider infoProvider;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
+    @Autowired
+    private IndexerApiAccessRepository indexerApiAccessRepository;
+    @Autowired
+    private NzbDownloadRepository nzbDownloadRepository;
     @Autowired
     private BaseConfig baseConfig;
 
@@ -62,6 +83,9 @@ public class IndexerPicker {
             }
             //TODO Account for query generation
             if (!checkSearchId(searchRequest, count, indexer)) {
+                continue;
+            }
+            if (!checkIndexerHitLimit(count, indexer)) {
                 continue;
             }
 
@@ -131,6 +155,59 @@ public class IndexerPicker {
             return false;
         }
         return true;
+    }
+
+    protected boolean checkIndexerHitLimit(Map<Indexer, String> count, Indexer indexer) {
+        IndexerConfig indexerConfig = indexer.getConfig();
+        if (!indexerConfig.getHitLimit().isPresent() && !indexerConfig.getDownloadLimit().isPresent()) {
+            return true;
+        }
+        LocalDateTime comparisonTime;
+        if (indexerConfig.getHitLimitResetTime().isPresent()) {
+            comparisonTime = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+            if (comparisonTime.isAfter(LocalDateTime.now())) {
+                comparisonTime = comparisonTime.minus(1, ChronoUnit.DAYS);
+            }
+        } else {
+            comparisonTime = LocalDateTime.now().minus(1, ChronoUnit.DAYS);
+        }
+        if (indexerConfig.getHitLimit().isPresent()) {
+            Page<IndexerApiAccessEntity> page = indexerApiAccessRepository.findByIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getHitLimit().get()));
+            if (page.getContent().size() == indexerConfig.getHitLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
+
+                logger.info("Not picking {} because all {} allowed API hits were already made. The next API hit should be possible at {}", indexerConfig.getName(), indexerConfig.getHitLimit().get(), nextPossibleHit);
+                count.put(indexer, "API hit limit reached");
+                return false;
+            }
+        }
+        if (indexerConfig.getDownloadLimit().isPresent()) {
+            Page<NzbDownloadEntity> page = nzbDownloadRepository.findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
+            if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getIndexerApiAccess().getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getIndexerApiAccess().getTime());
+
+                logger.info("Not picking {} because all {} allowed download were already made. The next download should be possible at {}", indexerConfig.getName(), indexerConfig.getDownloadLimit().get(), nextPossibleHit);
+                count.put(indexer, "Download limit reached");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {
+        LocalDateTime nextPossibleHit;
+        if (indexerConfig.getHitLimitResetTime().isPresent()) {
+            //Next possible hit is at the hour of day defined by the reset time. If that is already in the past we add one hour
+            nextPossibleHit = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+            if (nextPossibleHit.isBefore(LocalDateTime.now())) {
+                nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);
+            }
+        } else {
+            //Next possible hit is at the earlierst 24 hours after the first hit in the hit limit time window (5 hits are limit, the first was made now, then the next hit is available tomorrow at this time)
+            nextPossibleHit = LocalDateTime.ofInstant(firstInWindowAccessTime, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS);
+        }
+        return nextPossibleHit;
     }
 
     protected boolean checkSearchSource(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {

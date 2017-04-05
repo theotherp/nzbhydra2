@@ -51,6 +51,10 @@ public class IndexerConfig {
         return Optional.ofNullable(hitLimit);
     }
 
+    public Optional<Integer> getDownloadLimit() {
+        return Optional.ofNullable(downloadLimit);
+    }
+
     public Optional<Integer> getHitLimitResetTime() {
         return Optional.ofNullable(hitLimitResetTime);
     }

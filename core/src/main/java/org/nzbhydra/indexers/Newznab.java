@@ -62,7 +62,8 @@ public class Newznab extends Indexer {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
-    private static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
+    static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
+    static Map<String, IdType> paramValueToIdMap = new HashMap<>();
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile("Group:</b> ?([\\w\\.]+)<br ?/>");
@@ -75,6 +76,14 @@ public class Newznab extends Indexer {
         idTypeToParamValueMap.put(IdType.TVRAGE, "rid");
         idTypeToParamValueMap.put(IdType.TVDB, "tvdbid");
         idTypeToParamValueMap.put(IdType.TVMAZE, "tvmazeid");
+        idTypeToParamValueMap.put(IdType.TRAKT, "traktid");
+
+        paramValueToIdMap.put("imdbid", IdType.IMDB);
+        paramValueToIdMap.put("tmdbid", IdType.TMDB);
+        paramValueToIdMap.put("rid", IdType.TVRAGE);
+        paramValueToIdMap.put("tvdbid", IdType.TVDB);
+        paramValueToIdMap.put("tvmazeid", IdType.TVMAZE);
+        paramValueToIdMap.put("traktid", IdType.TRAKT);
     }
 
     @Autowired
@@ -113,6 +122,7 @@ public class Newznab extends Indexer {
         }
         return indexerSearchResult;
     }
+
 
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) {
         UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
@@ -202,7 +212,7 @@ public class Newznab extends Indexer {
     }
 
     protected IndexerSearchResult searchInternal(SearchRequest searchRequest) {
-        String url = buildSearchUrl(searchRequest).build().toString();
+        String url = buildSearchUrl(searchRequest).build().toUriString();
 
         Xml response;
         Stopwatch stopwatch = Stopwatch.createStarted();

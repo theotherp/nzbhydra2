@@ -22,7 +22,7 @@ Config
 - Setting via web call
 - reloading config: Mostly done
 
-Downloader support
+Downloader support: mostly done
 - sabnzbd
 - nzbget
 
@@ -36,8 +36,8 @@ Indexer support
 - nzbindex
 - anizb
 - nzbclub
-- checking caps
-- checking auth / connection
+- checking caps: half done, backend and cats missing
+- checking auth / connection: connection check done, auth missing
 
 Torrent support
 - jackett / cardigann
@@ -52,9 +52,7 @@ Process control
 - Shutdown: Works
 
 Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
-- Basic
-- Form
-- Remember me
+- mostly done
 - log user name for appropriate actions
 
 History & stats
@@ -68,6 +66,7 @@ Backups
 - create periodically
 - create before updating
 
+General, Ideas
 - Log / config sanitation
 - Initialize config
 - overwrite config file

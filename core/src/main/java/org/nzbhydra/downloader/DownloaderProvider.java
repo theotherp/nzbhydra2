@@ -64,7 +64,7 @@ public class DownloaderProvider implements InitializingBean {
         }
     }
 
-    public GenericResponse checkConfig(DownloaderConfig downloaderConfig) {
+    public GenericResponse checkConnection(DownloaderConfig downloaderConfig) {
         Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
         downloader.intialize(downloaderConfig);
         return downloader.checkConnection();

@@ -19,9 +19,9 @@ public class Downloader {
     private DownloaderProvider downloaderProvider;
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/downloader/checkconnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/internalapi/downloader/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse checkConnection(@RequestBody DownloaderConfig downloaderConfig) {
-        return downloaderProvider.checkConfig(downloaderConfig);
+        return downloaderProvider.checkConnection(downloaderConfig);
     }
 
     @Secured({"ROLE_ADMIN"})

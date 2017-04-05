@@ -236,7 +236,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: ["$http", function ($http) {
-                            return $http.get("internalapi/indexerstatuses").success(function (response) {
+                            return $http.get("internalapi/indexertatuses").success(function (response) {
                                 return response;
                             });
                         }],
@@ -3759,7 +3759,7 @@ function IndexerStatusesController($scope, $http, statuses) {
     };
 
     $scope.enable = function (indexerName) {
-        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
+        $http.post("internalapi/indexertatuses/enable/" + encodeURI(indexerName)).then(function (response) {
             $scope.statuses = response.data;
         });
     }
@@ -4200,13 +4200,8 @@ angular
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
 
-                    var url = "internalapi/test_caps";
-                    var params = {indexer: $scope.model.name, apiKey: $scope.model.apiKey, host: $scope.model.host};
-                    if (angular.isDefined($scope.model.username)) {
-                        params["username"] = $scope.model.username;
-                        params["password"] = $scope.model.password;
-                    }
-                    ConfigBoxService.checkCaps(url, params, $scope.model).then(function (data, model) {
+                    var url = "internalapi/indexer/checkCaps";
+                    ConfigBoxService.checkCaps(url, $scope.model).then(function (data, model) {
                         angular.element(testMessage).text("Supports: " + data.supportedIds + "," ? data.supportedIds && data.supportedTypes : "" + data.supportedTypes);
                         showSuccess();
                     }, function (message) {
@@ -4500,29 +4495,28 @@ function ConfigBoxService($http, $q) {
         return deferred.promise;
     }
 
-    function checkCaps(url, params, model) {
+    function checkCaps(url, model) {
         var deferred = $q.defer();
 
-        $http.post(url, params).success(function (data) {
+        $http.post(url, model).success(function (data) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (data.success) {
-                model.search_ids = data.supportedIds;
-                model.searchTypes = data.supportedTypes;
-                if (data.supportsAllCategories) {   //Don't display all the categories, will be replaced with placeholder "All categories"
-                    model.categories = [];
-                } else {
-                    model.categories = data.supportedCategories;
-                }
-                model.animeCategory = data.animeCategory;
-                model.audiobookCategory = data.audiobookCategory;
-                model.comicCategory = data.comicCategory;
-                model.ebookCategory = data.ebookCategory;
-                model.magazineCategory = data.magazineCategory;
-                model.backend = data.backend;
-                deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+
+            model.supportedSearchIds = data.supportedIds;
+            model.searchTypes = data.supportedTypes;
+            if (data.supportsAllCategories) {   //Don't display all the categories, will be replaced with placeholder "All categories"
+                model.categories = [];
             } else {
-                deferred.reject(data.message);
+                model.categories = data.supportedCategories;
             }
+            //TODO: Find out categories and backend
+            model.animeCategory = data.animeCategory;
+            model.audiobookCategory = data.audiobookCategory;
+            model.comicCategory = data.comicCategory;
+            model.ebookCategory = data.ebookCategory;
+            model.magazineCategory = data.magazineCategory;
+            model.backend = data.backend;
+            deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+
         }).error(function () {
             deferred.reject("Unknown error");
         });
@@ -6769,13 +6763,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
         } else {
             blockUI.start("Testing connection...");
             scope.spinnerActive = true;
-            var url = "internalapi/test_newznab"; //TODO
-            var settings = {host: model.host, apiKey: model.apiKey};
-            if (angular.isDefined(model.username)) {
-                settings["username"] = model.username;
-                settings["password"] = model.password;
-            }
-            ConfigBoxService.checkConnection(url, JSON.stringify(settings)).then(function () {
+            var url = "internalapi/indexer/checkConnection"; //TODO
+            ConfigBoxService.checkConnection(url, model).then(function () {
                     checkCaps(scope, model).then(function () {
                         blockUI.reset();
                         scope.spinnerActive = false;
@@ -6801,16 +6790,11 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     function checkCaps(scope, model) {
         var deferred = $q.defer();
-        var url = "internalapi/test_caps"; //TODO
-        var settings = {indexer: model.name, apiKey: model.apiKey, host: model.host};
-        if (angular.isDefined(model.username)) {
-            settings["username"] = model.username;
-            settings["password"] = model.password;
-        }
+        var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.searchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
-            ConfigBoxService.checkCaps(url, JSON.stringify(settings), model).then(
+            ConfigBoxService.checkCaps(url, model).then(
                 function (data, model) {
                     blockUI.reset();
                     scope.spinnerActive = false;
@@ -6855,7 +6839,7 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         } else {
             scope.spinnerActive = true;
             blockUI.start("Testing connection...");
-            var url = "internalapi/downloader/checkconnection";
+            var url = "internalapi/downloader/checkConnection";
             ConfigBoxService.checkConnection(url, JSON.stringify(model)).then(function () {
                     blockUI.reset();
                     scope.spinnerActive = false;

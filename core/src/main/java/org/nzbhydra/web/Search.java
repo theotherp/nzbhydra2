@@ -163,8 +163,8 @@ public class Search {
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
                         .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                        .link("http://127.0.0.1:5076/internalapi/getnzb/" + item.getGuid()) //TODO construct using scheme, host, url base or external url
-                        .searchResultId(item.getSearchResultId())
+                        .link("http://127.0.0.1:5076/internalapi/" + item.getGuid()) //TODO construct using scheme, host, url base or external url
+                        .searchResultId(item.getSearchResultId().toString())
                         .size(item.getSize())
                         .title(item.getTitle());
                 builder = setSearchResultDateRelatedValues(builder, item);

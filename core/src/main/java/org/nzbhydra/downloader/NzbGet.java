@@ -40,9 +40,10 @@ public class NzbGet extends Downloader {
     public GenericResponse checkConnection() {
         try {
             boolean successful = client.invoke("writelog", new Object[]{"INFO", "NZBHydra connected to test connection"}, Boolean.class);
+            logger.info("Connection check to NZBGet using URL {} successful", downloaderConfig.getUrl());
             return new GenericResponse(successful, null);
         } catch (Throwable e) {
-            logger.error("Connection check to NZBGet failed");
+            logger.error("Connection check to NZBGet using URL {} failed", downloaderConfig.getUrl());
             return new GenericResponse(false, e.getMessage());
         }
     }

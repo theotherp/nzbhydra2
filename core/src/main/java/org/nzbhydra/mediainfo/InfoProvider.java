@@ -12,18 +12,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.IMDB;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.MOVIETITLE;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TMDB;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TRAKT;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVDB;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVMAZE;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVRAGE;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVTITLE;
 
 @Component
 public class InfoProvider {
+
 
     public enum IdType {
         TVDB,
         TVRAGE,
         TVMAZE,
+        TRAKT,
         IMDB,
         TMDB,
         TVTITLE,
@@ -36,6 +48,7 @@ public class InfoProvider {
         canConvertMap.put(TVDB, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
         canConvertMap.put(TVMAZE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
         canConvertMap.put(TVRAGE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
+        canConvertMap.put(TRAKT, Sets.newHashSet(TRAKT)); //Currently no conversion supported
         canConvertMap.put(TVTITLE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
 
         canConvertMap.put(TMDB, Sets.newHashSet(TMDB, IMDB, MOVIETITLE));
@@ -55,7 +68,6 @@ public class InfoProvider {
     protected TvMazeHandler tvMazeHandler;
     @Autowired
     private TvInfoRepository tvInfoRepository;
-
 
     public boolean canConvert(IdType from, IdType to) {
         return canConvertMap.get(from).contains(to);
@@ -138,28 +150,6 @@ public class InfoProvider {
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }
-    }
-
-
-    private class CacheKey {
-        private IdType idType;
-        private String value;
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            CacheKey cacheKey = (CacheKey) o;
-            return idType == cacheKey.idType &&
-                    Objects.equals(value, cacheKey.value);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(idType, value);
-        }
-
-
     }
 
 
