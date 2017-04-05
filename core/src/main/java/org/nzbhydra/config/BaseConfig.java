@@ -1,15 +1,22 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +25,8 @@ import java.util.List;
 @EnableConfigurationProperties
 @Data
 public class BaseConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
     @Autowired
     @Getter(AccessLevel.NONE)
@@ -35,9 +44,20 @@ public class BaseConfig {
         main = newConfig.getMain();
         categories = newConfig.getCategories();
         indexers = newConfig.getIndexers();
+        downloaders = newConfig.getDownloaders();
+        searching = newConfig.getSearching();
+        auth = newConfig.getAuth();
 
         ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, this);
         applicationEventPublisher.publishEvent(configChangedEvent);
+    }
+
+    public void save() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        objectMapper.registerModule(new Jdk8Module());
+        File file = new File("config/application.yml");
+        logger.info("Writing config to file {}", file.getAbsolutePath());
+        objectMapper.writeValue(file, this);
     }
 
 

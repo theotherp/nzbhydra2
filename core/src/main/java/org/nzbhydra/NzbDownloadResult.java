@@ -17,6 +17,7 @@ public class NzbDownloadResult {
 
     private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error) {
         this.nzbContent = nzbContent;
+        this.title = title;
         this.url = url;
         this.successful = successful;
         this.error = error;

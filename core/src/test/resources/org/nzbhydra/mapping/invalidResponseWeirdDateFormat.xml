@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+    <channel>
+        <atom:link href="https://nzbs.org/api?apikey=APIKEY&amp;t=search&amp;q=avengers&amp;extended=1" rel="self" type="application/rss+xml"/>
+        <title>NZBs(dot)ORG API Search</title>
+        <description>NZBs(dot)ORG Feed</description>
+        <link>https://nzbs.org/</link>
+        <language>en-gb</language>
+        <webMaster>admin@nzbs.org (NZBs(dot)ORG)</webMaster>
+        <category></category>
+        <image>
+            <url>https://nzbs.org//templates/default/images/banner.jpg</url>
+            <title>NZBs(dot)ORG</title>
+            <link>https://nzbs.org/</link>
+            <description>Visit NZBs(dot)ORG - Home of the NZB Harvester</description>
+        </image>
+
+        <newznab:response offset="0" total="1000"/>
+        <item>
+            <title>UTC instead of +000</title>
+            <pubDate>Mon, 03 Apr 2017 07:25:35 UTC</pubDate>
+        </item>
+        <item>
+            <title>Son should be Mon</title>
+            <pubDate>Son, 03 Apr 2017 07:25:35 +0000</pubDate>
+        </item>
+        <item>
+            <title>No time zone</title>
+            <pubDate>Mon, 03 Apr 2017 07:25:35</pubDate>
+        </item>
+
+    </channel>
+</rss>

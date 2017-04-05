@@ -3,7 +3,15 @@ package org.nzbhydra.database;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
@@ -47,7 +55,7 @@ public class SearchResultEntity {
 
     protected String details;
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.IndexerConfig;
 import org.slf4j.Logger;
@@ -28,10 +29,12 @@ public class SearchModuleConfigProvider implements InitializingBean {
     private Map<String, IndexerConfig> configsByname;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
+    @Autowired
+    private BaseConfig baseConfig;
 
     @EventListener
-    public void handleNewConfig(ConfigChangedEvent newConfig) {
-        indexers = newConfig.getNewConfig().getIndexers();
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
+        baseConfig = configChangedEvent.getNewConfig();
         afterPropertiesSet();
     }
 
@@ -50,6 +53,7 @@ public class SearchModuleConfigProvider implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
+        indexers = baseConfig.getIndexers();
         if (indexers != null) {
             configsByname = indexers.stream().collect(Collectors.toMap(IndexerConfig::getName, Function.identity()));
         } else {

@@ -1,0 +1,1217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="https://www.tabula-rasa.pw/api" rel="self" type="application/rss+xml"/>
+        <title>Tabula Rasa</title>
+        <description>Tabula Rasa API Details</description>
+        <link>https://www.tabula-rasa.pw/</link>
+        <language>en-gb</language>
+        <webMaster>admin@tabula-rasa.pw Tabula Rasa</webMaster>
+        <category>usenet,nzbs,newznab,cms,community</category>
+        <generator>nntmux</generator>
+        <ttl>10</ttl>
+        <docs>https://www.tabula-rasa.pw/apihelp/</docs>
+        <image url="https://www.tabula-rasa.pw/themes/shared/images/logo.png" title="Tabula Rasa" link="https://www.tabula-rasa.pw/" description="Visit Tabula Rasa - A great usenet indexer"/>
+        <newznab:response offset="0" total="125000"/>
+        <item>
+            <title>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/c00dc2fb993c02ed4b4f513851de8b154bf22a5d</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/c00dc2fb993c02ed4b4f513851de8b154bf22a5d.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/c00dc2fb993c02ed4b4f513851de8b154bf22a5d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:50 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/c00dc2fb993c02ed4b4f513851de8b154bf22a5d.nzb&amp;i=650&amp;r=APIKEY" length="206166560" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="206166560"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/2dfca5cf784837c7d6507d5fe08f5e1d35241e2c</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/2dfca5cf784837c7d6507d5fe08f5e1d35241e2c.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/2dfca5cf784837c7d6507d5fe08f5e1d35241e2c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:50 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/2dfca5cf784837c7d6507d5fe08f5e1d35241e2c.nzb&amp;i=650&amp;r=APIKEY" length="184381721" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="184381721"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/ea387f61860ab0e7bf44d3b3227dc937da9fdf5e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/ea387f61860ab0e7bf44d3b3227dc937da9fdf5e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/ea387f61860ab0e7bf44d3b3227dc937da9fdf5e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:45:04 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/ea387f61860ab0e7bf44d3b3227dc937da9fdf5e.nzb&amp;i=650&amp;r=APIKEY" length="1000934589" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1000934589"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/fce7b477b069885ed2c8bf4127b5ae0013b51179</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/fce7b477b069885ed2c8bf4127b5ae0013b51179.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/fce7b477b069885ed2c8bf4127b5ae0013b51179#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:41:21 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/fce7b477b069885ed2c8bf4127b5ae0013b51179.nzb&amp;i=650&amp;r=APIKEY" length="1016004490" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1016004490"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b0df7db74878a0ead86dc0bd8fd3d17e1d94d262</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b0df7db74878a0ead86dc0bd8fd3d17e1d94d262.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b0df7db74878a0ead86dc0bd8fd3d17e1d94d262#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:42 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b0df7db74878a0ead86dc0bd8fd3d17e1d94d262.nzb&amp;i=650&amp;r=APIKEY" length="971463390" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="971463390"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/520e97016e4744e6f4fe2f1811a488b942d2adde</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/520e97016e4744e6f4fe2f1811a488b942d2adde.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/520e97016e4744e6f4fe2f1811a488b942d2adde#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:42 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/520e97016e4744e6f4fe2f1811a488b942d2adde.nzb&amp;i=650&amp;r=APIKEY" length="988293695" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="988293695"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e815fe93c4bf98279c9327bd70ac2fe612f2d4a3</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e815fe93c4bf98279c9327bd70ac2fe612f2d4a3.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e815fe93c4bf98279c9327bd70ac2fe612f2d4a3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:38:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e815fe93c4bf98279c9327bd70ac2fe612f2d4a3.nzb&amp;i=650&amp;r=APIKEY" length="167488682" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="167488682"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/2655ba08e07a143795b0f6ddacba13749b0c0898</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/2655ba08e07a143795b0f6ddacba13749b0c0898.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/2655ba08e07a143795b0f6ddacba13749b0c0898#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:43 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/2655ba08e07a143795b0f6ddacba13749b0c0898.nzb&amp;i=650&amp;r=APIKEY" length="1108289311" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1108289311"/>
+        </item>
+        <item>
+            <title>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/d8e7b1dd28d82abb9d44155546ebf89c19858bbb</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/d8e7b1dd28d82abb9d44155546ebf89c19858bbb.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/d8e7b1dd28d82abb9d44155546ebf89c19858bbb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:45:10 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/d8e7b1dd28d82abb9d44155546ebf89c19858bbb.nzb&amp;i=650&amp;r=APIKEY" length="1854903202" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1854903202"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E16.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/ee51ee3c41fafeaeb551a61da2a4a8b53f0f621a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/ee51ee3c41fafeaeb551a61da2a4a8b53f0f621a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/ee51ee3c41fafeaeb551a61da2a4a8b53f0f621a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:33:36 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E16.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/ee51ee3c41fafeaeb551a61da2a4a8b53f0f621a.nzb&amp;i=650&amp;r=APIKEY" length="180214691" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="180214691"/>
+        </item>
+        <item>
+            <title>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/bda29471ff74165c2cf926c94ae5cadda0b6bfc6</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/bda29471ff74165c2cf926c94ae5cadda0b6bfc6.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/bda29471ff74165c2cf926c94ae5cadda0b6bfc6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:37:10 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/bda29471ff74165c2cf926c94ae5cadda0b6bfc6.nzb&amp;i=650&amp;r=APIKEY" length="326013439" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="326013439"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/40fb3bfb0363a2a3c3fd6393333a6bdb40fd707e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/40fb3bfb0363a2a3c3fd6393333a6bdb40fd707e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/40fb3bfb0363a2a3c3fd6393333a6bdb40fd707e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:31:03 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/40fb3bfb0363a2a3c3fd6393333a6bdb40fd707e.nzb&amp;i=650&amp;r=APIKEY" length="247234962" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="247234962"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9877fd2edf69e1ff726a6cd8c85a10621d019437</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9877fd2edf69e1ff726a6cd8c85a10621d019437.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9877fd2edf69e1ff726a6cd8c85a10621d019437#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:31:03 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9877fd2edf69e1ff726a6cd8c85a10621d019437.nzb&amp;i=650&amp;r=APIKEY" length="184374880" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="184374880"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9b0048cd77dfeacfbd7248839d345be54edbf726</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9b0048cd77dfeacfbd7248839d345be54edbf726.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9b0048cd77dfeacfbd7248839d345be54edbf726#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:54 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9b0048cd77dfeacfbd7248839d345be54edbf726.nzb&amp;i=650&amp;r=APIKEY" length="1472190050" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1472190050"/>
+        </item>
+        <item>
+            <title>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e5da46a0b4579a4e26b0bdc6b98169beb76e2376</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e5da46a0b4579a4e26b0bdc6b98169beb76e2376.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e5da46a0b4579a4e26b0bdc6b98169beb76e2376#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:59 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e5da46a0b4579a4e26b0bdc6b98169beb76e2376.nzb&amp;i=650&amp;r=APIKEY" length="1916849901" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1916849901"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/5daffd09e0520b58e4358bbcffa6379cbdba1319</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/5daffd09e0520b58e4358bbcffa6379cbdba1319.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/5daffd09e0520b58e4358bbcffa6379cbdba1319#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:27:14 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/5daffd09e0520b58e4358bbcffa6379cbdba1319.nzb&amp;i=650&amp;r=APIKEY" length="1897541226" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1897541226"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/fef0d26cf78038233c0c9b18e954579dc8d435bb</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/fef0d26cf78038233c0c9b18e954579dc8d435bb.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/fef0d26cf78038233c0c9b18e954579dc8d435bb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:16:44 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/fef0d26cf78038233c0c9b18e954579dc8d435bb.nzb&amp;i=650&amp;r=APIKEY" length="903780360" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="903780360"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/61df95b4422dfb5f54e59475e88377c43f406aba</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/61df95b4422dfb5f54e59475e88377c43f406aba.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/61df95b4422dfb5f54e59475e88377c43f406aba#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:14:08 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/61df95b4422dfb5f54e59475e88377c43f406aba.nzb&amp;i=650&amp;r=APIKEY" length="827752070" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="827752070"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e0cba6c5f0273cabd6a7dc3fcd90429392ba62b2</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e0cba6c5f0273cabd6a7dc3fcd90429392ba62b2.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e0cba6c5f0273cabd6a7dc3fcd90429392ba62b2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:11:16 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e0cba6c5f0273cabd6a7dc3fcd90429392ba62b2.nzb&amp;i=650&amp;r=APIKEY" length="472987210" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="472987210"/>
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/30269e17af6aa20372be16fd2126371f51abb03d</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/30269e17af6aa20372be16fd2126371f51abb03d.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/30269e17af6aa20372be16fd2126371f51abb03d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:14:51 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/30269e17af6aa20372be16fd2126371f51abb03d.nzb&amp;i=650&amp;r=APIKEY" length="657850141" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="657850141"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/79280f450afcf5be211f41359ea2cda245fe4e03</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/79280f450afcf5be211f41359ea2cda245fe4e03.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/79280f450afcf5be211f41359ea2cda245fe4e03#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:11:16 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/79280f450afcf5be211f41359ea2cda245fe4e03.nzb&amp;i=650&amp;r=APIKEY" length="247239315" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="247239315"/>
+        </item>
+        <item>
+            <title>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b13b4356d81d7d9690d8a546323e4f0f02d104ab</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b13b4356d81d7d9690d8a546323e4f0f02d104ab.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b13b4356d81d7d9690d8a546323e4f0f02d104ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:17:28 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b13b4356d81d7d9690d8a546323e4f0f02d104ab.nzb&amp;i=650&amp;r=APIKEY" length="322502653" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="322502653"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/02f9f165b98b0e8ed8fe3c15ed3f4a28d85f1b02</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/02f9f165b98b0e8ed8fe3c15ed3f4a28d85f1b02.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/02f9f165b98b0e8ed8fe3c15ed3f4a28d85f1b02#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:05:55 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/02f9f165b98b0e8ed8fe3c15ed3f4a28d85f1b02.nzb&amp;i=650&amp;r=APIKEY" length="1058014052" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1058014052"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/01ca4bb8e70c8a233a0ebe58f6850c5e58295ec4</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/01ca4bb8e70c8a233a0ebe58f6850c5e58295ec4.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/01ca4bb8e70c8a233a0ebe58f6850c5e58295ec4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:56:14 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/01ca4bb8e70c8a233a0ebe58f6850c5e58295ec4.nzb&amp;i=650&amp;r=APIKEY" length="482415886" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="482415886"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E14.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/237924778fa7ad027fb56be2ca7ed3c315461362</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/237924778fa7ad027fb56be2ca7ed3c315461362.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/237924778fa7ad027fb56be2ca7ed3c315461362#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:56:14 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E14.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/237924778fa7ad027fb56be2ca7ed3c315461362.nzb&amp;i=650&amp;r=APIKEY" length="188808691" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="188808691"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/89726b6cba3c9ea624db568658b1425e4c9a5359</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/89726b6cba3c9ea624db568658b1425e4c9a5359.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/89726b6cba3c9ea624db568658b1425e4c9a5359#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:59:34 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/89726b6cba3c9ea624db568658b1425e4c9a5359.nzb&amp;i=650&amp;r=APIKEY" length="964222457" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="964222457"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/75da2f96267913dc50973f72a5642402e4127f18</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/75da2f96267913dc50973f72a5642402e4127f18.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/75da2f96267913dc50973f72a5642402e4127f18#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:54:26 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/75da2f96267913dc50973f72a5642402e4127f18.nzb&amp;i=650&amp;r=APIKEY" length="858682389" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="858682389"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E12.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9d9623cda6b60b0ae16b93f272f37ce5f8cb5407</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9d9623cda6b60b0ae16b93f272f37ce5f8cb5407.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9d9623cda6b60b0ae16b93f272f37ce5f8cb5407#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:52:31 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E12.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9d9623cda6b60b0ae16b93f272f37ce5f8cb5407.nzb&amp;i=650&amp;r=APIKEY" length="154429380" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="154429380"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E13.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/3d124b2d937105d283f4be176ac2582e3da129a2</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/3d124b2d937105d283f4be176ac2582e3da129a2.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/3d124b2d937105d283f4be176ac2582e3da129a2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:52:31 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E13.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/3d124b2d937105d283f4be176ac2582e3da129a2.nzb&amp;i=650&amp;r=APIKEY" length="164505146" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="164505146"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/6d436c26e156c41eee4ca51fad5487cb48b1b63a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/6d436c26e156c41eee4ca51fad5487cb48b1b63a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/6d436c26e156c41eee4ca51fad5487cb48b1b63a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:56:07 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/6d436c26e156c41eee4ca51fad5487cb48b1b63a.nzb&amp;i=650&amp;r=APIKEY" length="501725619" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="501725619"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/c5e6a6d58452ce05124a058ffef771e6ca5b5ab8</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/c5e6a6d58452ce05124a058ffef771e6ca5b5ab8.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/c5e6a6d58452ce05124a058ffef771e6ca5b5ab8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:52:31 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/c5e6a6d58452ce05124a058ffef771e6ca5b5ab8.nzb&amp;i=650&amp;r=APIKEY" length="758837748" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="758837748"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/7ea629b5280660d13760004a8fca7163fad77d24</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/7ea629b5280660d13760004a8fca7163fad77d24.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/7ea629b5280660d13760004a8fca7163fad77d24#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:47:18 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/7ea629b5280660d13760004a8fca7163fad77d24.nzb&amp;i=650&amp;r=APIKEY" length="460851436" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="460851436"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/d8108df4750ee8ffe52ee18d996b20d4d51351db</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/d8108df4750ee8ffe52ee18d996b20d4d51351db.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/d8108df4750ee8ffe52ee18d996b20d4d51351db#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:50:40 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/d8108df4750ee8ffe52ee18d996b20d4d51351db.nzb&amp;i=650&amp;r=APIKEY" length="877078391" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="877078391"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E12.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/de5b8ef5d53d81035250255b4193f8aada17ffcd</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/de5b8ef5d53d81035250255b4193f8aada17ffcd.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/de5b8ef5d53d81035250255b4193f8aada17ffcd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:47:18 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E12.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/de5b8ef5d53d81035250255b4193f8aada17ffcd.nzb&amp;i=650&amp;r=APIKEY" length="154434434" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="154434434"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/c574a6751d19628dd6865f483f8bfbbd6c191b02</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/c574a6751d19628dd6865f483f8bfbbd6c191b02.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/c574a6751d19628dd6865f483f8bfbbd6c191b02#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E03.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/c574a6751d19628dd6865f483f8bfbbd6c191b02.nzb&amp;i=650&amp;r=APIKEY" length="272843358" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="272843358"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/1254cb17cdfd2147fa74968836c16e725b8d923b</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/1254cb17cdfd2147fa74968836c16e725b8d923b.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/1254cb17cdfd2147fa74968836c16e725b8d923b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/1254cb17cdfd2147fa74968836c16e725b8d923b.nzb&amp;i=650&amp;r=APIKEY" length="917435251" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="917435251"/>
+        </item>
+        <item>
+            <title>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b964c0d77deb07f283b3b248fbec40cd80292fe4</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b964c0d77deb07f283b3b248fbec40cd80292fe4.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b964c0d77deb07f283b3b248fbec40cd80292fe4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:52:25 +0200</pubDate>
+            <category>TV &gt; WEB-DL</category>
+            <description>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b964c0d77deb07f283b3b248fbec40cd80292fe4.nzb&amp;i=650&amp;r=APIKEY" length="1551989420" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5010"/>
+            <newznab:attr name="size" value="1551989420"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/383fb35d7e1b648be5f3c02665925cc5615c7ea1</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/383fb35d7e1b648be5f3c02665925cc5615c7ea1.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/383fb35d7e1b648be5f3c02665925cc5615c7ea1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:50:41 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/383fb35d7e1b648be5f3c02665925cc5615c7ea1.nzb&amp;i=650&amp;r=APIKEY" length="247133721" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="247133721"/>
+        </item>
+        <item>
+            <title>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/4be80fbe2c666e543df7d74a3bca5f37537dfa07</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/4be80fbe2c666e543df7d74a3bca5f37537dfa07.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/4be80fbe2c666e543df7d74a3bca5f37537dfa07#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:47:18 +0200</pubDate>
+            <category>TV &gt; Sport</category>
+            <description>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/4be80fbe2c666e543df7d74a3bca5f37537dfa07.nzb&amp;i=650&amp;r=APIKEY" length="3077304130" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5060"/>
+            <newznab:attr name="size" value="3077304130"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/91779f428a063411f2a4c6097ee8d3c341479d78</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/91779f428a063411f2a4c6097ee8d3c341479d78.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/91779f428a063411f2a4c6097ee8d3c341479d78#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:50:41 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/91779f428a063411f2a4c6097ee8d3c341479d78.nzb&amp;i=650&amp;r=APIKEY" length="807713103" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="807713103"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/ad1f77f82bbd6b91f17549b85c9f7f0f75176cb4</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/ad1f77f82bbd6b91f17549b85c9f7f0f75176cb4.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/ad1f77f82bbd6b91f17549b85c9f7f0f75176cb4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/ad1f77f82bbd6b91f17549b85c9f7f0f75176cb4.nzb&amp;i=650&amp;r=APIKEY" length="627436669" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="627436669"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/5575e74cc38f812ca5509fe131ba3ec898713fbe</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/5575e74cc38f812ca5509fe131ba3ec898713fbe.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/5575e74cc38f812ca5509fe131ba3ec898713fbe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/5575e74cc38f812ca5509fe131ba3ec898713fbe.nzb&amp;i=650&amp;r=APIKEY" length="712065830" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="712065830"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/8c7f62833463bd618de69f3ed33be598ab86b171</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/8c7f62833463bd618de69f3ed33be598ab86b171.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/8c7f62833463bd618de69f3ed33be598ab86b171#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/8c7f62833463bd618de69f3ed33be598ab86b171.nzb&amp;i=650&amp;r=APIKEY" length="2104940098" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="2104940098"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/cb897d20c53166a7743f6d2c2cb0887765c9ec3e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/cb897d20c53166a7743f6d2c2cb0887765c9ec3e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/cb897d20c53166a7743f6d2c2cb0887765c9ec3e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:42:39 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/cb897d20c53166a7743f6d2c2cb0887765c9ec3e.nzb&amp;i=650&amp;r=APIKEY" length="693015788" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="693015788"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/846a4387df03ee2441155b532454f746528613e9</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/846a4387df03ee2441155b532454f746528613e9.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/846a4387df03ee2441155b532454f746528613e9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:42:39 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/846a4387df03ee2441155b532454f746528613e9.nzb&amp;i=650&amp;r=APIKEY" length="513872730" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="513872730"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E11.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b13d33e7498c77e0fa6d0374cea18f3f369f07a3</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b13d33e7498c77e0fa6d0374cea18f3f369f07a3.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b13d33e7498c77e0fa6d0374cea18f3f369f07a3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:14 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E11.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b13d33e7498c77e0fa6d0374cea18f3f369f07a3.nzb&amp;i=650&amp;r=APIKEY" length="169877025" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="169877025"/>
+        </item>
+        <item>
+            <title>3-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/d1f8b0240c58e68266dd2d5ab102cd802d71f6b5</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/d1f8b0240c58e68266dd2d5ab102cd802d71f6b5.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/d1f8b0240c58e68266dd2d5ab102cd802d71f6b5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:22 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>3-050417-STS021080IWA20x264B</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/d1f8b0240c58e68266dd2d5ab102cd802d71f6b5.nzb&amp;i=650&amp;r=APIKEY" length="1718135560" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1718135560"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/1dd14932f5d18c6467dd1f6a8e0581d7dc0ae508</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/1dd14932f5d18c6467dd1f6a8e0581d7dc0ae508.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/1dd14932f5d18c6467dd1f6a8e0581d7dc0ae508#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:19 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/1dd14932f5d18c6467dd1f6a8e0581d7dc0ae508.nzb&amp;i=650&amp;r=APIKEY" length="2183835234" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="2183835234"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/a30791d34870aa1c65a87f6338fd14cc1a3647e6</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/a30791d34870aa1c65a87f6338fd14cc1a3647e6.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/a30791d34870aa1c65a87f6338fd14cc1a3647e6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:46:22 +0200</pubDate>
+            <category>TV &gt; WEB-DL</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/a30791d34870aa1c65a87f6338fd14cc1a3647e6.nzb&amp;i=650&amp;r=APIKEY" length="2061302071" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5010"/>
+            <newznab:attr name="size" value="2061302071"/>
+        </item>
+        <item>
+            <title>2-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e9df0ff7aab9fed818a522dafd85c46b8170f7eb</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e9df0ff7aab9fed818a522dafd85c46b8170f7eb.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e9df0ff7aab9fed818a522dafd85c46b8170f7eb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:42:42 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>2-050417-STS021080IWA20x264B</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e9df0ff7aab9fed818a522dafd85c46b8170f7eb.nzb&amp;i=650&amp;r=APIKEY" length="1736964507" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1736964507"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/13345b407b11832f92e1611e6e589777b4386e7f</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/13345b407b11832f92e1611e6e589777b4386e7f.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/13345b407b11832f92e1611e6e589777b4386e7f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:56 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/13345b407b11832f92e1611e6e589777b4386e7f.nzb&amp;i=650&amp;r=APIKEY" length="883504571" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="883504571"/>
+        </item>
+        <item>
+            <title>[ 1-050417-STS021080IWA20x264B ]</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/a6eb67beea00749ec4b66b259f6d093105174594</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/a6eb67beea00749ec4b66b259f6d093105174594.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/a6eb67beea00749ec4b66b259f6d093105174594#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:07 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>[ 1-050417-STS021080IWA20x264B ]</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/a6eb67beea00749ec4b66b259f6d093105174594.nzb&amp;i=650&amp;r=APIKEY" length="1734645719" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1734645719"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/dfba886cd672b785425fcb5ce99198ed9480e3fb</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/dfba886cd672b785425fcb5ce99198ed9480e3fb.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/dfba886cd672b785425fcb5ce99198ed9480e3fb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:56 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/dfba886cd672b785425fcb5ce99198ed9480e3fb.nzb&amp;i=650&amp;r=APIKEY" length="336391568" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="336391568"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/031b2b4e056ffc7416e883191829c821ebb40901</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/031b2b4e056ffc7416e883191829c821ebb40901.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/031b2b4e056ffc7416e883191829c821ebb40901#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:56 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/031b2b4e056ffc7416e883191829c821ebb40901.nzb&amp;i=650&amp;r=APIKEY" length="1089722684" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1089722684"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9ee38a253d8fedf3a0d595630e52b1e4ef31d615</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9ee38a253d8fedf3a0d595630e52b1e4ef31d615.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9ee38a253d8fedf3a0d595630e52b1e4ef31d615#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:31 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9ee38a253d8fedf3a0d595630e52b1e4ef31d615.nzb&amp;i=650&amp;r=APIKEY" length="390036173" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="390036173"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/f44ffa4443badd2a92f11790a8623cbb0e7283c4</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/f44ffa4443badd2a92f11790a8623cbb0e7283c4.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/f44ffa4443badd2a92f11790a8623cbb0e7283c4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:31 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/f44ffa4443badd2a92f11790a8623cbb0e7283c4.nzb&amp;i=650&amp;r=APIKEY" length="1891030000" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="1891030000"/>
+        </item>
+        <item>
+            <title>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/434bddf19208e6dcc7522b63c3102409c72b1b0b</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/434bddf19208e6dcc7522b63c3102409c72b1b0b.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/434bddf19208e6dcc7522b63c3102409c72b1b0b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:42:40 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/434bddf19208e6dcc7522b63c3102409c72b1b0b.nzb&amp;i=650&amp;r=APIKEY" length="1144804816" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1144804816"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b4ad1a3a2f36003db5cab5d22cf71d37d5d16cfa</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b4ad1a3a2f36003db5cab5d22cf71d37d5d16cfa.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b4ad1a3a2f36003db5cab5d22cf71d37d5d16cfa#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:33:02 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b4ad1a3a2f36003db5cab5d22cf71d37d5d16cfa.nzb&amp;i=650&amp;r=APIKEY" length="340286461" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="340286461"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/15663001e64882cd101d09840fcfa9d5310a9fee</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/15663001e64882cd101d09840fcfa9d5310a9fee.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/15663001e64882cd101d09840fcfa9d5310a9fee#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:56 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/15663001e64882cd101d09840fcfa9d5310a9fee.nzb&amp;i=650&amp;r=APIKEY" length="313331080" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="313331080"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/2d554218ecec11277fc2417bcff366645b55de6c</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/2d554218ecec11277fc2417bcff366645b55de6c.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/2d554218ecec11277fc2417bcff366645b55de6c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:39:10 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/2d554218ecec11277fc2417bcff366645b55de6c.nzb&amp;i=650&amp;r=APIKEY" length="431385745" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="431385745"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/6c04c8f9041034451f9638dc733d2fa4c75d2b78</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/6c04c8f9041034451f9638dc733d2fa4c75d2b78.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/6c04c8f9041034451f9638dc733d2fa4c75d2b78#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:31 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/6c04c8f9041034451f9638dc733d2fa4c75d2b78.nzb&amp;i=650&amp;r=APIKEY" length="857688618" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="857688618"/>
+        </item>
+        <item>
+            <title>[01/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 254,63 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/46b589a9857ce83cb12f84faac1c6ae554f5eb6e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/46b589a9857ce83cb12f84faac1c6ae554f5eb6e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/46b589a9857ce83cb12f84faac1c6ae554f5eb6e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:33 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 254,63 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/46b589a9857ce83cb12f84faac1c6ae554f5eb6e.nzb&amp;i=650&amp;r=APIKEY" length="277314628" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="277314628"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/410fda4b8deebd5c15f90ef5083c8881c1b933dc</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/410fda4b8deebd5c15f90ef5083c8881c1b933dc.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/410fda4b8deebd5c15f90ef5083c8881c1b933dc#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:31 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/410fda4b8deebd5c15f90ef5083c8881c1b933dc.nzb&amp;i=650&amp;r=APIKEY" length="905238056" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="905238056"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e2a13976bec611dcbace9855bf15ed59d399781f</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e2a13976bec611dcbace9855bf15ed59d399781f.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e2a13976bec611dcbace9855bf15ed59d399781f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:36:31 +0200</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e2a13976bec611dcbace9855bf15ed59d399781f.nzb&amp;i=650&amp;r=APIKEY" length="2036925205" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="2036925205"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/36f5312e45a65626e6a351171ac31edb56f6fe96</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/36f5312e45a65626e6a351171ac31edb56f6fe96.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/36f5312e45a65626e6a351171ac31edb56f6fe96#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:18 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/36f5312e45a65626e6a351171ac31edb56f6fe96.nzb&amp;i=650&amp;r=APIKEY" length="184684910" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184684910"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/26804d53271b68e266c8067f41200988bbff335a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/26804d53271b68e266c8067f41200988bbff335a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/26804d53271b68e266c8067f41200988bbff335a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:34:49 +0200</pubDate>
+            <category>TV &gt; WEB-DL</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/26804d53271b68e266c8067f41200988bbff335a.nzb&amp;i=650&amp;r=APIKEY" length="1646447724" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5010"/>
+            <newznab:attr name="size" value="1646447724"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/5df139934bb7edd863a7041f0ed1e53f10532cd8</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/5df139934bb7edd863a7041f0ed1e53f10532cd8.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/5df139934bb7edd863a7041f0ed1e53f10532cd8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:30 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/5df139934bb7edd863a7041f0ed1e53f10532cd8.nzb&amp;i=650&amp;r=APIKEY" length="198451847" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="198451847"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/c68cc335681b9b21417fbbe7ca9753561c07a22b</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/c68cc335681b9b21417fbbe7ca9753561c07a22b.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/c68cc335681b9b21417fbbe7ca9753561c07a22b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:33:02 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/c68cc335681b9b21417fbbe7ca9753561c07a22b.nzb&amp;i=650&amp;r=APIKEY" length="472580866" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="472580866"/>
+        </item>
+        <item>
+            <title>Lost.Songs.Of.St.Kilda.2017.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/10f0f3c102358c0a8ec576a870b9742d195f1a3e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/10f0f3c102358c0a8ec576a870b9742d195f1a3e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/10f0f3c102358c0a8ec576a870b9742d195f1a3e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:33:02 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Lost.Songs.Of.St.Kilda.2017.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/10f0f3c102358c0a8ec576a870b9742d195f1a3e.nzb&amp;i=650&amp;r=APIKEY" length="678650425" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="678650425"/>
+        </item>
+        <item>
+            <title>Lost.Songs.Of.St.Kilda.2017.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/225e0c6a36f2e5203684700d07e40dccbf0f47b6</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/225e0c6a36f2e5203684700d07e40dccbf0f47b6.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/225e0c6a36f2e5203684700d07e40dccbf0f47b6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:26 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Lost.Songs.Of.St.Kilda.2017.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/225e0c6a36f2e5203684700d07e40dccbf0f47b6.nzb&amp;i=650&amp;r=APIKEY" length="235812735" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="235812735"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E10.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/8a7460c3c28937037a7e67c1763b8c133c272ef0</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/8a7460c3c28937037a7e67c1763b8c133c272ef0.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/8a7460c3c28937037a7e67c1763b8c133c272ef0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:56 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E10.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/8a7460c3c28937037a7e67c1763b8c133c272ef0.nzb&amp;i=650&amp;r=APIKEY" length="187520572" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="187520572"/>
+        </item>
+        <item>
+            <title>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b2226d7f686eb14ca567b1ac5c1e08d991deccbd</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b2226d7f686eb14ca567b1ac5c1e08d991deccbd.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b2226d7f686eb14ca567b1ac5c1e08d991deccbd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:18 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b2226d7f686eb14ca567b1ac5c1e08d991deccbd.nzb&amp;i=650&amp;r=APIKEY" length="708984633" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="708984633"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/20d0c3b78da9865aecc82e037567ae761ef58f18</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/20d0c3b78da9865aecc82e037567ae761ef58f18.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/20d0c3b78da9865aecc82e037567ae761ef58f18#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:02 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/20d0c3b78da9865aecc82e037567ae761ef58f18.nzb&amp;i=650&amp;r=APIKEY" length="404816980" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404816980"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b52f2aa6dea325152bb52a4de27c326184b7b638</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b52f2aa6dea325152bb52a4de27c326184b7b638.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b52f2aa6dea325152bb52a4de27c326184b7b638#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:22:37 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b52f2aa6dea325152bb52a4de27c326184b7b638.nzb&amp;i=650&amp;r=APIKEY" length="648141358" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="648141358"/>
+        </item>
+        <item>
+            <title>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/cebc926691cd8866f105cc669b0a02752896040a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/cebc926691cd8866f105cc669b0a02752896040a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/cebc926691cd8866f105cc669b0a02752896040a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:22:33 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/cebc926691cd8866f105cc669b0a02752896040a.nzb&amp;i=650&amp;r=APIKEY" length="404072556" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404072556"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/0b2db82e75d25e0f3ecdd29b6c2ff8d65e853a70</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/0b2db82e75d25e0f3ecdd29b6c2ff8d65e853a70.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/0b2db82e75d25e0f3ecdd29b6c2ff8d65e853a70#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:25:57 +0200</pubDate>
+            <category>TV &gt; WEB-DL</category>
+            <description>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/0b2db82e75d25e0f3ecdd29b6c2ff8d65e853a70.nzb&amp;i=650&amp;r=APIKEY" length="4930903186" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5010"/>
+            <newznab:attr name="size" value="4930903186"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/a84005433f4c3cabd39bb0c0011961cfccb68073</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/a84005433f4c3cabd39bb0c0011961cfccb68073.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/a84005433f4c3cabd39bb0c0011961cfccb68073#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:18:50 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/a84005433f4c3cabd39bb0c0011961cfccb68073.nzb&amp;i=650&amp;r=APIKEY" length="160157076" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="160157076"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E10.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/2bb45f3ac69883aac2ef82481dbbcbc3b76b8c70</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/2bb45f3ac69883aac2ef82481dbbcbc3b76b8c70.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/2bb45f3ac69883aac2ef82481dbbcbc3b76b8c70#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:17:11 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E10.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/2bb45f3ac69883aac2ef82481dbbcbc3b76b8c70.nzb&amp;i=650&amp;r=APIKEY" length="187530604" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="187530604"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/4a39d0591552356d91b9fcc2e8189dcb78d49818</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/4a39d0591552356d91b9fcc2e8189dcb78d49818.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/4a39d0591552356d91b9fcc2e8189dcb78d49818#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:18:49 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/4a39d0591552356d91b9fcc2e8189dcb78d49818.nzb&amp;i=650&amp;r=APIKEY" length="125721892" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="125721892"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/b12acef6bb65ba535afacae977b3fb985b3258ec</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/b12acef6bb65ba535afacae977b3fb985b3258ec.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/b12acef6bb65ba535afacae977b3fb985b3258ec#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:14:35 +0200</pubDate>
+            <category>TV &gt; Other</category>
+            <description>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/b12acef6bb65ba535afacae977b3fb985b3258ec.nzb&amp;i=650&amp;r=APIKEY" length="203089855" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="203089855"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E09.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/2afd278f3a51f931f067d0184240bc0b1ba0521e</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/2afd278f3a51f931f067d0184240bc0b1ba0521e.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/2afd278f3a51f931f067d0184240bc0b1ba0521e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:11:04 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E09.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/2afd278f3a51f931f067d0184240bc0b1ba0521e.nzb&amp;i=650&amp;r=APIKEY" length="203223029" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="203223029"/>
+        </item>
+        <item>
+            <title>[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].mkv [1/7] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].mkv&quot; Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/22e2394623b26410647506597b8db02167e4330a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/22e2394623b26410647506597b8db02167e4330a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/22e2394623b26410647506597b8db02167e4330a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:14:35 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].mkv [1/7] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].mkv&quot; Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/22e2394623b26410647506597b8db02167e4330a.nzb&amp;i=650&amp;r=APIKEY" length="591231849" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="591231849"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E08.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e763c8b4024eaa85be4989c702dd3bc966d443ca</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e763c8b4024eaa85be4989c702dd3bc966d443ca.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e763c8b4024eaa85be4989c702dd3bc966d443ca#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:10:16 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E08.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e763c8b4024eaa85be4989c702dd3bc966d443ca.nzb&amp;i=650&amp;r=APIKEY" length="157914161" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="157914161"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E09.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/aa69d6ff120bd9ec152b26af6fb5a07e258218cf</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/aa69d6ff120bd9ec152b26af6fb5a07e258218cf.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/aa69d6ff120bd9ec152b26af6fb5a07e258218cf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:29 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E09.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/aa69d6ff120bd9ec152b26af6fb5a07e258218cf.nzb&amp;i=650&amp;r=APIKEY" length="203216504" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="203216504"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/d84be1cb6000370b60a2fb9c03fdc59841fb79d5</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/d84be1cb6000370b60a2fb9c03fdc59841fb79d5.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/d84be1cb6000370b60a2fb9c03fdc59841fb79d5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:15:20 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/d84be1cb6000370b60a2fb9c03fdc59841fb79d5.nzb&amp;i=650&amp;r=APIKEY" length="671979957" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="671979957"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E08.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/89458bbc3a506a409947133100126c4bbc4478ab</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/89458bbc3a506a409947133100126c4bbc4478ab.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/89458bbc3a506a409947133100126c4bbc4478ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:29 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E08.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/89458bbc3a506a409947133100126c4bbc4478ab.nzb&amp;i=650&amp;r=APIKEY" length="157913588" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="157913588"/>
+        </item>
+        <item>
+            <title>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/ff0ec25b510850cd4ddbe7d7cfe22e7fe59ff7d6</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/ff0ec25b510850cd4ddbe7d7cfe22e7fe59ff7d6.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/ff0ec25b510850cd4ddbe7d7cfe22e7fe59ff7d6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/ff0ec25b510850cd4ddbe7d7cfe22e7fe59ff7d6.nzb&amp;i=650&amp;r=APIKEY" length="215836870" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="215836870"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E07.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/19d08348cd51ac4506bdc6ae8cc0ba56bfcca919</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/19d08348cd51ac4506bdc6ae8cc0ba56bfcca919.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/19d08348cd51ac4506bdc6ae8cc0ba56bfcca919#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:03:07 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E07.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/19d08348cd51ac4506bdc6ae8cc0ba56bfcca919.nzb&amp;i=650&amp;r=APIKEY" length="175395124" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="175395124"/>
+        </item>
+        <item>
+            <title>Boruto: Naruto Next Generations - 01 [720p][AAC]</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/0194537e8850e0103c35c5cebb7bac0b84a9a7e1</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/0194537e8850e0103c35c5cebb7bac0b84a9a7e1.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/0194537e8850e0103c35c5cebb7bac0b84a9a7e1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:01 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Boruto: Naruto Next Generations - 01 [720p][AAC]</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/0194537e8850e0103c35c5cebb7bac0b84a9a7e1.nzb&amp;i=650&amp;r=APIKEY" length="389395196" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="389395196"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/a0bfec86c1d6061b55cddbbeb70fbf3326c372a1</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/a0bfec86c1d6061b55cddbbeb70fbf3326c372a1.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/a0bfec86c1d6061b55cddbbeb70fbf3326c372a1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/a0bfec86c1d6061b55cddbbeb70fbf3326c372a1.nzb&amp;i=650&amp;r=APIKEY" length="196160294" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="196160294"/>
+        </item>
+        <item>
+            <title>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9157cd3187a2b4548355283750b66cbff1947a62</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9157cd3187a2b4548355283750b66cbff1947a62.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9157cd3187a2b4548355283750b66cbff1947a62#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:03:07 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9157cd3187a2b4548355283750b66cbff1947a62.nzb&amp;i=650&amp;r=APIKEY" length="1482929153" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1482929153"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/f161e4b3b9e28d71e2d5bebb2cf7072f72656238</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/f161e4b3b9e28d71e2d5bebb2cf7072f72656238.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/f161e4b3b9e28d71e2d5bebb2cf7072f72656238#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:59:28 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/f161e4b3b9e28d71e2d5bebb2cf7072f72656238.nzb&amp;i=650&amp;r=APIKEY" length="372867541" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="372867541"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.1080p.WEB.x264-HEAT</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/85b8d3fa408b62f55cc2c519aabdf095588d4cfe</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/85b8d3fa408b62f55cc2c519aabdf095588d4cfe.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/85b8d3fa408b62f55cc2c519aabdf095588d4cfe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:59:28 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.1080p.WEB.x264-HEAT</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/85b8d3fa408b62f55cc2c519aabdf095588d4cfe.nzb&amp;i=650&amp;r=APIKEY" length="1455789795" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1455789795"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/e7ed7864f1f7a2d5b55dc1b1ba5ed02ec500aebb</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/e7ed7864f1f7a2d5b55dc1b1ba5ed02ec500aebb.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/e7ed7864f1f7a2d5b55dc1b1ba5ed02ec500aebb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/e7ed7864f1f7a2d5b55dc1b1ba5ed02ec500aebb.nzb&amp;i=650&amp;r=APIKEY" length="166567206" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="166567206"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E05.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/3539ce61aa4f9ced2e81c29f33ca4720403616cd</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/3539ce61aa4f9ced2e81c29f33ca4720403616cd.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/3539ce61aa4f9ced2e81c29f33ca4720403616cd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E05.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/3539ce61aa4f9ced2e81c29f33ca4720403616cd.nzb&amp;i=650&amp;r=APIKEY" length="187312050" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="187312050"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E04.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/27d27c5c9bdb7235802ec88c6c6cf58a6dd82d1d</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/27d27c5c9bdb7235802ec88c6c6cf58a6dd82d1d.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/27d27c5c9bdb7235802ec88c6c6cf58a6dd82d1d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E04.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/27d27c5c9bdb7235802ec88c6c6cf58a6dd82d1d.nzb&amp;i=650&amp;r=APIKEY" length="187340585" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="187340585"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 161,73 MB Japanese</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/93808e3c26c7bb4f96942dadafaa431a9038da46</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/93808e3c26c7bb4f96942dadafaa431a9038da46.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/93808e3c26c7bb4f96942dadafaa431a9038da46#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 161,73 MB Japanese</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/93808e3c26c7bb4f96942dadafaa431a9038da46.nzb&amp;i=650&amp;r=APIKEY" length="176173875" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="176173875"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E03.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/9e644c1f770207bf5e145cefbd2f288076955263</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/9e644c1f770207bf5e145cefbd2f288076955263.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/9e644c1f770207bf5e145cefbd2f288076955263#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E03.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/9e644c1f770207bf5e145cefbd2f288076955263.nzb&amp;i=650&amp;r=APIKEY" length="177541186" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="177541186"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E02.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/c5df899a7b9968d36463ee44d67c52fcb81d466a</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/c5df899a7b9968d36463ee44d67c52fcb81d466a.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/c5df899a7b9968d36463ee44d67c52fcb81d466a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E02.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/c5df899a7b9968d36463ee44d67c52fcb81d466a.nzb&amp;i=650&amp;r=APIKEY" length="183174639" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="183174639"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E01.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://www.tabula-rasa.pw/details/13ad199b1e840ef672e982537336aabf0bd1f1a3</guid>
+            <link>https://www.tabula-rasa.pw/getnzb/13ad199b1e840ef672e982537336aabf0bd1f1a3.nzb&amp;i=650&amp;r=APIKEY</link>
+            <comments>https://www.tabula-rasa.pw/details/13ad199b1e840ef672e982537336aabf0bd1f1a3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:56:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E01.BDRip.X264-REWARD English</description>
+            <enclosure url="https://www.tabula-rasa.pw/getnzb/13ad199b1e840ef672e982537336aabf0bd1f1a3.nzb&amp;i=650&amp;r=APIKEY" length="172174877" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="172174877"/>
+        </item>
+    </channel>
+</rss>

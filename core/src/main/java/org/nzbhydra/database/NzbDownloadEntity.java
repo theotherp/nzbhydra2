@@ -2,7 +2,7 @@ package org.nzbhydra.database;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.config.SearchingConfig.NzbAccessType;
+import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 
 import javax.persistence.Entity;

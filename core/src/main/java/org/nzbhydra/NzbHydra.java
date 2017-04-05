@@ -2,13 +2,13 @@ package org.nzbhydra;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import org.nzbhydra.api.CategoryConverter;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.TmdbHandler;
+import org.nzbhydra.downloader.Downloader;
+import org.nzbhydra.downloader.DownloaderProvider;
+import org.nzbhydra.downloader.NzbGet;
 import org.nzbhydra.rssmapping.RssRoot;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
@@ -65,16 +65,15 @@ public class NzbHydra {
     private SearchModuleConfigProvider searchModuleConfigProvider;
 
     @Autowired
-    CategoryProvider categoryProvider;
+    private CategoryProvider categoryProvider;
 
     @Autowired
-    InfoProvider infoProvider;
+    private RestTemplate restTemplate;
 
     @Autowired
-    private TmdbHandler tmdbHandler;
-
+    private NzbGet nzbGet;
     @Autowired
-    CategoryConverter categoryConverter; //Needed to be autowired so the provider in it is initialized
+    private DownloaderProvider downloaderProvider;
 
 
     public static void main(String[] args) {
@@ -92,7 +91,6 @@ public class NzbHydra {
 
     @RequestMapping(value = "/rss")
     public RssRoot get() {
-        RestTemplate restTemplate = new RestTemplate();
         RssRoot rssRoot = restTemplate.getForObject("http://127.0.0.1:5000/api?apikey=a", RssRoot.class);
 
         return rssRoot;
@@ -110,6 +108,19 @@ public class NzbHydra {
     @RequestMapping(value = "/categories")
     public String getCats() {
         return categoryProvider.getCategories().stream().map(Category::getName).collect(Collectors.joining(","));
+
+    }
+
+    @RequestMapping(value = "/test2")
+    public String test2() throws Exception {
+//        DownloaderConfig downloaderConfig = new DownloaderConfig();
+//        downloaderConfig.setUrl("http://127.0.0.1:6789/jsonrpc");
+//        downloaderConfig.setType("nzbget");
+//        nzbGet.intialize(downloaderConfig);
+        Downloader nzbGet = downloaderProvider.getDownloaderByName("nzbget");
+        nzbGet.getCategories();
+        nzbGet.addLink("https://nzbs.org/getnzb/3e82a151b8f93cb484706a92153bee32.nzb&i=1692&r=db7afb7f52e75435048e7cd66528667a", "avengers.nzb", "");
+        return "OK";
 
     }
 
@@ -140,33 +151,8 @@ public class NzbHydra {
         applicationContext.registerShutdownHook();
         System.exit(0);
 
-//
-//        BufferedReader stdInput = new BufferedReader(new
-//                InputStreamReader(proc.getInputStream()));
-//
-//        BufferedReader stdError = new BufferedReader(new
-//                InputStreamReader(proc.getErrorStream()));
-//
-//// read the output from the command
-//        System.out.println("Here is the standard output of the command:\n");
-//        String s = null;
-//        while ((s = stdInput.readLine()) != null) {
-//            System.out.println(s);
-//        }
-//
-//// read any errors from the attempted command
-//        System.out.println("Here is the standard error of the command (if any):\n");
-//        while ((s = stdError.readLine()) != null) {
-//            System.out.println(s);
-//        }
 
         return "Ok";
-    }
-
-
-    @RequestMapping("/testconfig")
-    public String testconfig() {
-        return searchModuleConfigProvider.getIndexers().get(0).getName();
     }
 
 

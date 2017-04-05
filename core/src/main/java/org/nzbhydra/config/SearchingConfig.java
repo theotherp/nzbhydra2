@@ -12,17 +12,13 @@ import java.util.Set;
 @Data
 public class SearchingConfig {
 
-    public enum NzbAccessType {
-        REDIRECT,
-        PROXY
-    }
-
     private boolean alwaysShowDuplicates = false;
     @JsonFormat(shape = Shape.STRING)
     private SearchRestrictionType applyRestrictions = SearchRestrictionType.NONE;
     //categorySettings ;
     private float duplicateAgeThreshold = 2F;
     private float duplicateSizeThresholdInPercent = 1F;
+    private boolean enableCategorySizes = true;
     private Set<String> forbiddenGroups = new HashSet<>();
     private Set<String> forbiddenPosters = new HashSet<>();
     private String forbiddenRegex;

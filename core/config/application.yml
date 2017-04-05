@@ -27,31 +27,27 @@ auth:
     username: s
 
 downloaders:
-#- defaultCategory: No category
-#  downloadType: nzb
-#  enabled: true
-#  host: 127.0.0.1
-#  iconCssClass: ''
-#  name: NZBGet
-#  nzbAddingType: link
-#  nzbaccesstype: serve
-#  password: nzbget
-#  port: 6789
-#  ssl: false
-#  type: nzbget
-#  username: nzbget
-- apikey: 63e1c248a4a84c63e44b5a2ce9153cfe
-  defaultCategory: No category
-  downloadType: nzb
-  enabled: true
-  iconCssClass: ''
-  name: SABnzbd
-  nzbAddingType: link
-  nzbaccesstype: serve
-  password:
-  type: sabnzbd
-  url: http://127.0.0.1:8085/sabnzbd/
-  username: ''
+    -
+        defaultCategory: No category
+        downloadType: nzb
+        enabled: true
+        iconCssClass: ''
+        name: nzbget
+        nzbAddingType: SEND_LINK
+        nzbaccesstype: PROXY
+        downloaderType: NZBGET
+        url: http://127.0.0.1:6789/
+    -
+        apikey: 63e1c248a4a84c63e44b5a2ce9153cfe
+        defaultCategory: No category
+        downloadType: nzb
+        enabled: true
+        iconCssClass: ''
+        name: SABnzbd
+        nzbAddingType: SEND_LINK
+        nzbaccesstype: PROXY
+        downloaderType: SABNZBD
+        url: http://127.0.0.1:8085/sabnzbd/
 #- downloadType: nzb
 #  enabled: false
 #  host: 127.0.0.1
@@ -83,7 +79,7 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: a
-    searchModuleType: newznab
+    searchModuleType: NEWZNAB
     supportedSearchIds: TVRAGE
     score: 1
     enabledForSearchSource: BOTH
@@ -92,7 +88,7 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: b
-    searchModuleType: newznab
+    searchModuleType: NEWZNAB
     supportedSearchIds: IMDB, TMDB
     score: 2
     enabledForSearchSource: BOTH
@@ -101,7 +97,7 @@ indexers:
     host: http://invalid
     enabled: true
     apikey: c
-    searchModuleType: newznab
+    searchModuleType: NEWZNAB
     score: 1
     enabledForSearchSource: BOTH
   -
@@ -109,7 +105,7 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: d
-    searchModuleType: newznab
+    searchModuleType: NEWZNAB
     score: 1
     enabledForSearchSource: BOTH
 #  -

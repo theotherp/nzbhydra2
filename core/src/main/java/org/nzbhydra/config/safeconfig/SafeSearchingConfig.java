@@ -7,12 +7,14 @@ import org.nzbhydra.config.SearchingConfig;
 @Getter
 public class SafeSearchingConfig {
 
-    private Integer maxAge;
     private boolean alwaysShowDuplicates = false;
+    private boolean enableCategorySizes = true;
+    private Integer maxAge;
 
     public SafeSearchingConfig(SearchingConfig searchingConfig) {
-        this.maxAge = searchingConfig.getMaxAge();
-        this.alwaysShowDuplicates = searchingConfig.isAlwaysShowDuplicates();
+        alwaysShowDuplicates = searchingConfig.isAlwaysShowDuplicates();
+        enableCategorySizes = searchingConfig.isEnableCategorySizes();
+        maxAge = searchingConfig.getMaxAge();
     }
 
 

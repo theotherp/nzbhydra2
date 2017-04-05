@@ -3,11 +3,23 @@ package org.nzbhydra.api;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import org.nzbhydra.NzbDownloadResult;
-import org.nzbhydra.NzbDownloader;
+import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.rssmapping.*;
-import org.nzbhydra.searching.*;
+import org.nzbhydra.rssmapping.Enclosure;
+import org.nzbhydra.rssmapping.NewznabAttribute;
+import org.nzbhydra.rssmapping.NewznabResponse;
+import org.nzbhydra.rssmapping.RssChannel;
+import org.nzbhydra.rssmapping.RssError;
+import org.nzbhydra.rssmapping.RssGuid;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.rssmapping.Xml;
+import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.SearchResult;
+import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
@@ -21,7 +33,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -36,7 +52,7 @@ public class ExternalApi {
     @Autowired
     private SearchRequestFactory searchRequestFactory;
     @Autowired
-    private NzbDownloader nzbDownloader;
+    private NzbHandler nzbDownloader;
     @Autowired
     private BaseConfig baseConfig;
 

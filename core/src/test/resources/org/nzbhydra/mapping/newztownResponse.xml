@@ -1,0 +1,2745 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+    <channel>
+        <atom:link href="https://newztown.co.za/api?apikey=APIKEY&amp;t=tvsearch&amp;extended=1" rel="self" type="application/rss+xml"/>
+        <title>NewzTown</title>
+        <description>NewzTown Feed</description>
+        <link>https://newztown.co.za/</link>
+        <language>en-gb</language>
+        <webMaster>admin@newztown.co.za (NewzTown)</webMaster>
+        <category></category>
+        <image>
+            <url>https://newztown.co.za/views/images/banner.jpg</url>
+            <title>NewzTown</title>
+            <link>https://newztown.co.za/</link>
+            <description>Visit NewzTown - The Best South African Usenet Indexer</description>
+        </image>
+
+        <newznab:response offset="0" total="4443964"/>
+        <item>
+            <title>metart matrus katie-a high 0006</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/23a338c01818b41d18801b60a2a95831</guid>
+            <link>https://newztown.co.za/getnzb/23a338c01818b41d18801b60a2a95831.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/23a338c01818b41d18801b60a2a95831#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:59 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>metart matrus katie-a high 0006</description>
+            <enclosure url="https://newztown.co.za/getnzb/23a338c01818b41d18801b60a2a95831.nzb&amp;i=52081&amp;r=APIKEY" length="105695303" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="105695303"/>
+            <newznab:attr name="guid" value="23a338c01818b41d18801b60a2a95831"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:41:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>metart dineaz sybil-a high 0048</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/082de299425c96854495a61aebbf38c0</guid>
+            <link>https://newztown.co.za/getnzb/082de299425c96854495a61aebbf38c0.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/082de299425c96854495a61aebbf38c0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:57 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>metart dineaz sybil-a high 0048</description>
+            <enclosure url="https://newztown.co.za/getnzb/082de299425c96854495a61aebbf38c0.nzb&amp;i=52081&amp;r=APIKEY" length="235048749" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="235048749"/>
+            <newznab:attr name="guid" value="082de299425c96854495a61aebbf38c0"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:40:41 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>sexart gapaz isabella-d high 0087</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/56c1f65d0ca4acd9769213a44e3b33ef</guid>
+            <link>https://newztown.co.za/getnzb/56c1f65d0ca4acd9769213a44e3b33ef.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/56c1f65d0ca4acd9769213a44e3b33ef#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:57 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>sexart gapaz isabella-d high 0087</description>
+            <enclosure url="https://newztown.co.za/getnzb/56c1f65d0ca4acd9769213a44e3b33ef.nzb&amp;i=52081&amp;r=APIKEY" length="228712633" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="228712633"/>
+            <newznab:attr name="guid" value="56c1f65d0ca4acd9769213a44e3b33ef"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:39:47 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Uhnqhdnora-3425412976-201704052220</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/d3363de2236f58c5bdefe0082152340a</guid>
+            <link>https://newztown.co.za/getnzb/d3363de2236f58c5bdefe0082152340a.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/d3363de2236f58c5bdefe0082152340a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:58:57 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Uhnqhdnora-3425412976-201704052220</description>
+            <enclosure url="https://newztown.co.za/getnzb/d3363de2236f58c5bdefe0082152340a.nzb&amp;i=52081&amp;r=APIKEY" length="5383213774" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="5383213774"/>
+            <newznab:attr name="guid" value="d3363de2236f58c5bdefe0082152340a"/>
+            <newznab:attr name="files" value="107"/>
+            <newznab:attr name="poster" value="nosendemails@me.com.bk (radombk)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="-1"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:39:04 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+
+        </item>
+        <item>
+            <title>metart presenting-beth beth high 0146</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/619baf63af3ac86d4cf2637265d7cab4</guid>
+            <link>https://newztown.co.za/getnzb/619baf63af3ac86d4cf2637265d7cab4.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/619baf63af3ac86d4cf2637265d7cab4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:56 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>metart presenting-beth beth high 0146</description>
+            <enclosure url="https://newztown.co.za/getnzb/619baf63af3ac86d4cf2637265d7cab4.nzb&amp;i=52081&amp;r=APIKEY" length="472868709" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="472868709"/>
+            <newznab:attr name="guid" value="619baf63af3ac86d4cf2637265d7cab4"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:38:46 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>aKAs5PTzn5VdKvj0490a2</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/449b1d655704d8d7804a3e96f5309a79</guid>
+            <link>https://newztown.co.za/getnzb/449b1d655704d8d7804a3e96f5309a79.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/449b1d655704d8d7804a3e96f5309a79#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:58 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>aKAs5PTzn5VdKvj0490a2</description>
+            <enclosure url="https://newztown.co.za/getnzb/449b1d655704d8d7804a3e96f5309a79.nzb&amp;i=52081&amp;r=APIKEY" length="209941196" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="209941196"/>
+            <newznab:attr name="guid" value="449b1d655704d8d7804a3e96f5309a79"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:36:40 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>h8DTVc5ZDz5GcNUd33b8b</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6203527f3458733e6f772dd3c27e630e</guid>
+            <link>https://newztown.co.za/getnzb/6203527f3458733e6f772dd3c27e630e.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6203527f3458733e6f772dd3c27e630e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:58 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>h8DTVc5ZDz5GcNUd33b8b</description>
+            <enclosure url="https://newztown.co.za/getnzb/6203527f3458733e6f772dd3c27e630e.nzb&amp;i=52081&amp;r=APIKEY" length="191234527" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="191234527"/>
+            <newznab:attr name="guid" value="6203527f3458733e6f772dd3c27e630e"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:35:37 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>ZpKNEN0DErEvC2G751901</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/bfc9bc8b9e2475cd4a9b4311dbc1799b</guid>
+            <link>https://newztown.co.za/getnzb/bfc9bc8b9e2475cd4a9b4311dbc1799b.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/bfc9bc8b9e2475cd4a9b4311dbc1799b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:57 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>ZpKNEN0DErEvC2G751901</description>
+            <enclosure url="https://newztown.co.za/getnzb/bfc9bc8b9e2475cd4a9b4311dbc1799b.nzb&amp;i=52081&amp;r=APIKEY" length="226046860" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="226046860"/>
+            <newznab:attr name="guid" value="bfc9bc8b9e2475cd4a9b4311dbc1799b"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:34:49 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E21.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/ea72dffc2254d6f6908cdd1acbd3ce79</guid>
+            <link>https://newztown.co.za/getnzb/ea72dffc2254d6f6908cdd1acbd3ce79.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/ea72dffc2254d6f6908cdd1acbd3ce79#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:55 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E21.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/ea72dffc2254d6f6908cdd1acbd3ce79.nzb&amp;i=52081&amp;r=APIKEY" length="185707739" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="185707739"/>
+            <newznab:attr name="guid" value="ea72dffc2254d6f6908cdd1acbd3ce79"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E21"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 21 Apr 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=ea72dffc2254d6f6908cdd1acbd3ce79&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:34:26 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>d733268cb66ce45ef9ed759d16741080</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/aa830e2de3b1e263302fa1c9139fe3fe</guid>
+            <link>https://newztown.co.za/getnzb/aa830e2de3b1e263302fa1c9139fe3fe.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/aa830e2de3b1e263302fa1c9139fe3fe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:59:00 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>d733268cb66ce45ef9ed759d16741080</description>
+            <enclosure url="https://newztown.co.za/getnzb/aa830e2de3b1e263302fa1c9139fe3fe.nzb&amp;i=52081&amp;r=APIKEY" length="5120626882" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="5120626882"/>
+            <newznab:attr name="guid" value="aa830e2de3b1e263302fa1c9139fe3fe"/>
+            <newznab:attr name="files" value="97"/>
+            <newznab:attr name="poster" value="CPP-Gebruiker &lt;CPP-gebruiker@domein.nl&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="-1"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:34:24 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+
+        </item>
+        <item>
+            <title>Zg9LMCh2bcbDKZ35a1125</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/5c9605f0c7419130727d9ef6d3f6235e</guid>
+            <link>https://newztown.co.za/getnzb/5c9605f0c7419130727d9ef6d3f6235e.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/5c9605f0c7419130727d9ef6d3f6235e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:44 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Zg9LMCh2bcbDKZ35a1125</description>
+            <enclosure url="https://newztown.co.za/getnzb/5c9605f0c7419130727d9ef6d3f6235e.nzb&amp;i=52081&amp;r=APIKEY" length="187742027" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="187742027"/>
+            <newznab:attr name="guid" value="5c9605f0c7419130727d9ef6d3f6235e"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:33:46 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>ZUBZCWcrACUuT5j628514</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/f5556f6fa2d74318d4888f3af7295fef</guid>
+            <link>https://newztown.co.za/getnzb/f5556f6fa2d74318d4888f3af7295fef.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/f5556f6fa2d74318d4888f3af7295fef#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:43 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>ZUBZCWcrACUuT5j628514</description>
+            <enclosure url="https://newztown.co.za/getnzb/f5556f6fa2d74318d4888f3af7295fef.nzb&amp;i=52081&amp;r=APIKEY" length="368186103" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="368186103"/>
+            <newznab:attr name="guid" value="f5556f6fa2d74318d4888f3af7295fef"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:32:41 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/a23acb6b25c72ede75a1f44afe1ea127</guid>
+            <link>https://newztown.co.za/getnzb/a23acb6b25c72ede75a1f44afe1ea127.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/a23acb6b25c72ede75a1f44afe1ea127#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:50 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES</description>
+            <enclosure url="https://newztown.co.za/getnzb/a23acb6b25c72ede75a1f44afe1ea127.nzb&amp;i=52081&amp;r=APIKEY" length="1000878687" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="1000878687"/>
+            <newznab:attr name="guid" value="a23acb6b25c72ede75a1f44afe1ea127"/>
+            <newznab:attr name="files" value="82"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E05"/>
+            <newznab:attr name="tvmazeid" value="23684"/>
+            <newznab:attr name="tvtitle" value="Meet the Spies"/>
+            <newznab:attr name="tvairdate" value="Fri, 03 Feb 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=a23acb6b25c72ede75a1f44afe1ea127&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:32:39 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>33VSXjk7REPOST7l271Y8s0622zO720</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/9061c68d0b62960f730f82ed78fcdb5b</guid>
+            <link>https://newztown.co.za/getnzb/9061c68d0b62960f730f82ed78fcdb5b.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/9061c68d0b62960f730f82ed78fcdb5b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:58:58 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>33VSXjk7REPOST7l271Y8s0622zO720</description>
+            <enclosure url="https://newztown.co.za/getnzb/9061c68d0b62960f730f82ed78fcdb5b.nzb&amp;i=52081&amp;r=APIKEY" length="4941965634" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="4941965634"/>
+            <newznab:attr name="guid" value="9061c68d0b62960f730f82ed78fcdb5b"/>
+            <newznab:attr name="files" value="98"/>
+            <newznab:attr name="poster" value="yEncBin@Poster.com (yEncBin)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="-1"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:32:33 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/0542a21e69a336ced84f60a9be45b762</guid>
+            <link>https://newztown.co.za/getnzb/0542a21e69a336ced84f60a9be45b762.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/0542a21e69a336ced84f60a9be45b762#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:47 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</description>
+            <enclosure url="https://newztown.co.za/getnzb/0542a21e69a336ced84f60a9be45b762.nzb&amp;i=52081&amp;r=APIKEY" length="1015874549" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="1015874549"/>
+            <newznab:attr name="guid" value="0542a21e69a336ced84f60a9be45b762"/>
+            <newznab:attr name="files" value="83"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E04"/>
+            <newznab:attr name="tvmazeid" value="23684"/>
+            <newznab:attr name="tvtitle" value="Mischief"/>
+            <newznab:attr name="tvairdate" value="Thu, 02 Feb 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=0542a21e69a336ced84f60a9be45b762&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:32:18 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/7a2c4430ce53aaf7b5293302cf34885b</guid>
+            <link>https://newztown.co.za/getnzb/7a2c4430ce53aaf7b5293302cf34885b.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/7a2c4430ce53aaf7b5293302cf34885b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:51 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES</description>
+            <enclosure url="https://newztown.co.za/getnzb/7a2c4430ce53aaf7b5293302cf34885b.nzb&amp;i=52081&amp;r=APIKEY" length="971211395" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="971211395"/>
+            <newznab:attr name="guid" value="7a2c4430ce53aaf7b5293302cf34885b"/>
+            <newznab:attr name="files" value="80"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E03"/>
+            <newznab:attr name="tvmazeid" value="23684"/>
+            <newznab:attr name="tvtitle" value="Friendship"/>
+            <newznab:attr name="tvairdate" value="Thu, 26 Jan 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=7a2c4430ce53aaf7b5293302cf34885b&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:31:10 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>2d27b6e04086b1fc79dbfeba3ec173aff</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1919a093b1343f7f53f08b4a69c30013</guid>
+            <link>https://newztown.co.za/getnzb/1919a093b1343f7f53f08b4a69c30013.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1919a093b1343f7f53f08b4a69c30013#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:44:11 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>2d27b6e04086b1fc79dbfeba3ec173aff</description>
+            <enclosure url="https://newztown.co.za/getnzb/1919a093b1343f7f53f08b4a69c30013.nzb&amp;i=52081&amp;r=APIKEY" length="5121312790" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="5121312790"/>
+            <newznab:attr name="guid" value="1919a093b1343f7f53f08b4a69c30013"/>
+            <newznab:attr name="files" value="98"/>
+            <newznab:attr name="poster" value="CPP-Gebruiker &lt;CPP-gebruiker@domein.nl&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="1"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:51 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+
+        </item>
+        <item>
+            <title>ZFD1Sbm3unufNlzfb527b</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/2f49bf730e236bfa8dec2c2d94d66c62</guid>
+            <link>https://newztown.co.za/getnzb/2f49bf730e236bfa8dec2c2d94d66c62.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/2f49bf730e236bfa8dec2c2d94d66c62#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:44 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>ZFD1Sbm3unufNlzfb527b</description>
+            <enclosure url="https://newztown.co.za/getnzb/2f49bf730e236bfa8dec2c2d94d66c62.nzb&amp;i=52081&amp;r=APIKEY" length="113680004" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="113680004"/>
+            <newznab:attr name="guid" value="2f49bf730e236bfa8dec2c2d94d66c62"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:47 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1c40272d689d6ef556b20cab1bd14fca</guid>
+            <link>https://newztown.co.za/getnzb/1c40272d689d6ef556b20cab1bd14fca.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1c40272d689d6ef556b20cab1bd14fca#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:50 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES</description>
+            <enclosure url="https://newztown.co.za/getnzb/1c40272d689d6ef556b20cab1bd14fca.nzb&amp;i=52081&amp;r=APIKEY" length="988055511" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="988055511"/>
+            <newznab:attr name="guid" value="1c40272d689d6ef556b20cab1bd14fca"/>
+            <newznab:attr name="files" value="80"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E02"/>
+            <newznab:attr name="tvmazeid" value="23684"/>
+            <newznab:attr name="tvtitle" value="Intelligence"/>
+            <newznab:attr name="tvairdate" value="Thu, 19 Jan 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=1c40272d689d6ef556b20cab1bd14fca&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:42 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>ZCIjnJuXphn4hHy8708fe</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e75131f72192db4da7cdb678135fd93f</guid>
+            <link>https://newztown.co.za/getnzb/e75131f72192db4da7cdb678135fd93f.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e75131f72192db4da7cdb678135fd93f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:44 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>ZCIjnJuXphn4hHy8708fe</description>
+            <enclosure url="https://newztown.co.za/getnzb/e75131f72192db4da7cdb678135fd93f.nzb&amp;i=52081&amp;r=APIKEY" length="199555663" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="199555663"/>
+            <newznab:attr name="guid" value="e75131f72192db4da7cdb678135fd93f"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/cfb29d766b8dbdfc636c9884a543a2f7</guid>
+            <link>https://newztown.co.za/getnzb/cfb29d766b8dbdfc636c9884a543a2f7.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/cfb29d766b8dbdfc636c9884a543a2f7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:44 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES</description>
+            <enclosure url="https://newztown.co.za/getnzb/cfb29d766b8dbdfc636c9884a543a2f7.nzb&amp;i=52081&amp;r=APIKEY" length="1108086816" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="1108086816"/>
+            <newznab:attr name="guid" value="cfb29d766b8dbdfc636c9884a543a2f7"/>
+            <newznab:attr name="files" value="87"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E01"/>
+            <newznab:attr name="tvmazeid" value="23684"/>
+            <newznab:attr name="tvtitle" value="Love"/>
+            <newznab:attr name="tvairdate" value="Thu, 12 Jan 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=cfb29d766b8dbdfc636c9884a543a2f7&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:29:39 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>YHShTbmLRAqAl7Ja9590c</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/48b98d878309c4cb794e589564b95092</guid>
+            <link>https://newztown.co.za/getnzb/48b98d878309c4cb794e589564b95092.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/48b98d878309c4cb794e589564b95092#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:43 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>YHShTbmLRAqAl7Ja9590c</description>
+            <enclosure url="https://newztown.co.za/getnzb/48b98d878309c4cb794e589564b95092.nzb&amp;i=52081&amp;r=APIKEY" length="245968466" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="245968466"/>
+            <newznab:attr name="guid" value="48b98d878309c4cb794e589564b95092"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:29:23 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>XHkYnbDK8YyHOft0ff66a</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/939e177e9931a1a4715426f526b4b51c</guid>
+            <link>https://newztown.co.za/getnzb/939e177e9931a1a4715426f526b4b51c.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/939e177e9931a1a4715426f526b4b51c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:43 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>XHkYnbDK8YyHOft0ff66a</description>
+            <enclosure url="https://newztown.co.za/getnzb/939e177e9931a1a4715426f526b4b51c.nzb&amp;i=52081&amp;r=APIKEY" length="244687357" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="244687357"/>
+            <newznab:attr name="guid" value="939e177e9931a1a4715426f526b4b51c"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:28:20 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>NCIS.S14E20.A.Bowl.of.Cherries.1080p.WEB-DL.DD5.1.H.264-BTN</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/886d96e6c06adadde6409d6700294bc8</guid>
+            <link>https://newztown.co.za/getnzb/886d96e6c06adadde6409d6700294bc8.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/886d96e6c06adadde6409d6700294bc8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:41 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.S14E20.A.Bowl.of.Cherries.1080p.WEB-DL.DD5.1.H.264-BTN</description>
+            <enclosure url="https://newztown.co.za/getnzb/886d96e6c06adadde6409d6700294bc8.nzb&amp;i=52081&amp;r=APIKEY" length="2062554268" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="2062554268"/>
+            <newznab:attr name="guid" value="886d96e6c06adadde6409d6700294bc8"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="season" value="S14"/>
+            <newznab:attr name="episode" value="E20"/>
+            <newznab:attr name="rageid" value="4628"/>
+            <newznab:attr name="tvmazeid" value="60"/>
+            <newznab:attr name="tvdbid" value="72108"/>
+            <newznab:attr name="tvtitle" value="A Bowl of Cherries"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="40"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:28:14 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E20.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/75f2a70bbccab96e70a2b8c108c2e1d5</guid>
+            <link>https://newztown.co.za/getnzb/75f2a70bbccab96e70a2b8c108c2e1d5.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/75f2a70bbccab96e70a2b8c108c2e1d5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:42 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E20.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/75f2a70bbccab96e70a2b8c108c2e1d5.nzb&amp;i=52081&amp;r=APIKEY" length="194020116" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="194020116"/>
+            <newznab:attr name="guid" value="75f2a70bbccab96e70a2b8c108c2e1d5"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E20"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 07 Apr 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="18"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=75f2a70bbccab96e70a2b8c108c2e1d5&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:27:40 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Hip Hop Pantsula-O Mang-ZA-CD-FLAC-2004-hbZ</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/95b6394b330620fcdf1468bd33f84319</guid>
+            <link>https://newztown.co.za/getnzb/95b6394b330620fcdf1468bd33f84319.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/95b6394b330620fcdf1468bd33f84319#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:42 +0200</pubDate>
+            <category>Audio &gt; Lossless</category>
+            <description>Hip Hop Pantsula-O Mang-ZA-CD-FLAC-2004-hbZ</description>
+            <enclosure url="https://newztown.co.za/getnzb/95b6394b330620fcdf1468bd33f84319.nzb&amp;i=52081&amp;r=APIKEY" length="607847485" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3040"/>
+
+            <newznab:attr name="size" value="607847485"/>
+            <newznab:attr name="guid" value="95b6394b330620fcdf1468bd33f84319"/>
+            <newznab:attr name="files" value="28"/>
+            <newznab:attr name="poster" value="flac@4u.tv (flac)"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=95b6394b330620fcdf1468bd33f84319&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:27:11 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.sounds.flac"/>
+
+        </item>
+        <item>
+            <title>X52Wit9wb6id2XCa8d8e2</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/c9fd649f720cb7a5d9f51ea8e62cf9ce</guid>
+            <link>https://newztown.co.za/getnzb/c9fd649f720cb7a5d9f51ea8e62cf9ce.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/c9fd649f720cb7a5d9f51ea8e62cf9ce#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:43 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>X52Wit9wb6id2XCa8d8e2</description>
+            <enclosure url="https://newztown.co.za/getnzb/c9fd649f720cb7a5d9f51ea8e62cf9ce.nzb&amp;i=52081&amp;r=APIKEY" length="265329595" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="265329595"/>
+            <newznab:attr name="guid" value="c9fd649f720cb7a5d9f51ea8e62cf9ce"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:27:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Teba-Manifesto-ZA-CD-FLAC-2004-hbZ</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1f2d9033cf84eec36108c172f64b2338</guid>
+            <link>https://newztown.co.za/getnzb/1f2d9033cf84eec36108c172f64b2338.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1f2d9033cf84eec36108c172f64b2338#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:55 +0200</pubDate>
+            <category>Audio &gt; Lossless</category>
+            <description>Teba-Manifesto-ZA-CD-FLAC-2004-hbZ</description>
+            <enclosure url="https://newztown.co.za/getnzb/1f2d9033cf84eec36108c172f64b2338.nzb&amp;i=52081&amp;r=APIKEY" length="445799943" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3040"/>
+
+            <newznab:attr name="size" value="445799943"/>
+            <newznab:attr name="guid" value="1f2d9033cf84eec36108c172f64b2338"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="flac@4u.tv (flac)"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=1f2d9033cf84eec36108c172f64b2338&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:26:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.sounds.flac"/>
+
+        </item>
+        <item>
+            <title>115038-17825-001</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6bcb8bc91d7a2ef6c5bb7ec1f47d0f19</guid>
+            <link>https://newztown.co.za/getnzb/6bcb8bc91d7a2ef6c5bb7ec1f47d0f19.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6bcb8bc91d7a2ef6c5bb7ec1f47d0f19#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:16 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>115038-17825-001</description>
+            <enclosure url="https://newztown.co.za/getnzb/6bcb8bc91d7a2ef6c5bb7ec1f47d0f19.nzb&amp;i=52081&amp;r=APIKEY" length="70658102" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="70658102"/>
+            <newznab:attr name="guid" value="6bcb8bc91d7a2ef6c5bb7ec1f47d0f19"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:25:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Nick Lowe - The Abominable Showman (1983)</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/b588b7fe7fc7352284a92eafb251a1c2</guid>
+            <link>https://newztown.co.za/getnzb/b588b7fe7fc7352284a92eafb251a1c2.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/b588b7fe7fc7352284a92eafb251a1c2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:32:29 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Nick Lowe - The Abominable Showman (1983)</description>
+            <enclosure url="https://newztown.co.za/getnzb/b588b7fe7fc7352284a92eafb251a1c2.nzb&amp;i=52081&amp;r=APIKEY" length="107065329" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="107065329"/>
+            <newznab:attr name="guid" value="b588b7fe7fc7352284a92eafb251a1c2"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mick@xxxxxx.com (Michael Angelo)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:25:41 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.sounds.mp3.complete_cd"/>
+
+        </item>
+        <item>
+            <title>UF55hHe7WahX5Uqaeb404</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/89287ee6cfd026f7b3e1ac1928bf75e2</guid>
+            <link>https://newztown.co.za/getnzb/89287ee6cfd026f7b3e1ac1928bf75e2.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/89287ee6cfd026f7b3e1ac1928bf75e2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:11 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>UF55hHe7WahX5Uqaeb404</description>
+            <enclosure url="https://newztown.co.za/getnzb/89287ee6cfd026f7b3e1ac1928bf75e2.nzb&amp;i=52081&amp;r=APIKEY" length="276417822" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="276417822"/>
+            <newznab:attr name="guid" value="89287ee6cfd026f7b3e1ac1928bf75e2"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:25:25 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/b12c14b504193a0c63022a0d324dda18</guid>
+            <link>https://newztown.co.za/getnzb/b12c14b504193a0c63022a0d324dda18.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/b12c14b504193a0c63022a0d324dda18#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:42 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://newztown.co.za/getnzb/b12c14b504193a0c63022a0d324dda18.nzb&amp;i=52081&amp;r=APIKEY" length="325934229" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="325934229"/>
+            <newznab:attr name="guid" value="b12c14b504193a0c63022a0d324dda18"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="04/04"/>
+            <newznab:attr name="rageid" value="4188"/>
+            <newznab:attr name="tvmazeid" value="390"/>
+            <newznab:attr name="tvdbid" value="78057"/>
+            <newznab:attr name="tvtitle" value="Damon Lindelof, Agnes Obel, a segment about the podcast &quot;Missing Richard Simmons&quot;"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=b12c14b504193a0c63022a0d324dda18&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:24:15 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>RxfVOnmC6fORfMQ95197f</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/b7344dc21d59179a78db27b930e5a920</guid>
+            <link>https://newztown.co.za/getnzb/b7344dc21d59179a78db27b930e5a920.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/b7344dc21d59179a78db27b930e5a920#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:13 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>RxfVOnmC6fORfMQ95197f</description>
+            <enclosure url="https://newztown.co.za/getnzb/b7344dc21d59179a78db27b930e5a920.nzb&amp;i=52081&amp;r=APIKEY" length="218797687" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="218797687"/>
+            <newznab:attr name="guid" value="b7344dc21d59179a78db27b930e5a920"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:24:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>QbWDmSn9mBmYXE98d9b20</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/04eb5dbe2e525f79641b064c525f7675</guid>
+            <link>https://newztown.co.za/getnzb/04eb5dbe2e525f79641b064c525f7675.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/04eb5dbe2e525f79641b064c525f7675#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:13 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>QbWDmSn9mBmYXE98d9b20</description>
+            <enclosure url="https://newztown.co.za/getnzb/04eb5dbe2e525f79641b064c525f7675.nzb&amp;i=52081&amp;r=APIKEY" length="207824794" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="207824794"/>
+            <newznab:attr name="guid" value="04eb5dbe2e525f79641b064c525f7675"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:23:09 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>PSXal4WxZkDvlY5ce2649\olivia lua s3-089</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/95239f4ae8fe805cfca5946e555b256c</guid>
+            <link>https://newztown.co.za/getnzb/95239f4ae8fe805cfca5946e555b256c.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/95239f4ae8fe805cfca5946e555b256c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:12 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>PSXal4WxZkDvlY5ce2649\olivia lua s3-089</description>
+            <enclosure url="https://newztown.co.za/getnzb/95239f4ae8fe805cfca5946e555b256c.nzb&amp;i=52081&amp;r=APIKEY" length="222314826" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="222314826"/>
+            <newznab:attr name="guid" value="95239f4ae8fe805cfca5946e555b256c"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="season" value="S03"/>
+            <newznab:attr name="episode" value="E00"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:22:14 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/ba8ec503433260d0cbe7f18348b39514</guid>
+            <link>https://newztown.co.za/getnzb/ba8ec503433260d0cbe7f18348b39514.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/ba8ec503433260d0cbe7f18348b39514#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:40:41 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</description>
+            <enclosure url="https://newztown.co.za/getnzb/ba8ec503433260d0cbe7f18348b39514.nzb&amp;i=52081&amp;r=APIKEY" length="1471950770" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="1471950770"/>
+            <newznab:attr name="guid" value="ba8ec503433260d0cbe7f18348b39514"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="04/04"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvtitle" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=ba8ec503433260d0cbe7f18348b39514&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:21:21 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>O21CjS4BjGjvqgO917e72</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/24d77ad0c69c07de14ebdde82cdcee1a</guid>
+            <link>https://newztown.co.za/getnzb/24d77ad0c69c07de14ebdde82cdcee1a.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/24d77ad0c69c07de14ebdde82cdcee1a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:14 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>O21CjS4BjGjvqgO917e72</description>
+            <enclosure url="https://newztown.co.za/getnzb/24d77ad0c69c07de14ebdde82cdcee1a.nzb&amp;i=52081&amp;r=APIKEY" length="151971864" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="151971864"/>
+            <newznab:attr name="guid" value="24d77ad0c69c07de14ebdde82cdcee1a"/>
+            <newznab:attr name="files" value="10"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:21:11 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>metart madote serena-wood high 0033</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/992761a66f80ef86d6b8ad590741367e</guid>
+            <link>https://newztown.co.za/getnzb/992761a66f80ef86d6b8ad590741367e.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/992761a66f80ef86d6b8ad590741367e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:11 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>metart madote serena-wood high 0033</description>
+            <enclosure url="https://newztown.co.za/getnzb/992761a66f80ef86d6b8ad590741367e.nzb&amp;i=52081&amp;r=APIKEY" length="294541149" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="294541149"/>
+            <newznab:attr name="guid" value="992761a66f80ef86d6b8ad590741367e"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:20:35 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>qYA0kYA5VxcC17IVBRIa</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6ac2b7749f093cf434ec37c73cfd0709</guid>
+            <link>https://newztown.co.za/getnzb/6ac2b7749f093cf434ec37c73cfd0709.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6ac2b7749f093cf434ec37c73cfd0709#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:29:27 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>qYA0kYA5VxcC17IVBRIa</description>
+            <enclosure url="https://newztown.co.za/getnzb/6ac2b7749f093cf434ec37c73cfd0709.nzb&amp;i=52081&amp;r=APIKEY" length="3772797707" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="3772797707"/>
+            <newznab:attr name="guid" value="6ac2b7749f093cf434ec37c73cfd0709"/>
+            <newznab:attr name="files" value="77"/>
+            <newznab:attr name="poster" value="yEncBin@Poster.com (yEncBin)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:19:59 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/3b98c4b583aa9296c03bd658540be9e3</guid>
+            <link>https://newztown.co.za/getnzb/3b98c4b583aa9296c03bd658540be9e3.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/3b98c4b583aa9296c03bd658540be9e3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:29:58 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/3b98c4b583aa9296c03bd658540be9e3.nzb&amp;i=52081&amp;r=APIKEY" length="231352198" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="231352198"/>
+            <newznab:attr name="guid" value="3b98c4b583aa9296c03bd658540be9e3"/>
+            <newznab:attr name="files" value="27"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E19"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 31 Mar 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="16"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=3b98c4b583aa9296c03bd658540be9e3&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:19:51 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>108896-9963-007</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/ed55f4088e49d8c3c729a55c76ab0949</guid>
+            <link>https://newztown.co.za/getnzb/ed55f4088e49d8c3c729a55c76ab0949.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/ed55f4088e49d8c3c729a55c76ab0949#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:16 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>108896-9963-007</description>
+            <enclosure url="https://newztown.co.za/getnzb/ed55f4088e49d8c3c729a55c76ab0949.nzb&amp;i=52081&amp;r=APIKEY" length="58152392" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="58152392"/>
+            <newznab:attr name="guid" value="ed55f4088e49d8c3c729a55c76ab0949"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:19:17 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/d702bbae1d837d3968e36855f94fb955</guid>
+            <link>https://newztown.co.za/getnzb/d702bbae1d837d3968e36855f94fb955.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/d702bbae1d837d3968e36855f94fb955#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:32:23 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</description>
+            <enclosure url="https://newztown.co.za/getnzb/d702bbae1d837d3968e36855f94fb955.nzb&amp;i=52081&amp;r=APIKEY" length="5310252507" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="5310252507"/>
+            <newznab:attr name="guid" value="d702bbae1d837d3968e36855f94fb955"/>
+            <newznab:attr name="files" value="55"/>
+            <newznab:attr name="poster" value="Yenc@power-post.org (Yenc-PP-A&amp;A)"/>
+            <newznab:attr name="season" value="S02"/>
+            <newznab:attr name="episode" value="E05"/>
+            <newznab:attr name="rageid" value="24553"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=d702bbae1d837d3968e36855f94fb955&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:19:16 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+
+        </item>
+        <item>
+            <title>109075-10261-008</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/f5cc216cab955c3fb92ad09804ad494d</guid>
+            <link>https://newztown.co.za/getnzb/f5cc216cab955c3fb92ad09804ad494d.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/f5cc216cab955c3fb92ad09804ad494d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:15 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>109075-10261-008</description>
+            <enclosure url="https://newztown.co.za/getnzb/f5cc216cab955c3fb92ad09804ad494d.nzb&amp;i=52081&amp;r=APIKEY" length="69418730" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="69418730"/>
+            <newznab:attr name="guid" value="f5cc216cab955c3fb92ad09804ad494d"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:19:00 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>L4i13531TPjPzNjad46af</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/3f6a07fd1003c121b0c5583f1fb812fa</guid>
+            <link>https://newztown.co.za/getnzb/3f6a07fd1003c121b0c5583f1fb812fa.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/3f6a07fd1003c121b0c5583f1fb812fa#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:15 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>L4i13531TPjPzNjad46af</description>
+            <enclosure url="https://newztown.co.za/getnzb/3f6a07fd1003c121b0c5583f1fb812fa.nzb&amp;i=52081&amp;r=APIKEY" length="88262742" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="88262742"/>
+            <newznab:attr name="guid" value="3f6a07fd1003c121b0c5583f1fb812fa"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:18:37 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Nick Lowe - Nick The Knife (1982)</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/a84f6fed59490db1651677ea9b148e0c</guid>
+            <link>https://newztown.co.za/getnzb/a84f6fed59490db1651677ea9b148e0c.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/a84f6fed59490db1651677ea9b148e0c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:32:29 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Nick Lowe - Nick The Knife (1982)</description>
+            <enclosure url="https://newztown.co.za/getnzb/a84f6fed59490db1651677ea9b148e0c.nzb&amp;i=52081&amp;r=APIKEY" length="100506307" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="100506307"/>
+            <newznab:attr name="guid" value="a84f6fed59490db1651677ea9b148e0c"/>
+            <newznab:attr name="files" value="20"/>
+            <newznab:attr name="poster" value="mick@xxxxxx.com (Michael Angelo)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:18:21 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.sounds.mp3.complete_cd"/>
+
+        </item>
+        <item>
+            <title>Jm7RQDVNW8lownN43a1ba</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/b8913771878d53d66043913970bc40d0</guid>
+            <link>https://newztown.co.za/getnzb/b8913771878d53d66043913970bc40d0.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/b8913771878d53d66043913970bc40d0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:13 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Jm7RQDVNW8lownN43a1ba</description>
+            <enclosure url="https://newztown.co.za/getnzb/b8913771878d53d66043913970bc40d0.nzb&amp;i=52081&amp;r=APIKEY" length="180515595" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="180515595"/>
+            <newznab:attr name="guid" value="b8913771878d53d66043913970bc40d0"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:18:05 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Bad Girls 1994 1080p AVC TrueHD 5.1</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/ecf63dd258d7b838582fea6cd54a0dc5</guid>
+            <link>https://newztown.co.za/getnzb/ecf63dd258d7b838582fea6cd54a0dc5.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/ecf63dd258d7b838582fea6cd54a0dc5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:32:13 +0200</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>Bad Girls 1994 1080p AVC TrueHD 5.1</description>
+            <enclosure url="https://newztown.co.za/getnzb/ecf63dd258d7b838582fea6cd54a0dc5.nzb&amp;i=52081&amp;r=APIKEY" length="24891741587" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+
+            <newznab:attr name="size" value="24891741587"/>
+            <newznab:attr name="guid" value="ecf63dd258d7b838582fea6cd54a0dc5"/>
+            <newznab:attr name="files" value="125"/>
+            <newznab:attr name="poster" value="NewsUP &lt;NewsUp@somewhere.cbr&gt;"/>
+            <newznab:attr name="imdb" value="0109198"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:17:17 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.movies"/>
+
+        </item>
+        <item>
+            <title>JjnMBeMJocBsq5Yb48881</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/381717a8ec8714c3ebc27195346735da</guid>
+            <link>https://newztown.co.za/getnzb/381717a8ec8714c3ebc27195346735da.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/381717a8ec8714c3ebc27195346735da#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:14 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>JjnMBeMJocBsq5Yb48881</description>
+            <enclosure url="https://newztown.co.za/getnzb/381717a8ec8714c3ebc27195346735da.nzb&amp;i=52081&amp;r=APIKEY" length="185962175" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="185962175"/>
+            <newznab:attr name="guid" value="381717a8ec8714c3ebc27195346735da"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:17:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Ha95y86eVFVL6I1e757e1</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6c27aa0b927081998bbb819cefb10765</guid>
+            <link>https://newztown.co.za/getnzb/6c27aa0b927081998bbb819cefb10765.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6c27aa0b927081998bbb819cefb10765#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:11 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Ha95y86eVFVL6I1e757e1</description>
+            <enclosure url="https://newztown.co.za/getnzb/6c27aa0b927081998bbb819cefb10765.nzb&amp;i=52081&amp;r=APIKEY" length="294592763" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="294592763"/>
+            <newznab:attr name="guid" value="6c27aa0b927081998bbb819cefb10765"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:16:22 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/dc9313e99808ee4c657d2d0be1a8d67d</guid>
+            <link>https://newztown.co.za/getnzb/dc9313e99808ee4c657d2d0be1a8d67d.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/dc9313e99808ee4c657d2d0be1a8d67d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:29:51 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="https://newztown.co.za/getnzb/dc9313e99808ee4c657d2d0be1a8d67d.nzb&amp;i=52081&amp;r=APIKEY" length="1897174424" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="1897174424"/>
+            <newznab:attr name="guid" value="dc9313e99808ee4c657d2d0be1a8d67d"/>
+            <newznab:attr name="files" value="51"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="04/04"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="tvtitle" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="9"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=dc9313e99808ee4c657d2d0be1a8d67d&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:15:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>198301-2-carmenpope-03</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/7904202fc553ff2a35f37d888cc5aac6</guid>
+            <link>https://newztown.co.za/getnzb/7904202fc553ff2a35f37d888cc5aac6.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/7904202fc553ff2a35f37d888cc5aac6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:16 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>198301-2-carmenpope-03</description>
+            <enclosure url="https://newztown.co.za/getnzb/7904202fc553ff2a35f37d888cc5aac6.nzb&amp;i=52081&amp;r=APIKEY" length="28861527" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="28861527"/>
+            <newznab:attr name="guid" value="7904202fc553ff2a35f37d888cc5aac6"/>
+            <newznab:attr name="files" value="5"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:14:49 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>tiffany watson s3-050</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/857655066c7e1f30f28052d9158697f1</guid>
+            <link>https://newztown.co.za/getnzb/857655066c7e1f30f28052d9158697f1.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/857655066c7e1f30f28052d9158697f1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:12 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>tiffany watson s3-050</description>
+            <enclosure url="https://newztown.co.za/getnzb/857655066c7e1f30f28052d9158697f1.nzb&amp;i=52081&amp;r=APIKEY" length="199402221" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="199402221"/>
+            <newznab:attr name="guid" value="857655066c7e1f30f28052d9158697f1"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="season" value="S03"/>
+            <newznab:attr name="episode" value="E00"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:14:38 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>DghRfqT3pylXPnv060540</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/b29c2e451f396d6ab2dfcfaa511850e6</guid>
+            <link>https://newztown.co.za/getnzb/b29c2e451f396d6ab2dfcfaa511850e6.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/b29c2e451f396d6ab2dfcfaa511850e6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:10 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>DghRfqT3pylXPnv060540</description>
+            <enclosure url="https://newztown.co.za/getnzb/b29c2e451f396d6ab2dfcfaa511850e6.nzb&amp;i=52081&amp;r=APIKEY" length="423169150" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="423169150"/>
+            <newznab:attr name="guid" value="b29c2e451f396d6ab2dfcfaa511850e6"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:13:32 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>HCESfG9sHjAVS4Bf8in2</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e9b6243106281f6b62ae7984b40e6e00</guid>
+            <link>https://newztown.co.za/getnzb/e9b6243106281f6b62ae7984b40e6e00.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e9b6243106281f6b62ae7984b40e6e00#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:29:29 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>HCESfG9sHjAVS4Bf8in2</description>
+            <enclosure url="https://newztown.co.za/getnzb/e9b6243106281f6b62ae7984b40e6e00.nzb&amp;i=52081&amp;r=APIKEY" length="3772890043" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="3772890043"/>
+            <newznab:attr name="guid" value="e9b6243106281f6b62ae7984b40e6e00"/>
+            <newznab:attr name="files" value="77"/>
+            <newznab:attr name="poster" value="yEncBin@Poster.com (yEncBin)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:12:47 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.cores"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1227cab644683312f60364a71b3ffdcb</guid>
+            <link>https://newztown.co.za/getnzb/1227cab644683312f60364a71b3ffdcb.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1227cab644683312f60364a71b3ffdcb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:01 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/1227cab644683312f60364a71b3ffdcb.nzb&amp;i=52081&amp;r=APIKEY" length="190011579" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="190011579"/>
+            <newznab:attr name="guid" value="1227cab644683312f60364a71b3ffdcb"/>
+            <newznab:attr name="files" value="24"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E18"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 10 Mar 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="28"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=1227cab644683312f60364a71b3ffdcb&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:12:15 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>DS60uh8oWDUIuA4a2093d\115038-17824</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/0e5f69ae06067f006cee07dfbe128a50</guid>
+            <link>https://newztown.co.za/getnzb/0e5f69ae06067f006cee07dfbe128a50.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/0e5f69ae06067f006cee07dfbe128a50#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:15 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>DS60uh8oWDUIuA4a2093d\115038-17824</description>
+            <enclosure url="https://newztown.co.za/getnzb/0e5f69ae06067f006cee07dfbe128a50.nzb&amp;i=52081&amp;r=APIKEY" length="93789377" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="93789377"/>
+            <newznab:attr name="guid" value="0e5f69ae06067f006cee07dfbe128a50"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:11:23 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>metart dencali mia-chance high 0076</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/087ecfbef0e387e2ae009ded39e127ce</guid>
+            <link>https://newztown.co.za/getnzb/087ecfbef0e387e2ae009ded39e127ce.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/087ecfbef0e387e2ae009ded39e127ce#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:12 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>metart dencali mia-chance high 0076</description>
+            <enclosure url="https://newztown.co.za/getnzb/087ecfbef0e387e2ae009ded39e127ce.nzb&amp;i=52081&amp;r=APIKEY" length="194520573" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="194520573"/>
+            <newznab:attr name="guid" value="087ecfbef0e387e2ae009ded39e127ce"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:10:56 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>111226-13091-012</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/c30377e38f921a698aee968006763dc7</guid>
+            <link>https://newztown.co.za/getnzb/c30377e38f921a698aee968006763dc7.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/c30377e38f921a698aee968006763dc7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:16 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>111226-13091-012</description>
+            <enclosure url="https://newztown.co.za/getnzb/c30377e38f921a698aee968006763dc7.nzb&amp;i=52081&amp;r=APIKEY" length="57720250" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="57720250"/>
+            <newznab:attr name="guid" value="c30377e38f921a698aee968006763dc7"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:10:12 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>BYYZsXNYsNsOdb28c4b2c</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/02901d11b7231ba76e3ff41c5643896d</guid>
+            <link>https://newztown.co.za/getnzb/02901d11b7231ba76e3ff41c5643896d.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/02901d11b7231ba76e3ff41c5643896d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:12 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>BYYZsXNYsNsOdb28c4b2c</description>
+            <enclosure url="https://newztown.co.za/getnzb/02901d11b7231ba76e3ff41c5643896d.nzb&amp;i=52081&amp;r=APIKEY" length="261374425" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="261374425"/>
+            <newznab:attr name="guid" value="02901d11b7231ba76e3ff41c5643896d"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:09:55 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>AgZAC9hcaCW0hHO6f718c</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/0ce32a6a88e8c2836818bfab3de85de5</guid>
+            <link>https://newztown.co.za/getnzb/0ce32a6a88e8c2836818bfab3de85de5.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/0ce32a6a88e8c2836818bfab3de85de5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:12 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>AgZAC9hcaCW0hHO6f718c</description>
+            <enclosure url="https://newztown.co.za/getnzb/0ce32a6a88e8c2836818bfab3de85de5.nzb&amp;i=52081&amp;r=APIKEY" length="187186224" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="187186224"/>
+            <newznab:attr name="guid" value="0ce32a6a88e8c2836818bfab3de85de5"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:08:56 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>A0juXJL2erYXZMkd51172\199801</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6827c4c4f0abfcef70288502a181da31</guid>
+            <link>https://newztown.co.za/getnzb/6827c4c4f0abfcef70288502a181da31.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6827c4c4f0abfcef70288502a181da31#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:33 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>A0juXJL2erYXZMkd51172\199801</description>
+            <enclosure url="https://newztown.co.za/getnzb/6827c4c4f0abfcef70288502a181da31.nzb&amp;i=52081&amp;r=APIKEY" length="22324708" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="22324708"/>
+            <newznab:attr name="guid" value="6827c4c4f0abfcef70288502a181da31"/>
+            <newznab:attr name="files" value="5"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:08:06 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>9HnbxvuZxqxFojR3d5605</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e7cf99014ca8d8a11ba603c026967797</guid>
+            <link>https://newztown.co.za/getnzb/e7cf99014ca8d8a11ba603c026967797.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e7cf99014ca8d8a11ba603c026967797#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:10 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>9HnbxvuZxqxFojR3d5605</description>
+            <enclosure url="https://newztown.co.za/getnzb/e7cf99014ca8d8a11ba603c026967797.nzb&amp;i=52081&amp;r=APIKEY" length="366322223" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="366322223"/>
+            <newznab:attr name="guid" value="e7cf99014ca8d8a11ba603c026967797"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:07:57 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>7nwsNZhPp9NpwyX9e235f</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/a54fbc229768cbdd6b9382a731fbf7e8</guid>
+            <link>https://newztown.co.za/getnzb/a54fbc229768cbdd6b9382a731fbf7e8.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/a54fbc229768cbdd6b9382a731fbf7e8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:30 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>7nwsNZhPp9NpwyX9e235f</description>
+            <enclosure url="https://newztown.co.za/getnzb/a54fbc229768cbdd6b9382a731fbf7e8.nzb&amp;i=52081&amp;r=APIKEY" length="182721453" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="182721453"/>
+            <newznab:attr name="guid" value="a54fbc229768cbdd6b9382a731fbf7e8"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:06:03 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>Terre de passions 035</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1f2f4e82abc079081285b19e98d242e9</guid>
+            <link>https://newztown.co.za/getnzb/1f2f4e82abc079081285b19e98d242e9.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1f2f4e82abc079081285b19e98d242e9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:41 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Terre de passions 035</description>
+            <enclosure url="https://newztown.co.za/getnzb/1f2f4e82abc079081285b19e98d242e9.nzb&amp;i=52081&amp;r=APIKEY" length="517347909" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="517347909"/>
+            <newznab:attr name="guid" value="1f2f4e82abc079081285b19e98d242e9"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="Mayan &lt;Mayan@dventu.re&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:05:46 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.town"/>
+
+        </item>
+        <item>
+            <title>6gZmCTsYECGZvWq3200f8</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e8f06075bf6d4cfbaccd53d8298eb4e0</guid>
+            <link>https://newztown.co.za/getnzb/e8f06075bf6d4cfbaccd53d8298eb4e0.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e8f06075bf6d4cfbaccd53d8298eb4e0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:31 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>6gZmCTsYECGZvWq3200f8</description>
+            <enclosure url="https://newztown.co.za/getnzb/e8f06075bf6d4cfbaccd53d8298eb4e0.nzb&amp;i=52081&amp;r=APIKEY" length="186595863" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="186595863"/>
+            <newznab:attr name="guid" value="e8f06075bf6d4cfbaccd53d8298eb4e0"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:05:19 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>3keg834N9mKppAK6nRAC8</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/37d353ec482da2ec49732f72e95c181e</guid>
+            <link>https://newztown.co.za/getnzb/37d353ec482da2ec49732f72e95c181e.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/37d353ec482da2ec49732f72e95c181e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:44:14 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>3keg834N9mKppAK6nRAC8</description>
+            <enclosure url="https://newztown.co.za/getnzb/37d353ec482da2ec49732f72e95c181e.nzb&amp;i=52081&amp;r=APIKEY" length="7285530339" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="7285530339"/>
+            <newznab:attr name="guid" value="37d353ec482da2ec49732f72e95c181e"/>
+            <newznab:attr name="files" value="73"/>
+            <newznab:attr name="poster" value="Niemand@live.nl (JanvanIngrid)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:04:54 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.cores"/>
+
+        </item>
+        <item>
+            <title>65mTNDqe2bNHR7cb14e71</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/ccb1777447c2feceedf911e651e481fb</guid>
+            <link>https://newztown.co.za/getnzb/ccb1777447c2feceedf911e651e481fb.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/ccb1777447c2feceedf911e651e481fb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:31 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>65mTNDqe2bNHR7cb14e71</description>
+            <enclosure url="https://newztown.co.za/getnzb/ccb1777447c2feceedf911e651e481fb.nzb&amp;i=52081&amp;r=APIKEY" length="171286070" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="171286070"/>
+            <newznab:attr name="guid" value="ccb1777447c2feceedf911e651e481fb"/>
+            <newznab:attr name="files" value="10"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:04:34 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/baf4bb1d77169f8f8d7065d31e2b047f</guid>
+            <link>https://newztown.co.za/getnzb/baf4bb1d77169f8f8d7065d31e2b047f.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/baf4bb1d77169f8f8d7065d31e2b047f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:39 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/baf4bb1d77169f8f8d7065d31e2b047f.nzb&amp;i=52081&amp;r=APIKEY" length="206664962" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="206664962"/>
+            <newznab:attr name="guid" value="baf4bb1d77169f8f8d7065d31e2b047f"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E17"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 25 Feb 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="24"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=baf4bb1d77169f8f8d7065d31e2b047f&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:04:22 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/60534ccca98d02efd4d586995ef3fe50</guid>
+            <link>https://newztown.co.za/getnzb/60534ccca98d02efd4d586995ef3fe50.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/60534ccca98d02efd4d586995ef3fe50#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:29:58 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://newztown.co.za/getnzb/60534ccca98d02efd4d586995ef3fe50.nzb&amp;i=52081&amp;r=APIKEY" length="657826434" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="657826434"/>
+            <newznab:attr name="guid" value="60534ccca98d02efd4d586995ef3fe50"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="04/04"/>
+            <newznab:attr name="rageid" value="35852"/>
+            <newznab:attr name="tvmazeid" value="363"/>
+            <newznab:attr name="tvdbid" value="270262"/>
+            <newznab:attr name="tvtitle" value="Ice T, Freida Pinto, Julio Torres, Jonathan Mover"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=60534ccca98d02efd4d586995ef3fe50&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:03:52 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>5YFvwdNLkr8ruRn89cf05</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/436b411b34a9d14cd93fd9c846ae4980</guid>
+            <link>https://newztown.co.za/getnzb/436b411b34a9d14cd93fd9c846ae4980.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/436b411b34a9d14cd93fd9c846ae4980#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:31 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>5YFvwdNLkr8ruRn89cf05</description>
+            <enclosure url="https://newztown.co.za/getnzb/436b411b34a9d14cd93fd9c846ae4980.nzb&amp;i=52081&amp;r=APIKEY" length="206898302" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="206898302"/>
+            <newznab:attr name="guid" value="436b411b34a9d14cd93fd9c846ae4980"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:03:49 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>1zfVUvt5UnUpXr957e685</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1759f5cc258c1fe8404ef623fb47b80c</guid>
+            <link>https://newztown.co.za/getnzb/1759f5cc258c1fe8404ef623fb47b80c.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1759f5cc258c1fe8404ef623fb47b80c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:31 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>1zfVUvt5UnUpXr957e685</description>
+            <enclosure url="https://newztown.co.za/getnzb/1759f5cc258c1fe8404ef623fb47b80c.nzb&amp;i=52081&amp;r=APIKEY" length="221234379" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="221234379"/>
+            <newznab:attr name="guid" value="1759f5cc258c1fe8404ef623fb47b80c"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:02:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>1EaqcUdpi6cxa7j4b09f2</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/3bb3a8c2521ab29d02c5ccabc952d4be</guid>
+            <link>https://newztown.co.za/getnzb/3bb3a8c2521ab29d02c5ccabc952d4be.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/3bb3a8c2521ab29d02c5ccabc952d4be#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:30 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>1EaqcUdpi6cxa7j4b09f2</description>
+            <enclosure url="https://newztown.co.za/getnzb/3bb3a8c2521ab29d02c5ccabc952d4be.nzb&amp;i=52081&amp;r=APIKEY" length="216983381" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="216983381"/>
+            <newznab:attr name="guid" value="3bb3a8c2521ab29d02c5ccabc952d4be"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:01:54 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>1956GoJDaMGv5oZ01fd95</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/2d6a2b1cadddb6d999d6e2ef6e08cf03</guid>
+            <link>https://newztown.co.za/getnzb/2d6a2b1cadddb6d999d6e2ef6e08cf03.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/2d6a2b1cadddb6d999d6e2ef6e08cf03#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:30 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>1956GoJDaMGv5oZ01fd95</description>
+            <enclosure url="https://newztown.co.za/getnzb/2d6a2b1cadddb6d999d6e2ef6e08cf03.nzb&amp;i=52081&amp;r=APIKEY" length="201093886" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="201093886"/>
+            <newznab:attr name="guid" value="2d6a2b1cadddb6d999d6e2ef6e08cf03"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:00:52 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>0nfCqdER6a9a6eA65c002</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/0d3893fd726bb25f48ac888e5a6b4016</guid>
+            <link>https://newztown.co.za/getnzb/0d3893fd726bb25f48ac888e5a6b4016.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/0d3893fd726bb25f48ac888e5a6b4016#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:32 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>0nfCqdER6a9a6eA65c002</description>
+            <enclosure url="https://newztown.co.za/getnzb/0d3893fd726bb25f48ac888e5a6b4016.nzb&amp;i=52081&amp;r=APIKEY" length="163947454" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="163947454"/>
+            <newznab:attr name="guid" value="0d3893fd726bb25f48ac888e5a6b4016"/>
+            <newznab:attr name="files" value="10"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:00:05 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>0EFpzsi0QzUFa2l9a3acc</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/5e9c336009a5b54bb3fd9d91d90bc279</guid>
+            <link>https://newztown.co.za/getnzb/5e9c336009a5b54bb3fd9d91d90bc279.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/5e9c336009a5b54bb3fd9d91d90bc279#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:30 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>0EFpzsi0QzUFa2l9a3acc</description>
+            <enclosure url="https://newztown.co.za/getnzb/5e9c336009a5b54bb3fd9d91d90bc279.nzb&amp;i=52081&amp;r=APIKEY" length="183220216" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="183220216"/>
+            <newznab:attr name="guid" value="5e9c336009a5b54bb3fd9d91d90bc279"/>
+            <newznab:attr name="files" value="11"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:59:26 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>01nzi8bk8oi7nWid877f8</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/df87d2872c12ff60a7ff13f528345d11</guid>
+            <link>https://newztown.co.za/getnzb/df87d2872c12ff60a7ff13f528345d11.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/df87d2872c12ff60a7ff13f528345d11#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:30 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>01nzi8bk8oi7nWid877f8</description>
+            <enclosure url="https://newztown.co.za/getnzb/df87d2872c12ff60a7ff13f528345d11.nzb&amp;i=52081&amp;r=APIKEY" length="309018271" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="309018271"/>
+            <newznab:attr name="guid" value="df87d2872c12ff60a7ff13f528345d11"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="Mack &lt;Mazzle.Manhazzle@gmazzle.com&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:58:42 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.test"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E16.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/3f233d1b0ceaf4245424dfcce5976831</guid>
+            <link>https://newztown.co.za/getnzb/3f233d1b0ceaf4245424dfcce5976831.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/3f233d1b0ceaf4245424dfcce5976831#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:39 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E16.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/3f233d1b0ceaf4245424dfcce5976831.nzb&amp;i=52081&amp;r=APIKEY" length="201614914" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="201614914"/>
+            <newznab:attr name="guid" value="3f233d1b0ceaf4245424dfcce5976831"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E16"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 18 Feb 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="18"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=3f233d1b0ceaf4245424dfcce5976831&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:56:59 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>[SquareSubs] Bakuten Shoot Beyblade 26</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/42624c457c200a61d8f00936237c4465</guid>
+            <link>https://newztown.co.za/getnzb/42624c457c200a61d8f00936237c4465.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/42624c457c200a61d8f00936237c4465#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:33 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[SquareSubs] Bakuten Shoot Beyblade 26</description>
+            <enclosure url="https://newztown.co.za/getnzb/42624c457c200a61d8f00936237c4465.nzb&amp;i=52081&amp;r=APIKEY" length="322546191" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5070"/>
+
+            <newznab:attr name="size" value="322546191"/>
+            <newznab:attr name="guid" value="42624c457c200a61d8f00936237c4465"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:56:53 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E04.Mike.Lawrence.Marina.Franklin.Brendon.Walsh.Greg.Behrendt.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/3b60768df89ab9fd2a7ac3e20ad47238</guid>
+            <link>https://newztown.co.za/getnzb/3b60768df89ab9fd2a7ac3e20ad47238.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/3b60768df89ab9fd2a7ac3e20ad47238#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:32:20 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E04.Mike.Lawrence.Marina.Franklin.Brendon.Walsh.Greg.Behrendt.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</description>
+            <enclosure url="https://newztown.co.za/getnzb/3b60768df89ab9fd2a7ac3e20ad47238.nzb&amp;i=52081&amp;r=APIKEY" length="5313150666" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="5313150666"/>
+            <newznab:attr name="guid" value="3b60768df89ab9fd2a7ac3e20ad47238"/>
+            <newznab:attr name="files" value="55"/>
+            <newznab:attr name="poster" value="Yenc@power-post.org (Yenc-PP-A&amp;A)"/>
+            <newznab:attr name="season" value="S02"/>
+            <newznab:attr name="episode" value="E04"/>
+            <newznab:attr name="rageid" value="24553"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=3b60768df89ab9fd2a7ac3e20ad47238&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:54:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+
+        </item>
+        <item>
+            <title>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/1a5302c5eea08bcbe434cd00cdd2a567</guid>
+            <link>https://newztown.co.za/getnzb/1a5302c5eea08bcbe434cd00cdd2a567.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/1a5302c5eea08bcbe434cd00cdd2a567#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:38 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</description>
+            <enclosure url="https://newztown.co.za/getnzb/1a5302c5eea08bcbe434cd00cdd2a567.nzb&amp;i=52081&amp;r=APIKEY" length="964095604" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="964095604"/>
+            <newznab:attr name="guid" value="1a5302c5eea08bcbe434cd00cdd2a567"/>
+            <newznab:attr name="files" value="34"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="S01"/>
+            <newznab:attr name="episode" value="E09"/>
+            <newznab:attr name="tvmazeid" value="4144"/>
+            <newznab:attr name="tvtitle" value="TBA"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=1a5302c5eea08bcbe434cd00cdd2a567&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:48:06 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/abdd83cd3ff37a7e6fff602943fe2c33</guid>
+            <link>https://newztown.co.za/getnzb/abdd83cd3ff37a7e6fff602943fe2c33.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/abdd83cd3ff37a7e6fff602943fe2c33#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:51 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E15.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/abdd83cd3ff37a7e6fff602943fe2c33.nzb&amp;i=52081&amp;r=APIKEY" length="274353501" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="274353501"/>
+            <newznab:attr name="guid" value="abdd83cd3ff37a7e6fff602943fe2c33"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E15"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 11 Feb 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="26"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=abdd83cd3ff37a7e6fff602943fe2c33&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:47:17 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/cf490bd5fe2802ad996852504db4d71b</guid>
+            <link>https://newztown.co.za/getnzb/cf490bd5fe2802ad996852504db4d71b.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/cf490bd5fe2802ad996852504db4d71b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:36 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="https://newztown.co.za/getnzb/cf490bd5fe2802ad996852504db4d71b.nzb&amp;i=52081&amp;r=APIKEY" length="501670648" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="501670648"/>
+            <newznab:attr name="guid" value="cf490bd5fe2802ad996852504db4d71b"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="04/04"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="tvtitle" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="6"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=cf490bd5fe2802ad996852504db4d71b&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:43:18 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Goede hoop-Jan van Riebeeck afl.1-De landing</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/0d08bf69dbe3452e1b37fd8c8e8f74b6</guid>
+            <link>https://newztown.co.za/getnzb/0d08bf69dbe3452e1b37fd8c8e8f74b6.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/0d08bf69dbe3452e1b37fd8c8e8f74b6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:39 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Goede hoop-Jan van Riebeeck afl.1-De landing</description>
+            <enclosure url="https://newztown.co.za/getnzb/0d08bf69dbe3452e1b37fd8c8e8f74b6.nzb&amp;i=52081&amp;r=APIKEY" length="1768673025" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="1768673025"/>
+            <newznab:attr name="guid" value="0d08bf69dbe3452e1b37fd8c8e8f74b6"/>
+            <newznab:attr name="files" value="42"/>
+            <newznab:attr name="poster" value="CPP-gebruiker@domein.nl (CPP-Gebruiker)"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:39:31 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tvseries"/>
+
+        </item>
+        <item>
+            <title>050417-SCS04011080BWA20x264B</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/12ed9b03d0aa8d29e45f6a2c96f39dc2</guid>
+            <link>https://newztown.co.za/getnzb/12ed9b03d0aa8d29e45f6a2c96f39dc2.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/12ed9b03d0aa8d29e45f6a2c96f39dc2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:41 +0200</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>050417-SCS04011080BWA20x264B</description>
+            <enclosure url="https://newztown.co.za/getnzb/12ed9b03d0aa8d29e45f6a2c96f39dc2.nzb&amp;i=52081&amp;r=APIKEY" length="1551857130" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+
+            <newznab:attr name="size" value="1551857130"/>
+            <newznab:attr name="guid" value="12ed9b03d0aa8d29e45f6a2c96f39dc2"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="imdb" value="0000000"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:36:26 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/36a29abcfd00d45fedb14d2c347e6161</guid>
+            <link>https://newztown.co.za/getnzb/36a29abcfd00d45fedb14d2c347e6161.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/36a29abcfd00d45fedb14d2c347e6161#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:50 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://newztown.co.za/getnzb/36a29abcfd00d45fedb14d2c347e6161.nzb&amp;i=52081&amp;r=APIKEY" length="877004207" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="877004207"/>
+            <newznab:attr name="guid" value="36a29abcfd00d45fedb14d2c347e6161"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E02"/>
+            <newznab:attr name="rageid" value="32939"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="tvtitle" value="Episode 2"/>
+            <newznab:attr name="tvairdate" value="Thu, 09 Mar 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=36a29abcfd00d45fedb14d2c347e6161&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:36:20 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/38af047718f5f8b615e08501d762a191</guid>
+            <link>https://newztown.co.za/getnzb/38af047718f5f8b615e08501d762a191.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/38af047718f5f8b615e08501d762a191#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:50 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://newztown.co.za/getnzb/38af047718f5f8b615e08501d762a191.nzb&amp;i=52081&amp;r=APIKEY" length="917333869" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="917333869"/>
+            <newznab:attr name="guid" value="38af047718f5f8b615e08501d762a191"/>
+            <newznab:attr name="files" value="34"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E03"/>
+            <newznab:attr name="rageid" value="32939"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=38af047718f5f8b615e08501d762a191&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:36:09 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/124a9fb90231fef0eb5ca349931c4031</guid>
+            <link>https://newztown.co.za/getnzb/124a9fb90231fef0eb5ca349931c4031.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/124a9fb90231fef0eb5ca349931c4031#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:51 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E03.HDTV.x264-CBFM</description>
+            <enclosure url="https://newztown.co.za/getnzb/124a9fb90231fef0eb5ca349931c4031.nzb&amp;i=52081&amp;r=APIKEY" length="272813874" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="272813874"/>
+            <newznab:attr name="guid" value="124a9fb90231fef0eb5ca349931c4031"/>
+            <newznab:attr name="files" value="27"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E03"/>
+            <newznab:attr name="rageid" value="32939"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=124a9fb90231fef0eb5ca349931c4031&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:39 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E14.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/89497f5ee9d7fba9bc8daf1c14b4affb</guid>
+            <link>https://newztown.co.za/getnzb/89497f5ee9d7fba9bc8daf1c14b4affb.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/89497f5ee9d7fba9bc8daf1c14b4affb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:43 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E14.BDRip.X264-REWARD</description>
+            <enclosure url="https://newztown.co.za/getnzb/89497f5ee9d7fba9bc8daf1c14b4affb.nzb&amp;i=52081&amp;r=APIKEY" length="211492566" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="211492566"/>
+            <newznab:attr name="guid" value="89497f5ee9d7fba9bc8daf1c14b4affb"/>
+            <newznab:attr name="files" value="26"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="season" value="S09"/>
+            <newznab:attr name="episode" value="E14"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="tvairdate" value="Thu, 04 Feb 2016 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="20"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=89497f5ee9d7fba9bc8daf1c14b4affb&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:34:34 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/83c504dc7a3372880bde7186ff15902e</guid>
+            <link>https://newztown.co.za/getnzb/83c504dc7a3372880bde7186ff15902e.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/83c504dc7a3372880bde7186ff15902e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:52 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</description>
+            <enclosure url="https://newztown.co.za/getnzb/83c504dc7a3372880bde7186ff15902e.nzb&amp;i=52081&amp;r=APIKEY" length="247112964" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="247112964"/>
+            <newznab:attr name="guid" value="83c504dc7a3372880bde7186ff15902e"/>
+            <newznab:attr name="files" value="20"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E02"/>
+            <newznab:attr name="rageid" value="32939"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="tvtitle" value="Episode 2"/>
+            <newznab:attr name="tvairdate" value="Thu, 09 Mar 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=83c504dc7a3372880bde7186ff15902e&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:33:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/374b5e291a9102783b10481b8bb2bdec</guid>
+            <link>https://newztown.co.za/getnzb/374b5e291a9102783b10481b8bb2bdec.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/374b5e291a9102783b10481b8bb2bdec#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:50 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://newztown.co.za/getnzb/374b5e291a9102783b10481b8bb2bdec.nzb&amp;i=52081&amp;r=APIKEY" length="807609598" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="807609598"/>
+            <newznab:attr name="guid" value="374b5e291a9102783b10481b8bb2bdec"/>
+            <newznab:attr name="files" value="32"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E07"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvtitle" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=374b5e291a9102783b10481b8bb2bdec&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:33:05 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e90491bfec292ccc1c71ecc2e37b7a5a</guid>
+            <link>https://newztown.co.za/getnzb/e90491bfec292ccc1c71ecc2e37b7a5a.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e90491bfec292ccc1c71ecc2e37b7a5a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:58:52 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://newztown.co.za/getnzb/e90491bfec292ccc1c71ecc2e37b7a5a.nzb&amp;i=52081&amp;r=APIKEY" length="513830667" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="513830667"/>
+            <newznab:attr name="guid" value="e90491bfec292ccc1c71ecc2e37b7a5a"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="season" value="S05"/>
+            <newznab:attr name="episode" value="E07"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvtitle" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=e90491bfec292ccc1c71ecc2e37b7a5a&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:31:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/9b151f9d5d4847970d305e428e469d24</guid>
+            <link>https://newztown.co.za/getnzb/9b151f9d5d4847970d305e428e469d24.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/9b151f9d5d4847970d305e428e469d24#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:38 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN</description>
+            <enclosure url="https://newztown.co.za/getnzb/9b151f9d5d4847970d305e428e469d24.nzb&amp;i=52081&amp;r=APIKEY" length="2061200638" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="2061200638"/>
+            <newznab:attr name="guid" value="9b151f9d5d4847970d305e428e469d24"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="season" value="S03"/>
+            <newznab:attr name="episode" value="E20"/>
+            <newznab:attr name="rageid" value="38017"/>
+            <newznab:attr name="tvmazeid" value="45"/>
+            <newznab:attr name="tvdbid" value="278125"/>
+            <newznab:attr name="tvtitle" value="NOLA Confidential"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="20"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:43 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>3-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/e50dc623468f17cd37400994691d3392</guid>
+            <link>https://newztown.co.za/getnzb/e50dc623468f17cd37400994691d3392.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/e50dc623468f17cd37400994691d3392#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:40 +0200</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>3-050417-STS021080IWA20x264B</description>
+            <enclosure url="https://newztown.co.za/getnzb/e50dc623468f17cd37400994691d3392.nzb&amp;i=52081&amp;r=APIKEY" length="1718043986" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+
+            <newznab:attr name="size" value="1718043986"/>
+            <newznab:attr name="guid" value="e50dc623468f17cd37400994691d3392"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="imdb" value="0000000"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:03 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>2-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/bdfcf6212f4cab7ffe0520a1c08b390f</guid>
+            <link>https://newztown.co.za/getnzb/bdfcf6212f4cab7ffe0520a1c08b390f.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/bdfcf6212f4cab7ffe0520a1c08b390f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:40 +0200</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>2-050417-STS021080IWA20x264B</description>
+            <enclosure url="https://newztown.co.za/getnzb/bdfcf6212f4cab7ffe0520a1c08b390f.nzb&amp;i=52081&amp;r=APIKEY" length="1736842314" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+
+            <newznab:attr name="size" value="1736842314"/>
+            <newznab:attr name="guid" value="bdfcf6212f4cab7ffe0520a1c08b390f"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="imdb" value="0000000"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:29:43 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E03.Anthony.Jeselnik.Rory.Albanese.Deon.Cole.Tommy.Johnagin.David.Koechner.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/cfadeb3848068e68384438c5c52331de</guid>
+            <link>https://newztown.co.za/getnzb/cfadeb3848068e68384438c5c52331de.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/cfadeb3848068e68384438c5c52331de#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:43:33 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E03.Anthony.Jeselnik.Rory.Albanese.Deon.Cole.Tommy.Johnagin.David.Koechner.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</description>
+            <enclosure url="https://newztown.co.za/getnzb/cfadeb3848068e68384438c5c52331de.nzb&amp;i=52081&amp;r=APIKEY" length="5306201376" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="5306201376"/>
+            <newznab:attr name="guid" value="cfadeb3848068e68384438c5c52331de"/>
+            <newznab:attr name="files" value="55"/>
+            <newznab:attr name="poster" value="Yenc@power-post.org (Yenc-PP-A&amp;A)"/>
+            <newznab:attr name="season" value="S02"/>
+            <newznab:attr name="episode" value="E03"/>
+            <newznab:attr name="rageid" value="24553"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=cfadeb3848068e68384438c5c52331de&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:29:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+
+        </item>
+        <item>
+            <title>1-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/5c25b36902cb67a151d972a198cb7603</guid>
+            <link>https://newztown.co.za/getnzb/5c25b36902cb67a151d972a198cb7603.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/5c25b36902cb67a151d972a198cb7603#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:39 +0200</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>1-050417-STS021080IWA20x264B</description>
+            <enclosure url="https://newztown.co.za/getnzb/5c25b36902cb67a151d972a198cb7603.nzb&amp;i=52081&amp;r=APIKEY" length="1734470975" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+
+            <newznab:attr name="size" value="1734470975"/>
+            <newznab:attr name="guid" value="5c25b36902cb67a151d972a198cb7603"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="imdb" value="0000000"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:28:50 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/dd2e0bba6fa6ab12bccb29f8eaa2c0a8</guid>
+            <link>https://newztown.co.za/getnzb/dd2e0bba6fa6ab12bccb29f8eaa2c0a8.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/dd2e0bba6fa6ab12bccb29f8eaa2c0a8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:42 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://newztown.co.za/getnzb/dd2e0bba6fa6ab12bccb29f8eaa2c0a8.nzb&amp;i=52081&amp;r=APIKEY" length="883402838" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+
+            <newznab:attr name="size" value="883402838"/>
+            <newznab:attr name="guid" value="dd2e0bba6fa6ab12bccb29f8eaa2c0a8"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="season" value="S03"/>
+            <newznab:attr name="episode" value="E06"/>
+            <newznab:attr name="tvmazeid" value="11162"/>
+            <newznab:attr name="tvdbid" value="294684"/>
+            <newznab:attr name="tvtitle" value="Episode 6"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="3"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=dd2e0bba6fa6ab12bccb29f8eaa2c0a8&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:28:29 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+        <item>
+            <title>Tim O&#039;Brien - Where The River Meets The Road (2017)</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/8507e62e4143369ad19c76c0ffd3e696</guid>
+            <link>https://newztown.co.za/getnzb/8507e62e4143369ad19c76c0ffd3e696.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/8507e62e4143369ad19c76c0ffd3e696#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:24 +0200</pubDate>
+            <category>Other &gt; Misc</category>
+            <description>Tim O&#039;Brien - Where The River Meets The Road (2017)</description>
+            <enclosure url="https://newztown.co.za/getnzb/8507e62e4143369ad19c76c0ffd3e696.nzb&amp;i=52081&amp;r=APIKEY" length="121468955" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+
+            <newznab:attr name="size" value="121468955"/>
+            <newznab:attr name="guid" value="8507e62e4143369ad19c76c0ffd3e696"/>
+            <newznab:attr name="files" value="19"/>
+            <newznab:attr name="poster" value="xxxx@xxxx.com (Clay Potts)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:28:24 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.sounds.mp3.complete_cd"/>
+
+        </item>
+        <item>
+            <title>[DB]</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/6c5e4ce0f2980d9d811ac08878af6515</guid>
+            <link>https://newztown.co.za/getnzb/6c5e4ce0f2980d9d811ac08878af6515.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/6c5e4ce0f2980d9d811ac08878af6515#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:49:25 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[DB]</description>
+            <enclosure url="https://newztown.co.za/getnzb/6c5e4ce0f2980d9d811ac08878af6515.nzb&amp;i=52081&amp;r=APIKEY" length="305252646" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5070"/>
+
+            <newznab:attr name="size" value="305252646"/>
+            <newznab:attr name="guid" value="6c5e4ce0f2980d9d811ac08878af6515"/>
+            <newznab:attr name="files" value="22"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; qfyAV4 &gt;&gt;&gt; &lt;urzxcb__vsylc3a@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="1"/>
+            <newznab:attr name="nfo" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:27:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://newztown.co.za/details/9fcdf8887152b4362c1147ef697b7dce</guid>
+            <link>https://newztown.co.za/getnzb/9fcdf8887152b4362c1147ef697b7dce.nzb&amp;i=52081&amp;r=APIKEY</link>
+            <comments>https://newztown.co.za/details/9fcdf8887152b4362c1147ef697b7dce#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:42 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://newztown.co.za/getnzb/9fcdf8887152b4362c1147ef697b7dce.nzb&amp;i=52081&amp;r=APIKEY" length="336376437" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+
+            <newznab:attr name="size" value="336376437"/>
+            <newznab:attr name="guid" value="9fcdf8887152b4362c1147ef697b7dce"/>
+            <newznab:attr name="files" value="31"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="season" value="S03"/>
+            <newznab:attr name="episode" value="E06"/>
+            <newznab:attr name="tvmazeid" value="11162"/>
+            <newznab:attr name="tvdbid" value="294684"/>
+            <newznab:attr name="tvtitle" value="Episode 6"/>
+            <newznab:attr name="tvairdate" value="Tue, 04 Apr 2017 00:00:00 +0200"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="nfo" value="1"/>
+            <newznab:attr name="info" value="https://newztown.co.za/api?t=getnfo&amp;id=9fcdf8887152b4362c1147ef697b7dce&amp;apikey=APIKEY&amp;raw=1"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:27:31 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+
+        </item>
+
+
+    </channel>
+</rss>

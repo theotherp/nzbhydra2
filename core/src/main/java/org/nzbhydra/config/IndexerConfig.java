@@ -21,14 +21,15 @@ public class IndexerConfig {
         BOTH
     }
 
-    @JsonFormat(shape = Shape.STRING)
-    private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
     private String apikey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend;
     private Set<String> categories = new HashSet<>();
     private Integer downloadLimit;
     private boolean enabled;
+    @JsonFormat(shape = Shape.STRING)
+    private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
+    private Integer generalMinSize;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
     private String host;
@@ -37,12 +38,12 @@ public class IndexerConfig {
     private String password = null;
     private boolean preselect;
     private Integer score = null;
-    private String searchModuleType;
+    private SearchModuleType searchModuleType;
     private boolean showOnSearch;
     @JsonFormat(shape = Shape.STRING)
     private Set<IdType> supportedSearchIds = new HashSet<>();
     private Integer timeout = null;
-    private String type;
+    private String type; //TODO what is this?
 
     private String username = null;
 

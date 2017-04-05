@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
 @RestController
 public class Config {
@@ -29,9 +30,10 @@ public class Config {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String setConfig(@RequestBody BaseConfig config) {
+    public String setConfig(@RequestBody BaseConfig config) throws IOException {
         logger.info("Received new config");
         baseConfig.replace(config);
+        baseConfig.save();
         return "OK";
     }
 

@@ -1,0 +1,2529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="https://nzbfinder.ws/api" rel="self" type="application/rss+xml"/>
+        <title>NZB Finder</title>
+        <description>NZB Finder API Details</description>
+        <link>https://nzbfinder.ws/</link>
+        <language>en-gb</language>
+        <webMaster>hello@nzbfinder.ws NZB Finder</webMaster>
+        <category>usenet,nzbs,newznab,indexer,indexing,index,couchpotato,sickbeard,alt.binaries,alt.binaries.hdtv,bluray,blu-ray</category>
+        <generator>nZEDb</generator>
+        <ttl>10</ttl>
+        <docs>https://nzbfinder.ws/apihelp/</docs>
+        <image url="https://nzbfinder.ws/themes/shared/img/logo.png" title="NZB Finder" link="https://nzbfinder.ws/" description="Visit NZB Finder - Fast, Easy, Reliable"/>
+        <newznab:response offset="0" total="125000"/>
+        <item>
+            <title>Hawaii.Five-0.S07E08.720p.HDTV.x264.NLSubs</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/559a2abb2898bb8e63ae291fd51e8aea2997b261</guid>
+            <link>https://nzbfinder.ws/getnzb/559a2abb2898bb8e63ae291fd51e8aea2997b261.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/559a2abb2898bb8e63ae291fd51e8aea2997b261#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:12 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Hawaii.Five-0.S07E08.720p.HDTV.x264.NLSubs</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/559a2abb2898bb8e63ae291fd51e8aea2997b261.nzb&amp;i=44844&amp;r=APIKEY" length="1381632191" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1381632191"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="Havefunteam@info.com (Havefunteam)"/>
+            <newznab:attr name="title" value="Hana Komo Pae"/>
+            <newznab:attr name="season" value="7"/>
+            <newznab:attr name="episode" value="8"/>
+            <newznab:attr name="tvairdate" value="2016-11-11"/>
+            <newznab:attr name="tvdbid" value="164541"/>
+            <newznab:attr name="traktid" value="32657"/>
+            <newznab:attr name="tvrageid" value="24840"/>
+            <newznab:attr name="rageid" value="24840"/>
+            <newznab:attr name="tvmazeid" value="24"/>
+            <newznab:attr name="imdbid" value="1600194"/>
+            <newznab:attr name="tmdbid" value="32798"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 15:08:51 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/20c65567cb0aa3a6d865e996aa571a7b020a01fb</guid>
+            <link>https://nzbfinder.ws/getnzb/20c65567cb0aa3a6d865e996aa571a7b020a01fb.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/20c65567cb0aa3a6d865e996aa571a7b020a01fb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:48:45 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/20c65567cb0aa3a6d865e996aa571a7b020a01fb.nzb&amp;i=44844&amp;r=APIKEY" length="636948300" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="636948300"/>
+            <newznab:attr name="files" value="45"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Ice T, Freida Pinto, Julio Torres, Jonathan Mover"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="93"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270262"/>
+            <newznab:attr name="traktid" value="75199"/>
+            <newznab:attr name="tvrageid" value="35852"/>
+            <newznab:attr name="rageid" value="35852"/>
+            <newznab:attr name="tvmazeid" value="363"/>
+            <newznab:attr name="imdbid" value="3513388"/>
+            <newznab:attr name="tmdbid" value="61818"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:39:27 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/2fac3ae7b8c61883a99fe38ce5f69da2dc77c197</guid>
+            <link>https://nzbfinder.ws/getnzb/2fac3ae7b8c61883a99fe38ce5f69da2dc77c197.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/2fac3ae7b8c61883a99fe38ce5f69da2dc77c197#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:50:09 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/2fac3ae7b8c61883a99fe38ce5f69da2dc77c197.nzb&amp;i=44844&amp;r=APIKEY" length="1384250616" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1384250616"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:38:02 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.etc"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.720p.BluRay.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/50557bee93311b9fb1a9759b0751d6b72db563d7</guid>
+            <link>https://nzbfinder.ws/getnzb/50557bee93311b9fb1a9759b0751d6b72db563d7.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/50557bee93311b9fb1a9759b0751d6b72db563d7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:54:37 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Spy.in.the.Wild.S01E02.720p.BluRay.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/50557bee93311b9fb1a9759b0751d6b72db563d7.nzb&amp;i=44844&amp;r=APIKEY" length="2768010907" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2768010907"/>
+            <newznab:attr name="files" value="74"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Intelligence"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-01-19"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=50557bee93311b9fb1a9759b0751d6b72db563d7&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:36:29 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/4834098ebc8bb99feb6e8852007233e60ce061ff</guid>
+            <link>https://nzbfinder.ws/getnzb/4834098ebc8bb99feb6e8852007233e60ce061ff.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/4834098ebc8bb99feb6e8852007233e60ce061ff#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:45:28 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/4834098ebc8bb99feb6e8852007233e60ce061ff.nzb&amp;i=44844&amp;r=APIKEY" length="1793113695" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1793113695"/>
+            <newznab:attr name="files" value="24"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="125"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="traktid" value="93737"/>
+            <newznab:attr name="tvrageid" value="41941"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="imdbid" value="3697842"/>
+            <newznab:attr name="tmdbid" value="63770"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:36:13 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tatu"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.720p.BluRay.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/ad4a7a33cc2498796141860f4827686826353f75</guid>
+            <link>https://nzbfinder.ws/getnzb/ad4a7a33cc2498796141860f4827686826353f75.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/ad4a7a33cc2498796141860f4827686826353f75#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:25 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Spy.in.the.Wild.S01E01.720p.BluRay.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/ad4a7a33cc2498796141860f4827686826353f75.nzb&amp;i=44844&amp;r=APIKEY" length="2742912826" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2742912826"/>
+            <newznab:attr name="files" value="73"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Love"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-01-12"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=ad4a7a33cc2498796141860f4827686826353f75&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:35:40 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/01769bd58f1ade3166e8d80c3754579fd26768f2</guid>
+            <link>https://nzbfinder.ws/getnzb/01769bd58f1ade3166e8d80c3754579fd26768f2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/01769bd58f1ade3166e8d80c3754579fd26768f2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:42:12 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/01769bd58f1ade3166e8d80c3754579fd26768f2.nzb&amp;i=44844&amp;r=APIKEY" length="1000934589" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1000934589"/>
+            <newznab:attr name="files" value="82"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Meet the Spies"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="5"/>
+            <newznab:attr name="tvairdate" value="2017-02-03"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=01769bd58f1ade3166e8d80c3754579fd26768f2&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:31:38 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.1080p.BluRay.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/bb5e67362911f935ff29a841bbc1b2231b2d73b6</guid>
+            <link>https://nzbfinder.ws/getnzb/bb5e67362911f935ff29a841bbc1b2231b2d73b6.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/bb5e67362911f935ff29a841bbc1b2231b2d73b6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:25 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Spy.in.the.Wild.S01E01.1080p.BluRay.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/bb5e67362911f935ff29a841bbc1b2231b2d73b6.nzb&amp;i=44844&amp;r=APIKEY" length="5510981833" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5510981833"/>
+            <newznab:attr name="files" value="122"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Love"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-01-12"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=bb5e67362911f935ff29a841bbc1b2231b2d73b6&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:31:29 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.1080p.BluRay.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/b71ac55b17a9a2b2c71677e01354d7fc1110f9d7</guid>
+            <link>https://nzbfinder.ws/getnzb/b71ac55b17a9a2b2c71677e01354d7fc1110f9d7.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/b71ac55b17a9a2b2c71677e01354d7fc1110f9d7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:51:25 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Spy.in.the.Wild.S01E02.1080p.BluRay.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/b71ac55b17a9a2b2c71677e01354d7fc1110f9d7.nzb&amp;i=44844&amp;r=APIKEY" length="5478957663" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5478957663"/>
+            <newznab:attr name="files" value="122"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Intelligence"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-01-19"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=b71ac55b17a9a2b2c71677e01354d7fc1110f9d7&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:31:25 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/4cd1228f5e578f3aa91bee0439fe5a540938a0f3</guid>
+            <link>https://nzbfinder.ws/getnzb/4cd1228f5e578f3aa91bee0439fe5a540938a0f3.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/4cd1228f5e578f3aa91bee0439fe5a540938a0f3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:42:12 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/4cd1228f5e578f3aa91bee0439fe5a540938a0f3.nzb&amp;i=44844&amp;r=APIKEY" length="1016004490" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1016004490"/>
+            <newznab:attr name="files" value="83"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Mischief"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="4"/>
+            <newznab:attr name="tvairdate" value="2017-02-02"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=4cd1228f5e578f3aa91bee0439fe5a540938a0f3&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:31:19 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/016aa69f9d51cf6e6b7734e690d80b3718257c6d</guid>
+            <link>https://nzbfinder.ws/getnzb/016aa69f9d51cf6e6b7734e690d80b3718257c6d.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/016aa69f9d51cf6e6b7734e690d80b3718257c6d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:15 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/016aa69f9d51cf6e6b7734e690d80b3718257c6d.nzb&amp;i=44844&amp;r=APIKEY" length="971463571" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="971463571"/>
+            <newznab:attr name="files" value="80"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Friendship"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2017-01-26"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=016aa69f9d51cf6e6b7734e690d80b3718257c6d&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:38 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/576c8b3ba7836051d51aff3735826bb74b9e8093</guid>
+            <link>https://nzbfinder.ws/getnzb/576c8b3ba7836051d51aff3735826bb74b9e8093.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/576c8b3ba7836051d51aff3735826bb74b9e8093#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:15 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/576c8b3ba7836051d51aff3735826bb74b9e8093.nzb&amp;i=44844&amp;r=APIKEY" length="988293611" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="988293611"/>
+            <newznab:attr name="files" value="80"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Intelligence"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-01-19"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=576c8b3ba7836051d51aff3735826bb74b9e8093&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:30:04 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/419def6086fa721e1a74550f4491198bb66d83be</guid>
+            <link>https://nzbfinder.ws/getnzb/419def6086fa721e1a74550f4491198bb66d83be.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/419def6086fa721e1a74550f4491198bb66d83be#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:39:15 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/419def6086fa721e1a74550f4491198bb66d83be.nzb&amp;i=44844&amp;r=APIKEY" length="1108289242" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1108289242"/>
+            <newznab:attr name="files" value="87"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Love"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-01-12"/>
+            <newznab:attr name="tvdbid" value="322505"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=419def6086fa721e1a74550f4491198bb66d83be&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:29:02 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7b4045ddcea377fd6cd1568610031023a0a747b4</guid>
+            <link>https://nzbfinder.ws/getnzb/7b4045ddcea377fd6cd1568610031023a0a747b4.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7b4045ddcea377fd6cd1568610031023a0a747b4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:42:10 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7b4045ddcea377fd6cd1568610031023a0a747b4.nzb&amp;i=44844&amp;r=APIKEY" length="1854903202" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1854903202"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:28:02 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/93926c5d66faed4a8bf07879109c26c1d0c87e5c</guid>
+            <link>https://nzbfinder.ws/getnzb/93926c5d66faed4a8bf07879109c26c1d0c87e5c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/93926c5d66faed4a8bf07879109c26c1d0c87e5c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:36:31 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/93926c5d66faed4a8bf07879109c26c1d0c87e5c.nzb&amp;i=44844&amp;r=APIKEY" length="326013439" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="326013439"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=93926c5d66faed4a8bf07879109c26c1d0c87e5c&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:24:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/d7a02fdd0f695565485fcf94349a9e66cc24eac6</guid>
+            <link>https://nzbfinder.ws/getnzb/d7a02fdd0f695565485fcf94349a9e66cc24eac6.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/d7a02fdd0f695565485fcf94349a9e66cc24eac6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:13 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/d7a02fdd0f695565485fcf94349a9e66cc24eac6.nzb&amp;i=44844&amp;r=APIKEY" length="1472189981" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1472189981"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=d7a02fdd0f695565485fcf94349a9e66cc24eac6&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="4"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:20:49 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7ab631c66d9f79880a89697e8e9f8f508a52deef</guid>
+            <link>https://nzbfinder.ws/getnzb/7ab631c66d9f79880a89697e8e9f8f508a52deef.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7ab631c66d9f79880a89697e8e9f8f508a52deef#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:10 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7ab631c66d9f79880a89697e8e9f8f508a52deef.nzb&amp;i=44844&amp;r=APIKEY" length="1916849901" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1916849901"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:16:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1c131941b4a8b35c1f991c071a51c520626106c9</guid>
+            <link>https://nzbfinder.ws/getnzb/1c131941b4a8b35c1f991c071a51c520626106c9.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1c131941b4a8b35c1f991c071a51c520626106c9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:24:28 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1c131941b4a8b35c1f991c071a51c520626106c9.nzb&amp;i=44844&amp;r=APIKEY" length="1897541226" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1897541226"/>
+            <newznab:attr name="files" value="51"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="125"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="traktid" value="93737"/>
+            <newznab:attr name="tvrageid" value="41941"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="imdbid" value="3697842"/>
+            <newznab:attr name="tmdbid" value="63770"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=1c131941b4a8b35c1f991c071a51c520626106c9&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="18"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:15:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7de6786a34818252b737b50000e1a8eff07232b7</guid>
+            <link>https://nzbfinder.ws/getnzb/7de6786a34818252b737b50000e1a8eff07232b7.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7de6786a34818252b737b50000e1a8eff07232b7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:15:32 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7de6786a34818252b737b50000e1a8eff07232b7.nzb&amp;i=44844&amp;r=APIKEY" length="903780360" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="903780360"/>
+            <newznab:attr name="files" value="60"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Changing Minds"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-03"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:06:50 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.british.drama"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/c33b4e44b304efc2958ce49bb31ba5df7192d783</guid>
+            <link>https://nzbfinder.ws/getnzb/c33b4e44b304efc2958ce49bb31ba5df7192d783.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/c33b4e44b304efc2958ce49bb31ba5df7192d783#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:12:40 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/c33b4e44b304efc2958ce49bb31ba5df7192d783.nzb&amp;i=44844&amp;r=APIKEY" length="827752113" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="827752113"/>
+            <newznab:attr name="files" value="56"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Changing Times"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:05:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tatu"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/a5365cd0df5048911d218432f2ba77dd8cbcd22b</guid>
+            <link>https://nzbfinder.ws/getnzb/a5365cd0df5048911d218432f2ba77dd8cbcd22b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/a5365cd0df5048911d218432f2ba77dd8cbcd22b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:09:11 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/a5365cd0df5048911d218432f2ba77dd8cbcd22b.nzb&amp;i=44844&amp;r=APIKEY" length="472987210" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="472987210"/>
+            <newznab:attr name="files" value="35"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="125"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="traktid" value="93737"/>
+            <newznab:attr name="tvrageid" value="41941"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="imdbid" value="3697842"/>
+            <newznab:attr name="tmdbid" value="63770"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="12"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:03:55 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/74ecf1046b71798a66bf380d481bf20cb57b5371</guid>
+            <link>https://nzbfinder.ws/getnzb/74ecf1046b71798a66bf380d481bf20cb57b5371.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/74ecf1046b71798a66bf380d481bf20cb57b5371#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:15:25 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/74ecf1046b71798a66bf380d481bf20cb57b5371.nzb&amp;i=44844&amp;r=APIKEY" length="657850141" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="657850141"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Ice T, Freida Pinto, Julio Torres, Jonathan Mover"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="93"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270262"/>
+            <newznab:attr name="traktid" value="75199"/>
+            <newznab:attr name="tvrageid" value="35852"/>
+            <newznab:attr name="rageid" value="35852"/>
+            <newznab:attr name="tvmazeid" value="363"/>
+            <newznab:attr name="imdbid" value="3513388"/>
+            <newznab:attr name="tmdbid" value="61818"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=74ecf1046b71798a66bf380d481bf20cb57b5371&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="21"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:03:37 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Vikings.S04E19.On.the.Eve.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/d084abfbd1c1ef02112d75ca4e94cad0577e934c</guid>
+            <link>https://nzbfinder.ws/getnzb/d084abfbd1c1ef02112d75ca4e94cad0577e934c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/d084abfbd1c1ef02112d75ca4e94cad0577e934c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:50:05 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Vikings.S04E19.On.the.Eve.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/d084abfbd1c1ef02112d75ca4e94cad0577e934c.nzb&amp;i=44844&amp;r=APIKEY" length="11324599147" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="11324599147"/>
+            <newznab:attr name="files" value="100"/>
+            <newznab:attr name="poster" value="bdf27d16634d73dd5fe0a6 &lt;bdf27d1663@4d73dd5fe0.bdf&gt;"/>
+            <newznab:attr name="title" value="On the Eve"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="19"/>
+            <newznab:attr name="tvairdate" value="2017-01-25"/>
+            <newznab:attr name="tvdbid" value="260449"/>
+            <newznab:attr name="tvrageid" value="31136"/>
+            <newznab:attr name="rageid" value="31136"/>
+            <newznab:attr name="tvmazeid" value="29"/>
+            <newznab:attr name="imdbid" value="2306299"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 14:00:03 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>COLONY.2016.S02E09.1080p.WEB-DL.DD5.1.NL.Subs.Metamorfose</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/c1798966bf371072b168901140d6991a3746a4d9</guid>
+            <link>https://nzbfinder.ws/getnzb/c1798966bf371072b168901140d6991a3746a4d9.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/c1798966bf371072b168901140d6991a3746a4d9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:18:09 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>COLONY.2016.S02E09.1080p.WEB-DL.DD5.1.NL.Subs.Metamorfose</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/c1798966bf371072b168901140d6991a3746a4d9.nzb&amp;i=44844&amp;r=APIKEY" length="1793172559" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1793172559"/>
+            <newznab:attr name="files" value="42"/>
+            <newznab:attr name="poster" value="yEncBin@Poster.com (yEncBin)"/>
+            <newznab:attr name="title" value="Taman Shud"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="9"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="284210"/>
+            <newznab:attr name="traktid" value="95966"/>
+            <newznab:attr name="tvrageid" value="42416"/>
+            <newznab:attr name="rageid" value="42416"/>
+            <newznab:attr name="tvmazeid" value="2757"/>
+            <newznab:attr name="imdbid" value="4209256"/>
+            <newznab:attr name="tmdbid" value="62858"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:56:20 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/71792a004e9d2b5c231762de4484b448299fd222</guid>
+            <link>https://nzbfinder.ws/getnzb/71792a004e9d2b5c231762de4484b448299fd222.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/71792a004e9d2b5c231762de4484b448299fd222#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:21 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/71792a004e9d2b5c231762de4484b448299fd222.nzb&amp;i=44844&amp;r=APIKEY" length="322502653" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="322502653"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="anidbid" value="1964"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:56:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/d5299d8ffe8a67424f42686667e8c97b52b18c35</guid>
+            <link>https://nzbfinder.ws/getnzb/d5299d8ffe8a67424f42686667e8c97b52b18c35.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/d5299d8ffe8a67424f42686667e8c97b52b18c35#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:06:13 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/d5299d8ffe8a67424f42686667e8c97b52b18c35.nzb&amp;i=44844&amp;r=APIKEY" length="1058014009" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1058014009"/>
+            <newznab:attr name="files" value="69"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="306705"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:52:53 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+        </item>
+        <item>
+            <title>Supernatural.S12E15.1080p.HDTV.X264-DIMENSION.NLSubs</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1f0f46600e6db52595d3c34a6cc3a4184d730e1c</guid>
+            <link>https://nzbfinder.ws/getnzb/1f0f46600e6db52595d3c34a6cc3a4184d730e1c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1f0f46600e6db52595d3c34a6cc3a4184d730e1c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:18:21 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Supernatural.S12E15.1080p.HDTV.X264-DIMENSION.NLSubs</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1f0f46600e6db52595d3c34a6cc3a4184d730e1c.nzb&amp;i=44844&amp;r=APIKEY" length="2736377541" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2736377541"/>
+            <newznab:attr name="files" value="59"/>
+            <newznab:attr name="poster" value="Havefunteam@info.com (Havefunteam)"/>
+            <newznab:attr name="title" value="Somewhere Between Heaven and Hell"/>
+            <newznab:attr name="season" value="12"/>
+            <newznab:attr name="episode" value="15"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="78901"/>
+            <newznab:attr name="tvrageid" value="5410"/>
+            <newznab:attr name="rageid" value="5410"/>
+            <newznab:attr name="tvmazeid" value="19"/>
+            <newznab:attr name="imdbid" value="0460681"/>
+            <newznab:attr name="grabs" value="3"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:52:21 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/fec56aa99740a81576943d3e95c3e2e940e461bb</guid>
+            <link>https://nzbfinder.ws/getnzb/fec56aa99740a81576943d3e95c3e2e940e461bb.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/fec56aa99740a81576943d3e95c3e2e940e461bb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:54:23 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/fec56aa99740a81576943d3e95c3e2e940e461bb.nzb&amp;i=44844&amp;r=APIKEY" length="482415886" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="482415886"/>
+            <newznab:attr name="files" value="35"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="7"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvrageid" value="40097"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="imdbid" value="3688530"/>
+            <newznab:attr name="tmdbid" value="62807"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:48:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/3cf6959a629527e2fa70f7bb8c4729af7d9ace51</guid>
+            <link>https://nzbfinder.ws/getnzb/3cf6959a629527e2fa70f7bb8c4729af7d9ace51.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/3cf6959a629527e2fa70f7bb8c4729af7d9ace51#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:57:04 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/3cf6959a629527e2fa70f7bb8c4729af7d9ace51.nzb&amp;i=44844&amp;r=APIKEY" length="964222457" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="964222457"/>
+            <newznab:attr name="files" value="34"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Ladies and Gentlemen, the Doctor Is In"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="9"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="320520"/>
+            <newznab:attr name="traktid" value="113543"/>
+            <newznab:attr name="tvmazeid" value="4144"/>
+            <newznab:attr name="imdbid" value="5212822"/>
+            <newznab:attr name="tmdbid" value="69889"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=3cf6959a629527e2fa70f7bb8c4729af7d9ace51&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:47:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/f9cde1d4159b54bce7d1be74dff5dead89a6b668</guid>
+            <link>https://nzbfinder.ws/getnzb/f9cde1d4159b54bce7d1be74dff5dead89a6b668.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/f9cde1d4159b54bce7d1be74dff5dead89a6b668#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:54:23 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/f9cde1d4159b54bce7d1be74dff5dead89a6b668.nzb&amp;i=44844&amp;r=APIKEY" length="858682389" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="858682389"/>
+            <newznab:attr name="files" value="58"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="294684"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:46:17 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.amazing"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/ee38e23a81776a1fbaa69df8db282d5ff69757d4</guid>
+            <link>https://nzbfinder.ws/getnzb/ee38e23a81776a1fbaa69df8db282d5ff69757d4.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/ee38e23a81776a1fbaa69df8db282d5ff69757d4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:54:19 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/ee38e23a81776a1fbaa69df8db282d5ff69757d4.nzb&amp;i=44844&amp;r=APIKEY" length="501725619" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="501725619"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="125"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="traktid" value="93737"/>
+            <newznab:attr name="tvrageid" value="41941"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="imdbid" value="3697842"/>
+            <newznab:attr name="tmdbid" value="63770"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=ee38e23a81776a1fbaa69df8db282d5ff69757d4&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="19"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:43:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7adccdc39e42aedd4f95b7efac0c9a60160c85d6</guid>
+            <link>https://nzbfinder.ws/getnzb/7adccdc39e42aedd4f95b7efac0c9a60160c85d6.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7adccdc39e42aedd4f95b7efac0c9a60160c85d6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:51:12 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7adccdc39e42aedd4f95b7efac0c9a60160c85d6.nzb&amp;i=44844&amp;r=APIKEY" length="758837748" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="758837748"/>
+            <newznab:attr name="files" value="52"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="7"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvrageid" value="40097"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="imdbid" value="3688530"/>
+            <newznab:attr name="tmdbid" value="62807"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="10"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:43:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.font"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/cf49bffb8baceb78eeef21fe8b7a4b6cd980cd23</guid>
+            <link>https://nzbfinder.ws/getnzb/cf49bffb8baceb78eeef21fe8b7a4b6cd980cd23.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/cf49bffb8baceb78eeef21fe8b7a4b6cd980cd23#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:08 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/cf49bffb8baceb78eeef21fe8b7a4b6cd980cd23.nzb&amp;i=44844&amp;r=APIKEY" length="460851436" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="460851436"/>
+            <newznab:attr name="files" value="34"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="5"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:36:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>At.Midnight.with.Chris.Hardwick.2017.04.04.Aisha.Tyler.Kevin.Smith.Rob.Riggle.1080p.CC.WEB-DL.AAC2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1264048ef3778fc506d7a488b7958a3eac50dfa2</guid>
+            <link>https://nzbfinder.ws/getnzb/1264048ef3778fc506d7a488b7958a3eac50dfa2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1264048ef3778fc506d7a488b7958a3eac50dfa2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:50:10 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>At.Midnight.with.Chris.Hardwick.2017.04.04.Aisha.Tyler.Kevin.Smith.Rob.Riggle.1080p.CC.WEB-DL.AAC2.0.x264-monkee</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1264048ef3778fc506d7a488b7958a3eac50dfa2.nzb&amp;i=44844&amp;r=APIKEY" length="690732638" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="690732638"/>
+            <newznab:attr name="files" value="48"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Aisha Tyler, Kevin Smith, Rob Riggle"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="49"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="274099"/>
+            <newznab:attr name="tvrageid" value="38478"/>
+            <newznab:attr name="rageid" value="38478"/>
+            <newznab:attr name="tvmazeid" value="2835"/>
+            <newznab:attr name="imdbid" value="3279494"/>
+            <newznab:attr name="tmdbid" value="61025"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:51 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.amazing"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/9d43aeac91983614ff3530cd74fcdfbee6e135c0</guid>
+            <link>https://nzbfinder.ws/getnzb/9d43aeac91983614ff3530cd74fcdfbee6e135c0.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/9d43aeac91983614ff3530cd74fcdfbee6e135c0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:48:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/9d43aeac91983614ff3530cd74fcdfbee6e135c0.nzb&amp;i=44844&amp;r=APIKEY" length="877078348" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="877078348"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Episode 2"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="traktid" value="68042"/>
+            <newznab:attr name="tvmazeid" value="19414"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:40 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/baa3bc1261c91b515f323645a4c98142e6b58c8d</guid>
+            <link>https://nzbfinder.ws/getnzb/baa3bc1261c91b515f323645a4c98142e6b58c8d.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/baa3bc1261c91b515f323645a4c98142e6b58c8d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:04 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E03.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/baa3bc1261c91b515f323645a4c98142e6b58c8d.nzb&amp;i=44844&amp;r=APIKEY" length="272843358" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="272843358"/>
+            <newznab:attr name="files" value="27"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:24 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/fcc42190c58edc5cfb35cedb7c14a725c3b5a83c</guid>
+            <link>https://nzbfinder.ws/getnzb/fcc42190c58edc5cfb35cedb7c14a725c3b5a83c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/fcc42190c58edc5cfb35cedb7c14a725c3b5a83c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:48:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/fcc42190c58edc5cfb35cedb7c14a725c3b5a83c.nzb&amp;i=44844&amp;r=APIKEY" length="917435208" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="917435208"/>
+            <newznab:attr name="files" value="34"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:23 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/bd85e733c8d880876f95d768a91b6615243060ab</guid>
+            <link>https://nzbfinder.ws/getnzb/bd85e733c8d880876f95d768a91b6615243060ab.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/bd85e733c8d880876f95d768a91b6615243060ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:54:16 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/bd85e733c8d880876f95d768a91b6615243060ab.nzb&amp;i=44844&amp;r=APIKEY" length="1551989420" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1551989420"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="While the Kat's Away..."/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-03"/>
+            <newznab:attr name="tvdbid" value="278266"/>
+            <newznab:attr name="imdbid" value="2815522"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:35:19 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/932b2b23462519a28677319a47896723d289bec2</guid>
+            <link>https://nzbfinder.ws/getnzb/932b2b23462519a28677319a47896723d289bec2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/932b2b23462519a28677319a47896723d289bec2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:48:00 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/932b2b23462519a28677319a47896723d289bec2.nzb&amp;i=44844&amp;r=APIKEY" length="247133721" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="247133721"/>
+            <newznab:attr name="files" value="20"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Episode 2"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="262944"/>
+            <newznab:attr name="traktid" value="68042"/>
+            <newznab:attr name="tvmazeid" value="19414"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:33:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/8381aac7b557b1fc05a19e859822545d8eb69412</guid>
+            <link>https://nzbfinder.ws/getnzb/8381aac7b557b1fc05a19e859822545d8eb69412.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/8381aac7b557b1fc05a19e859822545d8eb69412#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:09 +0200</pubDate>
+            <category>TV &gt; Sport</category>
+            <description>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/8381aac7b557b1fc05a19e859822545d8eb69412.nzb&amp;i=44844&amp;r=APIKEY" length="3077304130" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5060"/>
+            <newznab:attr name="size" value="3077304130"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:32:58 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.tatu"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/4ff212226e0f74b2f2198508823056ac90d496b2</guid>
+            <link>https://nzbfinder.ws/getnzb/4ff212226e0f74b2f2198508823056ac90d496b2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/4ff212226e0f74b2f2198508823056ac90d496b2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:48:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/4ff212226e0f74b2f2198508823056ac90d496b2.nzb&amp;i=44844&amp;r=APIKEY" length="807713103" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="807713103"/>
+            <newznab:attr name="files" value="32"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="7"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvrageid" value="40097"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="imdbid" value="3688530"/>
+            <newznab:attr name="tmdbid" value="62807"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=4ff212226e0f74b2f2198508823056ac90d496b2&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="7"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:32:46 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/0b13333b8fe3358811afb09fcb81e711123fd602</guid>
+            <link>https://nzbfinder.ws/getnzb/0b13333b8fe3358811afb09fcb81e711123fd602.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/0b13333b8fe3358811afb09fcb81e711123fd602#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:04 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/0b13333b8fe3358811afb09fcb81e711123fd602.nzb&amp;i=44844&amp;r=APIKEY" length="627436669" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="627436669"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Crystal Meth in Oberfranken"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2011-02-19"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:32:14 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/28ec8749e4f0cee045be106b19e9c6bd2c7a8925</guid>
+            <link>https://nzbfinder.ws/getnzb/28ec8749e4f0cee045be106b19e9c6bd2c7a8925.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/28ec8749e4f0cee045be106b19e9c6bd2c7a8925#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:04 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/28ec8749e4f0cee045be106b19e9c6bd2c7a8925.nzb&amp;i=44844&amp;r=APIKEY" length="712065830" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="712065830"/>
+            <newznab:attr name="files" value="47"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Satanismus"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="4"/>
+            <newznab:attr name="tvairdate" value="2011-03-05"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:31:48 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/f4690d8ce8ea3b55a8fee3dd15bf1459608640a9</guid>
+            <link>https://nzbfinder.ws/getnzb/f4690d8ce8ea3b55a8fee3dd15bf1459608640a9.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/f4690d8ce8ea3b55a8fee3dd15bf1459608640a9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:04 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/f4690d8ce8ea3b55a8fee3dd15bf1459608640a9.nzb&amp;i=44844&amp;r=APIKEY" length="2104940098" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2104940098"/>
+            <newznab:attr name="files" value="54"/>
+            <newznab:attr name="poster" value="provide@4u.net (yeahsure)"/>
+            <newznab:attr name="title" value="Satanismus"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="4"/>
+            <newznab:attr name="tvairdate" value="2011-03-05"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:31:29 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/d7bfc8c0b3d0f266acea654ef3c535541705542a</guid>
+            <link>https://nzbfinder.ws/getnzb/d7bfc8c0b3d0f266acea654ef3c535541705542a.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/d7bfc8c0b3d0f266acea654ef3c535541705542a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:59 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/d7bfc8c0b3d0f266acea654ef3c535541705542a.nzb&amp;i=44844&amp;r=APIKEY" length="693015788" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="693015788"/>
+            <newznab:attr name="files" value="41"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Metal"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2011-02-26"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:59 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>The.Daily.Show.with.Trevor.Noah.2017.04.04.Chelsea.Handler.1080p.CC.WEB-DL.AAC2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/6cf866c4b54b75cc216412a42da807193d32937b</guid>
+            <link>https://nzbfinder.ws/getnzb/6cf866c4b54b75cc216412a42da807193d32937b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/6cf866c4b54b75cc216412a42da807193d32937b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:50:15 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Daily.Show.with.Trevor.Noah.2017.04.04.Chelsea.Handler.1080p.CC.WEB-DL.AAC2.0.x264-monkee</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/6cf866c4b54b75cc216412a42da807193d32937b.nzb&amp;i=44844&amp;r=APIKEY" length="796194745" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="796194745"/>
+            <newznab:attr name="files" value="54"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Chelsea Handler"/>
+            <newznab:attr name="season" value="2017"/>
+            <newznab:attr name="episode" value="49"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvmazeid" value="3928"/>
+            <newznab:attr name="grabs" value="11"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:58 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.british.drama"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/e6e2eb8e6df674851b02544c7b58ef9dabc7ec93</guid>
+            <link>https://nzbfinder.ws/getnzb/e6e2eb8e6df674851b02544c7b58ef9dabc7ec93.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/e6e2eb8e6df674851b02544c7b58ef9dabc7ec93#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:59 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/e6e2eb8e6df674851b02544c7b58ef9dabc7ec93.nzb&amp;i=44844&amp;r=APIKEY" length="513872827" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="513872827"/>
+            <newznab:attr name="files" value="25"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Matchmakers and Batchbakers"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="7"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="279228"/>
+            <newznab:attr name="tvrageid" value="40097"/>
+            <newznab:attr name="rageid" value="40097"/>
+            <newznab:attr name="tvmazeid" value="418"/>
+            <newznab:attr name="imdbid" value="3688530"/>
+            <newznab:attr name="tmdbid" value="62807"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=e6e2eb8e6df674851b02544c7b58ef9dabc7ec93&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="4"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:51 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E03.The.Chameleon.Part3.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/989f8c06e23b1bc84227fb8bd2ab780c84def843</guid>
+            <link>https://nzbfinder.ws/getnzb/989f8c06e23b1bc84227fb8bd2ab780c84def843.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/989f8c06e23b1bc84227fb8bd2ab780c84def843#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E03.The.Chameleon.Part3.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/989f8c06e23b1bc84227fb8bd2ab780c84def843.nzb&amp;i=44844&amp;r=APIKEY" length="1718135560" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1718135560"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="The Chameleon (3)"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2015-12-07"/>
+            <newznab:attr name="tvdbid" value="296421"/>
+            <newznab:attr name="imdbid" value="4762138"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/2d52388a87ffc58e04df76e4fab7d37995a2a6f7</guid>
+            <link>https://nzbfinder.ws/getnzb/2d52388a87ffc58e04df76e4fab7d37995a2a6f7.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/2d52388a87ffc58e04df76e4fab7d37995a2a6f7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:04 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/2d52388a87ffc58e04df76e4fab7d37995a2a6f7.nzb&amp;i=44844&amp;r=APIKEY" length="2183835234" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2183835234"/>
+            <newznab:attr name="files" value="57"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Metal"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2011-02-26"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:00 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/b74ae6b15593f2f5903af5e8ee7a70c17a6bc49d</guid>
+            <link>https://nzbfinder.ws/getnzb/b74ae6b15593f2f5903af5e8ee7a70c17a6bc49d.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/b74ae6b15593f2f5903af5e8ee7a70c17a6bc49d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:45:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/b74ae6b15593f2f5903af5e8ee7a70c17a6bc49d.nzb&amp;i=44844&amp;r=APIKEY" length="2061302028" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2061302028"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="NOLA Confidential"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="20"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="278125"/>
+            <newznab:attr name="tvrageid" value="38017"/>
+            <newznab:attr name="rageid" value="38017"/>
+            <newznab:attr name="tvmazeid" value="45"/>
+            <newznab:attr name="imdbid" value="3560084"/>
+            <newznab:attr name="grabs" value="37"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:30:00 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E02.The.Chameleon.Part2.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1fc569c7ecfb8f0f84761e4aab4de5661067037b</guid>
+            <link>https://nzbfinder.ws/getnzb/1fc569c7ecfb8f0f84761e4aab4de5661067037b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1fc569c7ecfb8f0f84761e4aab4de5661067037b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:56 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E02.The.Chameleon.Part2.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1fc569c7ecfb8f0f84761e4aab4de5661067037b.nzb&amp;i=44844&amp;r=APIKEY" length="1736964464" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1736964464"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="The Chameleon (2)"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2015-12-06"/>
+            <newznab:attr name="tvdbid" value="296421"/>
+            <newznab:attr name="imdbid" value="4762138"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:28:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7d52b34b15a4464fb1397434c6aa3937162ac87b</guid>
+            <link>https://nzbfinder.ws/getnzb/7d52b34b15a4464fb1397434c6aa3937162ac87b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7d52b34b15a4464fb1397434c6aa3937162ac87b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7d52b34b15a4464fb1397434c6aa3937162ac87b.nzb&amp;i=44844&amp;r=APIKEY" length="883504528" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="883504528"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="294684"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=7d52b34b15a4464fb1397434c6aa3937162ac87b&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:27:48 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E01.The.Chameleon.Part1.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/5f908463a71b5e7b1af52a853cd96ab70c0fa10c</guid>
+            <link>https://nzbfinder.ws/getnzb/5f908463a71b5e7b1af52a853cd96ab70c0fa10c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/5f908463a71b5e7b1af52a853cd96ab70c0fa10c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:56 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E01.The.Chameleon.Part1.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/5f908463a71b5e7b1af52a853cd96ab70c0fa10c.nzb&amp;i=44844&amp;r=APIKEY" length="1734645719" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1734645719"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="The Chameleon (1)"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2015-12-06"/>
+            <newznab:attr name="tvdbid" value="296421"/>
+            <newznab:attr name="imdbid" value="4762138"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:27:35 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/b143e17e0fa2430508922a9042f1dd70861f7076</guid>
+            <link>https://nzbfinder.ws/getnzb/b143e17e0fa2430508922a9042f1dd70861f7076.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/b143e17e0fa2430508922a9042f1dd70861f7076#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:49 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/b143e17e0fa2430508922a9042f1dd70861f7076.nzb&amp;i=44844&amp;r=APIKEY" length="336391542" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="336391542"/>
+            <newznab:attr name="files" value="31"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="294684"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=b143e17e0fa2430508922a9042f1dd70861f7076&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:27:22 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7e53825a9557c0111694df2b2b6e854bb460d70c</guid>
+            <link>https://nzbfinder.ws/getnzb/7e53825a9557c0111694df2b2b6e854bb460d70c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7e53825a9557c0111694df2b2b6e854bb460d70c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7e53825a9557c0111694df2b2b6e854bb460d70c.nzb&amp;i=44844&amp;r=APIKEY" length="1089722684" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1089722684"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="provide@4u.net (yeahsure)"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="306705"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=7e53825a9557c0111694df2b2b6e854bb460d70c&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:26:54 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/8922f9f423edc6912d50d4d59888155cda13c8ab</guid>
+            <link>https://nzbfinder.ws/getnzb/8922f9f423edc6912d50d4d59888155cda13c8ab.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/8922f9f423edc6912d50d4d59888155cda13c8ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:49 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/8922f9f423edc6912d50d4d59888155cda13c8ab.nzb&amp;i=44844&amp;r=APIKEY" length="390036173" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="390036173"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Episode 6"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="306705"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=8922f9f423edc6912d50d4d59888155cda13c8ab&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:26:52 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/343949a005cca2bde76ad08d3aa4007ec6e3d7ee</guid>
+            <link>https://nzbfinder.ws/getnzb/343949a005cca2bde76ad08d3aa4007ec6e3d7ee.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/343949a005cca2bde76ad08d3aa4007ec6e3d7ee#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:54 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/343949a005cca2bde76ad08d3aa4007ec6e3d7ee.nzb&amp;i=44844&amp;r=APIKEY" length="4685954134" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4685954134"/>
+            <newznab:attr name="files" value="52"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Heaven Just Got a Little Smoother"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="281470"/>
+            <newznab:attr name="traktid" value="77686"/>
+            <newznab:attr name="tvrageid" value="38804"/>
+            <newznab:attr name="rageid" value="38804"/>
+            <newznab:attr name="tvmazeid" value="1589"/>
+            <newznab:attr name="imdbid" value="3501584"/>
+            <newznab:attr name="tmdbid" value="60866"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="27"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:26:50 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/4a342693ce8d3f2614469dddfe09c2b1cb6e3a91</guid>
+            <link>https://nzbfinder.ws/getnzb/4a342693ce8d3f2614469dddfe09c2b1cb6e3a91.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/4a342693ce8d3f2614469dddfe09c2b1cb6e3a91#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/4a342693ce8d3f2614469dddfe09c2b1cb6e3a91.nzb&amp;i=44844&amp;r=APIKEY" length="1891029957" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1891029957"/>
+            <newznab:attr name="files" value="45"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Crystal Meth in Oberfranken"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2011-02-19"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:25:53 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/bb40262df5fb069a287d4a44e7d2fe2bc6778f32</guid>
+            <link>https://nzbfinder.ws/getnzb/bb40262df5fb069a287d4a44e7d2fe2bc6778f32.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/bb40262df5fb069a287d4a44e7d2fe2bc6778f32#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:41:49 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/bb40262df5fb069a287d4a44e7d2fe2bc6778f32.nzb&amp;i=44844&amp;r=APIKEY" length="1144804816" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1144804816"/>
+            <newznab:attr name="files" value="26"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; aAPHL7 &gt;&gt;&gt; &lt;4ng_buao3li8q75@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10441"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:25:25 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1eb9350542819f24fa38624b4db29973841c27aa</guid>
+            <link>https://nzbfinder.ws/getnzb/1eb9350542819f24fa38624b4db29973841c27aa.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1eb9350542819f24fa38624b4db29973841c27aa#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:55 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1eb9350542819f24fa38624b4db29973841c27aa.nzb&amp;i=44844&amp;r=APIKEY" length="340286461" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="340286461"/>
+            <newznab:attr name="files" value="31"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Changing Minds"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-03"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=1eb9350542819f24fa38624b4db29973841c27aa&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:25:06 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/7c3cf96507586023d0d077ac713ad733c82d037d</guid>
+            <link>https://nzbfinder.ws/getnzb/7c3cf96507586023d0d077ac713ad733c82d037d.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/7c3cf96507586023d0d077ac713ad733c82d037d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:49 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/7c3cf96507586023d0d077ac713ad733c82d037d.nzb&amp;i=44844&amp;r=APIKEY" length="313331080" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="313331080"/>
+            <newznab:attr name="files" value="30"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Changing Times"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=7c3cf96507586023d0d077ac713ad733c82d037d&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:24:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/09cd9065b1ba9424375ad5df559090bcb0a68573</guid>
+            <link>https://nzbfinder.ws/getnzb/09cd9065b1ba9424375ad5df559090bcb0a68573.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/09cd9065b1ba9424375ad5df559090bcb0a68573#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:42 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/09cd9065b1ba9424375ad5df559090bcb0a68573.nzb&amp;i=44844&amp;r=APIKEY" length="431385745" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="431385745"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; mb8gto &gt;&gt;&gt; &lt;o2m6_4egod2u_hf@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:23:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/e58cc98e7e94f6c694c5a7ad81b46d9e4eef9843</guid>
+            <link>https://nzbfinder.ws/getnzb/e58cc98e7e94f6c694c5a7ad81b46d9e4eef9843.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/e58cc98e7e94f6c694c5a7ad81b46d9e4eef9843#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/e58cc98e7e94f6c694c5a7ad81b46d9e4eef9843.nzb&amp;i=44844&amp;r=APIKEY" length="857688618" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="857688618"/>
+            <newznab:attr name="files" value="32"/>
+            <newznab:attr name="poster" value="provide@4u.net (yeahsure)"/>
+            <newznab:attr name="title" value="Changing Times"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="2"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=e58cc98e7e94f6c694c5a7ad81b46d9e4eef9843&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:23:31 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 254,63 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1753339fa66eabd5d6846b0fac4059cf6efbfa28</guid>
+            <link>https://nzbfinder.ws/getnzb/1753339fa66eabd5d6846b0fac4059cf6efbfa28.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1753339fa66eabd5d6846b0fac4059cf6efbfa28#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:40 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 254,63 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1753339fa66eabd5d6846b0fac4059cf6efbfa28.nzb&amp;i=44844&amp;r=APIKEY" length="277314628" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="277314628"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; rCxKBW &gt;&gt;&gt; &lt;5gszdt3o6ns1qib@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="69"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:23:04 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/a6fbc9e332848762fee2c948528341a8e8036d2b</guid>
+            <link>https://nzbfinder.ws/getnzb/a6fbc9e332848762fee2c948528341a8e8036d2b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/a6fbc9e332848762fee2c948528341a8e8036d2b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/a6fbc9e332848762fee2c948528341a8e8036d2b.nzb&amp;i=44844&amp;r=APIKEY" length="905238013" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="905238013"/>
+            <newznab:attr name="files" value="26"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="title" value="Changing Minds"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-03"/>
+            <newznab:attr name="tvdbid" value="81416"/>
+            <newznab:attr name="imdbid" value="0290348"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=a6fbc9e332848762fee2c948528341a8e8036d2b&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:22:56 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/58e7fdfae3839c53df7e02500abda2fba0c41def</guid>
+            <link>https://nzbfinder.ws/getnzb/58e7fdfae3839c53df7e02500abda2fba0c41def.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/58e7fdfae3839c53df7e02500abda2fba0c41def#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/58e7fdfae3839c53df7e02500abda2fba0c41def.nzb&amp;i=44844&amp;r=APIKEY" length="156673856" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="156673856"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; lSCd8y &gt;&gt;&gt; &lt;xtze7s3r_vreb5a@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:22:32 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/a6f54648ba5b41d8345c36fb811b14874ab7e2b2</guid>
+            <link>https://nzbfinder.ws/getnzb/a6f54648ba5b41d8345c36fb811b14874ab7e2b2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/a6f54648ba5b41d8345c36fb811b14874ab7e2b2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:49 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/a6f54648ba5b41d8345c36fb811b14874ab7e2b2.nzb&amp;i=44844&amp;r=APIKEY" length="2036925248" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2036925248"/>
+            <newznab:attr name="files" value="52"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Bugchasing"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2011-02-12"/>
+            <newznab:attr name="tvdbid" value="237851"/>
+            <newznab:attr name="imdbid" value="1840260"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:22:05 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/bfbfa5bdd7421c2287988b0b19e6a80235bea195</guid>
+            <link>https://nzbfinder.ws/getnzb/bfbfa5bdd7421c2287988b0b19e6a80235bea195.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/bfbfa5bdd7421c2287988b0b19e6a80235bea195#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/bfbfa5bdd7421c2287988b0b19e6a80235bea195.nzb&amp;i=44844&amp;r=APIKEY" length="184684910" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184684910"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; VqvD2A &gt;&gt;&gt; &lt;q1m5lpuf_bta6tk@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:21:55 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[06/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].part05.rar&quot; - 148,59 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/fe66e1e7b8ec45344c41f9b05dea78c93903a6db</guid>
+            <link>https://nzbfinder.ws/getnzb/fe66e1e7b8ec45344c41f9b05dea78c93903a6db.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/fe66e1e7b8ec45344c41f9b05dea78c93903a6db#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].part05.rar&quot; - 148,59 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/fe66e1e7b8ec45344c41f9b05dea78c93903a6db.nzb&amp;i=44844&amp;r=APIKEY" length="161818409" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="161818409"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Dh5gL8 &gt;&gt;&gt; &lt;iazfae3n6klk8_s@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11210"/>
+            <newznab:attr name="grabs" value="5"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:21:38 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/55e81cf1cff4ccc9f27f8e28adc3785ec1b46fb9</guid>
+            <link>https://nzbfinder.ws/getnzb/55e81cf1cff4ccc9f27f8e28adc3785ec1b46fb9.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/55e81cf1cff4ccc9f27f8e28adc3785ec1b46fb9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:35:47 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/55e81cf1cff4ccc9f27f8e28adc3785ec1b46fb9.nzb&amp;i=44844&amp;r=APIKEY" length="1646447810" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1646447810"/>
+            <newznab:attr name="files" value="38"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="NOLA Confidential"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="20"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="278125"/>
+            <newznab:attr name="tvrageid" value="38017"/>
+            <newznab:attr name="rageid" value="38017"/>
+            <newznab:attr name="tvmazeid" value="45"/>
+            <newznab:attr name="imdbid" value="3560084"/>
+            <newznab:attr name="grabs" value="21"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:21:19 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/14c1aded61d9d84756f9f8a44cb773513c8b2cda</guid>
+            <link>https://nzbfinder.ws/getnzb/14c1aded61d9d84756f9f8a44cb773513c8b2cda.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/14c1aded61d9d84756f9f8a44cb773513c8b2cda#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:25 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/14c1aded61d9d84756f9f8a44cb773513c8b2cda.nzb&amp;i=44844&amp;r=APIKEY" length="198451847" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="198451847"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; yNWrU6 &gt;&gt;&gt; &lt;sbd_7jrpwqsvrpr@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11210"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:21:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/f8eec2a06d009779585c6a00d1d7046f8b46c681</guid>
+            <link>https://nzbfinder.ws/getnzb/f8eec2a06d009779585c6a00d1d7046f8b46c681.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/f8eec2a06d009779585c6a00d1d7046f8b46c681#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:33 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/f8eec2a06d009779585c6a00d1d7046f8b46c681.nzb&amp;i=44844&amp;r=APIKEY" length="472580866" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="472580866"/>
+            <newznab:attr name="files" value="44"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=f8eec2a06d009779585c6a00d1d7046f8b46c681&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:21:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/9673ea0052160266a39d6e877cd32db5485754cf</guid>
+            <link>https://nzbfinder.ws/getnzb/9673ea0052160266a39d6e877cd32db5485754cf.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/9673ea0052160266a39d6e877cd32db5485754cf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:25 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/9673ea0052160266a39d6e877cd32db5485754cf.nzb&amp;i=44844&amp;r=APIKEY" length="437909040" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="437909040"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; lpUDSk &gt;&gt;&gt; &lt;dvyeby4oqkej8nm@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9541"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:20:33 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/bb486d582eb3f10b1e1e9f4e95990528ae8af42e</guid>
+            <link>https://nzbfinder.ws/getnzb/bb486d582eb3f10b1e1e9f4e95990528ae8af42e.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/bb486d582eb3f10b1e1e9f4e95990528ae8af42e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/bb486d582eb3f10b1e1e9f4e95990528ae8af42e.nzb&amp;i=44844&amp;r=APIKEY" length="220864950" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="220864950"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; xxB2Kl &gt;&gt;&gt; &lt;k4_exocmtnbhizt@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:19:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[04/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].part03.rar&quot; - 144,58 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/cfc9c854034e64be66a223a5347414f411466e02</guid>
+            <link>https://nzbfinder.ws/getnzb/cfc9c854034e64be66a223a5347414f411466e02.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/cfc9c854034e64be66a223a5347414f411466e02#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:29:25 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[04/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].part03.rar&quot; - 144,58 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/cfc9c854034e64be66a223a5347414f411466e02.nzb&amp;i=44844&amp;r=APIKEY" length="157496127" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="157496127"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Xpiv3n &gt;&gt;&gt; &lt;dllia5es14seh33@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:18:32 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/24d53b838d62a826c30a0ed79921e7f26920da3c</guid>
+            <link>https://nzbfinder.ws/getnzb/24d53b838d62a826c30a0ed79921e7f26920da3c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/24d53b838d62a826c30a0ed79921e7f26920da3c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:19 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/24d53b838d62a826c30a0ed79921e7f26920da3c.nzb&amp;i=44844&amp;r=APIKEY" length="314577097" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="314577097"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hxRFPP &gt;&gt;&gt; &lt;exnhkwt6qrchtq5@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:17:09 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/5097436508108319daf6534ab051d5a175fd5e94</guid>
+            <link>https://nzbfinder.ws/getnzb/5097436508108319daf6534ab051d5a175fd5e94.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/5097436508108319daf6534ab051d5a175fd5e94#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:32:48 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/5097436508108319daf6534ab051d5a175fd5e94.nzb&amp;i=44844&amp;r=APIKEY" length="708984633" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="708984633"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; FjMpFp &gt;&gt;&gt; &lt;vw6bm3vetlewzg1@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:15:11 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Vikings.S04E17.The.Great.Army.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON English</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/b782c62abb61212abe1b2134f8def7fd8801d4d8</guid>
+            <link>https://nzbfinder.ws/getnzb/b782c62abb61212abe1b2134f8def7fd8801d4d8.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/b782c62abb61212abe1b2134f8def7fd8801d4d8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:30:09 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Vikings.S04E17.The.Great.Army.1080p.BluRay.REMUX.AVC.DTS-HD.MA.5.1-EPSiLON English</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/b782c62abb61212abe1b2134f8def7fd8801d4d8.nzb&amp;i=44844&amp;r=APIKEY" length="9282838973" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="9282838973"/>
+            <newznab:attr name="files" value="94"/>
+            <newznab:attr name="poster" value="2c4f3bf2ab92c6ddab5740 &lt;2c4f3bf2ab@92c6ddab57.2c4&gt;"/>
+            <newznab:attr name="title" value="The Great Army"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="17"/>
+            <newznab:attr name="tvairdate" value="2017-01-11"/>
+            <newznab:attr name="tvdbid" value="260449"/>
+            <newznab:attr name="tvrageid" value="31136"/>
+            <newznab:attr name="rageid" value="31136"/>
+            <newznab:attr name="tvmazeid" value="29"/>
+            <newznab:attr name="imdbid" value="2306299"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:11:43 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/a40c6b5a533ed3471c3e4d4e4df46815d80150ab</guid>
+            <link>https://nzbfinder.ws/getnzb/a40c6b5a533ed3471c3e4d4e4df46815d80150ab.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/a40c6b5a533ed3471c3e4d4e4df46815d80150ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:15 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/a40c6b5a533ed3471c3e4d4e4df46815d80150ab.nzb&amp;i=44844&amp;r=APIKEY" length="404816980" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404816980"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; s8Cg3e &gt;&gt;&gt; &lt;r6v4h3oyyvhgiz3@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:11:28 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/16a29cfa1ae6eebc2d080e3e2b7f32ef0df67f46</guid>
+            <link>https://nzbfinder.ws/getnzb/16a29cfa1ae6eebc2d080e3e2b7f32ef0df67f46.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/16a29cfa1ae6eebc2d080e3e2b7f32ef0df67f46#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:20:12 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/16a29cfa1ae6eebc2d080e3e2b7f32ef0df67f46.nzb&amp;i=44844&amp;r=APIKEY" length="648141358" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="648141358"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="27"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:11:10 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/e1dbde7d8a38e686d5c3124565ecd99615ee3ac8</guid>
+            <link>https://nzbfinder.ws/getnzb/e1dbde7d8a38e686d5c3124565ecd99615ee3ac8.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/e1dbde7d8a38e686d5c3124565ecd99615ee3ac8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:20:06 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/e1dbde7d8a38e686d5c3124565ecd99615ee3ac8.nzb&amp;i=44844&amp;r=APIKEY" length="648063597" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="648063597"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:11:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.amazing"/>
+        </item>
+        <item>
+            <title>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/50003c6cb393e0d582b8b1044af97f0f92894d0e</guid>
+            <link>https://nzbfinder.ws/getnzb/50003c6cb393e0d582b8b1044af97f0f92894d0e.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/50003c6cb393e0d582b8b1044af97f0f92894d0e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:23:13 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/50003c6cb393e0d582b8b1044af97f0f92894d0e.nzb&amp;i=44844&amp;r=APIKEY" length="404072556" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404072556"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; GU4RB3 &gt;&gt;&gt; &lt;l8vj_r8oxnksq8j@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:10:01 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/0e3e737c8a3cf70e60c81cec8a68384131d2dfc5</guid>
+            <link>https://nzbfinder.ws/getnzb/0e3e737c8a3cf70e60c81cec8a68384131d2dfc5.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/0e3e737c8a3cf70e60c81cec8a68384131d2dfc5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:26:29 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/0e3e737c8a3cf70e60c81cec8a68384131d2dfc5.nzb&amp;i=44844&amp;r=APIKEY" length="4930903186" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4930903186"/>
+            <newznab:attr name="files" value="103"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Heaven Just Got a Little Smoother"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="281470"/>
+            <newznab:attr name="traktid" value="77686"/>
+            <newznab:attr name="tvrageid" value="38804"/>
+            <newznab:attr name="rageid" value="38804"/>
+            <newznab:attr name="tvmazeid" value="1589"/>
+            <newznab:attr name="imdbid" value="3501584"/>
+            <newznab:attr name="tmdbid" value="60866"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=0e3e737c8a3cf70e60c81cec8a68384131d2dfc5&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="31"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:08:45 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/36ba02a0359015248b55053e2bc533714b735c06</guid>
+            <link>https://nzbfinder.ws/getnzb/36ba02a0359015248b55053e2bc533714b735c06.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/36ba02a0359015248b55053e2bc533714b735c06#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:19:58 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/36ba02a0359015248b55053e2bc533714b735c06.nzb&amp;i=44844&amp;r=APIKEY" length="160157076" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="160157076"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 4cemB2 &gt;&gt;&gt; &lt;rx7o_ozuypexo3g@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:08:24 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/82ab3652b633f152aa3c6f4e320881bdd3abd803</guid>
+            <link>https://nzbfinder.ws/getnzb/82ab3652b633f152aa3c6f4e320881bdd3abd803.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/82ab3652b633f152aa3c6f4e320881bdd3abd803#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:19:58 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/82ab3652b633f152aa3c6f4e320881bdd3abd803.nzb&amp;i=44844&amp;r=APIKEY" length="125721892" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="125721892"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 7Xrm7V &gt;&gt;&gt; &lt;d365525tyqab4wz@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:07:55 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/cef7442fda81634ef82eea290d4f3969dde8f310</guid>
+            <link>https://nzbfinder.ws/getnzb/cef7442fda81634ef82eea290d4f3969dde8f310.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/cef7442fda81634ef82eea290d4f3969dde8f310#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:16:49 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/cef7442fda81634ef82eea290d4f3969dde8f310.nzb&amp;i=44844&amp;r=APIKEY" length="484851886" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="484851886"/>
+            <newznab:attr name="files" value="19"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 5FaoEl &gt;&gt;&gt; &lt;yprpdujt227ky_v@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:07:29 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/6765aa46100ab12f70523914f60d4e10dfdadc88</guid>
+            <link>https://nzbfinder.ws/getnzb/6765aa46100ab12f70523914f60d4e10dfdadc88.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/6765aa46100ab12f70523914f60d4e10dfdadc88#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:13:47 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/6765aa46100ab12f70523914f60d4e10dfdadc88.nzb&amp;i=44844&amp;r=APIKEY" length="203089855" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203089855"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; jVS6PQ &gt;&gt;&gt; &lt;5_kp4nfavan8bbp@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:05:27 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/85d98fe90785b7677337c5cd277022af81c4151c</guid>
+            <link>https://nzbfinder.ws/getnzb/85d98fe90785b7677337c5cd277022af81c4151c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/85d98fe90785b7677337c5cd277022af81c4151c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:13:47 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/85d98fe90785b7677337c5cd277022af81c4151c.nzb&amp;i=44844&amp;r=APIKEY" length="591231892" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="591231892"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; m3_HfP &gt;&gt;&gt; &lt;pm_viw14wil43lr@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:59:07 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/3949779132d6b732497629b10bd313bab8c2c161</guid>
+            <link>https://nzbfinder.ws/getnzb/3949779132d6b732497629b10bd313bab8c2c161.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/3949779132d6b732497629b10bd313bab8c2c161#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/3949779132d6b732497629b10bd313bab8c2c161.nzb&amp;i=44844&amp;r=APIKEY" length="191420109" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="191420109"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; ljRTgo &gt;&gt;&gt; &lt;1mcvy_clml5xo7e@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:56:11 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Prison.Break.S05E01.1080p.WEB-DL.DD5.1.H264.RARBG</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/1a1c71cf4220f93b14a5cac29fe41af01c15f6a4</guid>
+            <link>https://nzbfinder.ws/getnzb/1a1c71cf4220f93b14a5cac29fe41af01c15f6a4.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/1a1c71cf4220f93b14a5cac29fe41af01c15f6a4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 14:18:10 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Prison.Break.S05E01.1080p.WEB-DL.DD5.1.H264.RARBG</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/1a1c71cf4220f93b14a5cac29fe41af01c15f6a4.nzb&amp;i=44844&amp;r=APIKEY" length="1946829018" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1946829018"/>
+            <newznab:attr name="files" value="32"/>
+            <newznab:attr name="poster" value="CPP-gebruiker@domein.nl (CPP-Gebruiker)"/>
+            <newznab:attr name="title" value="Ogygia"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="75340"/>
+            <newznab:attr name="tvrageid" value="4895"/>
+            <newznab:attr name="rageid" value="4895"/>
+            <newznab:attr name="tvmazeid" value="541"/>
+            <newznab:attr name="imdbid" value="0455275"/>
+            <newznab:attr name="tmdbid" value="2288"/>
+            <newznab:attr name="grabs" value="9"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:55:04 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/f80005e81664b08ea1beb8a8145e93a4b17abe9b</guid>
+            <link>https://nzbfinder.ws/getnzb/f80005e81664b08ea1beb8a8145e93a4b17abe9b.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/f80005e81664b08ea1beb8a8145e93a4b17abe9b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:13:55 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/f80005e81664b08ea1beb8a8145e93a4b17abe9b.nzb&amp;i=44844&amp;r=APIKEY" length="671979957" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="671979957"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="provide@4u.net (yeahsure)"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://nzbfinder.ws/api?t=info&amp;id=f80005e81664b08ea1beb8a8145e93a4b17abe9b&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="23"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:54:31 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/581c33925f1c5cfd51989430c0f004e01c564ca0</guid>
+            <link>https://nzbfinder.ws/getnzb/581c33925f1c5cfd51989430c0f004e01c564ca0.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/581c33925f1c5cfd51989430c0f004e01c564ca0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/581c33925f1c5cfd51989430c0f004e01c564ca0.nzb&amp;i=44844&amp;r=APIKEY" length="215836870" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="215836870"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; u56ul4 &gt;&gt;&gt; &lt;m4s3gbulrpnec6j@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:52:57 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Boruto: Naruto Next Generations - 01 [720p][AAC]</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/ee8b7ed535b9cb3c660a15f1aa79c482e97251a9</guid>
+            <link>https://nzbfinder.ws/getnzb/ee8b7ed535b9cb3c660a15f1aa79c482e97251a9.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/ee8b7ed535b9cb3c660a15f1aa79c482e97251a9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:23:22 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Boruto: Naruto Next Generations - 01 [720p][AAC]</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/ee8b7ed535b9cb3c660a15f1aa79c482e97251a9.nzb&amp;i=44844&amp;r=APIKEY" length="389395196" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="389395196"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:52:06 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/acf59f9c803d665773b995d1449f28c01b64b1c4</guid>
+            <link>https://nzbfinder.ws/getnzb/acf59f9c803d665773b995d1449f28c01b64b1c4.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/acf59f9c803d665773b995d1449f28c01b64b1c4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/acf59f9c803d665773b995d1449f28c01b64b1c4.nzb&amp;i=44844&amp;r=APIKEY" length="196160337" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="196160337"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; mmbuCM &gt;&gt;&gt; &lt;7ly_vfhbrnnuwyw@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:51:11 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/b9a1271673e2b403ac79cc18078e39a1346ecfb5</guid>
+            <link>https://nzbfinder.ws/getnzb/b9a1271673e2b403ac79cc18078e39a1346ecfb5.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/b9a1271673e2b403ac79cc18078e39a1346ecfb5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:01:00 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/b9a1271673e2b403ac79cc18078e39a1346ecfb5.nzb&amp;i=44844&amp;r=APIKEY" length="1482929080" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1482929080"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Intergalactic Congress"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="11"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="214831"/>
+            <newznab:attr name="tvrageid" value="27213"/>
+            <newznab:attr name="rageid" value="27213"/>
+            <newznab:attr name="tvmazeid" value="278"/>
+            <newznab:attr name="imdbid" value="1663641"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="26"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:50:49 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+        </item>
+        <item>
+            <title>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/2960ed60d9b3548254cdc3ec02a8b608217a8b2c</guid>
+            <link>https://nzbfinder.ws/getnzb/2960ed60d9b3548254cdc3ec02a8b608217a8b2c.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/2960ed60d9b3548254cdc3ec02a8b608217a8b2c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:00:10 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/2960ed60d9b3548254cdc3ec02a8b608217a8b2c.nzb&amp;i=44844&amp;r=APIKEY" length="1482704919" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1482704919"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Intergalactic Congress"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="11"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="214831"/>
+            <newznab:attr name="tvrageid" value="27213"/>
+            <newznab:attr name="rageid" value="27213"/>
+            <newznab:attr name="tvmazeid" value="278"/>
+            <newznab:attr name="imdbid" value="1663641"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="10"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:50:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.british.drama"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/6a565a05574922de720135d0e2802d79098b628f</guid>
+            <link>https://nzbfinder.ws/getnzb/6a565a05574922de720135d0e2802d79098b628f.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/6a565a05574922de720135d0e2802d79098b628f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:07:23 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/6a565a05574922de720135d0e2802d79098b628f.nzb&amp;i=44844&amp;r=APIKEY" length="184306513" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184306513"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; l3vs3S &gt;&gt;&gt; &lt;f3ml2o7nknxhtfe@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:50:08 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/044bfe8543ae5b3dbdb12039934193cda71167f2</guid>
+            <link>https://nzbfinder.ws/getnzb/044bfe8543ae5b3dbdb12039934193cda71167f2.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/044bfe8543ae5b3dbdb12039934193cda71167f2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:57:53 +0200</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/044bfe8543ae5b3dbdb12039934193cda71167f2.nzb&amp;i=44844&amp;r=APIKEY" length="372867541" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="372867541"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Persian Party"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2017-04-02"/>
+            <newznab:attr name="tvdbid" value="321449"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:49:44 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.amazing"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/10d7c38bef365839ada71b047096cb9d736aa249</guid>
+            <link>https://nzbfinder.ws/getnzb/10d7c38bef365839ada71b047096cb9d736aa249.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/10d7c38bef365839ada71b047096cb9d736aa249#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:04:03 +0200</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/10d7c38bef365839ada71b047096cb9d736aa249.nzb&amp;i=44844&amp;r=APIKEY" length="177474965" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="177474965"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Nq8m3r &gt;&gt;&gt; &lt;82h5sed7xjmxyxa@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10323"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:48:56 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.1080p.WEB.x264-HEAT</title>
+            <guid isPermaLink="true">https://nzbfinder.ws/details/767358b7ada450c8a410cb8868d0b6e70f0f118a</guid>
+            <link>https://nzbfinder.ws/getnzb/767358b7ada450c8a410cb8868d0b6e70f0f118a.nzb&amp;i=44844&amp;r=APIKEY</link>
+            <comments>https://nzbfinder.ws/details/767358b7ada450c8a410cb8868d0b6e70f0f118a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:57:53 +0200</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.1080p.WEB.x264-HEAT</description>
+            <enclosure url="https://nzbfinder.ws/getnzb/767358b7ada450c8a410cb8868d0b6e70f0f118a.nzb&amp;i=44844&amp;r=APIKEY" length="1455789795" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1455789795"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Ladies and Gentlemen, the Doctor Is In"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="9"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="320520"/>
+            <newznab:attr name="traktid" value="113543"/>
+            <newznab:attr name="tvmazeid" value="4144"/>
+            <newznab:attr name="imdbid" value="5212822"/>
+            <newznab:attr name="tmdbid" value="69889"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="6"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:48:18 +0200"/>
+            <newznab:attr name="group" value="alt.binaries.amazing"/>
+        </item>
+    </channel>
+</rss>

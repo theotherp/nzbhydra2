@@ -5,16 +5,25 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.rssmapping.*;
+import org.nzbhydra.rssmapping.Enclosure;
+import org.nzbhydra.rssmapping.NewznabAttribute;
+import org.nzbhydra.rssmapping.NewznabResponse;
+import org.nzbhydra.rssmapping.RssChannel;
+import org.nzbhydra.rssmapping.RssGuid;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -28,12 +37,7 @@ public class RssMappingTest {
 
     @Test
     public void testMappingFromXml() throws Exception {
-        RestTemplate restTemplate = new RestTemplate();
-        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-
-        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssMappingTest.class, "newznab_3results.xml"), Charsets.UTF_8), MediaType.APPLICATION_XML));
-
-        RssRoot rssRoot = restTemplate.getForObject("/api", RssRoot.class);
+        RssRoot rssRoot = getRssRootFromXml("newznab_3results.xml");
         RssChannel channel = rssRoot.getRssChannel();
         assertThat(channel.getDescription(), is("indexerName(dot)com Feed"));
         assertThat(channel.getLink(), is("https://indexerName.com/"));
@@ -73,6 +77,87 @@ public class RssMappingTest {
         assertThat(attributes.get(4).getValue(), is("chuck@norris.com"));
         assertThat(attributes.get(5).getName(), is("group"));
         assertThat(attributes.get(5).getValue(), is("alt.binaries.mom"));
+    }
+
+    @Test
+    public void shouldParseResponseFromNzbsOrg() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbsOrgResponse.xml");
+
+        assertEquals(Integer.valueOf(1000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromOmgwtf() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("omgwtfResponse.xml");
+
+        assertEquals(Integer.valueOf(416), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromNzbAG() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbAgResponse.xml");
+
+        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromTabulaRasa() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("tabulaRasaResponse.xml");
+
+        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromNzbCat() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbCatResponse.xml");
+
+        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromDrunkenSlug() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("drunkenSlugResponse.xml");
+
+        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromNzbFinder() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbFinderResponse.xml");
+
+        assertEquals(Integer.valueOf(125000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromNewztown() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("newztownResponse.xml");
+
+        assertEquals(Integer.valueOf(4443964), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromNzbSu() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbSuResponse.xml");
+
+        assertEquals(Integer.valueOf(20000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
+        assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+
+    private RssRoot getRssRootFromXml(String xmlFileName) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+        mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
+
+        return restTemplate.getForObject("/api", RssRoot.class);
     }
 
 

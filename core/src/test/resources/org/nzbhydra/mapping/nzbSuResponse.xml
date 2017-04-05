@@ -1,0 +1,1014 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+    <channel>
+        <atom:link href="https://api.nzb.su/api?apikey=APIKEY&amp;t=tvsearch" rel="self" type="application/rss+xml"/>
+        <title></title>
+        <description>Feed</description>
+        <link>https://api.nzb.su/</link>
+        <language>en-gb</language>
+        <webMaster>root@nzb.su ()</webMaster>
+        <category></category>
+        <image>
+            <url>https://api.nzb.su/views/images/logo.png</url>
+            <title></title>
+            <link>https://api.nzb.su/</link>
+            <description>Visit -</description>
+        </image>
+
+
+        <newznab:response offset="0" total="20000"/>
+        <item>
+            <title>[RH].Chain.Chronicle.Haecceitas.no.Hikari.-.09.[C58BC48E]</title>
+            <guid isPermaLink="true">https://nzb.su/details/6be0fcc24907d125f676c98b598e0c15</guid>
+            <link>https://api.nzb.su/getnzb/6be0fcc24907d125f676c98b598e0c15.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/6be0fcc24907d125f676c98b598e0c15#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:42 -0400</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[RH].Chain.Chronicle.Haecceitas.no.Hikari.-.09.[C58BC48E]</description>
+            <enclosure url="https://api.nzb.su/getnzb/6be0fcc24907d125f676c98b598e0c15.nzb&amp;i=905&amp;r=APIKEY" length="1854903202" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1854903202"/>
+            <newznab:attr name="guid" value="6be0fcc24907d125f676c98b598e0c15"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://nzb.su/details/8bd5cf5b27c326c14f225fb52196b487</guid>
+            <link>https://api.nzb.su/getnzb/8bd5cf5b27c326c14f225fb52196b487.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/8bd5cf5b27c326c14f225fb52196b487#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:36 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES</description>
+            <enclosure url="https://api.nzb.su/getnzb/8bd5cf5b27c326c14f225fb52196b487.nzb&amp;i=905&amp;r=APIKEY" length="1016004490" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1016004490"/>
+            <newznab:attr name="guid" value="8bd5cf5b27c326c14f225fb52196b487"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://nzb.su/details/4e74f4e99267ff6b0929eccc63547680</guid>
+            <link>https://api.nzb.su/getnzb/4e74f4e99267ff6b0929eccc63547680.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/4e74f4e99267ff6b0929eccc63547680#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:30 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES</description>
+            <enclosure url="https://api.nzb.su/getnzb/4e74f4e99267ff6b0929eccc63547680.nzb&amp;i=905&amp;r=APIKEY" length="971463528" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="971463528"/>
+            <newznab:attr name="guid" value="4e74f4e99267ff6b0929eccc63547680"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://nzb.su/details/3aea8cb9d1954e2110d20262ac7a7572</guid>
+            <link>https://api.nzb.su/getnzb/3aea8cb9d1954e2110d20262ac7a7572.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/3aea8cb9d1954e2110d20262ac7a7572#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:25 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES</description>
+            <enclosure url="https://api.nzb.su/getnzb/3aea8cb9d1954e2110d20262ac7a7572.nzb&amp;i=905&amp;r=APIKEY" length="988293611" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="988293611"/>
+            <newznab:attr name="guid" value="3aea8cb9d1954e2110d20262ac7a7572"/>
+
+        </item>
+        <item>
+            <title>Mandoza-Punyuka Bamphethe-ZA-CD-FLAC-2005-hbZ</title>
+            <guid isPermaLink="true">https://nzb.su/details/f66a96a6c48976358e1d7d26abf99671</guid>
+            <link>https://api.nzb.su/getnzb/f66a96a6c48976358e1d7d26abf99671.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/f66a96a6c48976358e1d7d26abf99671#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:05 -0400</pubDate>
+            <category>Audio &gt; Lossless</category>
+            <description>Mandoza-Punyuka Bamphethe-ZA-CD-FLAC-2005-hbZ</description>
+            <enclosure url="https://api.nzb.su/getnzb/f66a96a6c48976358e1d7d26abf99671.nzb&amp;i=905&amp;r=APIKEY" length="471603780" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3040"/>
+            <newznab:attr name="size" value="471603780"/>
+            <newznab:attr name="guid" value="f66a96a6c48976358e1d7d26abf99671"/>
+
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES</title>
+            <guid isPermaLink="true">https://nzb.su/details/71cc647db3a27bc944e6fcfed483b30e</guid>
+            <link>https://api.nzb.su/getnzb/71cc647db3a27bc944e6fcfed483b30e.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/71cc647db3a27bc944e6fcfed483b30e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:20 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES</description>
+            <enclosure url="https://api.nzb.su/getnzb/71cc647db3a27bc944e6fcfed483b30e.nzb&amp;i=905&amp;r=APIKEY" length="1108289311" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1108289311"/>
+            <newznab:attr name="guid" value="71cc647db3a27bc944e6fcfed483b30e"/>
+
+        </item>
+        <item>
+            <title>YHShTbmLRAqAl7Ja9590c</title>
+            <guid isPermaLink="true">https://nzb.su/details/8126cfae1ad7250b20a0fd4c7f80889f</guid>
+            <link>https://api.nzb.su/getnzb/8126cfae1ad7250b20a0fd4c7f80889f.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/8126cfae1ad7250b20a0fd4c7f80889f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:54 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>YHShTbmLRAqAl7Ja9590c</description>
+            <enclosure url="https://api.nzb.su/getnzb/8126cfae1ad7250b20a0fd4c7f80889f.nzb&amp;i=905&amp;r=APIKEY" length="245967448" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="245967448"/>
+            <newznab:attr name="guid" value="8126cfae1ad7250b20a0fd4c7f80889f"/>
+
+        </item>
+        <item>
+            <title>XHkYnbDK8YyHOft0ff66a</title>
+            <guid isPermaLink="true">https://nzb.su/details/5003d4395831e2c345a06668c25fe1b8</guid>
+            <link>https://api.nzb.su/getnzb/5003d4395831e2c345a06668c25fe1b8.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/5003d4395831e2c345a06668c25fe1b8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:54 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>XHkYnbDK8YyHOft0ff66a</description>
+            <enclosure url="https://api.nzb.su/getnzb/5003d4395831e2c345a06668c25fe1b8.nzb&amp;i=905&amp;r=APIKEY" length="244690402" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="244690402"/>
+            <newznab:attr name="guid" value="5003d4395831e2c345a06668c25fe1b8"/>
+
+        </item>
+        <item>
+            <title>NCIS.S14E20.A.Bowl.of.Cherries.1080p.WEB-DL.DD5.1.H.264-BTN</title>
+            <guid isPermaLink="true">https://nzb.su/details/7173e911e8601e13808c7e1e8de3097b</guid>
+            <link>https://api.nzb.su/getnzb/7173e911e8601e13808c7e1e8de3097b.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/7173e911e8601e13808c7e1e8de3097b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:14 -0400</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.S14E20.A.Bowl.of.Cherries.1080p.WEB-DL.DD5.1.H.264-BTN</description>
+            <enclosure url="https://api.nzb.su/getnzb/7173e911e8601e13808c7e1e8de3097b.nzb&amp;i=905&amp;r=APIKEY" length="2062837573" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2062837573"/>
+            <newznab:attr name="guid" value="7173e911e8601e13808c7e1e8de3097b"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E20.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://nzb.su/details/fce09820a239bbd8a51b9b0b982c9313</guid>
+            <link>https://api.nzb.su/getnzb/fce09820a239bbd8a51b9b0b982c9313.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/fce09820a239bbd8a51b9b0b982c9313#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:09 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E20.BDRip.X264-REWARD</description>
+            <enclosure url="https://api.nzb.su/getnzb/fce09820a239bbd8a51b9b0b982c9313.nzb&amp;i=905&amp;r=APIKEY" length="195596705" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="195596705"/>
+            <newznab:attr name="guid" value="fce09820a239bbd8a51b9b0b982c9313"/>
+
+        </item>
+        <item>
+            <title>Hip Hop Pantsula-O Mang-ZA-CD-FLAC-2004-hbZ</title>
+            <guid isPermaLink="true">https://nzb.su/details/aac4d26fad12a8ec9bb03a64ae1bed87</guid>
+            <link>https://api.nzb.su/getnzb/aac4d26fad12a8ec9bb03a64ae1bed87.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/aac4d26fad12a8ec9bb03a64ae1bed87#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:04 -0400</pubDate>
+            <category>Audio &gt; Lossless</category>
+            <description>Hip Hop Pantsula-O Mang-ZA-CD-FLAC-2004-hbZ</description>
+            <enclosure url="https://api.nzb.su/getnzb/aac4d26fad12a8ec9bb03a64ae1bed87.nzb&amp;i=905&amp;r=APIKEY" length="607951665" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3040"/>
+            <newznab:attr name="size" value="607951665"/>
+            <newznab:attr name="guid" value="aac4d26fad12a8ec9bb03a64ae1bed87"/>
+
+        </item>
+        <item>
+            <title>X52Wit9wb6id2XCa8d8e2</title>
+            <guid isPermaLink="true">https://nzb.su/details/bf600afb588ca4224a1019ead3b91e93</guid>
+            <link>https://api.nzb.su/getnzb/bf600afb588ca4224a1019ead3b91e93.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/bf600afb588ca4224a1019ead3b91e93#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:54 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>X52Wit9wb6id2XCa8d8e2</description>
+            <enclosure url="https://api.nzb.su/getnzb/bf600afb588ca4224a1019ead3b91e93.nzb&amp;i=905&amp;r=APIKEY" length="265333581" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="265333581"/>
+            <newznab:attr name="guid" value="bf600afb588ca4224a1019ead3b91e93"/>
+
+        </item>
+        <item>
+            <title>HwWVGoUhh5DxwdshEzZDN5L02b</title>
+            <guid isPermaLink="true">https://nzb.su/details/7abe1830236153787dedd4c2981a5dbd</guid>
+            <link>https://api.nzb.su/getnzb/7abe1830236153787dedd4c2981a5dbd.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/7abe1830236153787dedd4c2981a5dbd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>HwWVGoUhh5DxwdshEzZDN5L02b</description>
+            <enclosure url="https://api.nzb.su/getnzb/7abe1830236153787dedd4c2981a5dbd.nzb&amp;i=905&amp;r=APIKEY" length="97559142" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="97559142"/>
+            <newznab:attr name="guid" value="7abe1830236153787dedd4c2981a5dbd"/>
+
+        </item>
+        <item>
+            <title>Teba-Manifesto-ZA-CD-FLAC-2004-hbZ</title>
+            <guid isPermaLink="true">https://nzb.su/details/6dd6191b1d3aa6aa98e2d3f2a7f4b3bd</guid>
+            <link>https://api.nzb.su/getnzb/6dd6191b1d3aa6aa98e2d3f2a7f4b3bd.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/6dd6191b1d3aa6aa98e2d3f2a7f4b3bd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:45 -0400</pubDate>
+            <category>Audio &gt; Lossless</category>
+            <description>Teba-Manifesto-ZA-CD-FLAC-2004-hbZ</description>
+            <enclosure url="https://api.nzb.su/getnzb/6dd6191b1d3aa6aa98e2d3f2a7f4b3bd.nzb&amp;i=905&amp;r=APIKEY" length="445799658" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3040"/>
+            <newznab:attr name="size" value="445799658"/>
+            <newznab:attr name="guid" value="6dd6191b1d3aa6aa98e2d3f2a7f4b3bd"/>
+
+        </item>
+        <item>
+            <title>WR0zYFqy3LHLJ3yf7e7cc</title>
+            <guid isPermaLink="true">https://nzb.su/details/cb7c9efea75331d112adf0bf09225e87</guid>
+            <link>https://api.nzb.su/getnzb/cb7c9efea75331d112adf0bf09225e87.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/cb7c9efea75331d112adf0bf09225e87#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>WR0zYFqy3LHLJ3yf7e7cc</description>
+            <enclosure url="https://api.nzb.su/getnzb/cb7c9efea75331d112adf0bf09225e87.nzb&amp;i=905&amp;r=APIKEY" length="70660847" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="70660847"/>
+            <newznab:attr name="guid" value="cb7c9efea75331d112adf0bf09225e87"/>
+
+        </item>
+        <item>
+            <title>UF55hHe7WahX5Uqaeb404</title>
+            <guid isPermaLink="true">https://nzb.su/details/18dd8bd27d043acc6a05f158eb358922</guid>
+            <link>https://api.nzb.su/getnzb/18dd8bd27d043acc6a05f158eb358922.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/18dd8bd27d043acc6a05f158eb358922#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>UF55hHe7WahX5Uqaeb404</description>
+            <enclosure url="https://api.nzb.su/getnzb/18dd8bd27d043acc6a05f158eb358922.nzb&amp;i=905&amp;r=APIKEY" length="276423959" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="276423959"/>
+            <newznab:attr name="guid" value="18dd8bd27d043acc6a05f158eb358922"/>
+
+        </item>
+        <item>
+            <title>Nick Lowe - The Abominable Showman (1983)</title>
+            <guid isPermaLink="true">https://nzb.su/details/8c03b02ac37bcce78c46db7c0427341f</guid>
+            <link>https://api.nzb.su/getnzb/8c03b02ac37bcce78c46db7c0427341f.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/8c03b02ac37bcce78c46db7c0427341f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:47 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>Nick Lowe - The Abominable Showman (1983)</description>
+            <enclosure url="https://api.nzb.su/getnzb/8c03b02ac37bcce78c46db7c0427341f.nzb&amp;i=905&amp;r=APIKEY" length="107070242" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="107070242"/>
+            <newznab:attr name="guid" value="8c03b02ac37bcce78c46db7c0427341f"/>
+
+        </item>
+        <item>
+            <title>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzb.su/details/b548322ad3540559d51c2924453553ed</guid>
+            <link>https://api.nzb.su/getnzb/b548322ad3540559d51c2924453553ed.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/b548322ad3540559d51c2924453553ed#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:03 -0400</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://api.nzb.su/getnzb/b548322ad3540559d51c2924453553ed.nzb&amp;i=905&amp;r=APIKEY" length="326013439" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+            <newznab:attr name="size" value="326013439"/>
+            <newznab:attr name="guid" value="b548322ad3540559d51c2924453553ed"/>
+
+        </item>
+        <item>
+            <title>RxfVOnmC6fORfMQ95197f</title>
+            <guid isPermaLink="true">https://nzb.su/details/f710a6454f22e73fa7e4e910ed21982a</guid>
+            <link>https://api.nzb.su/getnzb/f710a6454f22e73fa7e4e910ed21982a.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/f710a6454f22e73fa7e4e910ed21982a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>RxfVOnmC6fORfMQ95197f</description>
+            <enclosure url="https://api.nzb.su/getnzb/f710a6454f22e73fa7e4e910ed21982a.nzb&amp;i=905&amp;r=APIKEY" length="218802461" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="218802461"/>
+            <newznab:attr name="guid" value="f710a6454f22e73fa7e4e910ed21982a"/>
+
+        </item>
+        <item>
+            <title>QbWDmSn9mBmYXE98d9b20</title>
+            <guid isPermaLink="true">https://nzb.su/details/6fa13791eb6914dee94f865b95a53e8e</guid>
+            <link>https://api.nzb.su/getnzb/6fa13791eb6914dee94f865b95a53e8e.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/6fa13791eb6914dee94f865b95a53e8e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>QbWDmSn9mBmYXE98d9b20</description>
+            <enclosure url="https://api.nzb.su/getnzb/6fa13791eb6914dee94f865b95a53e8e.nzb&amp;i=905&amp;r=APIKEY" length="207855267" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="207855267"/>
+            <newznab:attr name="guid" value="6fa13791eb6914dee94f865b95a53e8e"/>
+
+        </item>
+        <item>
+            <title>PSXal4WxZkDvlY5ce2649</title>
+            <guid isPermaLink="true">https://nzb.su/details/958d9961f5750613726b866e0d0d0bad</guid>
+            <link>https://api.nzb.su/getnzb/958d9961f5750613726b866e0d0d0bad.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/958d9961f5750613726b866e0d0d0bad#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>PSXal4WxZkDvlY5ce2649</description>
+            <enclosure url="https://api.nzb.su/getnzb/958d9961f5750613726b866e0d0d0bad.nzb&amp;i=905&amp;r=APIKEY" length="222322791" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="222322791"/>
+            <newznab:attr name="guid" value="958d9961f5750613726b866e0d0d0bad"/>
+
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</title>
+            <guid isPermaLink="true">https://nzb.su/details/e77b4728c7cc54c00274b7df597923b2</guid>
+            <link>https://api.nzb.su/getnzb/e77b4728c7cc54c00274b7df597923b2.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/e77b4728c7cc54c00274b7df597923b2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:10 -0400</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS</description>
+            <enclosure url="https://api.nzb.su/getnzb/e77b4728c7cc54c00274b7df597923b2.nzb&amp;i=905&amp;r=APIKEY" length="1472189981" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1472189981"/>
+            <newznab:attr name="guid" value="e77b4728c7cc54c00274b7df597923b2"/>
+
+        </item>
+        <item>
+            <title>O21CjS4BjGjvqgO917e72</title>
+            <guid isPermaLink="true">https://nzb.su/details/729fb926eb78c0b7fbf9e6360e2561f1</guid>
+            <link>https://api.nzb.su/getnzb/729fb926eb78c0b7fbf9e6360e2561f1.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/729fb926eb78c0b7fbf9e6360e2561f1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>O21CjS4BjGjvqgO917e72</description>
+            <enclosure url="https://api.nzb.su/getnzb/729fb926eb78c0b7fbf9e6360e2561f1.nzb&amp;i=905&amp;r=APIKEY" length="151976425" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="151976425"/>
+            <newznab:attr name="guid" value="729fb926eb78c0b7fbf9e6360e2561f1"/>
+
+        </item>
+        <item>
+            <title>[RH].Chaos;Child.-.10.[1F2AC0C8]</title>
+            <guid isPermaLink="true">https://nzb.su/details/c78708cdf08532c19b027511ebb63717</guid>
+            <link>https://api.nzb.su/getnzb/c78708cdf08532c19b027511ebb63717.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/c78708cdf08532c19b027511ebb63717#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:34 -0400</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[RH].Chaos;Child.-.10.[1F2AC0C8]</description>
+            <enclosure url="https://api.nzb.su/getnzb/c78708cdf08532c19b027511ebb63717.nzb&amp;i=905&amp;r=APIKEY" length="1916849901" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1916849901"/>
+            <newznab:attr name="guid" value="c78708cdf08532c19b027511ebb63717"/>
+
+        </item>
+        <item>
+            <title>NwwlyI4IUevy1Co0bd673</title>
+            <guid isPermaLink="true">https://nzb.su/details/a1df9504b3ef0d46cc3beacda1021ad4</guid>
+            <link>https://api.nzb.su/getnzb/a1df9504b3ef0d46cc3beacda1021ad4.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/a1df9504b3ef0d46cc3beacda1021ad4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>NwwlyI4IUevy1Co0bd673</description>
+            <enclosure url="https://api.nzb.su/getnzb/a1df9504b3ef0d46cc3beacda1021ad4.nzb&amp;i=905&amp;r=APIKEY" length="294553688" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="294553688"/>
+            <newznab:attr name="guid" value="a1df9504b3ef0d46cc3beacda1021ad4"/>
+
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</title>
+            <guid isPermaLink="true">https://nzb.su/details/7cba21109cf1759bb7900b2d44f08258</guid>
+            <link>https://api.nzb.su/getnzb/7cba21109cf1759bb7900b2d44f08258.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/7cba21109cf1759bb7900b2d44f08258#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:29 -0400</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee</description>
+            <enclosure url="https://api.nzb.su/getnzb/7cba21109cf1759bb7900b2d44f08258.nzb&amp;i=905&amp;r=APIKEY" length="5355169925" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5355169925"/>
+            <newznab:attr name="guid" value="7cba21109cf1759bb7900b2d44f08258"/>
+
+        </item>
+        <item>
+            <title>qYA0kYA5VxcC17IVBRIa</title>
+            <guid isPermaLink="true">https://nzb.su/details/2cc9c8ded03c14d605077bf348aa513d</guid>
+            <link>https://api.nzb.su/getnzb/2cc9c8ded03c14d605077bf348aa513d.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/2cc9c8ded03c14d605077bf348aa513d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:29 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>qYA0kYA5VxcC17IVBRIa</description>
+            <enclosure url="https://api.nzb.su/getnzb/2cc9c8ded03c14d605077bf348aa513d.nzb&amp;i=905&amp;r=APIKEY" length="3772486358" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="3772486358"/>
+            <newznab:attr name="guid" value="2cc9c8ded03c14d605077bf348aa513d"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://nzb.su/details/7340311c9c8f514e0dcaf1dad89d9187</guid>
+            <link>https://api.nzb.su/getnzb/7340311c9c8f514e0dcaf1dad89d9187.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/7340311c9c8f514e0dcaf1dad89d9187#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:20 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E19.BDRip.X264-REWARD</description>
+            <enclosure url="https://api.nzb.su/getnzb/7340311c9c8f514e0dcaf1dad89d9187.nzb&amp;i=905&amp;r=APIKEY" length="233179713" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="233179713"/>
+            <newznab:attr name="guid" value="7340311c9c8f514e0dcaf1dad89d9187"/>
+
+        </item>
+        <item>
+            <title>NUUPs6eyyZwfsm212e057</title>
+            <guid isPermaLink="true">https://nzb.su/details/ab65be421e75ccf05b4bc408a280879c</guid>
+            <link>https://api.nzb.su/getnzb/ab65be421e75ccf05b4bc408a280879c.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/ab65be421e75ccf05b4bc408a280879c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>NUUPs6eyyZwfsm212e057</description>
+            <enclosure url="https://api.nzb.su/getnzb/ab65be421e75ccf05b4bc408a280879c.nzb&amp;i=905&amp;r=APIKEY" length="58157362" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="58157362"/>
+            <newznab:attr name="guid" value="ab65be421e75ccf05b4bc408a280879c"/>
+
+        </item>
+        <item>
+            <title>M9U7GI65xn5GZDMc894e2</title>
+            <guid isPermaLink="true">https://nzb.su/details/2bb2df333ac2514b6dd12658c3bc4fb6</guid>
+            <link>https://api.nzb.su/getnzb/2bb2df333ac2514b6dd12658c3bc4fb6.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/2bb2df333ac2514b6dd12658c3bc4fb6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>M9U7GI65xn5GZDMc894e2</description>
+            <enclosure url="https://api.nzb.su/getnzb/2bb2df333ac2514b6dd12658c3bc4fb6.nzb&amp;i=905&amp;r=APIKEY" length="69419138" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="69419138"/>
+            <newznab:attr name="guid" value="2bb2df333ac2514b6dd12658c3bc4fb6"/>
+
+        </item>
+        <item>
+            <title>L4i13531TPjPzNjad46af</title>
+            <guid isPermaLink="true">https://nzb.su/details/3bdb760fba8c2b274d674eaeba0f4ae1</guid>
+            <link>https://api.nzb.su/getnzb/3bdb760fba8c2b274d674eaeba0f4ae1.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/3bdb760fba8c2b274d674eaeba0f4ae1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>L4i13531TPjPzNjad46af</description>
+            <enclosure url="https://api.nzb.su/getnzb/3bdb760fba8c2b274d674eaeba0f4ae1.nzb&amp;i=905&amp;r=APIKEY" length="88263250" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="88263250"/>
+            <newznab:attr name="guid" value="3bdb760fba8c2b274d674eaeba0f4ae1"/>
+
+        </item>
+        <item>
+            <title>Nick Lowe - Nick The Knife (1982)</title>
+            <guid isPermaLink="true">https://nzb.su/details/da59b6cbcbebf2eb9b122a76ae673182</guid>
+            <link>https://api.nzb.su/getnzb/da59b6cbcbebf2eb9b122a76ae673182.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/da59b6cbcbebf2eb9b122a76ae673182#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:49 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>Nick Lowe - Nick The Knife (1982)</description>
+            <enclosure url="https://api.nzb.su/getnzb/da59b6cbcbebf2eb9b122a76ae673182.nzb&amp;i=905&amp;r=APIKEY" length="100508182" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="100508182"/>
+            <newznab:attr name="guid" value="da59b6cbcbebf2eb9b122a76ae673182"/>
+
+        </item>
+        <item>
+            <title>Jm7RQDVNW8lownN43a1ba</title>
+            <guid isPermaLink="true">https://nzb.su/details/0f4e9b94146fe5c992841dc40c7fdace</guid>
+            <link>https://api.nzb.su/getnzb/0f4e9b94146fe5c992841dc40c7fdace.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/0f4e9b94146fe5c992841dc40c7fdace#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>Jm7RQDVNW8lownN43a1ba</description>
+            <enclosure url="https://api.nzb.su/getnzb/0f4e9b94146fe5c992841dc40c7fdace.nzb&amp;i=905&amp;r=APIKEY" length="180516028" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="180516028"/>
+            <newznab:attr name="guid" value="0f4e9b94146fe5c992841dc40c7fdace"/>
+
+        </item>
+        <item>
+            <title>Bad Girls 1994 1080p AVC TrueHD 5.1</title>
+            <guid isPermaLink="true">https://nzb.su/details/af3004c838cb0b0ca0bb53d1bda10bdf</guid>
+            <link>https://api.nzb.su/getnzb/af3004c838cb0b0ca0bb53d1bda10bdf.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/af3004c838cb0b0ca0bb53d1bda10bdf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:08 -0400</pubDate>
+            <category>Movies &gt; HD</category>
+            <description>Bad Girls 1994 1080p AVC TrueHD 5.1</description>
+            <enclosure url="https://api.nzb.su/getnzb/af3004c838cb0b0ca0bb53d1bda10bdf.nzb&amp;i=905&amp;r=APIKEY" length="24888329067" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="2000"/>
+            <newznab:attr name="category" value="2040"/>
+            <newznab:attr name="size" value="24888329067"/>
+            <newznab:attr name="guid" value="af3004c838cb0b0ca0bb53d1bda10bdf"/>
+
+        </item>
+        <item>
+            <title>JjnMBeMJocBsq5Yb48881</title>
+            <guid isPermaLink="true">https://nzb.su/details/3e5b492a4d4e9f85dbb4e3bd55f10212</guid>
+            <link>https://api.nzb.su/getnzb/3e5b492a4d4e9f85dbb4e3bd55f10212.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/3e5b492a4d4e9f85dbb4e3bd55f10212#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>JjnMBeMJocBsq5Yb48881</description>
+            <enclosure url="https://api.nzb.su/getnzb/3e5b492a4d4e9f85dbb4e3bd55f10212.nzb&amp;i=905&amp;r=APIKEY" length="185974496" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="185974496"/>
+            <newznab:attr name="guid" value="3e5b492a4d4e9f85dbb4e3bd55f10212"/>
+
+        </item>
+        <item>
+            <title>Ha95y86eVFVL6I1e757e1</title>
+            <guid isPermaLink="true">https://nzb.su/details/cefd150358f7d89f1924880820e3a7ba</guid>
+            <link>https://api.nzb.su/getnzb/cefd150358f7d89f1924880820e3a7ba.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/cefd150358f7d89f1924880820e3a7ba#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>Ha95y86eVFVL6I1e757e1</description>
+            <enclosure url="https://api.nzb.su/getnzb/cefd150358f7d89f1924880820e3a7ba.nzb&amp;i=905&amp;r=APIKEY" length="294597341" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="294597341"/>
+            <newznab:attr name="guid" value="cefd150358f7d89f1924880820e3a7ba"/>
+
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">https://nzb.su/details/94d8e88f2540b2d8e8c329dd4c5470bf</guid>
+            <link>https://api.nzb.su/getnzb/94d8e88f2540b2d8e8c329dd4c5470bf.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/94d8e88f2540b2d8e8c329dd4c5470bf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:02 -0400</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="https://api.nzb.su/getnzb/94d8e88f2540b2d8e8c329dd4c5470bf.nzb&amp;i=905&amp;r=APIKEY" length="1897541226" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1897541226"/>
+            <newznab:attr name="guid" value="94d8e88f2540b2d8e8c329dd4c5470bf"/>
+
+        </item>
+        <item>
+            <title>FH8SfzCrwtHt5TO8af7d9</title>
+            <guid isPermaLink="true">https://nzb.su/details/32af73844e870361d7a0565de75d4f28</guid>
+            <link>https://api.nzb.su/getnzb/32af73844e870361d7a0565de75d4f28.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/32af73844e870361d7a0565de75d4f28#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>FH8SfzCrwtHt5TO8af7d9</description>
+            <enclosure url="https://api.nzb.su/getnzb/32af73844e870361d7a0565de75d4f28.nzb&amp;i=905&amp;r=APIKEY" length="28863131" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="28863131"/>
+            <newznab:attr name="guid" value="32af73844e870361d7a0565de75d4f28"/>
+
+        </item>
+        <item>
+            <title>Dq98vnaaHMhbvrg0bbfad</title>
+            <guid isPermaLink="true">https://nzb.su/details/3675c5ab63384939448020c142f46969</guid>
+            <link>https://api.nzb.su/getnzb/3675c5ab63384939448020c142f46969.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/3675c5ab63384939448020c142f46969#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>Dq98vnaaHMhbvrg0bbfad</description>
+            <enclosure url="https://api.nzb.su/getnzb/3675c5ab63384939448020c142f46969.nzb&amp;i=905&amp;r=APIKEY" length="199407260" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="199407260"/>
+            <newznab:attr name="guid" value="3675c5ab63384939448020c142f46969"/>
+
+        </item>
+        <item>
+            <title>DghRfqT3pylXPnv060540</title>
+            <guid isPermaLink="true">https://nzb.su/details/a27c2ca0907cae9aafbf8cb6c23b9423</guid>
+            <link>https://api.nzb.su/getnzb/a27c2ca0907cae9aafbf8cb6c23b9423.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/a27c2ca0907cae9aafbf8cb6c23b9423#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>DghRfqT3pylXPnv060540</description>
+            <enclosure url="https://api.nzb.su/getnzb/a27c2ca0907cae9aafbf8cb6c23b9423.nzb&amp;i=905&amp;r=APIKEY" length="423177209" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="423177209"/>
+            <newznab:attr name="guid" value="a27c2ca0907cae9aafbf8cb6c23b9423"/>
+
+        </item>
+        <item>
+            <title>HCESfG9sHjAVS4Bf8in2</title>
+            <guid isPermaLink="true">https://nzb.su/details/5d0da5e53d772d83e085ff1616bf82c6</guid>
+            <link>https://api.nzb.su/getnzb/5d0da5e53d772d83e085ff1616bf82c6.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/5d0da5e53d772d83e085ff1616bf82c6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:28 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>HCESfG9sHjAVS4Bf8in2</description>
+            <enclosure url="https://api.nzb.su/getnzb/5d0da5e53d772d83e085ff1616bf82c6.nzb&amp;i=905&amp;r=APIKEY" length="3772483958" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="3772483958"/>
+            <newznab:attr name="guid" value="5d0da5e53d772d83e085ff1616bf82c6"/>
+
+        </item>
+        <item>
+            <title>VA-Trance Classics The World Edition Mixed By Johan Gielen -2CD-2017-wAx</title>
+            <guid isPermaLink="true">https://nzb.su/details/ec43a88a489c8c583e7bddf0c79ee5b0</guid>
+            <link>https://api.nzb.su/getnzb/ec43a88a489c8c583e7bddf0c79ee5b0.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/ec43a88a489c8c583e7bddf0c79ee5b0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>VA-Trance Classics The World Edition Mixed By Johan Gielen -2CD-2017-wAx</description>
+            <enclosure url="https://api.nzb.su/getnzb/ec43a88a489c8c583e7bddf0c79ee5b0.nzb&amp;i=905&amp;r=APIKEY" length="322915328" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="322915328"/>
+            <newznab:attr name="guid" value="ec43a88a489c8c583e7bddf0c79ee5b0"/>
+
+        </item>
+        <item>
+            <title>VA-Trance Classics The World Edition Mixed By Johan Gielen -2CD-2017-wAx</title>
+            <guid isPermaLink="true">https://nzb.su/details/bc956996e9e830bab272cd2ba8664dd3</guid>
+            <link>https://api.nzb.su/getnzb/bc956996e9e830bab272cd2ba8664dd3.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/bc956996e9e830bab272cd2ba8664dd3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:45:02 -0400</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>VA-Trance Classics The World Edition Mixed By Johan Gielen -2CD-2017-wAx</description>
+            <enclosure url="https://api.nzb.su/getnzb/bc956996e9e830bab272cd2ba8664dd3.nzb&amp;i=905&amp;r=APIKEY" length="322934316" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="322934316"/>
+            <newznab:attr name="guid" value="bc956996e9e830bab272cd2ba8664dd3"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://nzb.su/details/e73f8c4f9c3f915f41631b57ff9d8078</guid>
+            <link>https://api.nzb.su/getnzb/e73f8c4f9c3f915f41631b57ff9d8078.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/e73f8c4f9c3f915f41631b57ff9d8078#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:25:12 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E18.BDRip.X264-REWARD</description>
+            <enclosure url="https://api.nzb.su/getnzb/e73f8c4f9c3f915f41631b57ff9d8078.nzb&amp;i=905&amp;r=APIKEY" length="191535364" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="191535364"/>
+            <newznab:attr name="guid" value="e73f8c4f9c3f915f41631b57ff9d8078"/>
+
+        </item>
+        <item>
+            <title>DS60uh8oWDUIuA4a2093d</title>
+            <guid isPermaLink="true">https://nzb.su/details/13321b266143bfa7d582e758951ad65a</guid>
+            <link>https://api.nzb.su/getnzb/13321b266143bfa7d582e758951ad65a.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/13321b266143bfa7d582e758951ad65a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>DS60uh8oWDUIuA4a2093d</description>
+            <enclosure url="https://api.nzb.su/getnzb/13321b266143bfa7d582e758951ad65a.nzb&amp;i=905&amp;r=APIKEY" length="93789375" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="93789375"/>
+            <newznab:attr name="guid" value="13321b266143bfa7d582e758951ad65a"/>
+
+        </item>
+        <item>
+            <title>DJtPx6ON0XFKfFq48e797</title>
+            <guid isPermaLink="true">https://nzb.su/details/6ee1905390d4b730b251c1b9218d46d3</guid>
+            <link>https://api.nzb.su/getnzb/6ee1905390d4b730b251c1b9218d46d3.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/6ee1905390d4b730b251c1b9218d46d3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>DJtPx6ON0XFKfFq48e797</description>
+            <enclosure url="https://api.nzb.su/getnzb/6ee1905390d4b730b251c1b9218d46d3.nzb&amp;i=905&amp;r=APIKEY" length="194518054" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="194518054"/>
+            <newznab:attr name="guid" value="6ee1905390d4b730b251c1b9218d46d3"/>
+
+        </item>
+        <item>
+            <title>BYk6kwjMdK3JHX1f421b3</title>
+            <guid isPermaLink="true">https://nzb.su/details/dab5a11cf22eb825f8aa57671f4a2e7e</guid>
+            <link>https://api.nzb.su/getnzb/dab5a11cf22eb825f8aa57671f4a2e7e.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/dab5a11cf22eb825f8aa57671f4a2e7e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>BYk6kwjMdK3JHX1f421b3</description>
+            <enclosure url="https://api.nzb.su/getnzb/dab5a11cf22eb825f8aa57671f4a2e7e.nzb&amp;i=905&amp;r=APIKEY" length="57722566" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="57722566"/>
+            <newznab:attr name="guid" value="dab5a11cf22eb825f8aa57671f4a2e7e"/>
+
+        </item>
+        <item>
+            <title>BYYZsXNYsNsOdb28c4b2c</title>
+            <guid isPermaLink="true">https://nzb.su/details/ad69a2a0851d08e67de5aea7112f9727</guid>
+            <link>https://api.nzb.su/getnzb/ad69a2a0851d08e67de5aea7112f9727.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/ad69a2a0851d08e67de5aea7112f9727#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:54 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>BYYZsXNYsNsOdb28c4b2c</description>
+            <enclosure url="https://api.nzb.su/getnzb/ad69a2a0851d08e67de5aea7112f9727.nzb&amp;i=905&amp;r=APIKEY" length="261375185" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="261375185"/>
+            <newznab:attr name="guid" value="ad69a2a0851d08e67de5aea7112f9727"/>
+
+        </item>
+        <item>
+            <title>AgZAC9hcaCW0hHO6f718c</title>
+            <guid isPermaLink="true">https://nzb.su/details/07af74f938adab3c91f1726b2a3c5a13</guid>
+            <link>https://api.nzb.su/getnzb/07af74f938adab3c91f1726b2a3c5a13.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/07af74f938adab3c91f1726b2a3c5a13#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>AgZAC9hcaCW0hHO6f718c</description>
+            <enclosure url="https://api.nzb.su/getnzb/07af74f938adab3c91f1726b2a3c5a13.nzb&amp;i=905&amp;r=APIKEY" length="187187932" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="187187932"/>
+            <newznab:attr name="guid" value="07af74f938adab3c91f1726b2a3c5a13"/>
+
+        </item>
+        <item>
+            <title>A0juXJL2erYXZMkd51172</title>
+            <guid isPermaLink="true">https://nzb.su/details/35b5c5395a1127e7f4b5800a31bfda7d</guid>
+            <link>https://api.nzb.su/getnzb/35b5c5395a1127e7f4b5800a31bfda7d.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/35b5c5395a1127e7f4b5800a31bfda7d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:56 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>A0juXJL2erYXZMkd51172</description>
+            <enclosure url="https://api.nzb.su/getnzb/35b5c5395a1127e7f4b5800a31bfda7d.nzb&amp;i=905&amp;r=APIKEY" length="22324927" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="22324927"/>
+            <newznab:attr name="guid" value="35b5c5395a1127e7f4b5800a31bfda7d"/>
+
+        </item>
+        <item>
+            <title>9HnbxvuZxqxFojR3d5605</title>
+            <guid isPermaLink="true">https://nzb.su/details/b38781ccc5e867b46188cf53bd7a64b7</guid>
+            <link>https://api.nzb.su/getnzb/b38781ccc5e867b46188cf53bd7a64b7.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/b38781ccc5e867b46188cf53bd7a64b7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>9HnbxvuZxqxFojR3d5605</description>
+            <enclosure url="https://api.nzb.su/getnzb/b38781ccc5e867b46188cf53bd7a64b7.nzb&amp;i=905&amp;r=APIKEY" length="366326614" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="366326614"/>
+            <newznab:attr name="guid" value="b38781ccc5e867b46188cf53bd7a64b7"/>
+
+        </item>
+        <item>
+            <title>VA-Deep_Rhythm_Vol_1-(MIXTRAX0094)-WEB-2017-ENSLAVE</title>
+            <guid isPermaLink="true">https://nzb.su/details/ba652688ec6e00c8e5b94373099cb605</guid>
+            <link>https://api.nzb.su/getnzb/ba652688ec6e00c8e5b94373099cb605.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/ba652688ec6e00c8e5b94373099cb605#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:25:06 -0400</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>VA-Deep_Rhythm_Vol_1-(MIXTRAX0094)-WEB-2017-ENSLAVE</description>
+            <enclosure url="https://api.nzb.su/getnzb/ba652688ec6e00c8e5b94373099cb605.nzb&amp;i=905&amp;r=APIKEY" length="444026990" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="444026990"/>
+            <newznab:attr name="guid" value="ba652688ec6e00c8e5b94373099cb605"/>
+
+        </item>
+        <item>
+            <title>7nwsNZhPp9NpwyX9e235f</title>
+            <guid isPermaLink="true">https://nzb.su/details/846f414e2e4d3524e55bfb2776625d9c</guid>
+            <link>https://api.nzb.su/getnzb/846f414e2e4d3524e55bfb2776625d9c.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/846f414e2e4d3524e55bfb2776625d9c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>7nwsNZhPp9NpwyX9e235f</description>
+            <enclosure url="https://api.nzb.su/getnzb/846f414e2e4d3524e55bfb2776625d9c.nzb&amp;i=905&amp;r=APIKEY" length="182725502" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="182725502"/>
+            <newznab:attr name="guid" value="846f414e2e4d3524e55bfb2776625d9c"/>
+
+        </item>
+        <item>
+            <title>E035</title>
+            <guid isPermaLink="true">https://nzb.su/details/9b5c484884807d555bdd80536dc6ad8e</guid>
+            <link>https://api.nzb.su/getnzb/9b5c484884807d555bdd80536dc6ad8e.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/9b5c484884807d555bdd80536dc6ad8e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:53 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>E035</description>
+            <enclosure url="https://api.nzb.su/getnzb/9b5c484884807d555bdd80536dc6ad8e.nzb&amp;i=905&amp;r=APIKEY" length="517355661" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="517355661"/>
+            <newznab:attr name="guid" value="9b5c484884807d555bdd80536dc6ad8e"/>
+
+        </item>
+        <item>
+            <title>6gZmCTsYECGZvWq3200f8</title>
+            <guid isPermaLink="true">https://nzb.su/details/20b53c18fd2114fb33a4e55004229a56</guid>
+            <link>https://api.nzb.su/getnzb/20b53c18fd2114fb33a4e55004229a56.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/20b53c18fd2114fb33a4e55004229a56#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>6gZmCTsYECGZvWq3200f8</description>
+            <enclosure url="https://api.nzb.su/getnzb/20b53c18fd2114fb33a4e55004229a56.nzb&amp;i=905&amp;r=APIKEY" length="186602566" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="186602566"/>
+            <newznab:attr name="guid" value="20b53c18fd2114fb33a4e55004229a56"/>
+
+        </item>
+        <item>
+            <title>A Non-Obvious Ride</title>
+            <guid isPermaLink="true">https://nzb.su/details/c9a28303740fdb731ce508b9f8b7dffd</guid>
+            <link>https://api.nzb.su/getnzb/c9a28303740fdb731ce508b9f8b7dffd.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/c9a28303740fdb731ce508b9f8b7dffd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:49 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>A Non-Obvious Ride</description>
+            <enclosure url="https://api.nzb.su/getnzb/c9a28303740fdb731ce508b9f8b7dffd.nzb&amp;i=905&amp;r=APIKEY" length="585576000" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="585576000"/>
+            <newznab:attr name="guid" value="c9a28303740fdb731ce508b9f8b7dffd"/>
+
+        </item>
+        <item>
+            <title>65mTNDqe2bNHR7cb14e71</title>
+            <guid isPermaLink="true">https://nzb.su/details/df1df0abd3b186a631d9b7e742ee6e21</guid>
+            <link>https://api.nzb.su/getnzb/df1df0abd3b186a631d9b7e742ee6e21.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/df1df0abd3b186a631d9b7e742ee6e21#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>65mTNDqe2bNHR7cb14e71</description>
+            <enclosure url="https://api.nzb.su/getnzb/df1df0abd3b186a631d9b7e742ee6e21.nzb&amp;i=905&amp;r=APIKEY" length="171317503" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="171317503"/>
+            <newznab:attr name="guid" value="df1df0abd3b186a631d9b7e742ee6e21"/>
+
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://nzb.su/details/d203cd11d7a2cbec4f23ca0d1b56257a</guid>
+            <link>https://api.nzb.su/getnzb/d203cd11d7a2cbec4f23ca0d1b56257a.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/d203cd11d7a2cbec4f23ca0d1b56257a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:15:32 -0400</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E17.BDRip.X264-REWARD</description>
+            <enclosure url="https://api.nzb.su/getnzb/d203cd11d7a2cbec4f23ca0d1b56257a.nzb&amp;i=905&amp;r=APIKEY" length="208347171" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="208347171"/>
+            <newznab:attr name="guid" value="d203cd11d7a2cbec4f23ca0d1b56257a"/>
+
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://nzb.su/details/b6d6b6765168b1bc72eb70ed06c7938f</guid>
+            <link>https://api.nzb.su/getnzb/b6d6b6765168b1bc72eb70ed06c7938f.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/b6d6b6765168b1bc72eb70ed06c7938f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:15:16 -0400</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://api.nzb.su/getnzb/b6d6b6765168b1bc72eb70ed06c7938f.nzb&amp;i=905&amp;r=APIKEY" length="657850141" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="5000"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="657850141"/>
+            <newznab:attr name="guid" value="b6d6b6765168b1bc72eb70ed06c7938f"/>
+
+        </item>
+        <item>
+            <title>5YFvwdNLkr8ruRn89cf05</title>
+            <guid isPermaLink="true">https://nzb.su/details/53030e91793a82dbf946aa77017d8cc2</guid>
+            <link>https://api.nzb.su/getnzb/53030e91793a82dbf946aa77017d8cc2.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/53030e91793a82dbf946aa77017d8cc2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>5YFvwdNLkr8ruRn89cf05</description>
+            <enclosure url="https://api.nzb.su/getnzb/53030e91793a82dbf946aa77017d8cc2.nzb&amp;i=905&amp;r=APIKEY" length="206898238" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="206898238"/>
+            <newznab:attr name="guid" value="53030e91793a82dbf946aa77017d8cc2"/>
+
+        </item>
+        <item>
+            <title>bass_prototype_and_corevin_-_freedom_ep-(swg036)-web-2017</title>
+            <guid isPermaLink="true">https://nzb.su/details/a5252a7f75dac15d501d4fc3d98c26e6</guid>
+            <link>https://api.nzb.su/getnzb/a5252a7f75dac15d501d4fc3d98c26e6.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/a5252a7f75dac15d501d4fc3d98c26e6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:25:04 -0400</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>bass_prototype_and_corevin_-_freedom_ep-(swg036)-web-2017</description>
+            <enclosure url="https://api.nzb.su/getnzb/a5252a7f75dac15d501d4fc3d98c26e6.nzb&amp;i=905&amp;r=APIKEY" length="33176610" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="3000"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="33176610"/>
+            <newznab:attr name="guid" value="a5252a7f75dac15d501d4fc3d98c26e6"/>
+
+        </item>
+        <item>
+            <title>1zfVUvt5UnUpXr957e685</title>
+            <guid isPermaLink="true">https://nzb.su/details/2b40d8f69046cff127525f103ba54185</guid>
+            <link>https://api.nzb.su/getnzb/2b40d8f69046cff127525f103ba54185.nzb&amp;i=905&amp;r=APIKEY</link>
+            <comments>https://nzb.su/details/2b40d8f69046cff127525f103ba54185#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 08:35:55 -0400</pubDate>
+            <category>Misc &gt; Other</category>
+            <description>1zfVUvt5UnUpXr957e685</description>
+            <enclosure url="https://api.nzb.su/getnzb/2b40d8f69046cff127525f103ba54185.nzb&amp;i=905&amp;r=APIKEY" length="221242812" type="application/x-nzb"/>
+
+            <newznab:attr name="category" value="8000"/>
+            <newznab:attr name="category" value="8010"/>
+            <newznab:attr name="size" value="221242812"/>
+            <newznab:attr name="guid" value="2b40d8f69046cff127525f103ba54185"/>
+
+        </item>
+
+    </channel>
+</rss>

@@ -1,6 +1,6 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.NzbDownloader;
+import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.BaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class NzbHandling {
     private static final Logger logger = LoggerFactory.getLogger(NzbHandling.class);
 
     @Autowired
-    private NzbDownloader nzbDownloader;
+    private NzbHandler nzbHandler;
     @Autowired
     private BaseConfig baseConfig;
 
@@ -29,7 +29,7 @@ public class NzbHandling {
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
-        return nzbDownloader.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
     }
 
     /**
@@ -38,9 +38,9 @@ public class NzbHandling {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/{guid}", produces = "application/x-nzb")
-    @Secured({"ROLE_USER"})
+    @Secured({"ROLE_USER"}) //TODO Auth with API key
     public ResponseEntity<String> downloadNzb(@PathVariable("guid") long guid) {
-        return nzbDownloader.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
     }
 
 }

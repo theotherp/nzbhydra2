@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
@@ -23,10 +24,10 @@ public class SearchModuleProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchModuleProvider.class);
 
-    private static final Map<String, Class<? extends Indexer>> searchModuleClasses = new HashMap<>();
+    private static final Map<SearchModuleType, Class<? extends Indexer>> searchModuleClasses = new HashMap<>();
 
     static {
-        searchModuleClasses.put("newznab", Newznab.class);
+        searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
     }
 
     @Autowired

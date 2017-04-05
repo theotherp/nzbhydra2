@@ -2,9 +2,12 @@ package org.nzbhydra.downloader;
 
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbDownloadResult;
-import org.nzbhydra.NzbDownloader;
+import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.DownloaderConfig;
-import org.nzbhydra.config.SearchingConfig.NzbAccessType;
+import org.nzbhydra.config.NzbAddingType;
+import org.nzbhydra.database.SearchResultEntity;
+import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.downloader.exceptions.DownloaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +18,9 @@ import java.util.Set;
 public abstract class Downloader {
 
     @Autowired
-    private NzbDownloader nzbDownloader;
+    private NzbHandler nzbHandler;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
 
     protected DownloaderConfig downloaderConfig;
 
@@ -25,16 +30,28 @@ public abstract class Downloader {
 
 
     public GenericResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
-        NzbAccessType accessType = NzbAccessType.valueOf(downloaderConfig.getNzbAccessType()); //TODO store/use enum in config
-        for (Long searchResultId : searchResultIds) {
-            NzbDownloadResult result = nzbDownloader.getNzbByGuid(searchResultId, accessType);
-            if (accessType == NzbAccessType.PROXY) {
-                addNzb(result.getNzbContent(), result.getTitle(), category);
-            } else {
-                addLink(result.getUrl(), result.getTitle(), category);
-            }
-        }
+        NzbAddingType addingType = downloaderConfig.getNzbAddingType();
+        int countAddedNzbs = 0;
+        try {
+            for (Long searchResultId : searchResultIds) {
+                if (addingType == NzbAddingType.UPLOAD) {
+                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType());
+                    addNzb(result.getNzbContent(), result.getTitle(), category);
+                } else {
+                    SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
+                    addLink(nzbHandler.getNzbDownloadLink(searchResultEntity.getId()), searchResultEntity.getTitle(), category);
+                }
 
+                countAddedNzbs++;
+            }
+
+        } catch (DownloaderException e) {
+            String message = "Error while adding NZB(s) to downloader: " + e.getMessage();
+            if (countAddedNzbs > 0) {
+                message += ".\n" + countAddedNzbs + " were added successfully";
+            }
+            return new GenericResponse(false, message);
+        }
         //TODO Capture error or something
         return new GenericResponse(true, null);
     }
@@ -44,8 +61,8 @@ public abstract class Downloader {
 
     public abstract List<String> getCategories();
 
-    public abstract boolean addLink(String link, String title, String category);
+    public abstract void addLink(String link, String title, String category) throws DownloaderException;
 
-    public abstract boolean addNzb(String content, String title, String category);
+    public abstract void addNzb(String content, String title, String category) throws DownloaderException;
 
 }

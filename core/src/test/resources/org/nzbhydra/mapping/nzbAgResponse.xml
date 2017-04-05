@@ -1,0 +1,1217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="http://nzb.ag/api" rel="self" type="application/rss+xml"/>
+        <title>nzb.ag</title>
+        <description>nzb.ag API Details</description>
+        <link>http://nzb.ag/</link>
+        <language>en-gb</language>
+        <webMaster>help@nzb.ag nzb.ag</webMaster>
+        <category></category>
+        <generator>nZEDb</generator>
+        <ttl>10</ttl>
+        <docs>http://nzb.ag/apihelp/</docs>
+        <image url="http://nzb.ag/themes/shared/img/logo.png" title="nzb.ag" link="http://nzb.ag/" description="Visit nzb.ag - "/>
+        <newznab:response offset="0" total="125000"/>
+        <item>
+            <title>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/6b688f42a1380b01d2a6d67d494c75a767e3225f</guid>
+            <link>http://nzb.ag/getnzb/6b688f42a1380b01d2a6d67d494c75a767e3225f.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/6b688f42a1380b01d2a6d67d494c75a767e3225f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:41:35 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E05.BDRip.x264-TAXES English</description>
+            <enclosure url="http://nzb.ag/getnzb/6b688f42a1380b01d2a6d67d494c75a767e3225f.nzb&amp;i=2365&amp;r=APIKEY" length="1000872497" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1000872497"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/1c0d66321c85738f26500547faee7750c7554c34</guid>
+            <link>http://nzb.ag/getnzb/1c0d66321c85738f26500547faee7750c7554c34.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/1c0d66321c85738f26500547faee7750c7554c34#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:41:35 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E04.BDRip.x264-TAXES English</description>
+            <enclosure url="http://nzb.ag/getnzb/1c0d66321c85738f26500547faee7750c7554c34.nzb&amp;i=2365&amp;r=APIKEY" length="1015865037" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1015865037"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/6a89379ee42bfe4f6e3a63a1a208e1103bb41f9d</guid>
+            <link>http://nzb.ag/getnzb/6a89379ee42bfe4f6e3a63a1a208e1103bb41f9d.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/6a89379ee42bfe4f6e3a63a1a208e1103bb41f9d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:38:34 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E03.BDRip.x264-TAXES English</description>
+            <enclosure url="http://nzb.ag/getnzb/6a89379ee42bfe4f6e3a63a1a208e1103bb41f9d.nzb&amp;i=2365&amp;r=APIKEY" length="971199780" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="971199780"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/3d8b077ecdf3380e0d058518e1de0c255495367e</guid>
+            <link>http://nzb.ag/getnzb/3d8b077ecdf3380e0d058518e1de0c255495367e.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/3d8b077ecdf3380e0d058518e1de0c255495367e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:38:34 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E02.BDRip.x264-TAXES English</description>
+            <enclosure url="http://nzb.ag/getnzb/3d8b077ecdf3380e0d058518e1de0c255495367e.nzb&amp;i=2365&amp;r=APIKEY" length="988051736" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="988051736"/>
+        </item>
+        <item>
+            <title>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ff2ecb86cfa0ac913f1bc0755e86f75abe873564</guid>
+            <link>http://nzb.ag/getnzb/ff2ecb86cfa0ac913f1bc0755e86f75abe873564.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ff2ecb86cfa0ac913f1bc0755e86f75abe873564#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:38:34 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Spy.in.the.Wild.S01E01.BDRip.x264-TAXES English</description>
+            <enclosure url="http://nzb.ag/getnzb/ff2ecb86cfa0ac913f1bc0755e86f75abe873564.nzb&amp;i=2365&amp;r=APIKEY" length="1108064097" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="1108064097"/>
+        </item>
+        <item>
+            <title>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">http://nzb.ag/details/96e12617382c4fc6e2b81079aa6a323dcd64f5da</guid>
+            <link>http://nzb.ag/getnzb/96e12617382c4fc6e2b81079aa6a323dcd64f5da.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/96e12617382c4fc6e2b81079aa6a323dcd64f5da#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:41:35 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chain Chronicle Haecceitas no Hikari - 09 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="http://nzb.ag/getnzb/96e12617382c4fc6e2b81079aa6a323dcd64f5da.nzb&amp;i=2365&amp;r=APIKEY" length="1855222624" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1855222624"/>
+        </item>
+        <item>
+            <title>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/a034c3885b94fdddf063142d9db3d0e3cc0b8121</guid>
+            <link>http://nzb.ag/getnzb/a034c3885b94fdddf063142d9db3d0e3cc0b8121.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/a034c3885b94fdddf063142d9db3d0e3cc0b8121#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:36:17 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Carson.Daly.2017.04.04.Damon.Lindelof.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/a034c3885b94fdddf063142d9db3d0e3cc0b8121.nzb&amp;i=2365&amp;r=APIKEY" length="325947191" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="325947191"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ee84f5ff77517766d28df7b91f4b4d0c95b2beae</guid>
+            <link>http://nzb.ag/getnzb/ee84f5ff77517766d28df7b91f4b4d0c95b2beae.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ee84f5ff77517766d28df7b91f4b4d0c95b2beae#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:29:57 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.HDTV.x264-CROOKS English</description>
+            <enclosure url="http://nzb.ag/getnzb/ee84f5ff77517766d28df7b91f4b4d0c95b2beae.nzb&amp;i=2365&amp;r=APIKEY" length="1471929445" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1471929445"/>
+        </item>
+        <item>
+            <title>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</title>
+            <guid isPermaLink="true">http://nzb.ag/details/c94ae23e5cb7c06aaf13afd451d6bb28a6f2edd4</guid>
+            <link>http://nzb.ag/getnzb/c94ae23e5cb7c06aaf13afd451d6bb28a6f2edd4.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/c94ae23e5cb7c06aaf13afd451d6bb28a6f2edd4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:29:56 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Chaos;Child - 10 [English Dubbed] [1080p] [MP4]</description>
+            <enclosure url="http://nzb.ag/getnzb/c94ae23e5cb7c06aaf13afd451d6bb28a6f2edd4.nzb&amp;i=2365&amp;r=APIKEY" length="1917154067" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1917154067"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">http://nzb.ag/details/4422d02ebc9353508b1ebca71c6ef9e96eb7b66b</guid>
+            <link>http://nzb.ag/getnzb/4422d02ebc9353508b1ebca71c6ef9e96eb7b66b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/4422d02ebc9353508b1ebca71c6ef9e96eb7b66b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:24:48 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.HDTV.x264-SORNY</description>
+            <enclosure url="http://nzb.ag/getnzb/4422d02ebc9353508b1ebca71c6ef9e96eb7b66b.nzb&amp;i=2365&amp;r=APIKEY" length="1897137528" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1897137528"/>
+        </item>
+        <item>
+            <title>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/bbf1e34694ca8128b5899d50b584c8cc592580cb</guid>
+            <link>http://nzb.ag/getnzb/bbf1e34694ca8128b5899d50b584c8cc592580cb.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/bbf1e34694ca8128b5899d50b584c8cc592580cb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:13:07 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Seth.Meyers.2017.04.04.Ice.T.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/bbf1e34694ca8128b5899d50b584c8cc592580cb.nzb&amp;i=2365&amp;r=APIKEY" length="657819659" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="657819659"/>
+        </item>
+        <item>
+            <title>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/2d787fd2aca8a3a860bef791ff22543a6fb4e43b</guid>
+            <link>http://nzb.ag/getnzb/2d787fd2aca8a3a860bef791ff22543a6fb4e43b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/2d787fd2aca8a3a860bef791ff22543a6fb4e43b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:15:24 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[SquareSubs] Bakuten Shoot Beyblade 26.mkv [1/6] - &quot;[SquareSubs] Bakuten Shoot Beyblade 26.mkv&quot; Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/2d787fd2aca8a3a860bef791ff22543a6fb4e43b.nzb&amp;i=2365&amp;r=APIKEY" length="322560175" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="322560175"/>
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/df7311f12f8d4bd0011a94a8495fdb41ee72ba25</guid>
+            <link>http://nzb.ag/getnzb/df7311f12f8d4bd0011a94a8495fdb41ee72ba25.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/df7311f12f8d4bd0011a94a8495fdb41ee72ba25#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:29:56 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E05.Brendon.Walsh.Glenn.Wool.Kumail.Nanjiani.Kirk.Fox.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</description>
+            <enclosure url="http://nzb.ag/getnzb/df7311f12f8d4bd0011a94a8495fdb41ee72ba25.nzb&amp;i=2365&amp;r=APIKEY" length="5353903140" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5353903140"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f5f57d05453c7fda840b616b156a866b89ebcb62</guid>
+            <link>http://nzb.ag/getnzb/f5f57d05453c7fda840b616b156a866b89ebcb62.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f5f57d05453c7fda840b616b156a866b89ebcb62#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:57:03 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.INTERNAL.720p.HDTV.x264-KILLERS</description>
+            <enclosure url="http://nzb.ag/getnzb/f5f57d05453c7fda840b616b156a866b89ebcb62.nzb&amp;i=2365&amp;r=APIKEY" length="964091938" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="964091938"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</title>
+            <guid isPermaLink="true">http://nzb.ag/details/5c7c11d5e1a09701e215ef19feb000dc2d90b697</guid>
+            <link>http://nzb.ag/getnzb/5c7c11d5e1a09701e215ef19feb000dc2d90b697.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/5c7c11d5e1a09701e215ef19feb000dc2d90b697#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:54:45 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.HDTV.x264-SORNY</description>
+            <enclosure url="http://nzb.ag/getnzb/5c7c11d5e1a09701e215ef19feb000dc2d90b697.nzb&amp;i=2365&amp;r=APIKEY" length="501649140" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="501649140"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/7ec3977cc62b17e9b81388bfc0fa0aafbc3c82d5</guid>
+            <link>http://nzb.ag/getnzb/7ec3977cc62b17e9b81388bfc0fa0aafbc3c82d5.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/7ec3977cc62b17e9b81388bfc0fa0aafbc3c82d5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:23 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E02.REAL.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/7ec3977cc62b17e9b81388bfc0fa0aafbc3c82d5.nzb&amp;i=2365&amp;r=APIKEY" length="876986701" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="876986701"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/51f871cb6ce4e20d42273da48d642b25aa6fea3c</guid>
+            <link>http://nzb.ag/getnzb/51f871cb6ce4e20d42273da48d642b25aa6fea3c.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/51f871cb6ce4e20d42273da48d642b25aa6fea3c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:43:05 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E03.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/51f871cb6ce4e20d42273da48d642b25aa6fea3c.nzb&amp;i=2365&amp;r=APIKEY" length="272810021" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="272810021"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/2032f04a361ce441c1765f6314c7c0d8b0f5a6cb</guid>
+            <link>http://nzb.ag/getnzb/2032f04a361ce441c1765f6314c7c0d8b0f5a6cb.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/2032f04a361ce441c1765f6314c7c0d8b0f5a6cb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:23 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Surveillance.Oz.S05E03.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/2032f04a361ce441c1765f6314c7c0d8b0f5a6cb.nzb&amp;i=2365&amp;r=APIKEY" length="917318670" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="917318670"/>
+        </item>
+        <item>
+            <title>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/53a51e161ea0a6ce9350b8e236c851424189c5d6</guid>
+            <link>http://nzb.ag/getnzb/53a51e161ea0a6ce9350b8e236c851424189c5d6.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/53a51e161ea0a6ce9350b8e236c851424189c5d6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:23 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Surveillance.Oz.S05E02.REAL.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/53a51e161ea0a6ce9350b8e236c851424189c5d6.nzb&amp;i=2365&amp;r=APIKEY" length="247105552" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="247105552"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/5241c6bb6d01e74b90acd239a327315eab9cacd0</guid>
+            <link>http://nzb.ag/getnzb/5241c6bb6d01e74b90acd239a327315eab9cacd0.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/5241c6bb6d01e74b90acd239a327315eab9cacd0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:23 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/5241c6bb6d01e74b90acd239a327315eab9cacd0.nzb&amp;i=2365&amp;r=APIKEY" length="807599110" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="807599110"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/886fcaa009f49ab17a212e7f1fea504e5eb37a06</guid>
+            <link>http://nzb.ag/getnzb/886fcaa009f49ab17a212e7f1fea504e5eb37a06.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/886fcaa009f49ab17a212e7f1fea504e5eb37a06#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:43:05 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E02.Mountains.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/886fcaa009f49ab17a212e7f1fea504e5eb37a06.nzb&amp;i=2365&amp;r=APIKEY" length="627337348" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="627337348"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/8268210880235a322d6a8e0b0ceb738db8741033</guid>
+            <link>http://nzb.ag/getnzb/8268210880235a322d6a8e0b0ceb738db8741033.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/8268210880235a322d6a8e0b0ceb738db8741033#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:43:05 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/8268210880235a322d6a8e0b0ceb738db8741033.nzb&amp;i=2365&amp;r=APIKEY" length="711988254" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="711988254"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/48b015dcb8985558e26590f107a47c921ef8495b</guid>
+            <link>http://nzb.ag/getnzb/48b015dcb8985558e26590f107a47c921ef8495b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/48b015dcb8985558e26590f107a47c921ef8495b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:22 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E04.Rivers.And.Lakes.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/48b015dcb8985558e26590f107a47c921ef8495b.nzb&amp;i=2365&amp;r=APIKEY" length="2104669202" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2104669202"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/b93070cfa82244f5ffa2bc51f2758c22e4919f40</guid>
+            <link>http://nzb.ag/getnzb/b93070cfa82244f5ffa2bc51f2758c22e4919f40.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/b93070cfa82244f5ffa2bc51f2758c22e4919f40#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:40:13 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Wild.Germany.S01E03.Forests.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/b93070cfa82244f5ffa2bc51f2758c22e4919f40.nzb&amp;i=2365&amp;r=APIKEY" length="692948904" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="692948904"/>
+        </item>
+        <item>
+            <title>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/e6c4e6c6a01bbef27ef291603bc3da746ce9bc2d</guid>
+            <link>http://nzb.ag/getnzb/e6c4e6c6a01bbef27ef291603bc3da746ce9bc2d.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/e6c4e6c6a01bbef27ef291603bc3da746ce9bc2d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:40:13 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Chrisley.Knows.Best.S05E07.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/e6c4e6c6a01bbef27ef291603bc3da746ce9bc2d.nzb&amp;i=2365&amp;r=APIKEY" length="513819074" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="513819074"/>
+        </item>
+        <item>
+            <title>[ 3-050417-STS021080IWA20x264B ]-[39/39] - &quot;3-050417-STS021080IWA20x264B</title>
+            <guid isPermaLink="true">http://nzb.ag/details/37675d46751988a95f24c688a875136850f79b42</guid>
+            <link>http://nzb.ag/getnzb/37675d46751988a95f24c688a875136850f79b42.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/37675d46751988a95f24c688a875136850f79b42#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:45:21 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>[ 3-050417-STS021080IWA20x264B ]-[39/39] - &quot;3-050417-STS021080IWA20x264B</description>
+            <enclosure url="http://nzb.ag/getnzb/37675d46751988a95f24c688a875136850f79b42.nzb&amp;i=2365&amp;r=APIKEY" length="1718016602" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1718016602"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/c926e4de9eb37b76285cd541a7c82dacfcf1507b</guid>
+            <link>http://nzb.ag/getnzb/c926e4de9eb37b76285cd541a7c82dacfcf1507b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/c926e4de9eb37b76285cd541a7c82dacfcf1507b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:43:05 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E03.Forests.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/c926e4de9eb37b76285cd541a7c82dacfcf1507b.nzb&amp;i=2365&amp;r=APIKEY" length="2183691971" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2183691971"/>
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E04.Mike.Lawrence.Marina.Franklin.Brendon.Walsh.Greg.Behrendt.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/81fc1c39c98ebff2464043d4d892f88339fdc795</guid>
+            <link>http://nzb.ag/getnzb/81fc1c39c98ebff2464043d4d892f88339fdc795.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/81fc1c39c98ebff2464043d4d892f88339fdc795#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:01:15 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E04.Mike.Lawrence.Marina.Franklin.Brendon.Walsh.Greg.Behrendt.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</description>
+            <enclosure url="http://nzb.ag/getnzb/81fc1c39c98ebff2464043d4d892f88339fdc795.nzb&amp;i=2365&amp;r=APIKEY" length="5356904928" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5356904928"/>
+        </item>
+        <item>
+            <title>[ 2-050417-STS021080IWA20x264B ]</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f7f86707cf7dad4075080260092f7a3ed279087b</guid>
+            <link>http://nzb.ag/getnzb/f7f86707cf7dad4075080260092f7a3ed279087b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f7f86707cf7dad4075080260092f7a3ed279087b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:43:03 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>[ 2-050417-STS021080IWA20x264B ]</description>
+            <enclosure url="http://nzb.ag/getnzb/f7f86707cf7dad4075080260092f7a3ed279087b.nzb&amp;i=2365&amp;r=APIKEY" length="1736814073" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1736814073"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/389178d09d8c530d3929255b9c2ee64ffed9d144</guid>
+            <link>http://nzb.ag/getnzb/389178d09d8c530d3929255b9c2ee64ffed9d144.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/389178d09d8c530d3929255b9c2ee64ffed9d144#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:37:57 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Play.To.The.Whistle.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/389178d09d8c530d3929255b9c2ee64ffed9d144.nzb&amp;i=2365&amp;r=APIKEY" length="883388418" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="883388418"/>
+        </item>
+        <item>
+            <title>[ 1-050417-STS021080IWA20x264B ]</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ef62476aa1a8aa5bd4141cf061fac7809960f907</guid>
+            <link>http://nzb.ag/getnzb/ef62476aa1a8aa5bd4141cf061fac7809960f907.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ef62476aa1a8aa5bd4141cf061fac7809960f907#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:40:12 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>[ 1-050417-STS021080IWA20x264B ]</description>
+            <enclosure url="http://nzb.ag/getnzb/ef62476aa1a8aa5bd4141cf061fac7809960f907.nzb&amp;i=2365&amp;r=APIKEY" length="1734439130" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1734439130"/>
+        </item>
+        <item>
+            <title>[02/22] - &quot;[DB] Mob Psycho 100 - 01 Dual Audio 10bit HDTV720p x265 HEVC).part01.rar&quot; - 280,29 MB English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/723043052405e04034d5e3539b36339d541acad7</guid>
+            <link>http://nzb.ag/getnzb/723043052405e04034d5e3539b36339d541acad7.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/723043052405e04034d5e3539b36339d541acad7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 05:01:13 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/22] - &quot;[DB] Mob Psycho 100 - 01 Dual Audio 10bit HDTV720p x265 HEVC).part01.rar&quot; - 280,29 MB English</description>
+            <enclosure url="http://nzb.ag/getnzb/723043052405e04034d5e3539b36339d541acad7.nzb&amp;i=2365&amp;r=APIKEY" length="305208079" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="305208079"/>
+        </item>
+        <item>
+            <title>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/de19836d0925fc076d65c61f565c052ff7fec6bc</guid>
+            <link>http://nzb.ag/getnzb/de19836d0925fc076d65c61f565c052ff7fec6bc.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/de19836d0925fc076d65c61f565c052ff7fec6bc#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:37:57 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Play.To.The.Whistle.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/de19836d0925fc076d65c61f565c052ff7fec6bc.nzb&amp;i=2365&amp;r=APIKEY" length="336373168" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="336373168"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/704e4973b7a36d0bd66c6cb01d54305025baa20e</guid>
+            <link>http://nzb.ag/getnzb/704e4973b7a36d0bd66c6cb01d54305025baa20e.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/704e4973b7a36d0bd66c6cb01d54305025baa20e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:51 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.720p.HDTV.x264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/704e4973b7a36d0bd66c6cb01d54305025baa20e.nzb&amp;i=2365&amp;r=APIKEY" length="1089629962" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1089629962"/>
+        </item>
+        <item>
+            <title>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/507127cf8d5c4fd15f848653d68b3ebcf9a86f41</guid>
+            <link>http://nzb.ag/getnzb/507127cf8d5c4fd15f848653d68b3ebcf9a86f41.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/507127cf8d5c4fd15f848653d68b3ebcf9a86f41#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:51 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Secret.Life.of.The.Zoo.S03E06.HDTV.x264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/507127cf8d5c4fd15f848653d68b3ebcf9a86f41.nzb&amp;i=2365&amp;r=APIKEY" length="390004358" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="390004358"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/cadbdff286bf69b16f75b0bb19f78ca6ce288448</guid>
+            <link>http://nzb.ag/getnzb/cadbdff286bf69b16f75b0bb19f78ca6ce288448.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/cadbdff286bf69b16f75b0bb19f78ca6ce288448#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:51 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E02.Mountains.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/cadbdff286bf69b16f75b0bb19f78ca6ce288448.nzb&amp;i=2365&amp;r=APIKEY" length="1890881308" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1890881308"/>
+        </item>
+        <item>
+            <title>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/cffab6d5e5c6766d5ca27cb497993467bad5d980</guid>
+            <link>http://nzb.ag/getnzb/cffab6d5e5c6766d5ca27cb497993467bad5d980.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/cffab6d5e5c6766d5ca27cb497993467bad5d980#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:37:56 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/26] - &quot;[DameDesuYo] Trinity Seven - Movie 01 (BD 1280x720 10bit AAC) [A635FEC3].par2&quot; - 1,03 GB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/cffab6d5e5c6766d5ca27cb497993467bad5d980.nzb&amp;i=2365&amp;r=APIKEY" length="1144598165" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="1144598165"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/93e42648dd902a01f4f3db3757167e4a276c313b</guid>
+            <link>http://nzb.ag/getnzb/93e42648dd902a01f4f3db3757167e4a276c313b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/93e42648dd902a01f4f3db3757167e4a276c313b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:26 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E01.HDTV.X264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/93e42648dd902a01f4f3db3757167e4a276c313b.nzb&amp;i=2365&amp;r=APIKEY" length="340230761" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="340230761"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/b0a033a90c580c5e9797a2750c77b8e41ccaf438</guid>
+            <link>http://nzb.ag/getnzb/b0a033a90c580c5e9797a2750c77b8e41ccaf438.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/b0a033a90c580c5e9797a2750c77b8e41ccaf438#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:37:57 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Child.of.our.Time.S11E02.HDTV.X264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/b0a033a90c580c5e9797a2750c77b8e41ccaf438.nzb&amp;i=2365&amp;r=APIKEY" length="313280461" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="313280461"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/307986ffdb1076036a7363f9f74e44424ee34776</guid>
+            <link>http://nzb.ag/getnzb/307986ffdb1076036a7363f9f74e44424ee34776.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/307986ffdb1076036a7363f9f74e44424ee34776#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:37:56 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Monster Hunter Stories3A Ride On - 26 [720p][AAC].par2&quot; - 396,09 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/307986ffdb1076036a7363f9f74e44424ee34776.nzb&amp;i=2365&amp;r=APIKEY" length="431246237" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="431246237"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/fff6b1cfb5a5fd3d6f4f5e2c3b662f53edc3eec2</guid>
+            <link>http://nzb.ag/getnzb/fff6b1cfb5a5fd3d6f4f5e2c3b662f53edc3eec2.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/fff6b1cfb5a5fd3d6f4f5e2c3b662f53edc3eec2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:51 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E02.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/fff6b1cfb5a5fd3d6f4f5e2c3b662f53edc3eec2.nzb&amp;i=2365&amp;r=APIKEY" length="857586514" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="857586514"/>
+        </item>
+        <item>
+            <title>[05/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].part04.rar&quot; - 254,63 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/8e144cfed4fc7e2e7326f72d674deabe21a6d2b2</guid>
+            <link>http://nzb.ag/getnzb/8e144cfed4fc7e2e7326f72d674deabe21a6d2b2.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/8e144cfed4fc7e2e7326f72d674deabe21a6d2b2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:49 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[05/21] - &quot;[AnimeRG] One Piece - 782 [1080p] [Multi-Sub] [x265] [pseudo].part04.rar&quot; - 254,63 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/8e144cfed4fc7e2e7326f72d674deabe21a6d2b2.nzb&amp;i=2365&amp;r=APIKEY" length="277327513" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="277327513"/>
+        </item>
+        <item>
+            <title>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</title>
+            <guid isPermaLink="true">http://nzb.ag/details/9dc00645a9fca065cd9f80bc47c066b1f64b4f7b</guid>
+            <link>http://nzb.ag/getnzb/9dc00645a9fca065cd9f80bc47c066b1f64b4f7b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/9dc00645a9fca065cd9f80bc47c066b1f64b4f7b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:51 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Child.of.our.Time.S11E01.720p.HDTV.X264-DEADPOOL</description>
+            <enclosure url="http://nzb.ag/getnzb/9dc00645a9fca065cd9f80bc47c066b1f64b4f7b.nzb&amp;i=2365&amp;r=APIKEY" length="905188251" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="905188251"/>
+        </item>
+        <item>
+            <title>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/1792ae41ef4e6b1dadbb272185d6e02a106e8beb</guid>
+            <link>http://nzb.ag/getnzb/1792ae41ef4e6b1dadbb272185d6e02a106e8beb.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/1792ae41ef4e6b1dadbb272185d6e02a106e8beb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:33:32 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/1792ae41ef4e6b1dadbb272185d6e02a106e8beb.nzb&amp;i=2365&amp;r=APIKEY" length="156639225" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="156639225"/>
+        </item>
+        <item>
+            <title>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ac939ffd116d61d5bcee976b34108dadc4211699</guid>
+            <link>http://nzb.ag/getnzb/ac939ffd116d61d5bcee976b34108dadc4211699.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ac939ffd116d61d5bcee976b34108dadc4211699#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:33:32 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Wild.Germany.S01E01.Coasts.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/ac939ffd116d61d5bcee976b34108dadc4211699.nzb&amp;i=2365&amp;r=APIKEY" length="2036666346" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2036666346"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/263a14afc43ca472aebe6028c5d8498d8b403661</guid>
+            <link>http://nzb.ag/getnzb/263a14afc43ca472aebe6028c5d8498d8b403661.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/263a14afc43ca472aebe6028c5d8498d8b403661#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:26 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/263a14afc43ca472aebe6028c5d8498d8b403661.nzb&amp;i=2365&amp;r=APIKEY" length="184626806" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184626806"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].par2&quot; - 148,59 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f982621a2c135ae0b21d720c59330babe59dda96</guid>
+            <link>http://nzb.ag/getnzb/f982621a2c135ae0b21d720c59330babe59dda96.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f982621a2c135ae0b21d720c59330babe59dda96#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:26 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].par2&quot; - 148,59 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/f982621a2c135ae0b21d720c59330babe59dda96.nzb&amp;i=2365&amp;r=APIKEY" length="161799563" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="161799563"/>
+        </item>
+        <item>
+            <title>[04/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].part03.rar&quot; - 182,20 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/a92bfd423fa134b7fab93426e9fb382b53b6b0e7</guid>
+            <link>http://nzb.ag/getnzb/a92bfd423fa134b7fab93426e9fb382b53b6b0e7.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/a92bfd423fa134b7fab93426e9fb382b53b6b0e7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:28:24 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[04/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].part03.rar&quot; - 182,20 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/a92bfd423fa134b7fab93426e9fb382b53b6b0e7.nzb&amp;i=2365&amp;r=APIKEY" length="198388966" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="198388966"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f5278871557595f365b0d4cd3fd68d6b2653de85</guid>
+            <link>http://nzb.ag/getnzb/f5278871557595f365b0d4cd3fd68d6b2653de85.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f5278871557595f365b0d4cd3fd68d6b2653de85#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:26 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.HDTV.x264-CROOKS English</description>
+            <enclosure url="http://nzb.ag/getnzb/f5278871557595f365b0d4cd3fd68d6b2653de85.nzb&amp;i=2365&amp;r=APIKEY" length="472512731" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="472512731"/>
+        </item>
+        <item>
+            <title>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/498ce9c95fd06517a0de419e07b2c4b268179360</guid>
+            <link>http://nzb.ag/getnzb/498ce9c95fd06517a0de419e07b2c4b268179360.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/498ce9c95fd06517a0de419e07b2c4b268179360#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:28:23 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/498ce9c95fd06517a0de419e07b2c4b268179360.nzb&amp;i=2365&amp;r=APIKEY" length="437757390" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="437757390"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/5caa7e6eee9e893beaab194764d96811b5bc262d</guid>
+            <link>http://nzb.ag/getnzb/5caa7e6eee9e893beaab194764d96811b5bc262d.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/5caa7e6eee9e893beaab194764d96811b5bc262d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:26 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/5caa7e6eee9e893beaab194764d96811b5bc262d.nzb&amp;i=2365&amp;r=APIKEY" length="220780703" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="220780703"/>
+        </item>
+        <item>
+            <title>[11/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].vol0+1.par2&quot; - 144,58 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/3dee448ba9de85e47e68202d6dfe2f3fe2697f13</guid>
+            <link>http://nzb.ag/getnzb/3dee448ba9de85e47e68202d6dfe2f3fe2697f13.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/3dee448ba9de85e47e68202d6dfe2f3fe2697f13#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:28:24 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[11/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].vol0+1.par2&quot; - 144,58 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/3dee448ba9de85e47e68202d6dfe2f3fe2697f13.nzb&amp;i=2365&amp;r=APIKEY" length="157468177" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="157468177"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/77faa5e02f870ae3f67b992663f3ed10255e705c</guid>
+            <link>http://nzb.ag/getnzb/77faa5e02f870ae3f67b992663f3ed10255e705c.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/77faa5e02f870ae3f67b992663f3ed10255e705c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:26:06 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/77faa5e02f870ae3f67b992663f3ed10255e705c.nzb&amp;i=2365&amp;r=APIKEY" length="314565732" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="314565732"/>
+        </item>
+        <item>
+            <title>[14/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol00+1.par2&quot; - 650,99 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/cc8d373870e1dc4f424254135745932106ccdf36</guid>
+            <link>http://nzb.ag/getnzb/cc8d373870e1dc4f424254135745932106ccdf36.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/cc8d373870e1dc4f424254135745932106ccdf36#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:31:25 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[14/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol00+1.par2&quot; - 650,99 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/cc8d373870e1dc4f424254135745932106ccdf36.nzb&amp;i=2365&amp;r=APIKEY" length="708724891" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="708724891"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/7b7ef6c82835e8c9934bc73eda8a3b7a63cd8bb0</guid>
+            <link>http://nzb.ag/getnzb/7b7ef6c82835e8c9934bc73eda8a3b7a63cd8bb0.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/7b7ef6c82835e8c9934bc73eda8a3b7a63cd8bb0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:24:02 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/7b7ef6c82835e8c9934bc73eda8a3b7a63cd8bb0.nzb&amp;i=2365&amp;r=APIKEY" length="404837025" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404837025"/>
+        </item>
+        <item>
+            <title>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/48257ee389e868085e933112fe20e7d8a18e4b90</guid>
+            <link>http://nzb.ag/getnzb/48257ee389e868085e933112fe20e7d8a18e4b90.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/48257ee389e868085e933112fe20e7d8a18e4b90#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:21:52 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/48257ee389e868085e933112fe20e7d8a18e4b90.nzb&amp;i=2365&amp;r=APIKEY" length="403963957" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="403963957"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/3b55fea1a1a3322243bafaa29a0f6230e43df097</guid>
+            <link>http://nzb.ag/getnzb/3b55fea1a1a3322243bafaa29a0f6230e43df097.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/3b55fea1a1a3322243bafaa29a0f6230e43df097#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:24:03 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</description>
+            <enclosure url="http://nzb.ag/getnzb/3b55fea1a1a3322243bafaa29a0f6230e43df097.nzb&amp;i=2365&amp;r=APIKEY" length="4930125226" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4930125226"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/02bc59c0bd0aaf635675c35f78029edae2172d54</guid>
+            <link>http://nzb.ag/getnzb/02bc59c0bd0aaf635675c35f78029edae2172d54.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/02bc59c0bd0aaf635675c35f78029edae2172d54#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:19:48 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/02bc59c0bd0aaf635675c35f78029edae2172d54.nzb&amp;i=2365&amp;r=APIKEY" length="160077273" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="160077273"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/2df9c0db38213b514b9d0902bf214bb2e10e8988</guid>
+            <link>http://nzb.ag/getnzb/2df9c0db38213b514b9d0902bf214bb2e10e8988.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/2df9c0db38213b514b9d0902bf214bb2e10e8988#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:16:58 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/2df9c0db38213b514b9d0902bf214bb2e10e8988.nzb&amp;i=2365&amp;r=APIKEY" length="125667966" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="125667966"/>
+        </item>
+        <item>
+            <title>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</title>
+            <guid isPermaLink="true">http://nzb.ag/details/497b2d3db7d0ab4e910e638099037a5f5d600df1</guid>
+            <link>http://nzb.ag/getnzb/497b2d3db7d0ab4e910e638099037a5f5d600df1.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/497b2d3db7d0ab4e910e638099037a5f5d600df1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:16:56 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</description>
+            <enclosure url="http://nzb.ag/getnzb/497b2d3db7d0ab4e910e638099037a5f5d600df1.nzb&amp;i=2365&amp;r=APIKEY" length="484738684" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="484738684"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/5dfa90adfe4e0d6020360b7ad5402a70941b23dc</guid>
+            <link>http://nzb.ag/getnzb/5dfa90adfe4e0d6020360b7ad5402a70941b23dc.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/5dfa90adfe4e0d6020360b7ad5402a70941b23dc#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:12:34 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/5dfa90adfe4e0d6020360b7ad5402a70941b23dc.nzb&amp;i=2365&amp;r=APIKEY" length="203085533" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203085533"/>
+        </item>
+        <item>
+            <title>John.Olivers.New.York.Stand.Up.Show.S02E03.Anthony.Jeselnik.Rory.Albanese.Deon.Cole.Tommy.Johnagin.David.Koechner.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ef07086e34c5bfaa4690ac8399fbba392e550153</guid>
+            <link>http://nzb.ag/getnzb/ef07086e34c5bfaa4690ac8399fbba392e550153.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ef07086e34c5bfaa4690ac8399fbba392e550153#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:35:50 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>John.Olivers.New.York.Stand.Up.Show.S02E03.Anthony.Jeselnik.Rory.Albanese.Deon.Cole.Tommy.Johnagin.David.Koechner.1080p.AMZN.WEB-DL.DD+2.0.x264-monkee English</description>
+            <enclosure url="http://nzb.ag/getnzb/ef07086e34c5bfaa4690ac8399fbba392e550153.nzb&amp;i=2365&amp;r=APIKEY" length="5349712793" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5349712793"/>
+        </item>
+        <item>
+            <title>The.Daily.Show.with.Trevor.Noah.2017.04.04.Chelsea.Handler.1080p.CC.WEB-DL.AAC2.0.x264-monkee</title>
+            <guid isPermaLink="true">http://nzb.ag/details/4d59ff8f0cc83cb384065e9e5484b39656dde1b0</guid>
+            <link>http://nzb.ag/getnzb/4d59ff8f0cc83cb384065e9e5484b39656dde1b0.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/4d59ff8f0cc83cb384065e9e5484b39656dde1b0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:10:27 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Daily.Show.with.Trevor.Noah.2017.04.04.Chelsea.Handler.1080p.CC.WEB-DL.AAC2.0.x264-monkee</description>
+            <enclosure url="http://nzb.ag/getnzb/4d59ff8f0cc83cb384065e9e5484b39656dde1b0.nzb&amp;i=2365&amp;r=APIKEY" length="800179867" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="800179867"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/2063790efe30c773403c5c562cd1ff19cdfaa497</guid>
+            <link>http://nzb.ag/getnzb/2063790efe30c773403c5c562cd1ff19cdfaa497.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/2063790efe30c773403c5c562cd1ff19cdfaa497#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:12:33 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/2063790efe30c773403c5c562cd1ff19cdfaa497.nzb&amp;i=2365&amp;r=APIKEY" length="591187327" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="591187327"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/aed20fbf60768db80226d25567ab6d986e85d679</guid>
+            <link>http://nzb.ag/getnzb/aed20fbf60768db80226d25567ab6d986e85d679.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/aed20fbf60768db80226d25567ab6d986e85d679#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:05:02 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/aed20fbf60768db80226d25567ab6d986e85d679.nzb&amp;i=2365&amp;r=APIKEY" length="191389196" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="191389196"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/de91d4091e18f34a1c5b808455da4a06a47475a2</guid>
+            <link>http://nzb.ag/getnzb/de91d4091e18f34a1c5b808455da4a06a47475a2.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/de91d4091e18f34a1c5b808455da4a06a47475a2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:10:27 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/de91d4091e18f34a1c5b808455da4a06a47475a2.nzb&amp;i=2365&amp;r=APIKEY" length="671999080" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="671999080"/>
+        </item>
+        <item>
+            <title>[04/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part03.rar&quot; - 197,99 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/7c3814a3a53a364694a4007bfc6fd3d8eb6e9260</guid>
+            <link>http://nzb.ag/getnzb/7c3814a3a53a364694a4007bfc6fd3d8eb6e9260.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/7c3814a3a53a364694a4007bfc6fd3d8eb6e9260#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:08:06 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[04/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part03.rar&quot; - 197,99 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/7c3814a3a53a364694a4007bfc6fd3d8eb6e9260.nzb&amp;i=2365&amp;r=APIKEY" length="215782916" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="215782916"/>
+        </item>
+        <item>
+            <title>Boruto: Naruto Next Generations - 01 [720p][AAC]</title>
+            <guid isPermaLink="true">http://nzb.ag/details/d960cf1e1c4a5d4e93ee6c3a33b1083b0c934715</guid>
+            <link>http://nzb.ag/getnzb/d960cf1e1c4a5d4e93ee6c3a33b1083b0c934715.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/d960cf1e1c4a5d4e93ee6c3a33b1083b0c934715#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:14:40 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Boruto: Naruto Next Generations - 01 [720p][AAC]</description>
+            <enclosure url="http://nzb.ag/getnzb/d960cf1e1c4a5d4e93ee6c3a33b1083b0c934715.nzb&amp;i=2365&amp;r=APIKEY" length="389464750" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="389464750"/>
+        </item>
+        <item>
+            <title>[03/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).part02.rar&quot; - 179,95 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/611b1135f1f3eba1eecf4b5b8f9b1e9ff3b575dd</guid>
+            <link>http://nzb.ag/getnzb/611b1135f1f3eba1eecf4b5b8f9b1e9ff3b575dd.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/611b1135f1f3eba1eecf4b5b8f9b1e9ff3b575dd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:05:02 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[03/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).part02.rar&quot; - 179,95 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/611b1135f1f3eba1eecf4b5b8f9b1e9ff3b575dd.nzb&amp;i=2365&amp;r=APIKEY" length="196123071" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="196123071"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/198872b4f4d7354bcbb60f7d9b164277f456e293</guid>
+            <link>http://nzb.ag/getnzb/198872b4f4d7354bcbb60f7d9b164277f456e293.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/198872b4f4d7354bcbb60f7d9b164277f456e293#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:02:44 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/198872b4f4d7354bcbb60f7d9b164277f456e293.nzb&amp;i=2365&amp;r=APIKEY" length="184246463" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184246463"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/c0c9e493b9dedb20f7edd0075d86d124b657ba03</guid>
+            <link>http://nzb.ag/getnzb/c0c9e493b9dedb20f7edd0075d86d124b657ba03.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/c0c9e493b9dedb20f7edd0075d86d124b657ba03#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:00:38 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/c0c9e493b9dedb20f7edd0075d86d124b657ba03.nzb&amp;i=2365&amp;r=APIKEY" length="177370453" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="177370453"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 173,31 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/aa8528feeca119cd6c483159c9a4eeabe5e6fa7f</guid>
+            <link>http://nzb.ag/getnzb/aa8528feeca119cd6c483159c9a4eeabe5e6fa7f.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/aa8528feeca119cd6c483159c9a4eeabe5e6fa7f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:58:32 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 173,31 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/aa8528feeca119cd6c483159c9a4eeabe5e6fa7f.nzb&amp;i=2365&amp;r=APIKEY" length="188715686" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="188715686"/>
+        </item>
+        <item>
+            <title>[02/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).part01.rar&quot; - 161,73 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f8a02f0911fb3aa07c3906f439dfa04239603af7</guid>
+            <link>http://nzb.ag/getnzb/f8a02f0911fb3aa07c3906f439dfa04239603af7.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f8a02f0911fb3aa07c3906f439dfa04239603af7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:56:25 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).part01.rar&quot; - 161,73 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/f8a02f0911fb3aa07c3906f439dfa04239603af7.nzb&amp;i=2365&amp;r=APIKEY" length="176130914" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="176130914"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_02_(Dual Audio_10bit_BD720p).par2&quot; - 143,11 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/cf95416f61e487f8b6352ea9588d1ef6b8a2e1e0</guid>
+            <link>http://nzb.ag/getnzb/cf95416f61e487f8b6352ea9588d1ef6b8a2e1e0.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/cf95416f61e487f8b6352ea9588d1ef6b8a2e1e0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:53:35 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_02_(Dual Audio_10bit_BD720p).par2&quot; - 143,11 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/cf95416f61e487f8b6352ea9588d1ef6b8a2e1e0.nzb&amp;i=2365&amp;r=APIKEY" length="155902589" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="155902589"/>
+        </item>
+        <item>
+            <title>@midnight [02/11] &quot;At.Midnight.with.Chris.Hardwick.2017.04.04.Aisha.Tyler.Kevin.Smith.Rob.Riggle.1080p.CC.WEB-DL.AAC2.0.x264-monkee.par2&quot;</title>
+            <guid isPermaLink="true">http://nzb.ag/details/10bdc740b0932c7a0d1071dafda84f4661443507</guid>
+            <link>http://nzb.ag/getnzb/10bdc740b0932c7a0d1071dafda84f4661443507.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/10bdc740b0932c7a0d1071dafda84f4661443507#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:53:35 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>@midnight [02/11] &quot;At.Midnight.with.Chris.Hardwick.2017.04.04.Aisha.Tyler.Kevin.Smith.Rob.Riggle.1080p.CC.WEB-DL.AAC2.0.x264-monkee.par2&quot;</description>
+            <enclosure url="http://nzb.ag/getnzb/10bdc740b0932c7a0d1071dafda84f4661443507.nzb&amp;i=2365&amp;r=APIKEY" length="693588570" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="693588570"/>
+        </item>
+        <item>
+            <title>[12/17] - &quot;[Cleo]Maken-Ki!_Two_-_10_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 207,43 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/357788877c77689f276c5bc2737f643a4e83d693</guid>
+            <link>http://nzb.ag/getnzb/357788877c77689f276c5bc2737f643a4e83d693.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/357788877c77689f276c5bc2737f643a4e83d693#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:56:25 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[12/17] - &quot;[Cleo]Maken-Ki!_Two_-_10_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 207,43 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/357788877c77689f276c5bc2737f643a4e83d693.nzb&amp;i=2365&amp;r=APIKEY" length="225879908" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="225879908"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_09_(Dual Audio_10bit_BD_720p).par2&quot; - 186,82 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/5f55307068fcf45bc6a77b2c3f36c1d6cc64ed5b</guid>
+            <link>http://nzb.ag/getnzb/5f55307068fcf45bc6a77b2c3f36c1d6cc64ed5b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/5f55307068fcf45bc6a77b2c3f36c1d6cc64ed5b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:53:35 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_09_(Dual Audio_10bit_BD_720p).par2&quot; - 186,82 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/5f55307068fcf45bc6a77b2c3f36c1d6cc64ed5b.nzb&amp;i=2365&amp;r=APIKEY" length="203439459" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203439459"/>
+        </item>
+        <item>
+            <title>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</title>
+            <guid isPermaLink="true">http://nzb.ag/details/e9d0939dd8dd4816f5ad2e3cdd39c91a8b71f1a8</guid>
+            <link>http://nzb.ag/getnzb/e9d0939dd8dd4816f5ad2e3cdd39c91a8b71f1a8.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/e9d0939dd8dd4816f5ad2e3cdd39c91a8b71f1a8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:00:38 -0700</pubDate>
+            <category>TV &gt; Sport</category>
+            <description>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</description>
+            <enclosure url="http://nzb.ag/getnzb/e9d0939dd8dd4816f5ad2e3cdd39c91a8b71f1a8.nzb&amp;i=2365&amp;r=APIKEY" length="3227718564" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5060"/>
+            <newznab:attr name="size" value="3227718564"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_08_(Dual Audio_10bit_BD_720p).par2&quot; - 190,61 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/bfeaf33523869f2d6474f8f25a1ec5c3a4dae235</guid>
+            <link>http://nzb.ag/getnzb/bfeaf33523869f2d6474f8f25a1ec5c3a4dae235.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/bfeaf33523869f2d6474f8f25a1ec5c3a4dae235#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 04:00:38 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_08_(Dual Audio_10bit_BD_720p).par2&quot; - 190,61 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/bfeaf33523869f2d6474f8f25a1ec5c3a4dae235.nzb&amp;i=2365&amp;r=APIKEY" length="207547751" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="207547751"/>
+        </item>
+        <item>
+            <title>[RamenSub] Dr. Slump - 02 [E623C2A6] [1/5] - &quot;[RamenSub] New Dr. Slump - 02 [E623C2A6].mkv&quot; Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/9f2a7b7379de458646a45c1597524127b2051736</guid>
+            <link>http://nzb.ag/getnzb/9f2a7b7379de458646a45c1597524127b2051736.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/9f2a7b7379de458646a45c1597524127b2051736#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:53:35 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[RamenSub] Dr. Slump - 02 [E623C2A6] [1/5] - &quot;[RamenSub] New Dr. Slump - 02 [E623C2A6].mkv&quot; Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/9f2a7b7379de458646a45c1597524127b2051736.nzb&amp;i=2365&amp;r=APIKEY" length="177632658" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="177632658"/>
+        </item>
+        <item>
+            <title>[02/16] - &quot;[Cleo]Maken-Ki!_Two_-_07_(Dual Audio_10bit_BD_720p).part01.rar&quot; - 184,73 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/d06416d33010b503c6ffb1fd35c96a58b6110a13</guid>
+            <link>http://nzb.ag/getnzb/d06416d33010b503c6ffb1fd35c96a58b6110a13.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/d06416d33010b503c6ffb1fd35c96a58b6110a13#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:58:32 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/16] - &quot;[Cleo]Maken-Ki!_Two_-_07_(Dual Audio_10bit_BD_720p).part01.rar&quot; - 184,73 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/d06416d33010b503c6ffb1fd35c96a58b6110a13.nzb&amp;i=2365&amp;r=APIKEY" length="201141852" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="201141852"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_06_(Dual Audio_10bit_BD_720p).par2&quot; - 155,87 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/e0c53ec97a6a9f2ef9a88fc5638ed80ee74a4549</guid>
+            <link>http://nzb.ag/getnzb/e0c53ec97a6a9f2ef9a88fc5638ed80ee74a4549.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/e0c53ec97a6a9f2ef9a88fc5638ed80ee74a4549#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:56:25 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_06_(Dual Audio_10bit_BD_720p).par2&quot; - 155,87 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/e0c53ec97a6a9f2ef9a88fc5638ed80ee74a4549.nzb&amp;i=2365&amp;r=APIKEY" length="169730765" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="169730765"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_Two_-_05_(Dual Audio_10bit_BD_720p).par2&quot; - 172,40 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/86f8608ef4e9030104d39a3f4ee344c388494d0c</guid>
+            <link>http://nzb.ag/getnzb/86f8608ef4e9030104d39a3f4ee344c388494d0c.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/86f8608ef4e9030104d39a3f4ee344c388494d0c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:51:21 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_Two_-_05_(Dual Audio_10bit_BD_720p).par2&quot; - 172,40 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/86f8608ef4e9030104d39a3f4ee344c388494d0c.nzb&amp;i=2365&amp;r=APIKEY" length="187767251" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="187767251"/>
+        </item>
+        <item>
+            <title>[14/16] - &quot;[Cleo]Maken-Ki!_Two_-_04_(Dual Audio_10bit_BD_720p).vol0+1.par2&quot; - 187,52 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/1c110129817f9d5bddee711a7a5ad90337744e39</guid>
+            <link>http://nzb.ag/getnzb/1c110129817f9d5bddee711a7a5ad90337744e39.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/1c110129817f9d5bddee711a7a5ad90337744e39#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:51:20 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[14/16] - &quot;[Cleo]Maken-Ki!_Two_-_04_(Dual Audio_10bit_BD_720p).vol0+1.par2&quot; - 187,52 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/1c110129817f9d5bddee711a7a5ad90337744e39.nzb&amp;i=2365&amp;r=APIKEY" length="204173998" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="204173998"/>
+        </item>
+        <item>
+            <title>[11/15] - &quot;[Cleo]Maken-Ki!_Two_-_03_(Dual Audio_10bit_BD_720p).part10.rar&quot; - 178,55 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/ea5aaf6858b673d91ca157834e2e6f6db9665c5a</guid>
+            <link>http://nzb.ag/getnzb/ea5aaf6858b673d91ca157834e2e6f6db9665c5a.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/ea5aaf6858b673d91ca157834e2e6f6db9665c5a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:51:20 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[11/15] - &quot;[Cleo]Maken-Ki!_Two_-_03_(Dual Audio_10bit_BD_720p).part10.rar&quot; - 178,55 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/ea5aaf6858b673d91ca157834e2e6f6db9665c5a.nzb&amp;i=2365&amp;r=APIKEY" length="194424181" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="194424181"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_02_(Dual Audio_10bit_BD_720p).par2&quot; - 163,51 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/337be5de3fab018ad21e2c431f847023ee6e5ff8</guid>
+            <link>http://nzb.ag/getnzb/337be5de3fab018ad21e2c431f847023ee6e5ff8.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/337be5de3fab018ad21e2c431f847023ee6e5ff8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:49:14 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_02_(Dual Audio_10bit_BD_720p).par2&quot; - 163,51 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/337be5de3fab018ad21e2c431f847023ee6e5ff8.nzb&amp;i=2365&amp;r=APIKEY" length="178058402" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="178058402"/>
+        </item>
+        <item>
+            <title>[03/16] - &quot;[Cleo]Maken-Ki!_Two_-_01_(Dual Audio_10bit_BD_720p).part02.rar&quot; - 186,44 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/37087455ebba19de35a760d508e618b925a66ab3</guid>
+            <link>http://nzb.ag/getnzb/37087455ebba19de35a760d508e618b925a66ab3.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/37087455ebba19de35a760d508e618b925a66ab3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:49:14 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[03/16] - &quot;[Cleo]Maken-Ki!_Two_-_01_(Dual Audio_10bit_BD_720p).part02.rar&quot; - 186,44 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/37087455ebba19de35a760d508e618b925a66ab3.nzb&amp;i=2365&amp;r=APIKEY" length="203043464" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203043464"/>
+        </item>
+        <item>
+            <title>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">http://nzb.ag/details/21454ae1721744cc92fc478719781077afae4b81</guid>
+            <link>http://nzb.ag/getnzb/21454ae1721744cc92fc478719781077afae4b81.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/21454ae1721744cc92fc478719781077afae4b81#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:49:15 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="http://nzb.ag/getnzb/21454ae1721744cc92fc478719781077afae4b81.nzb&amp;i=2365&amp;r=APIKEY" length="1608784923" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1608784923"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_-_12_ (Dual Audio_10bit_BD720p).par2&quot; - 177,36 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/4333db7af622bdcb9c88aace73e32669c76bf74b</guid>
+            <link>http://nzb.ag/getnzb/4333db7af622bdcb9c88aace73e32669c76bf74b.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/4333db7af622bdcb9c88aace73e32669c76bf74b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:44:48 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_-_12_ (Dual Audio_10bit_BD720p).par2&quot; - 177,36 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/4333db7af622bdcb9c88aace73e32669c76bf74b.nzb&amp;i=2365&amp;r=APIKEY" length="193157787" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="193157787"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.1080p.WEB.x264-HEAT</title>
+            <guid isPermaLink="true">http://nzb.ag/details/def7e2b0141b190851c05f196a640d5d27398dbe</guid>
+            <link>http://nzb.ag/getnzb/def7e2b0141b190851c05f196a640d5d27398dbe.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/def7e2b0141b190851c05f196a640d5d27398dbe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:44:48 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.1080p.WEB.x264-HEAT</description>
+            <enclosure url="http://nzb.ag/getnzb/def7e2b0141b190851c05f196a640d5d27398dbe.nzb&amp;i=2365&amp;r=APIKEY" length="1581530139" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1581530139"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_-_11_ (Dual Audio_10bit_BD720p).par2&quot; - 153,96 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/0d0849c98d40e179c5acf0bf830d76b01450c3a1</guid>
+            <link>http://nzb.ag/getnzb/0d0849c98d40e179c5acf0bf830d76b01450c3a1.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/0d0849c98d40e179c5acf0bf830d76b01450c3a1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:41:43 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_-_11_ (Dual Audio_10bit_BD720p).par2&quot; - 153,96 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/0d0849c98d40e179c5acf0bf830d76b01450c3a1.nzb&amp;i=2365&amp;r=APIKEY" length="167684456" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="167684456"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_-_10_ (Dual Audio_10bit_BD720p).par2&quot; - 155,14 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/f8bb018046ece1b8811891c94c6d37de8a79e430</guid>
+            <link>http://nzb.ag/getnzb/f8bb018046ece1b8811891c94c6d37de8a79e430.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/f8bb018046ece1b8811891c94c6d37de8a79e430#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:49:14 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_-_10_ (Dual Audio_10bit_BD720p).par2&quot; - 155,14 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/f8bb018046ece1b8811891c94c6d37de8a79e430.nzb&amp;i=2365&amp;r=APIKEY" length="168992292" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="168992292"/>
+        </item>
+        <item>
+            <title>[02/15] - &quot;[Cleo]Maken-Ki!_-_09_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 169,89 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/df9845179aac54e339eecfa325e5ab5550710f67</guid>
+            <link>http://nzb.ag/getnzb/df9845179aac54e339eecfa325e5ab5550710f67.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/df9845179aac54e339eecfa325e5ab5550710f67#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:49:14 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/15] - &quot;[Cleo]Maken-Ki!_-_09_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 169,89 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/df9845179aac54e339eecfa325e5ab5550710f67.nzb&amp;i=2365&amp;r=APIKEY" length="185036260" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="185036260"/>
+        </item>
+        <item>
+            <title>[02/14] - &quot;[Cleo]Maken-Ki!_-_08_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 163,90 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/8091d5f2b089a7b36e6efbbcdd240f7fb2ed5f91</guid>
+            <link>http://nzb.ag/getnzb/8091d5f2b089a7b36e6efbbcdd240f7fb2ed5f91.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/8091d5f2b089a7b36e6efbbcdd240f7fb2ed5f91#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:47:06 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/14] - &quot;[Cleo]Maken-Ki!_-_08_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 163,90 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/8091d5f2b089a7b36e6efbbcdd240f7fb2ed5f91.nzb&amp;i=2365&amp;r=APIKEY" length="178506711" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="178506711"/>
+        </item>
+        <item>
+            <title>[01/19] - &quot;[Cleo]Maken-Ki!_-_07_ (Dual Audio_10bit_BD720p).par2&quot; - 228,22 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/3b1971634b04d0c8c9fcd5599f2c666b65dcd9ab</guid>
+            <link>http://nzb.ag/getnzb/3b1971634b04d0c8c9fcd5599f2c666b65dcd9ab.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/3b1971634b04d0c8c9fcd5599f2c666b65dcd9ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:44:48 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/19] - &quot;[Cleo]Maken-Ki!_-_07_ (Dual Audio_10bit_BD720p).par2&quot; - 228,22 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/3b1971634b04d0c8c9fcd5599f2c666b65dcd9ab.nzb&amp;i=2365&amp;r=APIKEY" length="248551711" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="248551711"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/dec7c990f572cc8f1e833bfbe580b83ddc9edcae</guid>
+            <link>http://nzb.ag/getnzb/dec7c990f572cc8f1e833bfbe580b83ddc9edcae.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/dec7c990f572cc8f1e833bfbe580b83ddc9edcae#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:47:06 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.720p.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/dec7c990f572cc8f1e833bfbe580b83ddc9edcae.nzb&amp;i=2365&amp;r=APIKEY" length="1062653565" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1062653565"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[Cleo]Maken-Ki!_-_06_ (Dual Audio_10bit_BD720p).par2&quot; - 148,17 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/2c907963d22fc4b169490d586870e621a92e1abf</guid>
+            <link>http://nzb.ag/getnzb/2c907963d22fc4b169490d586870e621a92e1abf.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/2c907963d22fc4b169490d586870e621a92e1abf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:41:43 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[Cleo]Maken-Ki!_-_06_ (Dual Audio_10bit_BD720p).par2&quot; - 148,17 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/2c907963d22fc4b169490d586870e621a92e1abf.nzb&amp;i=2365&amp;r=APIKEY" length="161381416" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="161381416"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">http://nzb.ag/details/a810cd26447ca108cc38524b4b794a63cac7ebf0</guid>
+            <link>http://nzb.ag/getnzb/a810cd26447ca108cc38524b4b794a63cac7ebf0.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/a810cd26447ca108cc38524b4b794a63cac7ebf0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:39:28 -0700</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</description>
+            <enclosure url="http://nzb.ag/getnzb/a810cd26447ca108cc38524b4b794a63cac7ebf0.nzb&amp;i=2365&amp;r=APIKEY" length="385415618" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="385415618"/>
+        </item>
+        <item>
+            <title>Jimmy.Kimmel.Live.2017.04.04.Pierce.Brosnan.Jenny.Slate.Dustin.Lynch.720p.HULU.WEB-DL.AAC2.0.H.264-monkee</title>
+            <guid isPermaLink="true">http://nzb.ag/details/118f4dba15b8bff7c0f277cbf236c5267f546ff2</guid>
+            <link>http://nzb.ag/getnzb/118f4dba15b8bff7c0f277cbf236c5267f546ff2.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/118f4dba15b8bff7c0f277cbf236c5267f546ff2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:39:27 -0700</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Kimmel.Live.2017.04.04.Pierce.Brosnan.Jenny.Slate.Dustin.Lynch.720p.HULU.WEB-DL.AAC2.0.H.264-monkee</description>
+            <enclosure url="http://nzb.ag/getnzb/118f4dba15b8bff7c0f277cbf236c5267f546ff2.nzb&amp;i=2365&amp;r=APIKEY" length="1052384989" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1052384989"/>
+        </item>
+        <item>
+            <title>[06/16] - &quot;[Cleo]Maken-Ki!_-_05_ (Dual Audio_10bit_BD720p).part05.rar&quot; - 185,88 MB Japanese</title>
+            <guid isPermaLink="true">http://nzb.ag/details/b566bec18700e7969c98e5ca1512023d28656c58</guid>
+            <link>http://nzb.ag/getnzb/b566bec18700e7969c98e5ca1512023d28656c58.nzb&amp;i=2365&amp;r=APIKEY</link>
+            <comments>http://nzb.ag/details/b566bec18700e7969c98e5ca1512023d28656c58#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 03:37:21 -0700</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/16] - &quot;[Cleo]Maken-Ki!_-_05_ (Dual Audio_10bit_BD720p).part05.rar&quot; - 185,88 MB Japanese</description>
+            <enclosure url="http://nzb.ag/getnzb/b566bec18700e7969c98e5ca1512023d28656c58.nzb&amp;i=2365&amp;r=APIKEY" length="202446878" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="202446878"/>
+        </item>
+    </channel>
+</rss>

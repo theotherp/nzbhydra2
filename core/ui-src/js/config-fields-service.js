@@ -17,7 +17,7 @@ function ConfigFields($injector) {
 
 
     function restartListener(field, newValue, oldValue) {
-        if (newValue != oldValue) {
+        if (newValue !== oldValue) {
             restartWatcher();
         }
     }
@@ -65,7 +65,7 @@ function ConfigFields($injector) {
             }
         });
         _.each(categories, function (category) {
-                if (category.name != "all" && category.name != "na") {
+            if (category.name !== "all" && category.name !== "na") {
                     var categoryFields = [
                         {
                             key: "categories." + category.name + '.requiredWords',
@@ -566,18 +566,6 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'runThreaded',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Run threaded server',
-                                help: 'Requires restart'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
                             key: 'startupBrowser',
                             type: 'horizontalSwitch',
                             templateOptions: {
@@ -909,9 +897,9 @@ function ConfigFields($injector) {
                             username: null,
                             password: null,
                             preselect: true,
-                            type: 'newznab',
+                            searchModuleType: 'NEWZNAB',
                             accessType: "both",
-                            search_ids: undefined, //["imdbid", "rid", "tvdbid"],
+                            supportedSearchIds: undefined, //["imdbid", "rid", "tvdbid"],
                             searchTypes: undefined, //["tvsearch", "movie"]
                             backend: 'newznab',
                             userAgent: null
@@ -923,11 +911,11 @@ function ConfigFields($injector) {
                         },
 
                         checkAddingAllowed: function (existingIndexers, preset) {
-                            if (!preset || !(preset.type == "anizb" || preset.type == "binsearch" || preset.type == "nzbindex" || preset.type == "nzbclub")) {
+                            if (!preset || !(preset.searchModuleType === "ANIZB" || preset.searchModuleType === "BINSEARCH" || preset.searchModuleType === "NZBINDEX" || preset.searchModuleType === "NZBCLUB")) {
                                 return true;
                             }
                             return !_.any(existingIndexers, function (existingEntry) {
-                                return existingEntry.name == preset.name;
+                                return existingEntry.name === preset.name;
                             });
 
                         },
@@ -1235,15 +1223,15 @@ function getIndexerPresets(configuredIndexers) {
             {
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
-                search_ids: [],
+                supportedSearchIds: [],
                 searchTypes: [],
-                type: "jackett",
-                accessType: "internal"
+                searchModuleType: "JACKETT",
+                enabledForSearchSource: "INTERNAL"
             }
         ],
         [
             {
-                accessType: "both",
+                enabledForSearchSource: "BOTH",
                 categories: ["anime"],
                 downloadLimit: null,
                 enabled: false,
@@ -1255,15 +1243,15 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
-                search_ids: [],
+                supportedSearchIds: [],
                 searchTypes: [],
                 showOnSearch: true,
                 timeout: null,
-                type: "anizb",
+                searchModuleType: "ANIZB",
                 username: null
             },
             {
-                accessType: "internal",
+                enabledForSearchSource: "INTERNAL",
                 categories: [],
                 downloadLimit: null,
                 enabled: true,
@@ -1275,15 +1263,15 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
-                search_ids: [],
+                supportedSearchIds: [],
                 searchTypes: [],
                 showOnSearch: true,
                 timeout: null,
-                type: "binsearch",
+                searchModuleType: "BINSEARCH",
                 username: null
             },
             {
-                accessType: "internal",
+                enabledForSearchSource: "INTERNAL",
                 categories: [],
                 downloadLimit: null,
                 enabled: true,
@@ -1295,16 +1283,16 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
-                search_ids: [],
+                supportedSearchIds: [],
                 searchTypes: [],
                 showOnSearch: true,
                 timeout: null,
-                type: "nzbclub",
+                searchModuleType: "NZBCLUB",
                 username: null
 
             },
             {
-                accessType: "internal",
+                enabledForSearchSource: "INTERNAL",
                 categories: [],
                 downloadLimit: null,
                 enabled: true,
@@ -1317,13 +1305,12 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
-                search_ids: [],
+                supportedSearchIds: [],
                 searchTypes: [],
                 showOnSearch: true,
                 timeout: null,
-                type: "nzbindex",
+                searchModuleType: "NZBINDEX",
                 username: null
-
             }
         ]
     ];
@@ -1344,7 +1331,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         }
     });
 
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 key: 'name',
@@ -1358,8 +1345,8 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 validators: {
                     uniqueName: {
                         expression: function (viewValue) {
-                            if (isInitial || viewValue != model.name) {
-                                return _.pluck(parentModel, "name").indexOf(viewValue) == -1;
+                            if (isInitial || viewValue !== model.name) {
+                                return _.pluck(parentModel, "name").indexOf(viewValue) === -1;
                             }
                             return true;
                         },
@@ -1368,7 +1355,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 }
             })
     }
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 key: 'host',
@@ -1381,7 +1368,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 },
                 watcher: {
                     listener: function (field, newValue, oldValue, scope) {
-                        if (newValue != oldValue) {
+                        if (newValue !== oldValue) {
                             scope.$parent.needsConnectionTest = true;
                         }
                     }
@@ -1390,7 +1377,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -1401,7 +1388,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 },
                 watcher: {
                     listener: function (field, newValue, oldValue, scope) {
-                        if (newValue != oldValue) {
+                        if (newValue !== oldValue) {
                             scope.$parent.needsConnectionTest = true;
                         }
                     }
@@ -1433,7 +1420,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         });
 
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 key: 'hitLimit',
@@ -1495,7 +1482,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 }
             });
     }
-    if (model.type == 'newznab') {
+    if (model.searchModuleType === 'NEWZNAB') {
         fieldset.push(
             {
                 key: 'username',
@@ -1508,7 +1495,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 },
                 watcher: {
                     listener: function (field, newValue, oldValue, scope) {
-                        if (newValue != oldValue) {
+                        if (newValue !== oldValue) {
                             scope.$parent.needsConnectionTest = true;
                         }
                     }
@@ -1516,7 +1503,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         );
     }
-    if (model.type == 'newznab') {
+    if (model.searchModuleType === 'NEWZNAB') {
         fieldset.push(
             {
                 key: 'password',
@@ -1532,7 +1519,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.type == 'newznab') {
+    if (model.searchModuleType === 'NEWZNAB') {
         fieldset.push(
             {
                 key: 'userAgent',
@@ -1552,7 +1539,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         {
             key: 'preselect',
             type: 'horizontalSwitch',
-            hideExpression: 'model.enabledForSearchSource == "external"',
+            hideExpression: 'model.enabledForSearchSource==="external"',
             templateOptions: {
                 type: 'switch',
                 label: 'Preselect',
@@ -1560,7 +1547,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         }
     );
-    if (model.type != "jackett") {
+    if (model.searchModuleType !== "JACKETT") {
         fieldset.push(
             {
                 key: 'accessType',
@@ -1576,7 +1563,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         );
     }
-    if (model.type != "anizb") {
+    if (model.searchModuleType !== "ANIZB") {
         fieldset.push(
             {
                 key: 'categories',
@@ -1657,10 +1644,10 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.type == 'newznab') {
+    if (model.searchModuleType === 'NEWZNAB') {
         fieldset.push(
             {
-                key: 'search_ids',
+                key: 'supportedSearchIds',
                 type: 'horizontalMultiselect',
                 templateOptions: {
                     label: 'Search IDs',
@@ -1682,7 +1669,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         );
     }
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 key: 'searchTypes',
@@ -1706,7 +1693,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.type == 'newznab' || model.type == 'jackett') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
                 type: 'horizontalCheckCaps',
@@ -1719,7 +1706,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.type == 'nzbindex') {
+    if (model.searchModuleType === 'nzbindex') {
         fieldset.push(
             {
                 key: 'generalMinSize',
@@ -1760,8 +1747,8 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
             validators: {
                 uniqueName: {
                     expression: function (viewValue) {
-                        if (isInitial || viewValue != model.name) {
-                            return _.pluck(parentModel, "name").indexOf(viewValue) == -1;
+                        if (isInitial || viewValue !== model.name) {
+                            return _.pluck(parentModel, "name").indexOf(viewValue) === -1;
                         }
                         return true;
                     },
@@ -1769,96 +1756,19 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 }
             }
 
-        }]);
-
-    if (model.type == "nzbget") {
-        fieldset = _.union(fieldset, [{
-            key: 'host',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'text',
-                label: 'Host',
-                required: true
-            },
-            watcher: {
-                listener: function (field, newValue, oldValue, scope) {
-                    if (newValue != oldValue) {
-                        scope.$parent.needsConnectionTest = true;
-                    }
-                }
-            }
-
         },
-            {
-                key: 'port',
-                type: 'horizontalInput',
-                templateOptions: {
-                    type: 'number',
-                    label: 'Port',
-                    placeholder: '5050',
-                    required: true
-                },
-                watcher: {
-                    listener: function (field, newValue, oldValue, scope) {
-                        if (newValue != oldValue) {
-                            scope.$parent.needsConnectionTest = true;
-                        }
-                    }
-                }
-            }, {
-                key: 'ssl',
-                type: 'horizontalSwitch',
-                templateOptions: {
-                    type: 'switch',
-                    label: 'Use SSL'
-                }
-            }]);
-    } else if (model.type == "sabnzbd") {
-        fieldset.push({
+        {
             key: 'url',
             type: 'horizontalInput',
             templateOptions: {
                 type: 'text',
                 label: 'URL',
+                help: 'URL with scheme, full path and username and password if needed',
                 required: true
             },
             watcher: {
                 listener: function (field, newValue, oldValue, scope) {
-                    if (newValue != oldValue) {
-                        scope.$parent.needsConnectionTest = true;
-                    }
-                }
-            }
-        });
-    }
-    fieldset = _.union(fieldset, [
-        {
-            key: 'username',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'text',
-                label: 'Username',
-                help: model.type == "nzbget" ? 'Only alphanumeric usernames are guaranteed to work' : ""
-            },
-            watcher: {
-                listener: function (field, newValue, oldValue, scope) {
-                    if (newValue != oldValue) {
-                        scope.$parent.needsConnectionTest = true;
-                    }
-                }
-            }
-        },
-        {
-            key: 'password',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'password',
-                label: 'Password',
-                help: model.type == "nzbget" ? 'See username' : ""
-            },
-            watcher: {
-                listener: function (field, newValue, oldValue, scope) {
-                    if (newValue != oldValue) {
+                    if (newValue !== oldValue) {
                         scope.$parent.needsConnectionTest = true;
                     }
                 }
@@ -1867,7 +1777,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
     ]);
 
 
-    if (model.type == "sabnzbd") {
+    if (model.downloaderType === "SABNZBD") {
         fieldset.push({
             key: 'apiKey',
             type: 'horizontalInput',
@@ -1877,7 +1787,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
             },
             watcher: {
                 listener: function (field, newValue, oldValue, scope) {
-                    if (newValue != oldValue) {
+                    if (newValue !== oldValue) {
                         scope.$parent.needsConnectionTest = true;
                     }
                 }
@@ -1940,28 +1850,23 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
 function getDownloaderPresets() {
     return [[
         {
-            host: "127.0.0.1",
             name: "NZBGet",
-            password: "tegbzn6789x",
-            port: 6789,
-            ssl: false,
-            type: "nzbget",
+            type: "NZBGET",
             username: "nzbgetx",
             nzbAddingType: "link",
             nzbaccesstype: "redirect",
             iconCssClass: "",
-            downloadType: "nzb"
+            downloadType: "nzb",
+            url: "http://nzbget:tegbzn6789@localhost:6789"
         },
         {
             url: "http://localhost:8086",
-            type: "sabnzbd",
+            type: "SABNZBD",
             name: "SABnzbd",
             nzbAddingType: "link",
             nzbaccesstype: "redirect",
             iconCssClass: "",
-            downloadType: "nzb",
-            username: null,
-            password: null
+            downloadType: "nzb"
         }
     ]];
 }
@@ -2023,7 +1928,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
         } else {
             blockUI.start("Testing connection...");
             scope.spinnerActive = true;
-            var url = "internalapi/test_newznab";
+            var url = "internalapi/test_newznab"; //TODO
             var settings = {host: model.host, apiKey: model.apiKey};
             if (angular.isDefined(model.username)) {
                 settings["username"] = model.username;
@@ -2055,13 +1960,13 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     function checkCaps(scope, model) {
         var deferred = $q.defer();
-        var url = "internalapi/test_caps";
+        var url = "internalapi/test_caps"; //TODO
         var settings = {indexer: model.name, apiKey: model.apiKey, host: model.host};
         if (angular.isDefined(model.username)) {
             settings["username"] = model.username;
             settings["password"] = model.password;
         }
-        if (angular.isUndefined(model.search_ids) || angular.isUndefined(model.searchTypes)) {
+        if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.searchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
             ConfigBoxService.checkCaps(url, JSON.stringify(settings), model).then(
@@ -2074,7 +1979,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
                 function () {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    model.search_ids = [];
+                    model.supportedSearchIds = [];
                     model.searchTypes = [];
                     ModalService.open("Error testing capabilities", "The capabilities of the indexer could not be checked. The indexer won't be used for ID based searches (IMDB, TVDB, etc.). You may repeat the check manually at any time.");
                     deferred.resolve();

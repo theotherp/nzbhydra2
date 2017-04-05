@@ -41,6 +41,10 @@ public class ResultAcceptor {
         List<SearchResultItem> acceptedResults = new ArrayList<>();
         Multiset<String> reasonsForRejection = HashMultiset.create();
         for (SearchResultItem item : items) {
+
+            if (!checkForNeededAttributesSuccessfullyMapped(reasonsForRejection, item)) {
+                continue;
+            }
             if (!checkForPassword(reasonsForRejection, item)) {
                 continue;
             }
@@ -110,6 +114,29 @@ public class ResultAcceptor {
         }
 
         return new AcceptorResult(acceptedResults, reasonsForRejection);
+    }
+
+    protected boolean checkForNeededAttributesSuccessfullyMapped(Multiset<String> reasonsForRejection, SearchResultItem item) {
+        boolean accepted = true;
+        if (item.getTitle() == null) {
+            logger.debug("Title could no found or parsed");
+            accepted = false;
+        } else if (item.getIndexerGuid() == null) {
+            logger.debug("GUID could no found or parsed");
+            accepted = false;
+        } else if (item.getLink() == null) {
+            logger.debug("Link could no found or parsed");
+            accepted = false;
+        } else if ((item.getPubDate() == null && !item.getUsenetDate().isPresent())) {
+            logger.debug("Neither pubdate nor usenet date could be found or parsed");
+            accepted = false;
+        }
+        if (!accepted) {
+            reasonsForRejection.add("Important data could not be mapped from the indexers returned response");
+            return false;
+        }
+
+        return true;
     }
 
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {

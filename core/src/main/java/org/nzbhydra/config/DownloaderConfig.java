@@ -7,20 +7,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "downloaders")
 public class DownloaderConfig {
 
+
     private String apiKey;
     private String defaultCategory;
+    /**
+     * TODO
+     */
     private String downloadType;
     private boolean enabled = true;
-    private String host;
     private String iconCssClass;
     private String name;
-    private String nzbAccessType;
-    private String nzbAddingType;
-    private String password;
-    private Integer port;
-    private boolean ssl;
-    private String type;
+    private NzbAccessType nzbAccessType;
+    private NzbAddingType nzbAddingType;
+    private DownloaderType downloaderType;
     private String url;
-    private String username;
 
 }

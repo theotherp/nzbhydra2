@@ -1,0 +1,2187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="https://drunkenslug.com/api" rel="self" type="application/rss+xml"/>
+        <title>DS</title>
+        <description>DS API Details</description>
+        <link>https://drunkenslug.com/</link>
+        <language>en-gb</language>
+        <webMaster>admin@drunkenslug.com DS</webMaster>
+        <category>drunkenslug, usenet indexer, nzb, search nzb, newznab, nzedb, newsgroups, giganews, astraweb, sabnzbd, sonarr, nzbget, usenet, free open, search usenet&#13;
+        </category>
+        <generator>nZEDb</generator>
+        <ttl>10</ttl>
+        <docs>https://drunkenslug.com/apihelp/</docs>
+        <image url="https://drunkenslug.com/themes/shared/img/logo.png" title="DS" link="https://drunkenslug.com/" description="Visit DS - DrunkenSlug usenet indexer"/>
+        <newznab:response offset="0" total="125000"/>
+        <item>
+            <title>Supernatural S12E15 nl-subs ingebakken</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/73fe2a160db9cc5d6de2ce4371215540aa37bde1</guid>
+            <link>https://drunkenslug.com/getnzb/73fe2a160db9cc5d6de2ce4371215540aa37bde1.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/73fe2a160db9cc5d6de2ce4371215540aa37bde1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:06:54 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>Supernatural S12E15 nl-subs ingebakken</description>
+            <enclosure url="https://drunkenslug.com/getnzb/73fe2a160db9cc5d6de2ce4371215540aa37bde1.nzb&amp;i=1882&amp;r=APIKEY" length="474957072" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="474957072"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="Havefunteam@info.com (Havefunteam)"/>
+            <newznab:attr name="title" value="Somewhere Between Heaven and Hell"/>
+            <newznab:attr name="season" value="12"/>
+            <newznab:attr name="episode" value="15"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="78901"/>
+            <newznab:attr name="traktid" value="1611"/>
+            <newznab:attr name="tvrageid" value="5410"/>
+            <newznab:attr name="rageid" value="5410"/>
+            <newznab:attr name="tvmazeid" value="19"/>
+            <newznab:attr name="imdbid" value="0460681"/>
+            <newznab:attr name="tmdbid" value="1622"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:02:16 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>COLONY (2016) S02E09 1080p WEB-DL DD5_1 NL Subs Metamorfose English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b8ce484ecac40c6e7b3bad676b6e561c3a77371c</guid>
+            <link>https://drunkenslug.com/getnzb/b8ce484ecac40c6e7b3bad676b6e561c3a77371c.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b8ce484ecac40c6e7b3bad676b6e561c3a77371c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:07:17 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>COLONY (2016) S02E09 1080p WEB-DL DD5_1 NL Subs Metamorfose English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b8ce484ecac40c6e7b3bad676b6e561c3a77371c.nzb&amp;i=1882&amp;r=APIKEY" length="1793172559" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1793172559"/>
+            <newznab:attr name="files" value="42"/>
+            <newznab:attr name="poster" value="yEncBin@Poster.com (yEncBin)"/>
+            <newznab:attr name="title" value="Taman Shud"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="9"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="284210"/>
+            <newznab:attr name="traktid" value="95966"/>
+            <newznab:attr name="tvrageid" value="42416"/>
+            <newznab:attr name="rageid" value="42416"/>
+            <newznab:attr name="tvmazeid" value="2757"/>
+            <newznab:attr name="imdbid" value="4209256"/>
+            <newznab:attr name="tmdbid" value="62858"/>
+            <newznab:attr name="grabs" value="9"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:56:20 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>Supernatural S12E15 1080p_HDTV_X264-DIMENSION NLSubs</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/09ac71d8f435535a7554b02709cb5b543e05216b</guid>
+            <link>https://drunkenslug.com/getnzb/09ac71d8f435535a7554b02709cb5b543e05216b.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/09ac71d8f435535a7554b02709cb5b543e05216b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:07:26 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Supernatural S12E15 1080p_HDTV_X264-DIMENSION NLSubs</description>
+            <enclosure url="https://drunkenslug.com/getnzb/09ac71d8f435535a7554b02709cb5b543e05216b.nzb&amp;i=1882&amp;r=APIKEY" length="2736377541" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2736377541"/>
+            <newznab:attr name="files" value="59"/>
+            <newznab:attr name="poster" value="Havefunteam@info.com (Havefunteam)"/>
+            <newznab:attr name="title" value="Somewhere Between Heaven and Hell"/>
+            <newznab:attr name="season" value="12"/>
+            <newznab:attr name="episode" value="15"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="78901"/>
+            <newznab:attr name="traktid" value="1611"/>
+            <newznab:attr name="tvrageid" value="5410"/>
+            <newznab:attr name="rageid" value="5410"/>
+            <newznab:attr name="tvmazeid" value="19"/>
+            <newznab:attr name="imdbid" value="0460681"/>
+            <newznab:attr name="tmdbid" value="1622"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:52:21 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.boneless"/>
+        </item>
+        <item>
+            <title>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/523f5e67ed5a99a8fa0e1d8995aa3f5300c1a1aa</guid>
+            <link>https://drunkenslug.com/getnzb/523f5e67ed5a99a8fa0e1d8995aa3f5300c1a1aa.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/523f5e67ed5a99a8fa0e1d8995aa3f5300c1a1aa#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Southern.Charm.S04E01.While.The.Kats.Away.1080p.BRAV.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://drunkenslug.com/getnzb/523f5e67ed5a99a8fa0e1d8995aa3f5300c1a1aa.nzb&amp;i=1882&amp;r=APIKEY" length="1551989420" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1551989420"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="While the Kat's Away..."/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-03"/>
+            <newznab:attr name="tvdbid" value="278266"/>
+            <newznab:attr name="imdbid" value="2815522"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:35:19 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E03.The.Chameleon.Part3.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/0f83352dc662b6ef49140766fffe5012b88b8460</guid>
+            <link>https://drunkenslug.com/getnzb/0f83352dc662b6ef49140766fffe5012b88b8460.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/0f83352dc662b6ef49140766fffe5012b88b8460#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E03.The.Chameleon.Part3.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://drunkenslug.com/getnzb/0f83352dc662b6ef49140766fffe5012b88b8460.nzb&amp;i=1882&amp;r=APIKEY" length="1718135560" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1718135560"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="The Chameleon (3)"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2015-12-07"/>
+            <newznab:attr name="tvdbid" value="296421"/>
+            <newznab:attr name="imdbid" value="4762138"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:30:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e79c9922ff9938452f4c19a796fbd7de42822812</guid>
+            <link>https://drunkenslug.com/getnzb/e79c9922ff9938452f4c19a796fbd7de42822812.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/e79c9922ff9938452f4c19a796fbd7de42822812#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.1080p.WEB-DL.DD5.1.H.264-BTN English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e79c9922ff9938452f4c19a796fbd7de42822812.nzb&amp;i=1882&amp;r=APIKEY" length="2061302028" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2061302028"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="NOLA Confidential"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="20"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="278125"/>
+            <newznab:attr name="tvrageid" value="38017"/>
+            <newznab:attr name="rageid" value="38017"/>
+            <newznab:attr name="tvmazeid" value="45"/>
+            <newznab:attr name="imdbid" value="3560084"/>
+            <newznab:attr name="tmdbid" value="61387"/>
+            <newznab:attr name="grabs" value="4"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:30:00 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E02.The.Chameleon.Part2.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e033f2d2186dcad5172891b2c04a35a47b93548c</guid>
+            <link>https://drunkenslug.com/getnzb/e033f2d2186dcad5172891b2c04a35a47b93548c.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/e033f2d2186dcad5172891b2c04a35a47b93548c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E02.The.Chameleon.Part2.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e033f2d2186dcad5172891b2c04a35a47b93548c.nzb&amp;i=1882&amp;r=APIKEY" length="1736964464" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1736964464"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:28:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>Serial.Thriller.S02E01.The.Chameleon.Part1.1080p.ID.WEBRip.AAC2.0.x264-BTW</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/33f84dd1fae5fb0725a5d1130a24b80b546c2a24</guid>
+            <link>https://drunkenslug.com/getnzb/33f84dd1fae5fb0725a5d1130a24b80b546c2a24.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/33f84dd1fae5fb0725a5d1130a24b80b546c2a24#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Serial.Thriller.S02E01.The.Chameleon.Part1.1080p.ID.WEBRip.AAC2.0.x264-BTW</description>
+            <enclosure url="https://drunkenslug.com/getnzb/33f84dd1fae5fb0725a5d1130a24b80b546c2a24.nzb&amp;i=1882&amp;r=APIKEY" length="1734645719" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1734645719"/>
+            <newznab:attr name="files" value="39"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:27:35 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c339863b38697d8e0e4f5c9788e21eaafca6a843</guid>
+            <link>https://drunkenslug.com/getnzb/c339863b38697d8e0e4f5c9788e21eaafca6a843.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/c339863b38697d8e0e4f5c9788e21eaafca6a843#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:16:44 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/13] - &quot;[AnimeRG] NANBAKA - 22 [720p] [English Dub] [ReleaseBitch].part01.rar&quot; - 143,85 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c339863b38697d8e0e4f5c9788e21eaafca6a843.nzb&amp;i=1882&amp;r=APIKEY" length="156673856" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="156673856"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; lSCd8y &gt;&gt;&gt; &lt;xtze7s3r_vreb5a@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11075"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:22:32 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3bf343b5d0be49fca197a6ee4032368d0383b258</guid>
+            <link>https://drunkenslug.com/getnzb/3bf343b5d0be49fca197a6ee4032368d0383b258.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/3bf343b5d0be49fca197a6ee4032368d0383b258#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:16:44 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Luck $ Logic - 5 [720p] [English Dub] [ReleaseBitch].par2&quot; - 169,59 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3bf343b5d0be49fca197a6ee4032368d0383b258.nzb&amp;i=1882&amp;r=APIKEY" length="184684910" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184684910"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; VqvD2A &gt;&gt;&gt; &lt;q1m5lpuf_bta6tk@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:21:55 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[06/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].part05.rar&quot; - 148,59 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/623d1c0a33d0652ee62dfbfb30f404463b2a1c81</guid>
+            <link>https://drunkenslug.com/getnzb/623d1c0a33d0652ee62dfbfb30f404463b2a1c81.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/623d1c0a33d0652ee62dfbfb30f404463b2a1c81#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/13] - &quot;[AnimeRG] Dragon Ball Super - 84 [720p] [HardSub] [ReleaseBitch].part05.rar&quot; - 148,59 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/623d1c0a33d0652ee62dfbfb30f404463b2a1c81.nzb&amp;i=1882&amp;r=APIKEY" length="161818409" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="161818409"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Dh5gL8 &gt;&gt;&gt; &lt;iazfae3n6klk8_s@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11210"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:21:38 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/2e6c8dcf3549b9c9ac51ff885c1f251536f4a55f</guid>
+            <link>https://drunkenslug.com/getnzb/2e6c8dcf3549b9c9ac51ff885c1f251536f4a55f.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/2e6c8dcf3549b9c9ac51ff885c1f251536f4a55f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:44:01 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>NCIS.New.Orleans.S03E20.Nola.Confidential.720p.WEB-DL.DD5.1.H.264-BTN English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/2e6c8dcf3549b9c9ac51ff885c1f251536f4a55f.nzb&amp;i=1882&amp;r=APIKEY" length="1646447767" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1646447767"/>
+            <newznab:attr name="files" value="38"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="grabs" value="2"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:21:19 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tv"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/bc0c85a35db1f1d0f6485d41f794d2950471453d</guid>
+            <link>https://drunkenslug.com/getnzb/bc0c85a35db1f1d0f6485d41f794d2950471453d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/bc0c85a35db1f1d0f6485d41f794d2950471453d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[AnimeRG] Dragon Ball Super - 084 [720p] [Multi-Sub] [x264] [pseudo].par2&quot; - 182,20 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/bc0c85a35db1f1d0f6485d41f794d2950471453d.nzb&amp;i=1882&amp;r=APIKEY" length="198451847" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="198451847"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; yNWrU6 &gt;&gt;&gt; &lt;sbd_7jrpwqsvrpr@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11210"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:21:08 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c488715a434a3d4015b1e827166564d3aa8611a8</guid>
+            <link>https://drunkenslug.com/getnzb/c488715a434a3d4015b1e827166564d3aa8611a8.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/c488715a434a3d4015b1e827166564d3aa8611a8#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/18] - &quot;[AnimeRG] Attack on Titan - 026 [1080p] [Multi-Sub] [x265] [pseudo].par2&quot; - 402,04 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c488715a434a3d4015b1e827166564d3aa8611a8.nzb&amp;i=1882&amp;r=APIKEY" length="437909040" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="437909040"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; lpUDSk &gt;&gt;&gt; &lt;dvyeby4oqkej8nm@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9541"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:20:33 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/256d1e94c89ac8b801b9ccb400d8de94cc734356</guid>
+            <link>https://drunkenslug.com/getnzb/256d1e94c89ac8b801b9ccb400d8de94cc734356.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/256d1e94c89ac8b801b9ccb400d8de94cc734356#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[AnimeCruzers] Boku no Hero Academia S2 - 01 [720p-Dubbed].par2&quot; - 202,83 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/256d1e94c89ac8b801b9ccb400d8de94cc734356.nzb&amp;i=1882&amp;r=APIKEY" length="220864950" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="220864950"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; xxB2Kl &gt;&gt;&gt; &lt;k4_exocmtnbhizt@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:19:45 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[04/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].part03.rar&quot; - 144,58 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/21e8959811502bdfba612f093eebc5c08709fdc9</guid>
+            <link>https://drunkenslug.com/getnzb/21e8959811502bdfba612f093eebc5c08709fdc9.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/21e8959811502bdfba612f093eebc5c08709fdc9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[04/13] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [720p] [x265] [pseudo].part03.rar&quot; - 144,58 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/21e8959811502bdfba612f093eebc5c08709fdc9.nzb&amp;i=1882&amp;r=APIKEY" length="157496127" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="157496127"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Xpiv3n &gt;&gt;&gt; &lt;dllia5es14seh33@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11739"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:18:32 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/19e4808542811b4f8442998bf9dfc1dcdeedbd55</guid>
+            <link>https://drunkenslug.com/getnzb/19e4808542811b4f8442998bf9dfc1dcdeedbd55.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/19e4808542811b4f8442998bf9dfc1dcdeedbd55#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[AnimeRG] My Hero Academia - 14 (Boku no Hero Academia) [1080p] [x265] [pseudo].par2&quot; - 288,82 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/19e4808542811b4f8442998bf9dfc1dcdeedbd55.nzb&amp;i=1882&amp;r=APIKEY" length="314577097" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="314577097"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hxRFPP &gt;&gt;&gt; &lt;exnhkwt6qrchtq5@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11739"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:17:09 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/567830c909b34de58105d46da4ae7b862d7b39c4</guid>
+            <link>https://drunkenslug.com/getnzb/567830c909b34de58105d46da4ae7b862d7b39c4.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/567830c909b34de58105d46da4ae7b862d7b39c4#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:16:44 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[18/18] - &quot;[Asenshi-Mezashite] Kiniro Mosaic - Pretty Days [BD 720p AAC] [05D40B70].vol15+4.par2&quot; - 650,99 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/567830c909b34de58105d46da4ae7b862d7b39c4.nzb&amp;i=1882&amp;r=APIKEY" length="708984633" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="708984633"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; FjMpFp &gt;&gt;&gt; &lt;vw6bm3vetlewzg1@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:15:11 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e30f0a7acaf71bc1d00e14d9f8af04b8a399c72d</guid>
+            <link>https://drunkenslug.com/getnzb/e30f0a7acaf71bc1d00e14d9f8af04b8a399c72d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/e30f0a7acaf71bc1d00e14d9f8af04b8a399c72d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/17] - &quot;[BakedFish] Youjo Senki - 12v2 [720p][AAC].par2&quot; - 371,81 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e30f0a7acaf71bc1d00e14d9f8af04b8a399c72d.nzb&amp;i=1882&amp;r=APIKEY" length="404816980" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404816980"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; s8Cg3e &gt;&gt;&gt; &lt;r6v4h3oyyvhgiz3@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11905"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:11:28 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/70556c172d34fac8e5acbbfca3f42736b818a070</guid>
+            <link>https://drunkenslug.com/getnzb/70556c172d34fac8e5acbbfca3f42736b818a070.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/70556c172d34fac8e5acbbfca3f42736b818a070#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[06/17] - &quot;[BakedFish] Youjo Senki - 12 [720p][AAC].part05.rar&quot; - 371,05 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/70556c172d34fac8e5acbbfca3f42736b818a070.nzb&amp;i=1882&amp;r=APIKEY" length="404072556" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="404072556"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; GU4RB3 &gt;&gt;&gt; &lt;l8vj_r8oxnksq8j@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11905"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:10:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5081a545d3da9f03927cac45224c48a0c5cf5116</guid>
+            <link>https://drunkenslug.com/getnzb/5081a545d3da9f03927cac45224c48a0c5cf5116.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/5081a545d3da9f03927cac45224c48a0c5cf5116#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:57 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>iZombie.S03E01.1080p.WEBRip.X264-DEFLATE English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5081a545d3da9f03927cac45224c48a0c5cf5116.nzb&amp;i=1882&amp;r=APIKEY" length="4930903186" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4930903186"/>
+            <newznab:attr name="files" value="103"/>
+            <newznab:attr name="poster" value="autom@gical.tv (M@GiC)"/>
+            <newznab:attr name="title" value="Heaven Just Got a Little Smoother"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="281470"/>
+            <newznab:attr name="traktid" value="77686"/>
+            <newznab:attr name="tvrageid" value="38804"/>
+            <newznab:attr name="rageid" value="38804"/>
+            <newznab:attr name="tvmazeid" value="1589"/>
+            <newznab:attr name="imdbid" value="3501584"/>
+            <newznab:attr name="tmdbid" value="60866"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=5081a545d3da9f03927cac45224c48a0c5cf5116&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:08:45 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/784eaaffc131e8667b027ff83f841741a59ab254</guid>
+            <link>https://drunkenslug.com/getnzb/784eaaffc131e8667b027ff83f841741a59ab254.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/784eaaffc131e8667b027ff83f841741a59ab254#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[BakedFish] World Fool News3A Part II - 01 [720p][AAC].par2&quot; - 147,03 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/784eaaffc131e8667b027ff83f841741a59ab254.nzb&amp;i=1882&amp;r=APIKEY" length="160157076" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="160157076"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 4cemB2 &gt;&gt;&gt; &lt;rx7o_ozuypexo3g@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:08:24 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/7ddbb9d1b5425a2445748b2ed2c62b9d17929c94</guid>
+            <link>https://drunkenslug.com/getnzb/7ddbb9d1b5425a2445748b2ed2c62b9d17929c94.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/7ddbb9d1b5425a2445748b2ed2c62b9d17929c94#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[BakedFish] Sekai no Yami Zukan - 01 [720p][AAC].par2&quot; - 115,43 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/7ddbb9d1b5425a2445748b2ed2c62b9d17929c94.nzb&amp;i=1882&amp;r=APIKEY" length="125721823" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="125721823"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 7Xrm7V &gt;&gt;&gt; &lt;d365525tyqab4wz@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:07:55 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/bc66ac490f6d4ac2048638e67df06b9c1cec4922</guid>
+            <link>https://drunkenslug.com/getnzb/bc66ac490f6d4ac2048638e67df06b9c1cec4922.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/bc66ac490f6d4ac2048638e67df06b9c1cec4922#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/19] - &quot;[BakedFish] Schoolgirl Strikers3A Animation Channel - 13 [720p][AAC].part01.rar&quot; - 445,22 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/bc66ac490f6d4ac2048638e67df06b9c1cec4922.nzb&amp;i=1882&amp;r=APIKEY" length="484851886" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="484851886"/>
+            <newznab:attr name="files" value="19"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 5FaoEl &gt;&gt;&gt; &lt;yprpdujt227ky_v@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:07:29 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[1/9] - &quot;[BakedFish] Chiruran3A Nibun no Ichi - 12 [720p][AAC].par2&quot; - 61,58 MB</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/09979547325e189ac02ef15bd804565a1f7bb6fe</guid>
+            <link>https://drunkenslug.com/getnzb/09979547325e189ac02ef15bd804565a1f7bb6fe.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/09979547325e189ac02ef15bd804565a1f7bb6fe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[1/9] - &quot;[BakedFish] Chiruran3A Nibun no Ichi - 12 [720p][AAC].par2&quot; - 61,58 MB</description>
+            <enclosure url="https://drunkenslug.com/getnzb/09979547325e189ac02ef15bd804565a1f7bb6fe.nzb&amp;i=1882&amp;r=APIKEY" length="67064763" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="67064763"/>
+            <newznab:attr name="files" value="9"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 8Kktxq &gt;&gt;&gt; &lt;bfroelsh8yl6suy@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:05:39 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/773f3c28181d1650fc7c85fdebcf75a0cdb3b955</guid>
+            <link>https://drunkenslug.com/getnzb/773f3c28181d1650fc7c85fdebcf75a0cdb3b955.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/773f3c28181d1650fc7c85fdebcf75a0cdb3b955#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:50 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;High School Star Musical S2 - 01 (1280x720 HEVC2 AAC).par2&quot; - 186,48 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/773f3c28181d1650fc7c85fdebcf75a0cdb3b955.nzb&amp;i=1882&amp;r=APIKEY" length="203089855" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203089855"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; jVS6PQ &gt;&gt;&gt; &lt;5_kp4nfavan8bbp@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 12:05:27 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e32eedbac2c3126c524f0036bfb2c370c7a5f79c</guid>
+            <link>https://drunkenslug.com/getnzb/e32eedbac2c3126c524f0036bfb2c370c7a5f79c.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/e32eedbac2c3126c524f0036bfb2c370c7a5f79c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/23] - &quot;[Commie] Yowamushi Pedal New Generation - 12 [741D24BA].par2&quot; - 543,05 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e32eedbac2c3126c524f0036bfb2c370c7a5f79c.nzb&amp;i=1882&amp;r=APIKEY" length="591231849" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="591231849"/>
+            <newznab:attr name="files" value="23"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; m3_HfP &gt;&gt;&gt; &lt;pm_viw14wil43lr@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:59:07 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ac5c27b78c26a8396c2005380152c190ad48b919</guid>
+            <link>https://drunkenslug.com/getnzb/ac5c27b78c26a8396c2005380152c190ad48b919.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/ac5c27b78c26a8396c2005380152c190ad48b919#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_24_(Dual Audio_10bit_BD720p).par2&quot; - 175,59 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ac5c27b78c26a8396c2005380152c190ad48b919.nzb&amp;i=1882&amp;r=APIKEY" length="191420109" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="191420109"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; ljRTgo &gt;&gt;&gt; &lt;1mcvy_clml5xo7e@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:56:11 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>Prison Break S05E01 1080p WEB-DL DD5_1 H264 RARBG English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/618aad003e43a953350e7661928a5870aab47f7e</guid>
+            <link>https://drunkenslug.com/getnzb/618aad003e43a953350e7661928a5870aab47f7e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/618aad003e43a953350e7661928a5870aab47f7e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:13:38 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Prison Break S05E01 1080p WEB-DL DD5_1 H264 RARBG English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/618aad003e43a953350e7661928a5870aab47f7e.nzb&amp;i=1882&amp;r=APIKEY" length="1946829018" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1946829018"/>
+            <newznab:attr name="files" value="32"/>
+            <newznab:attr name="poster" value="CPP-gebruiker@domein.nl (CPP-Gebruiker)"/>
+            <newznab:attr name="title" value="Ogygia"/>
+            <newznab:attr name="season" value="5"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="75340"/>
+            <newznab:attr name="tvrageid" value="4895"/>
+            <newznab:attr name="rageid" value="4895"/>
+            <newznab:attr name="tvmazeid" value="541"/>
+            <newznab:attr name="imdbid" value="0455275"/>
+            <newznab:attr name="tmdbid" value="2288"/>
+            <newznab:attr name="grabs" value="3"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:55:04 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia"/>
+        </item>
+        <item>
+            <title>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/16c2a0f4cd6dbaabe62e767ec7a70f8b844af8bd</guid>
+            <link>https://drunkenslug.com/getnzb/16c2a0f4cd6dbaabe62e767ec7a70f8b844af8bd.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/16c2a0f4cd6dbaabe62e767ec7a70f8b844af8bd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:57 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Jimmy.Fallon.2017.04.04.Blake.Shelton.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://drunkenslug.com/getnzb/16c2a0f4cd6dbaabe62e767ec7a70f8b844af8bd.nzb&amp;i=1882&amp;r=APIKEY" length="671979957" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="671979957"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="provide@4u.net (yeahsure)"/>
+            <newznab:attr name="title" value="Blake Shelton, Scott Eastwood"/>
+            <newznab:attr name="season" value="4"/>
+            <newznab:attr name="episode" value="54"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="270261"/>
+            <newznab:attr name="traktid" value="59543"/>
+            <newznab:attr name="tvrageid" value="35853"/>
+            <newznab:attr name="rageid" value="35853"/>
+            <newznab:attr name="tvmazeid" value="718"/>
+            <newznab:attr name="imdbid" value="3444938"/>
+            <newznab:attr name="tmdbid" value="59941"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=16c2a0f4cd6dbaabe62e767ec7a70f8b844af8bd&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:54:31 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ab0ea128f4de9290dcbe7638b5ca4b84eaacac8a</guid>
+            <link>https://drunkenslug.com/getnzb/ab0ea128f4de9290dcbe7638b5ca4b84eaacac8a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/ab0ea128f4de9290dcbe7638b5ca4b84eaacac8a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/16] - &quot;[Cleo]Shuffle!_-_08_(Dual Audio_10bit_BD720p).part01.rar&quot; - 197,99 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ab0ea128f4de9290dcbe7638b5ca4b84eaacac8a.nzb&amp;i=1882&amp;r=APIKEY" length="215836870" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="215836870"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; u56ul4 &gt;&gt;&gt; &lt;m4s3gbulrpnec6j@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:52:57 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>Boruto: Naruto Next Generations - 01 [720p][AAC]</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e26be562f92f89bec203e23ed345c8e243c0da54</guid>
+            <link>https://drunkenslug.com/getnzb/e26be562f92f89bec203e23ed345c8e243c0da54.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/e26be562f92f89bec203e23ed345c8e243c0da54#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:18 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Boruto: Naruto Next Generations - 01 [720p][AAC]</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e26be562f92f89bec203e23ed345c8e243c0da54.nzb&amp;i=1882&amp;r=APIKEY" length="389395196" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="389395196"/>
+            <newznab:attr name="files" value="6"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:52:06 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ab0bda49d49eaafc3a6585e0e778760488719ca1</guid>
+            <link>https://drunkenslug.com/getnzb/ab0bda49d49eaafc3a6585e0e778760488719ca1.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/ab0bda49d49eaafc3a6585e0e778760488719ca1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Shuffle!_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 179,95 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ab0bda49d49eaafc3a6585e0e778760488719ca1.nzb&amp;i=1882&amp;r=APIKEY" length="196160337" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="196160337"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; mmbuCM &gt;&gt;&gt; &lt;7ly_vfhbrnnuwyw@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:51:11 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b935e2bf6fc7ba73f449935364879c4ee7fffc1d</guid>
+            <link>https://drunkenslug.com/getnzb/b935e2bf6fc7ba73f449935364879c4ee7fffc1d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b935e2bf6fc7ba73f449935364879c4ee7fffc1d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Shuffle!_-_03_(Dual Audio_10bit_BD720p).par2&quot; - 169,03 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b935e2bf6fc7ba73f449935364879c4ee7fffc1d.nzb&amp;i=1882&amp;r=APIKEY" length="184306513" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184306513"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; l3vs3S &gt;&gt;&gt; &lt;f3ml2o7nknxhtfe@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="2844"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:50:08 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/25f4456e555dc889920e61331c4494ad0785e7ed</guid>
+            <link>https://drunkenslug.com/getnzb/25f4456e555dc889920e61331c4494ad0785e7ed.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/25f4456e555dc889920e61331c4494ad0785e7ed#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 162,90 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/25f4456e555dc889920e61331c4494ad0785e7ed.nzb&amp;i=1882&amp;r=APIKEY" length="177474965" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="177474965"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Nq8m3r &gt;&gt;&gt; &lt;82h5sed7xjmxyxa@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10323"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:48:56 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 173,31 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/28051ca6bfef917479e137c7ab5f4857062040e2</guid>
+            <link>https://drunkenslug.com/getnzb/28051ca6bfef917479e137c7ab5f4857062040e2.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/28051ca6bfef917479e137c7ab5f4857062040e2#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 173,31 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/28051ca6bfef917479e137c7ab5f4857062040e2.nzb&amp;i=1882&amp;r=APIKEY" length="188802604" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="188802604"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hoPiQJ &gt;&gt;&gt; &lt;ociq63gyv5_fpty@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10323"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:47:50 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 161,73 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/90cebea27536f08de5cb4e9d8697c256b56a93dc</guid>
+            <link>https://drunkenslug.com/getnzb/90cebea27536f08de5cb4e9d8697c256b56a93dc.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/90cebea27536f08de5cb4e9d8697c256b56a93dc#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Ore_Twintail_ni_Narimasu_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 161,73 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/90cebea27536f08de5cb4e9d8697c256b56a93dc.nzb&amp;i=1882&amp;r=APIKEY" length="176173875" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="176173875"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hMW6ia &gt;&gt;&gt; &lt;g1smx8ap47p5e7n@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10323"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:47:00 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[12/17] - &quot;[Cleo]Maken-Ki!_Two_-_10_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 207,43 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/8a76eb666bf150b760fa5593fbcc11d158ea560a</guid>
+            <link>https://drunkenslug.com/getnzb/8a76eb666bf150b760fa5593fbcc11d158ea560a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/8a76eb666bf150b760fa5593fbcc11d158ea560a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[12/17] - &quot;[Cleo]Maken-Ki!_Two_-_10_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 207,43 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/8a76eb666bf150b760fa5593fbcc11d158ea560a.nzb&amp;i=1882&amp;r=APIKEY" length="225912820" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="225912820"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; C4ekbR &gt;&gt;&gt; &lt;tni2rpksh3hdlyu@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:45:58 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_09_(Dual Audio_10bit_BD_720p).par2&quot; - 186,82 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/893718fff347860bf837c47069cb476a582b6fbc</guid>
+            <link>https://drunkenslug.com/getnzb/893718fff347860bf837c47069cb476a582b6fbc.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/893718fff347860bf837c47069cb476a582b6fbc#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Maken-Ki!_Two_-_09_(Dual Audio_10bit_BD_720p).par2&quot; - 186,82 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/893718fff347860bf837c47069cb476a582b6fbc.nzb&amp;i=1882&amp;r=APIKEY" length="203473244" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="203473244"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Ess881 &gt;&gt;&gt; &lt;xah3jnd5b1tfcey@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:45:09 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4946b1b0a90699046c1f2853c1dd8655a5b4d3d7</guid>
+            <link>https://drunkenslug.com/getnzb/4946b1b0a90699046c1f2853c1dd8655a5b4d3d7.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/4946b1b0a90699046c1f2853c1dd8655a5b4d3d7#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:30 +0100</pubDate>
+            <category>TV &gt; Sport</category>
+            <description>WWE.Smackdown.2017.04.04.720p.HDTV.x264-KYR</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4946b1b0a90699046c1f2853c1dd8655a5b4d3d7.nzb&amp;i=1882&amp;r=APIKEY" length="3228258202" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5060"/>
+            <newznab:attr name="size" value="3228258202"/>
+            <newznab:attr name="files" value="68"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Amway Center, Orlando, FL"/>
+            <newznab:attr name="season" value="18"/>
+            <newznab:attr name="episode" value="66"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="75640"/>
+            <newznab:attr name="traktid" value="1538"/>
+            <newznab:attr name="tvrageid" value="6655"/>
+            <newznab:attr name="rageid" value="6655"/>
+            <newznab:attr name="tvmazeid" value="803"/>
+            <newznab:attr name="imdbid" value="0227972"/>
+            <newznab:attr name="tmdbid" value="1549"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=4946b1b0a90699046c1f2853c1dd8655a5b4d3d7&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:45:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>american.housewife.s01e18.1080p.amazon.webrip.dd.5.1.x264-trollhd English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1f6c89873e2c1d7185b64af9d5505631edc6ef88</guid>
+            <link>https://drunkenslug.com/getnzb/1f6c89873e2c1d7185b64af9d5505631edc6ef88.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1f6c89873e2c1d7185b64af9d5505631edc6ef88#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:12:52 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>american.housewife.s01e18.1080p.amazon.webrip.dd.5.1.x264-trollhd English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1f6c89873e2c1d7185b64af9d5505631edc6ef88.nzb&amp;i=1882&amp;r=APIKEY" length="1775791299" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1775791299"/>
+            <newznab:attr name="files" value="40"/>
+            <newznab:attr name="poster" value="nonscene@Ef.net (EF)"/>
+            <newznab:attr name="title" value="The Otto Motto"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="18"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="253478"/>
+            <newznab:attr name="imdbid" value="5396394"/>
+            <newznab:attr name="grabs" value="10"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:45:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.hdtv"/>
+        </item>
+        <item>
+            <title>[02/16] - &quot;[Cleo]Maken-Ki!_Two_-_08_(Dual Audio_10bit_BD_720p).part01.rar&quot; - 190,61 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/60fbc2453a635dcaf0b318f4d16c85e062d0ce9b</guid>
+            <link>https://drunkenslug.com/getnzb/60fbc2453a635dcaf0b318f4d16c85e062d0ce9b.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/60fbc2453a635dcaf0b318f4d16c85e062d0ce9b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:09 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/16] - &quot;[Cleo]Maken-Ki!_Two_-_08_(Dual Audio_10bit_BD_720p).part01.rar&quot; - 190,61 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/60fbc2453a635dcaf0b318f4d16c85e062d0ce9b.nzb&amp;i=1882&amp;r=APIKEY" length="207646316" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="207646316"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 6SSAg6 &gt;&gt;&gt; &lt;y3xgveo7bxtkqac@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:44:13 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime"/>
+        </item>
+        <item>
+            <title>[RamenSub] Dr. Slump - 02 [E623C2A6] [1/5] - &quot;[RamenSub] New Dr. Slump - 02 [E623C2A6].mkv&quot; Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/cfc5acbf4454090cd6802683a73c863e6864d62e</guid>
+            <link>https://drunkenslug.com/getnzb/cfc5acbf4454090cd6802683a73c863e6864d62e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/cfc5acbf4454090cd6802683a73c863e6864d62e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:18 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[RamenSub] Dr. Slump - 02 [E623C2A6] [1/5] - &quot;[RamenSub] New Dr. Slump - 02 [E623C2A6].mkv&quot; Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/cfc5acbf4454090cd6802683a73c863e6864d62e.nzb&amp;i=1882&amp;r=APIKEY" length="177609025" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="177609025"/>
+            <newznab:attr name="files" value="5"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="anidbid" value="532"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:44:07 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>[12/16] - &quot;[Cleo]Maken-Ki!_Two_-_07_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 184,73 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1b8185c4f86b64c0d9dd76a752b6f458e0aaf121</guid>
+            <link>https://drunkenslug.com/getnzb/1b8185c4f86b64c0d9dd76a752b6f458e0aaf121.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1b8185c4f86b64c0d9dd76a752b6f458e0aaf121#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[12/16] - &quot;[Cleo]Maken-Ki!_Two_-_07_(Dual Audio_10bit_BD_720p).part11.rar&quot; - 184,73 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1b8185c4f86b64c0d9dd76a752b6f458e0aaf121.nzb&amp;i=1882&amp;r=APIKEY" length="201233025" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="201233025"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hhhunP &gt;&gt;&gt; &lt;miqozyvwvjjpcz2@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:43:32 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_06_(Dual Audio_10bit_BD_720p).par2&quot; - 155,87 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c9fb67fcee18dc15dc1965a6cd240ca0771f93ab</guid>
+            <link>https://drunkenslug.com/getnzb/c9fb67fcee18dc15dc1965a6cd240ca0771f93ab.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/c9fb67fcee18dc15dc1965a6cd240ca0771f93ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_06_(Dual Audio_10bit_BD_720p).par2&quot; - 155,87 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c9fb67fcee18dc15dc1965a6cd240ca0771f93ab.nzb&amp;i=1882&amp;r=APIKEY" length="169785220" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="169785220"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; rQNona &gt;&gt;&gt; &lt;s687waw3kisd3b1@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:42:45 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_Two_-_05_(Dual Audio_10bit_BD_720p).par2&quot; - 172,40 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b675cddbaa92df93c80e2b13c35df8005c26af2a</guid>
+            <link>https://drunkenslug.com/getnzb/b675cddbaa92df93c80e2b13c35df8005c26af2a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b675cddbaa92df93c80e2b13c35df8005c26af2a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_Two_-_05_(Dual Audio_10bit_BD_720p).par2&quot; - 172,40 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b675cddbaa92df93c80e2b13c35df8005c26af2a.nzb&amp;i=1882&amp;r=APIKEY" length="187734395" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="187734395"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; B5AoUL &gt;&gt;&gt; &lt;wq7pd5kltir8enk@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:41:43 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[04/16] - &quot;[Cleo]Maken-Ki!_Two_-_04_(Dual Audio_10bit_BD_720p).part03.rar&quot; - 187,52 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/864d26f38b24a99f6e56ee1ac913af3c01c016ce</guid>
+            <link>https://drunkenslug.com/getnzb/864d26f38b24a99f6e56ee1ac913af3c01c016ce.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/864d26f38b24a99f6e56ee1ac913af3c01c016ce#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:26 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[04/16] - &quot;[Cleo]Maken-Ki!_Two_-_04_(Dual Audio_10bit_BD_720p).part03.rar&quot; - 187,52 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/864d26f38b24a99f6e56ee1ac913af3c01c016ce.nzb&amp;i=1882&amp;r=APIKEY" length="204225661" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="204225661"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 7li67j &gt;&gt;&gt; &lt;lp68xv5rd1vwli3@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:40:36 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[11/15] - &quot;[Cleo]Maken-Ki!_Two_-_03_(Dual Audio_10bit_BD_720p).part10.rar&quot; - 178,55 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/0e1db1a7747b2344ce35b7fce83c3efaaaa144cd</guid>
+            <link>https://drunkenslug.com/getnzb/0e1db1a7747b2344ce35b7fce83c3efaaaa144cd.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/0e1db1a7747b2344ce35b7fce83c3efaaaa144cd#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[11/15] - &quot;[Cleo]Maken-Ki!_Two_-_03_(Dual Audio_10bit_BD_720p).part10.rar&quot; - 178,55 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/0e1db1a7747b2344ce35b7fce83c3efaaaa144cd.nzb&amp;i=1882&amp;r=APIKEY" length="194475431" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="194475431"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; E3Ml4K &gt;&gt;&gt; &lt;2pcemb6ry_gvxrm@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:40:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_02_(Dual Audio_10bit_BD_720p).par2&quot; - 163,51 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1df21245fd66d41c2b738925d96b735609223abe</guid>
+            <link>https://drunkenslug.com/getnzb/1df21245fd66d41c2b738925d96b735609223abe.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1df21245fd66d41c2b738925d96b735609223abe#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_Two_-_02_(Dual Audio_10bit_BD_720p).par2&quot; - 163,51 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1df21245fd66d41c2b738925d96b735609223abe.nzb&amp;i=1882&amp;r=APIKEY" length="178088582" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="178088582"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; i8Gnz5 &gt;&gt;&gt; &lt;1k2gyx4lat8pzpl@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:38:58 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/63f3f2f45cbc5e1da1fd86bce92646e917739066</guid>
+            <link>https://drunkenslug.com/getnzb/63f3f2f45cbc5e1da1fd86bce92646e917739066.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/63f3f2f45cbc5e1da1fd86bce92646e917739066#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:53:23 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Face.Off.S11E11.1080p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://drunkenslug.com/getnzb/63f3f2f45cbc5e1da1fd86bce92646e917739066.nzb&amp;i=1882&amp;r=APIKEY" length="1608785655" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1608785655"/>
+            <newznab:attr name="files" value="47"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="title" value="Intergalactic Congress"/>
+            <newznab:attr name="season" value="11"/>
+            <newznab:attr name="episode" value="11"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="214831"/>
+            <newznab:attr name="tvrageid" value="27213"/>
+            <newznab:attr name="rageid" value="27213"/>
+            <newznab:attr name="tvmazeid" value="278"/>
+            <newznab:attr name="imdbid" value="1663641"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=63f3f2f45cbc5e1da1fd86bce92646e917739066&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:38:11 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Crayon Shin-chan - 397a - English subtitles [ATTKC] [1/4] - &quot;Crayon Shin-chan - 397a - English subtitles [ATTKC][09DECA9F].mkv&quot; Spanish</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/25b37daacc812e2b12a541090f4cb7334e6e2e2a</guid>
+            <link>https://drunkenslug.com/getnzb/25b37daacc812e2b12a541090f4cb7334e6e2e2a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/25b37daacc812e2b12a541090f4cb7334e6e2e2a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:10:18 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>Crayon Shin-chan - 397a - English subtitles [ATTKC] [1/4] - &quot;Crayon Shin-chan - 397a - English subtitles [ATTKC][09DECA9F].mkv&quot; Spanish</description>
+            <enclosure url="https://drunkenslug.com/getnzb/25b37daacc812e2b12a541090f4cb7334e6e2e2a.nzb&amp;i=1882&amp;r=APIKEY" length="72607406" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="72607406"/>
+            <newznab:attr name="files" value="4"/>
+            <newznab:attr name="poster" value="Anime Tosho &lt;usenet.bot@animetosho.org&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:36:07 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.multimedia.anime.highspeed"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_-_12_ (Dual Audio_10bit_BD720p).par2&quot; - 177,36 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/faed1640ca3d7937526bc1e162606b166728853d</guid>
+            <link>https://drunkenslug.com/getnzb/faed1640ca3d7937526bc1e162606b166728853d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/faed1640ca3d7937526bc1e162606b166728853d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_-_12_ (Dual Audio_10bit_BD720p).par2&quot; - 177,36 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/faed1640ca3d7937526bc1e162606b166728853d.nzb&amp;i=1882&amp;r=APIKEY" length="193208168" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="193208168"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; EP83A5 &gt;&gt;&gt; &lt;chlqvjagqgculnf@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:35:51 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Imposters.S01E09.1080p.WEB.x264-HEAT</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ba4164dc761d3bca9de39351a89cf1b99c21a2ef</guid>
+            <link>https://drunkenslug.com/getnzb/ba4164dc761d3bca9de39351a89cf1b99c21a2ef.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/ba4164dc761d3bca9de39351a89cf1b99c21a2ef#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:49:58 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Imposters.S01E09.1080p.WEB.x264-HEAT</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ba4164dc761d3bca9de39351a89cf1b99c21a2ef.nzb&amp;i=1882&amp;r=APIKEY" length="1581723236" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1581723236"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="canuck@su.ck (ilikeboys)"/>
+            <newznab:attr name="title" value="Ladies and Gentlemen, the Doctor Is In"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="9"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="320520"/>
+            <newznab:attr name="tvmazeid" value="4144"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=ba4164dc761d3bca9de39351a89cf1b99c21a2ef&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:35:04 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_-_11_ (Dual Audio_10bit_BD720p).par2&quot; - 153,96 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/25e0c31c12617f29b2cbb5effdecf5a3d9c644cf</guid>
+            <link>https://drunkenslug.com/getnzb/25e0c31c12617f29b2cbb5effdecf5a3d9c644cf.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/25e0c31c12617f29b2cbb5effdecf5a3d9c644cf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_-_11_ (Dual Audio_10bit_BD720p).par2&quot; - 153,96 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/25e0c31c12617f29b2cbb5effdecf5a3d9c644cf.nzb&amp;i=1882&amp;r=APIKEY" length="167735053" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="167735053"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; WJRgpF &gt;&gt;&gt; &lt;ckxssp3pc1jlthr@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:35:02 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Maken-Ki!_-_10_ (Dual Audio_10bit_BD720p).par2&quot; - 155,14 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1cf950bd301e5264f4210c9af5674a70a4c1e51e</guid>
+            <link>https://drunkenslug.com/getnzb/1cf950bd301e5264f4210c9af5674a70a4c1e51e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1cf950bd301e5264f4210c9af5674a70a4c1e51e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Maken-Ki!_-_10_ (Dual Audio_10bit_BD720p).par2&quot; - 155,14 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1cf950bd301e5264f4210c9af5674a70a4c1e51e.nzb&amp;i=1882&amp;r=APIKEY" length="169010599" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="169010599"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; JkE_D8 &gt;&gt;&gt; &lt;3wdw5gsldt3o6ns@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:34:13 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/15] - &quot;[Cleo]Maken-Ki!_-_09_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 169,89 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/bb4c3b1a0148dbd9f3bd3a4cdb3fa563daeaa6ab</guid>
+            <link>https://drunkenslug.com/getnzb/bb4c3b1a0148dbd9f3bd3a4cdb3fa563daeaa6ab.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/bb4c3b1a0148dbd9f3bd3a4cdb3fa563daeaa6ab#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/15] - &quot;[Cleo]Maken-Ki!_-_09_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 169,89 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/bb4c3b1a0148dbd9f3bd3a4cdb3fa563daeaa6ab.nzb&amp;i=1882&amp;r=APIKEY" length="185071027" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="185071027"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; zcdLY3 &gt;&gt;&gt; &lt;tqjnds5ibeh57hn@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:33:46 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/14] - &quot;[Cleo]Maken-Ki!_-_08_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 163,90 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/184b4be07bb5251412b483f0664787b80a225a2e</guid>
+            <link>https://drunkenslug.com/getnzb/184b4be07bb5251412b483f0664787b80a225a2e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/184b4be07bb5251412b483f0664787b80a225a2e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/14] - &quot;[Cleo]Maken-Ki!_-_08_ (Dual Audio_10bit_BD720p).part01.rar&quot; - 163,90 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/184b4be07bb5251412b483f0664787b80a225a2e.nzb&amp;i=1882&amp;r=APIKEY" length="178542376" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="178542376"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 1xy_n5 &gt;&gt;&gt; &lt;48hei2jgywzkase@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:33:04 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/19] - &quot;[Cleo]Maken-Ki!_-_07_ (Dual Audio_10bit_BD720p).par2&quot; - 228,22 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1403eda739a39fce50ad4e747abcbd77f139198b</guid>
+            <link>https://drunkenslug.com/getnzb/1403eda739a39fce50ad4e747abcbd77f139198b.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1403eda739a39fce50ad4e747abcbd77f139198b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/19] - &quot;[Cleo]Maken-Ki!_-_07_ (Dual Audio_10bit_BD720p).par2&quot; - 228,22 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1403eda739a39fce50ad4e747abcbd77f139198b.nzb&amp;i=1882&amp;r=APIKEY" length="248610747" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="248610747"/>
+            <newznab:attr name="files" value="19"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; pug3Bn &gt;&gt;&gt; &lt;xejxgmj6zwm3ueq@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:32:17 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.720p.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/9999ab0cf3a31ab91bac7c5d67c7cc894c199567</guid>
+            <link>https://drunkenslug.com/getnzb/9999ab0cf3a31ab91bac7c5d67c7cc894c199567.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/9999ab0cf3a31ab91bac7c5d67c7cc894c199567#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:49:58 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.720p.HDTV.x264-CBFM</description>
+            <enclosure url="https://drunkenslug.com/getnzb/9999ab0cf3a31ab91bac7c5d67c7cc894c199567.nzb&amp;i=1882&amp;r=APIKEY" length="1062755404" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1062755404"/>
+            <newznab:attr name="files" value="36"/>
+            <newznab:attr name="poster" value="prime@time.tv (autobot)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:32:03 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/13] - &quot;[Cleo]Maken-Ki!_-_06_ (Dual Audio_10bit_BD720p).par2&quot; - 148,17 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/2539dcde4cb89e7c869e2e779d35e91bbcc011c6</guid>
+            <link>https://drunkenslug.com/getnzb/2539dcde4cb89e7c869e2e779d35e91bbcc011c6.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/2539dcde4cb89e7c869e2e779d35e91bbcc011c6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/13] - &quot;[Cleo]Maken-Ki!_-_06_ (Dual Audio_10bit_BD720p).par2&quot; - 148,17 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/2539dcde4cb89e7c869e2e779d35e91bbcc011c6.nzb&amp;i=1882&amp;r=APIKEY" length="161427450" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="161427450"/>
+            <newznab:attr name="files" value="13"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; JMCKU3 &gt;&gt;&gt; &lt;bpumriji8ncvmrt@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:30:48 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/9c5528ae023cd2840a691c591b7d44b5ce0c510d</guid>
+            <link>https://drunkenslug.com/getnzb/9c5528ae023cd2840a691c591b7d44b5ce0c510d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/9c5528ae023cd2840a691c591b7d44b5ce0c510d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:49:49 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>Real.Housewives.Of.Sydney.S01E06.HDTV.x264-CBFM</description>
+            <enclosure url="https://drunkenslug.com/getnzb/9c5528ae023cd2840a691c591b7d44b5ce0c510d.nzb&amp;i=1882&amp;r=APIKEY" length="385429134" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="385429134"/>
+            <newznab:attr name="files" value="33"/>
+            <newznab:attr name="poster" value="r@ndom.tv (r@ndom)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:28:32 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[05/16] - &quot;[Cleo]Maken-Ki!_-_05_ (Dual Audio_10bit_BD720p).part04.rar&quot; - 185,88 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ee9511f0ed5ebab16331e5dda444f554aeb1216f</guid>
+            <link>https://drunkenslug.com/getnzb/ee9511f0ed5ebab16331e5dda444f554aeb1216f.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/ee9511f0ed5ebab16331e5dda444f554aeb1216f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[05/16] - &quot;[Cleo]Maken-Ki!_-_05_ (Dual Audio_10bit_BD720p).part04.rar&quot; - 185,88 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ee9511f0ed5ebab16331e5dda444f554aeb1216f.nzb&amp;i=1882&amp;r=APIKEY" length="202449061" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="202449061"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; h_2q2F &gt;&gt;&gt; &lt;jodd815biv7qn6n@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:26:51 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_-_04_ (Dual Audio_10bit_BD720p).par2&quot; - 176,38 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b09df3b5f0ef56399e85a33aa2a3b6a8077c47d3</guid>
+            <link>https://drunkenslug.com/getnzb/b09df3b5f0ef56399e85a33aa2a3b6a8077c47d3.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b09df3b5f0ef56399e85a33aa2a3b6a8077c47d3#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_-_04_ (Dual Audio_10bit_BD720p).par2&quot; - 176,38 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b09df3b5f0ef56399e85a33aa2a3b6a8077c47d3.nzb&amp;i=1882&amp;r=APIKEY" length="192144398" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="192144398"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Br8F6x &gt;&gt;&gt; &lt;aqifgfyk576ze56@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:24:09 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Maken-Ki!_-_03_ (Dual Audio_10bit_BD720p).par2&quot; - 190,47 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1fa66354dd7bae355788f0504de76720fda4459f</guid>
+            <link>https://drunkenslug.com/getnzb/1fa66354dd7bae355788f0504de76720fda4459f.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1fa66354dd7bae355788f0504de76720fda4459f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Maken-Ki!_-_03_ (Dual Audio_10bit_BD720p).par2&quot; - 190,47 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1fa66354dd7bae355788f0504de76720fda4459f.nzb&amp;i=1882&amp;r=APIKEY" length="207482669" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="207482669"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Smx8aP &gt;&gt;&gt; &lt;4775e7nekygy8ll@web.de&gt;"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:22:37 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.720p.WEB-DL.DD5.1.H264-RARBG English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/cc1ba34d1536299759c3ef35765f0913d9a8ad9b</guid>
+            <link>https://drunkenslug.com/getnzb/cc1ba34d1536299759c3ef35765f0913d9a8ad9b.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/cc1ba34d1536299759c3ef35765f0913d9a8ad9b#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:40 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>iZombie.S03E01.720p.WEB-DL.DD5.1.H264-RARBG English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/cc1ba34d1536299759c3ef35765f0913d9a8ad9b.nzb&amp;i=1882&amp;r=APIKEY" length="1517934711" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1517934711"/>
+            <newznab:attr name="files" value="22"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Heaven Just Got a Little Smoother"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="281470"/>
+            <newznab:attr name="traktid" value="77686"/>
+            <newznab:attr name="tvrageid" value="38804"/>
+            <newznab:attr name="rageid" value="38804"/>
+            <newznab:attr name="tvmazeid" value="1589"/>
+            <newznab:attr name="imdbid" value="3501584"/>
+            <newznab:attr name="tmdbid" value="60866"/>
+            <newznab:attr name="grabs" value="13"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:21:56 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.tatu"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_-_02_ (Dual Audio_10bit_BD720p).par2&quot; - 169,70 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/78a8aac78ae2e7fa2f552b5dbabbd9ab488ef0ec</guid>
+            <link>https://drunkenslug.com/getnzb/78a8aac78ae2e7fa2f552b5dbabbd9ab488ef0ec.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/78a8aac78ae2e7fa2f552b5dbabbd9ab488ef0ec#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_-_02_ (Dual Audio_10bit_BD720p).par2&quot; - 169,70 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/78a8aac78ae2e7fa2f552b5dbabbd9ab488ef0ec.nzb&amp;i=1882&amp;r=APIKEY" length="184854607" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184854607"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; QFiUR6 &gt;&gt;&gt; &lt;opalx64menc_pyz@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:21:56 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Maken-Ki!_-_01_ (Dual Audio_10bit_BD720p).par2&quot; - 172,19 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/51cc00af28987ca62ff8db0db306d282108d264f</guid>
+            <link>https://drunkenslug.com/getnzb/51cc00af28987ca62ff8db0db306d282108d264f.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/51cc00af28987ca62ff8db0db306d282108d264f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Maken-Ki!_-_01_ (Dual Audio_10bit_BD720p).par2&quot; - 172,19 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/51cc00af28987ca62ff8db0db306d282108d264f.nzb&amp;i=1882&amp;r=APIKEY" length="187579409" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="187579409"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; sNBSiV &gt;&gt;&gt; &lt;qsfr_ecdpbauu24@web.de&gt;"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:21:27 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_13_(Dual Audio_10bit_BD720p).par2&quot; - 153,03 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/fd5abc775e4b8eb59eb068cf96991dafa18fca29</guid>
+            <link>https://drunkenslug.com/getnzb/fd5abc775e4b8eb59eb068cf96991dafa18fca29.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/fd5abc775e4b8eb59eb068cf96991dafa18fca29#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_13_(Dual Audio_10bit_BD720p).par2&quot; - 153,03 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/fd5abc775e4b8eb59eb068cf96991dafa18fca29.nzb&amp;i=1882&amp;r=APIKEY" length="166681726" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="166681726"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; wRc2Ed &gt;&gt;&gt; &lt;aba7uqb_cjvwgwg@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:20:43 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_12_(Dual Audio_10bit_BD720p).par2&quot; - 171,92 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/84da91ac075069b718e7652fb7bfa2d2b403b722</guid>
+            <link>https://drunkenslug.com/getnzb/84da91ac075069b718e7652fb7bfa2d2b403b722.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/84da91ac075069b718e7652fb7bfa2d2b403b722#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_12_(Dual Audio_10bit_BD720p).par2&quot; - 171,92 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/84da91ac075069b718e7652fb7bfa2d2b403b722.nzb&amp;i=1882&amp;r=APIKEY" length="187254467" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="187254467"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; AuFRBy &gt;&gt;&gt; &lt;jux1wxrmqv1sleg@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:20:14 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[15/17] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_11_(Dual Audio_10bit_BD720p).vol0+1.par2&quot; - 202,77 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/075224eb1a963d3487c69e6aaad04c0774da9119</guid>
+            <link>https://drunkenslug.com/getnzb/075224eb1a963d3487c69e6aaad04c0774da9119.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/075224eb1a963d3487c69e6aaad04c0774da9119#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[15/17] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_11_(Dual Audio_10bit_BD720p).vol0+1.par2&quot; - 202,77 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/075224eb1a963d3487c69e6aaad04c0774da9119.nzb&amp;i=1882&amp;r=APIKEY" length="220844670" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="220844670"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; TAqP2k &gt;&gt;&gt; &lt;w2gbi4ff3wcmlij@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:19:57 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 201,41 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/41adfd3a7042cedb698ae03b9cbfcd2f92b85c0e</guid>
+            <link>https://drunkenslug.com/getnzb/41adfd3a7042cedb698ae03b9cbfcd2f92b85c0e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/41adfd3a7042cedb698ae03b9cbfcd2f92b85c0e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_10_(Dual Audio_10bit_BD720p).par2&quot; - 201,41 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/41adfd3a7042cedb698ae03b9cbfcd2f92b85c0e.nzb&amp;i=1882&amp;r=APIKEY" length="219382787" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="219382787"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; JpL47l &gt;&gt;&gt; &lt;s3_gepoltfv14w2@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:19:10 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E07.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3bbecb3c8ca660c69aeaa8da5681e7fca129965f</guid>
+            <link>https://drunkenslug.com/getnzb/3bbecb3c8ca660c69aeaa8da5681e7fca129965f.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/3bbecb3c8ca660c69aeaa8da5681e7fca129965f#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:43:07 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E07.BDRip.X264-REWARD</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3bbecb3c8ca660c69aeaa8da5681e7fca129965f.nzb&amp;i=1882&amp;r=APIKEY" length="26543073" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="26543073"/>
+            <newznab:attr name="files" value="8"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="10"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:18:55 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_09_(Dual Audio_10bit_BD720p).par2&quot; - 180,33 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/6d40684afce2da5b994635d4c0ab9efc2b6b88b5</guid>
+            <link>https://drunkenslug.com/getnzb/6d40684afce2da5b994635d4c0ab9efc2b6b88b5.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/6d40684afce2da5b994635d4c0ab9efc2b6b88b5#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_09_(Dual Audio_10bit_BD720p).par2&quot; - 180,33 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/6d40684afce2da5b994635d4c0ab9efc2b6b88b5.nzb&amp;i=1882&amp;r=APIKEY" length="196417088" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="196417088"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; w4HYsV &gt;&gt;&gt; &lt;qqfyau4uqzxbb__@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:18:40 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_08_(Dual Audio_10bit_BD720p).par2&quot; - 197,60 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5a03823ba3c66dfaef7b1abc24131d490992f69a</guid>
+            <link>https://drunkenslug.com/getnzb/5a03823ba3c66dfaef7b1abc24131d490992f69a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/5a03823ba3c66dfaef7b1abc24131d490992f69a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_08_(Dual Audio_10bit_BD720p).par2&quot; - 197,60 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5a03823ba3c66dfaef7b1abc24131d490992f69a.nzb&amp;i=1882&amp;r=APIKEY" length="215225710" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="215225710"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; yA3_FQ &gt;&gt;&gt; &lt;z4bb__fr_oh5cub@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:17:30 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 181,63 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/f3fe97b9ddbbf65dcb53a31adaa50f0d243c135a</guid>
+            <link>https://drunkenslug.com/getnzb/f3fe97b9ddbbf65dcb53a31adaa50f0d243c135a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/f3fe97b9ddbbf65dcb53a31adaa50f0d243c135a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_07_(Dual Audio_10bit_BD720p).par2&quot; - 181,63 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/f3fe97b9ddbbf65dcb53a31adaa50f0d243c135a.nzb&amp;i=1882&amp;r=APIKEY" length="197820331" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="197820331"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; Po1CxK &gt;&gt;&gt; &lt;3hqgdlytt7rqd1k@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:16:51 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 176,26 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4cfe005cd1b2fb0292ac25af856af1e173ec50cb</guid>
+            <link>https://drunkenslug.com/getnzb/4cfe005cd1b2fb0292ac25af856af1e173ec50cb.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/4cfe005cd1b2fb0292ac25af856af1e173ec50cb#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_06_(Dual Audio_10bit_BD720p).par2&quot; - 176,26 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4cfe005cd1b2fb0292ac25af856af1e173ec50cb.nzb&amp;i=1882&amp;r=APIKEY" length="191964346" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="191964346"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; DRhoQ8 &gt;&gt;&gt; &lt;uyollt663nu2yiu@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:16:22 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 174,59 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/66f1a9099da809392a58038498b15fc4f19d253a</guid>
+            <link>https://drunkenslug.com/getnzb/66f1a9099da809392a58038498b15fc4f19d253a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/66f1a9099da809392a58038498b15fc4f19d253a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_05_(Dual Audio_10bit_BD720p).par2&quot; - 174,59 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/66f1a9099da809392a58038498b15fc4f19d253a.nzb&amp;i=1882&amp;r=APIKEY" length="190175919" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="190175919"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; _QjWcG &gt;&gt;&gt; &lt;sp16ginwm8jrkmq@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:15:42 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_04_(Dual Audio_10bit_BD720p).par2&quot; - 176,35 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1dc7596c24798d045b8de0f711f93da3a147bcb0</guid>
+            <link>https://drunkenslug.com/getnzb/1dc7596c24798d045b8de0f711f93da3a147bcb0.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1dc7596c24798d045b8de0f711f93da3a147bcb0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/15] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_04_(Dual Audio_10bit_BD720p).par2&quot; - 176,35 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1dc7596c24798d045b8de0f711f93da3a147bcb0.nzb&amp;i=1882&amp;r=APIKEY" length="192104548" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="192104548"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 1RT77R &gt;&gt;&gt; &lt;3ddkcs5htqgnoie@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:15:15 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[08/18] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_03_(Dual Audio_10bit_BD720p).part07.rar&quot; - 218,21 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/26d49bbf8207cdf0ebab6fd1d165f42b55dae815</guid>
+            <link>https://drunkenslug.com/getnzb/26d49bbf8207cdf0ebab6fd1d165f42b55dae815.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/26d49bbf8207cdf0ebab6fd1d165f42b55dae815#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[08/18] - &quot;[Cleo]Madan_no_Ou_to_Vanadis_-_03_(Dual Audio_10bit_BD720p).part07.rar&quot; - 218,21 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/26d49bbf8207cdf0ebab6fd1d165f42b55dae815.nzb&amp;i=1882&amp;r=APIKEY" length="237672188" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="237672188"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; wrCULr &gt;&gt;&gt; &lt;ilygnhqu1tcls_v@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="10744"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:15:01 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>James.Corden.2017.04.04.Claire.Danes.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/886575528208c9bdedc765bb1a918ecaf973a931</guid>
+            <link>https://drunkenslug.com/getnzb/886575528208c9bdedc765bb1a918ecaf973a931.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/886575528208c9bdedc765bb1a918ecaf973a931#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:38 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>James.Corden.2017.04.04.Claire.Danes.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://drunkenslug.com/getnzb/886575528208c9bdedc765bb1a918ecaf973a931.nzb&amp;i=1882&amp;r=APIKEY" length="1157175094" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1157175094"/>
+            <newznab:attr name="files" value="76"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Claire Danes, Christine Baranski, Jack McBrayer"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="155"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="292421"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="7"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:11:22 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.ath"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD English</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b5b15bd8481d22fd525de8950da856b3ab2d797c</guid>
+            <link>https://drunkenslug.com/getnzb/b5b15bd8481d22fd525de8950da856b3ab2d797c.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b5b15bd8481d22fd525de8950da856b3ab2d797c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:19 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD English</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b5b15bd8481d22fd525de8950da856b3ab2d797c.nzb&amp;i=1882&amp;r=APIKEY" length="151718018" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="151718018"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="title" value="The Helium Insufficiency"/>
+            <newznab:attr name="season" value="9"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2015-10-26"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="traktid" value="1409"/>
+            <newznab:attr name="tvrageid" value="8511"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="imdbid" value="0898266"/>
+            <newznab:attr name="tmdbid" value="1418"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="info" value="https://drunkenslug.com/api?t=info&amp;id=b5b15bd8481d22fd525de8950da856b3ab2d797c&amp;r=APIKEY"/>
+            <newznab:attr name="grabs" value="15"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:09:47 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>Home.And.Away.S30E043.720p.HDTV.x264-FiHTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/bb3baaac1f315a810b559bf035ceabb317687312</guid>
+            <link>https://drunkenslug.com/getnzb/bb3baaac1f315a810b559bf035ceabb317687312.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/bb3baaac1f315a810b559bf035ceabb317687312#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:37 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Home.And.Away.S30E043.720p.HDTV.x264-FiHTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/bb3baaac1f315a810b559bf035ceabb317687312.nzb&amp;i=1882&amp;r=APIKEY" length="638809507" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="638809507"/>
+            <newznab:attr name="files" value="45"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Episode 6623"/>
+            <newznab:attr name="season" value="30"/>
+            <newznab:attr name="episode" value="43"/>
+            <newznab:attr name="tvairdate" value="2017-03-22"/>
+            <newznab:attr name="tvdbid" value="71890"/>
+            <newznab:attr name="traktid" value="2340"/>
+            <newznab:attr name="tvrageid" value="3882"/>
+            <newznab:attr name="rageid" value="3882"/>
+            <newznab:attr name="tvmazeid" value="5419"/>
+            <newznab:attr name="imdbid" value="0094481"/>
+            <newznab:attr name="tmdbid" value="2354"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:09:33 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.ath"/>
+        </item>
+        <item>
+            <title>You.Are.Wanted.S01E03.REPACK.WEBRip.X264-DEFLATE German</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/de8e0d31800ad39a4287fbdaf6774ac2c3ab0ca9</guid>
+            <link>https://drunkenslug.com/getnzb/de8e0d31800ad39a4287fbdaf6774ac2c3ab0ca9.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/de8e0d31800ad39a4287fbdaf6774ac2c3ab0ca9#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:37 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>You.Are.Wanted.S01E03.REPACK.WEBRip.X264-DEFLATE German</description>
+            <enclosure url="https://drunkenslug.com/getnzb/de8e0d31800ad39a4287fbdaf6774ac2c3ab0ca9.nzb&amp;i=1882&amp;r=APIKEY" length="378069995" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="378069995"/>
+            <newznab:attr name="files" value="29"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Episode 3"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="episode" value="3"/>
+            <newznab:attr name="tvairdate" value="2017-03-17"/>
+            <newznab:attr name="tvdbid" value="323033"/>
+            <newznab:attr name="imdbid" value="5462886"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:08:55 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.etc"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/cc71d640e29518a87cfae91021df4e1b4aa2b704</guid>
+            <link>https://drunkenslug.com/getnzb/cc71d640e29518a87cfae91021df4e1b4aa2b704.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/cc71d640e29518a87cfae91021df4e1b4aa2b704#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 13:38:03 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S09E06.BDRip.X264-REWARD</description>
+            <enclosure url="https://drunkenslug.com/getnzb/cc71d640e29518a87cfae91021df4e1b4aa2b704.nzb&amp;i=1882&amp;r=APIKEY" length="25322477" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="25322477"/>
+            <newznab:attr name="files" value="7"/>
+            <newznab:attr name="poster" value="CPP-user@domain.com (CPP-User)"/>
+            <newznab:attr name="title" value="The Helium Insufficiency"/>
+            <newznab:attr name="season" value="9"/>
+            <newznab:attr name="episode" value="6"/>
+            <newznab:attr name="tvairdate" value="2015-10-26"/>
+            <newznab:attr name="tvdbid" value="80379"/>
+            <newznab:attr name="traktid" value="1409"/>
+            <newznab:attr name="tvrageid" value="8511"/>
+            <newznab:attr name="rageid" value="8511"/>
+            <newznab:attr name="tvmazeid" value="66"/>
+            <newznab:attr name="imdbid" value="0898266"/>
+            <newznab:attr name="tmdbid" value="1418"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:08:22 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.teevee"/>
+        </item>
+        <item>
+            <title>[02/12] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_08_(Dual Audio_10bit_BD720p_x265).part01.rar&quot; - 130,99 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b6529a6a11af49f38d8875947b1a2152ac4f7822</guid>
+            <link>https://drunkenslug.com/getnzb/b6529a6a11af49f38d8875947b1a2152ac4f7822.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/b6529a6a11af49f38d8875947b1a2152ac4f7822#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/12] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_08_(Dual Audio_10bit_BD720p_x265).part01.rar&quot; - 130,99 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b6529a6a11af49f38d8875947b1a2152ac4f7822.nzb&amp;i=1882&amp;r=APIKEY" length="142771801" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="142771801"/>
+            <newznab:attr name="files" value="12"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; EvY11Y &gt;&gt;&gt; &lt;_1q6w8ygype6vaj@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9042"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:08:17 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/14] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_07_(Dual Audio_10bit_BD720p_x265).part01.rar&quot; - 153,76 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/a736f25ca4188f77345e614377fff6d681a91472</guid>
+            <link>https://drunkenslug.com/getnzb/a736f25ca4188f77345e614377fff6d681a91472.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/a736f25ca4188f77345e614377fff6d681a91472#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/14] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_07_(Dual Audio_10bit_BD720p_x265).part01.rar&quot; - 153,76 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/a736f25ca4188f77345e614377fff6d681a91472.nzb&amp;i=1882&amp;r=APIKEY" length="167579679" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="167579679"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; fdXi47 &gt;&gt;&gt; &lt;hnwm25rb3myckmw@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9042"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:07:51 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2017.04.04.Louis.C.K.720p.WEB.h264-WEBSTER</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/aa31522835c0cc57b1d6933cb76fe4a5da7dbc62</guid>
+            <link>https://drunkenslug.com/getnzb/aa31522835c0cc57b1d6933cb76fe4a5da7dbc62.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/aa31522835c0cc57b1d6933cb76fe4a5da7dbc62#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:37 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2017.04.04.Louis.C.K.720p.WEB.h264-WEBSTER</description>
+            <enclosure url="https://drunkenslug.com/getnzb/aa31522835c0cc57b1d6933cb76fe4a5da7dbc62.nzb&amp;i=1882&amp;r=APIKEY" length="1458943087" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1458943087"/>
+            <newznab:attr name="files" value="21"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Louis C.K., Ernie Johnson Jr., Father John Misty"/>
+            <newznab:attr name="season" value="2"/>
+            <newznab:attr name="episode" value="125"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="289574"/>
+            <newznab:attr name="traktid" value="93737"/>
+            <newznab:attr name="tvrageid" value="41941"/>
+            <newznab:attr name="rageid" value="41941"/>
+            <newznab:attr name="tvmazeid" value="2756"/>
+            <newznab:attr name="imdbid" value="3697842"/>
+            <newznab:attr name="tmdbid" value="63770"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:07:37 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.chello"/>
+        </item>
+        <item>
+            <title>[01/20] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_06_(Dual Audio_10bit_BD720p_x265).par2&quot; - 242,90 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/86374de36bf645f49c47a8425cf1475c501da646</guid>
+            <link>https://drunkenslug.com/getnzb/86374de36bf645f49c47a8425cf1475c501da646.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/86374de36bf645f49c47a8425cf1475c501da646#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/20] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_06_(Dual Audio_10bit_BD720p_x265).par2&quot; - 242,90 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/86374de36bf645f49c47a8425cf1475c501da646.nzb&amp;i=1882&amp;r=APIKEY" length="264686788" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="264686788"/>
+            <newznab:attr name="files" value="20"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; ft8qa1 &gt;&gt;&gt; &lt;v3iioqynwvrp4zw@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9042"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:07:28 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/18] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_05_(Dual Audio_10bit_BD720p_x265).par2&quot; - 220,30 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1c94660c6bf68d12e0f5522eb5a02e886d1a56f0</guid>
+            <link>https://drunkenslug.com/getnzb/1c94660c6bf68d12e0f5522eb5a02e886d1a56f0.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/1c94660c6bf68d12e0f5522eb5a02e886d1a56f0#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/18] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_05_(Dual Audio_10bit_BD720p_x265).par2&quot; - 220,30 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1c94660c6bf68d12e0f5522eb5a02e886d1a56f0.nzb&amp;i=1882&amp;r=APIKEY" length="240047864" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="240047864"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; gzqFov &gt;&gt;&gt; &lt;bjh7co1_ttinqtw@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9042"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:07:02 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_03_(Dual Audio_10bit_BD720p_x265).par2&quot; - 161,07 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/dda20f18f3065a528ec5000262f058700cd83361</guid>
+            <link>https://drunkenslug.com/getnzb/dda20f18f3065a528ec5000262f058700cd83361.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/dda20f18f3065a528ec5000262f058700cd83361#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Fate_Kaleid_Liner_Prisma_Illya_-_03_(Dual Audio_10bit_BD720p_x265).par2&quot; - 161,07 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/dda20f18f3065a528ec5000262f058700cd83361.nzb&amp;i=1882&amp;r=APIKEY" length="175482385" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="175482385"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; rP6lbP &gt;&gt;&gt; &lt;4gwq4cljtsprpdu@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="9042"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:06:21 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[05/14] - &quot;[Cleo]Divine_Gate_-_12_(Dual Audio_10bit_720p_x265).part04.rar&quot; - 159,50 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/9ec445f0c548624e34e936cc287fcc76523af33a</guid>
+            <link>https://drunkenslug.com/getnzb/9ec445f0c548624e34e936cc287fcc76523af33a.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/9ec445f0c548624e34e936cc287fcc76523af33a#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[05/14] - &quot;[Cleo]Divine_Gate_-_12_(Dual Audio_10bit_720p_x265).part04.rar&quot; - 159,50 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/9ec445f0c548624e34e936cc287fcc76523af33a.nzb&amp;i=1882&amp;r=APIKEY" length="173730942" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="173730942"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 27zxV1 &gt;&gt;&gt; &lt;_yosxfungxabjws@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:06:05 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[02/14] - &quot;[Cleo]Divine_Gate_-_11_(Dual Audio_10bit_720p_x265).part01.rar&quot; - 160,95 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/33a01dc40de85de134803f69ed5b6e66aae6280e</guid>
+            <link>https://drunkenslug.com/getnzb/33a01dc40de85de134803f69ed5b6e66aae6280e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/33a01dc40de85de134803f69ed5b6e66aae6280e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[02/14] - &quot;[Cleo]Divine_Gate_-_11_(Dual Audio_10bit_720p_x265).part01.rar&quot; - 160,95 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/33a01dc40de85de134803f69ed5b6e66aae6280e.nzb&amp;i=1882&amp;r=APIKEY" length="175320079" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="175320079"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; hhyun_ &gt;&gt;&gt; &lt;colbij8t5di7f_x@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:05:35 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>The.Voice.S12E14.720p.WEB.x264-WEBSTER</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c1719671b8b39b15bf10238848b4a33e9d127f63</guid>
+            <link>https://drunkenslug.com/getnzb/c1719671b8b39b15bf10238848b4a33e9d127f63.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/c1719671b8b39b15bf10238848b4a33e9d127f63#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:36 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Voice.S12E14.720p.WEB.x264-WEBSTER</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c1719671b8b39b15bf10238848b4a33e9d127f63.nzb&amp;i=1882&amp;r=APIKEY" length="657531252" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="657531252"/>
+            <newznab:attr name="files" value="46"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Knockouts Premiere, Part 2"/>
+            <newznab:attr name="season" value="12"/>
+            <newznab:attr name="episode" value="14"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="247824"/>
+            <newznab:attr name="traktid" value="37520"/>
+            <newznab:attr name="tvrageid" value="27447"/>
+            <newznab:attr name="rageid" value="27447"/>
+            <newznab:attr name="tvmazeid" value="70"/>
+            <newznab:attr name="imdbid" value="1839337"/>
+            <newznab:attr name="tmdbid" value="37678"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="14"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:05:19 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.bloaf"/>
+        </item>
+        <item>
+            <title>[01/16] - &quot;[Cleo]Divine_Gate_-_10_(Dual Audio_10bit_720p_x265).par2&quot; - 189,76 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/593689499a888d06184cd893fdbe7d828de755bf</guid>
+            <link>https://drunkenslug.com/getnzb/593689499a888d06184cd893fdbe7d828de755bf.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/593689499a888d06184cd893fdbe7d828de755bf#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/16] - &quot;[Cleo]Divine_Gate_-_10_(Dual Audio_10bit_720p_x265).par2&quot; - 189,76 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/593689499a888d06184cd893fdbe7d828de755bf.nzb&amp;i=1882&amp;r=APIKEY" length="206690011" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="206690011"/>
+            <newznab:attr name="files" value="16"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; GVur3R &gt;&gt;&gt; &lt;e3l_vd4womwhtfd@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:05:18 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Divine_Gate_-_09_(Dual Audio_10bit_720p_x265).par2&quot; - 169,20 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/2e77d50eb9309f63eaf86a46c190c670b3f45d79</guid>
+            <link>https://drunkenslug.com/getnzb/2e77d50eb9309f63eaf86a46c190c670b3f45d79.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/2e77d50eb9309f63eaf86a46c190c670b3f45d79#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:25 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Divine_Gate_-_09_(Dual Audio_10bit_720p_x265).par2&quot; - 169,20 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/2e77d50eb9309f63eaf86a46c190c670b3f45d79.nzb&amp;i=1882&amp;r=APIKEY" length="184317152" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="184317152"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; dvCNqM &gt;&gt;&gt; &lt;zmh6c8bgudbuuwe@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:04:46 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>iZombie.S03E01.PROPER.HDTV.x264-KILLERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/7e78def53ee03091a54fef6a2d7c41b07eaacd3c</guid>
+            <link>https://drunkenslug.com/getnzb/7e78def53ee03091a54fef6a2d7c41b07eaacd3c.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/7e78def53ee03091a54fef6a2d7c41b07eaacd3c#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:34:36 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>iZombie.S03E01.PROPER.HDTV.x264-KILLERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/7e78def53ee03091a54fef6a2d7c41b07eaacd3c.nzb&amp;i=1882&amp;r=APIKEY" length="338092987" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="338092987"/>
+            <newznab:attr name="files" value="27"/>
+            <newznab:attr name="poster" value="mmmq@meh.com"/>
+            <newznab:attr name="title" value="Heaven Just Got a Little Smoother"/>
+            <newznab:attr name="season" value="3"/>
+            <newznab:attr name="episode" value="1"/>
+            <newznab:attr name="tvairdate" value="2017-04-04"/>
+            <newznab:attr name="tvdbid" value="281470"/>
+            <newznab:attr name="traktid" value="77686"/>
+            <newznab:attr name="tvrageid" value="38804"/>
+            <newznab:attr name="rageid" value="38804"/>
+            <newznab:attr name="tvmazeid" value="1589"/>
+            <newznab:attr name="imdbid" value="3501584"/>
+            <newznab:attr name="tmdbid" value="60866"/>
+            <newznab:attr name="prematch" value="1"/>
+            <newznab:attr name="grabs" value="31"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:04:38 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.misc"/>
+        </item>
+        <item>
+            <title>[01/18] - &quot;[Cleo]Divine_Gate_-_07_(Dual Audio_10bit_720p_x265).par2&quot; - 218,53 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/54f6c5a9b57f1db59a58b82c3a297b1e0c6f13f6</guid>
+            <link>https://drunkenslug.com/getnzb/54f6c5a9b57f1db59a58b82c3a297b1e0c6f13f6.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/54f6c5a9b57f1db59a58b82c3a297b1e0c6f13f6#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/18] - &quot;[Cleo]Divine_Gate_-_07_(Dual Audio_10bit_720p_x265).par2&quot; - 218,53 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/54f6c5a9b57f1db59a58b82c3a297b1e0c6f13f6.nzb&amp;i=1882&amp;r=APIKEY" length="238033700" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="238033700"/>
+            <newznab:attr name="files" value="18"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; ro3oB3 &gt;&gt;&gt; &lt;ig2k6jwlteqca3u@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:04:16 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[01/14] - &quot;[Cleo]Divine_Gate_-_06_(Dual Audio_10bit_720p_x265).par2&quot; - 155,44 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4d5a82b39d1ad832ac87482b2dd219f276b7ca5e</guid>
+            <link>https://drunkenslug.com/getnzb/4d5a82b39d1ad832ac87482b2dd219f276b7ca5e.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/4d5a82b39d1ad832ac87482b2dd219f276b7ca5e#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[01/14] - &quot;[Cleo]Divine_Gate_-_06_(Dual Audio_10bit_720p_x265).par2&quot; - 155,44 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4d5a82b39d1ad832ac87482b2dd219f276b7ca5e.nzb&amp;i=1882&amp;r=APIKEY" length="169312881" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="169312881"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; ugJwsJ &gt;&gt;&gt; &lt;qim8_qaya3_1r_c@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:03:42 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[03/15] - &quot;[Cleo]Divine_Gate_-_04_(Dual Audio_10bit_720p_x265).part02.rar&quot; - 173,56 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c3d0f392cdf391dbac00be8cc97aa5ee9e9f43db</guid>
+            <link>https://drunkenslug.com/getnzb/c3d0f392cdf391dbac00be8cc97aa5ee9e9f43db.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/c3d0f392cdf391dbac00be8cc97aa5ee9e9f43db#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[03/15] - &quot;[Cleo]Divine_Gate_-_04_(Dual Audio_10bit_720p_x265).part02.rar&quot; - 173,56 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c3d0f392cdf391dbac00be8cc97aa5ee9e9f43db.nzb&amp;i=1882&amp;r=APIKEY" length="189057262" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="189057262"/>
+            <newznab:attr name="files" value="15"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; _h6MZF &gt;&gt;&gt; &lt;h2pppwwh1nrwetl@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:03:25 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+        <item>
+            <title>[03/14] - &quot;[Cleo]Divine_Gate_-_03_(Dual Audio_10bit_720p_x265).part02.rar&quot; - 159,13 MB Japanese</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5e1244bebc20fe31c0a3693e4f57feefb1cacc8d</guid>
+            <link>https://drunkenslug.com/getnzb/5e1244bebc20fe31c0a3693e4f57feefb1cacc8d.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/5e1244bebc20fe31c0a3693e4f57feefb1cacc8d#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 11:57:24 +0100</pubDate>
+            <category>TV &gt; Anime</category>
+            <description>[03/14] - &quot;[Cleo]Divine_Gate_-_03_(Dual Audio_10bit_720p_x265).part02.rar&quot; - 159,13 MB Japanese</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5e1244bebc20fe31c0a3693e4f57feefb1cacc8d.nzb&amp;i=1882&amp;r=APIKEY" length="173344610" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="size" value="173344610"/>
+            <newznab:attr name="files" value="14"/>
+            <newznab:attr name="poster" value="&lt;&lt;&lt; 3GQ_2r &gt;&gt;&gt; &lt;coarkyh_yknkst7@web.de&gt;"/>
+            <newznab:attr name="anidbid" value="11266"/>
+            <newznab:attr name="grabs" value="0"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 11:02:46 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.anime"/>
+        </item>
+    </channel>
+</rss>
