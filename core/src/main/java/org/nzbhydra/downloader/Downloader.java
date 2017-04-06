@@ -39,7 +39,7 @@ public abstract class Downloader {
                     addNzb(result.getNzbContent(), result.getTitle(), category);
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
-                    addLink(nzbHandler.getNzbDownloadLink(searchResultEntity.getId()), searchResultEntity.getTitle(), category);
+                    addLink(nzbHandler.getNzbDownloadLink(searchResultEntity.getId(), true), searchResultEntity.getTitle(), category);
                 }
 
                 countAddedNzbs++;

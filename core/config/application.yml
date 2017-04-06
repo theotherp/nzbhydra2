@@ -79,7 +79,6 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: a
-    hitLimit: 5
     searchModuleType: NEWZNAB
     supportedSearchIds: TVRAGE
     score: 1
@@ -89,7 +88,6 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: b
-    hitLimit: 7
     hitLimitResetTime: 12
     searchModuleType: NEWZNAB
     supportedSearchIds: IMDB, TMDB
@@ -108,7 +106,6 @@ indexers:
     host: http://127.0.0.1:5000
     enabled: true
     apikey: d
-    downloadLimit: 5
     searchModuleType: NEWZNAB
     score: 1
     enabledForSearchSource: BOTH

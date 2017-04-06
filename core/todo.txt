@@ -37,19 +37,19 @@ Indexer support
 - anizb
 - nzbclub
 - checking caps: half done, backend and cats missing
-- checking auth / connection: connection check done, auth missing
+- checking auth / connection: done
 
 Torrent support
 - jackett / cardigann
 - special handling
 
-Updater
+Updater: Proof of concept with wrapper works
 - update notification
 - self updating
 
 Process control
-- Restart: With help of updater, loses console 
-- Shutdown: Works
+- Restart: Works, based on wrapper
+- Shutdown: Works, based on wrapper
 
 Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - mostly done

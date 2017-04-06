@@ -23,7 +23,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Updater</mainClass>
+                            <mainClass>Wrapper</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

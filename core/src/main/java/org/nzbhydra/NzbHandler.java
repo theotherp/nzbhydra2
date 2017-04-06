@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +30,8 @@ public class NzbHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHandler.class);
 
+    @Autowired
+    protected BaseConfig baseConfig;
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
@@ -68,15 +73,27 @@ public class NzbHandler {
         }
     }
 
-    public String getNzbDownloadLink(SearchResultEntity entity) {
-        return getNzbDownloadLink(entity.getId());
-    }
 
-    public String getNzbDownloadLink(long searchResultId) {
-        //TODO build link using scheme, host, port and base url or external URL
-        return "http://127.0.0.1:5076/getnzb/" + searchResultId;
-
-
+    public String getNzbDownloadLink(long searchResultId, boolean internal) {
+        UriComponentsBuilder builder;
+        if (internal) {
+            builder = baseConfig.getBaseUriBuilder();
+            builder.path("/getnzb/user");
+            builder.path("/" + String.valueOf(searchResultId));
+        } else {
+            MainConfig main = baseConfig.getMain();
+            if (main.getExternalUrl().isPresent() && !main.isUseLocalUrlForApiAccess()) {
+                builder = UriComponentsBuilder.fromHttpUrl(main.getExternalUrl().get());
+            } else {
+                builder = baseConfig.getBaseUriBuilder();
+            }
+            builder.path("/getnzb/api");
+            builder.path("/" + String.valueOf(searchResultId));
+            if (main.getApiKey().isPresent()) {
+                builder.queryParam("apikey", main.getApiKey().get());
+            }
+        }
+        return builder.toUriString();
     }
 
 

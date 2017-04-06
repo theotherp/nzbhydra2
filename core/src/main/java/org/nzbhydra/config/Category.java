@@ -1,7 +1,5 @@
 package org.nzbhydra.config;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import org.nzbhydra.searching.SearchRestrictionType;
@@ -19,19 +17,17 @@ public class Category {
     /**
      * Internal name
      */
-    private String name;
-    private String pretty;
-    private boolean mayBeSelected = true;
-    private boolean supportyById;
-    private Set<Integer> newznabCategories = new HashSet<>();
-    @JsonFormat(shape = Shape.STRING)
-    private SearchRestrictionType applyRestrictionsType = SearchRestrictionType.NONE;
-    @JsonFormat(shape = Shape.STRING)
-    private SearchRestrictionType ignoreResultsFrom = SearchRestrictionType.NONE;
-    private Set<String> forbiddenWords = Sets.newHashSet();
-    private String forbiddenRegex;
-    private Set<String> requiredWords = Sets.newHashSet();
-    private String requiredRegex;
+    protected String name;
+    protected String pretty;
+    protected boolean mayBeSelected = true;
+    protected boolean supportyById;
+    protected Set<Integer> newznabCategories = new HashSet<>();
+    protected SearchRestrictionType applyRestrictionsType = SearchRestrictionType.NONE;
+    protected SearchRestrictionType ignoreResultsFrom = SearchRestrictionType.NONE;
+    protected Set<String> forbiddenWords = Sets.newHashSet();
+    protected String forbiddenRegex;
+    protected Set<String> requiredWords = Sets.newHashSet();
+    protected String requiredRegex;
 
     @Override
     public boolean equals(Object o) {
@@ -52,4 +48,6 @@ public class Category {
     public int hashCode() {
         return Objects.hash(super.hashCode(), name);
     }
+
+
 }

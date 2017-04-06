@@ -24,7 +24,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
 
         $scope.showNfo = showNfo;
         function showNfo(resultItem) {
-            if (resultItem.has_nfo == 0) {
+            if (resultItem.has_nfo === 0) {
                 return;
             }
             var uri = new URI("internalapi/getnfo");

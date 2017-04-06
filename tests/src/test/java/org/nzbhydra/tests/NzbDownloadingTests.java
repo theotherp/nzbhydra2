@@ -14,6 +14,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.config.DownloaderType;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.database.IndexerEntity;
@@ -75,7 +76,7 @@ public class NzbDownloadingTests {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         mockServer = startClientAndServer(7070);
         proxy = startClientAndProxy(7072);
         mvc = MockMvcBuilders
@@ -98,7 +99,7 @@ public class NzbDownloadingTests {
         searchResultId = searchResult.getId();
 
         DownloaderConfig downloaderConfig = new DownloaderConfig();
-        downloaderConfig.setDownloaderType("sabnzbd");
+        downloaderConfig.setDownloaderType(DownloaderType.SABNZBD);
         downloaderConfig.setName("sabnzbd");
         downloaderConfig.setUrl("http://127.0.0.1:7070/sabnzbd/");
         downloaderConfig.setNzbAccessType(NzbAccessType.REDIRECT);

@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,20 +51,22 @@ public class ExternalApi {
     @Autowired
     protected Searcher searcher;
     @Autowired
-    private SearchRequestFactory searchRequestFactory;
+    protected SearchRequestFactory searchRequestFactory;
     @Autowired
-    private NzbHandler nzbDownloader;
+    protected NzbHandler nzbHandler;
     @Autowired
-    private BaseConfig baseConfig;
+    protected BaseConfig baseConfig;
 
     @Autowired
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
+    @Secured("ROLE_API")
     public ResponseEntity<? extends Object> api(ApiCallParameters params) throws Exception {
         logger.info("Received external API call: " + params);
 
-        if (!Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
+        //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
+        if (baseConfig.getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
@@ -81,7 +84,7 @@ public class ExternalApi {
             if (Strings.isNullOrEmpty(params.getId())) {
                 throw new MissingParameterException("Missing ID/GUID");
             }
-            NzbDownloadResult downloadResult = nzbDownloader.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType());
+            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType());
             if (!downloadResult.isSuccessful()) {
                 throw new UnknownErrorException(downloadResult.getError());
             }
@@ -121,23 +124,10 @@ public class ExternalApi {
         rssChannel.setNewznabResponse(new NewznabResponse( params.getOffset(), searchResultItems.size())); //TODO
         rssChannel.setGenerator("NZBHydra");
 
-
         rssRoot.setRssChannel(rssChannel);
         List<RssItem> items = new ArrayList<>();
         for (SearchResultItem searchResultItem : searchResultItems) {
-            RssItem rssItem = new RssItem();
-            String link = searchResultItem.getLink(); //TODO Construct
-            rssItem.setLink(link);
-            rssItem.setTitle(searchResultItem.getTitle());
-            rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
-            rssItem.setPubDate(searchResultItem.getPubDate());
-            List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
-            rssItem.setAttributes(newznabAttributes);
-            rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
-            rssItem.setComments(searchResultItem.getCommentsLink());
-            rssItem.setDescription(searchResultItem.getDescription());
-            rssItem.setDescription(searchResultItem.getCategory().getName());
-
+            RssItem rssItem = buildRssItem(searchResultItem);
             items.add(rssItem);
         }
 
@@ -145,6 +135,23 @@ public class ExternalApi {
         logger.debug("Finished transforming");
         return rssRoot;
     }
+
+    protected RssItem buildRssItem(SearchResultItem searchResultItem) {
+        RssItem rssItem = new RssItem();
+        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false);
+        rssItem.setLink(link);
+        rssItem.setTitle(searchResultItem.getTitle());
+        rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
+        rssItem.setPubDate(searchResultItem.getPubDate());
+        List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
+        rssItem.setAttributes(newznabAttributes);
+        rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
+        rssItem.setComments(searchResultItem.getCommentsLink());
+        rssItem.setDescription(searchResultItem.getDescription());
+        rssItem.setDescription(searchResultItem.getCategory().getName());
+        return rssItem;
+    }
+
 
     protected List<SearchResultItem> pickSearchResultItemsFromDuplicateGroups(SearchResult searchResult) {
         List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();

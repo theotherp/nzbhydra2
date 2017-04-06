@@ -21,25 +21,25 @@ public class IndexerConfig {
         BOTH
     }
 
-    private String apikey;
+    private String apikey = null;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend;
     private Set<String> categories = new HashSet<>();
-    private Integer downloadLimit;
-    private boolean enabled;
+    private Integer downloadLimit = null;
+    private boolean enabled = true;
     @JsonFormat(shape = Shape.STRING)
     private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
-    private Integer generalMinSize;
+    private Integer generalMinSize = null;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
-    private String host;
+    private String host = null;
     private Integer loadLimitOnRandom = null;
-    private String name;
+    private String name = null;
     private String password = null;
-    private boolean preselect;
+    private boolean preselect = true;
     private Integer score = null;
     private SearchModuleType searchModuleType;
-    private boolean showOnSearch;
+    private boolean showOnSearch = true;
     @JsonFormat(shape = Shape.STRING)
     private Set<IdType> supportedSearchIds = new HashSet<>();
     private Integer timeout = null;

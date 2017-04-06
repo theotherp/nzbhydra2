@@ -27,7 +27,6 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-
     @Autowired
     private BaseConfig baseConfig;
     private SafeConfig safeConfig = null;

@@ -34,7 +34,7 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
 
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
     private String key = "anonymous";
-    private Object principal = "anonymousUser";
+    private Object principal = "AnonymousUser";
     private List<GrantedAuthority> authorities;
 
     public HydraAnonymousAuthenticationFilter(@Autowired BaseConfig baseConfig) {

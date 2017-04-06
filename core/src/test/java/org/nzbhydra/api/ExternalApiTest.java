@@ -1,7 +1,9 @@
 package org.nzbhydra.api;
 
 import com.google.common.collect.HashMultiset;
+import org.junit.Before;
 import org.junit.Test;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.searching.DuplicateDetectionResult;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -18,14 +20,18 @@ import static org.junit.Assert.assertThat;
 
 public class ExternalApiTest {
 
+    BaseConfig baseConfig = new BaseConfig();
 
     @MockBean
     private ExternalApi testee = new ExternalApi();
 
+    @Before
+    public void setUp() {
+        testee.baseConfig = baseConfig;
+    }
 
     @Test
     public void shouldPickResultsByScoreAndAge() {
-
         SearchResult result = new SearchResult();
 
         TreeSet<SearchResultItem> itemSet = new TreeSet<>();

@@ -1,5 +1,6 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -14,6 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +60,23 @@ public class BaseConfig {
         File file = new File("config/application.yml");
         logger.info("Writing config to file {}", file.getAbsolutePath());
         objectMapper.writeValue(file, this);
+    }
+
+    @JsonIgnore
+    public String getBaseUrl() {
+        return getBaseUriBuilder().toUriString();
+    }
+
+    @JsonIgnore
+    public UriComponentsBuilder getBaseUriBuilder() {
+        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+                .host(main.getHost().equals("0.0.0.0") ? "127.0.0.1" : main.getHost())
+                .scheme(main.isSsl() ? "https" : "http")
+                .port(main.getPort());
+        if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
+            builder.path(main.getUrlBase().get());
+        }
+        return builder;
     }
 
 

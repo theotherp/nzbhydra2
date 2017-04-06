@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import org.nzbhydra.NzbHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -53,6 +54,8 @@ public class Search {
     private CategoryProvider categoryProvider;
     @Autowired
     private SearchRequestFactory searchRequestFactory;
+    @Autowired
+    private NzbHandler nzbHandler;
 
     private Random random = new Random();
 
@@ -163,7 +166,7 @@ public class Search {
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
                         .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                        .link("http://127.0.0.1:5076/internalapi/" + item.getGuid()) //TODO construct using scheme, host, url base or external url
+                        .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true)) //TODO construct using scheme, host, url base or external url
                         .searchResultId(item.getSearchResultId().toString())
                         .size(item.getSize())
                         .title(item.getTitle());
@@ -173,6 +176,7 @@ public class Search {
         }
         return transformedSearchResults;
     }
+
 
     private SearchResultBuilder setSearchResultDateRelatedValues(SearchResultBuilder builder, SearchResultItem item) {
         Instant date = item.getUsenetDate().orElse(item.getPubDate());

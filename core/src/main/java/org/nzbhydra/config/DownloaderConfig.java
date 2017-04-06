@@ -22,4 +22,7 @@ public class DownloaderConfig {
     private DownloaderType downloaderType;
     private String url;
 
+    public DownloaderType getDownloaderType() {
+        return downloaderType;
+    }
 }

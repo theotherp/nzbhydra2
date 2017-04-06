@@ -6,7 +6,9 @@ import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.rssmapping.RssError;
 import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.rssmapping.Xml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +47,13 @@ public class NewznabChecker {
 
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
-        RssRoot rssRoot;
+        Xml xmlResponse;
         try {
-            rssRoot = restTemplate.getForObject(getBaseUri(indexerConfig).queryParam("t", "tvsearch").toUriString(), RssRoot.class);
+            xmlResponse = restTemplate.getForObject(getBaseUri(indexerConfig).queryParam("t", "tvsearch").toUriString(), Xml.class);
+            if (xmlResponse instanceof RssError) {
+                return new GenericResponse(false, "Indexer returned message: " + ((RssError) xmlResponse).getDescription());
+            }
+            RssRoot rssRoot = (RssRoot) xmlResponse;
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
                 return new GenericResponse(true, null);
             } else {

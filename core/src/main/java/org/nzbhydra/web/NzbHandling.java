@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.NzbHandler;
+import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -33,13 +35,29 @@ public class NzbHandling {
     }
 
     /**
+     * Provides an external access to NZBs via GUID for users.
+     *
+     * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
+     */
+    @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
+    @Secured({"ROLE_USER"})
+    public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid) {
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+    }
+
+    /**
      * Provides an external access to NZBs via GUID
      *
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
-    @RequestMapping(value = "/getnzb/{guid}", produces = "application/x-nzb")
-    @Secured({"ROLE_USER"}) //TODO Auth with API key
-    public ResponseEntity<String> downloadNzb(@PathVariable("guid") long guid) {
+    @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
+    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam String apikey) throws WrongApiKeyException {
+        if (baseConfig.getMain().getApiKey().isPresent()) {
+            if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey().get())) {
+                logger.error("Received NZB API download call with wrong API key");
+                throw new WrongApiKeyException("Wrong api key");
+            }
+        }
         return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
     }
 
