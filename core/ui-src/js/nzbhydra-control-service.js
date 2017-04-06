@@ -19,6 +19,7 @@ function NzbHydraControlService($http) {
     }
 
     function deleteLogAndDb() {
+        //TODO
         return $http.get("internalapi/control/deleteloganddb");
     }
 }

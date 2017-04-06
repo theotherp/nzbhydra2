@@ -40,10 +40,10 @@ function connectionTest() {
             var $http = myInjector.get("$http");
             var url;
             var params;
-            if ($scope.type == "downloader") {
+            if ($scope.type === "downloader") {
                 url = "internalapi/test_downloader";
                 params = {name: $scope.downloader, username: $scope.data.username, password: $scope.data.password};
-                if ($scope.downloader == "sabnzbd") {
+                if ($scope.downloader === "SABNZBD") {
                     params.apiKey = $scope.data.apiKey;
                     params.url = $scope.data.url;
                 } else {
@@ -51,7 +51,7 @@ function connectionTest() {
                     params.port = $scope.data.port;
                     params.ssl = $scope.data.ssl;
                 }
-            } else if ($scope.data.type == "newznab") {
+            } else if ($scope.data.type === "newznab") {
                 url = "internalapi/test_newznab";
                 params = {host: $scope.data.host, apiKey: $scope.data.apiKey};
                 if (angular.isDefined($scope.data.username)) {
