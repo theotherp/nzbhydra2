@@ -3,6 +3,7 @@ package org.nzbhydra.searching.searchrequests;
 import org.junit.Before;
 import org.junit.Test;
 import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +14,7 @@ public class SearchRequestTest {
 
     @Before
     public void setUp() {
-        testee = new SearchRequest(SearchType.SEARCH, 0, 100);
+        testee = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
     }
 
     @Test

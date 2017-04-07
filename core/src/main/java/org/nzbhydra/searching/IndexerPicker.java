@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.IndexerConfig.SourceEnabled;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
@@ -15,7 +15,7 @@ import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +89,6 @@ public class IndexerPicker {
                 continue;
             }
 
-            //TODO CHeck hit and download limit
             selectedIndexers.add(indexer);
         }
         logger.info("Picked {} out of {} indexers", selectedIndexers.size(), enabledIndexers.size());
@@ -102,8 +101,9 @@ public class IndexerPicker {
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
-            if (cannotSearchProvidedOrConvertableId) {
-                logger.info("Did not pick {} because the search did not provide any ID that the indexer can handle", indexer.getName());
+            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
+                logger.info("Did not pick {} because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 count.put(indexer, "No usable ID");
                 return false;
             }
@@ -148,7 +148,10 @@ public class IndexerPicker {
     }
 
     protected boolean checkIndexerSelectedByUser(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {
-        boolean indexerNotSelectedByUser = searchRequest.getSource() == AccessSource.INTERNAL && searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().contains(indexer.getName());
+        boolean indexerNotSelectedByUser =
+                searchRequest.getSource() == SearchSource.INTERNAL
+                        && (searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().isEmpty())
+                        && !searchRequest.getIndexers().get().contains(indexer.getName());
         if (indexerNotSelectedByUser) {
             logger.info("Not picking {} because it was not selected by the user", indexer.getName());
             count.put(indexer, "Not selected by the user");
@@ -211,7 +214,7 @@ public class IndexerPicker {
     }
 
     protected boolean checkSearchSource(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {
-        boolean wrongSearchSource = indexer.getConfig().getEnabledForSearchSource() != SourceEnabled.BOTH && !searchRequest.getSource().name().equals(indexer.getConfig().getEnabledForSearchSource().name());
+        boolean wrongSearchSource = indexer.getConfig().getEnabledForSearchSource() != SearchSourceRestriction.BOTH && !searchRequest.getSource().name().equals(indexer.getConfig().getEnabledForSearchSource().name());
         if (wrongSearchSource) {
             logger.info("Not picking {} because the search source is {} but the indexer is only enabled for {} searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
             count.put(indexer, "Not enabled for this search context");

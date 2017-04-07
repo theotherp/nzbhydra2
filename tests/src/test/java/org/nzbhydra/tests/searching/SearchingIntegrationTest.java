@@ -17,6 +17,7 @@ import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -80,7 +81,7 @@ public class SearchingIntegrationTest {
         ));
 
 
-        SearchRequest searchRequest = new SearchRequest(SearchType.SEARCH, 0, 2);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 2);
         SearchResult searchResult = searcher.search(searchRequest);
 
         assertThat(searchResult.getDuplicateDetectionResult().getDuplicateGroups().size(), is(2));

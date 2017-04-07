@@ -10,10 +10,11 @@ import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -192,25 +193,25 @@ public class ResultAcceptorTest {
 
     @Test
     public void shouldCheckForForbiddenCategory() {
-        category.setIgnoreResultsFrom(SearchRestrictionType.BOTH);
+        category.setIgnoreResultsFrom(SearchSourceRestriction.BOTH);
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
 
-        category.setIgnoreResultsFrom(SearchRestrictionType.API);
+        category.setIgnoreResultsFrom(SearchSourceRestriction.API);
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertTrue(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
 
-        category.setIgnoreResultsFrom(SearchRestrictionType.INTERNAL);
+        category.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
     }
 

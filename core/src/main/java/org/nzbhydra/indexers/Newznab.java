@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import lombok.Getter;
 import lombok.Setter;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -32,6 +31,7 @@ import org.nzbhydra.searching.exceptions.IndexerAccessException;
 import org.nzbhydra.searching.exceptions.IndexerAuthException;
 import org.nzbhydra.searching.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.searching.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.searching.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.exceptions.IndexerUnreachableException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -40,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
@@ -50,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -89,13 +89,9 @@ public class Newznab extends Indexer {
     }
 
     @Autowired
-    protected RestTemplate restTemplate;
-    @Autowired
     private InfoProvider infoProvider;
     @Autowired
     private CategoryProvider categoryProvider;
-    @Autowired
-    private BaseConfig baseConfig;
     @Autowired
     private ResultAcceptor resultAcceptor;
 
@@ -105,34 +101,41 @@ public class Newznab extends Indexer {
         return builder.path("/api").queryParam("apikey", config.getApikey());
     }
 
-    @Override
-    public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) {
 
-        IndexerSearchResult indexerSearchResult;
-        try {
-            indexerSearchResult = searchInternal(searchRequest);
-        } catch (Exception e) {
-            logger.error("Unexpected error while searching", e);
-            try {
-                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
-            } catch (Exception e1) {
-                logger.error("Error while handling indexer failure. API access was not saved to database", e1);
-            }
-            IndexerSearchResult searchResult = new IndexerSearchResult(this, false);
-            searchResult.setErrorMessage(e.getMessage());
-            return searchResult;
-        }
-        return indexerSearchResult;
-    }
-
-
-    protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) {
+    protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) throws IndexerSearchAbortedException {
         UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
 
         String query = "";
+
+        componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
+
+        //Generate query if necessary, possible and enabled
         if (searchRequest.getQuery().isPresent()) {
             query = searchRequest.getQuery().get();
+        } else {
+            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
+            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
+            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
+                if (searchRequest.getTitle().isPresent()) {
+                    query = searchRequest.getTitle().get();
+                } else {
+                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
+                    try {
+                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
+                        if (!mediaInfo.getTitle().isPresent()) {
+                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
+                        }
+                        query = mediaInfo.getTitle().get();
+
+                    } catch (InfoProviderException e) {
+                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
+                    }
+                }
+                logger.info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+            }
         }
+
 
         Set<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
         requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
@@ -159,10 +162,6 @@ public class Newznab extends Indexer {
         if (!query.isEmpty()) {
             componentsBuilder.queryParam("q", query);
         }
-
-
-        //TODO query generation
-        componentsBuilder = extendQueryWithSearchIds(searchRequest, componentsBuilder);
 
         if (searchRequest.getSeason().isPresent()) {
             componentsBuilder.queryParam("season", searchRequest.getSeason().get());
@@ -200,7 +199,7 @@ public class Newznab extends Indexer {
         return componentsBuilder;
     }
 
-    protected UriComponentsBuilder extendQueryWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
+    protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) throws IndexerSearchAbortedException {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<IdType, String> params = new HashMap<>();
             boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().contains(x));
@@ -233,15 +232,19 @@ public class Newznab extends Indexer {
                     }
                 }
             }
-            params.putAll(searchRequest.getIdentifiers());
-            for (Map.Entry<IdType, String> entry : params.entrySet()) {
+            searchRequest.getIdentifiers().putAll(params);
+
+            for (Map.Entry<IdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
+                //We just add all IDs that we have. Some indexers support more than they say or will find results under one ID but not the other
                 componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue());
             }
+
         }
         return componentsBuilder;
     }
 
-    protected IndexerSearchResult searchInternal(SearchRequest searchRequest) {
+    @Override
+    protected IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException {
         String url = buildSearchUrl(searchRequest).build().toUriString();
 
         Xml response;

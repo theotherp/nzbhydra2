@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +78,7 @@ public class ResultAcceptor {
             }
 
             //Globally configured
-            boolean applyWordAndRegexRestrictions = baseConfig.getSearching().getApplyRestrictions() == SearchRestrictionType.BOTH || Objects.equals(searchRequest.getSource().name(), baseConfig.getSearching().getApplyRestrictions().name());
+            boolean applyWordAndRegexRestrictions = baseConfig.getSearching().getApplyRestrictions() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), baseConfig.getSearching().getApplyRestrictions().name());
             if (applyWordAndRegexRestrictions) {
                 if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex(), baseConfig.getSearching().getForbiddenRegex())) {
                     continue;
@@ -91,7 +92,7 @@ public class ResultAcceptor {
             }
 
             //Per category
-            applyWordAndRegexRestrictions = item.getCategory().getApplyRestrictionsType() == SearchRestrictionType.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getApplyRestrictionsType().name());
+            applyWordAndRegexRestrictions = item.getCategory().getApplyRestrictionsType() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getApplyRestrictionsType().name());
             if (applyWordAndRegexRestrictions) {
                 if (!checkRegexes(item, reasonsForRejection, searchRequest.getCategory().getRequiredRegex(), searchRequest.getCategory().getForbiddenRegex())) {
                     continue;
@@ -140,7 +141,7 @@ public class ResultAcceptor {
     }
 
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (item.getCategory().getIgnoreResultsFrom() == SearchRestrictionType.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getIgnoreResultsFrom().name())) {
+        if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
             logger.debug("{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;

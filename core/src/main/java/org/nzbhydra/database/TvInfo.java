@@ -2,7 +2,11 @@ package org.nzbhydra.database;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Data
 @Entity
@@ -14,17 +18,17 @@ public class TvInfo {
     protected int id;
 
 
-    private String tvDbId;
-    private String tvRageId;
-    private String tvMazeId;
+    private String tvdbId;
+    private String tvrageId;
+    private String tvmazeId;
     private String title;
     private Integer year;
     private String posterUrl;
 
-    public TvInfo(String tvDbId, String tvRageId, String tvMazeId, String title, Integer year, String posterUrl) {
-        this.tvDbId = tvDbId;
-        this.tvRageId = tvRageId;
-        this.tvMazeId = tvMazeId;
+    public TvInfo(String tvdbId, String tvrageId, String tvmazeId, String title, Integer year, String posterUrl) {
+        this.tvdbId = tvdbId;
+        this.tvrageId = tvrageId;
+        this.tvmazeId = tvmazeId;
         this.title = title;
         this.year = year;
         this.posterUrl = posterUrl;

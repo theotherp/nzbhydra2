@@ -8,13 +8,15 @@ import org.nzbhydra.config.Category;
 public class SafeCategory {
 
     private final boolean mayBeSelected;
-    private String name;
+    private final String name;
     private final String pretty;
+    private final boolean supportsById;
 
     public SafeCategory(Category category) {
         this.mayBeSelected = category.isMayBeSelected();
         this.name = category.getName();
         this.pretty = category.getPretty();
+        this.supportsById = category.isSupportyById();
     }
 
 }

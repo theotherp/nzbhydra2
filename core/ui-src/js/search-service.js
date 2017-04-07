@@ -17,7 +17,7 @@ function SearchService($http) {
     };
 
 
-    function search(category, query, tmdbid, imdbid, title, tvdbid, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri;
         var searchRequestParameters = {};
         searchRequestParameters.query = query;
@@ -27,21 +27,20 @@ function SearchService($http) {
         searchRequestParameters.minage = minage;
         searchRequestParameters.maxage = maxage;
         if (!angular.isUndefined(indexers) && indexers !== null) {
-            searchRequestParameters.indexers = indexers.split(",");
+            searchRequestParameters.indexers = indexers.split("|");
         }
 
         searchRequestParameters.category = category;
 
-        if (category.indexOf("Movies") > -1 || (category.indexOf("20") == 0) || mode == "movie") {
+        if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
             uri = new URI("internalapi/search/movie");
 
             searchRequestParameters.tmdbId = tmdbid;
-            searchRequestParameters.imdbId = imdbid;
-
-        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") == 0) || mode == "tvsearch") {
+            searchRequestParameters.imdbId = imdbId;
+        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
             uri = new URI("internalapi/search/tv");
 
-            searchRequestParameters.tvdbId = tvdbid;
+            searchRequestParameters.tvdbId = tvdbId;
             searchRequestParameters.tvrageId = rid;
             searchRequestParameters.season = season;
             searchRequestParameters.episode = episode;
@@ -67,7 +66,7 @@ function SearchService($http) {
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfResults = response.data.numberOfResults;
-        var rejectedReasonsMap = response.data.rejectedReasonsMap
+        var rejectedReasonsMap = response.data.rejectedReasonsMap;
 
 
         lastResults = {

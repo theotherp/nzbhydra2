@@ -3,7 +3,7 @@ package org.nzbhydra.database;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -33,16 +33,16 @@ public class NzbDownloadEntity {
     @Enumerated(EnumType.STRING)
     private NzbAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
-    private AccessSource accessSource;
+    private SearchSource searchSource;
 
     private String title;
 
-    public NzbDownloadEntity(IndexerApiAccessEntity indexerApiAccess, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, AccessSource accessSource) {
+    public NzbDownloadEntity(IndexerApiAccessEntity indexerApiAccess, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource searchSource) {
         this.indexerApiAccess = indexerApiAccess;
         this.searchResult = searchResult;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
-        this.accessSource = accessSource;
+        this.searchSource = searchSource;
     }
 
     public NzbDownloadEntity(IndexerApiAccessEntity indexerApiAccess) {

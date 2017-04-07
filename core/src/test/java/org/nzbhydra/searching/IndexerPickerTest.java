@@ -9,7 +9,7 @@ import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.IndexerConfig.SourceEnabled;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerEntity;
@@ -19,7 +19,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.data.domain.PageImpl;
 
 import java.time.Instant;
@@ -90,21 +90,21 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckIfSelectedByUser() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
-        when(searchRequest.getIndexers()).thenReturn(Optional.of(Arrays.asList("anotherIndexer")));
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("anotherIndexer")));
 
         assertFalse(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
 
-        when(searchRequest.getIndexers()).thenReturn(Optional.of(Arrays.asList("indexer")));
+        when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("indexer")));
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
     }
 
@@ -171,12 +171,12 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckContext() {
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
-        when(searchRequest.getSource()).thenReturn(AccessSource.INTERNAL);
-        when(indexerConfigMock.getEnabledForSearchSource()).thenReturn(SourceEnabled.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(indexerConfigMock.getEnabledForSearchSource()).thenReturn(SearchSourceRestriction.API);
 
         assertFalse(testee.checkSearchSource(searchRequest, count, indexer));
 
-        when(searchRequest.getSource()).thenReturn(AccessSource.API);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkSearchSource(searchRequest, count, indexer));
     }
 

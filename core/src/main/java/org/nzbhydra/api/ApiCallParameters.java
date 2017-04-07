@@ -18,7 +18,7 @@ public class ApiCallParameters {
 
     private String rid;
     private String tvdbid;
-    private String tvmazeid;
+    private String tvmazeId;
     private String imdbid;
     private String tmdbid;
     private Integer season;
@@ -51,7 +51,7 @@ public class ApiCallParameters {
                 .add("tmdbid", tmdbid)
                 .add("rid", rid)
                 .add("tvdbid", tvdbid)
-                .add("tvmazeid", tvmazeid)
+                .add("tvmazeId", tvmazeId)
                 .add("season", season)
                 .add("ep", ep)
                 .add("author", author)

@@ -109,9 +109,9 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Apply restrictions',
                                 options: [
-                                    {name: 'Internal searches', value: 'internal'},
-                                    {name: 'API searches', value: 'external'},
-                                    {name: 'All searches', value: 'both'}
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'All searches', value: 'BOTH'}
                                 ],
                                 help: "For which type of search word restrictions will be applied"
                             }
@@ -711,12 +711,14 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Generate queries',
                                 options: [
-                                    {label: 'Internal searches', id: 'internal'},
-                                    {label: 'API searches', id: 'external'}
+                                    {label: 'Internal searches', id: 'INTERNAL'},
+                                    {label: 'API searches', id: 'EXTERNAL'}
                                 ],
                                 help: "Generate queries for indexers which do not support ID based searches"
                             }
                         },
+                        //TODO fallback
+                        /*
                         {
                             key: 'idFallbackToTitle',
                             type: 'horizontalMultiselect',
@@ -738,6 +740,7 @@ function ConfigFields($injector) {
                                 help: "If enabled, fallback will occur on a per-indexer basis"
                             }
                         },
+                         */
                         {
                             key: 'userAgent',
                             type: 'horizontalInput',
@@ -899,7 +902,7 @@ function ConfigFields($injector) {
                             preselect: true,
                             searchModuleType: 'NEWZNAB',
                             accessType: "both",
-                            supportedSearchIds: undefined, //["imdbid", "rid", "tvdbid"],
+                            supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
                             searchTypes: undefined, //["tvsearch", "movie"]
                             backend: 'newznab',
                             userAgent: null
@@ -1539,7 +1542,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         {
             key: 'preselect',
             type: 'horizontalSwitch',
-            hideExpression: 'model.enabledForSearchSource==="external"',
+            hideExpression: 'model.enabledForSearchSource==="EXTERNAL"',
             templateOptions: {
                 type: 'switch',
                 label: 'Preselect',
@@ -1550,13 +1553,13 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     if (model.searchModuleType !== "JACKETT") {
         fieldset.push(
             {
-                key: 'accessType',
+                key: 'enabledForSearchSource',
                 type: 'horizontalSelect',
                 templateOptions: {
                     label: 'Enable for...',
                     options: [
-                        {name: 'Internal searches only', value: 'internal'},
-                        {name: 'API searches only', value: 'external'},
+                        {name: 'Internal searches only', value: 'INTERNAL'},
+                        {name: 'API searches only', value: 'EXTERNAL'},
                         {name: 'Internal and API searches', value: 'both'}
                     ]
                 }
@@ -1652,11 +1655,11 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 templateOptions: {
                     label: 'Search IDs',
                     options: [
-                        {label: 'TVDB', id: 'tvdbid'},
+                        {label: 'TVDB', id: 'tvdbId'},
                         {label: 'TVRage', id: 'rid'},
-                        {label: 'IMDB', id: 'imdbid'},
+                        {label: 'IMDB', id: 'imdbId'},
                         {label: 'Trakt', id: 'traktid'},
-                        {label: 'TVMaze', id: 'tvmazeid'},
+                        {label: 'TVMaze', id: 'tvmazeId'},
                         {label: 'TMDB', id: 'tmdbid'}
                     ],
                     getPlaceholder: function (model) {

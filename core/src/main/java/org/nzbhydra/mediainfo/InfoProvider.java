@@ -103,11 +103,11 @@ public class InfoProvider {
             } else if (fromType == TVMAZE || fromType == TVDB || fromType == TVRAGE || fromType == TVTITLE) {
                 TvInfo tvInfo;
                 if (fromType == TVMAZE) {
-                    tvInfo = tvInfoRepository.findByTvMazeId(value);
+                    tvInfo = tvInfoRepository.findByTvmazeId(value);
                 } else if (fromType == TVDB) {
-                    tvInfo = tvInfoRepository.findByTvDbId(value);
+                    tvInfo = tvInfoRepository.findByTvdbId(value);
                 } else if (fromType == TVRAGE) {
-                    tvInfo = tvInfoRepository.findByTvRageId(value);
+                    tvInfo = tvInfoRepository.findByTvrageId(value);
                 } else {
                     tvInfo = tvInfoRepository.findByTitle(value);
                 }

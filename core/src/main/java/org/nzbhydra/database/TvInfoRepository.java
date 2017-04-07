@@ -5,11 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TvInfoRepository extends JpaRepository<TvInfo, Integer> {
 
-    TvInfo findByTvRageId(String tvRageId);
+    TvInfo findByTvrageId(String tvrageId);
 
-    TvInfo findByTvMazeId(String tvMazeId);
+    TvInfo findByTvmazeId(String tvmazeId);
 
-    TvInfo findByTvDbId(String tvDbId);
+    TvInfo findByTvdbId(String tvdbId);
 
     TvInfo findByTitle(String title);
 }

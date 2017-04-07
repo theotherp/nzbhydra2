@@ -4,7 +4,7 @@ import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.searching.SearchType;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Convert;
@@ -31,7 +31,7 @@ public class SearchEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @Enumerated(EnumType.STRING)
-    private AccessSource source;
+    private SearchSource source;
 
     private String categoryName;
     private String query;

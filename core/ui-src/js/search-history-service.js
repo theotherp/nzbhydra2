@@ -72,10 +72,10 @@ function SearchHistoryService($filter, $http) {
         } else if (request.identifier_key) {
             var href;
             var key;
-            if (request.identifier_key == "imdbid") {
+            if (request.identifier_key == "imdbId") {
                 key = "IMDB ID";
                 href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbid") {
+            } else if (request.identifier_key == "tvdbId") {
                 key = "TVDB ID";
                 href = "https://thetvdb.com/?tab=series&id="
             } else if (request.identifier_key == "rid") {
@@ -113,15 +113,15 @@ function SearchHistoryService($filter, $http) {
     function getStateParamsForRepeatedSearch(request) {
         var stateParams = {};
         stateParams.mode = "search"
-        if (request.identifier_key == "imdbid") {
+        if (request.identifier_key == "imdbId") {
             stateParams.mode = "movie"
-            stateParams.imdbid = request.identifier_value;
-        } else if (request.identifier_key == "tvdbid" || request.identifier_key == "rid") {
+            stateParams.imdbId = request.identifier_value;
+        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
             stateParams.mode = "tvsearch";
             if (request.identifier_key == "rid") {
                 stateParams.rid = request.identifier_value;
             } else {
-                stateParams.tvdbid = request.identifier_value;
+                stateParams.tvdbId = request.identifier_value;
             }
 
             if (request.season != "") {

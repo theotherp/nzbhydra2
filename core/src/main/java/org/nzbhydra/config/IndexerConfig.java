@@ -15,12 +15,6 @@ import java.util.Set;
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig {
 
-    public enum SourceEnabled {
-        INTERNAL,
-        API,
-        BOTH
-    }
-
     private String apikey = null;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend;
@@ -28,7 +22,7 @@ public class IndexerConfig {
     private Integer downloadLimit = null;
     private boolean enabled = true;
     @JsonFormat(shape = Shape.STRING)
-    private SourceEnabled enabledForSearchSource = SourceEnabled.BOTH;
+    private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;

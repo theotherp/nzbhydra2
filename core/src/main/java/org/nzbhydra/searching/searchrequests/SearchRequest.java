@@ -5,15 +5,14 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.SearchType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,17 +23,22 @@ import java.util.regex.Pattern;
 @Data
 public class SearchRequest {
 
-    public enum AccessSource {
+    public enum SearchSource {
         INTERNAL,
-        API
+        API;
+
+        public boolean meets(SearchSourceRestriction restriction) {
+            return restriction.meets(this);
+        }
+
     }
 
     private static final Logger logger = LoggerFactory.getLogger(SearchRequest.class);
 
     private static final Pattern EXCLUSION_PATTERN = Pattern.compile("[\\s|\b](\\-\\-|!)(?<term>\\w+)");
 
-    protected List<String> indexers = new ArrayList<>();
-    protected AccessSource source;
+    protected Set<String> indexers = null;
+    protected SearchSource source;
     protected SearchType searchType = SearchType.SEARCH;
     protected Category category = new Category(); //TODO Replace with "all"
     protected Integer offset = 0;
@@ -53,13 +57,14 @@ public class SearchRequest {
 
     private InternalData internalData = new InternalData();
 
-    public SearchRequest(SearchType searchType, Integer offset, Integer limit) {
+    public SearchRequest(SearchSource source, SearchType searchType, Integer offset, Integer limit) {
+        this.source = source;
         this.searchType = searchType;
         this.offset = offset == null ? 0 : offset;
         this.limit = limit == null ? 100 : limit;
     }
 
-    public Optional<List<String>> getIndexers() {
+    public Optional<Set<String>> getIndexers() {
         return Optional.ofNullable(indexers);
     }
 
@@ -162,7 +167,9 @@ public class SearchRequest {
         }
         query = matcher.replaceAll("");
         internalData.getExcludedWords().addAll(exclusions);
-        logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
+        if (!exclusions.isEmpty()) {
+            logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
+        }
         return this;
     }
 
@@ -191,8 +198,12 @@ public class SearchRequest {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SearchRequest that = (SearchRequest) o;
         return source == that.source &&
                 searchType == that.searchType &&

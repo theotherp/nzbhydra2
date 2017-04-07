@@ -13,7 +13,7 @@ import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.web.mapping.BasicSearchRequestParameters;
 import org.nzbhydra.web.mapping.IndexerSearchMetaData;
@@ -195,7 +195,8 @@ public class Search {
     }
 
     private SearchRequest createSearchRequest(@RequestBody BasicSearchRequestParameters parameters) {
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, AccessSource.INTERNAL, categoryProvider.getByName(parameters.getCategory()), parameters.getOffset(), parameters.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, SearchSource.INTERNAL, categoryProvider.getByName(parameters.getCategory()), parameters.getOffset(), parameters.getLimit());
+        searchRequest.setIndexers(parameters.getIndexers());
         searchRequest.setQuery(parameters.getQuery());
         searchRequest.setMinage(parameters.getMinage());
         searchRequest.setMaxage(parameters.getMaxage());

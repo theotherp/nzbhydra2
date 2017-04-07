@@ -3,7 +3,6 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
-import org.nzbhydra.searching.SearchRestrictionType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,7 +13,7 @@ public class SearchingConfig {
 
     private boolean alwaysShowDuplicates = false;
     @JsonFormat(shape = Shape.STRING)
-    private SearchRestrictionType applyRestrictions = SearchRestrictionType.NONE;
+    private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.NONE;
     //categorySettings ;
     private float duplicateAgeThreshold = 2F;
     private float duplicateSizeThresholdInPercent = 1F;
@@ -23,9 +22,9 @@ public class SearchingConfig {
     private Set<String> forbiddenPosters = new HashSet<>();
     private String forbiddenRegex;
     private Set<String> forbiddenWords = new HashSet<>();
-    private boolean generateQueries;
+    private SearchSourceRestriction generateQueries;
     @JsonFormat(shape = Shape.STRING)
-    private SearchRestrictionType idFallbackToTitle = SearchRestrictionType.NONE;
+    private SearchSourceRestriction idFallbackToTitle = SearchSourceRestriction.NONE;
     private boolean idFallbackToTitlePerIndexer = false;
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
@@ -36,6 +35,6 @@ public class SearchingConfig {
     private boolean removeObfuscated = false;
     private String requiredRegex;
     private Set<String> requiredWords = new HashSet<>();
-    private Integer timeout;
+    private Integer timeout = 20;
     private String userAgent = "NZBHydra";
 };

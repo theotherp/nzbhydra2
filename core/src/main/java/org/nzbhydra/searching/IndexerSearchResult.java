@@ -38,5 +38,12 @@ public class IndexerSearchResult {
         this.time = Instant.now();
     }
 
+    public IndexerSearchResult(Indexer indexer, String errorMessage) {
+        this.wasSuccessful = false;
+        this.indexer = indexer;
+        this.time = Instant.now();
+        this.errorMessage = errorMessage;
+    }
+
 
 }

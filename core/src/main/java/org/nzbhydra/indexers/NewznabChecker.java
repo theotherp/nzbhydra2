@@ -1,6 +1,5 @@
 package org.nzbhydra.indexers;
 
-import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
@@ -98,7 +97,7 @@ public class NewznabChecker {
             if (supportedIds.isEmpty()) {
                 logger.info("The indexer does not support searching by any IDs");
             } else {
-                logger.info("The indexer supports searching using the following IDs: " + Joiner.on(", ").join(supportedIds));
+                logger.info("The indexer supports searching using the following IDs: " + supportedIds.stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
         } catch (InterruptedException e) {
             logger.error("Unexpected error while checking caps", e);

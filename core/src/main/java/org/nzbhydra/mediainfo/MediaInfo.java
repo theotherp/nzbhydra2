@@ -11,9 +11,9 @@ import java.util.Optional;
 public class MediaInfo {
     private String imdbId;
     private String tmdbId;
-    private String tvMazeId;
-    private String tvRageId;
-    private String tvDbId;
+    private String tvmazeId;
+    private String tvrageId;
+    private String tvdbId;
     private String title;
     private Integer year;
     private String posterUrl;
@@ -28,15 +28,15 @@ public class MediaInfo {
     }
 
     public Optional<String> getTvMazeId() {
-        return Optional.ofNullable(tvMazeId);
+        return Optional.ofNullable(tvmazeId);
     }
 
     public Optional<String> getTvRageId() {
-        return Optional.ofNullable(tvRageId);
+        return Optional.ofNullable(tvrageId);
     }
 
     public Optional<String> getTvDbId() {
-        return Optional.ofNullable(tvDbId);
+        return Optional.ofNullable(tvdbId);
     }
 
     public Optional<String> getTitle() {
@@ -52,9 +52,9 @@ public class MediaInfo {
     }
 
     public MediaInfo(TvMazeSearchResult searchResult) {
-        tvRageId = searchResult.getTvRageId();
-        tvMazeId = searchResult.getTvMazeId();
-        tvDbId = searchResult.getTvdbId();
+        tvrageId = searchResult.getTvrageId();
+        tvmazeId = searchResult.getTvmazeId();
+        tvdbId = searchResult.getTvdbId();
         title = searchResult.getTitle();
         year = searchResult.getYear();
         posterUrl = searchResult.getPosterUrl();
@@ -77,9 +77,9 @@ public class MediaInfo {
     }
 
     public MediaInfo(TvInfo tvInfo) {
-        tvRageId = tvInfo.getTvRageId();
-        tvMazeId = tvInfo.getTvMazeId();
-        tvDbId = tvInfo.getTvDbId();
+        tvrageId = tvInfo.getTvrageId();
+        tvmazeId = tvInfo.getTvmazeId();
+        tvdbId = tvInfo.getTvdbId();
         title = tvInfo.getTitle();
         year = tvInfo.getYear();
         posterUrl = tvInfo.getPosterUrl();
@@ -94,9 +94,9 @@ public class MediaInfo {
         return MoreObjects.toStringHelper(this)
                 .add("imdbId", imdbId)
                 .add("tmdbId", tmdbId)
-                .add("tvMazeId", tvMazeId)
-                .add("tvRageId", tvRageId)
-                .add("tvdbId", tvDbId)
+                .add("tvmazeId", tvmazeId)
+                .add("tvrageId", tvrageId)
+                .add("tvdbId", tvdbId)
                 .add("title", title)
                 .add("posterUrl", posterUrl)
                 .omitNullValues()

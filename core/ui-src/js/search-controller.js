@@ -5,7 +5,7 @@ angular
 function SearchController($scope, $http, $stateParams, $state, $window, $filter, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, blockUI, $element, ModalService, SearchHistoryService) {
 
     function getNumberOrUndefined(number) {
-        if (_.isUndefined(number) || _.isNaN(number) || number == "") {
+        if (_.isUndefined(number) || _.isNaN(number) || number === "") {
             return undefined;
         }
         number = parseInt(number);
@@ -19,17 +19,18 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
     $scope.categories = _.filter(CategoriesService.getAll(), function (c) {
-        return c.mayBeSelected && c.ignoreResults != "INTERNAL" && c.ignoreResults != "BOTH";
+        return c.mayBeSelected && c.ignoreResults !== "INTERNAL" && c.ignoreResults !== "BOTH";
     });
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);
     } else {
         $scope.category = CategoriesService.getDefault();
     }
-    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category == "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
-    $scope.tmdbid = $stateParams.tmdbid;
-    $scope.tvdbid = $stateParams.tvdbid;
-    $scope.imdbid = $stateParams.imdbid;
+    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
+    $scope.tmdbId = $stateParams.tmdbid;
+    $scope.tvdbId = $stateParams.tvdbid;
+    $scope.imdbId = $stateParams.imdbid;
+    $scope.tvmazeId = $stateParams.tvmazeid;
     $scope.rid = $stateParams.rid;
     $scope.title = $stateParams.title;
     $scope.season = $stateParams.season;
@@ -154,7 +155,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
                 return response.data;
             });
         } else if ($scope.category.name.indexOf("tv") > -1) {
-            return $http.get('internalapi/autocomplete/type/TV/' + val).then(function (response) {
+            return $http.get('internalapi/autocomplete/TV/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
@@ -167,7 +168,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.startSearch = function () {
         blockUI.start("Searching...");
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
-        SearchService.search($scope.category.name, $scope.query, $scope.tmdbid, $scope.imdbid, $scope.title, $scope.tvdbid, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+        SearchService.search($scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
             $state.go("root.search.results", {
                 minsize: $scope.minsize,
                 maxsize: $scope.maxsize,
@@ -176,9 +177,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             }, {
                 inherit: true
             });
-            $scope.tmdbid = undefined;
-            $scope.imdbid = undefined;
-            $scope.tvdbid = undefined;
+            $scope.tmdbId = undefined;
+            $scope.imdbId = undefined;
+            $scope.tvdbId = undefined;
         });
     };
 
@@ -191,6 +192,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.goToSearchUrl = function () {
+        //State params (query parameters) should all be lowercase
         var stateParams = {};
         if ($scope.category.name.indexOf("movies") > -1) {
             stateParams.title = $scope.title;
@@ -198,14 +200,15 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         } else if ($scope.category.name.indexOf("tv") > -1) {
             stateParams.mode = "tvsearch";
             stateParams.title = $scope.title;
-        } else if ($scope.category.name == "ebook") {
+        } else if ($scope.category.name === "ebook") {
             stateParams.mode = "ebook";
         } else {
             stateParams.mode = "search";
         }
 
-        stateParams.tmdbid = $scope.tmdbid;
-        stateParams.tvdbid = $scope.tvdbid;
+        stateParams.imdbid = $scope.imdbId;
+        stateParams.tmdbid = $scope.tmdbId;
+        stateParams.tvdbid = $scope.tvdbId;
         stateParams.tvrageid = $scope.tvrageId;
         stateParams.tvmazeid = $scope.tvmazeId;
         stateParams.title = $scope.title;
@@ -229,12 +232,13 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
         $scope.title = $item.title;
-        if ($scope.category.name.indexOf("movies") > -1) {
-            $scope.tmdbid = $item.tmdbId;
-        } else if ($scope.category.name.indexOf("tv") > -1) {
-            $scope.tvdbid = $item.tvdbId;
+        if ($item.tmdbId) {
+            $scope.tmdbId = $item.tmdbId;
         }
-        $scope.query = "";
+        if ($item.tvdbId) {
+            $scope.tvdbId = $item.tvdbId;
+        }
+        $scope.query = undefined;
         $scope.goToSearchUrl();
     };
 
@@ -244,8 +248,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         } else {
             //Reset values because they might've been set from the last search
             $scope.title = undefined;
-            $scope.tmdbid = undefined;
-            $scope.tvdbid = undefined;
+            $scope.tmdbId = undefined;
+            $scope.tvdbId = undefined;
             $scope.season = undefined;
             $scope.episode = undefined;
             $scope.goToSearchUrl();

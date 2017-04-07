@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@Ignore //TODO Still needed?
 public class HistoryTest {
     @InjectMocks
     private History testee = new History();

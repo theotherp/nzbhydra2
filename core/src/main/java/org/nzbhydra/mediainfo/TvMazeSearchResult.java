@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 class TvMazeSearchResult {
 
-    private String tvMazeId;
-    private String tvRageId;
+    private String tvmazeId;
+    private String tvrageId;
     private String tvdbId;
     private String title;
     private Integer year;
@@ -20,8 +20,8 @@ class TvMazeSearchResult {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("tvMazeId", tvMazeId)
-                .add("tvRageId", tvRageId)
+                .add("tvmazeId", tvmazeId)
+                .add("tvrageId", tvrageId)
                 .add("tvdbId", tvdbId)
                 .add("title", title)
                 .add("year", year)

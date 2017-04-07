@@ -58,13 +58,13 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     $scope.openSearch = function (request) {
         var stateParams = {};
-        if (request.identifier_key == "imdbid") {
-            stateParams.imdbid = request.identifier_value;
-        } else if (request.identifier_key == "tvdbid" || request.identifier_key == "rid") {
+        if (request.identifier_key == "imdbId") {
+            stateParams.imdbId = request.identifier_value;
+        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
             if (request.identifier_key == "rid") {
                 stateParams.rid = request.identifier_value;
             } else {
-                stateParams.tvdbid = request.identifier_value;
+                stateParams.tvdbId = request.identifier_value;
             }
 
             if (request.season != "") {
@@ -126,10 +126,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         if (request.identifier_key) {
             var href;
             var key;
-            if (request.identifier_key == "imdbid") {
+            if (request.identifier_key == "imdbId") {
                 key = "IMDB ID";
                 href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbid") {
+            } else if (request.identifier_key == "tvdbId") {
                 key = "TVDB ID";
                 href = "https://thetvdb.com/?tab=series&id="
             } else if (request.identifier_key == "rid") {

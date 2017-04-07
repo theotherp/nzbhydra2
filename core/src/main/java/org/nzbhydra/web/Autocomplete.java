@@ -76,8 +76,8 @@ public class Autocomplete {
     public class MediaInfoTO {
         private String imdbId;
         private String tmdbId;
-        private String tvMazeId;
-        private String tvRageId;
+        private String tvmazeId;
+        private String tvrageId;
         private String tvdbId;
         private String title;
         private Integer year;
@@ -86,8 +86,8 @@ public class Autocomplete {
         public MediaInfoTO(MediaInfo info) {
             this.imdbId = info.getImdbId().orElse(null);
             this.tmdbId = info.getTmdbId().orElse(null);
-            this.tvMazeId = info.getTvMazeId().orElse(null);
-            this.tvRageId = info.getTvRageId().orElse(null);
+            this.tvmazeId = info.getTvMazeId().orElse(null);
+            this.tvrageId = info.getTvRageId().orElse(null);
             this.tvdbId = info.getTvDbId().orElse(null);
             this.title = info.getTitle().orElse(null);
             this.year = info.getYear().orElse(null);

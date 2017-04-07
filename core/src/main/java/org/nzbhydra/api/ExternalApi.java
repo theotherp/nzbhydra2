@@ -21,7 +21,7 @@ import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,12 +60,11 @@ public class ExternalApi {
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    @Secured("ROLE_API")
     public ResponseEntity<? extends Object> api(ApiCallParameters params) throws Exception {
         logger.info("Received external API call: " + params);
 
         //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
-        if (baseConfig.getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey())) {
+        if (baseConfig.getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey().get())) {
             logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
@@ -168,7 +166,7 @@ public class ExternalApi {
 
     private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, AccessSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());
@@ -182,8 +180,8 @@ public class ExternalApi {
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());
         }
-        if (!Strings.isNullOrEmpty(params.getTvmazeid())) {
-            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeid());
+        if (!Strings.isNullOrEmpty(params.getTvmazeId())) {
+            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeId());
         }
         if (!Strings.isNullOrEmpty(params.getRid())) {
             searchRequest.getIdentifiers().put(IdType.TVRAGE, params.getRid());

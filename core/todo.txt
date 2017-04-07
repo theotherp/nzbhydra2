@@ -83,6 +83,8 @@ Improvements
 - Hopefully more stable in the long run
 - Fully unicode compatible TODO: Test this ;-)
 - In the future: Background processes, cancel searches
+- Sends all available identifiers instead of just one
+- Reverse proxy support is better (doesn't matter if called by trailing slash)
 ...
 ++++
 

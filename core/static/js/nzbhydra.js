@@ -438,7 +438,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         })
 
         .state("root.search", {
-            url: "/?category&query&imdbid&tvdbd&title&season&episode&minsize&maxsize&minage&maxage&offsets&rid&mode&tmdbid&indexers&tvmazeid",
+            url: "/?category&query&imdbid&tvdbid&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageid&mode&tmdbid&indexers&tvmazeid",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/search.html",
@@ -2436,7 +2436,7 @@ function SearchService($http) {
     };
 
 
-    function search(category, query, tmdbid, imdbid, title, tvdbid, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri;
         var searchRequestParameters = {};
         searchRequestParameters.query = query;
@@ -2446,21 +2446,20 @@ function SearchService($http) {
         searchRequestParameters.minage = minage;
         searchRequestParameters.maxage = maxage;
         if (!angular.isUndefined(indexers) && indexers !== null) {
-            searchRequestParameters.indexers = indexers.split(",");
+            searchRequestParameters.indexers = indexers.split("|");
         }
 
         searchRequestParameters.category = category;
 
-        if (category.indexOf("Movies") > -1 || (category.indexOf("20") == 0) || mode == "movie") {
+        if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
             uri = new URI("internalapi/search/movie");
 
             searchRequestParameters.tmdbId = tmdbid;
-            searchRequestParameters.imdbId = imdbid;
-
-        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") == 0) || mode == "tvsearch") {
+            searchRequestParameters.imdbId = imdbId;
+        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
             uri = new URI("internalapi/search/tv");
 
-            searchRequestParameters.tvdbId = tvdbid;
+            searchRequestParameters.tvdbId = tvdbId;
             searchRequestParameters.tvrageId = rid;
             searchRequestParameters.season = season;
             searchRequestParameters.episode = episode;
@@ -2486,7 +2485,7 @@ function SearchService($http) {
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfResults = response.data.numberOfResults;
-        var rejectedReasonsMap = response.data.rejectedReasonsMap
+        var rejectedReasonsMap = response.data.rejectedReasonsMap;
 
 
         lastResults = {
@@ -2883,10 +2882,10 @@ function SearchHistoryService($filter, $http) {
         } else if (request.identifier_key) {
             var href;
             var key;
-            if (request.identifier_key == "imdbid") {
+            if (request.identifier_key == "imdbId") {
                 key = "IMDB ID";
                 href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbid") {
+            } else if (request.identifier_key == "tvdbId") {
                 key = "TVDB ID";
                 href = "https://thetvdb.com/?tab=series&id="
             } else if (request.identifier_key == "rid") {
@@ -2924,15 +2923,15 @@ function SearchHistoryService($filter, $http) {
     function getStateParamsForRepeatedSearch(request) {
         var stateParams = {};
         stateParams.mode = "search"
-        if (request.identifier_key == "imdbid") {
+        if (request.identifier_key == "imdbId") {
             stateParams.mode = "movie"
-            stateParams.imdbid = request.identifier_value;
-        } else if (request.identifier_key == "tvdbid" || request.identifier_key == "rid") {
+            stateParams.imdbId = request.identifier_value;
+        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
             stateParams.mode = "tvsearch";
             if (request.identifier_key == "rid") {
                 stateParams.rid = request.identifier_value;
             } else {
-                stateParams.tvdbid = request.identifier_value;
+                stateParams.tvdbId = request.identifier_value;
             }
 
             if (request.season != "") {
@@ -3026,13 +3025,13 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     $scope.openSearch = function (request) {
         var stateParams = {};
-        if (request.identifier_key == "imdbid") {
-            stateParams.imdbid = request.identifier_value;
-        } else if (request.identifier_key == "tvdbid" || request.identifier_key == "rid") {
+        if (request.identifier_key == "imdbId") {
+            stateParams.imdbId = request.identifier_value;
+        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
             if (request.identifier_key == "rid") {
                 stateParams.rid = request.identifier_value;
             } else {
-                stateParams.tvdbid = request.identifier_value;
+                stateParams.tvdbId = request.identifier_value;
             }
 
             if (request.season != "") {
@@ -3094,10 +3093,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         if (request.identifier_key) {
             var href;
             var key;
-            if (request.identifier_key == "imdbid") {
+            if (request.identifier_key == "imdbId") {
                 key = "IMDB ID";
                 href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbid") {
+            } else if (request.identifier_key == "tvdbId") {
                 key = "TVDB ID";
                 href = "https://thetvdb.com/?tab=series&id="
             } else if (request.identifier_key == "rid") {
@@ -3137,7 +3136,7 @@ angular
 function SearchController($scope, $http, $stateParams, $state, $window, $filter, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, blockUI, $element, ModalService, SearchHistoryService) {
 
     function getNumberOrUndefined(number) {
-        if (_.isUndefined(number) || _.isNaN(number) || number == "") {
+        if (_.isUndefined(number) || _.isNaN(number) || number === "") {
             return undefined;
         }
         number = parseInt(number);
@@ -3151,17 +3150,18 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
     $scope.categories = _.filter(CategoriesService.getAll(), function (c) {
-        return c.mayBeSelected && c.ignoreResults != "INTERNAL" && c.ignoreResults != "BOTH";
+        return c.mayBeSelected && c.ignoreResults !== "INTERNAL" && c.ignoreResults !== "BOTH";
     });
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);
     } else {
         $scope.category = CategoriesService.getDefault();
     }
-    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category == "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
-    $scope.tmdbid = $stateParams.tmdbid;
-    $scope.tvdbid = $stateParams.tvdbid;
-    $scope.imdbid = $stateParams.imdbid;
+    $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
+    $scope.tmdbId = $stateParams.tmdbid;
+    $scope.tvdbId = $stateParams.tvdbid;
+    $scope.imdbId = $stateParams.imdbid;
+    $scope.tvmazeId = $stateParams.tvmazeid;
     $scope.rid = $stateParams.rid;
     $scope.title = $stateParams.title;
     $scope.season = $stateParams.season;
@@ -3286,7 +3286,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
                 return response.data;
             });
         } else if ($scope.category.name.indexOf("tv") > -1) {
-            return $http.get('internalapi/autocomplete/type/TV/' + val).then(function (response) {
+            return $http.get('internalapi/autocomplete/TV/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
@@ -3299,7 +3299,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.startSearch = function () {
         blockUI.start("Searching...");
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
-        SearchService.search($scope.category.name, $scope.query, $scope.tmdbid, $scope.imdbid, $scope.title, $scope.tvdbid, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+        SearchService.search($scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
             $state.go("root.search.results", {
                 minsize: $scope.minsize,
                 maxsize: $scope.maxsize,
@@ -3308,9 +3308,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             }, {
                 inherit: true
             });
-            $scope.tmdbid = undefined;
-            $scope.imdbid = undefined;
-            $scope.tvdbid = undefined;
+            $scope.tmdbId = undefined;
+            $scope.imdbId = undefined;
+            $scope.tvdbId = undefined;
         });
     };
 
@@ -3323,6 +3323,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.goToSearchUrl = function () {
+        //State params (query parameters) should all be lowercase
         var stateParams = {};
         if ($scope.category.name.indexOf("movies") > -1) {
             stateParams.title = $scope.title;
@@ -3330,14 +3331,15 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         } else if ($scope.category.name.indexOf("tv") > -1) {
             stateParams.mode = "tvsearch";
             stateParams.title = $scope.title;
-        } else if ($scope.category.name == "ebook") {
+        } else if ($scope.category.name === "ebook") {
             stateParams.mode = "ebook";
         } else {
             stateParams.mode = "search";
         }
 
-        stateParams.tmdbid = $scope.tmdbid;
-        stateParams.tvdbid = $scope.tvdbid;
+        stateParams.imdbid = $scope.imdbId;
+        stateParams.tmdbid = $scope.tmdbId;
+        stateParams.tvdbid = $scope.tvdbId;
         stateParams.tvrageid = $scope.tvrageId;
         stateParams.tvmazeid = $scope.tvmazeId;
         stateParams.title = $scope.title;
@@ -3361,12 +3363,13 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
         $scope.title = $item.title;
-        if ($scope.category.name.indexOf("movies") > -1) {
-            $scope.tmdbid = $item.tmdbId;
-        } else if ($scope.category.name.indexOf("tv") > -1) {
-            $scope.tvdbid = $item.tvdbId;
+        if ($item.tmdbId) {
+            $scope.tmdbId = $item.tmdbId;
         }
-        $scope.query = "";
+        if ($item.tvdbId) {
+            $scope.tvdbId = $item.tvdbId;
+        }
+        $scope.query = undefined;
         $scope.goToSearchUrl();
     };
 
@@ -3376,8 +3379,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         } else {
             //Reset values because they might've been set from the last search
             $scope.title = undefined;
-            $scope.tmdbid = undefined;
-            $scope.tvdbid = undefined;
+            $scope.tmdbId = undefined;
+            $scope.tvdbId = undefined;
             $scope.season = undefined;
             $scope.episode = undefined;
             $scope.goToSearchUrl();
@@ -4945,9 +4948,9 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Apply restrictions',
                                 options: [
-                                    {name: 'Internal searches', value: 'internal'},
-                                    {name: 'API searches', value: 'external'},
-                                    {name: 'All searches', value: 'both'}
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'All searches', value: 'BOTH'}
                                 ],
                                 help: "For which type of search word restrictions will be applied"
                             }
@@ -5547,12 +5550,14 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Generate queries',
                                 options: [
-                                    {label: 'Internal searches', id: 'internal'},
-                                    {label: 'API searches', id: 'external'}
+                                    {label: 'Internal searches', id: 'INTERNAL'},
+                                    {label: 'API searches', id: 'EXTERNAL'}
                                 ],
                                 help: "Generate queries for indexers which do not support ID based searches"
                             }
                         },
+                        //TODO fallback
+                        /*
                         {
                             key: 'idFallbackToTitle',
                             type: 'horizontalMultiselect',
@@ -5574,6 +5579,7 @@ function ConfigFields($injector) {
                                 help: "If enabled, fallback will occur on a per-indexer basis"
                             }
                         },
+                         */
                         {
                             key: 'userAgent',
                             type: 'horizontalInput',
@@ -5735,7 +5741,7 @@ function ConfigFields($injector) {
                             preselect: true,
                             searchModuleType: 'NEWZNAB',
                             accessType: "both",
-                            supportedSearchIds: undefined, //["imdbid", "rid", "tvdbid"],
+                            supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
                             searchTypes: undefined, //["tvsearch", "movie"]
                             backend: 'newznab',
                             userAgent: null
@@ -6376,7 +6382,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         {
             key: 'preselect',
             type: 'horizontalSwitch',
-            hideExpression: 'model.enabledForSearchSource==="external"',
+            hideExpression: 'model.enabledForSearchSource==="EXTERNAL"',
             templateOptions: {
                 type: 'switch',
                 label: 'Preselect',
@@ -6387,13 +6393,13 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     if (model.searchModuleType !== "JACKETT") {
         fieldset.push(
             {
-                key: 'accessType',
+                key: 'enabledForSearchSource',
                 type: 'horizontalSelect',
                 templateOptions: {
                     label: 'Enable for...',
                     options: [
-                        {name: 'Internal searches only', value: 'internal'},
-                        {name: 'API searches only', value: 'external'},
+                        {name: 'Internal searches only', value: 'INTERNAL'},
+                        {name: 'API searches only', value: 'EXTERNAL'},
                         {name: 'Internal and API searches', value: 'both'}
                     ]
                 }
@@ -6489,11 +6495,11 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 templateOptions: {
                     label: 'Search IDs',
                     options: [
-                        {label: 'TVDB', id: 'tvdbid'},
+                        {label: 'TVDB', id: 'tvdbId'},
                         {label: 'TVRage', id: 'rid'},
-                        {label: 'IMDB', id: 'imdbid'},
+                        {label: 'IMDB', id: 'imdbId'},
                         {label: 'Trakt', id: 'traktid'},
-                        {label: 'TVMaze', id: 'tvmazeid'},
+                        {label: 'TVMaze', id: 'tvmazeId'},
                         {label: 'TMDB', id: 'tmdbid'}
                     ],
                     getPlaceholder: function (model) {

@@ -2,6 +2,9 @@ package org.nzbhydra.searching.exceptions;
 
 import org.nzbhydra.NzbHydraException;
 
+/**
+ * Thrown when any error occurred while contacting the indexer.
+ */
 public class IndexerAccessException extends NzbHydraException {
 
     public IndexerAccessException(String message) {

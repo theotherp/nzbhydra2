@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
@@ -15,12 +16,15 @@ import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +55,10 @@ public abstract class Indexer {
     protected IndexerConfig config;
 
     @Autowired
+    protected BaseConfig baseConfig;
+    @Autowired
+    protected RestTemplate restTemplate;
+    @Autowired
     private IndexerRepository indexerRepository;
     @Autowired
     private SearchResultRepository searchResultRepository;
@@ -60,9 +68,36 @@ public abstract class Indexer {
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+        //Set timeout. //TODO Timeout should be the maximum total time we wait for the client to return
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        int timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
+        factory.setReadTimeout(timeout);
+        factory.setConnectTimeout(timeout);
+        restTemplate.setRequestFactory(factory);
     }
 
-    public abstract IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit);
+    public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) throws IndexerSearchAbortedException {
+        IndexerSearchResult indexerSearchResult;
+        try {
+            indexerSearchResult = searchInternal(searchRequest);
+        } catch (Exception e) {
+            if (e instanceof IndexerSearchAbortedException) {
+                logger.warn("Unexpected error while preparing search");
+                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            } else {
+                logger.error("Unexpected error while searching", e);
+                try {
+                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+                } catch (Exception e1) {
+                    logger.error("Error while handling indexer failure. API access was not saved to database", e1);
+                }
+                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            }
+        }
+        return indexerSearchResult;
+    }
+
+    protected abstract IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException;
 
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {

@@ -2,7 +2,7 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.IndexerConfig.SourceEnabled;
+import org.nzbhydra.config.SearchSourceRestriction;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ public class SafeIndexerConfig {
     private boolean enabled;
     private Set<String> categories;
     private boolean showOnSearch;
-    SourceEnabled enabledForSearchSource;
+    SearchSourceRestriction enabledForSearchSource;
 
     public SafeIndexerConfig(IndexerConfig indexerConfig) {
         this.name = indexerConfig.getName();

@@ -15,7 +15,7 @@ import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
-import org.nzbhydra.searching.searchrequests.SearchRequest.AccessSource;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class NzbHandler {
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
-            saveDownloadToDatabase(result, NzbAccessType.REDIRECT, AccessSource.INTERNAL, IndexerApiAccessResult.UNKNOWN);
+            saveDownloadToDatabase(result, NzbAccessType.REDIRECT, SearchSource.INTERNAL, IndexerApiAccessResult.UNKNOWN);
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink());
         } else {
             String nzbContent;
@@ -59,7 +59,7 @@ public class NzbHandler {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
-                saveDownloadToDatabase(result, NzbAccessType.PROXY, AccessSource.INTERNAL, IndexerApiAccessResult.CONNECTION_ERROR, null, e.getMessage());
+                saveDownloadToDatabase(result, NzbAccessType.PROXY, SearchSource.INTERNAL, IndexerApiAccessResult.CONNECTION_ERROR, null, e.getMessage());
                 return NzbDownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName());
             }
 
@@ -67,7 +67,7 @@ public class NzbHandler {
             //TODO CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("NZB download from indexer successfully completed in {}ms", responseTime);
 
-            saveDownloadToDatabase(result, NzbAccessType.PROXY, AccessSource.INTERNAL, IndexerApiAccessResult.SUCCESSFUL, responseTime, null);
+            saveDownloadToDatabase(result, NzbAccessType.PROXY, SearchSource.INTERNAL, IndexerApiAccessResult.SUCCESSFUL, responseTime, null);
 
             return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent);
         }
@@ -97,11 +97,11 @@ public class NzbHandler {
     }
 
 
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, AccessSource source, IndexerApiAccessResult accessResult) {
+    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerApiAccessResult accessResult) {
         saveDownloadToDatabase(result, accessType, source, accessResult, null, null);
     }
 
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, AccessSource source, IndexerApiAccessResult accessResult, Long responseTime, String error) {
+    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerApiAccessResult accessResult, Long responseTime, String error) {
         IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(result.getIndexer());
         apiAccess.setAccessType(IndexerApiAccessType.NZB);
         apiAccess.setResult(accessResult);

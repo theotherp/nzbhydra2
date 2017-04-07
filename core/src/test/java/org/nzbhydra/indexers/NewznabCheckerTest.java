@@ -12,6 +12,10 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.nzbhydra.mediainfo.InfoProvider.IdType.IMDB;
 import static org.nzbhydra.mediainfo.InfoProvider.IdType.TMDB;
@@ -56,6 +60,7 @@ public class NewznabCheckerTest {
         when(restTemplateMock.getForObject("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228", RssRoot.class))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
+
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(6, checkCapsRespone.getSupportedIds().size());
         assertTrue(checkCapsRespone.getSupportedIds().contains(TVDB));
@@ -64,6 +69,8 @@ public class NewznabCheckerTest {
         assertTrue(checkCapsRespone.getSupportedIds().contains(TRAKT));
         assertTrue(checkCapsRespone.getSupportedIds().contains(IMDB));
         assertTrue(checkCapsRespone.getSupportedIds().contains(TMDB));
+        verify(restTemplateMock, times(6)).getForObject(anyString(), any());
+
     }
 
     @Test
@@ -84,6 +91,8 @@ public class NewznabCheckerTest {
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(0, checkCapsRespone.getSupportedIds().size());
+        verify(restTemplateMock, times(6)).getForObject(anyString(), any());
+
     }
 
 

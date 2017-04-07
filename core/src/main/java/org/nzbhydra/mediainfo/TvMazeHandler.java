@@ -140,7 +140,6 @@ public class TvMazeHandler {
         public String toString() {
             return MoreObjects.toStringHelper(this)
                     .add("medium", medium)
-                    .add("original", original)
                     .toString();
         }
     }

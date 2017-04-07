@@ -2,10 +2,22 @@ package org.nzbhydra.indexers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
-import org.nzbhydra.database.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.nzbhydra.database.IndexerApiAccessRepository;
+import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.database.IndexerRepository;
+import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.SearchResultEntity;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +62,11 @@ public class IndexerTest {
 
         @Override
         public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) {
+            return null;
+        }
+
+        @Override
+        protected IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException {
             return null;
         }
     };
@@ -104,9 +121,9 @@ public class IndexerTest {
 
     @Test
     public void handleSuccess() throws Exception {
+        when(indexerMock.getIndexerEntity().getStatus()).thenReturn(statusMock);
         testee.handleSuccess(IndexerApiAccessType.SEARCH, 0, IndexerApiAccessResult.API_ERROR, "url");
 
-        verify(statusMock).setReason(null);
         verify(statusMock).setDisabledPermanently(false);
         verify(statusMock).setLevel(0);
         verify(statusMock).setDisabledUntil(null);
@@ -126,7 +143,6 @@ public class IndexerTest {
 
         assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) - 1, ChronoUnit.MINUTES).isAfter(Instant.now()));
         assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) + 1, ChronoUnit.MINUTES).isBefore(Instant.now()));
-
 
         verify(indexerRepositoryMock).save(indexerEntityMock);
     }

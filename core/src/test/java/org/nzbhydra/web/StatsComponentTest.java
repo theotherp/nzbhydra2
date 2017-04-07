@@ -113,7 +113,7 @@ public class StatsComponentTest {
         //Access #3 is included
         averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(101, ChronoUnit.DAYS), Instant.now()));
         assertEquals(1, averageResponseTimes.size());
-        assertEquals(3500D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
+        assertEquals(2333D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
     }
 
     @Test
