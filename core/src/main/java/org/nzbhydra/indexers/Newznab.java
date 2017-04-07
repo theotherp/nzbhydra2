@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,9 +129,37 @@ public class Newznab extends Indexer {
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) {
         UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
 
+        String query = "";
         if (searchRequest.getQuery().isPresent()) {
-            componentsBuilder.queryParam("q", searchRequest.getQuery().get());
+            query = searchRequest.getQuery().get();
         }
+
+        Set<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
+        requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
+        if (!requiredWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
+        }
+
+        Set<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
+        excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
+        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        if (!excludedWords.isEmpty()) {
+            //TODO handle differently depending on backend
+            query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
+        }
+
+        if (config.getHost().toLowerCase().contains("nzbgeek")) {
+            //With nzbgeek not more than 12 words at all are allowed
+            String[] split = query.split(" ");
+            if (query.split(" ").length > 12) {
+                query = Joiner.on(" ").join(Arrays.copyOfRange(split, 0, 12));
+            }
+        }
+        if (!query.isEmpty()) {
+            componentsBuilder.queryParam("q", query);
+        }
+
 
         //TODO query generation
         componentsBuilder = extendQueryWithSearchIds(searchRequest, componentsBuilder);

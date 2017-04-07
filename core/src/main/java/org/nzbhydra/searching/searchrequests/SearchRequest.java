@@ -1,12 +1,16 @@
 package org.nzbhydra.searching.searchrequests;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.SearchType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,12 +29,14 @@ public class SearchRequest {
         API
     }
 
+    private static final Logger logger = LoggerFactory.getLogger(SearchRequest.class);
+
     private static final Pattern EXCLUSION_PATTERN = Pattern.compile("[\\s|\b](\\-\\-|!)(?<term>\\w+)");
 
-    protected List<String> indexers;
+    protected List<String> indexers = new ArrayList<>();
     protected AccessSource source;
-    protected SearchType searchType;
-    protected Category category;
+    protected SearchType searchType = SearchType.SEARCH;
+    protected Category category = new Category(); //TODO Replace with "all"
     protected Integer offset = 0;
     protected Integer limit = 100;
     protected Integer minsize;
@@ -156,6 +162,7 @@ public class SearchRequest {
         }
         query = matcher.replaceAll("");
         internalData.getExcludedWords().addAll(exclusions);
+        logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
         return this;
     }
 

@@ -17,7 +17,6 @@ public class BootstrappedData {
     private Boolean maySeeAdmin;
     private Boolean authConfigured;
     private Boolean showIndexerSelection;
-    private String baseUrl;
     private SafeConfig safeConfig;
 
 }

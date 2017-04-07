@@ -2,6 +2,8 @@ var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy'
 
 angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
+    console.log("Starting");
+
     blockUIConfig.autoBlock = false;
     $urlMatcherFactoryProvider.strictMode(false);
 

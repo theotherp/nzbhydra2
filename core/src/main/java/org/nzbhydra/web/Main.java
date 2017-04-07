@@ -88,11 +88,9 @@ public class Main {
     private void setSessionAttributes(HttpSession session, Principal principal) {
         BootstrappedData bootstrappedData = new BootstrappedData();
         bootstrappedData = setUserInfos(bootstrappedData, principal);
-        bootstrappedData.setBaseUrl("/"); //TODO
-
         bootstrappedData.setSafeConfig(getSafeConfig());
 
-        session.setAttribute("baseUrl", "/");
+        session.setAttribute("baseUrl", (baseConfig.getMain().getUrlBase().orElse("/") + "/").replace("//", "/"));
         session.setAttribute("bootstrap", bootstrappedData);
     }
 

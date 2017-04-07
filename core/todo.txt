@@ -1,9 +1,9 @@
 GUI
-- Reverse proxy support (done in settings)
+- !!! Reverse proxy support (done in settings)
 - Config (getting, setting): Mostly done
 - Update notification
-- basic Searching
-- searching with exclusion
+- !!! basic Searching
+- !!! searching with exclusion
 - searching by ID, autocomplete
 
 Searching

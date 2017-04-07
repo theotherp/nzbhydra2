@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -31,6 +32,11 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         registry.setOrder(0);
     }
 
+    @Override
+    protected void addCorsMappings(CorsRegistry registry) {
+        //registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5076", "https://127.0.0.1:9091");
+        //TODO: Check when actually calling from other host
+    }
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping() {

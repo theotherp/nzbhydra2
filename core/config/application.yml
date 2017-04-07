@@ -178,6 +178,16 @@ categories:
     ignoreResultsFrom: NONE
     applyRestrictionsType: NONE
     enableCategorySizes: false
+    supportyById: true
+  -
+    name: tv
+    newznabCategories: 5000
+    pretty: TV
+    mayBeSelected: true
+    ignoreResultsFrom: NONE
+    applyRestrictionsType: NONE
+    enableCategorySizes: false
+    supportyById: true
 
 
 main:
@@ -214,7 +224,7 @@ main:
   sslkey: nzbhydra.key
   startupBrowser: false
   theme: grey
-  urlBase: ''
+  urlBase: '/'
   useCsrf: true
   useLocalUrlForApiAccess: true
 

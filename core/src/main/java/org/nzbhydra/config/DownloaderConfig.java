@@ -11,14 +11,14 @@ public class DownloaderConfig {
     private String apiKey;
     private String defaultCategory;
     /**
-     * TODO
+     * TODO NZB or torrent
      */
     private String downloadType;
     private boolean enabled = true;
-    private String iconCssClass;
+    private String iconCssClass = null;
     private String name;
-    private NzbAccessType nzbAccessType;
-    private NzbAddingType nzbAddingType;
+    private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
+    private NzbAddingType nzbAddingType = NzbAddingType.SEND_LINK;
     private DownloaderType downloaderType;
     private String url;
 
