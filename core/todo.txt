@@ -12,9 +12,9 @@ Searching
 - exclusions: mostly done
 - rejecting search results: mostly done
 - ID conversion: Infos can be retrieved, must be used
-- query generation
+- !!! query generation
 - search history: mostly done
-- hitlimit and downloadlimit
+- !!! hitlimit and downloadlimit
 
 Config
 - Loading

@@ -24,7 +24,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService) {
         $scope.checked = true;
         UpdateService.getVersions().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.repVersion;
+            $scope.latestVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;
             $scope.changelog = data.data.changelog;
         });
@@ -36,7 +36,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService) {
     };
 
     $scope.showChangelog = function () {
-        UpdateService.showChanges($scope.changelog);
+        UpdateService.showChanges();
     }
 
 }

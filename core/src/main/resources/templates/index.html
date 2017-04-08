@@ -34,7 +34,7 @@
 <span ng-controller="UpdateFooterController">
     <div id="footer" ng-if="updateAvailable" ng-cloak="">
         <div class="container">
-            Yay, there's an update available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="repVersion"></span>.
+            Yay, there's an update available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="latestVersion"></span>.
             <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!</button>
             <button class="btn btn-default" type="button" ng-click="update()" style="margin-top: 5px;">Update now!</button>
         </div>

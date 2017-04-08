@@ -56,10 +56,10 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     //Doesn't belong here but whatever
     var firstStartThreeDaysAgo = ConfigService.getSafe().firstStart < moment().subtract(3, "days").unix();
-    var doShowSurvey = (ConfigService.getSafe().pollShown == 0 && firstStartThreeDaysAgo) || ConfigService.getSafe().pollShown == 1;
+    var doShowSurvey = (ConfigService.getSafe().pollShown === 0 && firstStartThreeDaysAgo) || ConfigService.getSafe().pollShown === 1;
     if (doShowSurvey) {
         var message;
-        if (ConfigService.getSafe().pollShown == 0) {
+        if (ConfigService.getSafe().pollShown === 0) {
             message = "Dear user, I would like to ask you to answer a short query about NZB Hydra. It is absolutely anonymous and will not take more than a couple of minutes. You would help me a lot!";
         } else {
             message = "Dear user, thank you for answering my last survey. Unfortunately I'm an idiot and didn't know that SurveyMonkey would only show me the first 100 results. Please be so kind and answer the new survey :-)";
@@ -282,7 +282,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     function getAvailableIndexers() {
         return _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length == 0 || $scope.category.name == "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })
@@ -299,7 +299,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.searchInputChanged = function () {
-        $scope.$broadcast("searchInputChanged", $scope.query != $stateParams.query ? $scope.query : null, $scope.minage, $scope.maxage, $scope.minsize, $scope.maxsize);
+        $scope.$broadcast("searchInputChanged", $scope.query !== $stateParams.query ? $scope.query : null, $scope.minage, $scope.maxage, $scope.minsize, $scope.maxsize);
     };
 
 

@@ -722,7 +722,9 @@ nzbhydraapp.factory('responseObserver', ["$q", "$window", "growl", function resp
                     growl.info("You are not allowed to visit that section.");
                     break;
             }
-            errorResponse.config.alreadyHandled = true;
+            if (angular.isDefined(errorResponse.config)) {
+                errorResponse.config.alreadyHandled = true;
+            }
             return $q.reject(errorResponse);
         }
     };
@@ -760,43 +762,6 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
         });
     };
 }]);
-angular
-    .module('nzbhydraApp')
-    .directive('hydraupdates', hydraupdates);
-
-function hydraupdates() {
-    controller.$inject = ["$scope", "UpdateService", "$sce"];
-    return {
-        templateUrl: 'static/html/directives/updates.html',
-        controller: controller
-    };
-
-    function controller($scope, UpdateService, $sce) {
-
-        $scope.loadingPromise = UpdateService.getVersions().then(function (data) {
-            $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.repVersion;
-            $scope.updateAvailable = data.data.updateAvailable;
-            $scope.changelog = data.data.changelog;
-        });
-
-        UpdateService.getVersionHistory().then(function (data) {
-            $scope.versionHistory = $sce.trustAsHtml(data.data.versionHistory);
-        });
-
-        $scope.update = function () {
-            UpdateService.update();
-        };
-
-        $scope.showChangelog = function () {
-            UpdateService.showChanges($scope.changelog);
-        };
-
-
-    }
-}
-
-
 angular
     .module('nzbhydraApp')
     .directive('titleRow', titleRow);
@@ -1064,74 +1029,6 @@ function onFinishRender($timeout) {
 }
 onFinishRender.$inject = ["$timeout"];
 angular
-    .module('nzbhydraApp')
-    .directive('hydralog', hydralog);
-
-function hydralog() {
-    controller.$inject = ["$scope", "$http", "$sce", "$interval", "localStorageService"];
-    return {
-        templateUrl: "static/html/directives/log.html",
-        controller: controller
-    };
-
-    function controller($scope, $http, $sce, $interval, localStorageService) {
-        $scope.tailInterval = null;
-        $scope.doUpdateLog = localStorageService.get("doUpdateLog") != null ? localStorageService.get("doUpdateLog") : false;
-        $scope.doTailLog = localStorageService.get("doTailLog") != null ? localStorageService.get("doTailLog") : false;
-
-
-        function getAndShowLog() {
-            return $http.get("internalapi/getlogs").success(function (data) {
-                $scope.log = $sce.trustAsHtml(data.log);
-            });
-        }
-
-        $scope.logPromise = getAndShowLog();
-
-        $scope.scrollToBottom = function () {
-            document.getElementById("logfile").scrollTop = 10000000;
-            document.getElementById("logfile").scrollTop = 100001000;
-        };
-
-        $scope.update = function () {
-            getAndShowLog();
-            $scope.scrollToBottom();
-        };
-
-        function startUpdateLogInterval() {
-            $scope.tailInterval = $interval(function () {
-                getAndShowLog();
-                if ($scope.doTailLog) {
-                    $scope.scrollToBottom();
-                }
-            }, 5000);
-        }
-
-        $scope.toggleUpdate = function () {
-            if ($scope.doUpdateLog) {
-                startUpdateLogInterval();
-            } else if ($scope.tailInterval != null) {
-                console.log("Cancelling");
-                $interval.cancel($scope.tailInterval);
-                localStorageService.set("doTailLog", false);
-                $scope.doTailLog = false;
-            }
-            localStorageService.set("doUpdateLog", $scope.doUpdateLog);
-        };
-
-        $scope.toggleTailLog = function () {
-            localStorageService.set("doTailLog", $scope.doTailLog);
-        };
-
-        if ($scope.doUpdateLog) {
-            startUpdateLogInterval();
-        }
-
-    }
-}
-
-
-angular
     .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
     /*
      Intended use:
@@ -1179,6 +1076,111 @@ function indexerInput() {
         $scope.onBlur = function () {
             $scope.isFocused = false;
         };
+
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('hydraupdates', hydraupdates);
+
+function hydraupdates() {
+    controller.$inject = ["$scope", "UpdateService", "$sce"];
+    return {
+        templateUrl: 'static/html/directives/updates.html',
+        controller: controller
+    };
+
+    function controller($scope, UpdateService, $sce) {
+
+        $scope.loadingPromise = UpdateService.getVersions().then(function (data) {
+            $scope.currentVersion = data.data.currentVersion;
+            $scope.repVersion = data.data.repVersion;
+            $scope.updateAvailable = data.data.updateAvailable;
+            $scope.changelog = data.data.changelog;
+        });
+
+        UpdateService.getVersionHistory().then(function (data) {
+            $scope.versionHistory = $sce.trustAsHtml(data.data.versionHistory);
+        });
+
+        $scope.update = function () {
+            UpdateService.update();
+        };
+
+        $scope.showChangelog = function () {
+            UpdateService.showChanges($scope.changelog);
+        };
+
+
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('hydralog', hydralog);
+
+function hydralog() {
+    controller.$inject = ["$scope", "$http", "$sce", "$interval", "localStorageService"];
+    return {
+        templateUrl: "static/html/directives/log.html",
+        controller: controller
+    };
+
+    function controller($scope, $http, $sce, $interval, localStorageService) {
+        $scope.tailInterval = null;
+        $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
+        $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
+
+
+        function getAndShowLog() {
+            return $http.get("internalapi/getlogs").success(function (data) {
+                $scope.log = $sce.trustAsHtml(data.log);
+            });
+        }
+
+        $scope.logPromise = getAndShowLog();
+
+        $scope.scrollToBottom = function () {
+            document.getElementById("logfile").scrollTop = 10000000;
+            document.getElementById("logfile").scrollTop = 100001000;
+        };
+
+        $scope.update = function () {
+            getAndShowLog();
+            $scope.scrollToBottom();
+        };
+
+        function startUpdateLogInterval() {
+            $scope.tailInterval = $interval(function () {
+                getAndShowLog();
+                if ($scope.doTailLog) {
+                    $scope.scrollToBottom();
+                }
+            }, 5000);
+        }
+
+        $scope.toggleUpdate = function () {
+            if ($scope.doUpdateLog) {
+                startUpdateLogInterval();
+            } else if ($scope.tailInterval !== null) {
+                console.log("Cancelling");
+                $interval.cancel($scope.tailInterval);
+                localStorageService.set("doTailLog", false);
+                $scope.doTailLog = false;
+            }
+            localStorageService.set("doUpdateLog", $scope.doUpdateLog);
+        };
+
+        $scope.toggleTailLog = function () {
+            localStorageService.set("doTailLog", $scope.doTailLog);
+        };
+
+        if ($scope.doUpdateLog) {
+            startUpdateLogInterval();
+        }
 
     }
 }
@@ -1855,7 +1857,7 @@ angular
 function UpdateService($http, growl, blockUI, RestartService) {
 
     var currentVersion;
-    var repVersion;
+    var latestVersion;
     var updateAvailable;
     var changelog;
     var versionHistory;
@@ -1868,62 +1870,62 @@ function UpdateService($http, growl, blockUI, RestartService) {
         getVersionHistory: getVersionHistory
     };
 
-
     function getVersions() {
-        return $http.get("internalapi/get_versions").then(function (data) {
+        return $http.get("internalapi/updates/versions").then(function (data) {
             currentVersion = data.data.currentVersion;
-            repVersion = data.data.repVersion;
+            latestVersion = data.data.latestVersion;
             updateAvailable = data.data.updateAvailable;
             return data;
         });
     }
 
     function getChangelog() {
-        return $http.get("internalapi/get_changelog", {currentVersion: currentVersion, repVersion: repVersion}).then(function (data) {
-            changelog = data.data.changelog;
+        return $http.get("internalapi/changesSince").then(function (data) {
+            changelog = data.data;
             return data;
         });
     }
 
     function getVersionHistory() {
-        return $http.get("internalapi/get_version_history").then(function (data) {
-            versionHistory = data.data.versionHistory;
+        return $http.get("internalapi/updates/versionHistory").then(function (data) {
+            versionHistory = data.data;
             return data;
         });
     }
 
-    function showChanges(changelog) {
-
-        var myInjector = angular.injector(["ng", "ui.bootstrap"]);
-        var $uibModal = myInjector.get("$uibModal");
-        var params = {
-            size: "lg",
-            templateUrl: "static/html/changelog.html",
-            resolve: {
-                changelog: function () {
-                    return changelog;
+    function showChanges() {
+        return $http.get("internalapi/updates/changesSince").then(function (response) {
+            var myInjector = angular.injector(["ng", "ui.bootstrap"]);
+            var $uibModal = myInjector.get("$uibModal");
+            var params = {
+                size: "lg",
+                templateUrl: "static/html/changelog.html",
+                resolve: {
+                    changelog: function () {
+                        return response.data;
+                    }
+                },
+                controller: function ($scope, $sce, $uibModalInstance, changelog) {
+                    //I fucking hate that untrusted HTML shit
+                    changelog = $sce.trustAsHtml(changelog);
+                    $scope.changelog = changelog;
+                    console.log(changelog);
+                    $scope.ok = function () {
+                        $uibModalInstance.dismiss();
+                    };
                 }
-            },
-            controller: function ($scope, $sce, $uibModalInstance, changelog) {
-                //I fucking hate that untrusted HTML shit
-                changelog = $sce.trustAsHtml(changelog);
-                $scope.changelog = changelog;
-                console.log(changelog);
-                $scope.ok = function () {
-                    $uibModalInstance.dismiss();
-                };
-            }
-        };
+            };
 
-        var modalInstance = $uibModal.open(params);
+            var modalInstance = $uibModal.open(params);
 
-        modalInstance.result.then();
+            modalInstance.result.then();
+        });
     }
 
 
     function update() {
         blockUI.start("Updating. Please stand by...");
-        $http.get("internalapi/update").then(function (data) {
+        $http.get("internalapi/updates/update").then(function (data) {
                 if (data.data.success) {
                     RestartService.restart("Update complete.", 15);
                 } else {
@@ -1966,7 +1968,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService) {
         $scope.checked = true;
         UpdateService.getVersions().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.repVersion;
+            $scope.latestVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;
             $scope.changelog = data.data.changelog;
         });
@@ -1978,7 +1980,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService) {
     };
 
     $scope.showChangelog = function () {
-        UpdateService.showChanges($scope.changelog);
+        UpdateService.showChanges();
     }
 
 }
@@ -3187,10 +3189,10 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     //Doesn't belong here but whatever
     var firstStartThreeDaysAgo = ConfigService.getSafe().firstStart < moment().subtract(3, "days").unix();
-    var doShowSurvey = (ConfigService.getSafe().pollShown == 0 && firstStartThreeDaysAgo) || ConfigService.getSafe().pollShown == 1;
+    var doShowSurvey = (ConfigService.getSafe().pollShown === 0 && firstStartThreeDaysAgo) || ConfigService.getSafe().pollShown === 1;
     if (doShowSurvey) {
         var message;
-        if (ConfigService.getSafe().pollShown == 0) {
+        if (ConfigService.getSafe().pollShown === 0) {
             message = "Dear user, I would like to ask you to answer a short query about NZB Hydra. It is absolutely anonymous and will not take more than a couple of minutes. You would help me a lot!";
         } else {
             message = "Dear user, thank you for answering my last survey. Unfortunately I'm an idiot and didn't know that SurveyMonkey would only show me the first 100 results. Please be so kind and answer the new survey :-)";
@@ -3413,7 +3415,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     function getAvailableIndexers() {
         return _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length == 0 || $scope.category.name == "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })
@@ -3430,7 +3432,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.searchInputChanged = function () {
-        $scope.$broadcast("searchInputChanged", $scope.query != $stateParams.query ? $scope.query : null, $scope.minage, $scope.maxage, $scope.minsize, $scope.maxsize);
+        $scope.$broadcast("searchInputChanged", $scope.query !== $stateParams.query ? $scope.query : null, $scope.minage, $scope.maxage, $scope.minsize, $scope.maxsize);
     };
 
 

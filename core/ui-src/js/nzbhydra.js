@@ -722,7 +722,9 @@ nzbhydraapp.factory('responseObserver', function responseObserver($q, $window, g
                     growl.info("You are not allowed to visit that section.");
                     break;
             }
-            errorResponse.config.alreadyHandled = true;
+            if (angular.isDefined(errorResponse.config)) {
+                errorResponse.config.alreadyHandled = true;
+            }
             return $q.reject(errorResponse);
         }
     };

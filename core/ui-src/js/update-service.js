@@ -5,7 +5,7 @@ angular
 function UpdateService($http, growl, blockUI, RestartService) {
 
     var currentVersion;
-    var repVersion;
+    var latestVersion;
     var updateAvailable;
     var changelog;
     var versionHistory;
@@ -18,62 +18,62 @@ function UpdateService($http, growl, blockUI, RestartService) {
         getVersionHistory: getVersionHistory
     };
 
-
     function getVersions() {
-        return $http.get("internalapi/get_versions").then(function (data) {
+        return $http.get("internalapi/updates/versions").then(function (data) {
             currentVersion = data.data.currentVersion;
-            repVersion = data.data.repVersion;
+            latestVersion = data.data.latestVersion;
             updateAvailable = data.data.updateAvailable;
             return data;
         });
     }
 
     function getChangelog() {
-        return $http.get("internalapi/get_changelog", {currentVersion: currentVersion, repVersion: repVersion}).then(function (data) {
-            changelog = data.data.changelog;
+        return $http.get("internalapi/changesSince").then(function (data) {
+            changelog = data.data;
             return data;
         });
     }
 
     function getVersionHistory() {
-        return $http.get("internalapi/get_version_history").then(function (data) {
-            versionHistory = data.data.versionHistory;
+        return $http.get("internalapi/updates/versionHistory").then(function (data) {
+            versionHistory = data.data;
             return data;
         });
     }
 
-    function showChanges(changelog) {
-
-        var myInjector = angular.injector(["ng", "ui.bootstrap"]);
-        var $uibModal = myInjector.get("$uibModal");
-        var params = {
-            size: "lg",
-            templateUrl: "static/html/changelog.html",
-            resolve: {
-                changelog: function () {
-                    return changelog;
+    function showChanges() {
+        return $http.get("internalapi/updates/changesSince").then(function (response) {
+            var myInjector = angular.injector(["ng", "ui.bootstrap"]);
+            var $uibModal = myInjector.get("$uibModal");
+            var params = {
+                size: "lg",
+                templateUrl: "static/html/changelog.html",
+                resolve: {
+                    changelog: function () {
+                        return response.data;
+                    }
+                },
+                controller: function ($scope, $sce, $uibModalInstance, changelog) {
+                    //I fucking hate that untrusted HTML shit
+                    changelog = $sce.trustAsHtml(changelog);
+                    $scope.changelog = changelog;
+                    console.log(changelog);
+                    $scope.ok = function () {
+                        $uibModalInstance.dismiss();
+                    };
                 }
-            },
-            controller: function ($scope, $sce, $uibModalInstance, changelog) {
-                //I fucking hate that untrusted HTML shit
-                changelog = $sce.trustAsHtml(changelog);
-                $scope.changelog = changelog;
-                console.log(changelog);
-                $scope.ok = function () {
-                    $uibModalInstance.dismiss();
-                };
-            }
-        };
+            };
 
-        var modalInstance = $uibModal.open(params);
+            var modalInstance = $uibModal.open(params);
 
-        modalInstance.result.then();
+            modalInstance.result.then();
+        });
     }
 
 
     function update() {
         blockUI.start("Updating. Please stand by...");
-        $http.get("internalapi/update").then(function (data) {
+        $http.get("internalapi/updates/update").then(function (data) {
                 if (data.data.success) {
                     RestartService.restart("Update complete.", 15);
                 } else {

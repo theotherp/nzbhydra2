@@ -10,8 +10,8 @@ function hydralog() {
 
     function controller($scope, $http, $sce, $interval, localStorageService) {
         $scope.tailInterval = null;
-        $scope.doUpdateLog = localStorageService.get("doUpdateLog") != null ? localStorageService.get("doUpdateLog") : false;
-        $scope.doTailLog = localStorageService.get("doTailLog") != null ? localStorageService.get("doTailLog") : false;
+        $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
+        $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
 
 
         function getAndShowLog() {
@@ -44,7 +44,7 @@ function hydralog() {
         $scope.toggleUpdate = function () {
             if ($scope.doUpdateLog) {
                 startUpdateLogInterval();
-            } else if ($scope.tailInterval != null) {
+            } else if ($scope.tailInterval !== null) {
                 console.log("Cancelling");
                 $interval.cancel($scope.tailInterval);
                 localStorageService.set("doTailLog", false);

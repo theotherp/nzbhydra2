@@ -81,7 +81,7 @@ public class IndexerPicker {
             if (!checkLoadLimiting(count, indexer)) {
                 continue;
             }
-            //TODO Account for query generation
+
             if (!checkSearchId(searchRequest, count, indexer)) {
                 continue;
             }
