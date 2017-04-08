@@ -57,6 +57,12 @@ public class UpdateManager implements InitializingBean {
         return currentVersionString;
     }
 
+    /**
+     * Returns the full content of the changelog.md formatted as HTML
+     *
+     * @return HTML formatted changelog
+     * @throws UpdateException Unable to reach GitHub or parse data
+     */
     public String getFullChangelog() throws UpdateException {
         Request request = new Builder().url(changelogUrl).build();
         try {
@@ -70,6 +76,12 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
+    /**
+     * Returns all changes from releases after the current one as formatted HTML
+     *
+     * @return HTML with the markdown from the release bodies rendered and separated with <hr>
+     * @throws UpdateException Unable to reach github or parse the output
+     */
     public String getChangesSince() throws UpdateException {
         try {
             String url = repositoryBaseUrl + "/releases";

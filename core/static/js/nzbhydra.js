@@ -3998,11 +3998,14 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
             blockUI.reset();
             var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
-                var message = "An error occured :<br>" + rejection.status + ": " + rejection.statusText;
-
-                if (rejection.data) {
-                    message += "<br><br>" + rejection.data;
+                var message = "An error occured:<br>" + rejection.data.status + ": " + rejection.data.error;
+                if (rejection.data.path) {
+                    message += "<br><br>Path: " + rejection.data.path;
                 }
+                if (message !== "No message available") {
+                    message += "<br><br>Message: " + rejection.data.message;
+                }
+
                 GeneralModalService.open(message);
 
             } else if (rejection && rejection.config && rejection.config.headers && rejection.config.headers[HEADER_NAME] && rejection.config.url.contains("logerror")) {
