@@ -1,6 +1,5 @@
 package org.nzbhydra;
 
-import com.google.common.io.Files;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultEntity;
@@ -31,14 +30,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-//@SpringBootApplication
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
@@ -141,14 +138,11 @@ public class NzbHydra {
 //        applicationContext.registerShutdownHook();
 
 
-        File updateZip = new File("c:\\temp\\hydra2wrappertest\\update.zip");
-        if (updateZip.exists()) {
-            updateZip.delete();
-        }
-        Files.copy(new File("c:\\temp\\hydra2update1.zip"), updateZip);
 
         logger.info("Shutting down to execute update");
-        SpringApplication.exit(applicationContext, (ExitCodeGenerator) () -> 1);
+        SpringApplication.exit(applicationContext, (ExitCodeGenerator) () -> {
+            return 1;
+        });
 
 
 

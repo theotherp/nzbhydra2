@@ -50,7 +50,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
                 templateUrl: "static/html/changelog.html",
                 resolve: {
                     changelog: function () {
-                        return response.data;
+                        return response.data.message;
                     }
                 },
                 controller: function ($scope, $sce, $uibModalInstance, changelog) {
@@ -73,13 +73,10 @@ function UpdateService($http, growl, blockUI, RestartService) {
 
     function update() {
         blockUI.start("Updating. Please stand by...");
-        $http.get("internalapi/updates/update").then(function (data) {
-                if (data.data.success) {
-                    RestartService.restart("Update complete.", 15);
-                } else {
-                    blockUI.reset();
-                    growl.info("An error occurred while updating. Please check the logs.");
-                }
+        $http.get("internalapi/updates/installUpdate").then(function (data) {
+                //Handle like restart, ping application and wait
+                //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
+                growl.info("Installed update...");
             },
             function () {
                 blockUI.reset();

@@ -102,10 +102,10 @@ public class UpdateManagerTest {
     @Test
     public void shouldGetChangesSince() throws Exception {
         String changesSince = testee.getChangesSince();
-        String expectedChangesSince = "<h1>v2.0.0</h1>\n" +
+        String expectedChangesSince = "<h2>v2.0.0</h2>\n" +
                 "<p>Some new stuff</p>\n" +
                 "<hr />\n" +
-                "<h1>v1.0.0</h1>\n" +
+                "<h2>v1.0.0</h2>\n" +
                 "<p>A list:</p>\n" +
                 "<ul>\n" +
                 "<li>a</li>\n" +

@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.update.UpdateException;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,15 @@ public class Updates {
     @RequestMapping(value = "/internalapi/updates/versions", method = RequestMethod.GET)
     public VersionsInfo getVersions() throws Exception {
         //TODO Handle exception better?
-        String currentVersion = updateManager.getCurrentVersionString();
-        String latestVersion = updateManager.getLatestVersionString();
-        boolean isUpdateAvailable = updateManager.isUpdateAvailable();
-        return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable);
+        try {
+            String currentVersion = updateManager.getCurrentVersionString();
+            String latestVersion = updateManager.getLatestVersionString();
+            boolean isUpdateAvailable = updateManager.isUpdateAvailable();
+            return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable);
+        } catch (UpdateException e) {
+            logger.error("An error occured while getting version information", e);
+            throw e;
+        }
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -40,6 +46,13 @@ public class Updates {
     @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
     public GenericResponse getVersionHistory() throws Exception {
         return new GenericResponse(true, updateManager.getFullChangelog());
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.GET)
+    public GenericResponse installUpdate() throws Exception {
+        updateManager.installUpdate();
+        return new GenericResponse(true, null);
     }
 
 

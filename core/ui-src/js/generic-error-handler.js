@@ -24,6 +24,8 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
                 }
                 if (message !== "No message available") {
                     message += "<br><br>Message: " + rejection.data.message;
+                } else {
+                    message += "<br><br>Exception: " + rejection.data.exception;
                 }
 
                 GeneralModalService.open(message);

@@ -21,6 +21,7 @@ Config
 - Updating
 - Setting via web call
 - reloading config: Mostly done
+- idea: create when saving config the first time. That way I don't have to deploy it, keep it updated, can not overwrite it when installing an update
 
 Downloader support: mostly done
 - sabnzbd
@@ -66,7 +67,12 @@ Backups
 - create periodically
 - create before updating
 
+Windows GUI
+- perhaps use java gui: https://github.com/kemitix/spring-boot-awt-gui-demo or http://stackoverflow.com/questions/22864008/how-to-configure-spring-boot-with-swing-application
+- in that case updating will get even worse...
+
 General, Ideas
+- open browser on startup
 - Log / config sanitation
 - Initialize config
 - overwrite config file

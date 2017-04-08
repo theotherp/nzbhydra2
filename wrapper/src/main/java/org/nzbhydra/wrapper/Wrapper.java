@@ -1,6 +1,9 @@
+package org.nzbhydra.wrapper;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +39,9 @@ public class Wrapper {
                         File updateFolder = new File(rootDir, "update");
                         assert updateFolder.exists();
                         File[] filesInUpdateFolder = updateFolder.listFiles();
-                        assert filesInUpdateFolder.length == 1;
+                        assert filesInUpdateFolder != null && filesInUpdateFolder.length == 1;
                         File updateZip = filesInUpdateFolder[0];
-
+                        System.out.println("Extract all files from " + updateZip + " to " + Paths.get(""));
                         //Delete all static files beforehand
                         //Unzip to core folder, if updater is contained in ZIP then skip it. Updating the updater isn't something that will be easy or even possible
                         doStart = true;

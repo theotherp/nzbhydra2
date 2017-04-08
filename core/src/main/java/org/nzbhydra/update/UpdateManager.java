@@ -13,6 +13,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import org.apache.commons.io.FileUtils;
+import org.nzbhydra.update.gtihubmapping.Asset;
 import org.nzbhydra.update.gtihubmapping.Release;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +22,20 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @Component
 public class UpdateManager implements InitializingBean {
@@ -123,12 +133,47 @@ public class UpdateManager implements InitializingBean {
     }
 
 
-    public boolean downloadUpdate() {
-        return true;
-    }
+    public void installUpdate() throws UpdateException {
+        Release latestRelease = getLatestRelease();
+        logger.info("Starting update process to {}", latestRelease.getTagName());
+        List<Asset> assets = latestRelease.getAssets();
+        if (assets.isEmpty()) {
+            throw new UpdateException("No assets found for release " + latestRelease.getTagName());
+        }
+        //TODO Find asset for current OS or whatever
+        Asset asset = assets.get(0);
+        String url = asset.getBrowserDownloadUrl();
+        logger.debug("Downloading update from URL {}", url);
+        Request request = new Builder().url(url).build();
 
-    public void installUpdate() throws IOException {
+        File updateZip;
+        try {
+            Response response = client.newCall(request).execute();
+            InputStream inputStream = response.body().byteStream();
+            File updateFolder = new File("update");
+            if (!updateFolder.exists()) {
+                Files.createDirectory(updateFolder.toPath());
+            } else {
+                FileUtils.cleanDirectory(updateFolder);
+            }
 
+            Path tempDirectory = Files.createTempDirectory("nzbhydraupdate");
+            updateZip = new File(tempDirectory.toFile(), asset.getName());
+            updateZip.deleteOnExit();
+            logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
+            Files.copy(inputStream, updateZip.toPath());
+            logger.debug("Unzipping files to {}", updateFolder);
+            unzip(updateZip, updateFolder);
+
+//            updateZip = new File ("update"); //TODO Make sure we're in the main folder and not wherever
+//            updateZip = new File (updateZip, asset.getName());
+//            Files.copy(inputStream, updateZip.toPath());
+//            logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
+        } catch (IOException e) {
+            throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
+        }
+        logger.info("Shutting down to let wrapper execute the update");
+        exitWithReturnCode(1);
     }
 
     private SemanticVersion getLatestVersion() throws UpdateException {
@@ -164,6 +209,35 @@ public class UpdateManager implements InitializingBean {
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();
         Node document = parser.parse(markdown);
         return renderer.render(document);
+    }
+
+    private void unzip(File zipFilepath, File outputFolder) throws IOException {
+        ZipFile zipFile = new ZipFile(zipFilepath, ZipFile.OPEN_READ, Charset.defaultCharset());
+
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry zipEntry = entries.nextElement();
+            String fileName = zipEntry.getName();
+            File newFile = new File(outputFolder + File.separator + fileName);
+
+            logger.debug("Unzipping file {}", newFile.getAbsolutePath());
+
+            new File(newFile.getParent()).mkdirs();
+            Files.copy(zipFile.getInputStream(zipEntry), newFile.toPath());
+        }
+        zipFile.close();
+    }
+
+    public void exitWithReturnCode(final int returnCode) {
+        new Thread(() -> {
+            try {
+                //Wait just enough for the request to be completed
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
+            }
+            System.exit(returnCode);
+        }).run();
     }
 
 

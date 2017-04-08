@@ -14,8 +14,8 @@ public class Asset {
     private String label;
     private String state;
     private String contentType;
-    private Integer size;
-    private Integer downloadCount;
+    private Long size;
+    private Long downloadCount;
     private String createdAt;
     private String updatedAt;
 
