@@ -44,6 +44,12 @@ public class UpdateManager implements InitializingBean {
     protected OkHttpClient client = new OkHttpClient();
     protected Instant lastCheckedForNewVersion = Instant.ofEpochMilli(0L);
     private SemanticVersion latestVersion;
+    private ObjectMapper objectMapper;
+
+    public UpdateManager() {
+        objectMapper = new ObjectMapper();
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+    }
 
     public boolean isUpdateAvailable() throws UpdateException {
         return getLatestVersion().isUpdateFor(currentVersion);
@@ -88,8 +94,6 @@ public class UpdateManager implements InitializingBean {
             logger.debug("Loading changes since current version {} from GitHub using URL", currentVersion, url);
             Request request = new Builder().url(url).build();
             Response response = client.newCall(request).execute();
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
             String responseBody = response.body().string();
             List<Release> releases = objectMapper.readValue(responseBody, new TypeReference<List<Release>>() {
             });
@@ -107,7 +111,7 @@ public class UpdateManager implements InitializingBean {
                 if (new SemanticVersion(release.getTagName()).equals(currentVersion)) {
                     break;
                 }
-                collectedVersionChanges.add("# " + release.getTagName() + "\r\n" + release.getBody());
+                collectedVersionChanges.add("## " + release.getTagName() + "\r\n" + release.getBody());
             }
             String allChanges = Joiner.on("\r\n***\r\n").join(collectedVersionChanges);
 
@@ -146,8 +150,6 @@ public class UpdateManager implements InitializingBean {
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
             Request request = new Builder().url(url).build();
             Response response = client.newCall(request).execute();
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
             String responseBody = response.body().string();
             return objectMapper.readValue(responseBody, Release.class);
         } catch (IOException e) {

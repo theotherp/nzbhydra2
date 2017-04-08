@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -28,7 +29,12 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
         registry.addResourceHandler("/static/**")
                 .addResourceLocations(staticFile.toURI().toString().replace("file:/", "file:///")) //Doesn't work with simple file URL for some weird reason
-                .setCachePeriod(0).resourceChain(true);
+                .setCacheControl(CacheControl.noCache())
+                .resourceChain(false)
+        //.addResolver(new VersionResourceResolver().addContentVersionStrategy("/static/js/**", "/static/css/**"))
+        ;
+
+
         registry.setOrder(0);
     }
 
@@ -81,5 +87,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             }
         }
     }
+
 
 }

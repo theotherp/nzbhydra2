@@ -672,7 +672,6 @@ nzbhydraapp.config(["$provide", function ($provide) {
                 stack = stack.join("\n");
                 //$injector.get("$http").put("internalapi/logerror", {error: stack, cause: angular.isDefined(cause) ? cause.toString() : "No known cause"});
 
-
             } catch (e) {
                 console.error("Unable to log JS exception to server", e);
             }
@@ -3712,7 +3711,7 @@ function GeneralModalService() {
         }
         if (angular.isUndefined(template)) {
             if (angular.isUndefined(templateUrl)) {
-                params["template"] = '<pre>' + msg + '</pre>';
+                params["template"] = '<pre style="margin:0">' + msg + '</pre>';
             } else {
                 params["templateUrl"] = templateUrl;
             }

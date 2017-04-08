@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
@@ -58,6 +59,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
         }
+
+    }
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/static/**");
     }
 
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {
@@ -65,6 +72,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         try {
             if (!hydraAnonymousAuthenticationFilter.getAuthorities().isEmpty()) {
                 http.anonymous().authenticationFilter(hydraAnonymousAuthenticationFilter);
+                hydraAnonymousAuthenticationFilter.enable();
             }
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);

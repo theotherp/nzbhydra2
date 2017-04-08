@@ -36,7 +36,7 @@ public class BaseConfig {
     private ApplicationEventPublisher applicationEventPublisher;
 
     private AuthConfig auth = new AuthConfig();
-    private List<Category> categories;
+    private List<Category> categories = new ArrayList<>();
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();

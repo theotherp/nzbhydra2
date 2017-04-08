@@ -17,4 +17,6 @@ public class NzbHydraException extends Exception {
     public NzbHydraException(Throwable cause) {
         super(cause);
     }
+
+
 }
