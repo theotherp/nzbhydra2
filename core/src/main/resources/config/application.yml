@@ -43,6 +43,7 @@ main:
   sslkey: null
   startupBrowser: true
   theme: "grey"
+  updateCheckEnabled: true
   urlBase: "/"
   useCsrf: true
   useLocalUrlForApiAccess: true

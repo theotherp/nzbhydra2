@@ -35,6 +35,7 @@ public class MainConfig {
     private boolean startupBrowser;
     protected String theme;
     protected String urlBase;
+    private boolean updateCheckEnabled;
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
 

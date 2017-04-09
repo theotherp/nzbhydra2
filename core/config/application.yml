@@ -195,38 +195,12 @@ main:
   branch: develop
   configVersion: 1
   debug: true
-  dereferer: http://www.dereferer.org/?$s
-  externalUrl: ''
-  firstStartx: null
-  gitPath: c:\Program Files (x86)\Git\bin\git.exe
   host: 127.0.0.1
-  httpProxy:
-  httpsProxy:
   isFirstStart: false
-  keepSearchResultsForDays: 7
   logging:
     consolelevel: DEBUG
-    keepLogFiles: 25
-    logIpAddresses: true
-    logMaxSize: 1000
-    logRotateAfterDays:
-    logfilelevel: DEBUG
-    logfilename: nzbhydra.log
-    rolloverAtStart: false
-  port: 5076
-  repositoryBase: https://github.com/theotherp
-  runThreaded: true
-  secret: 6UH5FZH8VI4KQ5H1
-  shutdownForRestart: true
-  socksProxy: ''
-  ssl: false
-  sslcert: nzbhydra.crt
-  sslkey: nzbhydra.key
-  startupBrowser: false
-  theme: grey
-  urlBase: '/'
-  useCsrf: true
-  useLocalUrlForApiAccess: true
+  updateCheckEnabled: false
+
 
 
 searching:

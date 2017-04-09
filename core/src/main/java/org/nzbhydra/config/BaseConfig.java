@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"})
 public class BaseConfig {
 
+    //TODO On startup when config file does not exist yet create it with initial config? Or wait for user to save?
+
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
     @Autowired
@@ -66,7 +68,14 @@ public class BaseConfig {
     public void save() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         objectMapper.registerModule(new Jdk8Module());
-        File file = new File("config/application.yml");
+        File configFolder = new File("config"); //TODO Use configurable folder and/or make sure we're in the correct folder
+        if (!configFolder.exists()) {
+            boolean created = configFolder.mkdir();
+            if (!created) {
+                throw new IOException("Unable to create config folder " + configFolder.getAbsolutePath());
+            }
+        }
+        File file = new File(configFolder, "application.yml");
         logger.info("Writing config to file {}", file.getAbsolutePath());
         objectMapper.writeValue(file, this);
     }

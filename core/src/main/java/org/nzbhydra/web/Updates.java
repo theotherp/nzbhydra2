@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.update.UpdateException;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
@@ -20,12 +21,17 @@ public class Updates {
 
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private BaseConfig baseConfig;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/versions", method = RequestMethod.GET)
     public VersionsInfo getVersions() throws Exception {
-        //TODO Handle exception better?
         try {
+            if (!baseConfig.getMain().isUpdateCheckEnabled()) {
+                //Just for development
+                return new VersionsInfo("", "", false);
+            }
             String currentVersion = updateManager.getCurrentVersionString();
             String latestVersion = updateManager.getLatestVersionString();
             boolean isUpdateAvailable = updateManager.isUpdateAvailable();
