@@ -229,8 +229,6 @@ searching:
 
 
 
-
-
 spring:
   datasource:
     url: jdbc:hsqldb:file:nzbhydra.db;shutdown=true;

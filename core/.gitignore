@@ -11,4 +11,4 @@ nzbhydra.db.*
 *.log
 *.pid
 logs/*
-config
+config/
