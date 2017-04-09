@@ -4,37 +4,36 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 
-import java.util.HashSet;
 import java.util.Set;
 
 
 @Data
 public class SearchingConfig {
 
-    private boolean alwaysShowDuplicates = false;
+    private boolean alwaysShowDuplicates;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.NONE;
+    private SearchSourceRestriction applyRestrictions;
     //categorySettings ;
-    private float duplicateAgeThreshold = 2F;
-    private float duplicateSizeThresholdInPercent = 1F;
-    private boolean enableCategorySizes = true;
-    private Set<String> forbiddenGroups = new HashSet<>();
-    private Set<String> forbiddenPosters = new HashSet<>();
+    private float duplicateAgeThreshold;
+    private float duplicateSizeThresholdInPercent;
+    private boolean enableCategorySizes;
+    private Set<String> forbiddenGroups;
+    private Set<String> forbiddenPosters;
     private String forbiddenRegex;
-    private Set<String> forbiddenWords = new HashSet<>();
+    private Set<String> forbiddenWords;
     private SearchSourceRestriction generateQueries;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction idFallbackToTitle = SearchSourceRestriction.NONE;
-    private boolean idFallbackToTitlePerIndexer = false;
-    private boolean ignorePassworded = false;
-    private boolean ignoreTemporarilyDisabled = false;
+    private SearchSourceRestriction idFallbackToTitle;
+    private boolean idFallbackToTitlePerIndexer;
+    private boolean ignorePassworded;
+    private boolean ignoreTemporarilyDisabled;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
-    private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
-    private boolean removeLanguage = false;
-    private boolean removeObfuscated = false;
+    private NzbAccessType nzbAccessType;
+    private boolean removeLanguage;
+    private boolean removeObfuscated;
     private String requiredRegex;
-    private Set<String> requiredWords = new HashSet<>();
-    private Integer timeout = 20;
-    private String userAgent = "NZBHydra";
+    private Set<String> requiredWords;
+    private Integer timeout;
+    private String userAgent;
 };

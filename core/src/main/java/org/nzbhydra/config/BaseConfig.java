@@ -6,6 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -17,15 +18,19 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @ConfigurationProperties
 @EnableConfigurationProperties
 @Data
+@EqualsAndHashCode(exclude = {"applicationEventPublisher"})
 public class BaseConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
@@ -33,6 +38,7 @@ public class BaseConfig {
     @Autowired
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
+    @JsonIgnore
     private ApplicationEventPublisher applicationEventPublisher;
 
     private AuthConfig auth = new AuthConfig();
@@ -41,6 +47,9 @@ public class BaseConfig {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
+
+    public BaseConfig() {
+    }
 
     public void replace(BaseConfig newConfig) {
         main = newConfig.getMain();
@@ -62,6 +71,7 @@ public class BaseConfig {
         objectMapper.writeValue(file, this);
     }
 
+
     @JsonIgnore
     public String getBaseUrl() {
         return getBaseUriBuilder().toUriString();
@@ -78,6 +88,23 @@ public class BaseConfig {
         }
         return builder;
     }
+
+
+    /**
+     * Returns the original config as it was deployed
+     *
+     * @return the content of config/application.yml (from resources) as BaseConfig object
+     * @throws IOException Unable to read application.yml
+     */
+    public static BaseConfig originalConfig() throws IOException {
+        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
+        yamlMapper.registerModule(new Jdk8Module());
+        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/application.yml").openStream()));
+        String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
+        return yamlMapper.readValue(applicationYmlContent, BaseConfig.class);
+    }
+
+
 
 
 }

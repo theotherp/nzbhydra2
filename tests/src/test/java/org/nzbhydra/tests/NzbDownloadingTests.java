@@ -113,21 +113,23 @@ public class NzbDownloadingTests {
     @Test
     public void shouldRedirectToIndexer() throws Exception {
         baseConfig.getSearching().setNzbAccessType(NzbAccessType.REDIRECT);
-        mvc.perform(MockMvcRequestBuilders.get("/getnzb/" + searchResultId).with(csrf())).andExpect(status().is(307)).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
+        mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(status().is(307)).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
     }
 
     @Test
     public void shouldDownloadNzbFromIndexer() throws Exception {
         mockServer.when(HttpRequest.request()).respond(HttpResponse.response().withBody("NZBContent"));
         baseConfig.getSearching().setNzbAccessType(NzbAccessType.PROXY);
-        mvc.perform(MockMvcRequestBuilders.get("/getnzb/" + searchResultId).with(csrf())).andExpect(status().is(200)).andExpect(content().string("NZBContent"));
+        mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(result -> {
+            result.getResponse().getStatus();
+        }).andExpect(content().string("NZBContent"));
     }
 
     @Test
     public void shouldSendUrlToDownloader() throws Exception {
         baseConfig.getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
 
-        HttpRequest expectedRequest = HttpRequest.request("/sabnzbd/api").withQueryStringParameter("mode", "addurl").withQueryStringParameter("name", "http://127.0.0.1:5076/getnzb/" + searchResultId).withMethod("POST");
+        HttpRequest expectedRequest = HttpRequest.request("/sabnzbd/api").withQueryStringParameter("mode", "addurl").withQueryStringParameter("name", "http://127.0.0.1:5076/getnzb/api/" + searchResultId).withMethod("POST");
         mockServer.when(expectedRequest).respond(HttpResponse.response().withStatusCode(200).withBody("{\"isStatus\":true}"));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("/internalapi/downloader/addNzbs");

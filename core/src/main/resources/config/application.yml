@@ -1,18 +1,71 @@
-indexers: []
+---
+auth:
+  authType: "NONE"
+  rememberUsers: true
+  restrictAdmin: false
+  restrictDetailsDl: false
+  restrictIndexerSelection: false
+  restrictSearch: false
+  restrictStats: false
+  users: []
 categories: []
-
+downloaders: []
+indexers: []
 main:
-  apiKey:
-  baseUrl: /
+  apiKey: null
+  branch: "master"
   configVersion: 1
   debug: false
-  externalUrl:
-  host: 0.0.0.0
+  dereferer: null
+  externalUrl: null
+  firstStart: false
+  gitPath: null
+  host: "0.0.0.0"
+  httpProxy: null
+  httpsProxy: null
+  logging:
+    consolelevel: "DEBUG"
+    keepLogFiles: 25
+    logIpAddresses: true
+    logMaxSize: 1000
+    logRotateAfterDays: null
+    logfilelevel: "DEBUG"
+    logfilename: "nzbhydra.log"
+    rolloverAtStart: false
+  keepSearchResultsForDays: 7
+  port: 5076
+  repositoryBase: "https://github.com/theotherp"
+  secret: "TODO generate"
+  shutdownForRestart: false
+  socksProxy: null
+  ssl: false
+  sslcert: null
+  sslkey: null
+  startupBrowser: true
+  theme: "grey"
+  urlBase: "/"
   useCsrf: true
-
-spring:
-  datasource:
-    url: jdbc:hsqldb:file:nzbhydra.db;shutdown=true;
-    username: sa
-    password:
-    driverClassName: org.hsqldb.jdbc.JDBCDriver
+  useLocalUrlForApiAccess: true
+searching:
+  alwaysShowDuplicates: false
+  applyRestrictions: "NONE"
+  duplicateAgeThreshold: 2.0
+  duplicateSizeThresholdInPercent: 1.0
+  enableCategorySizes: true
+  forbiddenGroups: []
+  forbiddenPosters: []
+  forbiddenRegex: null
+  forbiddenWords: []
+  generateQueries: null
+  idFallbackToTitle: "NONE"
+  idFallbackToTitlePerIndexer: false
+  ignorePassworded: false
+  ignoreTemporarilyDisabled: false
+  maxAge: null
+  nzbAccessType: "REDIRECT"
+  removeLanguage: false
+  removeObfuscated: false
+  requiredRegex: null
+  requiredWords: []
+  timeout: 20
+  userAgent: "NZBHydra"

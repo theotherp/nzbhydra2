@@ -4,7 +4,12 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.rssmapping.*;
+import org.nzbhydra.rssmapping.Enclosure;
+import org.nzbhydra.rssmapping.NewznabAttribute;
+import org.nzbhydra.rssmapping.RssChannel;
+import org.nzbhydra.rssmapping.RssGuid;
+import org.nzbhydra.rssmapping.RssItem;
+import org.nzbhydra.rssmapping.RssRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -12,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -28,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest(ExternalApi.class)
 @ContextConfiguration(classes = ExternalApi.class)
+@TestPropertySource("classpath:/config/disable-security.properties")
 public class ExternalApiSpringTest {
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
@@ -36,7 +43,6 @@ public class ExternalApiSpringTest {
 
     @MockBean
     private ExternalApi externalApiMock;
-
 
     @Test
     public void shouldTransformToRssXml() throws Exception {

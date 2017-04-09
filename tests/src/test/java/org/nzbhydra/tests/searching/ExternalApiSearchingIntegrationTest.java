@@ -32,7 +32,7 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @DataJpaTest
-@TestPropertySource(locations = "classpath:org/nzbhydra/tests/searching/externalApiTest.properties")
+@TestPropertySource(locations = {"classpath:org/nzbhydra/tests/searching/externalApiTest.properties}", "classpath:org/nzbhydra/tests/categories.properties"})
 public class ExternalApiSearchingIntegrationTest {
 
     @Autowired

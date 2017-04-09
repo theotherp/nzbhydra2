@@ -15,25 +15,25 @@ import java.util.Set;
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig {
 
-    private String apikey = null;
+    private String apikey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend;
-    private Set<String> categories = new HashSet<>();
+    private Set<String> categories;
     private Integer downloadLimit = null;
-    private boolean enabled = true;
+    private boolean enabled;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
-    private Integer generalMinSize = null;
+    private SearchSourceRestriction enabledForSearchSource;
+    private Integer generalMinSize;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
-    private String host = null;
+    private String host;
     private Integer loadLimitOnRandom = null;
-    private String name = null;
+    private String name;
     private String password = null;
-    private boolean preselect = true;
+    private boolean preselect;
     private Integer score = null;
     private SearchModuleType searchModuleType;
-    private boolean showOnSearch = true;
+    private boolean showOnSearch;
     @JsonFormat(shape = Shape.STRING)
     private Set<IdType> supportedSearchIds = new HashSet<>();
     private Integer timeout = null;

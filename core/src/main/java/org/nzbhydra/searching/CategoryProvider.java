@@ -59,6 +59,9 @@ public class CategoryProvider implements InitializingBean {
     }
 
     public Category getNotAvailable() {
+        if (categoryMap == null || categoryMap.isEmpty()) {
+            return new Category("n/a", "N/A");
+        }
         return getByName("n/a");
     }
 

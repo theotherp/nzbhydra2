@@ -1,0 +1,3 @@
+org.springframework.boot.env.PropertySourceLoader=\
+org.springframework.boot.env.PropertiesPropertySourceLoader,\
+org.nzbhydra.config.HydraYamlPropertySourceLoader

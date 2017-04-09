@@ -51,8 +51,8 @@ public class NzbHandling {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam String apikey) throws WrongApiKeyException {
-        if (baseConfig.getMain().getApiKey().isPresent()) {
+    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+        if (baseConfig.getMain().getApiKey().isPresent() && !"".equals(baseConfig.getMain().getApiKey().get())) {
             if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey().get())) {
                 logger.error("Received NZB API download call with wrong API key");
                 throw new WrongApiKeyException("Wrong api key");

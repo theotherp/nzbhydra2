@@ -197,7 +197,7 @@ main:
   debug: true
   dereferer: http://www.dereferer.org/?$s
   externalUrl: ''
-  #firstStart: null
+  firstStartx: null
   gitPath: c:\Program Files (x86)\Git\bin\git.exe
   host: 127.0.0.1
   httpProxy:
