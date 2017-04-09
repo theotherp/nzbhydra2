@@ -202,7 +202,6 @@ main:
   updateCheckEnabled: false
 
 
-
 searching:
   alwaysShowDuplicates: true
   applyRestrictions: BOTH
