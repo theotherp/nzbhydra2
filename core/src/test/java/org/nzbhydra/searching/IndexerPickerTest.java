@@ -30,6 +30,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -139,14 +140,14 @@ public class IndexerPickerTest {
     @Test
     public void shouldCheckForCategory() {
         when(searchRequest.getCategory()).thenReturn(category);
-        when(indexerConfigMock.getCategories()).thenReturn(Collections.emptySet());
+        when(indexerConfigMock.getCategories()).thenReturn(Collections.emptyList());
 
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfigMock.getCategories()).thenReturn(Sets.newSet("anotherCategory"));
+        when(indexerConfigMock.getCategories()).thenReturn(Arrays.asList("anotherCategory"));
         assertFalse(testee.checkDisabledForCategory(searchRequest, count, indexer));
 
-        when(indexerConfigMock.getCategories()).thenReturn(Sets.newSet(("category")));
+        when(indexerConfigMock.getCategories()).thenReturn(Arrays.asList(("category")));
         assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
     }
 
@@ -195,7 +196,7 @@ public class IndexerPickerTest {
         assertTrue(testee.checkSearchId(searchRequest, count, indexer));
 
         //When no IDs are provided and no query is provided the ID check should be successful (might be an update query)
-        provided = Sets.newSet();
+        provided = new HashSet<>();
         when(searchRequest.getQuery()).thenReturn(Optional.empty());
         verify(infoProviderMock, never()).canConvertAny(provided, supported);
         assertTrue(testee.checkSearchId(searchRequest, count, indexer));

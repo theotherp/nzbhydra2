@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -137,14 +136,14 @@ public class Newznab extends Indexer {
         }
 
 
-        Set<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
         requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         if (!requiredWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
-        Set<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
+        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
         excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
         excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
         if (!excludedWords.isEmpty()) {
@@ -274,7 +273,6 @@ public class Newznab extends Indexer {
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        logger.info("Successfully executed search call in {}ms", responseTime);
         handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerApiAccessResult.SUCCESSFUL, url);
         //noinspection ConstantConditions Actually checked above
         RssRoot rssRoot = (RssRoot) response;
@@ -283,6 +281,7 @@ public class Newznab extends Indexer {
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
         List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot);
+        logger.info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
         indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
@@ -304,8 +303,6 @@ public class Newznab extends Indexer {
             indexerSearchResult.setOffset(0);
             indexerSearchResult.setLimit(0);
         }
-
-        logger.info("Processed search searchResults in {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         return indexerSearchResult;
     }

@@ -113,7 +113,7 @@ public class BaseConfig {
         return yamlMapper.readValue(applicationYmlContent, BaseConfig.class);
     }
 
-
-
-
+    public void setIndexers(List<IndexerConfig> indexers) {
+        this.indexers = indexers;
+    }
 }

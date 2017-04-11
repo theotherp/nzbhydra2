@@ -2,15 +2,15 @@ package org.nzbhydra.searching.searchrequests;
 
 import lombok.Data;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class InternalData {
 
     private String title;
     private boolean loadAll;
-    private Set<String> excludedWords = new HashSet<>();
-    private Set<String> requiredWords = new HashSet<>(); //TODO When is this filled?
+    private List<String> excludedWords = new ArrayList<>();
+    private List<String> requiredWords = new ArrayList<>(); //TODO When is this filled?
 
 }

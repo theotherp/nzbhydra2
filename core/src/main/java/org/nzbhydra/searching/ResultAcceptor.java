@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -214,7 +213,7 @@ public class ResultAcceptor {
         return true;
     }
 
-    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, Set<String> requiredWords, SearchResultItem item) {
+    protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item) {
         if (!requiredWords.isEmpty()) {
             List<String> titleWords = getTitleWords(item);
 
@@ -248,7 +247,7 @@ public class ResultAcceptor {
 
     }
 
-    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, Set<String> excludedWords, SearchResultItem item) {
+    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> excludedWords, SearchResultItem item) {
         for (String forbiddenWord : excludedWords) {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {

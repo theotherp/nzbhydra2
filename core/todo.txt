@@ -96,12 +96,12 @@ Improvements
 
 
 5 runs with 5 parallel calls to Hydra which will call 5 indexers
-Hydra Python: 163s
-Hydra Java: 32s
+Hydra Python: 176s
+Hydra Java: 27s
 
-1 run with 1 parallel call to Hydra which will call 5 indexers
+5 runs with 1 parallel call to Hydra which will call 5 indexers
 Hydra Python: 7911ms
-Hydra Java: 3233ms
+Hydra Java: 2200ms
 
 
 Check out:

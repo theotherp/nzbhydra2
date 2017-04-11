@@ -1,4 +1,4 @@
-package org.nzbhydra.gtihubmapping;
+package org.nzbhydra.mockserver.gtihubmapping;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

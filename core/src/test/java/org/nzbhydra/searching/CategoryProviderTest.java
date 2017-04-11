@@ -2,7 +2,6 @@ package org.nzbhydra.searching;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.Category;
 
 import java.util.ArrayList;
@@ -21,32 +20,32 @@ public class CategoryProviderTest {
         List<Category> categories = new ArrayList<>();
         Category category = new Category();
         category.setName("all");
-        category.setNewznabCategories(Collections.emptySet());
+        category.setNewznabCategories(Collections.emptyList());
         categories.add(category);
 
         category = new Category();
         category.setName("n/a");
-        category.setNewznabCategories(Collections.emptySet());
+        category.setNewznabCategories(Collections.emptyList());
         categories.add(category);
 
         category = new Category();
         category.setName("3000,3030");
-        category.setNewznabCategories(Sets.newSet(3000, 3030));
+        category.setNewznabCategories(Arrays.asList(3000, 3030));
         categories.add(category);
 
         category = new Category();
         category.setName("4000");
-        category.setNewznabCategories(Sets.newSet(4000));
+        category.setNewznabCategories(Arrays.asList(4000));
         categories.add(category);
 
         category = new Category();
         category.setName("4090");
-        category.setNewznabCategories(Sets.newSet(4090));
+        category.setNewznabCategories(Arrays.asList(4090));
         categories.add(category);
 
         category = new Category();
         category.setName("7020,8010");
-        category.setNewznabCategories(Sets.newSet(7020, 8010));
+        category.setNewznabCategories(Arrays.asList(7020, 8010));
         categories.add(category);
         testee.setCategories(categories);
         testee.afterPropertiesSet();

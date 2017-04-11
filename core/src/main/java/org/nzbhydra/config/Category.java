@@ -1,12 +1,12 @@
 package org.nzbhydra.config;
 
-import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @ConfigurationProperties(prefix = "categories")
 @Data
@@ -21,12 +21,12 @@ public class Category {
     protected String pretty;
     protected boolean mayBeSelected;
     protected boolean supportyById;
-    protected Set<Integer> newznabCategories;
+    protected List<Integer> newznabCategories = new ArrayList<>();
     protected SearchSourceRestriction applyRestrictionsType;
     protected SearchSourceRestriction ignoreResultsFrom;
-    protected Set<String> forbiddenWords = Sets.newHashSet();
+    protected List<String> forbiddenWords = new ArrayList<>();
     protected String forbiddenRegex;
-    protected Set<String> requiredWords = Sets.newHashSet();
+    protected List<String> requiredWords = new ArrayList<>();
     protected String requiredRegex;
 
     public Category(String name, String pretty) {

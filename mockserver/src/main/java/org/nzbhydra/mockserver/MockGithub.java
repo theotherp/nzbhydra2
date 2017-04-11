@@ -1,11 +1,11 @@
-package org.nzbhydra;
+package org.nzbhydra.mockserver;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.nzbhydra.gtihubmapping.Asset;
-import org.nzbhydra.gtihubmapping.Release;
+import org.nzbhydra.mockserver.gtihubmapping.Asset;
+import org.nzbhydra.mockserver.gtihubmapping.Release;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMapping;

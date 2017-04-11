@@ -7,9 +7,9 @@ import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
@@ -18,7 +18,7 @@ public class IndexerConfig {
     private String apikey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend;
-    private Set<String> categories;
+    private List<String> categories = new ArrayList<>();
     private Integer downloadLimit = null;
     private boolean enabled;
     @JsonFormat(shape = Shape.STRING)
@@ -35,7 +35,7 @@ public class IndexerConfig {
     private SearchModuleType searchModuleType;
     private boolean showOnSearch;
     @JsonFormat(shape = Shape.STRING)
-    private Set<IdType> supportedSearchIds = new HashSet<>();
+    private List<IdType> supportedSearchIds = new ArrayList<>();
     private Integer timeout = null;
     private String type; //TODO what is this?
 
@@ -71,5 +71,9 @@ public class IndexerConfig {
 
     public Optional<String> getUsername() {
         return Optional.ofNullable(username);
+    }
+
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
     }
 }

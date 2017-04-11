@@ -1,4 +1,4 @@
-package org.nzbhydra;
+package org.nzbhydra.mockserver;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

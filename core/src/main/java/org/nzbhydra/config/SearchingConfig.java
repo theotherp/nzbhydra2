@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Data
@@ -17,10 +18,10 @@ public class SearchingConfig {
     private float duplicateAgeThreshold;
     private float duplicateSizeThresholdInPercent;
     private boolean enableCategorySizes;
-    private Set<String> forbiddenGroups;
-    private Set<String> forbiddenPosters;
+    private List<String> forbiddenGroups = new ArrayList<>();
+    private List<String> forbiddenPosters = new ArrayList<>();
     private String forbiddenRegex;
-    private Set<String> forbiddenWords;
+    private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction generateQueries;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToTitle;
@@ -33,7 +34,9 @@ public class SearchingConfig {
     private boolean removeLanguage;
     private boolean removeObfuscated;
     private String requiredRegex;
-    private Set<String> requiredWords;
+    private List<String> requiredWords = new ArrayList<>();
     private Integer timeout;
     private String userAgent;
+
+
 };

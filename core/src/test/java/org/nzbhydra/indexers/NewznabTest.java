@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -7,7 +8,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
@@ -103,7 +103,7 @@ public class NewznabTest {
         when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Sets.newSet(IdType.TMDB, IdType.TVRAGE));
+        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
 
         when(baseConfigMock.getSearching()).thenReturn(searchingConfigMock);
@@ -129,7 +129,7 @@ public class NewznabTest {
     @Test
     public void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Sets.newSet(IdType.IMDB));
+        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
 
@@ -146,7 +146,7 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         when(searchingConfigMock.getGenerateQueries()).thenReturn(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Collections.emptySet());
+        testee.config.setSupportedSearchIds(Collections.emptyList());
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
@@ -236,40 +236,40 @@ public class NewznabTest {
     @Test
     public void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Sets.newSet("a", "b", "c"));
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=--a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
-        searchRequest.getInternalData().setExcludedWords(Sets.newSet("a", "b", "c"));
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery --a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Sets.newSet("a", "b", "c"));
-        searchRequest.getInternalData().setRequiredWords(Sets.newSet("x", "y", "z"));
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("x", "y", "z"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z --a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
 
         searchRequest.getCategory().getForbiddenWords().add("catforbidden");
         searchRequest.getCategory().getRequiredWords().add("catrequired");
-        when(searchingConfigMock.getForbiddenWords()).thenReturn(Sets.newSet("globalforbidden"));
-        when(searchingConfigMock.getRequiredWords()).thenReturn(Sets.newSet("globalrequired"));
+        when(searchingConfigMock.getForbiddenWords()).thenReturn(Lists.newArrayList("globalforbidden"));
+        when(searchingConfigMock.getRequiredWords()).thenReturn(Lists.newArrayList("globalrequired"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest).build());
     }
 
     @Test
     public void shouldNotUseMoreThan12WordsForNzbGeek() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Sets.newSet("a", "b", "c"));
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
 
         testee.config.setHost("http://www.nzbgeek.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setRequiredWords(Sets.newSet("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"));
+        searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"));
         UriComponents actual = testee.buildSearchUrl(searchRequest).build();
 
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=1 2 3 4 5 6 7 8 9 10 11 12").build(), actual);
 
         searchRequest.setQuery("a b c d");
-        searchRequest.getInternalData().setExcludedWords(Sets.newSet("x", "y", "z"));
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("x", "y", "z"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=a b c d 1 2 3 4 5 6 7 8").build(), testee.buildSearchUrl(searchRequest).build());
     }
 
