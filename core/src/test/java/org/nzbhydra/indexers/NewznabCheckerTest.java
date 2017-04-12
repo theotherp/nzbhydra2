@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
-import org.nzbhydra.mapping.rss.RssRoot;
+import org.nzbhydra.mapping.newznab.RssRoot;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.Assert.assertEquals;

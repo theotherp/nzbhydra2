@@ -1,4 +1,4 @@
-package org.nzbhydra.mapping.rss;
+package org.nzbhydra.mapping.newznab;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlAccessType;

@@ -17,7 +17,7 @@ import org.nzbhydra.api.ExternalApi;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
-import org.nzbhydra.mapping.rss.RssRoot;
+import org.nzbhydra.mapping.newznab.RssRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;

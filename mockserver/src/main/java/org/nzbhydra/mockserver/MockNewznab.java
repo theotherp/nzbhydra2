@@ -1,13 +1,21 @@
 package org.nzbhydra.mockserver;
 
+import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.Enclosure;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
-import org.nzbhydra.mapping.rss.Enclosure;
-import org.nzbhydra.mapping.rss.NewznabAttribute;
-import org.nzbhydra.mapping.rss.NewznabResponse;
-import org.nzbhydra.mapping.rss.RssChannel;
-import org.nzbhydra.mapping.rss.RssGuid;
-import org.nzbhydra.mapping.rss.RssItem;
-import org.nzbhydra.mapping.rss.RssRoot;
+import org.nzbhydra.mapping.newznab.NewznabResponse;
+import org.nzbhydra.mapping.newznab.RssChannel;
+import org.nzbhydra.mapping.newznab.RssGuid;
+import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.caps.CapsCategories;
+import org.nzbhydra.mapping.newznab.caps.CapsCategory;
+import org.nzbhydra.mapping.newznab.caps.CapsLimits;
+import org.nzbhydra.mapping.newznab.caps.CapsRetention;
+import org.nzbhydra.mapping.newznab.caps.CapsRoot;
+import org.nzbhydra.mapping.newznab.caps.CapsSearch;
+import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -34,18 +43,29 @@ public class MockNewznab {
     private static HashMap<Integer, RssRoot> responsesPerApikey = new HashMap<>();
 
     static {
-        apikeyToResultCount.put(0, 500);
-        apikeyToResultCount.put(1, 400);
-        apikeyToResultCount.put(2, 300);
-        apikeyToResultCount.put(3, 200);
-        apikeyToResultCount.put(4, 100);
+        apikeyToResultCount.put(0, 10);
+        apikeyToResultCount.put(1, 500);
+        apikeyToResultCount.put(2, 400);
+        apikeyToResultCount.put(3, 300);
+        apikeyToResultCount.put(4, 200);
+        apikeyToResultCount.put(5, 100);
     }
 
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
 
-        int count = apikeyToResultCount.get(Integer.valueOf(params.getApikey()) - 1);
+        if (params.getT() == ActionAttribute.CAPS) {
+            return getCaps();
+        }
+
+        int count;
+        int key = Integer.valueOf(params.getApikey());
+        if (apikeyToResultCount.containsKey(key)) {
+            count = apikeyToResultCount.get(key);
+        } else {
+            count = 0;
+        }
 
         if (responsesPerApikey.containsKey(count)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(count), HttpStatus.OK);
@@ -54,8 +74,22 @@ public class MockNewznab {
             responsesPerApikey.put(count, rssRoot);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
-
     }
+
+    private ResponseEntity<?> getCaps() {
+        CapsRoot capsRoot = new CapsRoot();
+        capsRoot.setLimits(new CapsLimits(100, 100));
+        capsRoot.setRetention(new CapsRetention(2000));
+        CapsSearching searching = new CapsSearching();
+        searching.setSearch(new CapsSearch("yes", "q,cat,limit"));
+        searching.setTvSearch(new CapsSearch("yes", "q,tmdb,tvmazeid"));
+        capsRoot.setSearching(searching);
+        CapsCategories capsCategories = new CapsCategories(Arrays.asList(new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD")))));
+        //CapsCategories capsCategories = new CapsCategories(Arrays.asList(new CapsCategory()));
+        capsRoot.setCategories(capsCategories);
+        return new ResponseEntity<Object>(capsRoot, HttpStatus.OK);
+    }
+
 
     private RssRoot generateResponse(int endCount, String itemTitleBase) {
 

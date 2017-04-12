@@ -1,4 +1,4 @@
-package org.nzbhydra.mapping.rss;
+package org.nzbhydra.mapping.newznab;
 
 import lombok.Data;
 

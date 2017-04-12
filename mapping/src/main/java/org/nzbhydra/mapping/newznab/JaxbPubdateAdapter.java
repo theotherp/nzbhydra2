@@ -1,4 +1,4 @@
-package org.nzbhydra.mapping.rss;
+package org.nzbhydra.mapping.newznab;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.Instant;

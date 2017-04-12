@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.mapping.rss.RssError;
-import org.nzbhydra.mapping.rss.RssRoot;
-import org.nzbhydra.mapping.rss.Xml;
+import org.nzbhydra.mapping.newznab.RssError;
+import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,12 +82,16 @@ public class NewznabChecker {
         List<Callable<SingleCheckCapsResponse>> callables = requests.stream().<Callable<SingleCheckCapsResponse>>map(checkCapsRequest -> () -> singleCheckCaps(checkCapsRequest)).collect(Collectors.toList());
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
         Set<IdType> supportedIds = Collections.emptySet();
+        String backend = null;
         try {
             ExecutorService executor = Executors.newFixedThreadPool(requests.size());
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
                     SingleCheckCapsResponse response = future.get();
+                    if (response.getBackend() != null) {
+                        backend = response.getBackend();
+                    }
                     responses.add(response);
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while checking caps", e);
@@ -103,7 +107,7 @@ public class NewznabChecker {
             logger.error("Unexpected error while checking caps", e);
         }
 
-        return new CheckCapsRespone(supportedIds, Collections.emptySet()); //TODO: Check types
+        return new CheckCapsRespone(supportedIds, Collections.emptySet(), backend); //TODO: Check types
     }
 
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request) {
@@ -117,10 +121,10 @@ public class NewznabChecker {
         boolean supported = percentCorrect > 90;
         if (supported) {
             logger.info("{}% of results using ID type {} were correct. The indexer probably supports this ID.", percentCorrect, request.getKey());
-            return new SingleCheckCapsResponse(request.getKey(), true);
+            return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
         } else {
             logger.info("{}% of results using ID type {} were correct. The indexer probably doesn't support this ID.", percentCorrect, request.getKey());
-            return new SingleCheckCapsResponse(request.getKey(), false);
+            return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
     }
 
@@ -139,6 +143,7 @@ public class NewznabChecker {
     private class SingleCheckCapsResponse {
         private String key;
         private boolean supported;
+        private String backend;
     }
 
     @Data
@@ -146,6 +151,7 @@ public class NewznabChecker {
     public class CheckCapsRespone {
         private Set<IdType> supportedIds;
         private Set<String> supportedTypes;
+        private String backend;
     }
 
 

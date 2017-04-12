@@ -6,16 +6,16 @@ import org.nzbhydra.NzbDownloadResult;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.Enclosure;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
-import org.nzbhydra.mapping.rss.Enclosure;
-import org.nzbhydra.mapping.rss.NewznabAttribute;
-import org.nzbhydra.mapping.rss.NewznabResponse;
-import org.nzbhydra.mapping.rss.RssChannel;
-import org.nzbhydra.mapping.rss.RssError;
-import org.nzbhydra.mapping.rss.RssGuid;
-import org.nzbhydra.mapping.rss.RssItem;
-import org.nzbhydra.mapping.rss.RssRoot;
-import org.nzbhydra.mapping.rss.Xml;
+import org.nzbhydra.mapping.newznab.NewznabResponse;
+import org.nzbhydra.mapping.newznab.RssChannel;
+import org.nzbhydra.mapping.newznab.RssError;
+import org.nzbhydra.mapping.newznab.RssGuid;
+import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
@@ -120,10 +120,10 @@ public class ExternalApi {
 
         RssChannel rssChannel = new RssChannel();
         rssChannel.setTitle("NZB Hydra 2");
-        rssChannel.setLink("link");
+        rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
         rssChannel.setNewznabResponse(new NewznabResponse( params.getOffset(), searchResultItems.size())); //TODO
-        rssChannel.setGenerator("NZBHydra");
+        rssChannel.setGenerator("NZBHydra2");
 
         rssRoot.setRssChannel(rssChannel);
         List<RssItem> items = new ArrayList<>();

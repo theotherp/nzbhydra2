@@ -6,7 +6,7 @@ import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.downloader.DownloaderProvider;
 import org.nzbhydra.downloader.NzbGet;
-import org.nzbhydra.mapping.rss.RssRoot;
+import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.slf4j.Logger;
