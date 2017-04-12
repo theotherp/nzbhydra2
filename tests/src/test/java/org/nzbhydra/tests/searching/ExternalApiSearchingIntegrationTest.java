@@ -13,11 +13,11 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.Parameter;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.api.ActionAttribute;
-import org.nzbhydra.api.ApiCallParameters;
 import org.nzbhydra.api.ExternalApi;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
-import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.NewznabParameters;
+import org.nzbhydra.mapping.rss.RssRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -72,7 +72,7 @@ public class ExternalApiSearchingIntegrationTest {
         ));
 
 
-        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setApikey("apikey");
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
@@ -108,7 +108,7 @@ public class ExternalApiSearchingIntegrationTest {
                 new Header("Content-Type", "application/xml; charset=utf-8")
         ));
 
-        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setApikey("apikey");
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
@@ -144,7 +144,7 @@ public class ExternalApiSearchingIntegrationTest {
                 new Header("Content-Type", "application/xml; charset=utf-8")
         ));
 
-        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setApikey("apikey");
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(100);
@@ -167,7 +167,7 @@ public class ExternalApiSearchingIntegrationTest {
         mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey"))).respond(HttpResponse.response().withBody("<error code=\"100\" description=\"a description\">").withHeaders(
                 new Header("Content-Type", "application/xml; charset=utf-8")
         ));
-        ApiCallParameters apiCallParameters = new ApiCallParameters();
+        NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setT(ActionAttribute.SEARCH);
         apiCallParameters.setApikey("apikey");
 

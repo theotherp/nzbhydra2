@@ -1,12 +1,13 @@
 package org.nzbhydra.mockserver;
 
-import org.nzbhydra.mockserver.rssmapping.Enclosure;
-import org.nzbhydra.mockserver.rssmapping.NewznabAttribute;
-import org.nzbhydra.mockserver.rssmapping.NewznabResponse;
-import org.nzbhydra.mockserver.rssmapping.RssChannel;
-import org.nzbhydra.mockserver.rssmapping.RssGuid;
-import org.nzbhydra.mockserver.rssmapping.RssItem;
-import org.nzbhydra.mockserver.rssmapping.RssRoot;
+import org.nzbhydra.mapping.newznab.NewznabParameters;
+import org.nzbhydra.mapping.rss.Enclosure;
+import org.nzbhydra.mapping.rss.NewznabAttribute;
+import org.nzbhydra.mapping.rss.NewznabResponse;
+import org.nzbhydra.mapping.rss.RssChannel;
+import org.nzbhydra.mapping.rss.RssGuid;
+import org.nzbhydra.mapping.rss.RssItem;
+import org.nzbhydra.mapping.rss.RssRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,6 @@ import java.util.Random;
 @RestController
 public class MockNewznab {
 
-
     private static final Logger logger = LoggerFactory.getLogger(MockNewznab.class);
 
     Random random = new Random();
@@ -43,7 +43,7 @@ public class MockNewznab {
 
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public ResponseEntity<? extends Object> api(ApiCallParameters params) throws Exception {
+    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
 
         int count = apikeyToResultCount.get(Integer.valueOf(params.getApikey()) - 1);
 

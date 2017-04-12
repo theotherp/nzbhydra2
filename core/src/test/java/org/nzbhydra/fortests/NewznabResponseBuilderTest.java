@@ -1,7 +1,7 @@
 package org.nzbhydra.fortests;
 
 import org.junit.Test;
-import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.mapping.rss.RssRoot;
 
 import static org.junit.Assert.assertEquals;
 

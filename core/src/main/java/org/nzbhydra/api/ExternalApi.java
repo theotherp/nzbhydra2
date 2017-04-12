@@ -5,16 +5,18 @@ import com.google.common.base.Strings;
 import org.nzbhydra.NzbDownloadResult;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.NewznabParameters;
+import org.nzbhydra.mapping.rss.Enclosure;
+import org.nzbhydra.mapping.rss.NewznabAttribute;
+import org.nzbhydra.mapping.rss.NewznabResponse;
+import org.nzbhydra.mapping.rss.RssChannel;
+import org.nzbhydra.mapping.rss.RssError;
+import org.nzbhydra.mapping.rss.RssGuid;
+import org.nzbhydra.mapping.rss.RssItem;
+import org.nzbhydra.mapping.rss.RssRoot;
+import org.nzbhydra.mapping.rss.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.rssmapping.Enclosure;
-import org.nzbhydra.rssmapping.NewznabAttribute;
-import org.nzbhydra.rssmapping.NewznabResponse;
-import org.nzbhydra.rssmapping.RssChannel;
-import org.nzbhydra.rssmapping.RssError;
-import org.nzbhydra.rssmapping.RssGuid;
-import org.nzbhydra.rssmapping.RssItem;
-import org.nzbhydra.rssmapping.RssRoot;
-import org.nzbhydra.rssmapping.Xml;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -60,7 +62,7 @@ public class ExternalApi {
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public ResponseEntity<? extends Object> api(ApiCallParameters params) throws Exception {
+    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
         logger.info("Received external API call: " + params);
 
         //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
@@ -72,6 +74,7 @@ public class ExternalApi {
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             SearchResult searchResult = search(params);
+
 
             RssRoot transformedResults = transformResults(searchResult, params);
             logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -101,7 +104,7 @@ public class ExternalApi {
         return error;
     }
 
-    protected RssRoot transformResults(SearchResult searchResult, ApiCallParameters params) {
+    protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params) {
         logger.debug("Transforming searchResults");
         List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
@@ -159,12 +162,12 @@ public class ExternalApi {
         }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
-    private SearchResult search(ApiCallParameters params) {
+    private SearchResult search(NewznabParameters params) {
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         return searcher.search(searchRequest);
     }
 
-    private SearchRequest buildBaseSearchRequest(ApiCallParameters params) {
+    private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());

@@ -1,12 +1,13 @@
 package org.nzbhydra.fortests;
 
-import org.nzbhydra.rssmapping.Enclosure;
-import org.nzbhydra.rssmapping.NewznabAttribute;
-import org.nzbhydra.rssmapping.NewznabResponse;
-import org.nzbhydra.rssmapping.RssChannel;
-import org.nzbhydra.rssmapping.RssGuid;
-import org.nzbhydra.rssmapping.RssItem;
-import org.nzbhydra.rssmapping.RssRoot;
+
+import org.nzbhydra.mapping.rss.Enclosure;
+import org.nzbhydra.mapping.rss.NewznabAttribute;
+import org.nzbhydra.mapping.rss.NewznabResponse;
+import org.nzbhydra.mapping.rss.RssChannel;
+import org.nzbhydra.mapping.rss.RssGuid;
+import org.nzbhydra.mapping.rss.RssItem;
+import org.nzbhydra.mapping.rss.RssRoot;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

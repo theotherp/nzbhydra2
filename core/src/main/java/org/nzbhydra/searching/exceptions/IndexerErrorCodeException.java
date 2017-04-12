@@ -1,6 +1,7 @@
 package org.nzbhydra.searching.exceptions;
 
-import org.nzbhydra.rssmapping.RssError;
+
+import org.nzbhydra.mapping.rss.RssError;
 
 /**
  * Thrown when the indexer returns an error code that is not handled specifically (e.g. not an auth problem)

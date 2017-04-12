@@ -4,12 +4,13 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.rssmapping.Enclosure;
-import org.nzbhydra.rssmapping.NewznabAttribute;
-import org.nzbhydra.rssmapping.RssChannel;
-import org.nzbhydra.rssmapping.RssGuid;
-import org.nzbhydra.rssmapping.RssItem;
-import org.nzbhydra.rssmapping.RssRoot;
+import org.nzbhydra.mapping.newznab.NewznabParameters;
+import org.nzbhydra.mapping.rss.Enclosure;
+import org.nzbhydra.mapping.rss.NewznabAttribute;
+import org.nzbhydra.mapping.rss.RssChannel;
+import org.nzbhydra.mapping.rss.RssGuid;
+import org.nzbhydra.mapping.rss.RssItem;
+import org.nzbhydra.mapping.rss.RssRoot;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -78,7 +79,7 @@ public class ExternalApiSpringTest {
 
         rssRoot.setRssChannel(channel);
         ResponseEntity x = new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
-        when(externalApiMock.api(any(ApiCallParameters.class))).thenReturn(x);
+        when(externalApiMock.api(any(NewznabParameters.class))).thenReturn(x);
 
         String expectedContent = Resources.toString(Resources.getResource(ExternalApiSpringTest.class, "simplesearchresult.xml"), Charsets.UTF_8);
         mockMvc.perform(MockMvcRequestBuilders.get("/api").accept(MediaType.ALL)).andExpect(content().xml(expectedContent));
