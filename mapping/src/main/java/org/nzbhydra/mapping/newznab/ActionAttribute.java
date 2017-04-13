@@ -6,6 +6,7 @@ public enum ActionAttribute {
     TVSEARCH,
     MOVIE,
     BOOK,
+    AUDIO,
     CAPS,
     GET,
     DETAILS,

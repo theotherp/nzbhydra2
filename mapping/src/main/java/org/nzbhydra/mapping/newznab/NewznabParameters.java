@@ -19,6 +19,7 @@ public class NewznabParameters {
     private String rid;
     private String tvdbid;
     private String tvmazeId;
+    private String traktId; //TODO implement?
     private String imdbid;
     private String tmdbid;
     private Integer season;
@@ -51,6 +52,7 @@ public class NewznabParameters {
                 .add("tmdbid", tmdbid)
                 .add("rid", rid)
                 .add("tvdbid", tvdbid)
+                .add("taktId", traktId)
                 .add("tvmazeId", tvmazeId)
                 .add("season", season)
                 .add("ep", ep)

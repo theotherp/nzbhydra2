@@ -59,6 +59,10 @@ public class MockNewznab {
             return getCaps();
         }
 
+        if (params.getRid() != null) {
+            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+        }
+
         int count;
         int key = Integer.valueOf(params.getApikey());
         if (apikeyToResultCount.containsKey(key)) {

@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -60,7 +61,10 @@ public class CategoryProvider implements InitializingBean {
 
     public Category getNotAvailable() {
         if (categoryMap == null || categoryMap.isEmpty()) {
-            return new Category("n/a", "N/A");
+            Category naCategory = new Category("n/a", "N/A");
+            naCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+            naCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+            return naCategory;
         }
         return getByName("n/a");
     }

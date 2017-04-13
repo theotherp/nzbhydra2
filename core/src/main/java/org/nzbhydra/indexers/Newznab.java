@@ -3,11 +3,16 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.base.Throwables;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.RssError;
@@ -27,19 +32,11 @@ import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.UnknownResponseException;
-import org.nzbhydra.searching.exceptions.IndexerAccessException;
-import org.nzbhydra.searching.exceptions.IndexerAuthException;
-import org.nzbhydra.searching.exceptions.IndexerErrorCodeException;
-import org.nzbhydra.searching.exceptions.IndexerProgramErrorException;
-import org.nzbhydra.searching.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.searching.exceptions.IndexerUnreachableException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
@@ -131,7 +128,7 @@ public class Newznab extends Indexer {
                         throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
                     }
                 }
-                logger.info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
             }
         }
 
@@ -147,8 +144,11 @@ public class Newznab extends Indexer {
         excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
         excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
         if (!excludedWords.isEmpty()) {
-            //TODO handle differently depending on backend
-            query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
+            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
+                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(excludedWords);
+            } else {
+                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
+            }
         }
 
         if (config.getHost().toLowerCase().contains("nzbgeek")) {
@@ -225,7 +225,7 @@ public class Newznab extends Indexer {
                                     params.put(IdType.TVDB, info.getTvDbId().get());
                                 }
                             } catch (InfoProviderException e) {
-                                logger.error("Error while converting search ID", e);
+                                error("Error while converting search ID", e);
                             }
                         }
                     }
@@ -249,20 +249,14 @@ public class Newznab extends Indexer {
         Xml response;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
-            try {
-                logger.info("Calling {}", url);
-                response = restTemplate.getForObject(url, Xml.class);
-                if (response instanceof RssError) {
-                    handleRssError((RssError) response, url);
-                } else if (!(response instanceof RssRoot)) {
-                    throw new UnknownResponseException("Indexer returned unknown response");
-                }
-            } catch (HttpStatusCodeException | ResourceAccessException e) {
-                throw new IndexerUnreachableException(String.format("Error calling URL %s: %s", url, e.getMessage()));
-            } catch (Exception e) {
-                Throwables.throwIfInstanceOf(e, IndexerAccessException.class);
-                throw new IndexerAccessException("An unexpected error occurred while calling the indexer", e);
+            info("Calling {}", url);
+            response = get(url, Xml.class);
+            if (response instanceof RssError) {
+                handleRssError((RssError) response, url);
+            } else if (!(response instanceof RssRoot)) {
+                throw new UnknownResponseException("Indexer returned unknown response");
             }
+
         } catch (IndexerAccessException e) {
             handleIndexerAccessException(e, url);
 
@@ -281,7 +275,7 @@ public class Newznab extends Indexer {
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
         List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot);
-        logger.info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
+        info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
         indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
@@ -311,17 +305,17 @@ public class Newznab extends Indexer {
         boolean disablePermanently = false;
         IndexerApiAccessResult apiAccessResult;
         if (e instanceof IndexerAuthException) {
-            logger.error("Indexer refused authentication");
+            error("Indexer refused authentication");
             disablePermanently = true;
             apiAccessResult = IndexerApiAccessResult.AUTH_ERROR;
         } else if (e instanceof IndexerErrorCodeException) {
-            logger.error(e.getMessage());
+            error(e.getMessage());
             apiAccessResult = IndexerApiAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
-            logger.error(e.getMessage());
+            error(e.getMessage());
             apiAccessResult = IndexerApiAccessResult.CONNECTION_ERROR;
         } else {
-            logger.error(e.getMessage(), e);
+            error(e.getMessage(), e);
             apiAccessResult = IndexerApiAccessResult.HYDRA_ERROR;
         }
         handleFailure(e.getMessage(), disablePermanently, IndexerApiAccessType.SEARCH, null, apiAccessResult, url);
@@ -420,7 +414,7 @@ public class Newznab extends Indexer {
         if (baseConfig.getSearching().isRemoveLanguage()) {
             for (String language : LANGUAGES) {
                 if (searchResultItem.getTitle().endsWith(language)) {
-                    logger.debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
+                    debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
                     searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
                 }
             }

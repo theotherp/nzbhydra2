@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.exceptions;
+package org.nzbhydra.indexers.exceptions;
 
 /**
  * Thrown when an error occurrs that indicates an error in the program code :-(

@@ -428,16 +428,11 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-
             model.supportedSearchIds = data.supportedIds;
             model.searchTypes = data.supportedTypes;
-            if (data.supportsAllCategories) {   //Don't display all the categories, will be replaced with placeholder "All categories"
-                model.categories = [];
-            } else {
-                model.categories = data.supportedCategories;
-            }
-            //TODO: Find out categories and backend
+            model.categories = [];
+
+            //TODO: Find out categories
             model.animeCategory = data.animeCategory;
             model.audiobookCategory = data.audiobookCategory;
             model.comicCategory = data.comicCategory;

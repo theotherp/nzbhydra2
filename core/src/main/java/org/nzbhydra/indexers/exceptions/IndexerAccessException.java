@@ -1,4 +1,4 @@
-package org.nzbhydra.searching.exceptions;
+package org.nzbhydra.indexers.exceptions;
 
 import org.nzbhydra.NzbHydraException;
 

@@ -19,6 +19,8 @@ import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -28,10 +30,7 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,6 +40,7 @@ import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.eq;
@@ -56,7 +56,7 @@ public class NewznabTest {
     @Mock
     private InfoProvider infoProviderMock;
     @Mock
-    private RestTemplate restTemplateMock;
+    private IndexerWebAccess indexerWebAccessMock;
     @Mock
     private IndexerEntity indexerEntityMock;
     @Mock
@@ -165,7 +165,7 @@ public class NewznabTest {
 
     @Test
     public void shouldThrowAuthException() throws Exception {
-        when(restTemplateMock.getForObject(anyString(), eq(Xml.class))).thenReturn(new RssError("101", "Wrong api key"));
+        when(indexerWebAccessMock.get(anyString(), eq(Xml.class), anyInt())).thenReturn(new RssError("101", "Wrong api key"));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
@@ -177,7 +177,7 @@ public class NewznabTest {
 
     @Test
     public void shouldThrowProgramErrorCodeException() throws Exception {
-        when(restTemplateMock.getForObject(anyString(), eq(Xml.class))).thenReturn(new RssError("200", "Whatever"));
+        when(indexerWebAccessMock.get(anyString(), eq(Xml.class), anyInt())).thenReturn(new RssError("200", "Whatever"));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
@@ -189,7 +189,7 @@ public class NewznabTest {
 
     @Test
     public void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
-        when(restTemplateMock.getForObject(anyString(), eq(Xml.class))).thenReturn(new RssError("123", "Whatever"));
+        when(indexerWebAccessMock.get(anyString(), eq(Xml.class), anyInt())).thenReturn(new RssError("123", "Whatever"));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
@@ -201,13 +201,13 @@ public class NewznabTest {
 
     @Test
     public void shouldThrowIndexerUnreachableException() throws Exception {
-        HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.BAD_REQUEST, "errorMessage");
-        when(restTemplateMock.getForObject(anyString(), eq(Xml.class))).thenThrow(exception);
+        IndexerUnreachableException exception = new IndexerUnreachableException("message");
+        when(indexerWebAccessMock.get(anyString(), eq(Xml.class), anyInt())).thenThrow(exception);
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100));
 
-        assertEquals("Error calling URL http://127.0.0.1:1234/api?apikey&t=search: 400 errorMessage", errorMessageCaptor.getValue());
+        assertEquals("message", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
         assertEquals(IndexerApiAccessResult.CONNECTION_ERROR, indexerApiAccessResultCaptor.getValue());
     }
@@ -254,6 +254,31 @@ public class NewznabTest {
         when(searchingConfigMock.getForbiddenWords()).thenReturn(Lists.newArrayList("globalforbidden"));
         when(searchingConfigMock.getRequiredWords()).thenReturn(Lists.newArrayList("globalrequired"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest).build());
+    }
+
+    @Test
+    public void shouldUseDifferentExclusionFormatForNzedbAndOmgWtf() throws Exception {
+        testee.config.setBackend(BackendType.NZEDB);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+
+        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("aquery");
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+
+        testee.config.setBackend(BackendType.NEWZNAB);
+        testee.config.setHost("http://www.OMGwtfnzbs.com");
+        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+
+        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setQuery("aquery");
+        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+
     }
 
     @Test

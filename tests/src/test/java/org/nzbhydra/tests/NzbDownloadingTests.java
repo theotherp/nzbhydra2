@@ -129,7 +129,7 @@ public class NzbDownloadingTests {
     public void shouldSendUrlToDownloader() throws Exception {
         baseConfig.getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
 
-        HttpRequest expectedRequest = HttpRequest.request("/sabnzbd/api").withQueryStringParameter("mode", "addurl").withQueryStringParameter("name", "http://127.0.0.1:5076/getnzb/api/" + searchResultId).withMethod("POST");
+        HttpRequest expectedRequest = HttpRequest.request("/sabnzbd/api").withQueryStringParameter("mode", "addurl").withQueryStringParameter("name", "http://127.0.0.1:5076/getnzb/user/" + searchResultId).withMethod("POST");
         mockServer.when(expectedRequest).respond(HttpResponse.response().withStatusCode(200).withBody("{\"isStatus\":true}"));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("/internalapi/downloader/addNzbs");

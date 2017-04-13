@@ -13,18 +13,17 @@ import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +41,8 @@ public abstract class Indexer {
 
     public enum BackendType {
         NZEDB,
-        NNTMUX
+        NNTMUX,
+        NEWZNAB
     }
 
     protected static final List<Integer> DISABLE_PERIODS = Arrays.asList(0, 15, 30, 60, 3 * 60, 6 * 60, 12 * 60, 24 * 60);
@@ -57,23 +57,19 @@ public abstract class Indexer {
     @Autowired
     protected BaseConfig baseConfig;
     @Autowired
-    protected RestTemplate restTemplate;
-    @Autowired
     private IndexerRepository indexerRepository;
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerApiAccessRepository indexerApiAccessRepository;
+    @Autowired
+    protected IndexerWebAccess indexerWebAccess;
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
-        //Set timeout. //TODO Timeout should be the maximum total time we wait for the client to return
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        int timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
-        factory.setReadTimeout(timeout);
-        factory.setConnectTimeout(timeout);
-        restTemplate.setRequestFactory(factory);
+        //TODO Set user agent, use proxy, etc
+
     }
 
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) throws IndexerSearchAbortedException {
@@ -171,6 +167,11 @@ public abstract class Indexer {
         indexerApiAccessRepository.save(apiAccess);
     }
 
+    protected <T> T get(String url, Class<T> responseType) throws IndexerAccessException {
+        Integer timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
+        return indexerWebAccess.get(url, responseType, timeout);
+    }
+
 
     public String getName() {
         return config.getName();
@@ -212,6 +213,22 @@ public abstract class Indexer {
     @Override
     public int hashCode() {
         return config == null ? 0 : Objects.hashCode(config.getName());
+    }
+
+    protected void error(String msg) {
+        getLogger().error(getName() + ": " + msg);
+    }
+
+    protected void error(String msg, Throwable t) {
+        getLogger().error(getName() + ": " + msg, t);
+    }
+
+    protected void info(String msg, Object... arguments) {
+        getLogger().info(getName() + ": " + msg, arguments);
+    }
+
+    protected void debug(String msg, Object... arguments) {
+        getLogger().debug(getName() + ": " + msg, arguments);
     }
 
     protected abstract Logger getLogger();

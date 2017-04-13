@@ -18,12 +18,13 @@ import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -32,28 +33,21 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
-//@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class, Newznab.class, SearchModuleConfigProvider.class, SearchModuleProvider.class, AppConfig.class, SearchResultRepository.class, IndexerRepository.class})
-//@Configuration
 @DataJpaTest
-//@ConfigurationProperties
-//@EnableConfigurationProperties
-@TestPropertySource(locations = "classpath:/org/nzbhydra/tests/searching/application.properties")
-public class SearchingIntegrationTest {
+public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
     private Searcher searcher;
 
-
-    @Autowired
-    private RestTemplate restTemplateMock;
-
     private ClientAndProxy proxy;
     private ClientAndServer mockServer;
 
+
     @Before
-    public void startProxy() {
+    public void setUp() throws IOException {
         mockServer = startClientAndServer(7070);
         proxy = startClientAndProxy(7072);
+        replaceConfig(getClass().getResource("twoIndexers.json"));
     }
 
     @After

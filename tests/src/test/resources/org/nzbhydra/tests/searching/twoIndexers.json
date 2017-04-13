@@ -1,0 +1,25 @@
+{
+  "indexers": [
+    {
+      "apikey": "apikey1",
+      "enabled": true,
+      "enabledForSearchSource": "BOTH",
+      "host": "http://localhost:7070",
+      "name": "hallo1",
+      "score": 0,
+      "searchModuleType": "NEWZNAB"
+    },
+    {
+      "apikey": "apikey2",
+      "enabled": true,
+      "enabledForSearchSource": "BOTH",
+      "host": "http://localhost:7070",
+      "name": "hallo2",
+      "score": 0,
+      "searchModuleType": "NEWZNAB"
+    }
+  ],
+  "main": {
+    "apiKey": "apikey"
+  }
+}

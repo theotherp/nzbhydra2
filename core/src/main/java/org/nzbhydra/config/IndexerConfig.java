@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -17,7 +18,7 @@ public class IndexerConfig {
 
     private String apikey;
     @JsonFormat(shape = Shape.STRING)
-    private BackendType backend;
+    private BackendType backend = BackendType.NEWZNAB;
     private List<String> categories = new ArrayList<>();
     private Integer downloadLimit = null;
     private boolean enabled;
@@ -36,6 +37,7 @@ public class IndexerConfig {
     private boolean showOnSearch;
     @JsonFormat(shape = Shape.STRING)
     private List<IdType> supportedSearchIds = new ArrayList<>();
+    private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
     private Integer timeout = null;
     private String type; //TODO what is this?
 

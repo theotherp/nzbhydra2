@@ -1,6 +1,6 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.searching.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 
 public class UnknownResponseException extends IndexerAccessException {
 

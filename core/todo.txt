@@ -73,6 +73,10 @@ Windows GUI
 
 General, Ideas
 - open browser on startup
+- user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
+- proxy
+- Separate nzbdownloads from api accesses in database, remove joins, save time in nzbdownload
+- wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - Log / config sanitation
 - Initialize config
 - overwrite config file

@@ -18,11 +18,13 @@ import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -32,8 +34,8 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @DataJpaTest
-@TestPropertySource(locations = {"classpath:org/nzbhydra/tests/searching/externalApiTest.properties}", "classpath:org/nzbhydra/tests/categories.properties"})
-public class ExternalApiSearchingIntegrationTest {
+//@TestPropertySource(locations = {"classpath:/org/nzbhydra/tests/searching/externalApiTest.properties}", "classpath:org/nzbhydra/tests/categories.properties"})
+public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
     private ExternalApi externalApi;
@@ -42,9 +44,10 @@ public class ExternalApiSearchingIntegrationTest {
     private ClientAndServer mockServer;
 
     @Before
-    public void startProxy() {
+    public void setUp() throws IOException {
         mockServer = startClientAndServer(7070);
         proxy = startClientAndProxy(7072);
+        replaceConfig(getClass().getResource("twoIndexers.json"));
     }
 
     @After

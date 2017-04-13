@@ -57,7 +57,7 @@ searching:
   forbiddenPosters: []
   forbiddenRegex: null
   forbiddenWords: []
-  generateQueries: null
+  generateQueries: "NONE"
   idFallbackToTitle: "NONE"
   idFallbackToTitlePerIndexer: false
   ignorePassworded: false

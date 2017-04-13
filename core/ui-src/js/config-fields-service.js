@@ -237,7 +237,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Set when using an external proxy. Call using a trailing slash, e.g. http://www.domain.com/nzbhydra/'
+                                help: 'Set when using an external proxy'
                             },
                             validators: {
                                 urlBase: regexValidator(/^(\/\w+)*$/, "Base URL needs to start with a slash and must not end with one")
@@ -666,9 +666,9 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Apply word restrictions',
                                 options: [
-                                    {name: 'Internal searches', value: 'internal'},
-                                    {name: 'API searches', value: 'external'},
-                                    {name: 'All searches', value: 'both'}
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'All searches', value: 'BOTH'}
                                 ],
                                 help: "For which type of search word restrictions will be applied"
                             }
@@ -760,18 +760,6 @@ function ConfigFields($injector) {
                     },
                     fieldGroup: [
                         {
-                            key: 'htmlParser',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'HTML parser',
-                                options: [
-                                    {name: 'Default BS (slower)', value: 'html.parser'},
-                                    {name: 'LXML (faster, needs to be installed separately)', value: 'lxml'}
-                                ]
-                            }
-                        },
-                        {
                             key: 'duplicateSizeThresholdInPercent',
                             type: 'horizontalPercentInput',
                             templateOptions: {
@@ -829,8 +817,8 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'NZB access type',
                                 options: [
-                                    {name: 'Proxy NZBs from indexer', value: 'serve'},
-                                    {name: 'Redirect to the indexer', value: 'redirect'}
+                                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
+                                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
                                 ],
                                 help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended."
                             }
@@ -903,7 +891,7 @@ function ConfigFields($injector) {
                             searchModuleType: 'NEWZNAB',
                             accessType: "both",
                             supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
-                            searchTypes: undefined, //["tvsearch", "movie"]
+                            supportedSearchTypes: undefined, //["tvsearch", "movie"]
                             backend: 'newznab',
                             userAgent: null
                         },
@@ -947,9 +935,9 @@ function ConfigFields($injector) {
                     templateOptions: {
                         label: 'Auth type',
                         options: [
-                            {name: 'None', value: 'none'},
-                            {name: 'HTTP Basic auth', value: 'basic'},
-                            {name: 'Login form', value: 'form'}
+                            {name: 'None', value: 'NONE'},
+                            {name: 'HTTP Basic auth', value: 'BASIC'},
+                            {name: 'Login form', value: 'FORM'}
                         ]
 
                     }
@@ -963,7 +951,7 @@ function ConfigFields($injector) {
                         help: 'Restrict access to searching'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -975,7 +963,7 @@ function ConfigFields($injector) {
                         help: 'Restrict access to stats'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -987,7 +975,7 @@ function ConfigFields($injector) {
                         help: 'Restrict access to admin functions'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -999,7 +987,7 @@ function ConfigFields($injector) {
                         help: 'Restrict NZB details, comments and download links'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -1011,7 +999,7 @@ function ConfigFields($injector) {
                         help: 'Restrict visibility of indexer selection box in search. Affects only GUI'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -1023,7 +1011,7 @@ function ConfigFields($injector) {
                         help: 'Remember users with cookie for 14 days'
                     },
                     hideExpression: function () {
-                        return rootModel.auth.authType == "none";
+                        return rootModel.auth.authType === "NONE";
                     }
                 },
                 {
@@ -1227,7 +1215,7 @@ function getIndexerPresets(configuredIndexers) {
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
                 supportedSearchIds: [],
-                searchTypes: [],
+                supportedSearchTypes: [],
                 searchModuleType: "JACKETT",
                 enabledForSearchSource: "INTERNAL"
             }
@@ -1247,7 +1235,7 @@ function getIndexerPresets(configuredIndexers) {
                 preselect: true,
                 score: 0,
                 supportedSearchIds: [],
-                searchTypes: [],
+                supportedSearchTypes: [],
                 showOnSearch: true,
                 timeout: null,
                 searchModuleType: "ANIZB",
@@ -1267,7 +1255,7 @@ function getIndexerPresets(configuredIndexers) {
                 preselect: true,
                 score: 0,
                 supportedSearchIds: [],
-                searchTypes: [],
+                supportedSearchTypes: [],
                 showOnSearch: true,
                 timeout: null,
                 searchModuleType: "BINSEARCH",
@@ -1287,7 +1275,7 @@ function getIndexerPresets(configuredIndexers) {
                 preselect: true,
                 score: 0,
                 supportedSearchIds: [],
-                searchTypes: [],
+                supportedSearchTypes: [],
                 showOnSearch: true,
                 timeout: null,
                 searchModuleType: "NZBCLUB",
@@ -1309,7 +1297,7 @@ function getIndexerPresets(configuredIndexers) {
                 preselect: true,
                 score: 0,
                 supportedSearchIds: [],
-                searchTypes: [],
+                supportedSearchTypes: [],
                 showOnSearch: true,
                 timeout: null,
                 searchModuleType: "NZBINDEX",
@@ -1560,7 +1548,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                     options: [
                         {name: 'Internal searches only', value: 'INTERNAL'},
                         {name: 'API searches only', value: 'EXTERNAL'},
-                        {name: 'Internal and API searches', value: 'both'}
+                        {name: 'Internal and API searches', value: 'BOTH'}
                     ]
                 }
             }
@@ -1655,12 +1643,12 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 templateOptions: {
                     label: 'Search IDs',
                     options: [
-                        {label: 'TVDB', id: 'tvdbId'},
-                        {label: 'TVRage', id: 'rid'},
-                        {label: 'IMDB', id: 'imdbId'},
-                        {label: 'Trakt', id: 'traktid'},
-                        {label: 'TVMaze', id: 'tvmazeId'},
-                        {label: 'TMDB', id: 'tmdbid'}
+                        {label: 'TVDB', id: 'TVDB'},
+                        {label: 'TVRage', id: 'TVRAGE'},
+                        {label: 'IMDB', id: 'IMDB'},
+                        {label: 'Trakt', id: 'TRAKT'},
+                        {label: 'TVMaze', id: 'TVMAZE'},
+                        {label: 'TMDB', id: 'TMDB'}
                     ],
                     getPlaceholder: function (model) {
                         if (angular.isUndefined(model)) {
@@ -1675,15 +1663,15 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
         fieldset.push(
             {
-                key: 'searchTypes',
+                key: 'supportedSearchTypes',
                 type: 'horizontalMultiselect',
                 templateOptions: {
                     label: 'Search types',
                     options: [
-                        {label: 'Movies', id: 'movie'},
-                        {label: 'TV', id: 'tvsearch'},
-                        {label: 'Ebooks', id: 'book'},
-                        {label: 'Audio', id: 'audio'}
+                        {label: 'Movies', id: 'MOVIE'},
+                        {label: 'TV', id: 'TVSEARCH'},
+                        {label: 'Ebooks', id: 'BOOK'},
+                        {label: 'Audio', id: 'AUDIO'}
                     ],
                     getPlaceholder: function (model) {
                         if (angular.isUndefined(model)) {
@@ -1959,21 +1947,25 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
     function checkCaps(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";
-        if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.searchTypes)) {
+        if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
             ConfigBoxService.checkCaps(url, model).then(
                 function (data, model) {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    growl.info("Successfully tested capabilites of indexer");
+                    if (model.allChecked) {
+                        growl.info("Successfully tested capabilites of indexer");
+                    } else {
+                        growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");
+                    }
                     deferred.resolve();
                 },
                 function () {
                     blockUI.reset();
                     scope.spinnerActive = false;
                     model.supportedSearchIds = [];
-                    model.searchTypes = [];
+                    model.supportedSearchTypes = [];
                     ModalService.open("Error testing capabilities", "The capabilities of the indexer could not be checked. The indexer won't be used for ID based searches (IMDB, TVDB, etc.). You may repeat the check manually at any time.");
                     deferred.resolve();
                 }).finally(
