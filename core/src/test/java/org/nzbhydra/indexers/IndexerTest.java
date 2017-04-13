@@ -7,8 +7,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessRepository;
-import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
@@ -122,7 +122,7 @@ public class IndexerTest {
     @Test
     public void handleSuccess() throws Exception {
         when(indexerMock.getIndexerEntity().getStatus()).thenReturn(statusMock);
-        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0, IndexerApiAccessResult.API_ERROR, "url");
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0, IndexerAccessResult.API_ERROR, "url");
 
         verify(statusMock).setDisabledPermanently(false);
         verify(statusMock).setLevel(0);

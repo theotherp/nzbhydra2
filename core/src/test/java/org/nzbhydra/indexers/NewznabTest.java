@@ -12,8 +12,8 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessRepository;
-import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
@@ -76,7 +76,7 @@ public class NewznabTest {
     @Captor
     ArgumentCaptor<Boolean> disabledPermanentlyCaptor;
     @Captor
-    ArgumentCaptor<? extends IndexerApiAccessResult> indexerApiAccessResultCaptor;
+    ArgumentCaptor<? extends IndexerAccessResult> indexerApiAccessResultCaptor;
     @Mock
     BaseConfig baseConfigMock;
     @Mock
@@ -172,7 +172,7 @@ public class NewznabTest {
 
         assertEquals("Indexer refused authentication. Error code: 101. Description: Wrong api key", errorMessageCaptor.getValue());
         assertTrue(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerApiAccessResult.AUTH_ERROR, indexerApiAccessResultCaptor.getValue());
+        assertEquals(IndexerAccessResult.AUTH_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
     @Test
@@ -184,7 +184,7 @@ public class NewznabTest {
 
         assertEquals("Indexer returned error code 200 when URL http://127.0.0.1:1234/api?apikey&t=search was called", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerApiAccessResult.HYDRA_ERROR, indexerApiAccessResultCaptor.getValue());
+        assertEquals(IndexerAccessResult.HYDRA_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
     @Test
@@ -196,7 +196,7 @@ public class NewznabTest {
 
         assertEquals("Indexer returned with error code 123 and description Whatever", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerApiAccessResult.API_ERROR, indexerApiAccessResultCaptor.getValue());
+        assertEquals(IndexerAccessResult.API_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
     @Test
@@ -209,7 +209,7 @@ public class NewznabTest {
 
         assertEquals("message", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerApiAccessResult.CONNECTION_ERROR, indexerApiAccessResultCaptor.getValue());
+        assertEquals(IndexerAccessResult.CONNECTION_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
     @Test

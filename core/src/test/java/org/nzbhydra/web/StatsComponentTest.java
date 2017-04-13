@@ -6,9 +6,9 @@ import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
-import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerSearchEntity;
@@ -145,26 +145,23 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateDownloadsPerDayOfWeek() throws Exception {
 
-        IndexerApiAccessEntity accessFriday = new IndexerApiAccessEntity(indexer1);
-        accessFriday.setTime(Instant.ofEpochSecond(1490945310L)); //Friday
-        NzbDownloadEntity downloadFriday = new NzbDownloadEntity(accessFriday);
+        NzbDownloadEntity downloadFriday = new NzbDownloadEntity();
+        downloadFriday.setTime(Instant.ofEpochSecond(1490945310L)); //Friday
 
-        IndexerApiAccessEntity accessThursday1 = new IndexerApiAccessEntity(indexer1);
-        accessThursday1.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
-        NzbDownloadEntity downloadThursday1 = new NzbDownloadEntity(accessThursday1);
-        IndexerApiAccessEntity accessThursday2 = new IndexerApiAccessEntity(indexer1);
-        accessThursday2.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
-        NzbDownloadEntity downloadThursday2 = new NzbDownloadEntity(accessThursday2);
+        NzbDownloadEntity downloadThursday1 = new NzbDownloadEntity();
+        downloadThursday1.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
 
-        IndexerApiAccessEntity accessSunday = new IndexerApiAccessEntity(indexer1);
-        accessSunday.setTime(Instant.ofEpochSecond(1490513310L)); //Sunday
-        NzbDownloadEntity downloadSunday = new NzbDownloadEntity(accessSunday);
+        NzbDownloadEntity downloadThursday2 = new NzbDownloadEntity();
+        downloadThursday2.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
 
-        apiAccessRepository.save(Arrays.asList(accessFriday, accessSunday, accessThursday1, accessThursday2));
+
+        NzbDownloadEntity downloadSunday = new NzbDownloadEntity();
+        downloadSunday.setTime(Instant.ofEpochSecond(1490513310L)); //Sunday
+
         downloadRepository.save(Arrays.asList(downloadFriday, downloadSunday, downloadThursday1, downloadThursday2));
 
 
-        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(accessFriday.getTime().minus(10, ChronoUnit.DAYS), accessFriday.getTime().plus(10, ChronoUnit.DAYS)));
+        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(downloadFriday.getTime().minus(10, ChronoUnit.DAYS), downloadFriday.getTime().plus(10, ChronoUnit.DAYS)));
         assertEquals(7, result.size());
 
         assertEquals("Thu", result.get(3).getDay());
@@ -200,21 +197,21 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateIndexerApiAccessStats() throws Exception {
         IndexerApiAccessEntity apiAccess1 = new IndexerApiAccessEntity(indexer1);
-        apiAccess1.setResult(IndexerApiAccessResult.CONNECTION_ERROR); //Counted as failed
+        apiAccess1.setResult(IndexerAccessResult.CONNECTION_ERROR); //Counted as failed
         apiAccess1.setTime(Instant.now().minus(24, ChronoUnit.HOURS));
         apiAccessRepository.save(apiAccess1);
 
         IndexerApiAccessEntity apiAccess2 = new IndexerApiAccessEntity(indexer1);
-        apiAccess2.setResult(IndexerApiAccessResult.HYDRA_ERROR); //Neither counted as successful nor as failed
+        apiAccess2.setResult(IndexerAccessResult.HYDRA_ERROR); //Neither counted as successful nor as failed
         apiAccessRepository.save(apiAccess2);
 
         IndexerApiAccessEntity apiAccess3 = new IndexerApiAccessEntity(indexer1);
-        apiAccess3.setResult(IndexerApiAccessResult.SUCCESSFUL); //Counted as successful
+        apiAccess3.setResult(IndexerAccessResult.SUCCESSFUL); //Counted as successful
         apiAccessRepository.save(apiAccess3);
 
         //Initially ignored by set time period
         IndexerApiAccessEntity apiAccess4 = new IndexerApiAccessEntity(indexer1);
-        apiAccess4.setResult(IndexerApiAccessResult.SUCCESSFUL); //Counted as successful
+        apiAccess4.setResult(IndexerAccessResult.SUCCESSFUL); //Counted as successful
         apiAccess4.setTime(Instant.now().minus(14, ChronoUnit.DAYS));
         apiAccessRepository.save(apiAccess4);
 

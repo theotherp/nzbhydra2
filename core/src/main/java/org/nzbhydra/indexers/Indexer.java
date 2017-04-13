@@ -4,9 +4,9 @@ import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
-import org.nzbhydra.database.IndexerApiAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
@@ -83,7 +83,7 @@ public abstract class Indexer {
             } else {
                 logger.error("Unexpected error while searching", e);
                 try {
-                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerApiAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
                 } catch (Exception e1) {
                     logger.error("Error while handling indexer failure. API access was not saved to database", e1);
                 }
@@ -124,7 +124,7 @@ public abstract class Indexer {
         return searchResultItems;
     }
 
-    protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerApiAccessResult accessResult, String url) {
+    protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerAccessResult accessResult, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         status.setLevel(0);
         status.setDisabledPermanently(false);
@@ -140,7 +140,7 @@ public abstract class Indexer {
         indexerApiAccessRepository.save(apiAccess);
     }
 
-    protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerApiAccessResult accessResult, String url) {
+    protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         if (status.getLevel() == 0) {
             status.setFirstFailure(Instant.now());

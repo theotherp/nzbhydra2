@@ -29,7 +29,7 @@ public class History {
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page searchHistory(@RequestBody HistoryRequestData requestData) {
-        return historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class, "");
+        return historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class);
     }
 
     @Secured({"ROLE_USER"})
@@ -41,7 +41,7 @@ public class History {
         FilterModel filterModel = new FilterModel();
         filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
         requestData.setFilterModel(filterModel);
-        Page searchHistoryPage = historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class, "");
+        Page searchHistoryPage = historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class);
         List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
         List<SearchEntity> filteredSearchEntities = new ArrayList<>();
         if (!allSearchEntities.isEmpty()) {
@@ -61,7 +61,7 @@ public class History {
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page downloadHistory(@RequestBody HistoryRequestData requestData) {
-        return historyProvider.getHistory(requestData, "INDEXERNZBDOWNLOAD", NzbDownloadEntity.class, " LEFT JOIN indexerapiaccess ON indexer_api_access_id = indexerapiaccess.id ");
+        return historyProvider.getHistory(requestData, "INDEXERNZBDOWNLOAD", NzbDownloadEntity.class);
     }
 
 }

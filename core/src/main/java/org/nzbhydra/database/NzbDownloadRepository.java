@@ -9,9 +9,7 @@ import java.util.Collection;
 
 public interface NzbDownloadRepository extends JpaRepository<NzbDownloadEntity, Integer> {
 
-    Collection<NzbDownloadEntity> findByIndexerApiAccessIndexer(IndexerEntity indexerEntity);
+    Collection<NzbDownloadEntity> findByIndexer(IndexerEntity indexerEntity);
 
-    Page<NzbDownloadEntity> findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
-
-    NzbDownloadEntity findByIndexerApiAccess(IndexerApiAccessEntity apiAccessEntity);
+    Page<NzbDownloadEntity> findByIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
 }

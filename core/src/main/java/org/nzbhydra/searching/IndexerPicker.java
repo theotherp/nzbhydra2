@@ -186,9 +186,9 @@ public class IndexerPicker {
             }
         }
         if (indexerConfig.getDownloadLimit().isPresent()) {
-            Page<NzbDownloadEntity> page = nzbDownloadRepository.findByIndexerApiAccessIndexerOrderByIndexerApiAccessTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
-            if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getIndexerApiAccess().getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
-                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getIndexerApiAccess().getTime());
+            Page<NzbDownloadEntity> page = nzbDownloadRepository.findByIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
+            if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
 
                 logger.info("Not picking {} because all {} allowed download were already made. The next download should be possible at {}", indexerConfig.getName(), indexerConfig.getDownloadLimit().get(), nextPossibleHit);
                 count.put(indexer, "Download limit reached");

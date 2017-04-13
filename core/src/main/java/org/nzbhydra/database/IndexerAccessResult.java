@@ -1,6 +1,6 @@
 package org.nzbhydra.database;
 
-public enum IndexerApiAccessResult {
+public enum IndexerAccessResult {
     SUCCESSFUL,
     CONNECTION_ERROR,
     API_ERROR,

@@ -37,7 +37,7 @@ public class IndexerApiAccessEntity {
     private Instant time;
 
     @Enumerated(EnumType.STRING)
-    private IndexerApiAccessResult result;
+    private IndexerAccessResult result;
 
     @Enumerated(EnumType.STRING)
     private IndexerApiAccessType accessType;

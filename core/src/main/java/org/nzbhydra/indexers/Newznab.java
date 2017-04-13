@@ -5,7 +5,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
-import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
@@ -267,7 +267,7 @@ public class Newznab extends Indexer {
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerApiAccessResult.SUCCESSFUL, url);
+        handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerAccessResult.SUCCESSFUL, url);
         //noinspection ConstantConditions Actually checked above
         RssRoot rssRoot = (RssRoot) response;
 
@@ -303,20 +303,20 @@ public class Newznab extends Indexer {
 
     private void handleIndexerAccessException(IndexerAccessException e, String url) {
         boolean disablePermanently = false;
-        IndexerApiAccessResult apiAccessResult;
+        IndexerAccessResult apiAccessResult;
         if (e instanceof IndexerAuthException) {
             error("Indexer refused authentication");
             disablePermanently = true;
-            apiAccessResult = IndexerApiAccessResult.AUTH_ERROR;
+            apiAccessResult = IndexerAccessResult.AUTH_ERROR;
         } else if (e instanceof IndexerErrorCodeException) {
             error(e.getMessage());
-            apiAccessResult = IndexerApiAccessResult.API_ERROR;
+            apiAccessResult = IndexerAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
             error(e.getMessage());
-            apiAccessResult = IndexerApiAccessResult.CONNECTION_ERROR;
+            apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
             error(e.getMessage(), e);
-            apiAccessResult = IndexerApiAccessResult.HYDRA_ERROR;
+            apiAccessResult = IndexerAccessResult.HYDRA_ERROR;
         }
         handleFailure(e.getMessage(), disablePermanently, IndexerApiAccessType.SEARCH, null, apiAccessResult, url);
     }

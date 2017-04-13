@@ -1,6 +1,6 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.database.IndexerApiAccessResult;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.StatsResponse;
 import org.nzbhydra.indexers.Indexer;
@@ -83,17 +83,13 @@ public class Stats {
                 "  (SELECT count(*) AS countall\n" +
                 "   FROM\n" +
                 "     indexernzbdownload dl\n" +
-                "     LEFT OUTER JOIN indexerapiaccess api\n" +
-                "       ON dl.INDEXER_API_ACCESS_ID = api.id\n" +
-                "   WHERE api.indexer_id IN (:indexerIds)\n" +
+                "   WHERE dl.indexer_id IN (:indexerIds)\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "  )\n" +
                 "  countall\n" +
-                "  LEFT OUTER JOIN indexerapiaccess api\n" +
-                "    ON dl.INDEXER_API_ACCESS_ID = api.id\n" +
                 "  LEFT OUTER JOIN indexer indexer\n" +
-                "    ON api.indexer_id = indexer.id\n" +
-                "WHERE api.indexer_id IN (:indexerIds)\n" +
+                "    ON dl.indexer_id = indexer.id\n" +
+                "WHERE dl.indexer_id IN (:indexerIds)\n" +
                 "GROUP BY indexer.id, indexer.NAME, countall";
 
         Query query = entityManager.createNativeQuery(sql);
@@ -267,7 +263,7 @@ public class Stats {
 
         Query countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
-        countQuery.setParameter("resultTypes", Arrays.asList(IndexerApiAccessResult.SUCCESSFUL.name()));
+        countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.SUCCESSFUL.name()));
 
         Map<Integer, BigInteger> successCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
@@ -276,14 +272,14 @@ public class Stats {
 
         countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
-        countQuery.setParameter("resultTypes", Arrays.asList(IndexerApiAccessResult.CONNECTION_ERROR.name()));
+        countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.CONNECTION_ERROR.name()));
         Map<Integer, BigInteger> connectionErrorCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
         countQuery = entityManager.createNativeQuery(countByResultSql);
         countQuery.setParameter("indexerIds", enabledIndexerIds);
-        countQuery.setParameter("resultTypes", Arrays.stream(IndexerApiAccessResult.values()).map(Enum::name).collect(Collectors.toList()));
+        countQuery.setParameter("resultTypes", Arrays.stream(IndexerAccessResult.values()).map(Enum::name).collect(Collectors.toList()));
         Map<Integer, BigInteger> allAccessesCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
@@ -327,7 +323,6 @@ public class Stats {
                 "  DAYOFWEEK(time) AS dayofweek, \n" +
                 "  count(*)        AS counter \n" +
                 "FROM " + table + " \n" +
-                (table.equals("INDEXERNZBDOWNLOAD") ? " LEFT JOIN INDEXERAPIACCESS ON INDEXERNZBDOWNLOAD.INDEXER_API_ACCESS_ID = INDEXERAPIACCESS.ID \n" : "") +
                 buildWhereFromStatsRequest(false, statsRequest) +
                 "GROUP BY DAYOFWEEK(time)";
 
@@ -361,7 +356,6 @@ public class Stats {
                 "  HOUR(time) AS hourofday, \n" +
                 "  count(*)        AS counter \n" +
                 "FROM " + table + " \n" +
-                (table.equals("INDEXERNZBDOWNLOAD") ? " LEFT JOIN INDEXERAPIACCESS ON INDEXERNZBDOWNLOAD.INDEXER_API_ACCESS_ID = INDEXERAPIACCESS.ID \n" : " ") +
                 buildWhereFromStatsRequest(false, statsRequest) +
                 "GROUP BY HOUR(time)";
 

@@ -30,7 +30,7 @@ public class HistoryProvider {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Page getHistory(HistoryRequestData requestData, String tableName, Class resultClass, String join) {
+    public Page getHistory(HistoryRequestData requestData, String tableName, Class resultClass) {
         Map<String, Object> parameters = new HashMap<>();
 
         List<String> wheres = new ArrayList<>();
@@ -75,8 +75,8 @@ public class HistoryProvider {
         String paging = String.format(" LIMIT %d OFFSET %d", requestData.getLimit(), (requestData.getPage() - 1) * requestData.getLimit());
 
 
-        String selectQuerySql = "SELECT * FROM " + tableName + " " + join + " " + whereConditions + sort + paging;
-        String countQuerySql = "SELECT COUNT(*) FROM " + tableName + " " + join + " " + whereConditions;
+        String selectQuerySql = "SELECT * FROM " + tableName + whereConditions + sort + paging;
+        String countQuerySql = "SELECT COUNT(*) FROM " + tableName + whereConditions;
 
         Query selectQuery = entityManager.createNativeQuery(selectQuerySql, resultClass);
         Query countQuery = entityManager.createNativeQuery(countQuerySql);

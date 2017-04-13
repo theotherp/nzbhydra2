@@ -52,13 +52,13 @@
     </thead>
     <tbody>
     <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage: limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
-        <td class="narrow-row">{{ nzbDownload.indexerApiAccess.time.epochSecond | reformatDate }}</td>
-        <td class="narrow-row">{{ nzbDownload.indexerApiAccess.indexer.name }}</td>
+        <td class="narrow-row">{{ nzbDownload.time.epochSecond | reformatDate }}</td>
+        <td class="narrow-row">{{ nzbDownload.indexer.name }}</td>
         <td class="narrow-row">
             <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>
             <a target="_blank" href="{{ nzbDownload.detailsLink | dereferer }}" ng-if="nzbDownload.detailsLink">{{ nzbDownload.title }}</a><span ng-if="!nzbDownload.detailsLink">{{ nzbDownload.title }}</span>
         </td>
-        <td class="narrow-row"><span class="glyphicon" ng-class="accessResult(nzbDownload.indexerApiAccess.result)"></span>
+        <td class="narrow-row"><span class="glyphicon" ng-class="accessResult(nzbDownload.result)"></span>
             <!--ng-class="{'glyphicon-ok': nzbDownload.indexerApiAccess.result == 'SUCCESSFUL', 'glyphicon-remove': nzbDownload.ndexerApiAccess.result == false, 'glyphicon-question-sign': nzbDownload.ndexerApiAccess.result == 'UNKNOWN'}"-->
 
         </td>
