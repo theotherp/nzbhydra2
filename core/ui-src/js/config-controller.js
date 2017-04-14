@@ -41,23 +41,29 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     function submit() {
         if ($scope.form.$valid) {
 
-            ConfigService.set($scope.config);
-            $scope.form.$setPristine();
-            DownloaderCategoriesService.invalidate();
-            if ($scope.restartRequired) {
-                ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
-                    yes: {
-                        onYes: function () {
-                            RestartService.restart();
+
+            ConfigService.set($scope.config).then(function () {
+                $scope.form.$setPristine();
+                DownloaderCategoriesService.invalidate();
+                if ($scope.restartRequired) {
+                    ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
+                        yes: {
+                            onYes: function () {
+                                RestartService.restart();
+                            }
+                        },
+                        no: {
+                            onNo: function () {
+                                $scope.restartRequired = false;
+                            }
                         }
-                    },
-                    no: {
-                        onNo: function () {
-                            $scope.restartRequired = false;
-                        }
-                    }
-                });
-            }
+                    });
+                }
+            }, function (response) {
+                console.log(response);
+                growl.error(response.data.errorMessages.join("<br>"));
+            });
+
         } else {
             growl.error("Config invalid. Please check your settings.");
 
@@ -112,8 +118,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             active: false,
             state: 'root.config.categories',
             name: 'Categories',
-            model: ConfigModel.categories,
-            fields: $scope.fields.categories
+            model: ConfigModel.categoriesConfig,
+            fields: $scope.fields.categoriesConfig
         },
         {
             active: false,

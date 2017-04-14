@@ -39,9 +39,10 @@ angular
         formlyConfigProvider.setType({
             name: 'help',
             template: [
-                '<div class="panel panel-default">',
+                //'<div class="panel panel-default" style="margin-top: ' + options.templateOptions.marginTop + 'margin-bottom:' + options.templateOptions.marginBottom + ';">',
+                '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body">',
-                '<div ng-repeat="line in options.templateOptions.lines">{{ line }}</div>',
+                '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line }}</h5></div>',
                 '</div>',
                 '</div>'
             ].join(' ')
@@ -131,7 +132,7 @@ angular
 
                     var url = "internalapi/indexer/checkCaps";
                     ConfigBoxService.checkCaps(url, $scope.model).then(function (data, model) {
-                        angular.element(testMessage).text("Supports: " + data.supportedIds + "," ? data.supportedIds && data.supportedTypes : "" + data.supportedTypes);
+                        angular.element(testMessage).text("Supports: " + data.supportedSearchIds + "," ? data.supportedSearchIds && data.supportedSearchTypes : "" + data.supportedSearchTypes);
                         showSuccess();
                     }, function (message) {
                         angular.element(testMessage).text(message);
@@ -428,18 +429,12 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model.supportedSearchIds = data.supportedIds;
-            model.searchTypes = data.supportedTypes;
-            model.categories = [];
-
-            //TODO: Find out categories
-            model.animeCategory = data.animeCategory;
-            model.audiobookCategory = data.audiobookCategory;
-            model.comicCategory = data.comicCategory;
-            model.ebookCategory = data.ebookCategory;
-            model.magazineCategory = data.magazineCategory;
+            model.supportedSearchIds = data.supportedSearchIds;
+            model.supportedSearchTypes = data.supportedSearchTypes;
+            model.enabledCategories = [];
+            model.categoryConfig = data.categoryConfig;
             model.backend = data.backend;
-            deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+            deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
 
         }).error(function () {
             deferred.reject("Unknown error");

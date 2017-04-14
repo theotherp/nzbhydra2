@@ -1,11 +1,14 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -27,12 +30,33 @@ public class CategoryProvider implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryProvider.class);
 
+    /**
+     * List of all categories in the order in which they are configured and to be shown in the dropdown
+     */
     private List<Category> categories;
+
+    /**
+     * Map of categories by name, newly initialized whenever categories are changed
+     */
     protected Map<String, Category> categoryMap;
 
+    @Autowired
+    protected BaseConfig baseConfig;
+
+    private final Category naCategory = new Category("N/A");
+
+    public CategoryProvider() {
+        naCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+        naCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
+        naCategory.setMayBeSelected(false);
+        naCategory.setSearchType(null);
+
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        categories = baseConfig.getCategoriesConfig().getCategories();
+
         if (categories != null) {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
         } else {
@@ -43,7 +67,8 @@ public class CategoryProvider implements InitializingBean {
 
     @org.springframework.context.event.EventListener
     public void handleNewConfig(ConfigChangedEvent newConfig) {
-        categoryMap = newConfig.getNewConfig().getCategories().stream().collect(Collectors.toMap(Category::getName, Function.identity()));
+        categories = baseConfig.getCategoriesConfig().getCategories();
+        categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
     }
 
     public List<Category> getCategories() {
@@ -55,18 +80,14 @@ public class CategoryProvider implements InitializingBean {
     }
 
     public Category getByName(String name) {
-        //TODO do something if not found
-        return categoryMap.get(name) != null ? categoryMap.get(name) : getNotAvailable();
+        if (name == null || !categoryMap.containsKey(name)) {
+            return getNotAvailable();
+        }
+        return categoryMap.get(name);
     }
 
     public Category getNotAvailable() {
-        if (categoryMap == null || categoryMap.isEmpty()) {
-            Category naCategory = new Category("n/a", "N/A");
-            naCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
-            naCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
-            return naCategory;
-        }
-        return getByName("n/a");
+        return naCategory;
     }
 
 
@@ -79,34 +100,34 @@ public class CategoryProvider implements InitializingBean {
      */
     public Category fromNewznabCategories(String cats) {
         if (StringUtils.isEmpty(cats)) {
-            return getByName("n/a");
+            return getNotAvailable();
         }
 
         try {
             return fromNewznabCategories(Arrays.stream(cats.split(",")).map(Integer::valueOf).collect(Collectors.toList()));
         } catch (NumberFormatException e) {
             logger.error("Unable to parse categories string '{}'", cats);
-            return getByName("n/a");
+            return getNotAvailable();
         }
     }
 
     /**
-     * Should only be called for ingoing conversion. Returns the "All" category if no matching category is found
+     * Should only be called for conversion of incoming searches. Returns the "All" category if no matching category is found
      *
      * @param cats List of newznab categories
      * @return The matching configured category or "All" if none is found
      */
     public Category fromNewznabCategories(List<Integer> cats) {
         if (cats == null || cats.size() == 0) {
-            return getByName("all");
+            return CategoriesConfig.allCategory;
         }
 
-        Category matchingCategory1 = getCategory(cats);
-        if (matchingCategory1 != null) {
-            return matchingCategory1;
+        Category matchingCategory = getCategory(cats);
+        if (matchingCategory != null) {
+            return matchingCategory;
         }
 
-        return getByName("all");
+        return CategoriesConfig.allCategory;
     }
 
     protected Category getCategory(List<Integer> cats) {

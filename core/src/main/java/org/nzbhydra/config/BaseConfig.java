@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties
 @Data
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"})
-public class BaseConfig {
+public class BaseConfig extends ValidatingConfig {
 
     //TODO On startup when config file does not exist yet create it with initial config? Or wait for user to save?
 
@@ -44,7 +44,7 @@ public class BaseConfig {
     private ApplicationEventPublisher applicationEventPublisher;
 
     private AuthConfig auth = new AuthConfig();
-    private List<Category> categories = new ArrayList<>();
+    private CategoriesConfig categoriesConfig = new CategoriesConfig();
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
@@ -55,7 +55,7 @@ public class BaseConfig {
 
     public void replace(BaseConfig newConfig) {
         main = newConfig.getMain();
-        categories = newConfig.getCategories();
+        categoriesConfig = newConfig.getCategoriesConfig();
         indexers = newConfig.getIndexers();
         downloaders = newConfig.getDownloaders();
         searching = newConfig.getSearching();
@@ -115,5 +115,17 @@ public class BaseConfig {
 
     public void setIndexers(List<IndexerConfig> indexers) {
         this.indexers = indexers;
+    }
+
+    @Override
+    public List<String> validateConfig() {
+        List<String> errorMessages = new ArrayList<>();
+        errorMessages.addAll(auth.validateConfig());
+        errorMessages.addAll(categoriesConfig.validateConfig());
+        errorMessages.addAll(main.validateConfig());
+        errorMessages.addAll(searching.validateConfig());
+        //TODO indexers
+        //TODO downloaders
+        return errorMessages;
     }
 }

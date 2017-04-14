@@ -3,8 +3,11 @@ package org.nzbhydra.config;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-public class LoggingConfig {
+public class LoggingConfig extends ValidatingConfig {
 
     private String consolelevel = "DEBUG";
     private int keepLogFiles = 25;
@@ -14,4 +17,9 @@ public class LoggingConfig {
     private String logfilelevel = "DEBUG";
     private String logfilename = "nzbhydra.log";
     private boolean rolloverAtStart = false;
+
+    @Override
+    public List<String> validateConfig() {
+        return new ArrayList<>();
+    }
 }

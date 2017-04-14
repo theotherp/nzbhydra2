@@ -123,7 +123,7 @@ public class IndexerPicker {
     }
 
     protected boolean checkDisabledForCategory(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {
-        boolean indexerDisabledForThisCategory = !indexer.getConfig().getCategories().isEmpty() && !indexer.getConfig().getCategories().contains(searchRequest.getCategory().getName());
+        boolean indexerDisabledForThisCategory = !indexer.getConfig().getEnabledCategories().isEmpty() && !indexer.getConfig().getEnabledCategories().contains(searchRequest.getCategory().getName());
         if (indexerDisabledForThisCategory) {
             logger.info("Did not pick {} because it's disabled for category {}", indexer.getName(), searchRequest.getCategory().getName());
             count.put(indexer, "Disabled for category");

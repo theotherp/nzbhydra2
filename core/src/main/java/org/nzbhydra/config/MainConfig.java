@@ -4,12 +4,14 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @ConfigurationProperties("main")
 @Component
 @Data
-public class MainConfig {
+public class MainConfig extends ValidatingConfig {
 
     private String apiKey = null;
     private String branch;
@@ -77,5 +79,10 @@ public class MainConfig {
 
     public Optional<String> getUrlBase() {
         return Optional.ofNullable(urlBase);
+    }
+
+    @Override
+    public List<String> validateConfig() {
+        return new ArrayList<>();
     }
 }

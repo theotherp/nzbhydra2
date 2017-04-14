@@ -9,14 +9,17 @@ public class SafeCategory {
 
     private final boolean mayBeSelected;
     private final String name;
-    private final String pretty;
-    private final boolean supportsById;
+    private final String searchType;
+    private final String ignoreResultsFrom;
+    private boolean preselect;
+
 
     public SafeCategory(Category category) {
         this.mayBeSelected = category.isMayBeSelected();
         this.name = category.getName();
-        this.pretty = category.getPretty();
-        this.supportsById = category.isSupportyById();
+        this.searchType = category.getSearchType().name();
+        this.ignoreResultsFrom = category.getIgnoreResultsFrom().name();
+        this.preselect = category.isPreselect();
     }
 
 }

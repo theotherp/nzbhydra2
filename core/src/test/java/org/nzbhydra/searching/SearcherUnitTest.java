@@ -81,7 +81,6 @@ public class SearcherUnitTest {
         when(indexer2.getConfig()).thenReturn(indexerConfigMock);
         Category category = new Category();
         category.setName("cat");
-        category.setPretty("cat");
         when(searchRequestMock.getCategory()).thenReturn(category);
         when(indexerPicker.pickIndexers(searchRequestMock)).thenReturn(pickingResultMock);
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));

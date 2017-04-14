@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @ConfigurationProperties
 @EqualsAndHashCode
-public class AuthConfig {
+public class AuthConfig extends ValidatingConfig {
 
     @JsonFormat(shape = Shape.STRING)
     private AuthType authType;
@@ -32,4 +32,8 @@ public class AuthConfig {
     }
 
 
+    @Override
+    public List<String> validateConfig() {
+        return new ArrayList<>();
+    }
 }

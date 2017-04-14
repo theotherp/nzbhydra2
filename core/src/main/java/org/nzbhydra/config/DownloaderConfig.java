@@ -3,9 +3,12 @@ package org.nzbhydra.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @ConfigurationProperties(prefix = "downloaders")
-public class DownloaderConfig {
+public class DownloaderConfig extends ValidatingConfig {
 
 
     private String apiKey;
@@ -24,5 +27,10 @@ public class DownloaderConfig {
 
     public DownloaderType getDownloaderType() {
         return downloaderType;
+    }
+
+    @Override
+    public List<String> validateConfig() {
+        return new ArrayList<>();
     }
 }

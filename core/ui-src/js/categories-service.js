@@ -6,26 +6,31 @@ function CategoriesService(ConfigService) {
 
     return {
         getByName: getByName,
-        getAll: getAll,
-        getDefault: getDefault
+        getAllCategories: getAllCategories,
+        getDefault: getDefault,
+        getWithoutAll: getWithoutAll
     };
 
 
     function getByName(name) {
-        for (var category in ConfigService.getSafe().categories) {
-            category = ConfigService.getSafe().categories[category];
-            if (category.name == name || category.pretty == name) {
+        for (var category in ConfigService.getSafe().categoriesConfig.categories) {
+            category = ConfigService.getSafe().categoriesConfig.categories[category];
+            if (category.name === name) {
                 return category;
             }
         }
     }
 
-    function getAll() {
-        return ConfigService.getSafe().categories;
+    function getAllCategories() {
+        return ConfigService.getSafe().categoriesConfig.categories;
+    }
+
+    function getWithoutAll() {
+        return ConfigService.getSafe().categoriesConfig.categories.splice(1);
     }
 
     function getDefault() {
-        return getAll()[1];
+        return getAllCategories()[0];
     }
 
 }

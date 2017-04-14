@@ -2,7 +2,6 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.DownloaderConfig;
-import org.nzbhydra.config.DownloaderType;
 
 @Data
 public class SafeDownloaderConfig {
@@ -12,7 +11,7 @@ public class SafeDownloaderConfig {
     private boolean enabled = true;
     private String iconCssClass;
     private String name;
-    private DownloaderType downloaderType;
+    private String downloaderType;
 
     public SafeDownloaderConfig(DownloaderConfig downloaderConfig) {
         this.defaultCategory = downloaderConfig.getDefaultCategory();
@@ -20,10 +19,8 @@ public class SafeDownloaderConfig {
         this.enabled = downloaderConfig.isEnabled();
         this.iconCssClass = downloaderConfig.getIconCssClass();
         this.name = downloaderConfig.getName();
-        this.downloaderType = downloaderConfig.getDownloaderType();
+        this.downloaderType = downloaderConfig.getDownloaderType().name();
     }
 
-    public String getDownloaderType() {
-        return downloaderType.name();
-    }
+
 }

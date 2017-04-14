@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -11,6 +12,7 @@ import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
@@ -19,10 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -122,8 +126,9 @@ public class NewznabChecker {
             allChecked = false;
         }
 
+        IndexerCategoryConfig indexerCategoryConfig = new IndexerCategoryConfig();
         try {
-            readAndAnalyzeCapsPage(indexerConfig, supportedTypes, supportedIds, timeout);
+            indexerCategoryConfig = readAndAnalyzeCapsPage(indexerConfig, supportedTypes, supportedIds, timeout);
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
         }
@@ -138,10 +143,10 @@ public class NewznabChecker {
         }
 
         //TODO Return response that says if an error occured but still return any found IDs and types
-        return new CheckCapsRespone(supportedIds, supportedTypes, backendType, allChecked);
+        return new CheckCapsRespone(supportedIds, supportedTypes, indexerCategoryConfig, backendType, allChecked);
     }
 
-    private void readAndAnalyzeCapsPage(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
+    private IndexerCategoryConfig readAndAnalyzeCapsPage(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
         if (supportedIds.contains(IdType.TVDB) || supportedIds.contains(IdType.TVRAGE) || supportedIds.contains(IdType.TVMAZE) || supportedIds.contains(IdType.TRAKT)) {
             supportedTypes.add(ActionAttribute.TVSEARCH);
         }
@@ -156,6 +161,21 @@ public class NewznabChecker {
         if (capsRoot.getSearching().getBookSearch() != null) {
             supportedTypes.add(ActionAttribute.BOOK);
         }
+
+        List<CapsCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
+        for (CapsCategory category : capsRoot.getCategories().getCategories()) {
+            categories.addAll(category.getSubCategories());
+        }
+        IndexerCategoryConfig categoryConfig = new IndexerCategoryConfig();
+        Optional<CapsCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime")).findFirst();
+        anime.ifPresent(capsCategory -> categoryConfig.setAnime(capsCategory.getId()));
+        Optional<CapsCategory> audiobook = categories.stream().filter(x -> x.getName().toLowerCase().contains("audiobook")).findFirst();
+        audiobook.ifPresent(capsCategory -> categoryConfig.setAudiobook(capsCategory.getId()));
+        Optional<CapsCategory> comic = categories.stream().filter(x -> x.getName().toLowerCase().contains("comic")).findFirst();
+        comic.ifPresent(capsCategory -> categoryConfig.setComic(capsCategory.getId()));
+        Optional<CapsCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
+        ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
+        return categoryConfig;
     }
 
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, int timeout) throws IndexerAccessException {
@@ -199,8 +219,9 @@ public class NewznabChecker {
     @Data
     @AllArgsConstructor
     public class CheckCapsRespone {
-        private Set<IdType> supportedIds;
-        private Set<ActionAttribute> supportedTypes;
+        private Set<IdType> supportedSearchIds;
+        private Set<ActionAttribute> supportedSearchTypes;
+        private IndexerCategoryConfig categoryConfig;
         private BackendType backend;
         private boolean allChecked;
     }

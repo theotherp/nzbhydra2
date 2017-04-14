@@ -2982,7 +2982,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     //Filter options
     $scope.categoriesForFiltering = [];
     _.forEach(ConfigService.getSafe().categories, function (category) {
-        $scope.categoriesForFiltering.push({label: category.pretty, id: category.name})
+        $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
@@ -3147,8 +3147,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
-    $scope.categories = _.filter(CategoriesService.getAll(), function (c) {
-        return c.mayBeSelected && c.ignoreResults !== "INTERNAL" && c.ignoreResults !== "BOTH";
+    $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
+        return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResults === "BOTH");
     });
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);
@@ -3224,7 +3224,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.typeAheadWait = 300;
     $scope.selectedItem = "";
     $scope.autocompleteLoading = false;
-    $scope.isAskById = $scope.category.supportsById;
+    $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.isById = {value: true}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean
     $scope.availableIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
@@ -3233,7 +3233,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         $scope.category = searchCategory;
 
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
-        $scope.isAskById = $scope.category.supportsById;
+        $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
 
         focus('searchfield');
 
@@ -3259,8 +3259,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         }
 
         $scope.availableIndexers = getAvailableIndexers();
-
-
     };
 
 
@@ -3325,15 +3323,10 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         var stateParams = {};
         if ($scope.category.name.indexOf("movies") > -1) {
             stateParams.title = $scope.title;
-            stateParams.mode = "movie";
         } else if ($scope.category.name.indexOf("tv") > -1) {
-            stateParams.mode = "tvsearch";
             stateParams.title = $scope.title;
-        } else if ($scope.category.name === "ebook") {
-            stateParams.mode = "ebook";
-        } else {
-            stateParams.mode = "search";
         }
+        stateParams.mode = $scope.category.searchType.toLowerCase();
 
         stateParams.imdbid = $scope.imdbId;
         stateParams.tmdbid = $scope.tmdbId;
@@ -3387,7 +3380,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.autocompleteActive = function () {
-        return $scope.category.supportsById;
+        return $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     };
 
     $scope.seriesSelected = function () {
@@ -4016,7 +4009,7 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
                         message += "<br><br>Exception: " + rejection.data.exception;
                     }
                 } else {
-                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + rejection;
+                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + JSON.stringify(rejection);
                 }
                 GeneralModalService.open(message);
 
@@ -4132,9 +4125,10 @@ angular
         formlyConfigProvider.setType({
             name: 'help',
             template: [
-                '<div class="panel panel-default">',
+                //'<div class="panel panel-default" style="margin-top: ' + options.templateOptions.marginTop + 'margin-bottom:' + options.templateOptions.marginBottom + ';">',
+                '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body">',
-                '<div ng-repeat="line in options.templateOptions.lines">{{ line }}</div>',
+                '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line }}</h5></div>',
                 '</div>',
                 '</div>'
             ].join(' ')
@@ -4224,7 +4218,7 @@ angular
 
                     var url = "internalapi/indexer/checkCaps";
                     ConfigBoxService.checkCaps(url, $scope.model).then(function (data, model) {
-                        angular.element(testMessage).text("Supports: " + data.supportedIds + "," ? data.supportedIds && data.supportedTypes : "" + data.supportedTypes);
+                        angular.element(testMessage).text("Supports: " + data.supportedSearchIds + "," ? data.supportedSearchIds && data.supportedSearchTypes : "" + data.supportedSearchTypes);
                         showSuccess();
                     }, function (message) {
                         angular.element(testMessage).text(message);
@@ -4521,18 +4515,12 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model.supportedSearchIds = data.supportedIds;
-            model.searchTypes = data.supportedTypes;
-            model.categories = [];
-
-            //TODO: Find out categories
-            model.animeCategory = data.animeCategory;
-            model.audiobookCategory = data.audiobookCategory;
-            model.comicCategory = data.comicCategory;
-            model.ebookCategory = data.ebookCategory;
-            model.magazineCategory = data.magazineCategory;
+            model.supportedSearchIds = data.supportedSearchIds;
+            model.supportedSearchTypes = data.supportedSearchTypes;
+            model.enabledCategories = [];
+            model.categoryConfig = data.categoryConfig;
             model.backend = data.backend;
-            deferred.resolve({supportedIds: data.supportedIds, supportedTypes: data.supportedTypes}, model);
+            deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
 
         }).error(function () {
             deferred.reject("Unknown error");
@@ -4792,15 +4780,25 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
 
 
     function set(newConfig) {
+        var deferred = $q.defer();
         $http.put('internalapi/config', newConfig)
-            .then(function (successresponse) {
-                console.log("Settings saved. Updating cache");
-                cache.put("config", newConfig);
-                invalidateSafe();
+            .then(function (response) {
+                if (response.ok) {
+                    console.log("Settings saved. Updating cache");
+                    cache.put("config", newConfig);
+                    invalidateSafe();
+                    deferred.resolve(response);
+                } else {
+                    deferred.reject(response);
+                }
+
+
             }, function (errorresponse) {
                 console.log("Error saving settings:");
                 console.log(errorresponse);
+                deferred.reject(errorresponse);
             });
+        return deferred.promise;
     }
 
 
@@ -4902,144 +4900,6 @@ function ConfigFields($injector) {
     }
 
 
-    function getCategoryFields() {
-        var fields = [];
-        var ConfigService = $injector.get("ConfigService");
-        var categories = ConfigService.getSafe().categories;
-        fields.push({
-            key: 'enableCategorySizes',
-            type: 'horizontalSwitch',
-            templateOptions: {
-                type: 'switch',
-                label: 'Category sizes',
-                help: "Preset min and max sizes depending on the selected category"
-            }
-        });
-        _.each(categories, function (category) {
-            if (category.name !== "all" && category.name !== "na") {
-                    var categoryFields = [
-                        {
-                            key: "categories." + category.name + '.requiredWords',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Required words',
-                                placeholder: 'separate, with, commas, like, this'
-                            }
-                        },
-                        {
-                            key: "categories." + category.name + '.requiredRegex',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Required regex',
-                                help: 'Must be present in a title (case insensitive)'
-                            }
-                        },
-                        {
-                            key: "categories." + category.name + '.forbiddenWords',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Forbidden words',
-                                placeholder: 'separate, with, commas, like, this'
-                            }
-                        },
-                        {
-                            key: "categories." + category.name + '.forbiddenRegex',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Forbidden regex',
-                                help: 'Must not be present in a title (case insensitive)'
-                            }
-                        },
-                        {
-                            key: "categories." + category.name + '.applyRestrictions',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                label: 'Apply restrictions',
-                                options: [
-                                    {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'EXTERNAL'},
-                                    {name: 'All searches', value: 'BOTH'}
-                                ],
-                                help: "For which type of search word restrictions will be applied"
-                            }
-                        }
-                    ];
-                    categoryFields.push({
-                        wrapper: 'settingWrapper',
-                        templateOptions: {
-                            label: 'Size preset'
-                        },
-                        fieldGroup: [
-                            {
-                                key: "categories." + category.name + '.min',
-                                type: 'duoSetting',
-                                templateOptions: {
-                                    addonRight: {
-                                        text: 'MB'
-                                    }
-                                }
-                            },
-                            {
-                                type: 'duolabel'
-                            },
-                            {
-                                key: "categories." + category.name + '.max',
-                                type: 'duoSetting', templateOptions: {addonRight: {text: 'MB'}}
-                            }
-                        ]
-                    });
-                    categoryFields.push({
-                        key: "categories." + category.name + '.newznabCategories',
-                        type: 'horizontalInput',
-                        templateOptions: {
-                            type: 'text',
-                            label: 'Newznab categories',
-                            help: 'Map newznab categories to hydra categories',
-                            required: true
-                        },
-                        parsers: [function (value) {
-                            if (!value) {
-                                return value;
-                            }
-                            var arr = [];
-                            arr.push.apply(arr, value.split(",").map(Number));
-                            return arr;
-
-                        }]
-                    });
-                    categoryFields.push({
-                        key: "categories." + category.name + '.ignoreResults',
-                        type: 'horizontalSelect',
-                        templateOptions: {
-                            label: 'Ignore results',
-                            options: [
-                                {name: 'For internal searches', value: 'internal'},
-                                {name: 'For API searches', value: 'external'},
-                                {name: 'Always', value: 'always'},
-                                {name: 'Never', value: 'never'}
-                            ],
-                            help: "Ignore results from this category"
-                        }
-                    });
-
-                    fields.push({
-                        wrapper: 'fieldset',
-                        templateOptions: {
-                            label: category.pretty
-                        },
-                        fieldGroup: categoryFields
-
-                    })
-                }
-            }
-        );
-        return fields;
-    }
-
     function getFields(rootModel) {
         return {
             main: [
@@ -5091,7 +4951,7 @@ function ConfigFields($injector) {
                                 help: 'Set when using an external proxy'
                             },
                             validators: {
-                                urlBase: regexValidator(/^(\/\w+)*$/, "Base URL needs to start with a slash and must not end with one")
+                                urlBase: regexValidator(/^\/?(\/\w+)*$/, "Base URL needs to start with a slash and must not end with one")
                             }
                         },
                         {
@@ -5404,7 +5264,7 @@ function ConfigFields($injector) {
                                     text: 'days'
                                 },
                                 required: true,
-                                help: 'Meta data from searches is stored in the database. When they\'re deleted links to hydra become invalid.'
+                                help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
                             }
                         },
                         {
@@ -5519,7 +5379,8 @@ function ConfigFields($injector) {
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
                                     {name: 'API searches', value: 'EXTERNAL'},
-                                    {name: 'All searches', value: 'BOTH'}
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
                                 ],
                                 help: "For which type of search word restrictions will be applied"
                             }
@@ -5558,39 +5419,41 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'generateQueries',
-                            type: 'horizontalMultiselect',
+                            type: 'horizontalSelect',
                             templateOptions: {
                                 label: 'Generate queries',
                                 options: [
-                                    {label: 'Internal searches', id: 'INTERNAL'},
-                                    {label: 'API searches', id: 'EXTERNAL'}
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
                                 ],
                                 help: "Generate queries for indexers which do not support ID based searches"
                             }
                         },
                         //TODO fallback
                         /*
-                        {
-                            key: 'idFallbackToTitle',
-                            type: 'horizontalMultiselect',
-                            templateOptions: {
-                                label: 'Fallback to title queries',
-                                options: [
-                                    {label: 'Internal searches', id: 'internal'},
-                                    {label: 'API searches', id: 'external'}
-                                ],
-                                help: "When no results were found for a query ID search again using the title"
-                            }
-                        },
-                        {
-                            key: 'idFallbackToTitlePerIndexer',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Fallback per indexer',
-                                help: "If enabled, fallback will occur on a per-indexer basis"
-                            }
-                        },
+                         {
+                         key: 'idFallbackToTitle',
+                         type: 'horizontalMultiselect',
+                         templateOptions: {
+                         label: 'Fallback to title queries',
+                         options: [
+                         {label: 'Internal searches', id: 'internal'},
+                         {label: 'API searches', id: 'external'}
+                         ],
+                         help: "When no results were found for a query ID search again using the title"
+                         }
+                         },
+                         {
+                         key: 'idFallbackToTitlePerIndexer',
+                         type: 'horizontalSwitch',
+                         templateOptions: {
+                         type: 'switch',
+                         label: 'Fallback per indexer',
+                         help: "If enabled, fallback will occur on a per-indexer basis"
+                         }
+                         },
                          */
                         {
                             key: 'userAgent',
@@ -5678,7 +5541,197 @@ function ConfigFields($injector) {
                 }
             ],
 
-            categories: getCategoryFields(),
+            categoriesConfig: [
+                {
+                    key: 'enableCategorySizes',
+                    type: 'horizontalSwitch',
+                    templateOptions: {
+                        type: 'switch',
+                        label: 'Category sizes',
+                        help: "Preset min and max sizes depending on the selected category"
+                    }
+                },
+                {
+                    type: 'help',
+                    templateOptions: {
+                        type: 'help',
+                        lines: ["The category configuration is not validated in any way. You can seriously fuck up Hydra's results and overall behavior so take care."],
+                        marginTop: '50px'
+                    }
+                },
+                {
+                    type: 'repeatSection',
+                    key: 'categories',
+                    model: rootModel.categoriesConfig,
+                    templateOptions: {
+                        btnText: 'Add new category',
+                        fields: [
+                            {
+                                key: 'name',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Name',
+                                    help: 'Renaming categories might cause problems with repeating searches from the history',
+                                    required: true
+                                }
+                            },
+                            {
+                                key: 'searchType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Search type',
+                                    options: [
+                                        {name: 'General', value: 'SEARCH'},
+                                        {name: 'Audio', value: 'AUDIO'},
+                                        {name: 'EBook', value: 'BOOK'},
+                                        {name: 'Movie', value: 'MOVIE'},
+                                        {name: 'TV', value: 'TVSEARCH'}
+                                    ],
+                                    help: "Determines how indexers will be search and if autocompletion is available in the GUI"
+                                }
+                            },
+                            {
+                                key: 'requiredWords',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Required words',
+                                    placeholder: 'separate, with, commas, like, this'
+                                }
+                            },
+                            {
+                                key: 'requiredRegex',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Required regex',
+                                    help: 'Must be present in a title (case insensitive)'
+                                }
+                            },
+                            {
+                                key: 'forbiddenWords',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Forbidden words',
+                                    placeholder: 'separate, with, commas, like, this'
+                                }
+                            },
+                            {
+                                key: 'forbiddenRegex',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Forbidden regex',
+                                    help: 'Must not be present in a title (case insensitive)'
+                                }
+                            },
+                            {
+                                key: 'applyRestrictionsType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Apply restrictions',
+                                    options: [
+                                        {name: 'Internal searches', value: 'INTERNAL'},
+                                        {name: 'API searches', value: 'EXTERNAL'},
+                                        {name: 'All searches', value: 'BOTH'},
+                                        {name: 'Never', value: 'NONE'}
+                                    ],
+                                    help: "For which type of search word restrictions will be applied"
+                                }
+                            },
+                            {
+                                wrapper: 'settingWrapper',
+                                templateOptions: {
+                                    label: 'Size preset',
+                                    help: "Will set these values on the search page. Does not affect API searches"
+                                },
+                                fieldGroup: [
+                                    {
+                                        key: 'min',
+                                        type: 'duoSetting',
+                                        templateOptions: {
+                                            addonRight: {
+                                                text: 'MB'
+                                            }
+
+                                        }
+                                    },
+                                    {
+                                        type: 'duolabel'
+                                    },
+                                    {
+                                        key: 'max',
+                                        type: 'duoSetting', templateOptions: {addonRight: {text: 'MB'}}
+                                    }
+                                ]
+                            },
+                            {
+                                key: 'preselect',
+                                type: 'horizontalSwitch',
+                                templateOptions: {
+                                    type: 'switch',
+                                    label: 'Preselect',
+                                    help: "Determines if indexer is preselect on search page"
+                                }
+                            },
+                            {
+                                key: 'newznabCategories',
+                                type: 'horizontalInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Newznab categories',
+                                    help: 'Map newznab categories to Hydra categories',
+                                    placeholder: '1000, 2000'
+                                },
+                                parsers: [function (value) {
+                                    if (!value) {
+                                        return [];
+                                    }
+                                    if (_.isArray(value))
+                                        return value;
+                                    var arr = [];
+                                    arr.push.apply(arr, value.split(",").map(Number));
+                                    return arr;
+
+                                }]
+
+                            },
+                            {
+                                key: 'ignoreResultsFrom',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Ignore results',
+                                    options: [
+                                        {name: 'For internal searches', value: 'INTERNAL'},
+                                        {name: 'For API searches', value: 'EXTERNAL'},
+                                        {name: 'For all searches', value: 'BOTH'},
+                                        {name: 'Never', value: 'NONE'}
+                                    ],
+                                    help: "Ignore results from this category"
+                                }
+                            }
+
+                        ],
+                        defaultModel: {
+                            name: null,
+                            applyRestrictionsType: "NONE",
+                            forbiddenRegex: null,
+                            forbiddenWords: null,
+                            ignoreResultsFrom: "NONE",
+                            mayBeSelected: true,
+                            maxSizePreset: null,
+                            minSizePreset: null,
+                            newznabCategories: [],
+                            preselect: true,
+                            requiredRegex: null,
+                            requiredWords: null,
+                            searchType: "SEARCH"
+                        }
+                    }
+                }
+            ],
 
             downloaders: [
                 {
@@ -5719,11 +5772,7 @@ function ConfigFields($injector) {
                     type: "arrayConfig",
                     data: {
                         defaultModel: {
-                            animeCategory: null,
-                            comicCategory: null,
-                            audiobookCategory: null,
-                            magazineCategory: null,
-                            ebookCategory: null,
+                            categoryConfig: {anime: null, audiobook: null, comic: null, ebook: null},
                             enabled: true,
                             categories: [],
                             downloadLimit: null,
@@ -5740,10 +5789,10 @@ function ConfigFields($injector) {
                             password: null,
                             preselect: true,
                             searchModuleType: 'NEWZNAB',
-                            accessType: "both",
+                            accessType: "BOTH",
                             supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
                             supportedSearchTypes: undefined, //["tvsearch", "movie"]
-                            backend: 'newznab',
+                            backend: 'NEWZNAB',
                             userAgent: null
                         },
                         addNewText: 'Add new indexer',
@@ -6916,23 +6965,29 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     function submit() {
         if ($scope.form.$valid) {
 
-            ConfigService.set($scope.config);
-            $scope.form.$setPristine();
-            DownloaderCategoriesService.invalidate();
-            if ($scope.restartRequired) {
-                ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
-                    yes: {
-                        onYes: function () {
-                            RestartService.restart();
+
+            ConfigService.set($scope.config).then(function () {
+                $scope.form.$setPristine();
+                DownloaderCategoriesService.invalidate();
+                if ($scope.restartRequired) {
+                    ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
+                        yes: {
+                            onYes: function () {
+                                RestartService.restart();
+                            }
+                        },
+                        no: {
+                            onNo: function () {
+                                $scope.restartRequired = false;
+                            }
                         }
-                    },
-                    no: {
-                        onNo: function () {
-                            $scope.restartRequired = false;
-                        }
-                    }
-                });
-            }
+                    });
+                }
+            }, function (response) {
+                console.log(response);
+                growl.error(response.data.errorMessages.join("<br>"));
+            });
+
         } else {
             growl.error("Config invalid. Please check your settings.");
 
@@ -6987,8 +7042,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             active: false,
             state: 'root.config.categories',
             name: 'Categories',
-            model: ConfigModel.categories,
-            fields: $scope.fields.categories
+            model: ConfigModel.categoriesConfig,
+            fields: $scope.fields.categoriesConfig
         },
         {
             active: false,
@@ -7066,26 +7121,31 @@ function CategoriesService(ConfigService) {
 
     return {
         getByName: getByName,
-        getAll: getAll,
-        getDefault: getDefault
+        getAllCategories: getAllCategories,
+        getDefault: getDefault,
+        getWithoutAll: getWithoutAll
     };
 
 
     function getByName(name) {
-        for (var category in ConfigService.getSafe().categories) {
-            category = ConfigService.getSafe().categories[category];
-            if (category.name == name || category.pretty == name) {
+        for (var category in ConfigService.getSafe().categoriesConfig.categories) {
+            category = ConfigService.getSafe().categoriesConfig.categories[category];
+            if (category.name === name) {
                 return category;
             }
         }
     }
 
-    function getAll() {
-        return ConfigService.getSafe().categories;
+    function getAllCategories() {
+        return ConfigService.getSafe().categoriesConfig.categories;
+    }
+
+    function getWithoutAll() {
+        return ConfigService.getSafe().categoriesConfig.categories.splice(1);
     }
 
     function getDefault() {
-        return getAll()[1];
+        return getAllCategories()[0];
     }
 
 }

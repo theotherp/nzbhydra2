@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.NzbHandler;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -62,11 +63,11 @@ public class Search {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters) {
-
         SearchRequest searchRequest = createSearchRequest(parameters);
-
         return handleSearchRequest(searchRequest);
     }
+
+    //TODO Replace specific searches with general one. Set all settings that are available. What is used is later determined by the search type
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/movie", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -195,7 +196,9 @@ public class Search {
     }
 
     private SearchRequest createSearchRequest(@RequestBody BasicSearchRequestParameters parameters) {
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(SearchType.SEARCH, SearchSource.INTERNAL, categoryProvider.getByName(parameters.getCategory()), parameters.getOffset(), parameters.getLimit());
+        Category category = categoryProvider.getByName(parameters.getCategory());
+        SearchType searchType = category.getSearchType();
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.INTERNAL, category, parameters.getOffset(), parameters.getLimit());
         searchRequest.setIndexers(parameters.getIndexers());
         searchRequest.setQuery(parameters.getQuery());
         searchRequest.setMinage(parameters.getMinage());

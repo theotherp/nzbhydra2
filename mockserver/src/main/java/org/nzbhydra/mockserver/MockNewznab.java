@@ -59,10 +59,6 @@ public class MockNewznab {
             return getCaps();
         }
 
-        if (params.getRid() != null) {
-            return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
-        }
-
         int count;
         int key = Integer.valueOf(params.getApikey());
         if (apikeyToResultCount.containsKey(key)) {
@@ -88,8 +84,10 @@ public class MockNewznab {
         searching.setSearch(new CapsSearch("yes", "q,cat,limit"));
         searching.setTvSearch(new CapsSearch("yes", "q,tmdb,tvmazeid"));
         capsRoot.setSearching(searching);
-        CapsCategories capsCategories = new CapsCategories(Arrays.asList(new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD")))));
-        //CapsCategories capsCategories = new CapsCategories(Arrays.asList(new CapsCategory()));
+        CapsCategories capsCategories = new CapsCategories(Arrays.asList(
+                new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD"))),
+                new CapsCategory(7000, "Other", Arrays.asList(new CapsCategory(7020, "EBook")))
+        ));
         capsRoot.setCategories(capsCategories);
         return new ResponseEntity<Object>(capsRoot, HttpStatus.OK);
     }

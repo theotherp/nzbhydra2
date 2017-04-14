@@ -57,7 +57,7 @@
 
             </span>
             </td>
-            <td class="narrow-row">{{ request.category.pretty }}</td>
+            <td class="narrow-row">{{ request.category.name }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
             <td class="narrow-row">{{ request.source === "INTERNAL" ? "Internal" : "API"}}</td>
             <td class="narrow-row">{{ request.username }}</td>

@@ -9,7 +9,7 @@ import java.util.List;
 
 
 @Data
-public class SearchingConfig {
+public class SearchingConfig extends ValidatingConfig {
 
     private boolean alwaysShowDuplicates;
     @JsonFormat(shape = Shape.STRING)
@@ -39,4 +39,11 @@ public class SearchingConfig {
     private String userAgent;
 
 
+    @Override
+    public List<String> validateConfig() {
+        List<String> errorMessages = new ArrayList<>();
+        checkRegex(errorMessages, requiredRegex, "The required regex in \"Searching\" is invalid");
+        checkRegex(errorMessages, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
+        return errorMessages;
+    }
 };

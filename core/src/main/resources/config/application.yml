@@ -8,7 +8,221 @@ auth:
   restrictSearch: false
   restrictStats: false
   users: []
-categories: []
+categoriesConfig:
+    enableCategorySizes: true
+    categories:
+        - name: Anime
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 3000
+          minSizePreset: 50
+          newznabCategories:
+          - 5070
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
+        - name: Audio
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 2000
+          minSizePreset: 1
+          newznabCategories:
+          - 3000
+          requiredRegex:
+          requiredWords: ["mp3", "flac"]
+          preselect: true
+          searchType: MUSIC
+        - name: Audiobook
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 1000
+          minSizePreset: 50
+          newznabCategories:
+          - 3030
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MUSIC
+        - name: Comic
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 250
+          minSizePreset: 1
+          newznabCategories:
+          - 7030
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
+        - name: Console
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 40000
+          minSizePreset: 100
+          newznabCategories:
+          - 1000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
+        - name: Ebook
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 100
+          minSizePreset:
+          newznabCategories:
+          - 7020
+          - 8010
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
+        - name: FLAC
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 2000
+          minSizePreset: 10
+          newznabCategories:
+          - 3040
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MUSIC
+        - name: Movies
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 20000
+          minSizePreset: 500
+          newznabCategories:
+          - 2000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MOVIE
+        - name: Movies HD
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 20000
+          minSizePreset: 3000
+          newznabCategories:
+          - 2040
+          - 2050
+          - 2060
+          - 2070
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MOVIE
+        - name: Movies SD
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 3000
+          minSizePreset: 500
+          newznabCategories:
+          - 2030
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MOVIE
+        - name: MP3
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 500
+          minSizePreset: 1
+          newznabCategories:
+          - 3000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: MUSIC
+        - name: PC
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 50000
+          minSizePreset: 100
+          newznabCategories:
+          - 4000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
+        - name: TV
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 5000
+          minSizePreset: 50
+          newznabCategories:
+          - 5000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: TVSEARCH
+        - name: TV HD
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 4500
+          minSizePreset: 300
+          newznabCategories:
+          - 5040
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: TVSEARCH
+        - name: TV SD
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 1000
+          minSizePreset: 50
+          newznabCategories:
+          - 5030
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: TVSEARCH
+        - name: XXX
+          applyRestrictionsType: BOTH
+          forbiddenRegex:
+          forbiddenWords:
+          ignoreResultsFrom: NONE
+          maxSizePreset: 10000
+          minSizePreset: 100
+          newznabCategories:
+          - 6000
+          requiredRegex:
+          requiredWords:
+          preselect: true
+          searchType: SEARCH
 downloaders: []
 indexers: []
 main:

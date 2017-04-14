@@ -18,12 +18,12 @@
                         <span class="input-group-btn input-group-btn2">
                               <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
                                       ng-cloak>
-                                  {{ category.pretty }} <span class="caret"></span>
+                                  {{ category.name }} <span class="caret"></span>
                               </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
                                     
                                     <li ng-repeat="category in categories">
-                                        <a href="" class="searchCategoryButton" ng-click="toggle(category)">{{ category.pretty }}</a>
+                                        <a href="" class="searchCategoryButton" ng-click="toggle(category)">{{ category.name }}</a>
                                     </li>
                                 </ul>
                               

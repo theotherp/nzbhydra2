@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -28,6 +29,7 @@ public class BaseConfigTest {
     //If true the actual content of the config in code and in application.yml will be compared
     //If false only the structure will be compare, meaning both sides have to have the same keys but the values can be different
     private static final boolean COMPARE_CONFIG_VALUES = false;
+    private Set<String> dontCheckTheseLists = Sets.newHashSet("categories");
 
     @Before
     public void setUp() throws Exception {
@@ -93,7 +95,9 @@ public class BaseConfigTest {
             if (entry.getValue() instanceof LinkedHashMap) {
                 compareMaps((HashMap) entry.getValue(), (HashMap) right.get(entry.getKey()));
             } else if (entry.getValue() instanceof List) {
-                compareLists((List) entry.getValue(), (List) right.get(entry.getKey()));
+                if (!dontCheckTheseLists.contains(entry.getKey())) {
+                    compareLists((List) entry.getValue(), (List) right.get(entry.getKey()));
+                }
             } else if (COMPARE_CONFIG_VALUES) {
                 assertEquals("Setting " + entry.getKey() + " in application.yml is different than in base config", entry.getValue(), right.get(entry.getKey()));
             }
@@ -104,6 +108,7 @@ public class BaseConfigTest {
             fail("Some keys in base config are not contained in the application.yml: " + rightKeys);
         }
     }
+
 
     private void compareLists(List left, List right) {
         if (right == null) {

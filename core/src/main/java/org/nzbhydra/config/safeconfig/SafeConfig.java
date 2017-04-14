@@ -10,8 +10,7 @@ import java.util.stream.Collectors;
 @Getter
 public class SafeConfig {
 
-    private List<SafeCategory> categories;
-
+    private SafeCategoriesConfig categoriesConfig;
     private AuthType authType;
     private String dereferer;
     private SafeSearchingConfig searching;
@@ -24,7 +23,7 @@ public class SafeConfig {
         this.searching = new SafeSearchingConfig(baseConfig.getSearching());
         this.downloaders = baseConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
         this.indexers = baseConfig.getIndexers().stream().map(SafeIndexerConfig::new).collect(Collectors.toList());
-        this.categories = baseConfig.getCategories().stream().map(SafeCategory::new).collect(Collectors.toList());
+        this.categoriesConfig = new SafeCategoriesConfig(baseConfig.getCategoriesConfig());
     }
 
     public String getAuthType() {

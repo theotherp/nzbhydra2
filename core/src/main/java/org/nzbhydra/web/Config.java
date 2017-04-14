@@ -1,5 +1,8 @@
 package org.nzbhydra.web;
 
+import com.google.common.base.Joiner;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class Config {
@@ -30,11 +34,16 @@ public class Config {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String setConfig(@RequestBody BaseConfig config) throws IOException {
+    public ConfigValidationResult setConfig(@RequestBody BaseConfig config) throws IOException {
         logger.info("Received new config");
-        baseConfig.replace(config);
-        baseConfig.save();
-        return "OK";
+        List<String> messages = config.validateConfig();
+        if (messages.isEmpty()) {
+            baseConfig.replace(config);
+            baseConfig.save();
+        } else {
+            logger.warn("Invalid config submitted:\n" + Joiner.on("\n").join(messages));
+        }
+        return new ConfigValidationResult(messages.isEmpty(), messages);
     }
 
     @Secured({"ROLE_USER"})
@@ -42,5 +51,12 @@ public class Config {
     public BaseConfig getSafeConfig() {
         //TODO
         return baseConfig;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class ConfigValidationResult {
+        private boolean ok;
+        private List<String> errorMessages;
     }
 }

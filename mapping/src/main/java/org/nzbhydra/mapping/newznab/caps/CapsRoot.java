@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "caps")
@@ -22,7 +23,7 @@ public class CapsRoot {
     private CapsSearching searching;
 
     @XmlElement(name = "categories")
-    private CapsCategories categories;
+    private CapsCategories categories = new CapsCategories(new ArrayList<>());
 
 
 }

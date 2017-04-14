@@ -2,7 +2,6 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchSourceRestriction;
 
 import java.util.List;
 
@@ -14,18 +13,15 @@ public class SafeIndexerConfig {
     private boolean enabled;
     private List<String> categories;
     private boolean showOnSearch;
-    SearchSourceRestriction enabledForSearchSource;
+    String enabledForSearchSource;
 
     public SafeIndexerConfig(IndexerConfig indexerConfig) {
         this.name = indexerConfig.getName();
         this.preselect = indexerConfig.isPreselect();
         this.enabled = indexerConfig.isEnabled();
-        this.categories = indexerConfig.getCategories();
+        this.categories = indexerConfig.getEnabledCategories();
         this.showOnSearch = indexerConfig.isShowOnSearch();
-        this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource();
+        this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
     }
 
-    public String getEnabledForSearchSource() {
-        return enabledForSearchSource.name();
-    }
 }

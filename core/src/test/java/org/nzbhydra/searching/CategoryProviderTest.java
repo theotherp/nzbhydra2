@@ -2,6 +2,8 @@ package org.nzbhydra.searching;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.Category;
 
 import java.util.ArrayList;
@@ -47,7 +49,11 @@ public class CategoryProviderTest {
         category.setName("7020,8010");
         category.setNewznabCategories(Arrays.asList(7020, 8010));
         categories.add(category);
-        testee.setCategories(categories);
+        BaseConfig baseConfig = new BaseConfig();
+        CategoriesConfig categoriesConfig = new CategoriesConfig();
+        categoriesConfig.setCategories(categories);
+        baseConfig.setCategoriesConfig(categoriesConfig);
+        testee.baseConfig = baseConfig;
         testee.afterPropertiesSet();
     }
 
@@ -70,15 +76,15 @@ public class CategoryProviderTest {
         assertThat(testee.fromNewznabCategories(Arrays.asList(4090)).getName(), is("4090"));
 
         //None found
-        assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is("all"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is("All"));
 
         //String input
         assertThat(testee.fromNewznabCategories("4000").getName(), is("4000"));
         assertThat(testee.fromNewznabCategories("7020,8010").getName(), is("7020,8010"));
 
         //No cats
-        assertThat(testee.fromNewznabCategories(Collections.emptyList()).getName(), is("all"));
-        assertThat(testee.fromNewznabCategories("").getName(), is("n/a"));
+        assertThat(testee.fromNewznabCategories(Collections.emptyList()).getName(), is("All"));
+        assertThat(testee.fromNewznabCategories("").getName(), is("N/A"));
 
     }
 

@@ -14,12 +14,13 @@ import java.util.Optional;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
-public class IndexerConfig {
+public class IndexerConfig extends ValidatingConfig {
 
     private String apikey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
-    private List<String> categories = new ArrayList<>();
+    private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
+    private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
     private boolean enabled;
     @JsonFormat(shape = Shape.STRING)
@@ -75,7 +76,12 @@ public class IndexerConfig {
         return Optional.ofNullable(username);
     }
 
-    public void setCategories(List<String> categories) {
-        this.categories = categories;
+    public void setEnabledCategories(List<String> enabledCategories) {
+        this.enabledCategories = enabledCategories;
+    }
+
+    @Override
+    public List<String> validateConfig() {
+        return new ArrayList<>();
     }
 }

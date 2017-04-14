@@ -85,18 +85,18 @@ public class NewznabCheckerTest {
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(6, checkCapsRespone.getSupportedIds().size());
-        assertTrue(checkCapsRespone.getSupportedIds().contains(TVDB));
-        assertTrue(checkCapsRespone.getSupportedIds().contains(TVRAGE));
-        assertTrue(checkCapsRespone.getSupportedIds().contains(TVMAZE));
-        assertTrue(checkCapsRespone.getSupportedIds().contains(TRAKT));
-        assertTrue(checkCapsRespone.getSupportedIds().contains(IMDB));
-        assertTrue(checkCapsRespone.getSupportedIds().contains(TMDB));
+        assertEquals(6, checkCapsRespone.getSupportedSearchIds().size());
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVDB));
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVRAGE));
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVMAZE));
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TRAKT));
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(IMDB));
+        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TMDB));
 
-        assertEquals(3, checkCapsRespone.getSupportedTypes().size());
-        assertTrue(checkCapsRespone.getSupportedTypes().contains(ActionAttribute.AUDIO));
-        assertTrue(checkCapsRespone.getSupportedTypes().contains(ActionAttribute.TVSEARCH));
-        assertTrue(checkCapsRespone.getSupportedTypes().contains(ActionAttribute.MOVIE));
+        assertEquals(3, checkCapsRespone.getSupportedSearchTypes().size());
+        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.AUDIO));
+        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.TVSEARCH));
+        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.MOVIE));
 
         assertEquals(BackendType.NZEDB, checkCapsRespone.getBackend());
 
@@ -122,7 +122,7 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(0, checkCapsRespone.getSupportedIds().size());
+        assertEquals(0, checkCapsRespone.getSupportedSearchIds().size());
         verify(indexerWebAccess, times(7)).get(anyString(), any(), anyInt());
     }
 
@@ -144,7 +144,7 @@ public class NewznabCheckerTest {
                 .thenThrow(new IndexerAccessException("some error"));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(5, checkCapsRespone.getSupportedIds().size());
+        assertEquals(5, checkCapsRespone.getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllChecked());
         verify(indexerWebAccess, times(7)).get(anyString(), any(), anyInt());
     }

@@ -18,8 +18,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
-    $scope.categories = _.filter(CategoriesService.getAll(), function (c) {
-        return c.mayBeSelected && c.ignoreResults !== "INTERNAL" && c.ignoreResults !== "BOTH";
+    $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
+        return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResults === "BOTH");
     });
     if (angular.isDefined($stateParams.category) && $stateParams.category) {
         $scope.category = CategoriesService.getByName($stateParams.category);
@@ -95,7 +95,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.typeAheadWait = 300;
     $scope.selectedItem = "";
     $scope.autocompleteLoading = false;
-    $scope.isAskById = $scope.category.supportsById;
+    $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.isById = {value: true}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean
     $scope.availableIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
@@ -104,7 +104,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         $scope.category = searchCategory;
 
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
-        $scope.isAskById = $scope.category.supportsById;
+        $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
 
         focus('searchfield');
 
@@ -130,8 +130,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         }
 
         $scope.availableIndexers = getAvailableIndexers();
-
-
     };
 
 
@@ -196,15 +194,10 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         var stateParams = {};
         if ($scope.category.name.indexOf("movies") > -1) {
             stateParams.title = $scope.title;
-            stateParams.mode = "movie";
         } else if ($scope.category.name.indexOf("tv") > -1) {
-            stateParams.mode = "tvsearch";
             stateParams.title = $scope.title;
-        } else if ($scope.category.name === "ebook") {
-            stateParams.mode = "ebook";
-        } else {
-            stateParams.mode = "search";
         }
+        stateParams.mode = $scope.category.searchType.toLowerCase();
 
         stateParams.imdbid = $scope.imdbId;
         stateParams.tmdbid = $scope.tmdbId;
@@ -258,7 +251,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.autocompleteActive = function () {
-        return $scope.category.supportsById;
+        return $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     };
 
     $scope.seriesSelected = function () {

@@ -77,6 +77,7 @@ General, Ideas
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - Log / config sanitation
+- more config validation. make sure auth is properly configured, etc
 - Initialize config
 - timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system
@@ -84,6 +85,7 @@ General, Ideas
 - clean up old search results
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
+- button to reload config from file (with disclaimer that some settings may not take effect)
 
 ++++
 Improvements
@@ -93,6 +95,8 @@ Improvements
 - In the future: Background processes, cancel searches
 - Sends all available identifiers instead of just one
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
+- Option to add and remove categories
+- better validation for configuration
 ...
 ++++
 
