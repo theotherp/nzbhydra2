@@ -16,18 +16,22 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
         // --- Response interceptor for handling errors generically ---
         responseError: function (rejection) {
             blockUI.reset();
-            var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.alreadyHandled);
+            var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
-                var message = "An error occured:<br>" + rejection.data.status + ": " + rejection.data.error;
-                if (rejection.data.path) {
-                    message += "<br><br>Path: " + rejection.data.path;
-                }
-                if (message !== "No message available") {
-                    message += "<br><br>Message: " + rejection.data.message;
-                } else {
-                    message += "<br><br>Exception: " + rejection.data.exception;
-                }
+                if (rejection.data) {
 
+                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    if (rejection.data.path) {
+                        message += "<br><br>Path: " + rejection.data.path;
+                    }
+                    if (message !== "No message available") {
+                        message += "<br><br>Message: " + rejection.data.message;
+                    } else {
+                        message += "<br><br>Exception: " + rejection.data.exception;
+                    }
+                } else {
+                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + rejection;
+                }
                 GeneralModalService.open(message);
 
             } else if (rejection && rejection.config && rejection.config.headers && rejection.config.headers[HEADER_NAME] && rejection.config.url.contains("logerror")) {

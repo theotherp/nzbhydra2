@@ -10,4 +10,8 @@ public class GenericResponse {
     private boolean successful;
     private String message;
 
+    public static GenericResponse ok() {
+        return new GenericResponse(true, null);
+    }
+
 }

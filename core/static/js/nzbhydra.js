@@ -3464,7 +3464,7 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlService) {
+function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService) {
 
     return {
         restart: restart,
@@ -3473,17 +3473,21 @@ function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlServic
 
 
     function internalCaR(message, timer) {
-
-        if (timer >= 1) {
-            blockUI.start(message + "Restarting. Will reload page in " + timer + " seconds...");
-            $timeout(function () {
-                internalCaR(message, timer - 1)
-            }, 1000);
+        if (timer === 45) {
+            blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
         } else {
+            blockUI.start(message + " Will reload page when NZB Hydra is back.");
             $timeout(function () {
-                blockUI.start("Reloading page...");
-                $window.location.reload();
+                $http.get("internalapi/control/ping").then(function () {
+                    $timeout(function () {
+                        blockUI.start("Reloading page...");
+                        $window.location.reload();
+                    }, 500);
+                }, function () {
+                    internalCaR(message, timer + 1);
+                });
             }, 1000);
+            blockUI.start(message + " Will reload page when NZB Hydra is back.");
         }
     }
 
@@ -3493,14 +3497,20 @@ function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlServic
 
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
-        NzbHydraControlService.restart().then(internalCaR(message, 15),
-            function () {
+        NzbHydraControlService.restart().then(function () {
+                blockUI.start(message + " Will reload page when NZB Hydra is back.");
+                $timeout(function () {
+                    internalCaR(message, 0);
+                }, 3000)
+            },
+            function (x) {
+                console.log(x);
                 growl.info("Unable to send restart command.");
             }
         )
     }
 }
-RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "NzbHydraControlService"];
+RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService"];
 
 angular
     .module('nzbhydraApp')
@@ -3992,18 +4002,22 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
         // --- Response interceptor for handling errors generically ---
         responseError: function (rejection) {
             blockUI.reset();
-            var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.alreadyHandled);
+            var shouldHandle = (rejection && rejection.config && rejection.status !== 403 && rejection.config.headers && rejection.config.headers[HEADER_NAME] && !rejection.config.url.contains("logerror") && !rejection.config.url.contains("/ping") && !rejection.config.alreadyHandled);
             if (shouldHandle) {
-                var message = "An error occured:<br>" + rejection.data.status + ": " + rejection.data.error;
-                if (rejection.data.path) {
-                    message += "<br><br>Path: " + rejection.data.path;
-                }
-                if (message !== "No message available") {
-                    message += "<br><br>Message: " + rejection.data.message;
-                } else {
-                    message += "<br><br>Exception: " + rejection.data.exception;
-                }
+                if (rejection.data) {
 
+                    var message = "An error occurred:<br>" + rejection.data.status + ": " + rejection.data.error;
+                    if (rejection.data.path) {
+                        message += "<br><br>Path: " + rejection.data.path;
+                    }
+                    if (message !== "No message available") {
+                        message += "<br><br>Message: " + rejection.data.message;
+                    } else {
+                        message += "<br><br>Exception: " + rejection.data.exception;
+                    }
+                } else {
+                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + rejection;
+                }
                 GeneralModalService.open(message);
 
             } else if (rejection && rejection.config && rejection.config.headers && rejection.config.headers[HEADER_NAME] && rejection.config.url.contains("logerror")) {

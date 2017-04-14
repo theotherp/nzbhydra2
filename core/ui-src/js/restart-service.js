@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlService) {
+function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService) {
 
     return {
         restart: restart,
@@ -11,17 +11,21 @@ function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlServic
 
 
     function internalCaR(message, timer) {
-
-        if (timer >= 1) {
-            blockUI.start(message + "Restarting. Will reload page in " + timer + " seconds...");
-            $timeout(function () {
-                internalCaR(message, timer - 1)
-            }, 1000);
+        if (timer === 45) {
+            blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
         } else {
+            blockUI.start(message + " Will reload page when NZB Hydra is back.");
             $timeout(function () {
-                blockUI.start("Reloading page...");
-                $window.location.reload();
+                $http.get("internalapi/control/ping").then(function () {
+                    $timeout(function () {
+                        blockUI.start("Reloading page...");
+                        $window.location.reload();
+                    }, 500);
+                }, function () {
+                    internalCaR(message, timer + 1);
+                });
             }, 1000);
+            blockUI.start(message + " Will reload page when NZB Hydra is back.");
         }
     }
 
@@ -31,8 +35,14 @@ function RestartService(blockUI, $timeout, $window, growl, NzbHydraControlServic
 
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
-        NzbHydraControlService.restart().then(internalCaR(message, 15),
-            function () {
+        NzbHydraControlService.restart().then(function () {
+                blockUI.start(message + " Will reload page when NZB Hydra is back.");
+                $timeout(function () {
+                    internalCaR(message, 0);
+                }, 3000)
+            },
+            function (x) {
+                console.log(x);
                 growl.info("Unable to send restart command.");
             }
         )

@@ -232,12 +232,12 @@ public class UpdateManager implements InitializingBean {
         new Thread(() -> {
             try {
                 //Wait just enough for the request to be completed
-                Thread.sleep(100);
+                Thread.sleep(300);
+                System.exit(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway
             }
-            System.exit(returnCode);
-        }).run();
+        }).start();
     }
 
 
