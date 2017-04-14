@@ -95,6 +95,7 @@ Improvements
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories
 - better validation for configuration
+- catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 ...
 ++++
 

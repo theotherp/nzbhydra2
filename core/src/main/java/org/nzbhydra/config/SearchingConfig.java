@@ -37,6 +37,7 @@ public class SearchingConfig extends ValidatingConfig {
     private List<String> requiredWords = new ArrayList<>();
     private Integer timeout;
     private String userAgent;
+    private boolean wrapApiErrors;
 
 
     @Override

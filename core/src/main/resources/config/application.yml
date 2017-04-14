@@ -284,3 +284,4 @@ searching:
   requiredWords: []
   timeout: 20
   userAgent: "NZBHydra"
+  wrapApiErrors: false

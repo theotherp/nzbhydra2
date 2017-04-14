@@ -5470,6 +5470,15 @@ function ConfigFields($injector) {
                          },
                          */
                         {
+                            key: 'wrapApiErrors',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Wrap API errors in empty results page',
+                                help: 'When enabled accessing tools will think the search was completed successfully but without results'
+                            }
+                        },
+                        {
                             key: 'userAgent',
                             type: 'horizontalInput',
                             templateOptions: {

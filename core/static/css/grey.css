@@ -7785,6 +7785,10 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 .filter-active {
   color: #62c462;
 }
+.help-block {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;
 }

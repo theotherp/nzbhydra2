@@ -31,11 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +47,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
+@ControllerAdvice
 public class ExternalApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
@@ -63,6 +66,7 @@ public class ExternalApi {
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+
         logger.info("Received external API call: " + params);
 
         //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
@@ -93,9 +97,8 @@ public class ExternalApi {
             return downloadResult.getAsResponseEntity();
         }
 
-        //TODO handle missing or wrong parameters
-
-        return new ResponseEntity<Object>(new RssRoot(), HttpStatus.BAD_REQUEST);
+        RssError error = new RssError("200", "Unknown or incorrect parameter");
+        return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -103,6 +106,19 @@ public class ExternalApi {
         RssError error = new RssError(e.getStatusCode(), e.getMessage());
         return error;
     }
+
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<Object> handleUnexpectedError(Exception e) {
+        logger.error("Unexpected error while handling API request", e);
+        if (baseConfig.getSearching().isWrapApiErrors()) {
+            logger.debug("Wrapping error in empty search result");
+            return new ResponseEntity<>(getRssRoot(Collections.emptyList(), 0, 0), HttpStatus.OK);
+        } else {
+            RssError error = new RssError("900", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.OK);
+        }
+    }
+
 
     protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params) {
         logger.debug("Transforming searchResults");
@@ -116,13 +132,19 @@ public class ExternalApi {
         searchResultItems = searchResultItems.subList(fromIndex, toIndex);
 
 
+        RssRoot rssRoot = getRssRoot(searchResultItems, params.getOffset(), searchResultItems.size());
+        logger.debug("Finished transforming");
+        return rssRoot;
+    }
+
+    private RssRoot getRssRoot(List<SearchResultItem> searchResultItems, Integer offset, int total) {
         RssRoot rssRoot = new RssRoot();
 
         RssChannel rssChannel = new RssChannel();
         rssChannel.setTitle("NZB Hydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
-        rssChannel.setNewznabResponse(new NewznabResponse( params.getOffset(), searchResultItems.size())); //TODO
+        rssChannel.setNewznabResponse(new NewznabResponse(offset, total)); //TODO
         rssChannel.setGenerator("NZBHydra2");
 
         rssRoot.setRssChannel(rssChannel);
@@ -133,7 +155,6 @@ public class ExternalApi {
         }
 
         rssChannel.setItems(items);
-        logger.debug("Finished transforming");
         return rssRoot;
     }
 
