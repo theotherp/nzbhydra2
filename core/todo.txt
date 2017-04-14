@@ -83,7 +83,6 @@ General, Ideas
 - !! restart dialog pings until recognizes successful restart
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
-- button to reload config from file (with disclaimer that some settings may not take effect)
 - rss functionality with configurable caching
 
 ++++

@@ -80,6 +80,17 @@ public class BaseConfig extends ValidatingConfig {
         objectMapper.writeValue(file, this);
     }
 
+    public void load() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        objectMapper.registerModule(new Jdk8Module());
+        File configFolder = new File("config"); //TODO Use configurable folder and/or make sure we're in the correct folder
+        File file = new File(configFolder, "application.yml");
+        if (!configFolder.exists() || !file.exists()) {
+            throw new IOException("Folder or file do not exist: " + file.getAbsolutePath());
+        }
+        replace(objectMapper.readValue(file, BaseConfig.class));
+    }
+
 
     @JsonIgnore
     public String getBaseUrl() {

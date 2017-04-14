@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import com.google.common.base.Joiner;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.BaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,18 @@ public class Config {
             logger.warn("Invalid config submitted:\n" + Joiner.on("\n").join(messages));
         }
         return new ConfigValidationResult(messages.isEmpty(), messages);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/config/reload", method = RequestMethod.GET)
+    public GenericResponse reloadConfig() throws IOException {
+        logger.info("Reloading config from file");
+        try {
+            baseConfig.load();
+        } catch (IOException e) {
+            return new GenericResponse(false, e.getMessage());
+        }
+        return GenericResponse.ok();
     }
 
     @Secured({"ROLE_USER"})

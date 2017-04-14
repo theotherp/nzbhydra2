@@ -1986,7 +1986,7 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, NzbHydraControlService) {
+function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, ConfigService, NzbHydraControlService) {
 
     $scope.activeTab = activeTab;
 
@@ -2001,6 +2001,14 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
 
     $scope.restart = function () {
         RestartService.restart();
+    };
+
+    $scope.reloadConfig = function () {
+        ConfigService.reloadConfig().then(function () {
+            growl.info("Successfully reloaded config. Some setting may need a restart to take effect.")
+        }, function (data) {
+            growl.error(data.message);
+        })
     };
 
     $scope.deleteLogAndDatabase = function () {
@@ -2081,7 +2089,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     }
 
 }
-SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "ModalService", "UpdateService", "NzbHydraControlService"];
+SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "ModalService", "UpdateService", "ConfigService", "NzbHydraControlService"];
 
 angular
     .module('nzbhydraApp')
@@ -4775,7 +4783,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         get: get,
         getSafe: getSafe,
         invalidateSafe: invalidateSafe,
-        maySeeAdminArea: maySeeAdminArea
+        maySeeAdminArea: maySeeAdminArea,
+        reloadConfig: reloadConfig
     };
 
 
@@ -4801,6 +4810,11 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         return deferred.promise;
     }
 
+    function reloadConfig() {
+        return $http.get('internalapi/config/reload').then(function (data) {
+            return data.data;
+        });
+    }
 
     function get() {
         var config = cache.get("config");

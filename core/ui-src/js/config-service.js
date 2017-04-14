@@ -12,7 +12,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         get: get,
         getSafe: getSafe,
         invalidateSafe: invalidateSafe,
-        maySeeAdminArea: maySeeAdminArea
+        maySeeAdminArea: maySeeAdminArea,
+        reloadConfig: reloadConfig
     };
 
 
@@ -38,6 +39,11 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         return deferred.promise;
     }
 
+    function reloadConfig() {
+        return $http.get('internalapi/config/reload').then(function (data) {
+            return data.data;
+        });
+    }
 
     function get() {
         var config = cache.get("config");

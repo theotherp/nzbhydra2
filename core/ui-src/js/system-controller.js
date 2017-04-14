@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, NzbHydraControlService) {
+function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, ConfigService, NzbHydraControlService) {
 
     $scope.activeTab = activeTab;
 
@@ -17,6 +17,14 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
 
     $scope.restart = function () {
         RestartService.restart();
+    };
+
+    $scope.reloadConfig = function () {
+        ConfigService.reloadConfig().then(function () {
+            growl.info("Successfully reloaded config. Some setting may need a restart to take effect.")
+        }, function (data) {
+            growl.error(data.message);
+        })
     };
 
     $scope.deleteLogAndDatabase = function () {
