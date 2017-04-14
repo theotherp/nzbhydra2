@@ -12,7 +12,7 @@
 
         <div class="tab-content">
             <div ng-repeat="tab in allTabs">
-                <formly-form model="tab.model" fields="tab.fields" ng-if="$index == activeTab" options="ctrl.options">
+                <formly-form model="tab.model" fields="tab.fields" ng-if="$index == activeTab" options="tab.options">
                 </formly-form>
             </div>
 

@@ -5941,7 +5941,11 @@ function ConfigFields($injector) {
                     type: 'repeatSection',
                     key: 'users',
                     model: rootModel.auth,
+                    hideExpression: function () {
+                        return rootModel.auth.authType === "NONE";
+                    },
                     templateOptions: {
+
                         btnText: 'Add new user',
                         altLegendText: 'Authless',
                         fields: [
@@ -7045,42 +7049,48 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             state: 'root.config.main',
             name: 'Main',
             model: ConfigModel.main,
-            fields: $scope.fields.main
+            fields: $scope.fields.main,
+            options: {}
         },
         {
             active: false,
             state: 'root.config.auth',
             name: 'Authorization',
             model: ConfigModel.auth,
-            fields: $scope.fields.auth
+            fields: $scope.fields.auth,
+            options: {}
         },
         {
             active: false,
             state: 'root.config.searching',
             name: 'Searching',
             model: ConfigModel.searching,
-            fields: $scope.fields.searching
+            fields: $scope.fields.searching,
+            options: {}
         },
         {
             active: false,
             state: 'root.config.categories',
             name: 'Categories',
             model: ConfigModel.categoriesConfig,
-            fields: $scope.fields.categoriesConfig
+            fields: $scope.fields.categoriesConfig,
+            options: {}
         },
         {
             active: false,
             state: 'root.config.downloader',
             name: 'Downloaders',
             model: ConfigModel.downloaders,
-            fields: $scope.fields.downloaders
+            fields: $scope.fields.downloaders,
+            options: {}
         },
         {
             active: false,
             state: 'root.config.indexers',
             name: 'Indexers',
             model: ConfigModel.indexers,
-            fields: $scope.fields.indexers
+            fields: $scope.fields.indexers,
+            options: {}
         }
     ];
 
@@ -7117,7 +7127,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     no: {
                         onNo: function () {
                             $scope.ignoreSaveNeeded = true;
-                            $scope.ctrl.options.resetModel();
+                            $scope.allTabs[$scope.activeTab].options.resetModel();
                             $state.go(toState);
                         },
                         text: "No"

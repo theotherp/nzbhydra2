@@ -1078,7 +1078,11 @@ function ConfigFields($injector) {
                     type: 'repeatSection',
                     key: 'users',
                     model: rootModel.auth,
+                    hideExpression: function () {
+                        return rootModel.auth.authType === "NONE";
+                    },
                     templateOptions: {
+
                         btnText: 'Add new user',
                         altLegendText: 'Authless',
                         fields: [
