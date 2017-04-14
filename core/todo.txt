@@ -1,27 +1,26 @@
 GUI
 - !!! Reverse proxy support (done in settings)
 - Config (getting, setting): Mostly done
-- Update notification
+- Update notification: Mostly done
 - !!! basic Searching
 - !!! searching with exclusion
-- searching by ID, autocomplete
+- !!! searching by ID, autocomplete
 
 Searching
 - return indexerName access data to show in GUI
 - pick indexers: show in GUI
 - exclusions: mostly done
 - rejecting search results: mostly done
-- ID conversion: Infos can be retrieved, must be used
+- ID conversion: mostly done
 - !!! query generation
 - search history: mostly done
 - !!! hitlimit and downloadlimit
 
 Config
-- Loading
-- Updating
-- Setting via web call
+- !!! Loading
+- !!! Updating
+- !!! Setting via web call
 - reloading config: Mostly done
-- idea: create when saving config the first time. That way I don't have to deploy it, keep it updated, can not overwrite it when installing an update
 
 Downloader support: mostly done
 - sabnzbd
@@ -72,20 +71,20 @@ Windows GUI
 - in that case updating will get even worse...
 
 General, Ideas
-- open browser on startup
+- !! open browser on startup
 - user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - Log / config sanitation
 - more config validation. make sure auth is properly configured, etc
-- Initialize config
+- !! Initialize config
 - timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system
-- restart dialog pings until recognizes successful restart
-- clean up old search results
+- !! restart dialog pings until recognizes successful restart
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 - button to reload config from file (with disclaimer that some settings may not take effect)
+- rss functionality with configurable caching
 
 ++++
 Improvements

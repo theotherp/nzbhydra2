@@ -60,6 +60,6 @@ public class SearchModuleConfigProvider implements InitializingBean {
             logger.error("Configuration incomplete, no indexers found");
             configsByname = Collections.emptyMap();
         }
-        searchModuleProvider.loadIndexers();
+        searchModuleProvider.loadIndexers(indexers);
     }
 }

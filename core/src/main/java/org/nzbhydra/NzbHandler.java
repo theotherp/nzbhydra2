@@ -8,7 +8,6 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.database.IndexerAccessResult;
-import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchResultEntity;
@@ -32,8 +31,6 @@ public class NzbHandler {
     protected BaseConfig baseConfig;
     @Autowired
     private SearchResultRepository searchResultRepository;
-    @Autowired
-    private IndexerApiAccessRepository apiAccessRepository;
     @Autowired
     private NzbDownloadRepository downloadRepository;
 

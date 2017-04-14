@@ -2,6 +2,7 @@ package org.nzbhydra.mapping.newznab.caps;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -14,6 +15,7 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class CapsCategories {
 
     @XmlElement(name = "category")

@@ -54,14 +54,14 @@ public class SearchModuleProvider {
     /**
      * Must be called by <tt>{@link SearchModuleConfigProvider}</tt> when config is loaded.
      */
-    public void loadIndexers() {
-        if (searchModuleConfigProvider.getIndexers() == null) {
+    public void loadIndexers(List<IndexerConfig> indexers) {
+        if (indexers == null) {
             logger.error("Indexers not set. Check your configuration");
             return;
         }
         logger.info("Loading indexers");
         searchModuleInstances.clear();
-        for (IndexerConfig config : searchModuleConfigProvider.getIndexers()) {
+        for (IndexerConfig config : indexers) {
             try {
                 Indexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
                 logger.info("Found indexer {}", config.getName());
