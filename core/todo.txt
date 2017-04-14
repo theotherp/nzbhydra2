@@ -72,7 +72,7 @@ Windows GUI
 
 General, Ideas
 - !! open browser on startup
-- delete results older than x, perhaps do this as first background task?
+- !! delete results older than x, perhaps do this as first background task?
 - user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
@@ -91,7 +91,8 @@ Improvements
 - Way faster (searching, database handling, processing, stats). TODO: Get some numbers
 - Hopefully more stable in the long run
 - Fully unicode compatible TODO: Test this ;-)
-- In the future: Background processes, cancel searches
+- Background processes
+- In the future: Cancel searches, self updating
 - Sends all available identifiers instead of just one
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories

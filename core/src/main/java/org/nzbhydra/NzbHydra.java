@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
 @ComponentScan
 @RestController
 @EnableCaching
+@EnableScheduling
 public class NzbHydra {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHydra.class);
