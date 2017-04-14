@@ -28,6 +28,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean idFallbackToTitlePerIndexer;
     private boolean ignorePassworded;
     private boolean ignoreTemporarilyDisabled;
+    private int keepSearchResultsForDays;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType;

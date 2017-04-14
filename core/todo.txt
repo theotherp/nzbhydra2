@@ -72,6 +72,7 @@ Windows GUI
 
 General, Ideas
 - !! open browser on startup
+- delete results older than x, perhaps do this as first background task?
 - user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
@@ -81,7 +82,7 @@ General, Ideas
 - timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system
 - !! restart dialog pings until recognizes successful restart
-- catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
+- !! catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 - rss functionality with configurable caching
 

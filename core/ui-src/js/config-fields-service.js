@@ -268,11 +268,10 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'Logfile level',
                                 options: [
-                                    {name: 'Critical', value: 'CRITICAL'},
-                                    {name: 'Error', value: 'ERROR'},
-                                    {name: 'Warning', value: 'WARNING'},
-                                    {name: 'Info', value: 'INFO'},
-                                    {name: 'Debug', value: 'DEBUG'}
+                                    {name: 'Error', value: 'error'},
+                                    {name: 'Warning', value: 'warn'},
+                                    {name: 'Info', value: 'info'},
+                                    {name: 'Debug', value: 'debug'}
                                 ]
                             },
                             watcher: {
@@ -292,25 +291,13 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'rolloverAtStart',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                label: 'Startup rollover',
-                                help: 'Starts a new log file on start/restart'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
                             key: 'logMaxSize',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'number',
                                 label: 'Max log file size',
-                                help: 'When log file size is reached a new one is started. Set to 0 to disable.',
                                 addonRight: {
-                                    text: 'kB'
+                                    text: 'MB'
                                 }
                             },
                             watcher: {
@@ -318,27 +305,12 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'logRotateAfterDays',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Rotate after',
-                                help: 'A new log file is started after this many days. Supercedes max size. Keep empty to disable.',
-                                addonRight: {
-                                    text: 'days'
-                                }
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'keepLogFiles',
+                            key: 'logMaxDays',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'number',
                                 label: 'Keep log files',
-                                help: 'Number of log files to keep before oldest is deleted.'
+                                help: 'Number of log files to keep before oldest is deleted'
                             },
                             watcher: {
                                 listener: restartListener
@@ -352,11 +324,10 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'Console log level',
                                 options: [
-                                    {name: 'Critical', value: 'CRITICAL'},
-                                    {name: 'Error', value: 'ERROR'},
-                                    {name: 'Warning', value: 'WARNING'},
-                                    {name: 'Info', value: 'INFO'},
-                                    {name: 'Debug', value: 'DEBUG'}
+                                    {name: 'Error', value: 'error'},
+                                    {name: 'Warning', value: 'warn'},
+                                    {name: 'Info', value: 'info'},
+                                    {name: 'Debug', value: 'debug'}
                                 ]
                             },
                             watcher: {
@@ -377,71 +348,14 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'Updating'},
-                    fieldGroup: [
-
-                        {
-                            key: 'gitPath',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                label: 'Git executable',
-                                help: 'Set if git is not in your path'
-                            }
-                        },
-                        {
-                            key: 'branch',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Repository branch',
-                                required: true,
-                                help: 'Stay on master. Seriously...'
-                            }
-                        }
-                    ]
-                },
-
-                {
-                    wrapper: 'fieldset',
                     templateOptions: {label: 'Other'},
                     fieldGroup: [
-                        {
-                            key: 'keepSearchResultsForDays',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Store results for ...',
-                                addonRight: {
-                                    text: 'days'
-                                },
-                                required: true,
-                                help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
-                            }
-                        },
-                        {
-                            key: 'debug',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Enable debugging',
-                                help: "Only do this if you know what and why you're doing it"
-                            }
-                        },
                         {
                             key: 'startupBrowser',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Open browser on startup'
-                            }
-                        },
-                        {
-                            key: 'shutdownForRestart',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Shutdown to restart',
-                                help: 'When run with a service manager which automatically restarts Hydra enable this to prevent duplicate instances'
                             }
                         }
                     ]
@@ -695,6 +609,19 @@ function ConfigFields($injector) {
                                     {name: 'Redirect to the indexer', value: 'REDIRECT'}
                                 ],
                                 help: "How access to NZBs is provided when NZBs are downloaded (by the user or external tools). Redirecting is recommended."
+                            }
+                        },
+                        {
+                            key: 'keepSearchResultsForDays',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Store results for ...',
+                                addonRight: {
+                                    text: 'days'
+                                },
+                                required: true,
+                                help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
                             }
                         }
                     ]

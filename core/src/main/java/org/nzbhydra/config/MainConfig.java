@@ -17,6 +17,7 @@ public class MainConfig extends ValidatingConfig {
     private String branch;
     private Integer configVersion;
     private boolean debug;
+    private String databaseFile;
     private String dereferer;
     private String externalUrl = null;
     private String gitPath;
@@ -25,7 +26,6 @@ public class MainConfig extends ValidatingConfig {
     private String httpsProxy = null;
     private boolean firstStart;
     private LoggingConfig logging = new LoggingConfig();
-    private int keepSearchResultsForDays;
     private int port;
     private String repositoryBase;
     private String secret;

@@ -229,6 +229,7 @@ main:
   apiKey: null
   branch: "master"
   configVersion: 1
+  databaseFile: "database/nzbhydra.db"
   debug: false
   dereferer: null
   externalUrl: null
@@ -238,15 +239,12 @@ main:
   httpProxy: null
   httpsProxy: null
   logging:
-    consolelevel: "DEBUG"
-    keepLogFiles: 25
-    logIpAddresses: true
-    logMaxSize: 1000
-    logRotateAfterDays: null
-    logfilelevel: "DEBUG"
+    logfilelevel: "info"
     logfilename: "nzbhydra.log"
-    rolloverAtStart: false
-  keepSearchResultsForDays: 7
+    consolelevel: "info"
+    logMaxSize: 10
+    logIpAddresses: true
+    logMaxDays: 30
   port: 5076
   repositoryBase: "https://github.com/theotherp"
   secret: "TODO generate"
@@ -276,6 +274,7 @@ searching:
   idFallbackToTitlePerIndexer: false
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
+  keepSearchResultsForDays: 7
   maxAge: null
   nzbAccessType: "REDIRECT"
   removeLanguage: false

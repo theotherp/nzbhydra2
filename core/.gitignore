@@ -13,3 +13,5 @@ nzbhydra.db.*
 logs/*
 config/
 config/**
+database/
+database/**
