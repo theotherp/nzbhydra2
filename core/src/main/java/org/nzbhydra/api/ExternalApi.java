@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,7 +46,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
-@ControllerAdvice
 public class ExternalApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
@@ -108,14 +106,14 @@ public class ExternalApi {
     }
 
     @ExceptionHandler(value = Exception.class)
-    public ResponseEntity<Object> handleUnexpectedError(Exception e) {
+    public ResponseEntity handleUnexpectedError(Exception e) {
         logger.error("Unexpected error while handling API request", e);
         if (baseConfig.getSearching().isWrapApiErrors()) {
             logger.debug("Wrapping error in empty search result");
-            return new ResponseEntity<>(getRssRoot(Collections.emptyList(), 0, 0), HttpStatus.OK);
+            return ResponseEntity.status(200).body(getRssRoot(Collections.emptyList(), 0, 0));
         } else {
             RssError error = new RssError("900", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.OK);
+            return ResponseEntity.status(200).body(error);
         }
     }
 

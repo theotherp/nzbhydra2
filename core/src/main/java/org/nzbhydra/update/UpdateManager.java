@@ -5,15 +5,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Joiner;
-import com.vladsch.flexmark.ast.Node;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.options.MutableDataSet;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
+import org.nzbhydra.Markdown;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.update.gtihubmapping.Asset;
 import org.nzbhydra.update.gtihubmapping.Release;
@@ -130,7 +127,7 @@ public class UpdateManager implements InitializingBean {
             }
             String allChanges = Joiner.on("\r\n***\r\n").join(collectedVersionChanges);
 
-            String html = renderMarkdownAsHtml(allChanges);
+            String html = Markdown.renderMarkdownAsHtml(allChanges);
             return html;
         } catch (IOException | ParseException e) {
             throw new UpdateException("Error while getting changelog", e);
@@ -207,14 +204,6 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-
-    private String renderMarkdownAsHtml(String markdown) {
-        MutableDataSet options = new MutableDataSet();
-        Parser parser = Parser.builder(options).build();
-        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
-        Node document = parser.parse(markdown);
-        return renderer.render(document);
-    }
 
     private void unzip(File zipFilepath, File outputFolder) throws IOException {
         ZipFile zipFile = new ZipFile(zipFilepath, ZipFile.OPEN_READ, Charset.defaultCharset());
