@@ -11,8 +11,9 @@ public class SafeCategory {
     private final String name;
     private final String searchType;
     private final String ignoreResultsFrom;
-    private boolean preselect;
-
+    private final boolean preselect;
+    private final Integer maxSizePreset;
+    private final Integer minSizePreset;
 
     public SafeCategory(Category category) {
         this.mayBeSelected = category.isMayBeSelected();
@@ -20,6 +21,8 @@ public class SafeCategory {
         this.searchType = category.getSearchType().name();
         this.ignoreResultsFrom = category.getIgnoreResultsFrom().name();
         this.preselect = category.isPreselect();
+        this.minSizePreset = category.getMinSizePreset();
+        this.maxSizePreset = category.getMaxSizePreset();
     }
 
 }

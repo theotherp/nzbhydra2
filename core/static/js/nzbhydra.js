@@ -3251,8 +3251,8 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         }
 
         if (safeConfig.searching.enableCategorySizes) {
-            var min = searchCategory.min;
-            var max = searchCategory.max;
+            var min = searchCategory.minSizePreset;
+            var max = searchCategory.maxSizePreset;
             if (_.isNumber(min)) {
                 $scope.minsize = min;
             } else {
