@@ -21,7 +21,7 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         var deferred = $q.defer();
         $http.put('internalapi/config', newConfig)
             .then(function (response) {
-                if (response.ok) {
+                if (response.data.ok) {
                     console.log("Settings saved. Updating cache");
                     cache.put("config", newConfig);
                     invalidateSafe();

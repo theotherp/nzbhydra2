@@ -52,7 +52,7 @@
     </thead>
     <tbody>
     <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage: limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
-        <td class="narrow-row">{{ nzbDownload.time.epochSecond | reformatDate }}</td>
+        <td class="narrow-row">{{ nzbDownload.time | reformatDate }}</td>
         <td class="narrow-row">{{ nzbDownload.indexer.name }}</td>
         <td class="narrow-row">
             <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>

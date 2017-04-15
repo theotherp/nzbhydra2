@@ -2,6 +2,8 @@ package org.nzbhydra.web;
 
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.IndexerStatusRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @RestController
 public class IndexerStatuses {
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexerStatuses.class);
 
     @Autowired
     private IndexerStatusRepository indexerStatusRepository;
@@ -33,6 +37,8 @@ public class IndexerStatuses {
         statusEntity.setDisabledUntil(null);
         statusEntity.setLevel(0);
         indexerStatusRepository.save(statusEntity);
+
+        logger.info("Reenable indexer {}", indexerName);
 
         return new ResponseEntity<>(indexerStatusRepository.findAll(), HttpStatus.OK);
     }

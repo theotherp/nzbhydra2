@@ -238,7 +238,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: ["$http", function ($http) {
-                            return $http.get("internalapi/indexertatuses").success(function (response) {
+                            return $http.get("internalapi/indexerstatuses").success(function (response) {
                                 return response;
                             });
                         }],
@@ -3029,44 +3029,29 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     });
 
 
+    var keysToParams = {
+        "IMDB": "imdbid",
+        "TMDB": "tmdbid",
+        "TVRAGE": "tvrageid",
+        "TVDB": "tvdbid",
+        "TVMAZE": "tvmazeid"
+    };
+
     $scope.openSearch = function (request) {
         var stateParams = {};
-        if (request.identifier_key == "imdbId") {
-            stateParams.imdbId = request.identifier_value;
-        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
-            if (request.identifier_key == "rid") {
-                stateParams.rid = request.identifier_value;
-            } else {
-                stateParams.tvdbId = request.identifier_value;
-            }
-
-            if (request.season != "") {
-                stateParams.season = request.season;
-            }
-            if (request.episode != "") {
-                stateParams.episode = request.episode;
+        for (var i = 0; i < request.identifiers.length; i++) {
+            if (request.identifiers[i].identifierKey in keysToParams) {
+                var key = keysToParams[request.identifiers[i].identifierKey];
+                stateParams[key] = request.identifiers[i].identifierValue;
             }
         }
-        if (request.query != "") {
+        if (request.query) {
             stateParams.query = request.query;
         }
-        if (request.type == "tv") {
-            stateParams.mode = "tvsearch"
-        } else if (request.type == "movie") {
-            stateParams.mode = "movie"
-        } else {
-            stateParams.mode = "search"
-        }
+        stateParams.mode = request.searchType.toLowerCase();
 
-        if (request.movietitle != null) {
-            stateParams.title = request.movietitle;
-        }
-        if (request.tvtitle != null) {
-            stateParams.title = request.tvtitle;
-        }
-
-        if (request.category) {
-            stateParams.category = request.category;
+        if (request.title) {
+            stateParams.title = request.title;
         }
 
         stateParams.category = request.category;
@@ -3075,46 +3060,60 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     };
 
     $scope.formatQuery = function (request) {
-        if (request.movietitle != null) {
-            return request.movietitle;
-        }
-        if (request.tvtitle != null) {
-            return request.tvtitle;
+        if (request.title) {
+            return request.title;
         }
 
-        if (!request.query && !request.identifier_key && !request.season && !request.episode) {
+        if (!request.query && request.identifiers.length === 0 && !request.season && !request.episode) {
             return "Update query";
         }
         return request.query;
     };
 
-    //TODO Reenable
     $scope.formatAdditional = function (request) {
         var result = [];
-        //ID key: ID value
-        //season
-        //episode
-        //author
-        //title
-        if (request.identifier_key) {
+        if (request.identifiers.length > 0) {
             var href;
             var key;
-            if (request.identifier_key == "imdbId") {
-                key = "IMDB ID";
-                href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbId") {
-                key = "TVDB ID";
-                href = "https://thetvdb.com/?tab=series&id="
-            } else if (request.identifier_key == "rid") {
-                key = "TVRage ID";
-                href = "internalapi/redirect_rid?rid="
-            } else if (request.identifier_key == "tmdb") {
-                key = "TMDV ID";
-                href = "https://www.themoviedb.org/movie/"
+            var value
+            var pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "TMDB"
+            });
+            if (angular.isDefined(pair)) {
+                key = "TMDB ID";
+                href = "https://www.themoviedb.org/movie/" + pair.identifierValue;
+                value = pair.identifierValue;
             }
-            href = href + request.identifier_value;
+
+            pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "IMDB"
+            });
+            if (angular.isDefined(pair)) {
+                key = "IMDB ID";
+                href = "https://www.imdb.com/title/tt" + pair.identifierValue;
+                value = pair.identifierValue;
+            }
+
+            pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "TVDB"
+            });
+            if (angular.isDefined(pair)) {
+                key = "TVDB ID";
+                href = "https://thetvdb.com/?tab=series&id=" + pair.identifierValue;
+                value = pair.identifierValue;
+            }
+
+            pair = _.find(request.identifiers, function (pair) {
+                return pair.identifierKey === "TVRAGE"
+            });
+            if (angular.isDefined(pair)) {
+                key = "TVRage ID";
+                href = "internalapi/redirect_rid?rid=" + pair.identifierValue; //TODO
+                value = pair.identifierValue;
+            }
+
             href = $filter("dereferer")(href);
-            result.push(key + ": " + '<a target="_blank" href="' + href + '">' + request.identifier_value + "</a>");
+            result.push(key + ": " + '<a target="_blank" href="' + href + '">' + value + "</a>");
         }
         if (request.season) {
             result.push("Season: " + request.season);
@@ -3284,12 +3283,12 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             return {};
         }
 
-        if ($scope.category.name.indexOf("movies") > -1) {
+        if ($scope.category.searchType === "MOVIE") {
             return $http.get('internalapi/autocomplete/MOVIE/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
-        } else if ($scope.category.name.indexOf("tv") > -1) {
+        } else if ($scope.category.searchType === "TVSEARCH") {
             return $http.get('internalapi/autocomplete/TV/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
@@ -3329,13 +3328,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.goToSearchUrl = function () {
         //State params (query parameters) should all be lowercase
         var stateParams = {};
-        if ($scope.category.name.indexOf("movies") > -1) {
-            stateParams.title = $scope.title;
-        } else if ($scope.category.name.indexOf("tv") > -1) {
-            stateParams.title = $scope.title;
-        }
         stateParams.mode = $scope.category.searchType.toLowerCase();
-
         stateParams.imdbid = $scope.imdbId;
         stateParams.tmdbid = $scope.tmdbId;
         stateParams.tvdbid = $scope.tvdbId;
@@ -3388,11 +3381,11 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.autocompleteActive = function () {
-        return $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
+        return $scope.isAskById;
     };
 
     $scope.seriesSelected = function () {
-        return $scope.category.name.indexOf("tv") > -1;
+        return $scope.category.searchType === "TVSEARCH";
     };
 
     $scope.toggleIndexer = function (indexer) {
@@ -3412,7 +3405,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     function getAvailableIndexers() {
         return _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })
@@ -3773,14 +3766,12 @@ function IndexerStatusesController($scope, $http, statuses) {
     };
 
     $scope.enable = function (indexerName) {
-        $http.post("internalapi/indexertatuses/enable/" + encodeURI(indexerName)).then(function (response) {
+        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
             $scope.statuses = response.data;
         });
     }
-
 }
 IndexerStatusesController.$inject = ["$scope", "$http", "statuses"];
-
 
 angular
     .module('nzbhydraApp')
@@ -4616,7 +4607,6 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
 
     function getCategories(downloader) {
-
         function loadAll() {
             if (angular.isDefined(categories) && angular.isDefined(categories.downloader)) {
                 var deferred = $q.defer();
@@ -4792,7 +4782,7 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         var deferred = $q.defer();
         $http.put('internalapi/config', newConfig)
             .then(function (response) {
-                if (response.ok) {
+                if (response.data.ok) {
                     console.log("Settings saved. Updating cache");
                     cache.put("config", newConfig);
                     invalidateSafe();
@@ -6918,8 +6908,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     function submit() {
         if ($scope.form.$valid) {
-
-
             ConfigService.set($scope.config).then(function () {
                 $scope.form.$setPristine();
                 DownloaderCategoriesService.invalidate();
@@ -7031,7 +7019,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     $scope.help = function () {
         var tabName = $scope.allTabs[$scope.activeTab].name;
-        $http.get("internalapi/help/"+tabName).then(function (result) {
+        $http.get("internalapi/help/" + tabName).then(function (result) {
                 var html = '<span style="text-align: left;">' + result.data + "</span>";
                 ModalService.open(tabName + " - Help", html, {}, "lg");
             },

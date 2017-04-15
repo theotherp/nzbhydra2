@@ -147,12 +147,12 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             return {};
         }
 
-        if ($scope.category.name.indexOf("movies") > -1) {
+        if ($scope.category.searchType === "MOVIE") {
             return $http.get('internalapi/autocomplete/MOVIE/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
-        } else if ($scope.category.name.indexOf("tv") > -1) {
+        } else if ($scope.category.searchType === "TVSEARCH") {
             return $http.get('internalapi/autocomplete/TV/' + val).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
@@ -192,13 +192,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.goToSearchUrl = function () {
         //State params (query parameters) should all be lowercase
         var stateParams = {};
-        if ($scope.category.name.indexOf("movies") > -1) {
-            stateParams.title = $scope.title;
-        } else if ($scope.category.name.indexOf("tv") > -1) {
-            stateParams.title = $scope.title;
-        }
         stateParams.mode = $scope.category.searchType.toLowerCase();
-
         stateParams.imdbid = $scope.imdbId;
         stateParams.tmdbid = $scope.tmdbId;
         stateParams.tvdbid = $scope.tvdbId;
@@ -251,11 +245,11 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.autocompleteActive = function () {
-        return $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
+        return $scope.isAskById;
     };
 
     $scope.seriesSelected = function () {
-        return $scope.category.name.indexOf("tv") > -1;
+        return $scope.category.searchType === "TVSEARCH";
     };
 
     $scope.toggleIndexer = function (indexer) {
@@ -275,7 +269,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     function getAvailableIndexers() {
         return _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })

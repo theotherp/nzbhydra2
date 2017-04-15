@@ -20,7 +20,6 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
 
     function getCategories(downloader) {
-
         function loadAll() {
             if (angular.isDefined(categories) && angular.isDefined(categories.downloader)) {
                 var deferred = $q.defer();

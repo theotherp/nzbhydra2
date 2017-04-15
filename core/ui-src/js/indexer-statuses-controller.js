@@ -10,13 +10,11 @@ function IndexerStatusesController($scope, $http, statuses) {
     };
 
     $scope.enable = function (indexerName) {
-        $http.post("internalapi/indexertatuses/enable/" + encodeURI(indexerName)).then(function (response) {
+        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
             $scope.statuses = response.data;
         });
     }
-
 }
-
 
 angular
     .module('nzbhydraApp')

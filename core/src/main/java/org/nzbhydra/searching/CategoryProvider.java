@@ -56,7 +56,6 @@ public class CategoryProvider implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         categories = baseConfig.getCategoriesConfig().getCategories();
-
         if (categories != null) {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
         } else {
@@ -82,6 +81,9 @@ public class CategoryProvider implements InitializingBean {
     public Category getByName(String name) {
         if (name == null || !categoryMap.containsKey(name)) {
             return getNotAvailable();
+        }
+        if (name.toLowerCase().equals("all")) {
+            return CategoriesConfig.allCategory;
         }
         return categoryMap.get(name);
     }

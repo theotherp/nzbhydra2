@@ -67,7 +67,7 @@ public class Search {
         return handleSearchRequest(searchRequest);
     }
 
-    //TODO Replace specific searches with general one. Set all settings that are available. What is used is later determined by the search type
+    //TODO Replace specific searches with general one. Set all settings that are available. What is actually used is later determined by the search type
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/movie", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -81,6 +81,10 @@ public class Search {
         if (!Strings.isNullOrEmpty(parameters.getTmdbId())) {
             searchRequest.getIdentifiers().put(IdType.TMDB, parameters.getTmdbId());
         }
+        if (!Strings.isNullOrEmpty(parameters.getTitle())) {
+            searchRequest.setTitle(parameters.getTitle());
+        }
+
 
         return handleSearchRequest(searchRequest);
     }
@@ -99,6 +103,9 @@ public class Search {
         }
         if (!Strings.isNullOrEmpty(parameters.getTvmazeId())) {
             searchRequest.getIdentifiers().put(IdType.TVMAZE, parameters.getTvmazeId());
+        }
+        if (!Strings.isNullOrEmpty(parameters.getTitle())) {
+            searchRequest.setTitle(parameters.getTitle());
         }
 
         return handleSearchRequest(searchRequest);

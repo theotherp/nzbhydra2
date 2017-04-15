@@ -40,8 +40,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     function submit() {
         if ($scope.form.$valid) {
-
-
             ConfigService.set($scope.config).then(function () {
                 $scope.form.$setPristine();
                 DownloaderCategoriesService.invalidate();

@@ -134,8 +134,12 @@ public class IndexerPicker {
 
     protected boolean checkIndexerStatus(Map<Indexer, String> count, Indexer indexer) {
         IndexerStatusEntity status = indexer.getIndexerEntity().getStatus();
-        boolean indexerTemporarilyDisabled = status.getDisabledUntil() != null && status.getDisabledUntil().isAfter(Instant.now()) && !baseConfig.getSearching().isIgnoreTemporarilyDisabled();
+        boolean indexerTemporarilyDisabled = status.getDisabledUntil() != null && status.getDisabledUntil().isAfter(Instant.now());
         if (indexerTemporarilyDisabled) {
+            if (baseConfig.getSearching().isIgnoreTemporarilyDisabled()) {
+                logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), status.getDisabledUntil());
+                return true;
+            }
             logger.info("Did not pick {} because it's disabled until {}", indexer.getName(), status.getDisabledUntil());
             count.put(indexer, "\"Disabled temporarily\"");
             return false;

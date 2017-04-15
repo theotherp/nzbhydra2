@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +62,8 @@ public class Config {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/config/safe", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BaseConfig getSafeConfig() {
-        //TODO
-        return baseConfig;
+    public SafeConfig getSafeConfig() {
+        return new SafeConfig(baseConfig);
     }
 
     @Data
