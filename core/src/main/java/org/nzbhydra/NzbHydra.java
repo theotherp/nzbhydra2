@@ -9,7 +9,6 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
@@ -26,6 +25,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -58,7 +58,6 @@ public class NzbHydra {
     @Autowired
     private IndexerRepository indexerRepository;
 
-
     @Autowired
     private CategoryProvider categoryProvider;
 
@@ -80,7 +79,7 @@ public class NzbHydra {
     }
 
     @EventListener
-    private void startupDone(ApplicationReadyEvent event) {
+    protected void startupDone(ApplicationReadyEvent event) {
         //TODO: Possible do all the initializing now / listening to this event where we can be sure that all beans have been constructed
         if (baseConfig.getMain().isStartupBrowser()) { //TODO Overwritable per command line
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
@@ -129,13 +128,10 @@ public class NzbHydra {
     }
 
     @RequestMapping("/test")
+    @Transactional
     public String test() throws IOException, ExecutionException, InterruptedException {
 
 
-        logger.info("Shutting down to execute update");
-        SpringApplication.exit(applicationContext, (ExitCodeGenerator) () -> {
-            return 1;
-        });
 
 
         return "Ok";

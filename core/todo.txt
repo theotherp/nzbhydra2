@@ -10,17 +10,17 @@ Searching
 - return indexerName access data to show in GUI
 - pick indexers: show in GUI
 - exclusions: mostly done
-- rejecting search results: mostly done
-- ID conversion: mostly done
+- !!! rejecting search results: mostly done
+- !!! ID conversion: mostly done
 - !!! query generation
-- search history: mostly done
+- !!! search history: mostly done
 - !!! hitlimit and downloadlimit
 
 Config
 - !!! Loading
 - !!! Updating
 - !!! Setting via web call
-- reloading config: Mostly done
+- !!! reloading config: Mostly done
 
 Downloader support: mostly done
 - sabnzbd
@@ -62,7 +62,7 @@ History & stats
 
 Backups
 - Save
-- Restore
+- Restore: Probably only possible without database
 - create periodically
 - create before updating
 

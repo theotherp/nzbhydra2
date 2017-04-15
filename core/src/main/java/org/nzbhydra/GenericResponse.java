@@ -14,4 +14,8 @@ public class GenericResponse {
         return new GenericResponse(true, null);
     }
 
+    public static GenericResponse notOk(String message) {
+        return new GenericResponse(false, message);
+    }
+
 }

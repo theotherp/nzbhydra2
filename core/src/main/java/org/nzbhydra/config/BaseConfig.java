@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class BaseConfig extends ValidatingConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
+
     @Autowired
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -51,6 +53,7 @@ public class BaseConfig extends ValidatingConfig {
     private SearchingConfig searching = new SearchingConfig();
 
     public BaseConfig() {
+
     }
 
     public void replace(BaseConfig newConfig) {
@@ -65,29 +68,40 @@ public class BaseConfig extends ValidatingConfig {
         applicationEventPublisher.publishEvent(configChangedEvent);
     }
 
-    public void save() throws IOException {
+    public void save(File targetFile) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         objectMapper.registerModule(new Jdk8Module());
-        File configFolder = new File("config"); //TODO Use configurable folder and/or make sure we're in the correct folder
+
+        logger.info("Writing config to file {}", targetFile.getAbsolutePath());
+        objectMapper.writeValue(targetFile, this);
+    }
+
+    public void save() throws IOException {
+        File file = buildConfigFileFile();
+        save(file);
+    }
+
+    private File buildConfigFileFile() throws IOException {
+        File mainFolder;
+        try {
+            mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+        } catch (URISyntaxException e) {
+            throw new IOException("Unable to build path to config folder: " + e.getMessage());
+        }
+        File configFolder = new File(mainFolder, "config"); //TODO Use configurable folder and/or make sure we're in the correct folder
         if (!configFolder.exists()) {
             boolean created = configFolder.mkdir();
             if (!created) {
                 throw new IOException("Unable to create config folder " + configFolder.getAbsolutePath());
             }
         }
-        File file = new File(configFolder, "application.yml");
-        logger.info("Writing config to file {}", file.getAbsolutePath());
-        objectMapper.writeValue(file, this);
+        return new File(configFolder, "application.yml");
     }
 
     public void load() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
         objectMapper.registerModule(new Jdk8Module());
-        File configFolder = new File("config"); //TODO Use configurable folder and/or make sure we're in the correct folder
-        File file = new File(configFolder, "application.yml");
-        if (!configFolder.exists() || !file.exists()) {
-            throw new IOException("Folder or file do not exist: " + file.getAbsolutePath());
-        }
+        File file = buildConfigFileFile();
         replace(objectMapper.readValue(file, BaseConfig.class));
     }
 

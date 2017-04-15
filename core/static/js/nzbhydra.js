@@ -1737,7 +1737,7 @@ function hydrabackup() {
 
 
         $scope.createAndDownloadBackupFile = function () {
-            FileDownloadService.downloadFile("internalapi/getbackup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip");
+            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip");
         };
 
         $scope.uploadBackupFile = function (file, errFiles) {
