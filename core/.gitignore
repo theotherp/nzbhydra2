@@ -1,16 +1,13 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
-### IntelliJ IDEA ###
 .idea/*
 *.iws
 *.iml
 *.ipr
-bower_components
-node_modules
-nzbhydra.db.*
+/bower_components
+/node_modules
+/nzbhydra.db.*
 *.pid
-logs/**
-config/
-config/**
-database/
-database/**
+/logs
+/config
+/database/

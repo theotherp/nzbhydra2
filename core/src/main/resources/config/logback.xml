@@ -1,0 +1,78 @@
+<configuration>
+    <springProperty scope="context" name="logging.file" source="main.logging.logfilename" defaultValue="logs/nzbhydra.log"/>
+    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="10"/>
+    <springProperty scope="context" name="logging.logMaxDays" source="main.logging.logging.logMaxDays" defaultValue="30"/>
+    <!--
+    consolelevel: "DEBUG"
+    keepLogFiles: 25
+    logIpAddresses: true
+    logMaxSize: 1000
+    logRotateAfterDays: null
+    consolelevel: "DEBUG"
+    logfilename: "nzbhydra2.log"
+    rolloverAtStart: false
+
+    -->
+
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+    <property name="FILE_LOG_PATTERN"
+              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <appender name="DEBUG_LEVEL_REMAPPER" class="org.springframework.boot.logging.logback.LevelRemappingAppender">
+        <destinationLogger>org.springframework.boot</destinationLogger>
+    </appender>
+
+    <logger name="org.nzbhydra" level="DEBUG"/>
+    <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
+    <logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
+    <logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
+    <logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
+    <logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
+    <logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
+    <logger name="org.hibernate.validator.internal.util.Version" level="WARN"/>
+    <logger name="org.thymeleaf.*" level="WARN"/>
+    <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
+    <logger name="org.springframework.boot.actuate.endpoint.jmx" additivity="false">
+        <appender-ref ref="DEBUG_LEVEL_REMAPPER"/>
+    </logger>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.level.console}</level>
+        </filter>
+    </appender>
+
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.level.file}</level>
+        </filter>
+        <file>${logging.file}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.file}.%d</fileNamePattern>
+            <maxHistory>${logging.logMaxDays}</maxHistory>
+        </rollingPolicy>
+        <triggeringPolicy
+                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>${logging.logMaxSize}MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
