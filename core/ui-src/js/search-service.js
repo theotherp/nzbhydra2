@@ -69,7 +69,6 @@ function SearchService($http) {
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
         var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
 
-
         lastResults = {
             "searchResults": searchResults,
             "indexerSearchMetaDatas": indexerSearchMetaDatas,

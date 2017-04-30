@@ -8,7 +8,7 @@ GUI
 
 Searching
 - return indexerName access data to show in GUI
-- pick indexers: show in GUI
+- !! pick indexers: show in GUI
 - exclusions: mostly done
 - !!! rejecting search results: mostly done
 - !!! ID conversion: mostly done
@@ -81,7 +81,7 @@ General, Ideas
 - !! Log / config sanitation
 - more config validation. make sure auth is properly configured, etc
 - !! Initialize config
-- timeout for indexer accesses is "global" (max time spent for access)
+- !! timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system
 - !! restart dialog pings until recognizes successful restart
 - !! catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results

@@ -2492,7 +2492,6 @@ function SearchService($http) {
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
         var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
 
-
         lastResults = {
             "searchResults": searchResults,
             "indexerSearchMetaDatas": indexerSearchMetaDatas,
@@ -2578,6 +2577,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     //Process searchResults
     $scope.results = SearchService.getLastResults().searchResults;
     $scope.numberOfAvailableResults = SearchService.getLastResults().numberOfAvailableResults;
+    $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
     $scope.numberOfResults = SearchService.getLastResults().numberOfResults;
     $scope.rejected = SearchService.getLastResults().rejectedReasonsMap;
     $scope.numberOfRejectedResults = SearchService.getLastResults().numberOfRejectedResults;
@@ -2799,6 +2799,20 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         //$scope.foo.duplicatesDisplayed = !$scope.foo.duplicatesDisplayed;
         localStorageService.set("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
         $scope.$broadcast("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
+    };
+
+    $scope.getRejectedReasonsTooltip = function () {
+        if ($scope.rejectedReasonsMap.length === 0) {
+            return "No rejected results";
+        } else {
+            var tooltip = "<span >Rejected results:<span><br>";
+            tooltip += '<table class="rejected-tooltip-table"><thead><tr><th width="50px">Count</th><th>Reason</th></tr></thead>';
+            _.forEach($scope.rejectedReasonsMap, function (count, reason) {
+                tooltip += '<tr><td>' + count + '</td><td>' + reason + '</td></tr>';
+            });
+            tooltip += '</table>';
+            return tooltip;
+        }
     };
 
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {

@@ -136,7 +136,14 @@
         <dir-pagination-controls auto-hide="false" max-size="5"></dir-pagination-controls>
     </div>
     <div class="col-md-8" style="text-align: right;">
-        <span class="badge">Loaded {{ numberOfResults }} of {{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})</span>
+        <span class="badge"
+              uib-tooltip-html="getRejectedReasonsTooltip()"
+              tooltip-class="rejected-tooltip"
+              tooltip-placement="top"
+              tooltip-trigger="click"
+        >Loaded {{ numberOfResults }} of {{ numberOfAvailableResults }} results (
+            rejected {{ numberOfRejectedResults }}
+            )</span>
 
         <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
             <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="resultsCount >= total"

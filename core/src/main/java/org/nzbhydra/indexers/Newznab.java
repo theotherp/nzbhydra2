@@ -356,7 +356,6 @@ public class Newznab extends Indexer {
             searchResultItem.setDetails(item.getComments().replace("#comments", ""));
         }
 
-
         searchResultItem.setFirstFound(Instant.now());
         searchResultItem.setIndexer(this);
         searchResultItem.setTitle(item.getTitle());
@@ -367,7 +366,7 @@ public class Newznab extends Indexer {
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
-        searchResultItem.setCategory(categoryProvider.getNotAvailable());
+        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
         searchResultItem.setCommentsLink(item.getComments());
 
         for (NewznabAttribute attribute : item.getAttributes()) {
@@ -406,7 +405,6 @@ public class Newznab extends Indexer {
             }
         }
 
-        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
 
         if (config.getHost().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
             searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));

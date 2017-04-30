@@ -7789,6 +7789,13 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   margin-top: 0;
   margin-bottom: 0;
 }
+.rejected-tooltip {
+  width: unset;
+}
+.rejected-tooltip-table {
+  margin-top: 10px;
+  background-color: transparent;
+}
 .nav-tabs > li > a:hover {
   border-color: #eeeeee #eeeeee transparent;
   background-color: transparent;

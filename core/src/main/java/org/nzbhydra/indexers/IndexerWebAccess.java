@@ -28,7 +28,7 @@ public class IndexerWebAccess {
         } catch (ExecutionException e) {
             throw new IndexerUnreachableException("Error while communicating with Indexer", e.getCause());
         } catch (TimeoutException e) {
-            throw new IndexerAccessException("Indexer did not respond within " + timeout + " seconds");
+            throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
         }
     }
 
