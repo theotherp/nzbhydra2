@@ -163,7 +163,7 @@ public class Search {
             for (SearchResultItem item : duplicateGroup) {
 
                 SearchResultBuilder builder = SearchResult.builder()
-                        .category("todo")
+                        .category(item.getCategory().getName())
                         .comments(item.getCommentsCount())
                         .details_link(item.getDetails())
                         .downloadType(item.getDownloadType().name()) //TODO

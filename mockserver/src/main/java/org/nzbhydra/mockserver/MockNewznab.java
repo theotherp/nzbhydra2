@@ -106,7 +106,7 @@ public class MockNewznab {
         channel.setNewznabResponse(new NewznabResponse(0, endCount));
 
         List<RssItem> items = new ArrayList<>();
-        for (int i = 0; i <= endCount; i++) {
+        for (int i = 1; i <= endCount; i++) {
 
             RssItem item = new RssItem();
             item.setDescription("Some longer itemDescription that whatever" + i);
