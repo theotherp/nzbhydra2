@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class NzbHandling {
     @Autowired
     private NzbHandler nzbHandler;
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     /**
      * Provides an internal access to NZBs via GUID
@@ -31,7 +32,7 @@ public class NzbHandling {
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType()).getAsResponseEntity();
     }
 
     /**
@@ -42,7 +43,7 @@ public class NzbHandling {
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType()).getAsResponseEntity();
     }
 
     /**
@@ -52,6 +53,7 @@ public class NzbHandling {
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
     public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+        BaseConfig baseConfig = configProvider.getBaseConfig();
         if (baseConfig.getMain().getApiKey().isPresent() && !"".equals(baseConfig.getMain().getApiKey().get())) {
             if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey().get())) {
                 logger.error("Received NZB API download call with wrong API key");

@@ -1135,8 +1135,8 @@ function hydralog() {
 
 
         function getAndShowLog() {
-            return $http.get("internalapi/getlogs").success(function (data) {
-                $scope.log = $sce.trustAsHtml(data.log);
+            return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
+                $scope.log = $sce.trustAsHtml(data.message);
             });
         }
 
@@ -2073,18 +2073,16 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/getdebugginginfos', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
-            var filename = "nzbhydra-debuginfo-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
+            var filename = "nzbhydra-debuginfos-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
             a.download = filename;
 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }).error(function (data, status, headers, config) {
-            console.log("Error:" + status);
         });
     }
 
@@ -2492,6 +2490,7 @@ function SearchService($http) {
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfResults = response.data.numberOfResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
+        var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
 
 
         lastResults = {
@@ -2500,7 +2499,8 @@ function SearchService($http) {
             "numberOfAvailableResults": numberOfAvailableResults,
             "numberOfResults": numberOfResults,
             "numberOfRejectedResults": numberOfRejectedResults,
-            "rejectedReasonsMap": rejectedReasonsMap
+            "rejectedReasonsMap": rejectedReasonsMap,
+            "notPickedIndexersWithReason": notPickedIndexersWithReason
         };
         return lastResults;
     }
@@ -2523,7 +2523,7 @@ function sumRejected(rejected) {
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
-    if (localStorageService.get("sorting") != null) {
+    if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
         $scope.sortPredicate = sorting.predicate;
         $scope.sortReversed = sorting.reversed;
@@ -2536,6 +2536,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
+    $scope.notPickedIndexersWithReason = [];
+    _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
+        $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});
+    });
     $scope.indexerDisplayState = []; //Stores if a indexerName's searchResults should be displayed or not
     $scope.indexerResultsInfo = {}; //Stores information about the indexerName's searchResults like how many we already retrieved
     $scope.groupExpanded = {};
@@ -2556,8 +2560,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.lastClickedValue = null;
 
     $scope.foo = {
-        indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") != null ? localStorageService.get("indexerStatusesExpanded") : false,
-        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") != null ? localStorageService.get("duplicatesDisplayed") : false
+        indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
+        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
     };
 
     $scope.countFilteredOut = 0;

@@ -31,8 +31,8 @@
 
                     </tr>
                     </thead>
-                    <tbody>
 
+                    <tbody>
                     <tr ng-repeat-start="ps in indexersearches " ng-if="0"></tr>
                     <!-- First result in the list, show regularly -->
                     <tr>
@@ -59,23 +59,39 @@
 
                             <span ng-if="$index == 0">{{ ps.errorMessage }}</span>
                         </span>
-                    </span>
+                            </span>
                             <span ng-if="!ps.didSearch">
                         Did not search.
                     </span>
                         </td>
                     </tr>
-
                     <tr ng-repeat-end ng-if="0"></tr>
+
+
+                    <tr ng-repeat-start="ps in notPickedIndexersWithReason" ng-if="0"></tr>
+                    <tr>
+                        <td class="text-left" style="padding-left: 21px">
+                            {{ ps.indexer }}
+                        </td>
+                        <td class="text-left">
+                        </td>
+                        <td class="text-left">
+                        </td>
+                        <td class="text-left">
+                            <span class="glyphicon glyphicon-minus"></span>
+                            {{ps.reason}}
+                        </td>
+                    </tr>
+                    <tr ng-repeat-end ng-if="0"></tr>
+
+
                     </tbody>
                 </table>
-
 
                 <table class="table" style="margin-bottom: 0px; margin-top: 5px" ng-if="countRejected > 0">
                     <thead>
                     <tr>
                         <th class="col-md-5 text-left">
-
                         </th>
                         <th class="col-md-5 text-left" style="text-align: right">
                             Reject reason
@@ -84,9 +100,7 @@
                             Count
                         </th>
                         <th class="col-md-5 text-left">
-
                         </th>
-
                     </tr>
                     </thead>
                     <tbody>
@@ -112,14 +126,14 @@
 
 <div class="row" ng-if="indexersearches" style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
-        <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default">Include duplicates</input>
+        <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default">Show duplicates</input>
         <button class="btn btn-default" ng-click="invertSelection()">Invert selection</button>
         <download-nzbs-button search-results="selected"></download-nzbs-button>
         <download-nzbzip-button search-results="selected" search-title="searchTitle"></download-nzbzip-button>
     </div>
 
     <div class="col-md-4" style="margin-top: 20px">
-        <dir-pagination-controls auto-hide="false"></dir-pagination-controls>
+        <dir-pagination-controls auto-hide="false" max-size="5"></dir-pagination-controls>
     </div>
     <div class="col-md-8" style="text-align: right;">
         <span class="badge">Loaded {{ numberOfResults }} of {{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})</span>

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +27,12 @@ public class Config {
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) {
-        return baseConfig;
+        return configProvider.getBaseConfig();
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -40,8 +41,8 @@ public class Config {
         logger.info("Received new config");
         List<String> messages = config.validateConfig();
         if (messages.isEmpty()) {
-            baseConfig.replace(config);
-            baseConfig.save();
+            configProvider.getBaseConfig().replace(config);
+            configProvider.getBaseConfig().save();
         } else {
             logger.warn("Invalid config submitted:\n" + Joiner.on("\n").join(messages));
         }
@@ -53,7 +54,7 @@ public class Config {
     public GenericResponse reloadConfig() throws IOException {
         logger.info("Reloading config from file");
         try {
-            baseConfig.load();
+            configProvider.getBaseConfig().load();
         } catch (IOException e) {
             return new GenericResponse(false, e.getMessage());
         }
@@ -63,7 +64,7 @@ public class Config {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/config/safe", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public SafeConfig getSafeConfig() {
-        return new SafeConfig(baseConfig);
+        return new SafeConfig(configProvider.getBaseConfig());
     }
 
     @Data

@@ -2,6 +2,7 @@ package org.nzbhydra.auth;
 
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     @Autowired
     private HydraAnonymousAuthenticationFilter hydraAnonymousAuthenticationFilter;
@@ -40,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        BaseConfig baseConfig = configProvider.getBaseConfig();
         http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http

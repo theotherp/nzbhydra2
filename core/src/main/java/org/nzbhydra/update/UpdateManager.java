@@ -11,13 +11,11 @@ import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.update.gtihubmapping.Asset;
 import org.nzbhydra.update.gtihubmapping.Release;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -40,9 +38,6 @@ import java.util.zip.ZipFile;
 public class UpdateManager implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateManager.class);
-
-    @Autowired
-    private BaseConfig baseConfig;
 
     @Value("${nzbhydra.repositoryBaseUrl}")
     protected String repositoryBaseUrl;

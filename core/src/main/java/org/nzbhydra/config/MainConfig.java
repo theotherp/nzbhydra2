@@ -1,6 +1,7 @@
 package org.nzbhydra.config;
 
 import lombok.Data;
+import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +14,14 @@ import java.util.Optional;
 @Data
 public class MainConfig extends ValidatingConfig {
 
+    @SensitiveData
     private String apiKey = null;
     private String branch;
     private Integer configVersion;
     private boolean debug;
     private String databaseFile;
     private String dereferer;
+    @SensitiveData
     private String externalUrl = null;
     private String gitPath;
     private String host;

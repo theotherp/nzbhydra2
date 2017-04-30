@@ -79,11 +79,14 @@ public class CategoryProvider implements InitializingBean {
     }
 
     public Category getByName(String name) {
-        if (name == null || !categoryMap.containsKey(name)) {
+        if (name == null) {
             return getNotAvailable();
         }
         if (name.toLowerCase().equals("all")) {
             return CategoriesConfig.allCategory;
+        }
+        if (!categoryMap.containsKey(name)) {
+            return getNotAvailable();
         }
         return categoryMap.get(name);
     }

@@ -11,7 +11,7 @@ function sumRejected(rejected) {
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
-    if (localStorageService.get("sorting") != null) {
+    if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
         $scope.sortPredicate = sorting.predicate;
         $scope.sortReversed = sorting.reversed;
@@ -24,6 +24,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     //Handle incoming data
 
     $scope.indexersearches = SearchService.getLastResults().indexerSearchMetaDatas;
+    $scope.notPickedIndexersWithReason = [];
+    _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
+        $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});
+    });
     $scope.indexerDisplayState = []; //Stores if a indexerName's searchResults should be displayed or not
     $scope.indexerResultsInfo = {}; //Stores information about the indexerName's searchResults like how many we already retrieved
     $scope.groupExpanded = {};
@@ -44,8 +48,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.lastClickedValue = null;
 
     $scope.foo = {
-        indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") != null ? localStorageService.get("indexerStatusesExpanded") : false,
-        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") != null ? localStorageService.get("duplicatesDisplayed") : false
+        indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
+        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
     };
 
     $scope.countFilteredOut = 0;

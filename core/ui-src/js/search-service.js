@@ -67,6 +67,7 @@ function SearchService($http) {
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
         var numberOfResults = response.data.numberOfResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
+        var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
 
 
         lastResults = {
@@ -75,7 +76,8 @@ function SearchService($http) {
             "numberOfAvailableResults": numberOfAvailableResults,
             "numberOfResults": numberOfResults,
             "numberOfRejectedResults": numberOfRejectedResults,
-            "rejectedReasonsMap": rejectedReasonsMap
+            "rejectedReasonsMap": rejectedReasonsMap,
+            "notPickedIndexersWithReason": notPickedIndexersWithReason
         };
         return lastResults;
     }

@@ -1,7 +1,7 @@
 package org.nzbhydra;
 
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -51,7 +51,7 @@ public class NzbHydra {
     private static ConfigurableApplicationContext applicationContext;
 
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
     @Autowired
     private SearchResultRepository searchResultRepository;
 
@@ -70,7 +70,7 @@ public class NzbHydra {
         SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
         hydraApplication.addListeners(new ApplicationPidFileWriter());
         NzbHydra.originalArgs = args;
-        hydraApplication.setHeadless(false); //TODO Check, it's better to run headless
+        hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
         applicationContext = hydraApplication.run(args);
     }
 
@@ -81,9 +81,9 @@ public class NzbHydra {
     @EventListener
     protected void startupDone(ApplicationReadyEvent event) {
         //TODO: Possible do all the initializing now / listening to this event where we can be sure that all beans have been constructed
-        if (baseConfig.getMain().isStartupBrowser()) { //TODO Overwritable per command line
+        if (configProvider.getBaseConfig().getMain().isStartupBrowser()) { //TODO Overwritable per command line
             Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-            URI uri = baseConfig.getBaseUriBuilder().build().toUri();
+            URI uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
             logger.info("Opening {} in browser", uri);
             if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
@@ -110,7 +110,6 @@ public class NzbHydra {
         RssRoot rssRoot = restTemplate.getForObject("http://127.0.0.1:5000/api?apikey=a", RssRoot.class);
 
         return rssRoot;
-
     }
 
     @RequestMapping(value = "/delete")

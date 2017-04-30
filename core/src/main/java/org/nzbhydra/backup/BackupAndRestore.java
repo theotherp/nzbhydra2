@@ -1,7 +1,7 @@
 package org.nzbhydra.backup;
 
 import com.google.common.io.Files;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class BackupAndRestore {
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
 
     public File backup() throws Exception {
@@ -46,7 +46,7 @@ public class BackupAndRestore {
             backupDatabase(tempFolder);
 
             configBackupFile = new File(tempFolder, "application.yml");
-            baseConfig.save(configBackupFile);
+            configProvider.getBaseConfig().save(configBackupFile);
 
             tempFile = File.createTempFile("nzbhydra", ".zip");
             logger.debug("Using temp file {}", tempFile.getAbsolutePath());
@@ -80,7 +80,7 @@ public class BackupAndRestore {
 
     }
 
-    private void addToZipFile(File file, ZipOutputStream zos) throws IOException {
+    private static void addToZipFile(File file, ZipOutputStream zos) throws IOException {
         logger.debug("Adding file {} to temporary ZIP file", file.getAbsolutePath());
         FileInputStream fis = new FileInputStream(file);
         ZipEntry zipEntry = new ZipEntry(file.getName());

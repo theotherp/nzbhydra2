@@ -2,8 +2,8 @@ package org.nzbhydra.web;
 
 import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
-import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.UserAuthConfig;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.web.mapping.BootstrappedData;
@@ -28,12 +28,12 @@ public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
     private SafeConfig safeConfig = null;
 
     private SafeConfig getSafeConfig() {
         if (safeConfig == null) {
-            safeConfig = new SafeConfig(baseConfig);
+            safeConfig = new SafeConfig(configProvider.getBaseConfig());
         }
         return safeConfig;
     }
@@ -41,8 +41,7 @@ public class Main {
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        baseConfig = configChangedEvent.getNewConfig();
-        safeConfig = new SafeConfig(baseConfig);
+        safeConfig = new SafeConfig(configChangedEvent.getNewConfig());
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -90,12 +89,12 @@ public class Main {
         bootstrappedData = setUserInfos(bootstrappedData, principal);
         bootstrappedData.setSafeConfig(getSafeConfig());
 
-        session.setAttribute("baseUrl", (baseConfig.getMain().getUrlBase().orElse("/") + "/").replace("//", "/"));
+        session.setAttribute("baseUrl", (configProvider.getBaseConfig().getMain().getUrlBase().orElse("/") + "/").replace("//", "/"));
         session.setAttribute("bootstrap", bootstrappedData);
     }
 
     private BootstrappedData setUserInfos(BootstrappedData bootstrappedData, Principal principal) {
-        AuthConfig auth = baseConfig.getAuth();
+        AuthConfig auth = configProvider.getBaseConfig().getAuth();
 
         boolean authConfigured = auth.getAuthType() != AuthType.NONE && !auth.getUsers().isEmpty();
         boolean adminRestricted = auth.isRestrictAdmin() && authConfigured;

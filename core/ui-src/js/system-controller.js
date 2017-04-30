@@ -89,18 +89,16 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/getdebugginginfos', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
-            var filename = "nzbhydra-debuginfo-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
+            var filename = "nzbhydra-debuginfos-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
             a.download = filename;
 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }).error(function (data, status, headers, config) {
-            console.log("Error:" + status);
         });
     }
 

@@ -1,6 +1,7 @@
 package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -51,8 +52,11 @@ public class BaseConfig extends ValidatingConfig {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
+    private static ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+
 
     public BaseConfig() {
+        objectMapper.registerModule(new Jdk8Module());
 
     }
 
@@ -69,9 +73,6 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public void save(File targetFile) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.registerModule(new Jdk8Module());
-
         logger.info("Writing config to file {}", targetFile.getAbsolutePath());
         objectMapper.writeValue(targetFile, this);
     }
@@ -99,10 +100,13 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public void load() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.registerModule(new Jdk8Module());
         File file = buildConfigFileFile();
         replace(objectMapper.readValue(file, BaseConfig.class));
+    }
+
+    @JsonIgnore
+    public String getAsYamlString() throws JsonProcessingException {
+        return objectMapper.writeValueAsString(this);
     }
 
 
@@ -131,11 +135,9 @@ public class BaseConfig extends ValidatingConfig {
      * @throws IOException Unable to read application.yml
      */
     public static BaseConfig originalConfig() throws IOException {
-        ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
-        yamlMapper.registerModule(new Jdk8Module());
         BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/application.yml").openStream()));
         String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
-        return yamlMapper.readValue(applicationYmlContent, BaseConfig.class);
+        return objectMapper.readValue(applicationYmlContent, BaseConfig.class);
     }
 
     public void setIndexers(List<IndexerConfig> indexers) {

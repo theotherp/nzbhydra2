@@ -7,6 +7,7 @@ import com.google.common.collect.Multiset.Entry;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -34,9 +35,10 @@ public class ResultAcceptor {
     private Map<String, List<String>> titleWordCache = new HashMap<>();
 
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     public AcceptorResult acceptResults(List<SearchResultItem> items, SearchRequest searchRequest, IndexerConfig indexerConfig) {
+        BaseConfig baseConfig = configProvider.getBaseConfig();
         titleWordCache = new HashMap<>();
         List<SearchResultItem> acceptedResults = new ArrayList<>();
         Multiset<String> reasonsForRejection = HashMultiset.create();
@@ -178,7 +180,7 @@ public class ResultAcceptor {
 
     protected boolean checkForForbiddenGroup(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getGroup().isPresent()) {
-            if (baseConfig.getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().get().contains(x))) {
+            if (configProvider.getBaseConfig().getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().get().contains(x))) {
                 logger.debug("Found forbidden group {}", item.getGroup().get());
                 reasonsForRejection.add("In forbidden group");
                 return false;
@@ -189,7 +191,7 @@ public class ResultAcceptor {
 
     protected boolean checkForForbiddenPoster(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getPoster().isPresent()) {
-            if (baseConfig.getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().get().contains(x))) {
+            if (configProvider.getBaseConfig().getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().get().contains(x))) {
                 logger.debug("Found forbidden poster {}", item.getPoster().get());
                 reasonsForRejection.add("In forbidden poster");
                 return false;
@@ -269,7 +271,7 @@ public class ResultAcceptor {
     }
 
     protected boolean checkForPassword(Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (baseConfig.getSearching().isIgnorePassworded() && item.isPassworded()) {
+        if (configProvider.getBaseConfig().getSearching().isIgnorePassworded() && item.isPassworded()) {
             reasonsForRejection.add("Ignore passworded");
             return false;
         }

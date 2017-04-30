@@ -15,8 +15,8 @@ function hydralog() {
 
 
         function getAndShowLog() {
-            return $http.get("internalapi/getlogs").success(function (data) {
-                $scope.log = $sce.trustAsHtml(data.log);
+            return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
+                $scope.log = $sce.trustAsHtml(data.message);
             });
         }
 

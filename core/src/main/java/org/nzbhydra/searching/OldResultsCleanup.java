@@ -1,6 +1,6 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.SearchResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +17,7 @@ public class OldResultsCleanup {
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(OldResultsCleanup.class);
 
@@ -26,7 +26,7 @@ public class OldResultsCleanup {
     @Scheduled(initialDelay = HOUR, fixedRate = HOUR)
     public void deleteOldResults() {
         logger.debug("Attempting to delete old search results");
-        int keepSearchResultsForDays = baseConfig.getSearching().getKeepSearchResultsForDays();
+        int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
         int deletedResults = searchResultRepository.deleteByFirstFoundBefore(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS));
         if (deletedResults > 0) {
             logger.info("Deleted {} search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);

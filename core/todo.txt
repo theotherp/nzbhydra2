@@ -21,6 +21,7 @@ Config
 - !!! Updating
 - !!! Setting via web call
 - !!! reloading config: Mostly done
+- find out which settings require a restart and mark them accordingly
 
 Downloader support: mostly done
 - sabnzbd
@@ -61,8 +62,8 @@ History & stats
 - Stats: mostly done
 
 Backups
-- Save
-- Restore: Probably only possible without database
+- !! Save
+- Restore: Probably using the wrapper
 - create periodically
 - create before updating
 
@@ -77,7 +78,7 @@ General, Ideas
 - user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
-- Log / config sanitation
+- !! Log / config sanitation
 - more config validation. make sure auth is properly configured, etc
 - !! Initialize config
 - timeout for indexer accesses is "global" (max time spent for access)
@@ -87,6 +88,7 @@ General, Ideas
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 - rss functionality with configurable caching, perhaps with cache interval as parameter
 - banner
+- store IP address in search / download history. opt-in. use nullable column. show what available in history
 
 ++++
 Improvements

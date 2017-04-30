@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.database.IndexerApiAccessEntity;
@@ -51,7 +51,7 @@ public class IndexerPicker {
     @Autowired
     private NzbDownloadRepository nzbDownloadRepository;
     @Autowired
-    private BaseConfig baseConfig;
+    private ConfigProvider configProvider;
 
     private Random random = new Random();
 
@@ -102,7 +102,7 @@ public class IndexerPicker {
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), Sets.newHashSet(indexer.getConfig().getSupportedSearchIds()));
-            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
             if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
                 logger.info("Did not pick {} because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 count.put(indexer, "No usable ID");
@@ -136,7 +136,7 @@ public class IndexerPicker {
         IndexerStatusEntity status = indexer.getIndexerEntity().getStatus();
         boolean indexerTemporarilyDisabled = status.getDisabledUntil() != null && status.getDisabledUntil().isAfter(Instant.now());
         if (indexerTemporarilyDisabled) {
-            if (baseConfig.getSearching().isIgnoreTemporarilyDisabled()) {
+            if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
                 logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), status.getDisabledUntil());
                 return true;
             }

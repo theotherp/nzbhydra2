@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
+import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
@@ -16,6 +17,7 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig extends ValidatingConfig {
 
+    @SensitiveData
     private String apikey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
@@ -31,6 +33,7 @@ public class IndexerConfig extends ValidatingConfig {
     private String host;
     private Integer loadLimitOnRandom = null;
     private String name;
+    @SensitiveData
     private String password = null;
     private boolean preselect;
     private Integer score = null;
@@ -41,7 +44,7 @@ public class IndexerConfig extends ValidatingConfig {
     private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
     private Integer timeout = null;
     private String type; //TODO what is this?
-
+    @SensitiveData
     private String username = null;
 
     public Optional<Integer> getHitLimit() {
