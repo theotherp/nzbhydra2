@@ -3,6 +3,7 @@ package org.nzbhydra.database;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -36,6 +37,7 @@ public class IndexerStatusEntity {
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant disabledUntil;
     private Integer level = 0;
+    @Column(length = 4000)
     private String reason;
     private Boolean disabledPermanently = false;
 

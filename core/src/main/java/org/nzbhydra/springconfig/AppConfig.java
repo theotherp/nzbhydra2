@@ -1,5 +1,7 @@
 package org.nzbhydra.springconfig;
 
+import org.nzbhydra.config.ConfigProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -15,10 +17,20 @@ import java.net.HttpURLConnection;
 @Configuration
 public class AppConfig {
 
+    @Autowired
+    private ConfigProvider configProvider;
+
     @Bean
     public RestTemplate getRestTemplate() {
+        //configProvider.getBaseConfig().getMain().get;
+
         HostnameVerifier verifier = new NullHostnameVerifier();
         MySimpleClientHttpRequestFactory factory = new MySimpleClientHttpRequestFactory(verifier);
+
+
+//        Proxy proxy = new Proxy(Type.HTTP, new InetSocketAddress("127.0.0.1", 808));
+//        factory.setProxy(proxy);
+
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(factory);
         return restTemplate;

@@ -60,7 +60,12 @@ public class MockNewznab {
         }
 
         int count;
-        int key = Integer.valueOf(params.getApikey());
+        int key = 0;
+        try {
+            key = Integer.valueOf(params.getApikey());
+        } catch (NumberFormatException e) {
+            count = 0;
+        }
         if (apikeyToResultCount.containsKey(key)) {
             count = apikeyToResultCount.get(key);
         } else {

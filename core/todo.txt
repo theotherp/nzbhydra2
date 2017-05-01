@@ -37,8 +37,8 @@ Indexer support
 - nzbindex
 - anizb
 - nzbclub
-- checking caps: half done, backend and cats missing
-- checking auth / connection: done
+- !! checking caps
+- !! checking auth / connection: done
 
 Torrent support
 - jackett / cardigann
@@ -90,8 +90,9 @@ General, Ideas
 - banner
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 
-restart needed for:
-- proxy settings
+currently not (yet) supported:
+- proxies
+
 
 ++++
 Improvements

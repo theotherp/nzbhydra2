@@ -45,14 +45,15 @@ public class SearchResultEntity {
     protected Instant firstFound;
 
     @NotNull
+    @Column(length = 4000)
     protected String title;
 
     @Column(name = "indexerguid")
     @NotNull
     protected String indexerGuid;
-
+    @Column(length = 4000)
     protected String link;
-
+    @Column(length = 4000)
     protected String details;
 
     public void setId(long id) {

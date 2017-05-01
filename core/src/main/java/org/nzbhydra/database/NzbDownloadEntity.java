@@ -4,6 +4,7 @@ import lombok.Data;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
+import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -37,6 +38,7 @@ public class NzbDownloadEntity {
     @Enumerated(EnumType.STRING)
     private IndexerAccessResult result;
     private String error;
+    @Column(length = 4000)
     private String title;
 
     public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource searchSource, IndexerAccessResult result, String error) {
