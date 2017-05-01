@@ -268,10 +268,10 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'Logfile level',
                                 options: [
-                                    {name: 'Error', value: 'error'},
-                                    {name: 'Warning', value: 'warn'},
-                                    {name: 'Info', value: 'info'},
-                                    {name: 'Debug', value: 'debug'}
+                                    {name: 'Error', value: 'ERROR'},
+                                    {name: 'Warning', value: 'WARN'},
+                                    {name: 'Info', value: 'INFO'},
+                                    {name: 'Debug', value: 'DEBUG'}
                                 ]
                             },
                             watcher: {
@@ -324,10 +324,10 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'Console log level',
                                 options: [
-                                    {name: 'Error', value: 'error'},
-                                    {name: 'Warning', value: 'warn'},
-                                    {name: 'Info', value: 'info'},
-                                    {name: 'Debug', value: 'debug'}
+                                    {name: 'Error', value: 'ERROR'},
+                                    {name: 'Warning', value: 'WARN'},
+                                    {name: 'Info', value: 'INFO'},
+                                    {name: 'Debug', value: 'DEBUG'}
                                 ]
                             },
                             watcher: {
@@ -340,6 +340,14 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Log IP addresses'
+                            }
+                        },
+                        {
+                            key: 'logUsername',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Log user names'
                             }
                         }
 

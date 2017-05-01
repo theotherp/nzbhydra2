@@ -22,14 +22,8 @@ public class AppConfig {
 
     @Bean
     public RestTemplate getRestTemplate() {
-        //configProvider.getBaseConfig().getMain().get;
-
         HostnameVerifier verifier = new NullHostnameVerifier();
         MySimpleClientHttpRequestFactory factory = new MySimpleClientHttpRequestFactory(verifier);
-
-
-//        Proxy proxy = new Proxy(Type.HTTP, new InetSocketAddress("127.0.0.1", 808));
-//        factory.setProxy(proxy);
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(factory);

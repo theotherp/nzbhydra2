@@ -23,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,11 +83,12 @@ public class BaseConfig extends ValidatingConfig {
 
     private File buildConfigFileFile() throws IOException {
         File mainFolder;
-        try {
-            mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (URISyntaxException e) {
-            throw new IOException("Unable to build path to config folder: " + e.getMessage());
-        }
+//        try {
+        //mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());//TODO
+        mainFolder = new File("");
+//        } catch (URISyntaxException e) {
+//            throw new IOException("Unable to build path to config folder: " + e.getMessage());
+//        }
         File configFolder = new File(mainFolder, "config"); //TODO Use configurable folder and/or make sure we're in the correct folder
         if (!configFolder.exists()) {
             boolean created = configFolder.mkdir();

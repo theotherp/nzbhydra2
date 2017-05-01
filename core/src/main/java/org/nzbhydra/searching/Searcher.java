@@ -7,6 +7,7 @@ import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerPicker.PickingResult;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -161,7 +161,8 @@ public class Searcher {
     protected Map<Indexer, List<IndexerSearchResult>> callSearchModules(SearchRequest searchRequest, Map<Indexer, List<IndexerSearchResult>> indexersToSearch) {
         Map<Indexer, List<IndexerSearchResult>> indexerSearchResults = new HashMap<>(indexersToSearch);
 
-        ExecutorService executor = Executors.newFixedThreadPool(indexersToSearch.size());
+        //ExecutorService executor = Executors.newFixedThreadPool(indexersToSearch.size());
+        ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(indexersToSearch.size());
 
         List<Callable<IndexerSearchResult>> callables = getCallables(searchRequest, indexersToSearch);
 

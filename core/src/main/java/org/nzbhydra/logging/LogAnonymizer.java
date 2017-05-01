@@ -1,6 +1,7 @@
 package org.nzbhydra.logging;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.UserAuthConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,10 @@ public class LogAnonymizer {
         if (externalUrlOptional.isPresent()) {
             log = log.replaceAll(externalUrlOptional.get(), "<EXTERNALURL>");
         }
+        for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
+            log = log.replaceAll("User=" + userAuthConfig.getUsername(), "User:<USERNAME>");
+        }
+
         return log;
     }
 

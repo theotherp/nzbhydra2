@@ -1,5 +1,9 @@
 package org.nzbhydra.web;
 
+import com.google.common.base.Strings;
+import org.nzbhydra.config.ConfigProvider;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,11 +12,16 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.Marshaller;
 import java.io.File;
 import java.util.HashMap;
@@ -22,6 +31,8 @@ import java.util.Map;
 @Configuration
 public class WebConfiguration extends WebMvcConfigurationSupport {
 
+    @Autowired
+    private ConfigProvider configProvider;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -59,6 +70,32 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         characterEncodingFilter.setEncoding("UTF-8");
         registrationBean.setFilter(characterEncodingFilter);
         return registrationBean;
+    }
+
+    @Override
+    protected void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new HandlerInterceptor() {
+            @Override
+            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+                if (configProvider.getBaseConfig().getMain().getLogging().isLogIpAddresses()) {
+                    MDC.put("IPADDRESS", request.getRemoteAddr());
+                }
+                if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
+                    MDC.put("USERNAME", request.getRemoteUser());
+                }
+                return true;
+            }
+
+            @Override
+            public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+            }
+
+            @Override
+            public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
+            }
+        });
     }
 
     /**

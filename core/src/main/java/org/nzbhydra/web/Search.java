@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class Search {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters) {
+    public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters, HttpServletRequest request) {
         SearchRequest searchRequest = createSearchRequest(parameters);
         return handleSearchRequest(searchRequest);
     }

@@ -15,6 +15,7 @@ public class LoggingConfig extends ValidatingConfig {
     private int logMaxSize;
     private String logfilelevel;
     private String logfilename;
+    private boolean logUsername;
 
     @Override
     public List<String> validateConfig() {
