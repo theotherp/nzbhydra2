@@ -44,7 +44,7 @@ public class SearchEntity {
     private Integer episode;
     @Enumerated(EnumType.STRING)
     private SearchType searchType;
-    private String username;
+    private String usernameOrIp;
     private String title;
     private String author;
 

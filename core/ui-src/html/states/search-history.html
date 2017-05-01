@@ -40,9 +40,9 @@
                 </column-filter-wrapper>
             </th>
             <th class="col-md-2" style="width: 10%">
-                <column-sortable column="username">Username</column-sortable>
+                <column-sortable column="username_or_ip">User / IP</column-sortable>
                 <column-filter-wrapper>
-                    <freetext-filter column="username"/>
+                    <freetext-filter column="username_or_ip"/>
                 </column-filter-wrapper>
             </th>
         </tr>
@@ -62,7 +62,7 @@
             <td class="narrow-row">{{ request.categoryName }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
             <td class="narrow-row">{{ request.source === "INTERNAL" ? "Internal" : "API"}}</td>
-            <td class="narrow-row">{{ request.username }}</td>
+            <td class="narrow-row">{{ request.usernameOrIp }}</td>
         </tr>
         </tbody>
     </table>

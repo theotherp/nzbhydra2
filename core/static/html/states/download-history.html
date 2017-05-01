@@ -39,13 +39,13 @@
             <column-sortable column="access_source">Source
             </column-sortable>
             <column-filter-wrapper>
-                <boolean-filter column="source" options="accessOptionsForFiltering" preselect="0"/>
+                <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0"/>
             </column-filter-wrapper>
         </th>
         <th class="col-md-2" style="width: 10%">
-            <column-sortable column="username">Username</column-sortable>
+            <column-sortable column="username_or_ip">User / IP</column-sortable>
             <column-filter-wrapper>
-                <freetext-filter column="username"/>
+                <freetext-filter column="username_or_ip"/>
             </column-filter-wrapper>
         </th>
     </tr>
@@ -62,8 +62,8 @@
             <!--ng-class="{'glyphicon-ok': nzbDownload.indexerApiAccess.result == 'SUCCESSFUL', 'glyphicon-remove': nzbDownload.ndexerApiAccess.result == false, 'glyphicon-question-sign': nzbDownload.ndexerApiAccess.result == 'UNKNOWN'}"-->
 
         </td>
-        <td class="narrow-row">{{ nzbDownload.source === "INTERNAL" ? "Internal" : "API"}}</td>
-        <td class="narrow-row">{{ nzbDownload.username }}</td>
+        <td class="narrow-row">{{ nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
+        <td class="narrow-row">{{ nzbDownload.usernameOrIp }}</td>
     </tr>
     </tbody>
 </table>

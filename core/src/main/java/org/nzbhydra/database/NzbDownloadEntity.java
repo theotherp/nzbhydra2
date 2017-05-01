@@ -32,7 +32,7 @@ public class NzbDownloadEntity {
     @Enumerated(EnumType.STRING)
     private NzbAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
-    private SearchSource searchSource;
+    private SearchSource accessSource;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time = Instant.now();
     @Enumerated(EnumType.STRING)
@@ -40,23 +40,25 @@ public class NzbDownloadEntity {
     private String error;
     @Column(length = 4000)
     private String title;
+    private String usernameOrIp;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource searchSource, IndexerAccessResult result, String error) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result, String usernameOrIp, String error) {
         this.indexer = indexerEntity;
         this.searchResult = searchResult;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
-        this.searchSource = searchSource;
+        this.accessSource = accessSource;
         this.result = result;
         this.time = Instant.now();
+        this.usernameOrIp = usernameOrIp;
     }
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource searchSource, IndexerAccessResult result) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result) {
         this.indexer = indexerEntity;
         this.searchResult = searchResult;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
-        this.searchSource = searchSource;
+        this.accessSource = accessSource;
         this.result = result;
         this.time = Instant.now();
     }

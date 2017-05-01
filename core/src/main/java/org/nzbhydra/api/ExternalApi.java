@@ -25,6 +25,7 @@ import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
+import org.nzbhydra.web.UsernameOrIpProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,12 +60,14 @@ public class ExternalApi {
     protected NzbHandler nzbHandler;
     @Autowired
     protected BaseConfig baseConfig;
+    @Autowired
+    private UsernameOrIpProvider usernameOrIpProvider;
 
     @Autowired
     private CategoryProvider categoryProvider;
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+    public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
 
         logger.info("Received external API call: " + params);
 
@@ -75,8 +79,7 @@ public class ExternalApi {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            SearchResult searchResult = search(params);
-
+            SearchResult searchResult = search(params, usernameOrIpProvider.getUsernameOrIpExternal(request));
 
             RssRoot transformedResults = transformResults(searchResult, params);
             logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -87,7 +90,7 @@ public class ExternalApi {
             if (Strings.isNullOrEmpty(params.getId())) {
                 throw new MissingParameterException("Missing ID/GUID");
             }
-            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType());
+            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), usernameOrIpProvider.getUsernameOrIpExternal(request), SearchSource.API);
             if (!downloadResult.isSuccessful()) {
                 throw new UnknownErrorException(downloadResult.getError());
             }
@@ -181,12 +184,12 @@ public class ExternalApi {
         }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
-    private SearchResult search(NewznabParameters params) {
-        SearchRequest searchRequest = buildBaseSearchRequest(params);
+    private SearchResult search(NewznabParameters params, String usernameOrIp) {
+        SearchRequest searchRequest = buildBaseSearchRequest(params, usernameOrIp);
         return searcher.search(searchRequest);
     }
 
-    private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
+    private SearchRequest buildBaseSearchRequest(NewznabParameters params, String usernameOrIp) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
@@ -197,7 +200,7 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-
+        searchRequest.getInternalData().setUsernameOrIp(usernameOrIp);
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());

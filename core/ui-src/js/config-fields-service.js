@@ -349,9 +349,21 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Log user names'
                             }
+                        },
+                        {
+                            key: 'historyUserInfoType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'select',
+                                label: 'History user info',
+                                options: [
+                                    {name: 'IP address', value: 'IP'},
+                                    {name: 'Username', value: 'USERNAME'},
+                                    {name: 'None', value: 'NONE'}
+                                ],
+                                help: 'Will be stored and displayed in the search/download history for internal searches. If selected IP addresses will be saved for all API searches.'
+                            }
                         }
-
-
                     ]
                 },
                 {

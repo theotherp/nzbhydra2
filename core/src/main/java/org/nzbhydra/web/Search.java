@@ -55,6 +55,8 @@ public class Search {
     @Autowired
     private CategoryProvider categoryProvider;
     @Autowired
+    private UsernameOrIpProvider usernameOrIpProvider;
+    @Autowired
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private NzbHandler nzbHandler;
@@ -64,7 +66,7 @@ public class Search {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters, HttpServletRequest request) {
-        SearchRequest searchRequest = createSearchRequest(parameters);
+        SearchRequest searchRequest = createSearchRequest(parameters, request);
         return handleSearchRequest(searchRequest);
     }
 
@@ -72,9 +74,9 @@ public class Search {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/movie", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResponse movieSearch(@RequestBody MovieSearchRequestParameters parameters) {
+    public SearchResponse movieSearch(@RequestBody MovieSearchRequestParameters parameters, HttpServletRequest request) {
 
-        SearchRequest searchRequest = createSearchRequest(parameters);
+        SearchRequest searchRequest = createSearchRequest(parameters, request);
 
         if (!Strings.isNullOrEmpty(parameters.getImdbId())) {
             searchRequest.getIdentifiers().put(IdType.IMDB, parameters.getImdbId());
@@ -92,9 +94,9 @@ public class Search {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search/tv", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResponse tvSearch(@RequestBody TvSearchRequestParameters parameters) {
+    public SearchResponse tvSearch(@RequestBody TvSearchRequestParameters parameters, HttpServletRequest request) {
 
-        SearchRequest searchRequest = createSearchRequest(parameters);
+        SearchRequest searchRequest = createSearchRequest(parameters, request);
 
         if (!Strings.isNullOrEmpty(parameters.getTvrageId())) {
             searchRequest.getIdentifiers().put(IdType.TVRAGE, parameters.getTvrageId());
@@ -203,7 +205,7 @@ public class Search {
         return builder;
     }
 
-    private SearchRequest createSearchRequest(@RequestBody BasicSearchRequestParameters parameters) {
+    private SearchRequest createSearchRequest(@RequestBody BasicSearchRequestParameters parameters, HttpServletRequest request) {
         Category category = categoryProvider.getByName(parameters.getCategory());
         SearchType searchType = category.getSearchType() == null ? SearchType.SEARCH : category.getSearchType();
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.INTERNAL, category, parameters.getOffset(), parameters.getLimit());
@@ -214,6 +216,7 @@ public class Search {
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
         searchRequest.getInternalData().setLoadAll(parameters.getLoadAll() == null ? false : parameters.getLoadAll()); //TODO Should make sure that's never null...
+        searchRequest.getInternalData().setUsernameOrIp(usernameOrIpProvider.getUsernameOrIpInternal(request));
         return searchRequest;
     }
 

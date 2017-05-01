@@ -56,7 +56,7 @@
     <div class="{{ hideRepeat }}">
         <div class="repeatsection" ng-repeat="element in model[options.key]" ng-init="fields = copyFields(to.fields)">
             <fieldset>
-                <legend>{{ element.name ? element.name : (element.username ? element.username : to.altLegendText)}}</legend>
+                <legend>{{ element.name ? element.name : (element.username ? element.usernameOrIp : to.altLegendText)}}</legend>
                 <formly-form fields="fields"
                              model="element"
                              form="form">

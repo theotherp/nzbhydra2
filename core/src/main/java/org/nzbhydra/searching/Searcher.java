@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.IndexerSearchEntity;
 import org.nzbhydra.database.IndexerSearchRepository;
@@ -40,7 +41,8 @@ public class Searcher {
     protected DuplicateDetector duplicateDetector;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
-
+    @Autowired
+    private ConfigProvider configProvider;
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
@@ -127,7 +129,7 @@ public class Searcher {
             searchEntity.setSeason(searchRequest.getSeason().orElse(null));
             searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
             searchEntity.setSearchType(searchRequest.getSearchType());
-            searchEntity.setUsername(null);//TODO
+            searchEntity.setUsernameOrIp(searchRequest.getInternalData().getUsernameOrIp());
             searchEntity.setTitle(searchRequest.getTitle().orElse(null));
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 

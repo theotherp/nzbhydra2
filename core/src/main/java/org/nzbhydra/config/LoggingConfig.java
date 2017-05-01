@@ -10,6 +10,7 @@ import java.util.List;
 public class LoggingConfig extends ValidatingConfig {
 
     private String consolelevel;
+    private HistoryUserInfoType historyUserInfoType;
     private int logMaxDays;
     private boolean logIpAddresses;
     private int logMaxSize;
