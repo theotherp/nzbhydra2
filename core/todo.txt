@@ -92,6 +92,7 @@ General, Ideas
 - rss functionality with configurable caching, perhaps with cache interval as parameter
 - banner
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
+- verify that retrieving user from remoteuser works with form based login and rememberme
 
 currently not (yet) supported:
 - proxies

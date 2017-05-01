@@ -2,6 +2,7 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Strings;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.HistoryUserInfoType;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -83,6 +84,13 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
                     MDC.put("USERNAME", request.getRemoteUser());
                 }
+                if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.IP) {
+                    UsernameOrIpProvider.usernameOrIp.set(request.getRemoteAddr());
+                    UsernameOrIpProvider.ipForExternal.set(request.getRemoteAddr());
+                } else if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.USERNAME) {
+                    UsernameOrIpProvider.usernameOrIp.set(request.getRemoteUser());
+                }
+
                 return true;
             }
 

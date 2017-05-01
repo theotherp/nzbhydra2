@@ -60,8 +60,6 @@ public class ExternalApi {
     protected NzbHandler nzbHandler;
     @Autowired
     protected BaseConfig baseConfig;
-    @Autowired
-    private UsernameOrIpProvider usernameOrIpProvider;
 
     @Autowired
     private CategoryProvider categoryProvider;
@@ -79,7 +77,7 @@ public class ExternalApi {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            SearchResult searchResult = search(params, usernameOrIpProvider.getUsernameOrIpExternal(request));
+            SearchResult searchResult = search(params);
 
             RssRoot transformedResults = transformResults(searchResult, params);
             logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -90,7 +88,8 @@ public class ExternalApi {
             if (Strings.isNullOrEmpty(params.getId())) {
                 throw new MissingParameterException("Missing ID/GUID");
             }
-            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), usernameOrIpProvider.getUsernameOrIpExternal(request), SearchSource.API);
+
+            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpProvider.ipForExternal.get());
             if (!downloadResult.isSuccessful()) {
                 throw new UnknownErrorException(downloadResult.getError());
             }
@@ -184,12 +183,12 @@ public class ExternalApi {
         }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
-    private SearchResult search(NewznabParameters params, String usernameOrIp) {
-        SearchRequest searchRequest = buildBaseSearchRequest(params, usernameOrIp);
+    private SearchResult search(NewznabParameters params) {
+        SearchRequest searchRequest = buildBaseSearchRequest(params);
         return searcher.search(searchRequest);
     }
 
-    private SearchRequest buildBaseSearchRequest(NewznabParameters params, String usernameOrIp) {
+    private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
@@ -200,7 +199,7 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-        searchRequest.getInternalData().setUsernameOrIp(usernameOrIp);
+        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpProvider.ipForExternal.get());
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());

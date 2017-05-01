@@ -55,8 +55,6 @@ public class Search {
     @Autowired
     private CategoryProvider categoryProvider;
     @Autowired
-    private UsernameOrIpProvider usernameOrIpProvider;
-    @Autowired
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private NzbHandler nzbHandler;
@@ -216,7 +214,7 @@ public class Search {
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
         searchRequest.getInternalData().setLoadAll(parameters.getLoadAll() == null ? false : parameters.getLoadAll()); //TODO Should make sure that's never null...
-        searchRequest.getInternalData().setUsernameOrIp(usernameOrIpProvider.getUsernameOrIpInternal(request));
+        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpProvider.usernameOrIp.get());
         return searchRequest;
     }
 

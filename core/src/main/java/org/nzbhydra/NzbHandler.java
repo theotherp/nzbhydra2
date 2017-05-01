@@ -34,7 +34,7 @@ public class NzbHandler {
     @Autowired
     private NzbDownloadRepository downloadRepository;
 
-    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, String usernameOrIp, SearchSource accessSource) {
+    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
             logger.error("NZB download request with invalid/outdated GUID " + guid);
