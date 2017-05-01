@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -36,6 +37,8 @@ public class ResultAcceptorTest {
     private SearchRequest searchRequest;
     @Mock
     private IndexerConfig indexerConfig;
+    @Mock
+    private ConfigProvider configProvider;
     private InternalData internalData = new InternalData();
     private Category category = new Category();
 
@@ -45,7 +48,7 @@ public class ResultAcceptorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
+        when(configProvider.getBaseConfig()).thenReturn(baseConfig);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         when(searchingConfig.isIgnorePassworded()).thenReturn(false);
         when(indexerConfig.getHost()).thenReturn("someHost");

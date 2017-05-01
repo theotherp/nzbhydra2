@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -66,6 +67,8 @@ public class IndexerPickerTest {
     @Mock
     private BaseConfig baseConfig;
     @Mock
+    private ConfigProvider configProvider;
+    @Mock
     private SearchingConfig searchingConfig;
     @Mock
     private Category category;
@@ -80,6 +83,7 @@ public class IndexerPickerTest {
         MockitoAnnotations.initMocks(this);
         count = new HashMap<>();
         when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer));
+        when(configProvider.getBaseConfig()).thenReturn(baseConfig);
         when(indexer.getConfig()).thenReturn(indexerConfigMock);
         when(indexer.getName()).thenReturn("indexer");
         when(indexer.getIndexerEntity()).thenReturn(indexerEntity);
