@@ -75,7 +75,7 @@ General, Ideas
 - !! open browser on startup
 - !! delete results older than x, perhaps do this as first background task?
 - package static files in jar when delivering
-- user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
+- !!! user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - !! Log / config sanitation
@@ -90,6 +90,9 @@ General, Ideas
 - banner
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 
+restart needed for:
+- proxy settings
+
 ++++
 Improvements
 - Way faster (searching, database handling, processing, stats). TODO: Get some numbers
@@ -98,6 +101,8 @@ Improvements
 - Background processes
 - In the future: Cancel searches, self updating
 - Sends all available identifiers instead of just one
+- show which indexers where not picked for what reason
+- show how many results were rejected for what reason
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories
 - better validation for configuration
