@@ -19,12 +19,15 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,8 +36,6 @@ import java.util.stream.Collectors;
 @Data
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"})
 public class BaseConfig extends ValidatingConfig {
-
-    //TODO On startup when config file does not exist yet create it with initial config? Or wait for user to save?
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
@@ -56,7 +57,6 @@ public class BaseConfig extends ValidatingConfig {
 
     public BaseConfig() {
         objectMapper.registerModule(new Jdk8Module());
-
     }
 
     public void replace(BaseConfig newConfig) {
@@ -79,6 +79,18 @@ public class BaseConfig extends ValidatingConfig {
     public void save() throws IOException {
         File file = buildConfigFileFile();
         save(file);
+    }
+
+    @PostConstruct
+    public void init() throws IOException {
+        File file = buildConfigFileFile();
+        if (!file.exists()) {
+            logger.info("Config file {} does not exist and will be initialized", file.getAbsolutePath());
+            Random random = new Random();
+            main.setApiKey(new BigInteger(130, random).toString(32));
+            main.setSecret(new BigInteger(130, random).toString(32));
+            save();
+        }
     }
 
     private File buildConfigFileFile() throws IOException {

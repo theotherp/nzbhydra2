@@ -69,22 +69,21 @@ public class NzbHydra {
 
     public static void main(String[] args) throws Exception {
         OptionParser parser = new OptionParser();
-        parser.accepts("config", "Define path to config yaml file").withRequiredArg();
-        parser.accepts("database", "Define path to database base file").withRequiredArg();
+        parser.accepts("config", "Define path to config yaml file ").withRequiredArg().defaultsTo("config/application.yml");
+        parser.accepts("database", "Define path to database base file").withRequiredArg().defaultsTo("database/nzbhydra.db");
         parser.accepts("host", "Run on this host").withRequiredArg();
         parser.accepts("help", "Print help");
         parser.accepts("nobrowser", "Don't open browser to Hydra");
-        parser.accepts("port", "Run on this port").withRequiredArg();
+        parser.accepts("port", "Run on this port (default: 5076)").withRequiredArg();
         parser.accepts("version", "Print version");
 
         OptionSet options = parser.parse(args);
         if (options.has("help")) {
             parser.printHelpOn(System.out);
-        }
-        if (options.has("version")) {
+        } else if (options.has("version")) {
             System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
         } else {
-            useIfSet(options, "config", "spring.config.location");
+            System.setProperty("spring.config.location", (String) options.valueOf("config"));
             useIfSet(options, "database", "main.databaseFile");
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
