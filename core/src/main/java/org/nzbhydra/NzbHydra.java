@@ -1,5 +1,7 @@
 package org.nzbhydra;
 
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.IndexerRepository;
@@ -65,13 +67,47 @@ public class NzbHydra {
     private RestTemplate restTemplate;
 
 
+    public static void main(String[] args) throws Exception {
+        OptionParser parser = new OptionParser();
+        parser.accepts("config", "Define path to config yaml file").withRequiredArg();
+        parser.accepts("database", "Define path to database base file").withRequiredArg();
+        parser.accepts("host", "Run on this host").withRequiredArg();
+        parser.accepts("help", "Print help");
+        parser.accepts("nobrowser", "Don't open browser to Hydra");
+        parser.accepts("port", "Run on this port").withRequiredArg();
+        parser.accepts("version", "Print version");
 
-    public static void main(String[] args) {
-        SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-        hydraApplication.addListeners(new ApplicationPidFileWriter());
-        NzbHydra.originalArgs = args;
-        hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
-        applicationContext = hydraApplication.run(args);
+        OptionSet options = parser.parse(args);
+        if (options.has("help")) {
+            parser.printHelpOn(System.out);
+        }
+        if (options.has("version")) {
+            System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
+        } else {
+            useIfSet(options, "config", "spring.config.location");
+            useIfSet(options, "database", "main.databaseFile");
+            useIfSet(options, "host", "server.address");
+            useIfSet(options, "port", "server.port");
+            useIfSet(options, "nobrowser", "main.startupBrowser", "false");
+
+            SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+            hydraApplication.addListeners(new ApplicationPidFileWriter());
+            NzbHydra.originalArgs = args;
+            if (!options.has("quiet") && !options.has("nobrowser")) {
+                hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
+            }
+            applicationContext = hydraApplication.run(args);
+        }
+    }
+
+    private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
+        useIfSet(options, optionKey, propertyName, (String) options.valueOf(optionKey));
+    }
+
+    private static void useIfSet(OptionSet options, String optionKey, String propertyName, String propertyValue) {
+        if (options.has(optionKey)) {
+            System.setProperty(propertyName, propertyValue);
+        }
     }
 
     public static ApplicationContext getApplicationContext() {

@@ -82,6 +82,9 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     private File buildConfigFileFile() throws IOException {
+        if (System.getProperty("spring.config.location") != null) {
+            return new File(System.getProperty("spring.config.location"));
+        }
         File mainFolder;
 //        try {
         //mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());//TODO
