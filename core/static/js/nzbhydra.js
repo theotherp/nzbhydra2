@@ -514,16 +514,16 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         var deferred = $q.defer();
         var userInfos = HydraAuthService.getUserInfos();
         var allowed = false;
-        if (type == "search") {
+        if (type === "search") {
             allowed = !userInfos.searchRestricted || userInfos.maySeeSearch;
-        } else if (type == "stats") {
+        } else if (type === "stats") {
             allowed = !userInfos.statsRestricted || userInfos.maySeeStats;
-        } else if (type == "admin") {
+        } else if (type === "admin") {
             allowed = !userInfos.adminRestricted || userInfos.maySeeAdmin;
         } else {
             allowed = true;
         }
-        if (allowed || userInfos.authType != "form") {
+        if (allowed || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {
@@ -541,7 +541,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
     function loginRequiredSearch($q, $timeout, $state, HydraAuthService) {
         var deferred = $q.defer();
         var userInfos = HydraAuthService.getUserInfos();
-        if (!userInfos.searchRestricted || userInfos.maySeeSearch || userInfos.authType != "form") {
+        if (!userInfos.searchRestricted || userInfos.maySeeSearch || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {
@@ -557,7 +557,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         var deferred = $q.defer();
 
         var userInfos = HydraAuthService.getUserInfos();
-        if (!userInfos.statsRestricted || userInfos.maySeeStats || userInfos.authType != "form") {
+        if (!userInfos.statsRestricted || userInfos.maySeeStats || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {
@@ -3837,7 +3837,7 @@ angular
     .module('nzbhydraApp')
     .factory('HydraAuthService', HydraAuthService);
 
-function HydraAuthService($q, $rootScope, $http, bootstrapped) {
+function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSerializerJQLike, $state) {
 
     var loggedIn = bootstrapped.username;
 
@@ -3873,29 +3873,47 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
 
     function login(username, password) {
         var deferred = $q.defer();
-        return $http.post("auth/login", data = {username: username, password: password}).then(function (data) {
-            bootstrapped = data.data;
-            loggedIn = true;
-            $rootScope.$broadcast("user:loggedIn");
-            deferred.resolve();
-        });
+        //return $http.post("login", data = {username: username, password: password})
+        return $http({
+            url: "login",
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded' // Note the appropriate header
+            },
+            data: $httpParamSerializerJQLike({username: username, password: password})
+        })
+            .then(function () {
+                $http.get("internalapi/userinfos").then(function (data) {
+                    bootstrapped = data.data;
+                    loggedIn = true;
+                    $rootScope.$broadcast("user:loggedIn");
+                    deferred.resolve();
+                });
+            });
     }
 
     function askForPassword(params) {
-        return $http.get("internalapi/askforpassword", {params: params}).then(function (data) {
+        return $http.get("internalapi/askpassword", {params: params}).then(function (data) {
             bootstrapped = data.data;
             return bootstrapped;
         });
-
     }
 
     function logout() {
         var deferred = $q.defer();
-        return $http.post("auth/logout").then(function (data) {
-            $rootScope.$broadcast("user:loggedOut");
-            bootstrapped = data.data;
-            loggedIn = false;
-            deferred.resolve();
+        return $http.post("logout").then(function () {
+            $http.get("internalapi/userinfos").then(function (data) {
+                bootstrapped = data.data;
+                $rootScope.$broadcast("user:loggedOut");
+                loggedIn = false;
+                if (bootstrapped.maySeeSearch) {
+                    $state.go("root.search");
+                } else {
+                    $state.go("root.login");
+                }
+                //window.location.reload(false);
+                deferred.resolve();
+            });
         });
     }
 
@@ -3910,26 +3928,28 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
 
 
 }
-HydraAuthService.$inject = ["$q", "$rootScope", "$http", "bootstrapped"];
+HydraAuthService.$inject = ["$q", "$rootScope", "$http", "bootstrapped", "$httpParamSerializerJQLike", "$state"];
 angular
     .module('nzbhydraApp')
     .controller('HeaderController', HeaderController);
 
-function HeaderController($scope, $state, growl, HydraAuthService) {
+function HeaderController($scope, $state, growl, HydraAuthService, $state) {
 
 
     $scope.showLoginout = false;
     $scope.oldUserName = null;
 
-    function update() {
+    function update(event) {
 
         $scope.userInfos = HydraAuthService.getUserInfos();
         if (!$scope.userInfos.authConfigured) {
+            $scope.showSearch = true;
             $scope.showAdmin = true;
             $scope.showStats = true;
             $scope.showLoginout = false;
         } else {
             if ($scope.userInfos.username) {
+                $scope.showSearch = true;
                 $scope.showAdmin = $scope.userInfos.maySeeAdmin || !$scope.userInfos.adminRestricted;
                 $scope.showStats = $scope.userInfos.maySeeStats || !$scope.userInfos.statsRestricted;
                 $scope.showLoginout = true;
@@ -3939,8 +3959,9 @@ function HeaderController($scope, $state, growl, HydraAuthService) {
             } else {
                 $scope.showAdmin = !$scope.userInfos.adminRestricted;
                 $scope.showStats = !$scope.userInfos.statsRestricted;
+                $scope.showSearch = !$scope.userInfos.searchRestricted;
                 $scope.loginlogoutText = "Login";
-                $scope.showLoginout = $scope.userInfos.adminRestricted || $scope.userInfos.statsRestricted || $scope.userInfos.searchRestricted;
+                $scope.showLoginout = ($scope.userInfos.adminRestricted || $scope.userInfos.statsRestricted || $scope.userInfos.searchRestricted) && event !== "loggedOut" && !$state.is("root.login");
                 $scope.username = "";
             }
         }
@@ -3950,20 +3971,20 @@ function HeaderController($scope, $state, growl, HydraAuthService) {
 
 
     $scope.$on("user:loggedIn", function (event, data) {
-        update();
+        update("loggedIn");
     });
 
     $scope.$on("user:loggedOut", function (event, data) {
-        update();
+        update("loggedOut");
     });
 
     $scope.loginout = function () {
         if (HydraAuthService.isLoggedIn()) {
             HydraAuthService.logout().then(function () {
-                if ($scope.userInfos.authType == "basic") {
+                if ($scope.userInfos.authType === "BASIC") {
                     growl.info("Logged out. Close your browser to make sure session is closed.");
                 }
-                else if ($scope.userInfos.authType == "form") {
+                else if ($scope.userInfos.authType === "FORM") {
                     growl.info("Logged out");
                 }
                 update();
@@ -3971,7 +3992,7 @@ function HeaderController($scope, $state, growl, HydraAuthService) {
             });
 
         } else {
-            if ($scope.userInfos.authType == "basic") {
+            if ($scope.userInfos.authType === "BASIC") {
                 var params = {};
                 if ($scope.oldUserName) {
                     params = {
@@ -3980,11 +4001,11 @@ function HeaderController($scope, $state, growl, HydraAuthService) {
                 }
                 HydraAuthService.askForPassword(params).then(function () {
                     growl.info("Login successful!");
-                    update();
                     $scope.oldUserName = null;
+                    update("loggedIn");
                     $state.go("root.search");
                 })
-            } else if ($scope.userInfos.authType == "form") {
+            } else if ($scope.userInfos.authType === "FORM") {
                 $state.go("root.login");
             } else {
                 growl.info("You shouldn't need to login but here you go!");
@@ -3992,7 +4013,7 @@ function HeaderController($scope, $state, growl, HydraAuthService) {
         }
     }
 }
-HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService"];
+HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "$state"];
 
 var HEADER_NAME = 'MyApp-Handle-Errors-Generically';
 var specificallyHandleInProgress = false;

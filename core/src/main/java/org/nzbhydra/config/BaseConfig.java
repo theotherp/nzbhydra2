@@ -89,29 +89,28 @@ public class BaseConfig extends ValidatingConfig {
             Random random = new Random();
             main.setApiKey(new BigInteger(130, random).toString(32));
             main.setSecret(new BigInteger(130, random).toString(32));
-            save();
         }
+        //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
+        save();
     }
 
     private File buildConfigFileFile() throws IOException {
+        File configFile;
+        File configFolder;
         if (System.getProperty("spring.config.location") != null) {
-            return new File(System.getProperty("spring.config.location"));
+            configFile = new File(System.getProperty("spring.config.location"));
+            configFolder = configFile.getParentFile();
+        } else {
+            configFolder = new File("config");
+            configFile = new File(configFolder, "application.yml");
         }
-        File mainFolder;
-//        try {
-        //mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());//TODO
-        mainFolder = new File("");
-//        } catch (URISyntaxException e) {
-//            throw new IOException("Unable to build path to config folder: " + e.getMessage());
-//        }
-        File configFolder = new File(mainFolder, "config"); //TODO Use configurable folder and/or make sure we're in the correct folder
         if (!configFolder.exists()) {
-            boolean created = configFolder.mkdir();
+            boolean created = configFolder.mkdirs();
             if (!created) {
                 throw new IOException("Unable to create config folder " + configFolder.getAbsolutePath());
             }
         }
-        return new File(configFolder, "application.yml");
+        return configFile;
     }
 
     public void load() throws IOException {

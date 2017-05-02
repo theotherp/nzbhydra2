@@ -514,16 +514,16 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
         var deferred = $q.defer();
         var userInfos = HydraAuthService.getUserInfos();
         var allowed = false;
-        if (type == "search") {
+        if (type === "search") {
             allowed = !userInfos.searchRestricted || userInfos.maySeeSearch;
-        } else if (type == "stats") {
+        } else if (type === "stats") {
             allowed = !userInfos.statsRestricted || userInfos.maySeeStats;
-        } else if (type == "admin") {
+        } else if (type === "admin") {
             allowed = !userInfos.adminRestricted || userInfos.maySeeAdmin;
         } else {
             allowed = true;
         }
-        if (allowed || userInfos.authType != "form") {
+        if (allowed || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {
@@ -541,7 +541,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
     function loginRequiredSearch($q, $timeout, $state, HydraAuthService) {
         var deferred = $q.defer();
         var userInfos = HydraAuthService.getUserInfos();
-        if (!userInfos.searchRestricted || userInfos.maySeeSearch || userInfos.authType != "form") {
+        if (!userInfos.searchRestricted || userInfos.maySeeSearch || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {
@@ -557,7 +557,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
         var deferred = $q.defer();
 
         var userInfos = HydraAuthService.getUserInfos();
-        if (!userInfos.statsRestricted || userInfos.maySeeStats || userInfos.authType != "form") {
+        if (!userInfos.statsRestricted || userInfos.maySeeStats || userInfos.authType !== "FORM") {
             deferred.resolve();
         } else {
             $timeout(function () {

@@ -35,7 +35,7 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource = new WebAuthenticationDetailsSource();
     private String key = "anonymous";
     private Object principal = "AnonymousUser";
-    private List<GrantedAuthority> authorities;
+    private List<GrantedAuthority> authorities = new ArrayList<>();
     //Disabled by default because just by existing it will be used for static resource accesses where spring security is disabled
     private boolean enabled = false;
 
@@ -51,6 +51,9 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     @EventListener
     public void handleConfigChangedEvent(ConfigChangedEvent event) {
         updateAuthorities(event.getNewConfig().getAuth());
+        if (!authorities.isEmpty()) {
+            enable();
+        }
     }
 
     private void updateAuthorities(AuthConfig authConfig) {
@@ -86,7 +89,7 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
 
-        if (enabled && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (enabled && SecurityContextHolder.getContext().getAuthentication() == null & !authorities.isEmpty()) {
             SecurityContextHolder.getContext().setAuthentication(
                     createAuthentication((HttpServletRequest) req));
 

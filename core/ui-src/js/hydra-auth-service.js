@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('HydraAuthService', HydraAuthService);
 
-function HydraAuthService($q, $rootScope, $http, bootstrapped) {
+function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSerializerJQLike, $state) {
 
     var loggedIn = bootstrapped.username;
 
@@ -38,29 +38,47 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped) {
 
     function login(username, password) {
         var deferred = $q.defer();
-        return $http.post("auth/login", data = {username: username, password: password}).then(function (data) {
-            bootstrapped = data.data;
-            loggedIn = true;
-            $rootScope.$broadcast("user:loggedIn");
-            deferred.resolve();
-        });
+        //return $http.post("login", data = {username: username, password: password})
+        return $http({
+            url: "login",
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded' // Note the appropriate header
+            },
+            data: $httpParamSerializerJQLike({username: username, password: password})
+        })
+            .then(function () {
+                $http.get("internalapi/userinfos").then(function (data) {
+                    bootstrapped = data.data;
+                    loggedIn = true;
+                    $rootScope.$broadcast("user:loggedIn");
+                    deferred.resolve();
+                });
+            });
     }
 
     function askForPassword(params) {
-        return $http.get("internalapi/askforpassword", {params: params}).then(function (data) {
+        return $http.get("internalapi/askpassword", {params: params}).then(function (data) {
             bootstrapped = data.data;
             return bootstrapped;
         });
-
     }
 
     function logout() {
         var deferred = $q.defer();
-        return $http.post("auth/logout").then(function (data) {
-            $rootScope.$broadcast("user:loggedOut");
-            bootstrapped = data.data;
-            loggedIn = false;
-            deferred.resolve();
+        return $http.post("logout").then(function () {
+            $http.get("internalapi/userinfos").then(function (data) {
+                bootstrapped = data.data;
+                $rootScope.$broadcast("user:loggedOut");
+                loggedIn = false;
+                if (bootstrapped.maySeeSearch) {
+                    $state.go("root.search");
+                } else {
+                    $state.go("root.login");
+                }
+                //window.location.reload(false);
+                deferred.resolve();
+            });
         });
     }
 

@@ -46,11 +46,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
                     .httpBasic()
+                    .and()
+                    .logout().logoutUrl("/logout")
                     .and();
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
-            http = http.formLogin().loginPage("/login").permitAll()
+            http = http
+                    .authorizeRequests()
+//                    .antMatchers("/").permitAll()
+                    .antMatchers("/internalapi/userinfos").permitAll()
+                    //.anyRequest().authenticated()
                     .and()
-                    .formLogin().loginPage("/login").and();
+                    .formLogin().loginPage("/login").permitAll()
+                    .and()
+                    .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
+                    .and();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
             enableAnonymousAccessIfConfigured(http);

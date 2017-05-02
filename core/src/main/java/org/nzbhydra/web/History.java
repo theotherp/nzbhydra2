@@ -32,7 +32,7 @@ public class History {
         return historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class);
     }
 
-    @Secured({"ROLE_USER"})
+    //@Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntity> searchHistoryForSearchPage() {
         //TODO If user is logged in only show his searches
