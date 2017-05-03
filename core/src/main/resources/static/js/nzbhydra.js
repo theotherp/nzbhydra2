@@ -3854,11 +3854,9 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
         getUserInfos: getUserInfos
     };
 
-
     function getUserInfos() {
         return bootstrapped;
     }
-
 
     function isLoggedIn() {
         return bootstrapped.username;
@@ -3867,6 +3865,7 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
     function setLoggedInByForm() {
         $rootScope.$broadcast("user:loggedIn");
     }
+
 
     function setLoggedInByBasic(_maySeeStats, _maySeeAdmin, _username) {
     }
@@ -5838,7 +5837,9 @@ function ConfigFields($injector) {
                             {name: 'HTTP Basic auth', value: 'BASIC'},
                             {name: 'Login form', value: 'FORM'}
                         ]
-
+                    },
+                    watcher: {
+                        listener: restartListener
                     }
                 },
                 {
@@ -5979,7 +5980,6 @@ function ConfigFields($injector) {
                                 },
                                 hideExpression: 'model.maySeeAdmin'
                             }
-
                         ],
                         defaultModel: {
                             username: null,

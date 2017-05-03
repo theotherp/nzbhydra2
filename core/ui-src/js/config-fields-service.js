@@ -946,7 +946,9 @@ function ConfigFields($injector) {
                             {name: 'HTTP Basic auth', value: 'BASIC'},
                             {name: 'Login form', value: 'FORM'}
                         ]
-
+                    },
+                    watcher: {
+                        listener: restartListener
                     }
                 },
                 {
@@ -1087,7 +1089,6 @@ function ConfigFields($injector) {
                                 },
                                 hideExpression: 'model.maySeeAdmin'
                             }
-
                         ],
                         defaultModel: {
                             username: null,

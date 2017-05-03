@@ -21,7 +21,7 @@ var cached = require('gulp-cached');
 
 
 gulp.task('vendor-scripts', function () {
-    var dest = 'static/js';
+    var dest = 'src/main/resources/static/js';
     return gulp.src(wiredep().js)
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
@@ -31,7 +31,7 @@ gulp.task('vendor-scripts', function () {
 });
 
 gulp.task('vendor-css', function () {
-    var dest = 'static/css';
+    var dest = 'src/main/resources/static/css';
     return merge(gulp.src(wiredep().css)
             .pipe(cached("vendor-css")),
         gulp.src(wiredep().less)
@@ -45,7 +45,7 @@ gulp.task('vendor-css', function () {
 });
 
 gulp.task('scripts', function () {
-    var dest = 'static/js';
+    var dest = 'src/main/resources/static/js';
     return gulp.src("ui-src/js/**/*.js")
         .pipe(ngAnnotate())
         .on('error', swallowError)
@@ -60,7 +60,7 @@ gulp.task('scripts', function () {
 });
 
 gulp.task('less', function () {
-    var dest = 'static/css';
+    var dest = 'src/main/resources/static/css';
     var brightTheme = gulp.src('ui-src/less/bright.less')
         .pipe(cached("bright"))
         .pipe(sourcemaps.init())
@@ -89,7 +89,7 @@ gulp.task('less', function () {
 });
 
 gulp.task('copy-assets', function () {
-    var fontDest = 'static/fonts';
+    var fontDest = 'src/main/resources/static/fonts';
     var fonts1 = gulp.src("bower_components/bootstrap/fonts/*")
         .pipe(cached("fonts1"))
         .pipe(gulp.dest(fontDest));
@@ -98,12 +98,12 @@ gulp.task('copy-assets', function () {
         .pipe(cached("fonts2"))
         .pipe(gulp.dest(fontDest));
 
-    var imgDest = 'static/img';
+    var imgDest = 'src/main/resources/static/img';
     var img = gulp.src("ui-src/img/**/*")
         .pipe(cached("images"))
         .pipe(gulp.dest(imgDest));
 
-    var htmlDest = 'static/html';
+    var htmlDest = 'src/main/resources/static/html';
     var html = gulp.src("ui-src/html/**/*")
         .pipe(cached("html"))
         .pipe(gulp.dest(htmlDest));
@@ -113,14 +113,14 @@ gulp.task('copy-assets', function () {
 
 
 gulp.task('add', function () {
-    return gulp.src('static/*')
+    return gulp.src('src/main/resources/static/*')
         .pipe(cached("add"))
         .pipe(git.add({args: '--all'}));
 });
 
 
 gulp.task('reload', function () {
-    return gulp.src('static/index.html')
+    return gulp.src('src/main/resources/static/index.html')
         .pipe(livereload());
 });
 
@@ -130,9 +130,16 @@ gulp.task('delMainLessCache', function () {
     delete cached.caches["dark"];
 });
 
+gulp.task('copyStaticToClasses', function () {
+    return gulp.src('src/main/resources/static/**/*')
+        .pipe(cached("copyStatic"))
+        .pipe(gulp.dest('target/classes/static'));
+});
 
 gulp.task('index', function () {
-    runSequence(['scripts', 'less', 'vendor-scripts', 'vendor-css', 'copy-assets'], ['reload', 'add']);
+    runSequence(['scripts', 'less', 'vendor-scripts', 'vendor-css', 'copy-assets'], [
+        'copyStaticToClasses',
+        'add']);
 });
 
 function swallowError(error) {
@@ -142,7 +149,7 @@ function swallowError(error) {
 
 
 gulp.task('default', function () {
-    livereload.listen();
+    //livereload.listen();
     gulp.watch(['ui-src/less/nzbhydra.less'], ['delMainLessCache']);
     gulp.watch(['ui-src/**/*'], ['index']);
 });

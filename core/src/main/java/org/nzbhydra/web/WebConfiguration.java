@@ -24,7 +24,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.Marshaller;
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,10 +36,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        File staticFile = new File("static");
-
         registry.addResourceHandler("/static/**")
-                .addResourceLocations(staticFile.toURI().toString().replace("file:/", "file:///")) //Doesn't work with simple file URL for some weird reason
+                .addResourceLocations("classpath:/static/")
                 .setCacheControl(CacheControl.noCache())
                 .resourceChain(false)
         //.addResolver(new VersionResourceResolver().addContentVersionStrategy("/static/js/**", "/static/css/**"))
