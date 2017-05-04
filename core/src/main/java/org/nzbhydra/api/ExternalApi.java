@@ -64,7 +64,7 @@ public class ExternalApi {
     @Autowired
     private CategoryProvider categoryProvider;
 
-    @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
+    @RequestMapping(value = "/api", produces = MediaType.APPLICATION_RSS_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
 
         logger.info("Received external API call: " + params);
@@ -166,7 +166,7 @@ public class ExternalApi {
         rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
         rssItem.setPubDate(searchResultItem.getPubDate());
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
-        rssItem.setAttributes(newznabAttributes);
+        rssItem.setNewznabAttributes(newznabAttributes);
         rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
         rssItem.setComments(searchResultItem.getCommentsLink());
         rssItem.setDescription(searchResultItem.getDescription());

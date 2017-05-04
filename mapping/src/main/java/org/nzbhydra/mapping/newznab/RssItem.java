@@ -39,7 +39,10 @@ public class RssItem {
     private String category;
 
     @XmlElement(name = "attr", namespace="http://www.newznab.com/DTD/2010/feeds/attributes/")
-    private List<NewznabAttribute> attributes;
+    private List<NewznabAttribute> newznabAttributes;
+
+    @XmlElement(name = "attr", namespace = "http://torznab.com/schemas/2015/feed")
+    private List<TorznabAttribute> torznabAttributes;
 
     @XmlElement(name = "enclosure")
     private Enclosure enclosure;

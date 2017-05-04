@@ -53,7 +53,7 @@ public class NewznabResponseBuilder {
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));
-            item.setAttributes(attributes);
+            item.setNewznabAttributes(attributes);
 
             items.add(item);
         }

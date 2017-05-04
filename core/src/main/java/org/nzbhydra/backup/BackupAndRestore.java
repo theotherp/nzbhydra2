@@ -38,7 +38,7 @@ public class BackupAndRestore {
             tempFolder = Files.createTempDir();
             File backupFolder = new File(mainFolder, "backup");
             if (!backupFolder.exists()) {
-                boolean created = backupFolder.mkdir();
+                boolean created = backupFolder.mkdirs();
                 if (!created) {
                     throw new IOException("Unable to create backup target folder " + backupFolder.getAbsolutePath());
                 }

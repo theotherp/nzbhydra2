@@ -1,0 +1,43 @@
+<rss xmlns:torznab="http://torznab.com/schemas/2015/feed" version="2.0">
+    <channel>
+        <title>some-torrents</title>
+        <link>https://some-torrents.com/</link>
+        <language>en-us</language>
+        <item>
+            <title>American Stuff S03E02 1080p HEVC x265-MeGusta</title>
+            <guid>https://some-torrents.com/details.php?id=111</guid>
+            <comments>https://some-torrents.com/details.php?id=111&amp;page=0#startcomments</comments>
+            <link>http://127.0.0.1:5060/download/111.torrent</link>
+            <category>5040</category>
+            <grabs>14</grabs>
+            <pubDate>Thu, 04 May 2017 14:14:24 +0200</pubDate>
+            <enclosure url="http://127.0.0.1:5060/download/111.torrent"></enclosure>
+            <torznab:attr name="site" value="some-torrents"></torznab:attr>
+            <torznab:attr name="seeders" value="11"></torznab:attr>
+            <torznab:attr name="peers" value="11"></torznab:attr>
+            <torznab:attr name="minimumratio" value="1"></torznab:attr>
+            <torznab:attr name="minimumseedtime" value="172800"></torznab:attr>
+            <torznab:attr name="size" value="620000000"></torznab:attr>
+            <torznab:attr name="downloadvolumefactor" value="1"></torznab:attr>
+            <torznab:attr name="uploadvolumefactor" value="1"></torznab:attr>
+        </item>
+        <item>
+            <title>American Movie 2017 HDRip XviD AC3-EVO</title>
+            <guid>https://some-torrents.com/details.php?id=222</guid>
+            <comments>https://some-torrents.com/details.php?id=222&amp;page=0#startcomments</comments>
+            <link>http://127.0.0.1:5060/download/222.torrent</link>
+            <category>2040</category>
+            <grabs>149</grabs>
+            <pubDate>Thu, 04 May 2017 12:32:24 +0200</pubDate>
+            <enclosure url="http://127.0.0.1:5060/download/222.torrent"></enclosure>
+            <torznab:attr name="site" value="some-torrents"></torznab:attr>
+            <torznab:attr name="seeders" value="101"></torznab:attr>
+            <torznab:attr name="peers" value="112"></torznab:attr>
+            <torznab:attr name="minimumratio" value="1"></torznab:attr>
+            <torznab:attr name="minimumseedtime" value="172800"></torznab:attr>
+            <torznab:attr name="size" value="1390000000"></torznab:attr>
+            <torznab:attr name="downloadvolumefactor" value="1"></torznab:attr>
+            <torznab:attr name="uploadvolumefactor" value="1"></torznab:attr>
+        </item>
+    </channel>
+</rss>

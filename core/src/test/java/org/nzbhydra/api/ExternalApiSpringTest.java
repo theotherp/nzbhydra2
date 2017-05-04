@@ -73,7 +73,7 @@ public class ExternalApiSpringTest {
         attributes.add(new NewznabAttribute("guid", "attributeGuid"));
         attributes.add(new NewznabAttribute("poster", "poster"));
         attributes.add(new NewznabAttribute("group", "group"));
-        item.setAttributes(attributes);
+        item.setNewznabAttributes(attributes);
 
         channel.setItems(Arrays.asList(item));
 

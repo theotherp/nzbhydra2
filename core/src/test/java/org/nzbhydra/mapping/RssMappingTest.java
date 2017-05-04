@@ -65,7 +65,7 @@ public class RssMappingTest {
         assertThat(enclosure.getUrl(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));
         assertThat(enclosure.getLength(), is(2893890900L));
 
-        List<NewznabAttribute> attributes = item.getAttributes();
+        List<NewznabAttribute> attributes = item.getNewznabAttributes();
         assertThat(attributes.size(), is(6));
         assertThat(attributes.get(0).getName(), is("category"));
         assertThat(attributes.get(0).getValue(), is("7000"));

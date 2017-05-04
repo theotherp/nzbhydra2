@@ -369,7 +369,7 @@ public class Newznab extends Indexer {
         searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
         searchResultItem.setCommentsLink(item.getComments());
 
-        for (NewznabAttribute attribute : item.getAttributes()) {
+        for (NewznabAttribute attribute : item.getNewznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             if (attribute.getName().equals("usenetdate")) {
                 tryParseDate(attribute.getValue()).ifPresent(searchResultItem::setUsenetDate);
