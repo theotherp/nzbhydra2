@@ -9,6 +9,7 @@ import org.nzbhydra.mapping.newznab.RssChannel;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.TorznabAttribute;
 import org.nzbhydra.mapping.newznab.caps.CapsCategories;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
@@ -129,7 +130,14 @@ public class MockNewznab {
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));
-            item.setAttributes(attributes);
+            item.setNewznabAttributes(attributes);
+
+            item.setGrabs(i * 2);
+            List<TorznabAttribute> torznabAttributes = new ArrayList<>();
+            torznabAttributes.add(new TorznabAttribute("seeders", String.valueOf(i)));
+            torznabAttributes.add(new TorznabAttribute("peers", String.valueOf(i * 2)));
+            torznabAttributes.add(new TorznabAttribute("size", String.valueOf(random.nextInt())));
+            item.setTorznabAttributes(torznabAttributes);
 
             items.add(item);
         }

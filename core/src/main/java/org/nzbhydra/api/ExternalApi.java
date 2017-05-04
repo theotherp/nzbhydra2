@@ -20,6 +20,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -160,7 +161,7 @@ public class ExternalApi {
 
     protected RssItem buildRssItem(SearchResultItem searchResultItem) {
         RssItem rssItem = new RssItem();
-        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false);
+        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));

@@ -6120,7 +6120,7 @@ function getIndexerPresets(configuredIndexers) {
                 host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                searchModuleType: "JACKETT",
+                searchModuleType: "TORZNAB",
                 enabledForSearchSource: "INTERNAL"
             }
         ],
@@ -6210,7 +6210,6 @@ function getIndexerPresets(configuredIndexers) {
         ]
     ];
 
-
     return presets;
 }
 
@@ -6226,7 +6225,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         }
     });
 
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'name',
@@ -6250,7 +6249,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 }
             })
     }
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'host',
@@ -6272,7 +6271,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -6315,7 +6314,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         });
 
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'hitLimit',
@@ -6442,7 +6441,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         }
     );
-    if (model.searchModuleType !== "JACKETT") {
+    if (model.searchModuleType !== "TORZNAB") {
         fieldset.push(
             {
                 key: 'enabledForSearchSource',
@@ -6564,7 +6563,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         );
     }
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'supportedSearchTypes',
@@ -6588,7 +6587,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         )
     }
 
-    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'JACKETT') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 type: 'horizontalCheckCaps',

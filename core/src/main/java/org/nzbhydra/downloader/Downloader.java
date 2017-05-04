@@ -8,6 +8,7 @@ import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.downloader.exceptions.DownloaderException;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UsernameOrIpProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +42,7 @@ public abstract class Downloader {
                     addNzb(result.getNzbContent(), result.getTitle(), category);
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
-                    addLink(nzbHandler.getNzbDownloadLink(searchResultEntity.getId(), true), searchResultEntity.getTitle(), category);
+                    addLink(nzbHandler.getNzbDownloadLink(searchResultId, true, DownloadType.NZB), searchResultEntity.getTitle(), category);
                 }
 
                 countAddedNzbs++;

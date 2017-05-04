@@ -12,6 +12,7 @@ import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,11 +70,12 @@ public class NzbHandler {
     }
 
 
-    public String getNzbDownloadLink(long searchResultId, boolean internal) {
+    public String getNzbDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType) {
         UriComponentsBuilder builder;
+        String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
             builder = baseConfig.getBaseUriBuilder();
-            builder.path("/getnzb/user");
+            builder.path("/" + getName + "/user");
             builder.path("/" + String.valueOf(searchResultId));
         } else {
             MainConfig main = baseConfig.getMain();
@@ -82,7 +84,7 @@ public class NzbHandler {
             } else {
                 builder = baseConfig.getBaseUriBuilder();
             }
-            builder.path("/getnzb/api");
+            builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));
             if (main.getApiKey().isPresent()) {
                 builder.queryParam("apikey", main.getApiKey().get());

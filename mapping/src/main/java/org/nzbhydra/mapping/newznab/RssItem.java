@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -42,10 +43,10 @@ public class RssItem {
     private Integer grabs;
 
     @XmlElement(name = "attr", namespace="http://www.newznab.com/DTD/2010/feeds/attributes/")
-    private List<NewznabAttribute> newznabAttributes;
+    private List<NewznabAttribute> newznabAttributes = new ArrayList<>();
 
     @XmlElement(name = "attr", namespace = "http://torznab.com/schemas/2015/feed")
-    private List<TorznabAttribute> torznabAttributes;
+    private List<TorznabAttribute> torznabAttributes = new ArrayList<>();
 
     @XmlElement(name = "enclosure")
     private Enclosure enclosure;

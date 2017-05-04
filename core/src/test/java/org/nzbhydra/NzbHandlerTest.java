@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,15 +27,15 @@ public class NzbHandlerTest {
 
         testee.baseConfig.getMain().setExternalUrl("http://www.domain.com");
         testee.baseConfig.getMain().setUseLocalUrlForApiAccess(false);
-        assertEquals("http://www.domain.com/getnzb/api/123", testee.getNzbDownloadLink(123L, false));
+        assertEquals("http://www.domain.com/getnzb/api/123", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
         testee.baseConfig.getMain().setUseLocalUrlForApiAccess(true);
-        assertEquals("http://127.0.0.1:1234/getnzb/api/123", testee.getNzbDownloadLink(123L, false));
+        assertEquals("http://127.0.0.1:1234/getnzb/api/123", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
         testee.baseConfig.getMain().setApiKey("apikey");
-        assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false));
+        assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
-        assertEquals("http://127.0.0.1:1234/getnzb/user/123", testee.getNzbDownloadLink(123L, true));
+        assertEquals("http://127.0.0.1:1234/getnzb/user/123", testee.getNzbDownloadLink(123L, true, DownloadType.NZB));
     }
 
 }

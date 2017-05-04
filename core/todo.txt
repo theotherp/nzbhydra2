@@ -43,8 +43,8 @@ Indexer support
 - !! checking auth / connection: done
 
 Torrent support
-- jackett / cardigann
 - special handling
+- downloading directly
 
 Updater: Proof of concept with wrapper works
 - update notification
@@ -93,6 +93,7 @@ General, Ideas
 - banner
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 - verify that retrieving user from remoteuser works with form based login and rememberme
+- when no indexers configured / available, on search page show a note and link to config
 
 currently not (yet) supported:
 - proxies

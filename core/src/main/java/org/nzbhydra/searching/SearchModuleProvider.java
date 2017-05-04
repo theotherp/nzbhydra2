@@ -7,6 +7,7 @@ import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.indexers.Torznab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class SearchModuleProvider {
 
     static {
         searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
+        searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
     }
 
     @Autowired

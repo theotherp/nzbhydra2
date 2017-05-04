@@ -167,7 +167,7 @@ public class Search {
                         .category(item.getCategory().getName())
                         .comments(item.getCommentsCount())
                         .details_link(item.getDetails())
-                        .downloadType(item.getDownloadType().name()) //TODO
+                        .downloadType(item.getDownloadType().name())
                         .files(item.getFiles())
                         .grabs(item.getGrabs())
                         .has_nfo(item.getHasNfo().name())
@@ -175,7 +175,7 @@ public class Search {
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())
                         .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                        .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true)) //TODO construct using scheme, host, url base or external url
+                        .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
                         .searchResultId(item.getSearchResultId().toString())
                         .size(item.getSize())
                         .title(item.getTitle());

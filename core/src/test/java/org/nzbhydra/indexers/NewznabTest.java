@@ -33,6 +33,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -329,6 +330,7 @@ public class NewznabTest {
         assertThat(item.getDetails(), is("http://indexer.com/123/details"));
         assertThat(item.isAgePrecise(), is(true));
         assertThat(item.getUsenetDate().get(), is(Instant.ofEpochSecond(6666666)));
+        assertThat(item.getDownloadType(), is(DownloadType.NZB));
 
         assertThat(item.isPassworded(), is(false));
         assertThat(item.getGroup().get(), is("group"));
