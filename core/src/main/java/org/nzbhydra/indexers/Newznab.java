@@ -64,8 +64,8 @@ public class Newznab extends Indexer {
     static Map<String, IdType> paramValueToIdMap = new HashMap<>();
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
-    private static Pattern GROUP_PATTERN = Pattern.compile("Group:</b> ?([\\w\\.]+)<br ?/>");
-    private static Pattern GUID_PATTERN = Pattern.compile("(.*/)?([a-zA-Z0-9@\\.]+)");
+    private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
+    private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)");
 
 
     static {
@@ -87,7 +87,7 @@ public class Newznab extends Indexer {
     @Autowired
     private InfoProvider infoProvider;
     @Autowired
-    private CategoryProvider categoryProvider;
+    protected CategoryProvider categoryProvider;
     @Autowired
     private ResultAcceptor resultAcceptor;
 
@@ -104,52 +104,8 @@ public class Newznab extends Indexer {
         String query = "";
 
         componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
-
-        //Generate query if necessary, possible and enabled
-        if (searchRequest.getQuery().isPresent()) {
-            query = searchRequest.getQuery().get();
-        } else {
-            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
-            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
-            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
-                if (searchRequest.getTitle().isPresent()) {
-                    query = searchRequest.getTitle().get();
-                } else {
-                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
-                    try {
-                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
-                        if (!mediaInfo.getTitle().isPresent()) {
-                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
-                        }
-                        query = mediaInfo.getTitle().get();
-
-                    } catch (InfoProviderException e) {
-                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
-                    }
-                }
-                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
-            }
-        }
-
-
-        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
-        requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
-        requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
-        if (!requiredWords.isEmpty()) {
-            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
-        }
-
-        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
-        excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
-        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
-        if (!excludedWords.isEmpty()) {
-            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
-                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(excludedWords);
-            } else {
-                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
-            }
-        }
+        query = generateQueryIfApplicable(searchRequest, query);
+        query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
 
         if (config.getHost().toLowerCase().contains("nzbgeek")) {
             //With nzbgeek not more than 12 words at all are allowed
@@ -158,6 +114,13 @@ public class Newznab extends Indexer {
                 query = Joiner.on(" ").join(Arrays.copyOfRange(split, 0, 12));
             }
         }
+        addFurtherParametersToUri(searchRequest, componentsBuilder, query);
+
+
+        return componentsBuilder;
+    }
+
+    protected void addFurtherParametersToUri(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) {
         if (!query.isEmpty()) {
             componentsBuilder.queryParam("q", query);
         }
@@ -193,9 +156,56 @@ public class Newznab extends Indexer {
         if (baseConfig.getSearching().isIgnorePassworded()) {
             componentsBuilder.queryParam("password", "0");
         }
+    }
 
+    private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {
+        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
+        requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
+        if (!requiredWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
+        }
 
-        return componentsBuilder;
+        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
+        excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
+        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        if (!excludedWords.isEmpty()) {
+            if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
+                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(excludedWords);
+            } else {
+                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
+            }
+        }
+        return query;
+    }
+
+    protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
+        if (searchRequest.getQuery().isPresent()) {
+            query = searchRequest.getQuery().get();
+        } else {
+            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
+            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
+            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
+                if (searchRequest.getTitle().isPresent()) {
+                    query = searchRequest.getTitle().get();
+                } else {
+                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
+                    try {
+                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
+                        if (!mediaInfo.getTitle().isPresent()) {
+                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
+                        }
+                        query = mediaInfo.getTitle().get();
+
+                    } catch (InfoProviderException e) {
+                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
+                    }
+                }
+                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+            }
+        }
+        return query;
     }
 
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) throws IndexerSearchAbortedException {
@@ -301,7 +311,7 @@ public class Newznab extends Indexer {
         return indexerSearchResult;
     }
 
-    private void handleIndexerAccessException(IndexerAccessException e, String url) {
+    protected void handleIndexerAccessException(IndexerAccessException e, String url) {
         boolean disablePermanently = false;
         IndexerAccessResult apiAccessResult;
         if (e instanceof IndexerAuthException) {
@@ -321,7 +331,7 @@ public class Newznab extends Indexer {
         handleFailure(e.getMessage(), disablePermanently, IndexerApiAccessType.SEARCH, null, apiAccessResult, url);
     }
 
-    private void handleRssError(RssError response, String url) throws IndexerAccessException {
+    protected void handleRssError(RssError response, String url) throws IndexerAccessException {
         if (Stream.of("100", "101", "102").anyMatch(x -> x.equals(response.getCode()))) {
             throw new IndexerAuthException(String.format("Indexer refused authentication. Error code: %s. Description: %s", response.getCode(), response.getDescription()));
         }
@@ -342,17 +352,19 @@ public class Newznab extends Indexer {
         return searchResultItems;
     }
 
-    private SearchResultItem createSearchResultItem(RssItem item) {
+    protected SearchResultItem createSearchResultItem(RssItem item) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setLink(item.getLink());
-        searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
         if (item.getRssGuid().getIsPermaLink()) {
             searchResultItem.setDetails(item.getRssGuid().getGuid());
             Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
             if (matcher.matches()) {
                 searchResultItem.setIndexerGuid(matcher.group(2));
             }
-        } else if (!Strings.isNullOrEmpty(item.getComments())) {
+        } else {
+            searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
+        }
+        if (!Strings.isNullOrEmpty(item.getComments())) {
             searchResultItem.setDetails(item.getComments().replace("#comments", ""));
         }
 
@@ -366,7 +378,7 @@ public class Newznab extends Indexer {
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
-        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory()));
+        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory())); //TODO: Category here is the name, perhaps take over and show
         searchResultItem.setCommentsLink(item.getComments());
 
         for (NewznabAttribute attribute : item.getNewznabAttributes()) {
@@ -380,6 +392,8 @@ public class Newznab extends Indexer {
             } else if (attribute.getName().equals("info") && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
                 //Info attribute is always a link to an NFO
                 searchResultItem.setHasNfo(HasNfo.YES);
+            } else if (attribute.getName().equals("poster") && !attribute.getValue().equals("not available")) {
+                searchResultItem.setPoster(attribute.getValue());
             } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
                 searchResultItem.setGroup(attribute.getValue());
             } else if (attribute.getName().equals("files")) {
@@ -397,7 +411,7 @@ public class Newznab extends Indexer {
             //For these backends if not specified it doesn't exist
             searchResultItem.setHasNfo(HasNfo.NO);
         }
-        if (!Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
+        if (!searchResultItem.getGroup().isPresent() && !Strings.isNullOrEmpty(item.getDescription()) && item.getDescription().contains("Group:")) {
             //Dog has the group in the description, perhaps others too
             Matcher matcher = GROUP_PATTERN.matcher(item.getDescription());
             if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
@@ -406,7 +420,7 @@ public class Newznab extends Indexer {
         }
 
 
-        if (config.getHost().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
+        if (config.getHost().toLowerCase().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
             searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
         }
         if (baseConfig.getSearching().isRemoveLanguage()) {

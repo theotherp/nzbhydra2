@@ -194,7 +194,7 @@ public class Search {
             builder.age(ageInDays + "d");
         } else {
             long ageInHours = item.getPubDate().until(Instant.now(), ChronoUnit.HOURS);
-            builder.age(ageInHours + "d");
+            builder.age(ageInHours + "h");
         }
         builder = builder
                 .age_precise(item.isAgePrecise())

@@ -38,6 +38,9 @@ public class RssItem {
     @XmlElement(name = "category")
     private String category;
 
+    @XmlElement(name = "grabs") //Only set by torznab
+    private Integer grabs;
+
     @XmlElement(name = "attr", namespace="http://www.newznab.com/DTD/2010/feeds/attributes/")
     private List<NewznabAttribute> newznabAttributes;
 

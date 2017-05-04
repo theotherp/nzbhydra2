@@ -21,12 +21,18 @@ import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.mapping.newznab.Enclosure;
+import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssError;
+import org.nzbhydra.mapping.newznab.RssGuid;
+import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -34,10 +40,14 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -296,6 +306,91 @@ public class NewznabTest {
         searchRequest.setQuery("a b c d");
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("x", "y", "z"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=a b c d 1 2 3 4 5 6 7 8").build(), testee.buildSearchUrl(searchRequest).build());
+    }
+
+    @Test
+    public void shouldCreateSearchResultItem() throws Exception {
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "0"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "group"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("poster", "poster"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("files", "10"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("grabs", "20"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("comments", "30"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getLink(), is("http://indexer.com/123"));
+        assertThat(item.getIndexerGuid(), is("123"));
+        assertThat(item.getSize(), is(456L));
+        assertThat(item.getDescription(), is("description"));
+        assertThat(item.getPubDate(), is(Instant.ofEpochSecond(5555555)));
+        assertThat(item.getCommentsLink(), is("http://indexer.com/123/details#comments"));
+        assertThat(item.getDetails(), is("http://indexer.com/123/details"));
+        assertThat(item.isAgePrecise(), is(true));
+        assertThat(item.getUsenetDate().get(), is(Instant.ofEpochSecond(6666666)));
+
+        assertThat(item.isPassworded(), is(false));
+        assertThat(item.getGroup().get(), is("group"));
+        assertThat(item.getPoster().get(), is("poster"));
+        assertThat(item.getFiles(), is(10));
+        assertThat(item.getGrabs(), is(20));
+        assertThat(item.getCommentsCount(), is(30));
+
+        rssItem.setRssGuid(new RssGuid("123", false));
+        assertThat(testee.createSearchResultItem(rssItem).getIndexerGuid(), is("123"));
+
+
+    }
+
+    private RssItem buildBasicRssItem() {
+        RssItem rssItem = new RssItem();
+        rssItem.setLink("http://indexer.com/123");
+        rssItem.setRssGuid(new RssGuid("http://indexer.com/123", true));
+        rssItem.setTitle("title");
+        rssItem.setEnclosure(new Enclosure("http://indexer.com/123", 456L));
+        rssItem.setPubDate(Instant.ofEpochSecond(5555555));
+        rssItem.setDescription("description");
+        rssItem.setComments("http://indexer.com/123/details#comments");
+        rssItem.setNewznabAttributes(new ArrayList<>());
+        return rssItem;
+    }
+
+    @Test
+    public void shouldNotSetGroupOrPosterIfNotAvailable() throws Exception {
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.getNewznabAttributes().clear();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "not available"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("poster", "not available"));
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getGroup().isPresent(), is(false));
+        assertThat(item.getPoster().isPresent(), is(false));
+    }
+
+    @Test
+    public void shouldReadGroupFromDescription() throws Exception {
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.setDescription("<b>Group:</b> alt.binaries.tun<br />");
+        assertThat(testee.createSearchResultItem(rssItem).getGroup().get(), is("alt.binaries.tun"));
+    }
+
+    @Test
+    public void shouldRemoveTrailingLanguages() throws Exception {
+        when(searchingConfigMock.isRemoveLanguage()).thenReturn(true);
+
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.setTitle("Some title English");
+        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+    }
+
+    @Test
+    public void shouldRemoveObfuscatedFromNzbGeek() throws Exception {
+        when(searchingConfigMock.isRemoveObfuscated()).thenReturn(true);
+        testee.config.setHost("nzbgeek");
+
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.setTitle("Some title -Obfuscated");
+        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title "));
     }
 
 
