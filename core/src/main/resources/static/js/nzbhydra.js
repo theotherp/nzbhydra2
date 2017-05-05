@@ -976,9 +976,9 @@ function otherColumns($http, $templateCache, $compile, $window) {
         }
 
         $scope.getNfoTooltip = function () {
-            if ($scope.result.has_nfo == 1) {
+            if ($scope.result.hasNfo === "YES") {
                 return "Show NFO"
-            } else if ($scope.result.has_nfo == 2) {
+            } else if ($scope.result.hasNfo === "MAYBE") {
                 return "Try to load NFO (may not be available)";
             } else {
                 return "No NFO available";
@@ -1870,12 +1870,14 @@ function UpdateService($http, growl, blockUI, RestartService) {
     };
 
     function getVersions() {
-        return $http.get("internalapi/updates/versions").then(function (data) {
-            currentVersion = data.data.currentVersion;
-            latestVersion = data.data.latestVersion;
-            updateAvailable = data.data.updateAvailable;
-            return data;
-        });
+        return $http.get("internalapi/updates/versions").then(
+            function (data) {
+                currentVersion = data.data.currentVersion;
+                latestVersion = data.data.latestVersion;
+                updateAvailable = data.data.updateAvailable;
+                return data;
+            }
+        );
     }
 
     function getChangelog() {

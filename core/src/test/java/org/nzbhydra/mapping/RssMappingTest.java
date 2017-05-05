@@ -59,7 +59,7 @@ public class RssMappingTest {
 
         RssGuid rssGuid = item.getRssGuid();
         assertThat(rssGuid.getGuid(), is("eff551fbdb69d6777d5030c209ee5d4b"));
-        assertThat(rssGuid.getIsPermaLink(), is(false));
+        assertThat(rssGuid.isPermaLink(), is(false));
 
         Enclosure enclosure = item.getEnclosure();
         assertThat(enclosure.getUrl(), is("https://indexerName.com/getnzb/eff551fbdb69d6777d5030c209ee5d4b.nzb&i=1692&r=apikey"));

@@ -17,7 +17,7 @@ public class RssGuid {
 
     }
 
-    public RssGuid(String guid, Boolean isPermaLink) {
+    public RssGuid(String guid, boolean isPermaLink) {
         this.guid = guid;
         this.isPermaLink = isPermaLink;
     }
@@ -26,7 +26,7 @@ public class RssGuid {
     private String guid;
 
     @XmlAttribute
-    private Boolean isPermaLink;
+    private boolean isPermaLink = false;
 
 
 }

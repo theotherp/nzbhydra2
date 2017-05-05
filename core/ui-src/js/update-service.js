@@ -19,12 +19,14 @@ function UpdateService($http, growl, blockUI, RestartService) {
     };
 
     function getVersions() {
-        return $http.get("internalapi/updates/versions").then(function (data) {
-            currentVersion = data.data.currentVersion;
-            latestVersion = data.data.latestVersion;
-            updateAvailable = data.data.updateAvailable;
-            return data;
-        });
+        return $http.get("internalapi/updates/versions").then(
+            function (data) {
+                currentVersion = data.data.currentVersion;
+                latestVersion = data.data.latestVersion;
+                updateAvailable = data.data.updateAvailable;
+                return data;
+            }
+        );
     }
 
     function getChangelog() {

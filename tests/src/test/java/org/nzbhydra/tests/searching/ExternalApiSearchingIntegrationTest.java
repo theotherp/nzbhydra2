@@ -80,14 +80,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
@@ -116,14 +116,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle13"));
@@ -152,14 +152,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(100);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(100));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(100);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(50));
     }

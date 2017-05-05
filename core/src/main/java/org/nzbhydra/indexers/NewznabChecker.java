@@ -49,7 +49,7 @@ public class NewznabChecker {
 
     protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost());
-        return builder.path("/api").queryParam("apikey", indexerConfig.getApikey());
+        return builder.path("/api").queryParam("apikey", indexerConfig.getApiKey());
     }
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
@@ -57,16 +57,20 @@ public class NewznabChecker {
         try {
             xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").toUriString(), Xml.class, indexerConfig.getTimeout().orElse(baseConfig.getSearching().getTimeout()));
             if (xmlResponse instanceof RssError) {
-                return new GenericResponse(false, "Indexer returned message: " + ((RssError) xmlResponse).getDescription());
+                logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
+                return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
             }
             RssRoot rssRoot = (RssRoot) xmlResponse;
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
-                return new GenericResponse(true, null);
+                logger.info("Connection to indexer {} successful", indexerConfig.getName());
+                return GenericResponse.ok();
             } else {
-                return new GenericResponse(false, "Indexer did not return any results");
+                logger.warn("Connection to indexer {} successful but search did not return any results", indexerConfig.getName());
+                return GenericResponse.notOk("Indexer did not return any results");
             }
         } catch (IndexerAccessException e) {
-            return new GenericResponse(false, e.getMessage());
+            logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), e.getMessage());
+            return GenericResponse.notOk(e.getMessage());
         }
     }
 

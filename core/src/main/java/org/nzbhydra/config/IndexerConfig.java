@@ -18,7 +18,7 @@ import java.util.Optional;
 public class IndexerConfig extends ValidatingConfig {
 
     @SensitiveData
-    private String apikey;
+    private String apiKey;
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();

@@ -182,7 +182,7 @@ public class UpdateManager implements InitializingBean {
             }
             return latestVersion;
         } catch (ParseException e) {
-            throw new UpdateException("Error while getting latest version", e);
+            throw new UpdateException("Error while checking for latest version", e);
         }
     }
 

@@ -22,7 +22,7 @@ public class Torznab extends Newznab {
     protected SearchResultItem createSearchResultItem(RssItem item) {
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
 
-        searchResultItem.setGrabs(searchResultItem.getGrabs());
+        searchResultItem.setGrabs(item.getGrabs());
         for (TorznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             if (attribute.getName().equals("grabs")) {

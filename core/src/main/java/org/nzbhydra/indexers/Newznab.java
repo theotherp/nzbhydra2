@@ -94,7 +94,7 @@ public class Newznab extends Indexer {
 
     protected UriComponentsBuilder getBaseUri() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(config.getHost());
-        return builder.path("/api").queryParam("apikey", config.getApikey());
+        return builder.path("/api").queryParam("apikey", config.getApiKey());
     }
 
 
@@ -355,7 +355,7 @@ public class Newznab extends Indexer {
     protected SearchResultItem createSearchResultItem(RssItem item) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setLink(item.getLink());
-        if (item.getRssGuid().getIsPermaLink()) {
+        if (item.getRssGuid().isPermaLink()) {
             searchResultItem.setDetails(item.getRssGuid().getGuid());
             Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
             if (matcher.matches()) {

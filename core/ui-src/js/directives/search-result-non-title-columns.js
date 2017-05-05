@@ -67,9 +67,9 @@ function otherColumns($http, $templateCache, $compile, $window) {
         }
 
         $scope.getNfoTooltip = function () {
-            if ($scope.result.has_nfo == 1) {
+            if ($scope.result.hasNfo === "YES") {
                 return "Show NFO"
-            } else if ($scope.result.has_nfo == 2) {
+            } else if ($scope.result.hasNfo === "MAYBE") {
                 return "Try to load NFO (may not be available)";
             } else {
                 return "No NFO available";

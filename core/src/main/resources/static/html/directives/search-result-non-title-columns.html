@@ -14,11 +14,11 @@
     {{ ::result.age }}
 </td>
 <td class="col-md-3 search-results-cell result-links">
-    <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.has_nfo == 0}" class="no-underline"
-       uib-tooltip="{{ getNfoTooltip() }}"
+    <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}" class="no-underline"
+       uib-tooltip="{{ ::getNfoTooltip() }}"
        tooltip-placement="top"
        tooltip-trigger="mouseenter">
-        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.has_nfo == 2}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 2}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
     </a>
     <span ng-if="showDetailsDl">
         <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link}}" target="_blank" class="no-underline"

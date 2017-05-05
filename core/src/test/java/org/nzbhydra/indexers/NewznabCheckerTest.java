@@ -54,7 +54,7 @@ public class NewznabCheckerTest {
         MockitoAnnotations.initMocks(this);
         indexerConfig = new IndexerConfig();
         indexerConfig.setHost("http://127.0.0.1:1234");
-        indexerConfig.setApikey("apikey");
+        indexerConfig.setApiKey("apikey");
         when(searchingConfig.getTimeout()).thenReturn(1);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         capsRoot = new CapsRoot();
