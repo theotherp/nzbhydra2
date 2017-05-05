@@ -53,6 +53,8 @@ public class MockNewznab {
         apikeyToResultCount.put(5, 100);
     }
 
+    private static final List<Integer> newznabCategories = Arrays.asList(1000, 2000, 5000, 5040, 5035);
+
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
     public String nzbDownload(@PathVariable String nzbId) throws Exception {
         return "Would download NZB with ID" + nzbId;
@@ -139,18 +141,19 @@ public class MockNewznab {
         for (int i = 1; i <= endCount; i++) {
 
             RssItem item = new RssItem();
+            String size = String.valueOf(Math.abs(random.nextInt(999999999)));
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle("indexer" + itemTitleBase + "-" + i);
             item.setPubDate(Instant.now().minus(random.nextInt(1000), ChronoUnit.HOURS));
-            item.setEnclosure(new Enclosure("enclosureUrl", 5L));
+            item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
             item.setLink("http://127.0.0.1:5080/details/" + i);
-            item.setCategory("7000");
+            item.setCategory("TV > HD");
             item.setRssGuid(new RssGuid("http://127.0.0.1:5080/nzb/" + i, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
-            attributes.add(new NewznabAttribute("category", "7000"));
-            attributes.add(new NewznabAttribute("size", String.valueOf(random.nextInt())));
+            attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
+            attributes.add(new NewznabAttribute("size", size));
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));
@@ -161,7 +164,7 @@ public class MockNewznab {
             List<TorznabAttribute> torznabAttributes = new ArrayList<>();
             torznabAttributes.add(new TorznabAttribute("seeders", String.valueOf(i)));
             torznabAttributes.add(new TorznabAttribute("peers", String.valueOf(i * 2)));
-            torznabAttributes.add(new TorznabAttribute("size", String.valueOf(random.nextInt())));
+            torznabAttributes.add(new TorznabAttribute("size", size));
             item.setTorznabAttributes(torznabAttributes);
 
             items.add(item);

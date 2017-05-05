@@ -143,10 +143,7 @@ public class CategoryProvider implements InitializingBean {
         }
         //Let's try to find a more general one
         matchingCategory = categories.stream().filter(x -> cats.stream().anyMatch(y -> x.getNewznabCategories().contains(y / 1000 * 1000))).findFirst();
-        if (matchingCategory.isPresent()) {
-            return matchingCategory.get();
-        }
-        return null;
+        return matchingCategory.orElse(null);
     }
 
 

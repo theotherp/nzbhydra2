@@ -392,9 +392,9 @@ public class Newznab extends Indexer {
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
-        searchResultItem.setCategory(categoryProvider.fromNewznabCategories(item.getCategory())); //TODO: Category here is the name, perhaps take over and show
         searchResultItem.setCommentsLink(item.getComments());
 
+        List<Integer> newznabCategories = new ArrayList<>();
         for (NewznabAttribute attribute : item.getNewznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             if (attribute.getName().equals("usenetdate")) {
@@ -418,7 +418,16 @@ public class Newznab extends Indexer {
                 searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
             } else if (attribute.getName().equals("guid")) {
                 searchResultItem.setIndexerGuid(attribute.getValue());
+            } else if (attribute.getName().equals("category")) {
+                newznabCategories.add(Integer.valueOf(attribute.getValue()));
+            } else if (attribute.getName().equals("size")) {
+                searchResultItem.setSize(Long.valueOf(attribute.getValue()));
             }
+        }
+        if (!newznabCategories.isEmpty()) {
+            searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories));
+        } else {
+            searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
 
         if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
