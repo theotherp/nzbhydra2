@@ -52,6 +52,14 @@ public class SearchModuleProvider {
         return searchModuleInstances.values().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
     }
 
+    public Indexer getIndexerByName(String indexerName) {
+        if (searchModuleInstances.containsKey(indexerName)) {
+            return searchModuleInstances.get(indexerName);
+        } else {
+            throw new RuntimeException("Unable to find indexer with name " + indexerName);
+        }
+    }
+
 
     /**
      * Must be called by <tt>{@link SearchModuleConfigProvider}</tt> when config is loaded.

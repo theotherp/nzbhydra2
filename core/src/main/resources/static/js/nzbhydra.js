@@ -666,12 +666,13 @@ nzbhydraapp.config(["$provide", function ($provide) {
             $delegate(exception, cause);
             try {
                 console.log(exception);
-                var stack = exception.stack.split('\n').map(function (line) {
-                    return line.trim();
-                });
-                stack = stack.join("\n");
-                //$injector.get("$http").put("internalapi/logerror", {error: stack, cause: angular.isDefined(cause) ? cause.toString() : "No known cause"});
-
+                if (angular.isDefined(exception.stack)) {
+                    var stack = exception.stack.split('\n').map(function (line) {
+                        return line.trim();
+                    });
+                    stack = stack.join("\n");
+                    //$injector.get("$http").put("internalapi/logerror", {error: stack, cause: angular.isDefined(cause) ? cause.toString() : "No known cause"});
+                }
             } catch (e) {
                 console.error("Unable to log JS exception to server", e);
             }
@@ -936,17 +937,12 @@ function otherColumns($http, $templateCache, $compile, $window) {
             if (resultItem.has_nfo === 0) {
                 return;
             }
-            var uri = new URI("internalapi/getnfo");
-            uri.addQuery("searchresultid", resultItem.searchResultId);
+            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
             return $http.get(uri.toString()).then(function (response) {
-                if (response.data.has_nfo) {
-                    $scope.openModal("lg", response.data.nfo)
+                if (response.data.length > 0) {
+                    $scope.openModal("lg", response.data)
                 } else {
-                    if (!angular.isUndefined(resultItem.message)) {
-                        growl.error(resultItem.message);
-                    } else {
-                        growl.info("No NFO available");
-                    }
+                    growl.info("No NFO available");
                 }
             });
         }
@@ -4516,7 +4512,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
     };
 
     $scope.$on("modal.closing", function (targetScope, reason) {
-        if (reason == "backdrop click") {
+        if (reason === "backdrop click") {
             $scope.reset($scope);
         }
     });
@@ -4559,7 +4555,8 @@ function ConfigBoxService($http, $q) {
             model.enabledCategories = [];
             model.categoryConfig = data.categoryConfig;
             model.backend = data.backend;
-            deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
+            //deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
+            deferred.resolve(data);
 
         }).error(function () {
             deferred.reject("Unknown error");
@@ -5772,27 +5769,28 @@ function ConfigFields($injector) {
                     type: "arrayConfig",
                     data: {
                         defaultModel: {
-                            categoryConfig: {anime: null, audiobook: null, comic: null, ebook: null},
-                            enabled: true,
-                            categories: [],
-                            downloadLimit: null,
-                            loadLimitOnRandom: null,
-                            host: null,
                             apiKey: null,
+                            backend: 'NEWZNAB',
+                            categoryMapping: {anime: null, audiobook: null, comic: null, ebook: null}, //TODO
+                            downloadLimit: null,
+                            enabled: true,
+                            enabledCategories: [],
+                            enabledForSearchSource: "BOTH",
+                            generalMinSize: null,
                             hitLimit: null,
                             hitLimitResetTime: 0,
-                            timeout: null,
+                            host: null,
+                            loadLimitOnRandom: null,
                             name: null,
-                            showOnSearch: true,
-                            score: 0,
-                            username: null,
                             password: null,
                             preselect: true,
+                            score: 0,
                             searchModuleType: 'NEWZNAB',
-                            accessType: "BOTH",
+                            showOnSearch: true,
                             supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
                             supportedSearchTypes: undefined, //["tvsearch", "movie"]
-                            backend: 'NEWZNAB',
+                            timeout: null,
+                            username: null,
                             userAgent: null
                         },
                         addNewText: 'Add new indexer',
@@ -6856,10 +6854,10 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
             ConfigBoxService.checkCaps(url, model).then(
-                function (data, model) {
+                function (data) {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    if (model.allChecked) {
+                    if (data.allChecked) {
                         growl.info("Successfully tested capabilites of indexer");
                     } else {
                         growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");

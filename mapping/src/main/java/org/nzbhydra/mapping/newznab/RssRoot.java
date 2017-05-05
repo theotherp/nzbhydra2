@@ -17,7 +17,7 @@ public class RssRoot extends Xml {
     private String version = "2.0";
 
     @XmlElement(name = "channel")
-    private RssChannel rssChannel;
+    private RssChannel rssChannel = new RssChannel();
 
     @XmlElement(name = "error")
     private RssError error;

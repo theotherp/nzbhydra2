@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,12 +53,35 @@ public class MockNewznab {
         apikeyToResultCount.put(5, 100);
     }
 
+    @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    public String nzbDownload(@PathVariable String nzbId) throws Exception {
+        return "Would download NZB with ID" + nzbId;
+    }
+
+    @RequestMapping(value = "/details/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    public String nzbDetails(@PathVariable String nzbId) throws Exception {
+        return "Would show details for NZB with ID" + nzbId;
+    }
+
+    @RequestMapping(value = "/comments/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
+    public String nzbComments(@PathVariable String nzbId) throws Exception {
+        return "Would show comments for NZB with ID" + nzbId;
+    }
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
 
         if (params.getT() == ActionAttribute.CAPS) {
             return getCaps();
+        }
+
+        if (params.getT() == ActionAttribute.GETNFO) {
+            RssRoot rssRoot = new RssRoot();
+            rssRoot.getRssChannel().setNewznabResponse(new NewznabResponse(0, 1));
+            RssItem item = new RssItem();
+            item.setDescription("NFO for NZB with ID " + params.getId());
+            rssRoot.getRssChannel().getItems().add(item);
+            return ResponseEntity.ok(rssRoot);
         }
 
         int count;
@@ -108,7 +132,7 @@ public class MockNewznab {
         channel.setDescription("channelDescription");
         channel.setLanguage("en-gb");
         channel.setWebMaster("webmaster@master.com");
-        channel.setLink("http://www.link.xyz");
+        channel.setLink("http://127.0.0.1:5080");
         channel.setNewznabResponse(new NewznabResponse(0, endCount));
 
         List<RssItem> items = new ArrayList<>();
@@ -119,10 +143,10 @@ public class MockNewznab {
             item.setTitle("indexer" + itemTitleBase + "-" + i);
             item.setPubDate(Instant.now().minus(random.nextInt(1000), ChronoUnit.HOURS));
             item.setEnclosure(new Enclosure("enclosureUrl", 5L));
-            item.setComments("http://www.comments.com/" + i);
-            item.setLink("http://www.link.com/" + i);
+            item.setComments("http://127.0.0.1:5080/comments/" + i);
+            item.setLink("http://127.0.0.1:5080/details/" + i);
             item.setCategory("7000");
-            item.setRssGuid(new RssGuid("http://www.guid.com/" + i, true));
+            item.setRssGuid(new RssGuid("http://127.0.0.1:5080/nzb/" + i, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", "7000"));
@@ -130,6 +154,7 @@ public class MockNewznab {
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));
+            attributes.add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(1000))));
             item.setNewznabAttributes(attributes);
 
             item.setGrabs(i * 2);

@@ -27,7 +27,7 @@ public class IndexerConfig extends ValidatingConfig {
     private boolean enabled;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction enabledForSearchSource;
-    private Integer generalMinSize;
+    private Integer generalMinSize = null;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
     private String host;
@@ -43,9 +43,9 @@ public class IndexerConfig extends ValidatingConfig {
     private List<IdType> supportedSearchIds = new ArrayList<>();
     private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
     private Integer timeout = null;
-    private String type; //TODO what is this?
     @SensitiveData
     private String username = null;
+    private String userAgent = null; //TODO
 
     public Optional<Integer> getHitLimit() {
         return Optional.ofNullable(hitLimit);
@@ -63,6 +63,10 @@ public class IndexerConfig extends ValidatingConfig {
         return Optional.ofNullable(loadLimitOnRandom);
     }
 
+    public Optional<Integer> getGeneralMinSize() {
+        return Optional.ofNullable(generalMinSize);
+    }
+
     public Optional<String> getPassword() {
         return Optional.ofNullable(password);
     }
@@ -77,6 +81,11 @@ public class IndexerConfig extends ValidatingConfig {
 
     public Optional<String> getUsername() {
         return Optional.ofNullable(username);
+    }
+
+
+    public Optional<String> getUserAgent() {
+        return Optional.ofNullable(userAgent);
     }
 
     public void setEnabledCategories(List<String> enabledCategories) {

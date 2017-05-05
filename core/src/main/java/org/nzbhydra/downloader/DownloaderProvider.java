@@ -51,6 +51,7 @@ public class DownloaderProvider implements InitializingBean {
             List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloaders();
             downloadersMap.clear();
             for (DownloaderConfig downloaderConfig : downloaderConfigs) {
+                logger.info("Found downloader {}", downloaderConfig.getName());
                 try {
                     Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
                     downloader.intialize(downloaderConfig);
@@ -58,6 +59,9 @@ public class DownloaderProvider implements InitializingBean {
                 } catch (Exception e) {
                     logger.error("Error while initializing downloader", e);
                 }
+            }
+            if (downloadersMap.isEmpty()) {
+                logger.info("No downloaders configured");
             }
         } else {
             logger.error("Configuration incomplete, no downloaders found");

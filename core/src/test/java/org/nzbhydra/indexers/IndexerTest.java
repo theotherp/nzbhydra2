@@ -7,7 +7,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
@@ -15,6 +14,7 @@ import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -67,6 +67,11 @@ public class IndexerTest {
 
         @Override
         protected IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException {
+            return null;
+        }
+
+        @Override
+        public String getNfo(String guid) throws IndexerAccessException {
             return null;
         }
     };
@@ -122,7 +127,7 @@ public class IndexerTest {
     @Test
     public void handleSuccess() throws Exception {
         when(indexerMock.getIndexerEntity().getStatus()).thenReturn(statusMock);
-        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0, IndexerAccessResult.API_ERROR, "url");
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L, "url");
 
         verify(statusMock).setDisabledPermanently(false);
         verify(statusMock).setLevel(0);

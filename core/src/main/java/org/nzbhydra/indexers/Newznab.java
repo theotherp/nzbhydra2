@@ -5,14 +5,12 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
-import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.RssError;
@@ -36,9 +34,13 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,6 +92,8 @@ public class Newznab extends Indexer {
     protected CategoryProvider categoryProvider;
     @Autowired
     private ResultAcceptor resultAcceptor;
+    @Autowired
+    private Unmarshaller unmarshaller;
 
 
     protected UriComponentsBuilder getBaseUri() {
@@ -268,7 +272,7 @@ public class Newznab extends Indexer {
             }
 
         } catch (IndexerAccessException e) {
-            handleIndexerAccessException(e, url);
+            handleIndexerAccessException(e, url, IndexerApiAccessType.SEARCH);
 
             IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
             errorResult.setErrorMessage(e.getMessage());
@@ -277,7 +281,7 @@ public class Newznab extends Indexer {
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        handleSuccess(IndexerApiAccessType.SEARCH, responseTime, IndexerAccessResult.SUCCESSFUL, url);
+        handleSuccess(IndexerApiAccessType.SEARCH, responseTime, url);
         //noinspection ConstantConditions Actually checked above
         RssRoot rssRoot = (RssRoot) response;
 
@@ -311,24 +315,34 @@ public class Newznab extends Indexer {
         return indexerSearchResult;
     }
 
-    protected void handleIndexerAccessException(IndexerAccessException e, String url) {
-        boolean disablePermanently = false;
-        IndexerAccessResult apiAccessResult;
-        if (e instanceof IndexerAuthException) {
-            error("Indexer refused authentication");
-            disablePermanently = true;
-            apiAccessResult = IndexerAccessResult.AUTH_ERROR;
-        } else if (e instanceof IndexerErrorCodeException) {
-            error(e.getMessage());
-            apiAccessResult = IndexerAccessResult.API_ERROR;
-        } else if (e instanceof IndexerUnreachableException) {
-            error(e.getMessage());
-            apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
+    @Override
+    public String getNfo(String guid) throws IndexerAccessException {
+        UriComponentsBuilder baseUri = getBaseUri().queryParam("raw", "1").queryParam("id", guid);
+        if (config.getBackend() == BackendType.NZEDB || config.getBackend() == BackendType.NNTMUX) {
+            baseUri.queryParam("t", "info");
         } else {
-            error(e.getMessage(), e);
-            apiAccessResult = IndexerAccessResult.HYDRA_ERROR;
+            baseUri.queryParam("t", "getnfo");
         }
-        handleFailure(e.getMessage(), disablePermanently, IndexerApiAccessType.SEARCH, null, apiAccessResult, url);
+        String result = getAndStoreResultToDatabase(baseUri.toUriString(), String.class, IndexerApiAccessType.NFO);
+        if (result.contains("<error code")) {
+            return null;
+        }
+        if (!result.contains("<?xml")) {
+            return result;
+        }
+        try {
+            Xml xml = (Xml) unmarshaller.unmarshal(new StreamSource(new StringReader(result)));
+            if (xml instanceof RssError) {
+                handleRssError((RssError) xml, baseUri.toUriString());
+            }
+            RssRoot rssRoot = (RssRoot) xml;
+            if (rssRoot.getRssChannel().getNewznabResponse() == null || rssRoot.getRssChannel().getNewznabResponse().getTotal() == 0) {
+                return null;
+            }
+            return rssRoot.getRssChannel().getItems().get(0).getDescription();
+        } catch (IOException e) {
+            throw new IndexerAccessException("Error while reading NFO: " + e.getMessage());
+        }
     }
 
     protected void handleRssError(RssError response, String url) throws IndexerAccessException {

@@ -14,7 +14,10 @@ import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
@@ -95,6 +98,8 @@ public abstract class Indexer {
 
     protected abstract IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException;
 
+    public abstract String getNfo(String guid) throws IndexerAccessException;
+
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -124,7 +129,7 @@ public abstract class Indexer {
         return searchResultItems;
     }
 
-    protected void handleSuccess(IndexerApiAccessType accessType, long responseTime, IndexerAccessResult accessResult, String url) {
+    protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime, String url) {
         IndexerStatusEntity status = indexer.getStatus();
         status.setLevel(0);
         status.setDisabledPermanently(false);
@@ -134,7 +139,7 @@ public abstract class Indexer {
         IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(indexer);
         apiAccess.setAccessType(accessType);
         apiAccess.setResponseTime(responseTime);
-        apiAccess.setResult(accessResult);
+        apiAccess.setResult(IndexerAccessResult.SUCCESSFUL);
         apiAccess.setTime(Instant.now());
         apiAccess.setUrl(url);
         indexerApiAccessRepository.save(apiAccess);
@@ -167,9 +172,44 @@ public abstract class Indexer {
         indexerApiAccessRepository.save(apiAccess);
     }
 
+    protected void handleIndexerAccessException(IndexerAccessException e, String url, IndexerApiAccessType accessType) {
+        boolean disablePermanently = false;
+        IndexerAccessResult apiAccessResult;
+        if (e instanceof IndexerAuthException) {
+            error("Indexer refused authentication");
+            disablePermanently = true;
+            apiAccessResult = IndexerAccessResult.AUTH_ERROR;
+        } else if (e instanceof IndexerErrorCodeException) {
+            error(e.getMessage());
+            apiAccessResult = IndexerAccessResult.API_ERROR;
+        } else if (e instanceof IndexerUnreachableException) {
+            error(e.getMessage());
+            apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
+        } else {
+            error(e.getMessage(), e);
+            apiAccessResult = IndexerAccessResult.HYDRA_ERROR;
+        }
+        handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult, url);
+    }
+
     protected <T> T get(String url, Class<T> responseType) throws IndexerAccessException {
         Integer timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
         return indexerWebAccess.get(url, responseType, timeout);
+    }
+
+    protected <T> T getAndStoreResultToDatabase(String url, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Integer timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
+        T result;
+        try {
+            result = indexerWebAccess.get(url, responseType, timeout);
+        } catch (IndexerAccessException e) {
+            handleIndexerAccessException(e, url, apiAccessType);
+            throw e;
+        }
+        long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        handleSuccess(apiAccessType, responseTime, url);
+        return result;
     }
 
 

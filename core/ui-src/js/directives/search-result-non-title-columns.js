@@ -27,17 +27,12 @@ function otherColumns($http, $templateCache, $compile, $window) {
             if (resultItem.has_nfo === 0) {
                 return;
             }
-            var uri = new URI("internalapi/getnfo");
-            uri.addQuery("searchresultid", resultItem.searchResultId);
+            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
             return $http.get(uri.toString()).then(function (response) {
-                if (response.data.has_nfo) {
-                    $scope.openModal("lg", response.data.nfo)
+                if (response.data.length > 0) {
+                    $scope.openModal("lg", response.data)
                 } else {
-                    if (!angular.isUndefined(resultItem.message)) {
-                        growl.error(resultItem.message);
-                    } else {
-                        growl.info("No NFO available");
-                    }
+                    growl.info("No NFO available");
                 }
             });
         }

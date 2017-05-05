@@ -170,7 +170,7 @@ public class Search {
                         .downloadType(item.getDownloadType().name())
                         .files(item.getFiles())
                         .grabs(item.getGrabs())
-                        .has_nfo(item.getHasNfo().name())
+                        .hasNfo(item.getHasNfo().name())
                         .hash(groupResultsIdentifier)
                         .indexer(item.getIndexer().getName())
                         .indexerguid(item.getIndexerGuid())

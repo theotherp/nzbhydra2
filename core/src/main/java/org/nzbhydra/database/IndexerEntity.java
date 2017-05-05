@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import lombok.Data;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,6 +24,7 @@ public class IndexerEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
 
+    @Column(unique = true)
     private String name;
 
     @OneToOne(cascade = CascadeType.ALL)

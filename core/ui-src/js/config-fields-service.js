@@ -879,27 +879,28 @@ function ConfigFields($injector) {
                     type: "arrayConfig",
                     data: {
                         defaultModel: {
-                            categoryConfig: {anime: null, audiobook: null, comic: null, ebook: null},
-                            enabled: true,
-                            categories: [],
-                            downloadLimit: null,
-                            loadLimitOnRandom: null,
-                            host: null,
                             apiKey: null,
+                            backend: 'NEWZNAB',
+                            categoryMapping: {anime: null, audiobook: null, comic: null, ebook: null}, //TODO
+                            downloadLimit: null,
+                            enabled: true,
+                            enabledCategories: [],
+                            enabledForSearchSource: "BOTH",
+                            generalMinSize: null,
                             hitLimit: null,
                             hitLimitResetTime: 0,
-                            timeout: null,
+                            host: null,
+                            loadLimitOnRandom: null,
                             name: null,
-                            showOnSearch: true,
-                            score: 0,
-                            username: null,
                             password: null,
                             preselect: true,
+                            score: 0,
                             searchModuleType: 'NEWZNAB',
-                            accessType: "BOTH",
+                            showOnSearch: true,
                             supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
                             supportedSearchTypes: undefined, //["tvsearch", "movie"]
-                            backend: 'NEWZNAB',
+                            timeout: null,
+                            username: null,
                             userAgent: null
                         },
                         addNewText: 'Add new indexer',
@@ -1962,10 +1963,10 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
             ConfigBoxService.checkCaps(url, model).then(
-                function (data, model) {
+                function (data) {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    if (model.allChecked) {
+                    if (data.allChecked) {
                         growl.info("Successfully tested capabilites of indexer");
                     } else {
                         growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");

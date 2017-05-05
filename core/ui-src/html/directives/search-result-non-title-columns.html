@@ -18,7 +18,7 @@
        uib-tooltip="{{ ::getNfoTooltip() }}"
        tooltip-placement="top"
        tooltip-trigger="mouseenter">
-        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 2}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
     </a>
     <span ng-if="showDetailsDl">
         <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link}}" target="_blank" class="no-underline"

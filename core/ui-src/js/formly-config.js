@@ -391,7 +391,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     };
 
     $scope.$on("modal.closing", function (targetScope, reason) {
-        if (reason == "backdrop click") {
+        if (reason === "backdrop click") {
             $scope.reset($scope);
         }
     });
@@ -434,7 +434,8 @@ function ConfigBoxService($http, $q) {
             model.enabledCategories = [];
             model.categoryConfig = data.categoryConfig;
             model.backend = data.backend;
-            deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
+            //deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
+            deferred.resolve(data);
 
         }).error(function () {
             deferred.reject("Unknown error");

@@ -4,6 +4,7 @@ import org.nzbhydra.NzbHandler;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,13 @@ public class NzbHandling {
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid, HttpServletRequest request) {
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpProvider.usernameOrIp.get()).getAsResponseEntity();
+    }
+
+
+    @RequestMapping(value = "/internalapi/nfo/{guid}", produces = "application/x-nzb")
+    @Secured({"ROLE_USER"})
+    public String getNfo(@PathVariable("guid") long guid, HttpServletRequest request) throws IndexerAccessException {
+        return nzbHandler.getNfo(guid);
     }
 
 

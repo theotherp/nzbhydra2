@@ -12,6 +12,9 @@ import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
+import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
@@ -34,6 +37,8 @@ public class NzbHandler {
     private SearchResultRepository searchResultRepository;
     @Autowired
     private NzbDownloadRepository downloadRepository;
+    @Autowired
+    private SearchModuleProvider searchModuleProvider;
 
     public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
@@ -91,6 +96,16 @@ public class NzbHandler {
             }
         }
         return builder.toUriString();
+    }
+
+    public String getNfo(Long searchResultId) throws IndexerAccessException {
+        SearchResultEntity result = searchResultRepository.findOne(searchResultId);
+        if (result == null) {
+            logger.error("NZB download request with invalid/outdated search result ID " + searchResultId);
+            throw new RuntimeException("NZB download request with invalid/outdated search result ID " + searchResultId);
+        }
+        Indexer indexer = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
+        return indexer.getNfo(result.getIndexerGuid());
     }
 
 
