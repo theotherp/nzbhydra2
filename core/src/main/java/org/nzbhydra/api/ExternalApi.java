@@ -126,12 +126,6 @@ public class ExternalApi {
         logger.debug("Transforming searchResults");
         List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
-        //Account for offset and limit
-//        int maxIndex = searchResultItems.size();
-//        int fromIndex = Math.min(params.getOffset(), maxIndex);
-//        int toIndex = Math.min(params.getOffset() + params.getLimit(), maxIndex);
-//        logger.info("Returning items {} to {} of {} items", fromIndex, toIndex, searchResultItems.size());
-//        searchResultItems = searchResultItems.subList(fromIndex, toIndex);
         OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(params.getOffset(), params.getLimit(), searchResultItems.size());
 
         searchResultItems = searchResultItems.subList(splice.getOffset(), splice.getOffset() + splice.getLimit());

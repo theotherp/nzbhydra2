@@ -167,7 +167,7 @@ public class NewznabTest {
     @Test
     public void shouldGenerateQueryIfNecessaryAndAllowed() throws Exception {
         testee.config = new IndexerConfig();
-        when(searchingConfigMock.getGenerateQueries()).thenReturn(SearchSourceRestriction.BOTH);
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
         testee.config.setSupportedSearchIds(Collections.emptyList());
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
@@ -205,7 +205,7 @@ public class NewznabTest {
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
-        assertEquals("Indexer returned error code 200 when URL http://127.0.0.1:1234/api?apikey&t=search was called", errorMessageCaptor.getValue());
+        assertEquals("Indexer returned error code 200 when URL http://127.0.0.1:1234/api?apikey&t=search&offset=0&limit=100 was called", errorMessageCaptor.getValue());
         assertFalse(disabledPermanentlyCaptor.getValue());
         assertEquals(IndexerAccessResult.HYDRA_ERROR, indexerApiAccessResultCaptor.getValue());
     }
@@ -262,8 +262,8 @@ public class NewznabTest {
 
         searchRequest.getCategory().getForbiddenWords().add("catforbidden");
         searchRequest.getCategory().getRequiredWords().add("catrequired");
-        when(searchingConfigMock.getForbiddenWords()).thenReturn(Lists.newArrayList("globalforbidden"));
-        when(searchingConfigMock.getRequiredWords()).thenReturn(Lists.newArrayList("globalrequired"));
+        baseConfig.getSearching().setForbiddenWords(Lists.newArrayList("globalforbidden"));
+        baseConfig.getSearching().setRequiredWords(Lists.newArrayList("globalrequired"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest).build());
     }
 
@@ -400,7 +400,7 @@ public class NewznabTest {
 
     @Test
     public void shouldRemoveTrailingLanguages() throws Exception {
-        when(searchingConfigMock.isRemoveLanguage()).thenReturn(true);
+        baseConfig.getSearching().setRemoveLanguage(true);
         RssItem rssItem = buildBasicRssItem();
         rssItem.setTitle("Some title English");
 
@@ -409,7 +409,7 @@ public class NewznabTest {
 
     @Test
     public void shouldRemoveObfuscatedFromNzbGeek() throws Exception {
-        when(searchingConfigMock.isRemoveObfuscated()).thenReturn(true);
+        baseConfig.getSearching().setRemoveObfuscated(true);
         testee.config.setHost("nzbgeek");
         RssItem rssItem = buildBasicRssItem();
         rssItem.setTitle("Some title -Obfuscated");

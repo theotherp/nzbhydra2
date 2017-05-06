@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("ALL")
 public class TorznabTest {
 
+    private BaseConfig baseConfig;
     @Mock
     private InfoProvider infoProviderMock;
     @Mock
@@ -60,15 +62,15 @@ public class TorznabTest {
     @Mock
     private UriComponentsBuilder uriComponentsBuilderMock;
     @Captor
-    ArgumentCaptor<String> errorMessageCaptor;
+    private ArgumentCaptor<String> errorMessageCaptor;
     @Captor
-    ArgumentCaptor<Boolean> disabledPermanentlyCaptor;
+    private ArgumentCaptor<Boolean> disabledPermanentlyCaptor;
     @Captor
-    ArgumentCaptor<? extends IndexerAccessResult> indexerApiAccessResultCaptor;
+    private ArgumentCaptor<? extends IndexerAccessResult> indexerApiAccessResultCaptor;
     @Mock
-    BaseConfig baseConfigMock;
+    private ConfigProvider configProviderMock;
     @Mock
-    SearchingConfig searchingConfigMock;
+    private SearchingConfig searchingConfigMock;
 
     @InjectMocks
     private Torznab testee = new Torznab();
@@ -85,8 +87,9 @@ public class TorznabTest {
         testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
 
-        when(baseConfigMock.getSearching()).thenReturn(searchingConfigMock);
-        when(searchingConfigMock.getGenerateQueries()).thenReturn(SearchSourceRestriction.NONE);
+        baseConfig = new BaseConfig();
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
     }
 
 
