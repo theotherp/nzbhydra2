@@ -12,7 +12,7 @@ public class IndexerSearchMetaData {
     private int limit;
     private String notPickedReason;
     private int numberOfAvailableResults;
-    private int numberOfResults;
+    private int numberOfFoundResults;
     private int offset;
     private long responseTime;
     private boolean totalResultsKnown;

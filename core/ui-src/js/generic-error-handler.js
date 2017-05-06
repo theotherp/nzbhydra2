@@ -1,4 +1,4 @@
-var HEADER_NAME = 'MyApp-Handle-Errors-Generically';
+var HEADER_NAME = 'NzbHydra2-Handle-Errors-Generically';
 var specificallyHandleInProgress = false;
 
 nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, GeneralModalService) {

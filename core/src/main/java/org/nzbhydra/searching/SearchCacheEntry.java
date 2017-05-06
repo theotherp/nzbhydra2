@@ -22,6 +22,7 @@ public class SearchCacheEntry {
     private PickingResult pickingResult;
     private SearchEntity searchEntity;
     private SearchResult lastSearchResult;
+    private int numberOfFoundResults = 0;
 
     public SearchCacheEntry(SearchRequest searchRequest, PickingResult pickingResult, SearchEntity searchEntity) {
         this.searchRequest = searchRequest;

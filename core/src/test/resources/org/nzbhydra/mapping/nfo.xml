@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/">
+    <channel>
+        <title>DOGnzb</title>
+        <description>DOGnzb Feed</description>
+        <uuid>1D02EA13</uuid>
+        <newznab:response offset="0" total="1"/>
+
+        <item>
+            <title>testtitle.1080p.BluRay.x264-INFAMOUS</title>
+            <guid isPermaLink="true">https://dognzb.cr/details/b4ba74ecb5f5962e98ad3c40c271dcc8</guid>
+            <link>https://dognzb.cr/fetch/b4ba74ecb5f5962e98ad3c40c271dcc8/2f7e0142485ad6c5f934b6cab3a6d999</link>
+            <comments>https://dognzb.cr/details/b4ba74ecb5f5962e98ad3c40c271dcc8#comments</comments>
+            <pubDate>Tue, 22 Sep 2015 22:16:14 -0600</pubDate>
+            <category>Movies > HD</category>
+
+            <description>nfoInXml</description>
+
+        </item>
+
+    </channel>
+</rss>

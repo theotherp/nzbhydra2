@@ -157,21 +157,21 @@ public class Newznab extends Indexer {
             componentsBuilder.queryParam("author", searchRequest.getAuthor().get());
         }
 
-        if (baseConfig.getSearching().isIgnorePassworded()) {
+        if (configProvider.getBaseConfig().getSearching().isIgnorePassworded()) {
             componentsBuilder.queryParam("password", "0");
         }
     }
 
     private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {
         List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
-        requiredWords.addAll(baseConfig.getSearching().getRequiredWords());
+        requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         if (!requiredWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
         List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
-        excludedWords.addAll(baseConfig.getSearching().getForbiddenWords());
+        excludedWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
         if (!excludedWords.isEmpty()) {
             if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
@@ -189,7 +189,7 @@ public class Newznab extends Indexer {
         } else {
             boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
             boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-            boolean queryGenerationEnabled = baseConfig.getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
             if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
                 if (searchRequest.getTitle().isPresent()) {
                     query = searchRequest.getTitle().get();
@@ -257,23 +257,32 @@ public class Newznab extends Indexer {
     }
 
     @Override
-    protected IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException {
-        String url = buildSearchUrl(searchRequest).build().toUriString();
+    protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException {
+        UriComponentsBuilder builder = buildSearchUrl(searchRequest);
+        builder.queryParam("offset", offset);
+        if (limit != null) {
+            builder.queryParam("limit", limit);
+        }
+        String url = builder.build().toUriString();
+
 
         Xml response;
         Stopwatch stopwatch = Stopwatch.createStarted();
+        info("Calling {}", url);
         try {
-            info("Calling {}", url);
-            response = get(url, Xml.class);
+            response = getAndStoreResultToDatabase(url, Xml.class, IndexerApiAccessType.SEARCH);
             if (response instanceof RssError) {
-                handleRssError((RssError) response, url);
+                //Base class doesn't know any RssErrors so we must handle this case specially
+                try {
+                    handleRssError((RssError) response, url);
+                } catch (IndexerAccessException e) {
+                    handleIndexerAccessException(e, url, IndexerApiAccessType.SEARCH);
+                    throw e;
+                }
             } else if (!(response instanceof RssRoot)) {
                 throw new UnknownResponseException("Indexer returned unknown response");
             }
-
         } catch (IndexerAccessException e) {
-            handleIndexerAccessException(e, url, IndexerApiAccessType.SEARCH);
-
             IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
             errorResult.setErrorMessage(e.getMessage());
             errorResult.setSearchResultItems(Collections.emptyList());
@@ -281,7 +290,6 @@ public class Newznab extends Indexer {
             return errorResult;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        handleSuccess(IndexerApiAccessType.SEARCH, responseTime, url);
         //noinspection ConstantConditions Actually checked above
         RssRoot rssRoot = (RssRoot) response;
 
@@ -298,37 +306,41 @@ public class Newznab extends Indexer {
         indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
+        //TODO account for rejected items
         NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             indexerSearchResult.setTotalResults(newznabResponse.getTotal());
             indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size()); //TODO Not all indexers report an offset
             indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(newznabResponse.getOffset()); //TODO
+            indexerSearchResult.setLimit(10); //TODO replace with 100
         } else {
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setOffset(0);
             indexerSearchResult.setLimit(0);
         }
+        debug("Found results {}-{} of {} available", indexerSearchResult.getOffset(), indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getTotalResults());
 
         return indexerSearchResult;
     }
 
     @Override
-    public String getNfo(String guid) throws IndexerAccessException {
+    public NfoResult getNfo(String guid) {
         UriComponentsBuilder baseUri = getBaseUri().queryParam("raw", "1").queryParam("id", guid);
         if (config.getBackend() == BackendType.NZEDB || config.getBackend() == BackendType.NNTMUX) {
             baseUri.queryParam("t", "info");
         } else {
             baseUri.queryParam("t", "getnfo");
         }
-        String result = getAndStoreResultToDatabase(baseUri.toUriString(), String.class, IndexerApiAccessType.NFO);
-        if (result.contains("<error code")) {
-            return null;
+        String result;
+        try {
+            result = getAndStoreResultToDatabase(baseUri.toUriString(), String.class, IndexerApiAccessType.NFO);
+        } catch (IndexerAccessException e) {
+            return NfoResult.unsuccessful(e.getMessage());
         }
         if (!result.contains("<?xml")) {
-            return result;
+            return NfoResult.withNfo(result);
         }
         try {
             Xml xml = (Xml) unmarshaller.unmarshal(new StreamSource(new StringReader(result)));
@@ -337,11 +349,12 @@ public class Newznab extends Indexer {
             }
             RssRoot rssRoot = (RssRoot) xml;
             if (rssRoot.getRssChannel().getNewznabResponse() == null || rssRoot.getRssChannel().getNewznabResponse().getTotal() == 0) {
-                return null;
+                return NfoResult.withoutNfo();
             }
-            return rssRoot.getRssChannel().getItems().get(0).getDescription();
-        } catch (IOException e) {
-            throw new IndexerAccessException("Error while reading NFO: " + e.getMessage());
+            return NfoResult.withNfo(rssRoot.getRssChannel().getItems().get(0).getDescription());
+        } catch (IOException | IndexerAccessException e) {
+            error("Error while getting NFO: " + e.getMessage());
+            return NfoResult.unsuccessful(e.getMessage());
         }
     }
 
@@ -369,6 +382,7 @@ public class Newznab extends Indexer {
     protected SearchResultItem createSearchResultItem(RssItem item) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setLink(item.getLink());
+
         if (item.getRssGuid().isPermaLink()) {
             searchResultItem.setDetails(item.getRssGuid().getGuid());
             Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
@@ -378,9 +392,12 @@ public class Newznab extends Indexer {
         } else {
             searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
         }
-        if (!Strings.isNullOrEmpty(item.getComments())) {
+
+        if (!Strings.isNullOrEmpty(item.getComments()) && Strings.isNullOrEmpty(searchResultItem.getDetails())) {
             searchResultItem.setDetails(item.getComments().replace("#comments", ""));
         }
+
+        //TODO If details link still not set build it using the GUID which is sure to be not a link at this point. Perhaps this isn't necessary because all indexers should have a comments link
 
         searchResultItem.setFirstFound(Instant.now());
         searchResultItem.setIndexer(this);
@@ -443,10 +460,10 @@ public class Newznab extends Indexer {
         }
 
 
-        if (config.getHost().toLowerCase().contains("nzbgeek") && baseConfig.getSearching().isRemoveObfuscated()) {
+        if (config.getHost().toLowerCase().contains("nzbgeek") && configProvider.getBaseConfig().getSearching().isRemoveObfuscated()) {
             searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
         }
-        if (baseConfig.getSearching().isRemoveLanguage()) {
+        if (configProvider.getBaseConfig().getSearching().isRemoveLanguage()) {
             for (String language : LANGUAGES) {
                 if (searchResultItem.getTitle().endsWith(language)) {
                     debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());

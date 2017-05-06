@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,13 +28,22 @@ public class SearchResult {
         duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), HashMultiset.create());
     }
 
-    public int calculateNumberOfResults() {
+    public int calculateNumberOfProcessedResults() {
         if (duplicateDetectionResult == null) {
             return 0;
         }
 
         return duplicateDetectionResult.getDuplicateGroups().stream().mapToInt(TreeSet::size).sum() +
-
                 reasonsForRejection.entrySet().stream().mapToInt(Multiset.Entry::getCount).sum();
     }
+
+    public int calculateNumberOfAcceptedResults() {
+        return duplicateDetectionResult.getDuplicateGroups().stream().mapToInt(TreeSet::size).sum();
+    }
+
+    public int calculateNumberOfTotalAvailableResults() {
+        return indexerSearchResultMap.values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum();
+    }
+
+
 }

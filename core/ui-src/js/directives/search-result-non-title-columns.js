@@ -29,10 +29,14 @@ function otherColumns($http, $templateCache, $compile, $window) {
             }
             var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
             return $http.get(uri.toString()).then(function (response) {
-                if (response.data.length > 0) {
-                    $scope.openModal("lg", response.data)
+                if (response.data.success) {
+                    if (response.data.hasNfo) {
+                        $scope.openModal("lg", response.data.content)
+                    } else {
+                        growl.info("No NFO available");
+                    }
                 } else {
-                    growl.info("No NFO available");
+                    grow.error(response.data.content);
                 }
             });
         }

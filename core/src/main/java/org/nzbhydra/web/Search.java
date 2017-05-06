@@ -10,6 +10,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.OffsetAndLimitCalculation;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
@@ -58,6 +59,7 @@ public class Search {
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private NzbHandler nzbHandler;
+
 
     private Random random = new Random();
 
@@ -118,10 +120,36 @@ public class Search {
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
         SearchResponse response = new SearchResponse();
+        int totalResultsAvailable = searchResult.calculateNumberOfTotalAvailableResults();
+        response.setNumberOfAvailableResults(totalResultsAvailable);
+        response.setNumberOfRejectedResults(searchResult.getReasonsForRejection().entrySet().stream().mapToInt(Multiset.Entry::getCount).sum());
+        response.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
+        response.setIndexerSearchMetaDatas(createIndexerSearchMetaDatas(searchResult));
+        response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
+        response.setNumberOfProcessedResults(searchResult.calculateNumberOfProcessedResults());
+        response.setNumberOfAcceptedResults(searchResult.calculateNumberOfAcceptedResults());
 
         List<SearchResult> transformedSearchResults = transformSearchResults(searchResult);
-        response.setSearchResults(transformedSearchResults);
+        int offset = searchRequest.getOffset().orElse(0);
+        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
 
+        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(offset, limit, transformedSearchResults.size());
+        if (splice.getLimit() != 0) {
+            offset = splice.getOffset();
+            limit = splice.getLimit();
+            response.setOffset(splice.getOffset());
+            response.setLimit(splice.getLimit());
+            response.setSearchResults(transformedSearchResults.subList(offset, offset + limit));
+            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, limit, transformedSearchResults.size(), totalResultsAvailable);
+        }
+
+        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+        return response;
+    }
+
+    private List<IndexerSearchMetaData> createIndexerSearchMetaDatas(org.nzbhydra.searching.SearchResult searchResult) {
+        List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();
         for (Entry<Indexer, List<IndexerSearchResult>> entry : searchResult.getIndexerSearchResultMap().entrySet()) {
             //For now it's enough to get the data from the last metadata entry (even if multiple were done to get the needed amount of results)
             IndexerSearchResult indexerSearchResult = Iterables.getLast(entry.getValue());
@@ -132,28 +160,15 @@ public class Search {
             indexerSearchMetaData.setIndexerName(indexerSearchResult.getIndexer().getName());
             indexerSearchMetaData.setLimit(indexerSearchResult.getLimit());
             indexerSearchMetaData.setNumberOfAvailableResults(indexerSearchResult.getTotalResults());
-            indexerSearchMetaData.setNumberOfResults(indexerSearchResult.getSearchResultItems().size());
+            indexerSearchMetaData.setNumberOfFoundResults(indexerSearchResult.getSearchResultItems().size());
             indexerSearchMetaData.setOffset(indexerSearchResult.getOffset());
             indexerSearchMetaData.setResponseTime(indexerSearchResult.getResponseTime());
             indexerSearchMetaData.setTotalResultsKnown(indexerSearchResult.isTotalResultsKnown());
             indexerSearchMetaData.setWasSuccessful(indexerSearchResult.isWasSuccessful());
-            response.getIndexerSearchMetaDatas().add(indexerSearchMetaData);
+            indexerSearchMetaDatas.add(indexerSearchMetaData);
         }
-        //TODO: Not picked handlers and why
-
-        response.getIndexerSearchMetaDatas().sort(Comparator.comparing(IndexerSearchMetaData::getIndexerName));
-
-        response.setLimit(searchRequest.getLimit().orElse(100)); //TODO: Can this ever be actually null?
-        response.setOffset(searchRequest.getOffset().orElse(0)); //TODO: Can this ever be actually null?
-        response.setNumberOfAvailableResults(searchResult.getIndexerSearchResultMap().values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum()); //TODO?
-        response.setNumberOfRejectedResults(searchResult.getReasonsForRejection().entrySet().stream().mapToInt(Multiset.Entry::getCount).sum());
-        response.setNumberOfResults(transformedSearchResults.size());
-        response.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
-        response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
-
-        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-
-        return response;
+        indexerSearchMetaDatas.sort(Comparator.comparing(IndexerSearchMetaData::getIndexerName));
+        return indexerSearchMetaDatas;
     }
 
     private List<SearchResult> transformSearchResults(org.nzbhydra.searching.SearchResult searchResult) {
@@ -183,6 +198,7 @@ public class Search {
                 transformedSearchResults.add(builder.build());
             }
         }
+        transformedSearchResults.sort(Comparator.comparingLong(SearchResult::getEpoch).reversed());
         return transformedSearchResults;
     }
 

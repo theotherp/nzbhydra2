@@ -2,7 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessEntity;
@@ -58,7 +58,7 @@ public abstract class Indexer {
     protected IndexerConfig config;
 
     @Autowired
-    protected BaseConfig baseConfig;
+    protected ConfigProvider configProvider;
     @Autowired
     private IndexerRepository indexerRepository;
     @Autowired
@@ -75,10 +75,10 @@ public abstract class Indexer {
 
     }
 
-    public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) throws IndexerSearchAbortedException {
+    public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException {
         IndexerSearchResult indexerSearchResult;
         try {
-            indexerSearchResult = searchInternal(searchRequest);
+            indexerSearchResult = searchInternal(searchRequest, offset, limit);
         } catch (Exception e) {
             if (e instanceof IndexerSearchAbortedException) {
                 logger.warn("Unexpected error while preparing search");
@@ -96,9 +96,9 @@ public abstract class Indexer {
         return indexerSearchResult;
     }
 
-    protected abstract IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException;
+    protected abstract IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException;
 
-    public abstract String getNfo(String guid) throws IndexerAccessException;
+    public abstract NfoResult getNfo(String guid);
 
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
@@ -192,14 +192,9 @@ public abstract class Indexer {
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult, url);
     }
 
-    protected <T> T get(String url, Class<T> responseType) throws IndexerAccessException {
-        Integer timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
-        return indexerWebAccess.get(url, responseType, timeout);
-    }
-
     protected <T> T getAndStoreResultToDatabase(String url, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Integer timeout = config.getTimeout().orElse(baseConfig.getSearching().getTimeout());
+        Integer timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         T result;
         try {
             result = indexerWebAccess.get(url, responseType, timeout);

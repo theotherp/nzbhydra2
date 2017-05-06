@@ -13,7 +13,7 @@ import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -98,7 +98,7 @@ public class NzbHandler {
         return builder.toUriString();
     }
 
-    public String getNfo(Long searchResultId) throws IndexerAccessException {
+    public NfoResult getNfo(Long searchResultId) {
         SearchResultEntity result = searchResultRepository.findOne(searchResultId);
         if (result == null) {
             logger.error("NZB download request with invalid/outdated search result ID " + searchResultId);

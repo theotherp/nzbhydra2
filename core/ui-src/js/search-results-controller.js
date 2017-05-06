@@ -2,12 +2,6 @@ angular
     .module('nzbhydraApp')
     .controller('SearchResultsController', SearchResultsController);
 
-function sumRejected(rejected) {
-    return _.reduce(rejected, function (memo, entry) {
-        return memo + entry[1];
-    }, 0);
-}
-
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
@@ -64,13 +58,16 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     });
 
     //Process searchResults
-    $scope.results = SearchService.getLastResults().searchResults;
-    $scope.numberOfAvailableResults = SearchService.getLastResults().numberOfAvailableResults;
-    $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
-    $scope.numberOfResults = SearchService.getLastResults().numberOfResults;
-    $scope.rejected = SearchService.getLastResults().rejectedReasonsMap;
-    $scope.numberOfRejectedResults = SearchService.getLastResults().numberOfRejectedResults;
-    $scope.filteredResults = sortAndFilter($scope.results);
+    //$scope.searchResults = [];
+    // $scope.searchResults = SearchService.getLastResults().searchResults;
+    // $scope.numberOfAvailableResults = SearchService.getLastResults().numberOfAvailableResults;
+    // $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
+    // $scope.numberOfAcceptedResults = SearchService.getLastResults().numberOfAcceptedResults;
+    // $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
+    // $scope.numberOfRejectedResults = SearchService.getLastResults().numberOfRejectedResults;
+    // $scope.numberOfProcessedResults = SearchService.getLastResults().numberOfProcessedResults;
+    // $scope.filteredResults = sortAndFilter($scope.searchResults);
+    setDataFromSearchResult(SearchService.getLastResults(), []);
 
     $scope.$emit("searchResultsShown");
     stopBlocking();
@@ -101,14 +98,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     //Sorting (and filtering) are really slow (about 2 seconds for 1000 results from 5 indexers) but I haven't found any way of making it faster, apart from the tracking
     $scope.setSorting = setSorting;
     function setSorting(predicate, reversedDefault) {
-        if (predicate == $scope.sortPredicate) {
+        if (predicate === $scope.sortPredicate) {
             $scope.sortReversed = !$scope.sortReversed;
         } else {
             $scope.sortReversed = reversedDefault;
         }
         $scope.sortPredicate = predicate;
         startBlocking("Sorting / filtering...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.results);
+            $scope.filteredResults = sortAndFilter($scope.searchResults);
             blockUI.reset();
             localStorageService.set("sorting", {predicate: predicate, reversed: $scope.sortReversed});
         });
@@ -125,7 +122,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
 
     $scope.$on("searchInputChanged", function (event, query, minage, maxage, minsize, maxsize) {
-        $scope.filteredResults = sortAndFilter($scope.results, query, minage, maxage, minsize, maxsize);
+        $scope.filteredResults = sortAndFilter($scope.searchResults, query, minage, maxage, minsize, maxsize);
     });
 
     $scope.resort = function () {
@@ -243,16 +240,21 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         blockUI.reset();
     }
 
+    function setDataFromSearchResult(data, previousSearchResults) {
+        $scope.searchResults = previousSearchResults.concat(data.searchResults);
+        $scope.filteredResults = sortAndFilter($scope.searchResults);
+        $scope.numberOfAvailableResults = data.numberOfAvailableResults;
+        $scope.rejectedReasonsMap = data.rejectedReasonsMap;
+        $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
+        $scope.numberOfRejectedResults = data.numberOfRejectedResults;
+        $scope.numberOfProcessedResults = data.numberOfProcessedResults;
+    }
+
     $scope.loadMore = loadMore;
     function loadMore(loadAll) {
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
-            SearchService.loadMore($scope.resultsCount, loadAll).then(function (data) {
-                $scope.results = $scope.results.concat(data.results);
-                $scope.filteredResults = sortAndFilter($scope.results);
-                $scope.total = data.total;
-                $scope.rejected = data.rejected;
-                $scope.countRejected = sumRejected($scope.rejected);
-                $scope.resultsCount += data.resultsCount;
+            SearchService.loadMore($scope.numberOfAcceptedResults, loadAll).then(function (data) {
+                setDataFromSearchResult(data, $scope.searchResults);
                 stopBlocking();
             });
         });
@@ -264,7 +266,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     function toggleIndexerDisplay(indexer) {
         $scope.indexerDisplayState[indexer.toLowerCase()] = $scope.indexerDisplayState[indexer.toLowerCase()];
         startBlocking("Filtering. Sorry...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.results);
+            $scope.filteredResults = sortAndFilter($scope.searchResults);
         }).then(function () {
             stopBlocking();
         });
@@ -272,7 +274,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.countResults = countResults;
     function countResults() {
-        return $scope.results.length;
+        return $scope.searchResults.length;
     }
 
     $scope.invertSelection = function invertSelection() {

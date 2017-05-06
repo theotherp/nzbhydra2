@@ -4,11 +4,13 @@ import org.nzbhydra.NzbHandler;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,9 +42,9 @@ public class NzbHandling {
     }
 
 
-    @RequestMapping(value = "/internalapi/nfo/{guid}", produces = "application/x-nzb")
+    @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public String getNfo(@PathVariable("guid") long guid, HttpServletRequest request) throws IndexerAccessException {
+    public NfoResult getNfo(@PathVariable("guid") long guid, HttpServletRequest request) throws IndexerAccessException {
         return nzbHandler.getNfo(guid);
     }
 

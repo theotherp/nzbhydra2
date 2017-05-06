@@ -18,6 +18,7 @@ import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.OffsetAndLimitCalculation;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -81,7 +82,7 @@ public class ExternalApi {
             SearchResult searchResult = search(params);
 
             RssRoot transformedResults = transformResults(searchResult, params);
-            logger.debug("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
             return new ResponseEntity<>(transformedResults, HttpStatus.OK);
         }
 
@@ -98,7 +99,7 @@ public class ExternalApi {
             return downloadResult.getAsResponseEntity();
         }
 
-        RssError error = new RssError("200", "Unknown or incorrect parameter");
+        RssError error = new RssError("200", "Unknown or incorrect parameter"); //TODO log or throw as exeption so it's logged
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
 
@@ -126,14 +127,16 @@ public class ExternalApi {
         List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
         //Account for offset and limit
-        int maxIndex = searchResultItems.size();
-        int fromIndex = Math.min(params.getOffset(), maxIndex);
-        int toIndex = Math.min(params.getOffset() + params.getLimit(), maxIndex);
-        logger.info("Returning items {} to {} of {} items", fromIndex, toIndex, searchResultItems.size());
-        searchResultItems = searchResultItems.subList(fromIndex, toIndex);
+//        int maxIndex = searchResultItems.size();
+//        int fromIndex = Math.min(params.getOffset(), maxIndex);
+//        int toIndex = Math.min(params.getOffset() + params.getLimit(), maxIndex);
+//        logger.info("Returning items {} to {} of {} items", fromIndex, toIndex, searchResultItems.size());
+//        searchResultItems = searchResultItems.subList(fromIndex, toIndex);
+        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(params.getOffset(), params.getLimit(), searchResultItems.size());
 
+        searchResultItems = searchResultItems.subList(splice.getOffset(), splice.getOffset() + splice.getLimit());
 
-        RssRoot rssRoot = getRssRoot(searchResultItems, params.getOffset(), searchResultItems.size());
+        RssRoot rssRoot = getRssRoot(searchResultItems, splice.getOffset(), searchResult.calculateNumberOfTotalAvailableResults());
         logger.debug("Finished transforming");
         return rssRoot;
     }

@@ -65,7 +65,8 @@ function SearchService($http) {
         var indexerSearchMetaDatas = response.data.indexerSearchMetaDatas;
         var numberOfAvailableResults = response.data.numberOfAvailableResults;
         var numberOfRejectedResults = response.data.numberOfRejectedResults;
-        var numberOfResults = response.data.numberOfResults;
+        var numberOfAcceptedResults = response.data.numberOfAcceptedResults;
+        var numberOfProcessedResults = response.data.numberOfProcessedResults;
         var rejectedReasonsMap = response.data.rejectedReasonsMap;
         var notPickedIndexersWithReason = response.data.notPickedIndexersWithReason;
 
@@ -73,10 +74,12 @@ function SearchService($http) {
             "searchResults": searchResults,
             "indexerSearchMetaDatas": indexerSearchMetaDatas,
             "numberOfAvailableResults": numberOfAvailableResults,
-            "numberOfResults": numberOfResults,
+            "numberOfAcceptedResults": numberOfAcceptedResults,
             "numberOfRejectedResults": numberOfRejectedResults,
+            "numberOfProcessedResults": numberOfProcessedResults,
             "rejectedReasonsMap": rejectedReasonsMap,
             "notPickedIndexersWithReason": notPickedIndexersWithReason
+
         };
         return lastResults;
     }

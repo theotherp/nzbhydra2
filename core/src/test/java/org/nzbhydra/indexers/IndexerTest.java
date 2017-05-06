@@ -7,6 +7,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
@@ -15,7 +19,11 @@ import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -30,6 +38,11 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,11 +59,22 @@ public class IndexerTest {
     @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
+    private IndexerWebAccess indexerWebAccessMock;
+    @Mock
     private IndexerApiAccessRepository indexerApiAccessRepositoryMock;
     @Mock
     private SearchResultRepository searchResultRepositoryMock;
     @Captor
     private ArgumentCaptor<List<SearchResultEntity>> searchResultEntitiesCaptor;
+    @Captor
+    private ArgumentCaptor<String> errorMessageCaptor;
+    @Captor
+    private ArgumentCaptor<Boolean> disabledPermanentlyCaptor;
+    @Captor
+    private ArgumentCaptor<? extends IndexerAccessResult> indexerApiAccessResultCaptor;
+    @Mock
+    private ConfigProvider configProviderMock;
+
 
 
     @InjectMocks
@@ -61,17 +85,17 @@ public class IndexerTest {
         }
 
         @Override
-        public IndexerSearchResult search(SearchRequest searchRequest, int offset, int limit) {
+        public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
             return null;
         }
 
         @Override
-        protected IndexerSearchResult searchInternal(SearchRequest searchRequest) throws IndexerSearchAbortedException {
+        protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException {
             return null;
         }
 
         @Override
-        public String getNfo(String guid) throws IndexerAccessException {
+        public NfoResult getNfo(String guid) {
             return null;
         }
     };
@@ -86,6 +110,11 @@ public class IndexerTest {
         when(indexerMock.getName()).thenReturn("indexerName");
 
         testee.indexer = indexerEntityMock;
+        testee.config = new IndexerConfig();
+        testee.config.setTimeout(1);
+        when(configProviderMock.getBaseConfig()).thenReturn(new BaseConfig());
+
+        testee = spy(testee);
     }
 
     @Test
@@ -151,6 +180,46 @@ public class IndexerTest {
 
         verify(indexerRepositoryMock).save(indexerEntityMock);
     }
+
+    @Test
+    public void shouldGetAndStoreResultToDatabaseWithSuccess() throws Exception {
+        when(indexerWebAccessMock.get(anyString(), eq(String.class), anyInt())).thenReturn("result");
+
+        String result = testee.getAndStoreResultToDatabase("url", String.class, IndexerApiAccessType.SEARCH);
+
+        assertThat(result, is("result"));
+        verify(testee).handleSuccess(eq(IndexerApiAccessType.SEARCH), anyLong(), eq("url"));
+    }
+
+    @Test(expected = IndexerAccessException.class)
+    public void shouldGetAndStoreResultToDatabaseWithError() throws Exception {
+        IndexerAccessException exception = new IndexerAccessException("error");
+        when(indexerWebAccessMock.get(anyString(), eq(String.class), anyInt())).thenThrow(exception);
+
+        testee.getAndStoreResultToDatabase("url", String.class, IndexerApiAccessType.SEARCH);
+
+        verify(testee).handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
+    }
+
+    @Test
+    public void shouldHandleIndexerAccessException() throws Exception {
+        IndexerAccessException exception = new IndexerAuthException("error");
+        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("error", true, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.AUTH_ERROR, "url");
+
+        exception = new IndexerUnreachableException("error");
+        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("error", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, "url");
+
+        exception = new IndexerErrorCodeException(new RssError("101", "errorMessage"));
+        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("Indexer returned with error code 101 and description errorMessage", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.API_ERROR, "url");
+    }
+
+
+
+
+
 
 
 }

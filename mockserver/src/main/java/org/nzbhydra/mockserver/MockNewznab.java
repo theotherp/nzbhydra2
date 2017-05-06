@@ -86,24 +86,32 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
-        int count;
+        if (params.getQ().equals("offsettest")) {
+            int start = params.getOffset() == 0 ? 0 : params.getOffset();
+            int end = start + 10 - 1;
+            RssRoot rssRoot = generateResponse(start, end, "offsetTest");
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(20);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        int endIndex;
         int key = 0;
         try {
             key = Integer.valueOf(params.getApikey());
         } catch (NumberFormatException e) {
-            count = 0;
+            endIndex = 0;
         }
         if (apikeyToResultCount.containsKey(key)) {
-            count = apikeyToResultCount.get(key);
+            endIndex = apikeyToResultCount.get(key);
         } else {
-            count = 0;
+            endIndex = 0;
         }
 
-        if (responsesPerApikey.containsKey(count)) {
-            return new ResponseEntity<Object>(responsesPerApikey.get(count), HttpStatus.OK);
+        if (responsesPerApikey.containsKey(endIndex)) {
+            return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            RssRoot rssRoot = generateResponse(count, params.getApikey());
-            responsesPerApikey.put(count, rssRoot);
+            RssRoot rssRoot = generateResponse(0, endIndex, params.getApikey());
+            responsesPerApikey.put(endIndex, rssRoot);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
     }
@@ -125,7 +133,7 @@ public class MockNewznab {
     }
 
 
-    private RssRoot generateResponse(int endCount, String itemTitleBase) {
+    private RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase) {
 
         RssRoot rssRoot = new RssRoot();
         rssRoot.setVersion("2.0");
@@ -135,21 +143,22 @@ public class MockNewznab {
         channel.setLanguage("en-gb");
         channel.setWebMaster("webmaster@master.com");
         channel.setLink("http://127.0.0.1:5080");
-        channel.setNewznabResponse(new NewznabResponse(0, endCount));
+        channel.setNewznabResponse(new NewznabResponse(startIndex, endIndex + 1));
 
         List<RssItem> items = new ArrayList<>();
-        for (int i = 1; i <= endCount; i++) {
+        for (int i = startIndex; i <= endIndex; i++) {
 
             RssItem item = new RssItem();
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle("indexer" + itemTitleBase + "-" + i);
-            item.setPubDate(Instant.now().minus(random.nextInt(1000), ChronoUnit.HOURS));
+            Instant pubDate = Instant.now().minus(i, ChronoUnit.DAYS); //The higher the index the older they get
+            item.setPubDate(pubDate);
             item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
             item.setLink("http://127.0.0.1:5080/details/" + i);
             item.setCategory("TV > HD");
-            item.setRssGuid(new RssGuid("http://127.0.0.1:5080/nzb/" + i, true));
+            item.setRssGuid(new RssGuid("http://127.0.0.1:5080/details/" + i, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
@@ -158,6 +167,9 @@ public class MockNewznab {
             attributes.add(new NewznabAttribute("poster", "poster"));
             attributes.add(new NewznabAttribute("group", "group"));
             attributes.add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(1000))));
+            if (random.nextBoolean()) {
+                attributes.add(new NewznabAttribute("nfo", String.valueOf(random.nextInt(2))));
+            }
             item.setNewznabAttributes(attributes);
 
             item.setGrabs(i * 2);
