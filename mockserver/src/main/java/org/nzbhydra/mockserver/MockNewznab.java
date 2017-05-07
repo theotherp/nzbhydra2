@@ -90,7 +90,7 @@ public class MockNewznab {
             int start = params.getOffset() == 0 ? 0 : params.getOffset();
             int end = start + 10 - 1;
             RssRoot rssRoot = generateResponse(start, end, "offsetTest");
-            rssRoot.getRssChannel().getNewznabResponse().setTotal(20);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(40);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 

@@ -2478,11 +2478,11 @@ function SearchService($http) {
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
-    function loadMore(offset, loadAll) {
+    function loadMore(offset, limit) {
         lastExecutedSearchRequestParameters.offset = offset;
-        lastExecutedSearchRequestParameters.loadAll = loadAll;
+        lastExecutedSearchRequestParameters.limit = limit;
 
-        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData); //TODO: loadMore/loadAll: see above
+        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
     function processData(response) {
@@ -2769,13 +2769,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.loadMore = loadMore;
     function loadMore(loadAll) {
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
-            SearchService.loadMore($scope.numberOfAcceptedResults, loadAll).then(function (data) {
+            var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
+            SearchService.loadMore($scope.numberOfAcceptedResults, limit).then(function (data) {
                 setDataFromSearchResult(data, $scope.searchResults);
                 stopBlocking();
             });
         });
     }
-
 
 //Filters the results according to new visibility settings.
     $scope.toggleIndexerDisplay = toggleIndexerDisplay;

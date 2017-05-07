@@ -140,7 +140,7 @@ public class Search {
             response.setOffset(splice.getOffset());
             response.setLimit(splice.getLimit());
             response.setSearchResults(transformedSearchResults.subList(offset, offset + limit));
-            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, limit, transformedSearchResults.size(), totalResultsAvailable);
+            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, offset + limit, transformedSearchResults.size(), totalResultsAvailable);
         }
 
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -229,7 +229,6 @@ public class Search {
         searchRequest.setMaxage(parameters.getMaxage());
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
-        searchRequest.getInternalData().setLoadAll(parameters.getLoadAll() == null ? false : parameters.getLoadAll()); //TODO Should make sure that's never null...
         searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.usernameOrIp.get());
         return searchRequest;
     }

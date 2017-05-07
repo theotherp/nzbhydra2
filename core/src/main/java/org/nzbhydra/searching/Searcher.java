@@ -56,14 +56,13 @@ public class Searcher {
     public SearchResult search(SearchRequest searchRequest) {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
-
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //TODO default for limit
         searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
 
-        while (indexersToSearchAndTheirResults.size() > 0 && searchCacheEntry.getNumberOfFoundResults() < numberOfWantedResults) { //TODO load all
+        while (indexersToSearchAndTheirResults.size() > 0 && searchCacheEntry.getNumberOfFoundResults() < numberOfWantedResults) {
             logger.debug("Going to call {} indexer because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
 
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
@@ -89,13 +88,14 @@ public class Searcher {
         return searchCacheEntry.getLastSearchResult();
     }
 
+
     public OffsetAndLimitCalculation calculateOffsetAndLimit(int offset, int limit, int searchResultsSize) {
         if (offset >= searchResultsSize - 1) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultsSize);
             return new OffsetAndLimitCalculation(0, 0);
         }
-        if (offset + limit >= searchResultsSize) {
-            logger.debug("Offset {} + limit {} exceeds the number of available results {}; returning all remaining results", offset, limit, searchResultsSize);
+        if (offset + limit > searchResultsSize) {
+            logger.debug("Offset {} + limit {} exceeds the number of available results {}; returning all remaining results from cache", offset, limit, searchResultsSize);
             limit = searchResultsSize - offset;
         }
 
@@ -161,7 +161,6 @@ public class Searcher {
 
 
     protected Map<Indexer, List<IndexerSearchResult>> getIndexerSearchResultsToSearch(Map<Indexer, List<IndexerSearchResult>> map) {
-        //TODO Do all relevant checks again in case the state of the indexerName was changed in the background (use only basic checks, errors, disabled, etc)
         return map.entrySet().stream().filter(x -> {
             if (x.getValue().isEmpty()) {
                 return true;
@@ -174,7 +173,6 @@ public class Searcher {
     protected Map<Indexer, List<IndexerSearchResult>> callSearchModules(SearchRequest searchRequest, Map<Indexer, List<IndexerSearchResult>> indexersToSearch) {
         Map<Indexer, List<IndexerSearchResult>> indexerSearchResults = new HashMap<>(indexersToSearch);
 
-        //ExecutorService executor = Executors.newFixedThreadPool(indexersToSearch.size());
         ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(indexersToSearch.size());
 
         List<Callable<IndexerSearchResult>> callables = getCallables(searchRequest, indexersToSearch);
@@ -229,7 +227,7 @@ public class Searcher {
         int limit;
         if (entry.getValue().isEmpty()) {
             offset = 0;
-            limit = 100; //TODO Set either global default or get from indexerName or implement possibility to keep this unset and let indexerName decide
+            limit = 100; //TODO Set either global default or get from indexerName or implement possibility to keep this unset and let indexer implementation decide
         } else {
             IndexerSearchResult indexerToSearch = Iterables.getLast(entry.getValue());
             offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();

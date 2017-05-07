@@ -22,7 +22,7 @@ public class NewznabParameters {
     private String traktId; //TODO implement?
     private String imdbid;
     private String tmdbid;
-    private Integer season;
+    private Integer season; //TODO Can be a string for daily shows
     private Integer ep;
     private String author;
     private String title;

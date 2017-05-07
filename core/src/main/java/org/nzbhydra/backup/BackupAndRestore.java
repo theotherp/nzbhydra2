@@ -5,8 +5,8 @@ import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -32,7 +32,9 @@ public class BackupAndRestore {
 
     private static final long DAY = 1000 * 60 * 60 * 24;
 
-    @Scheduled(fixedDelay = DAY)
+    //TODO Make sure we only make a backup once. Perhaps save in database when the last one was executed. Or check backup.zip files for date
+    //@Scheduled(fixedDelay = DAY)
+    @Transactional
     public void createBackup() {
         if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
             try {
@@ -43,13 +45,14 @@ public class BackupAndRestore {
         }
     }
 
+
     public File backup() throws Exception {
         logger.info("Creating backup");
         File configBackupFile = null;
         File tempFile = null;
         File tempFolder = null;
         try {
-            File mainFolder = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            File mainFolder = new File(""); //TODO make sure we're in the correct main folder
             tempFolder = Files.createTempDir();
             File backupFolder = new File(mainFolder, "backup");
             if (!backupFolder.exists()) {

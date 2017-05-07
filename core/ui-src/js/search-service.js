@@ -53,11 +53,11 @@ function SearchService($http) {
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
-    function loadMore(offset, loadAll) {
+    function loadMore(offset, limit) {
         lastExecutedSearchRequestParameters.offset = offset;
-        lastExecutedSearchRequestParameters.loadAll = loadAll;
+        lastExecutedSearchRequestParameters.limit = limit;
 
-        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData); //TODO: loadMore/loadAll: see above
+        return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
     function processData(response) {
