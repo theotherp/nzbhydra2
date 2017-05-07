@@ -56,7 +56,7 @@ Process control
 
 Authorization https://kielczewski.eu/2014/12/spring-boot-security-application/
 - mostly done
-- log user name for appropriate actions
+- !! log user name for appropriate actions
 - enabling auth requires restart
 
 History & stats
@@ -67,8 +67,9 @@ History & stats
 Backups
 - !! Save
 - Restore: Probably using the wrapper
-- create periodically
+- create periodically (done, but needs to be checked if actually executed
 - create before updating
+- test what happens when search is executed while backup is made
 
 Windows GUI
 - perhaps use java gui: https://github.com/kemitix/spring-boot-awt-gui-demo or http://stackoverflow.com/questions/22864008/how-to-configure-spring-boot-with-swing-application
@@ -77,7 +78,7 @@ Windows GUI
 General, Ideas
 - !! open browser on startup
 - !! delete results older than x, perhaps do this as first background task?
-- package static files in jar when delivering
+- !! package static files in jar when delivering
 - !!! user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
 - proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
@@ -91,7 +92,6 @@ General, Ideas
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
 - rss functionality with configurable caching, perhaps with cache interval as parameter
 - banner
-- store IP address in search / download history. opt-in. use nullable column. show what available in history
 - verify that retrieving user from remoteuser works with form based login and rememberme
 - when no indexers configured / available, on search page show a note and link to config
 
@@ -112,6 +112,7 @@ Improvements
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories
 - better validation for configuration
+- store IP address in search / download history. opt-in. use nullable column. show what available in history
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 ...
 ++++

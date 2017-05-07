@@ -66,7 +66,7 @@ public class NzbGet extends Downloader {
     public void addLink(String link, String title, String category) throws DownloaderException {
         try {
             callAppend(link, title, category);
-            logger.error("Successfully added link {} for NZB \"{}\" to NZBGet queue", link, title);
+            logger.info("Successfully added link {} for NZB \"{}\" to NZBGet queue", link, title);
         } catch (Throwable throwable) {
             logger.error("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", link, title, throwable.getMessage());
         }
@@ -78,7 +78,8 @@ public class NzbGet extends Downloader {
             callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
             logger.error("Successfully added link {} for NZB \"{}\" to NZBGet queue", content, title);
         } catch (Throwable throwable) {
-            logger.error("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
+            logger.info("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
+            throw new DownloaderException("Error while adding link to NZB: " + throwable.getMessage());
         }
     }
 
@@ -94,6 +95,7 @@ public class NzbGet extends Downloader {
         if (nzbId <= 0) {
             throw new DownloaderException("NZBGet returned error code. Check its logs");
         }
+        logger.info("Successfully added link NZB \"{}\" to NZBGet queue", title);
     }
 
 

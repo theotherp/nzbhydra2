@@ -30,7 +30,7 @@ public class Downloader {
     @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest, HttpServletRequest request) {
         org.nzbhydra.downloader.Downloader downloader = downloaderProvider.getDownloaderByName(addNzbsRequest.getDownloaderName());
-        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory(), UsernameOrIpProvider.usernameOrIp.get());
+        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory());
     }
 
 }

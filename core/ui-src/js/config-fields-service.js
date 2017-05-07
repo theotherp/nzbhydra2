@@ -378,7 +378,17 @@ function ConfigFields($injector) {
                                 label: 'Open browser on startup'
                             }
                         }
+                        ,
+                        {
+                            key: 'backupEverySunday',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Backup every sunday'
+                            }
+                        }
                     ]
+
                 }
             ],
 

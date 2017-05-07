@@ -27,7 +27,7 @@ import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
-import org.nzbhydra.web.UsernameOrIpProvider;
+import org.nzbhydra.web.UsernameOrIpStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class ExternalApi {
                 throw new MissingParameterException("Missing ID/GUID");
             }
 
-            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpProvider.ipForExternal.get());
+            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
             if (!downloadResult.isSuccessful()) {
                 throw new UnknownErrorException(downloadResult.getError());
             }
@@ -197,7 +197,7 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpProvider.ipForExternal.get());
+        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.ipForExternal.get());
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());

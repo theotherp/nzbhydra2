@@ -10,7 +10,7 @@ import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.downloader.exceptions.DownloaderException;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.UsernameOrIpProvider;
+import org.nzbhydra.web.UsernameOrIpStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +32,13 @@ public abstract class Downloader {
     }
 
 
-    public GenericResponse addBySearchResultIds(Set<Long> searchResultIds, String category, String usernameOrIp) {
+    public GenericResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
         int countAddedNzbs = 0;
         try {
             for (Long searchResultId : searchResultIds) {
                 if (addingType == NzbAddingType.UPLOAD) {
-                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpProvider.usernameOrIp.get());
+                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get());
                     addNzb(result.getNzbContent(), result.getTitle(), category);
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
@@ -55,7 +55,6 @@ public abstract class Downloader {
             }
             return new GenericResponse(false, message);
         }
-        //TODO Capture error or something
         return new GenericResponse(true, null);
     }
 

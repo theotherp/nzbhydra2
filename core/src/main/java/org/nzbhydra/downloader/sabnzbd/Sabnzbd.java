@@ -49,6 +49,7 @@ public class Sabnzbd extends Downloader {
             urlBuilder.queryParam("cat", category);
         }
         sendAddNzbCommand(urlBuilder, null, HttpMethod.POST);
+        logger.info("Successfully added link {} for NZB \"{}\" to sabnzbd queue", url, title);
     }
 
     @Override
@@ -62,6 +63,7 @@ public class Sabnzbd extends Downloader {
         MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
         postData.add("name", fileContent);
         sendAddNzbCommand(urlBuilder, new HttpEntity<>(postData), HttpMethod.POST);
+        logger.info("Successfully added NZB \"{}\" to sabnzbd queue", title);
     }
 
     private void sendAddNzbCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {

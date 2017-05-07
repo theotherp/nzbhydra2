@@ -222,7 +222,6 @@ public class NewznabTest {
         assertEquals(IndexerAccessResult.API_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
-
     @Test
     public void shouldConvertIdIfNecessary() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);

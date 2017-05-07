@@ -18,6 +18,7 @@ public class MainConfig extends ValidatingConfig {
     private String apiKey = null;
     private String branch;
     private Integer configVersion;
+    private boolean backupEverySunday;
     private boolean debug;
     private String databaseFile;
     private String dereferer;

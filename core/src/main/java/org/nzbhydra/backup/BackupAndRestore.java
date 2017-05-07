@@ -5,6 +5,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -13,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.zip.ZipEntry;
@@ -28,8 +30,21 @@ public class BackupAndRestore {
     @Autowired
     private ConfigProvider configProvider;
 
+    private static final long DAY = 1000 * 60 * 60 * 24;
+
+    @Scheduled(fixedDelay = DAY)
+    public void createBackup() {
+        if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
+            try {
+                backup();
+            } catch (Exception e) {
+                logger.error("An error occured while doing a background backup", e);
+            }
+        }
+    }
 
     public File backup() throws Exception {
+        logger.info("Creating backup");
         File configBackupFile = null;
         File tempFile = null;
         File tempFolder = null;
@@ -77,7 +92,6 @@ public class BackupAndRestore {
                 logger.warn("Error while deleting temporary file/folder: " + e.getMessage());
             }
         }
-
     }
 
     private static void addToZipFile(File file, ZipOutputStream zos) throws IOException {

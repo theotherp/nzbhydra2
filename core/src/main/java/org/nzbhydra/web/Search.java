@@ -230,7 +230,7 @@ public class Search {
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
         searchRequest.getInternalData().setLoadAll(parameters.getLoadAll() == null ? false : parameters.getLoadAll()); //TODO Should make sure that's never null...
-        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpProvider.usernameOrIp.get());
+        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.usernameOrIp.get());
         return searchRequest;
     }
 
