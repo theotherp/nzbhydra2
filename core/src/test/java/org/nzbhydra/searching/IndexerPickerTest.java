@@ -76,7 +76,7 @@ public class IndexerPickerTest {
     private Map<Indexer, String> count;
 
     @InjectMocks
-    private IndexerPicker testee = new IndexerPicker();
+    private IndexerForSearchSelector testee = new IndexerForSearchSelector();
 
     @Before
     public void setUp() throws Exception {

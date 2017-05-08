@@ -38,9 +38,9 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 @Component
-public class IndexerPicker {
+public class IndexerForSearchSelector {
 
-    private static final Logger logger = LoggerFactory.getLogger(IndexerPicker.class);
+    private static final Logger logger = LoggerFactory.getLogger(IndexerForSearchSelector.class);
 
     @Autowired
     private InfoProvider infoProvider;
@@ -55,38 +55,38 @@ public class IndexerPicker {
 
     private Random random = new Random();
 
-    public PickingResult pickIndexers(SearchRequest searchRequest) {
+    public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
         List<Indexer> enabledIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
         if (enabledIndexers.isEmpty()) {
             logger.warn("You have no enabled indexers");
-            return new PickingResult();
+            return new IndexerForSearchSelection();
         }
 
         List<Indexer> selectedIndexers = new ArrayList<>();
         logger.debug("Picking indexers out of " + enabledIndexers.size());
 
-        Map<Indexer, String> count = new HashMap<>();
+        Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
         for (Indexer indexer : enabledIndexers) {
-            if (!checkSearchSource(searchRequest, count, indexer)) {
+            if (!checkSearchSource(searchRequest, notSelectedIndersWithReason, indexer)) {
                 continue;
             }
-            if (!checkIndexerSelectedByUser(searchRequest, count, indexer)) {
+            if (!checkIndexerSelectedByUser(searchRequest, notSelectedIndersWithReason, indexer)) {
                 continue;
             }
-            if (!checkIndexerStatus(count, indexer)) {
+            if (!checkIndexerStatus(notSelectedIndersWithReason, indexer)) {
                 continue;
             }
-            if (!checkDisabledForCategory(searchRequest, count, indexer)) {
+            if (!checkDisabledForCategory(searchRequest, notSelectedIndersWithReason, indexer)) {
                 continue;
             }
-            if (!checkLoadLimiting(count, indexer)) {
+            if (!checkLoadLimiting(notSelectedIndersWithReason, indexer)) {
                 continue;
             }
 
-            if (!checkSearchId(searchRequest, count, indexer)) {
+            if (!checkSearchId(searchRequest, notSelectedIndersWithReason, indexer)) {
                 continue;
             }
-            if (!checkIndexerHitLimit(count, indexer)) {
+            if (!checkIndexerHitLimit(notSelectedIndersWithReason, indexer)) {
                 continue;
             }
 
@@ -94,7 +94,7 @@ public class IndexerPicker {
         }
         logger.info("Picked {} out of {} indexers", selectedIndexers.size(), enabledIndexers.size());
 
-        return new PickingResult(count, selectedIndexers);
+        return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
     }
 
     protected boolean checkSearchId(SearchRequest searchRequest, Map<Indexer, String> count, Indexer indexer) {
@@ -231,7 +231,7 @@ public class IndexerPicker {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public class PickingResult {
+    public class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
         private List<Indexer> selectedIndexers = new ArrayList<>();
     }

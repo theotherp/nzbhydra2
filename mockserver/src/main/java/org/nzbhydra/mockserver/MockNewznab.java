@@ -87,9 +87,14 @@ public class MockNewznab {
         }
 
         if (params.getQ().equals("offsettest")) {
+            RssRoot rssRoot = new RssRoot();
+            rssRoot.getRssChannel().setNewznabResponse(new NewznabResponse(0, 0));
+            if (params.getOffset() >= 40) {
+                return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+            }
             int start = params.getOffset() == 0 ? 0 : params.getOffset();
-            int end = start + 10 - 1;
-            RssRoot rssRoot = generateResponse(start, end, "offsetTest");
+            int end = Math.min(start + 10 - 1, 40);
+            rssRoot = generateResponse(start, end, "offsetTest");
             rssRoot.getRssChannel().getNewznabResponse().setTotal(40);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

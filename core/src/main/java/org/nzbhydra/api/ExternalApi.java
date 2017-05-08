@@ -18,7 +18,6 @@ import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.OffsetAndLimitCalculation;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -44,7 +43,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -124,13 +122,8 @@ public class ExternalApi {
 
     protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params) {
         logger.debug("Transforming searchResults");
-        List<SearchResultItem> searchResultItems = pickSearchResultItemsFromDuplicateGroups(searchResult);
 
-        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(params.getOffset(), params.getLimit(), searchResultItems.size());
-
-        searchResultItems = searchResultItems.subList(splice.getOffset(), splice.getOffset() + splice.getLimit());
-
-        RssRoot rssRoot = getRssRoot(searchResultItems, splice.getOffset(), searchResult.calculateNumberOfTotalAvailableResults());
+        RssRoot rssRoot = getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults());
         logger.debug("Finished transforming");
         return rssRoot;
     }
@@ -142,7 +135,7 @@ public class ExternalApi {
         rssChannel.setTitle("NZB Hydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
-        rssChannel.setNewznabResponse(new NewznabResponse(offset, total)); //TODO
+        rssChannel.setNewznabResponse(new NewznabResponse(offset, total));
         rssChannel.setGenerator("NZBHydra2");
 
         rssRoot.setRssChannel(rssChannel);
@@ -173,14 +166,6 @@ public class ExternalApi {
     }
 
 
-    protected List<SearchResultItem> pickSearchResultItemsFromDuplicateGroups(SearchResult searchResult) {
-        List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
-
-        return duplicateGroups.stream().map(x -> {
-            return x.stream().sorted(Comparator.comparingInt(SearchResultItem::getIndexerScore).reversed().thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getPubDate().getEpochSecond()).reversed())).iterator().next();
-        }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
-    }
-
     private SearchResult search(NewznabParameters params) {
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         return searcher.search(searchRequest);
@@ -192,7 +177,10 @@ public class ExternalApi {
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());
+        searchRequest.setMinage(params.getMinage()); //Not part of spec
         searchRequest.setMaxage(params.getMaxage());
+        searchRequest.setMinsize(params.getMinsize()); //Not part of spec
+        searchRequest.setMaxsize(params.getMaxsize()); //Not part of spec
         searchRequest.setAuthor(params.getAuthor());
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());

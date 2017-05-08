@@ -320,7 +320,9 @@ public class Newznab extends Indexer {
             indexerSearchResult.setOffset(0);
             indexerSearchResult.setLimit(0);
         }
-        debug("Found results {}-{} of {} available", indexerSearchResult.getOffset(), indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getTotalResults());
+
+        int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
+        debug("Returning results {}-{} of {} available", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults());
 
         return indexerSearchResult;
     }

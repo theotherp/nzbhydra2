@@ -29,7 +29,10 @@ public class NewznabParameters {
 
     private Integer offset = 0;
     private Integer limit = 100;
+    private Integer minage;
     private Integer maxage;
+    private Integer minsize;
+    private Integer maxsize;
 
     private String id;
 

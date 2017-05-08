@@ -9,8 +9,9 @@ import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
-import org.nzbhydra.searching.IndexerPicker.PickingResult;
+import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -46,7 +50,7 @@ public class Searcher {
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
-    private IndexerPicker indexerPicker;
+    private IndexerForSearchSelector indexerPicker;
 
     /**
      * Maps a search request's hash to its cache entry
@@ -61,45 +65,74 @@ public class Searcher {
         searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
+        List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
+        while (indexersToSearchAndTheirResults.size() > 0 && searchResultItems.size() < numberOfWantedResults) {
 
-        while (indexersToSearchAndTheirResults.size() > 0 && searchCacheEntry.getNumberOfFoundResults() < numberOfWantedResults) {
             logger.debug("Going to call {} indexer because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
 
+            //Do the actual search
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
+
+            //Update cache
             searchCacheEntry.getIndexerSearchResultsByIndexer().putAll(indexersToSearchAndTheirResults);
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
-            searchResult.getIndexerSearchResultMap().putAll(indexersToSearchAndTheirResults);
 
-            //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates that were in different searches
-            List<SearchResultItem> searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
+
+            //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates over multiple searches
+            searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
             DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
+            //Save to database
             createOrUpdateIndexerSearchEntity(searchCacheEntry, indexersToSearchAndTheirResults, duplicateDetectionResult);
 
-            searchResult.setDuplicateDetectionResult(duplicateDetectionResult);
-            indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
-            //Set the rejection counts from all searches, this and previous
-            searchResult.getReasonsForRejection().clear();
-            indexersToSearchAndTheirResults.values().forEach(x -> x.forEach(y -> y.getReasonsForRejection().entrySet().forEach(z -> searchResult.getReasonsForRejection().add(z.getElement(), z.getCount()))));
-            searchCacheEntry.setNumberOfFoundResults(searchResult.calculateNumberOfProcessedResults());
-            searchCacheEntry.setLastSearchResult(searchResult);
-        }
+            //Remove duplicates for external searches
+            if (searchRequest.getSource() == SearchSource.API) {
+                searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
+            }
 
-        return searchCacheEntry.getLastSearchResult();
+            //Set the rejection counts from all searches, this and previous
+            searchCacheEntry.getReasonsForRejection().clear();
+            indexersToSearchAndTheirResults.values().forEach(x -> x.forEach(y -> y.getReasonsForRejection().entrySet().forEach(z -> searchCacheEntry.getReasonsForRejection().add(z.getElement(), z.getCount()))));
+
+            //Update indexersToSearchAndTheirResults to remove indexers which threw an error or don't have any more results
+            indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(indexersToSearchAndTheirResults);
+
+            searchCacheEntry.setSearchResultItems(searchResultItems);
+        }
+        searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
+        searchResult.setIndexerSearchResults(indexersToSearchAndTheirResults.entrySet().stream().map(x -> Iterables.getLast(x.getValue())).collect(Collectors.toList()));
+        searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
+
+        spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItems);
+
+        return searchResult;
     }
 
-
-    public OffsetAndLimitCalculation calculateOffsetAndLimit(int offset, int limit, int searchResultsSize) {
-        if (offset >= searchResultsSize - 1) {
-            logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultsSize);
-            return new OffsetAndLimitCalculation(0, 0);
+    private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
+        int offset = searchRequest.getOffset().orElse(0);
+        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
+        if (offset >= searchResultItems.size() - 1) {
+            logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
+            searchResult.setSearchResultItems(Collections.emptyList());
+            return;
         }
-        if (offset + limit > searchResultsSize) {
-            logger.debug("Offset {} + limit {} exceeds the number of available results {}; returning all remaining results from cache", offset, limit, searchResultsSize);
-            limit = searchResultsSize - offset;
+        if (offset + limit > searchResultItems.size()) {
+            logger.debug("Offset {} + limit {} exceeds the number of available results {}; returning all remaining results from cache", offset, limit, searchResultItems.size());
+            limit = searchResultItems.size() - offset;
         }
 
-        return new OffsetAndLimitCalculation(offset, limit);
+        if (limit != 0) {
+            searchResult.setOffset(offset);
+            searchResult.setLimit(limit);
+            logger.info("Returning results {}-{} from {} accepted results in cache. A total of {} results is available from indexers of which {} were already rejected", offset + 1, offset + limit, searchResultItems.size(), searchResult.getNumberOfTotalAvailableResults(), searchResult.getNumberOfRejectedResults());
+            searchResult.setSearchResultItems(searchResultItems.subList(offset, offset + limit));
+        }
+    }
+
+    protected List<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<TreeSet<SearchResultItem>> duplicateGroups) {
+        return duplicateGroups.stream().map(x -> {
+            return x.stream().sorted(Comparator.comparingInt(SearchResultItem::getIndexerScore).reversed().thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getPubDate().getEpochSecond()).reversed())).iterator().next();
+        }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
     private void createOrUpdateIndexerSearchEntity(SearchCacheEntry searchCacheEntry, Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults, DuplicateDetectionResult duplicateDetectionResult) {
@@ -149,7 +182,7 @@ public class Searcher {
 
             searchRepository.save(searchEntity);
 
-            PickingResult pickingResult = indexerPicker.pickIndexers(searchRequest);
+            IndexerForSearchSelection pickingResult = indexerPicker.pickIndexers(searchRequest);
             searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult, searchEntity);
         } else {
             searchCacheEntry = searchRequestCache.get(searchRequest.hashCode());

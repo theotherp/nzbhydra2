@@ -34,8 +34,8 @@ public class DuplicateDetector {
 
         //In each list of searchResults with the same title we want to find the duplicates
         int countDetectedDuplicates = 0;
+        int duplicateIdentifier = 1;
         for (List<SearchResultItem> titleGroup : groupedByTitle.values()) {
-            //TODO We can do that in parallel for every title group, but performance doesn't seem to be an issue
             titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getPubDate).reversed()).collect(Collectors.toList());
             //So we start with a bucket with the first (later we have a list of buckets where all searchResults in a bucket are duplicates)
             List<TreeSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
@@ -53,6 +53,7 @@ public class DuplicateDetector {
                         if (same) {
                             //If they are the same we found a bucket for the result. We add it and continue
                             foundBucket = true;
+                            searchResultItem.setDuplicateIdentifier(duplicateIdentifier);
                             bucket.add(searchResultItem);
                             countDetectedDuplicates++;
                             break;
@@ -65,6 +66,7 @@ public class DuplicateDetector {
                 }
                 //If we didn't find a bucket for the result we start a new one
                 if (!foundBucket) {
+                    searchResultItem.setDuplicateIdentifier(duplicateIdentifier++);
                     listOfBuckets.add(new TreeSet<>(newArrayList(searchResultItem)));
                 }
             }

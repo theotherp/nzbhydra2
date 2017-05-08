@@ -57,16 +57,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
     });
 
-    //Process searchResults
-    //$scope.searchResults = [];
-    // $scope.searchResults = SearchService.getLastResults().searchResults;
-    // $scope.numberOfAvailableResults = SearchService.getLastResults().numberOfAvailableResults;
-    // $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
-    // $scope.numberOfAcceptedResults = SearchService.getLastResults().numberOfAcceptedResults;
-    // $scope.rejectedReasonsMap = SearchService.getLastResults().rejectedReasonsMap;
-    // $scope.numberOfRejectedResults = SearchService.getLastResults().numberOfRejectedResults;
-    // $scope.numberOfProcessedResults = SearchService.getLastResults().numberOfProcessedResults;
-    // $scope.filteredResults = sortAndFilter($scope.searchResults);
     setDataFromSearchResult(SearchService.getLastResults(), []);
 
     $scope.$emit("searchResultsShown");
@@ -248,13 +238,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
+        $scope.numberOfLoadedResults = $scope.searchResults.length;
     }
 
     $scope.loadMore = loadMore;
     function loadMore(loadAll) {
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
-            SearchService.loadMore($scope.numberOfAcceptedResults, limit).then(function (data) {
+            SearchService.loadMore($scope.numberOfLoadedResults, limit).then(function (data) {
                 setDataFromSearchResult(data, $scope.searchResults);
                 stopBlocking();
             });

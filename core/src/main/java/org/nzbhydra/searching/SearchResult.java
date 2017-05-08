@@ -1,48 +1,41 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.searching.IndexerPicker.PickingResult;
+import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
 
 @Getter
 @Setter
 //@Builder
 public class SearchResult {
 
-    private DuplicateDetectionResult duplicateDetectionResult;
-    private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultMap = new HashMap<>();
+    private List<SearchResultItem> searchResultItems;
+    private List<IndexerSearchResult> indexerSearchResults;
+    //private DuplicateDetectionResult duplicateDetectionResult;
+    private int offset;
+    private int limit;
     private Multiset<String> reasonsForRejection = HashMultiset.create();
-    private PickingResult pickingResult;
+    private IndexerForSearchSelection pickingResult;
+    private Multiset<Indexer> uniqueResultsPerIndexer;
 
-    public SearchResult() {
-        duplicateDetectionResult = new DuplicateDetectionResult(new ArrayList<>(), HashMultiset.create());
+    private int numberOfTotalAvailableResults;
+
+
+    public int getNumberOfProcessedResults() {
+        return getNumberOfRejectedResults() + getNumberOfAcceptedResults();
     }
 
-    public int calculateNumberOfProcessedResults() {
-        if (duplicateDetectionResult == null) {
-            return 0;
-        }
-
-        return duplicateDetectionResult.getDuplicateGroups().stream().mapToInt(TreeSet::size).sum() +
-                reasonsForRejection.entrySet().stream().mapToInt(Multiset.Entry::getCount).sum();
+    public int getNumberOfAcceptedResults() {
+        return searchResultItems.size();
     }
 
-    public int calculateNumberOfAcceptedResults() {
-        return duplicateDetectionResult.getDuplicateGroups().stream().mapToInt(TreeSet::size).sum();
-    }
-
-    public int calculateNumberOfTotalAvailableResults() {
-        return indexerSearchResultMap.values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum();
+    public int getNumberOfRejectedResults() {
+        return reasonsForRejection.entrySet().stream().mapToInt(Multiset.Entry::getCount).sum();
     }
 
 

@@ -33,6 +33,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String description;
     private String details;
     private DownloadType downloadType;
+    private int duplicateIdentifier;
     private Integer files;
     private Instant firstFound;
     private Integer grabs;

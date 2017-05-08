@@ -1,5 +1,7 @@
 package org.nzbhydra.searching;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,24 +10,34 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerEntity;
+import org.nzbhydra.database.IndexerSearchEntity;
+import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.SearchRepository;
 import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.IndexerPicker.PickingResult;
+import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +70,9 @@ public class SearcherUnitTest {
     @Mock
     private InfoProvider infoProviderMock;
     @Mock
-    private IndexerPicker indexerPicker;
+    private IndexerForSearchSelector indexerPicker;
+    @Mock
+    private IndexerSearchRepository indexerSearchRepository;
     @Mock
     private SearchRequest searchRequestMock;
     @Mock
@@ -66,7 +80,9 @@ public class SearcherUnitTest {
     @Captor
     private ArgumentCaptor<List<SearchResultItem>> searchResultItemsCaptor;
     @Mock
-    private PickingResult pickingResultMock;
+    private IndexerForSearchSelection pickingResultMock;
+    @Mock
+    private IndexerSearchEntity indexerSearchEntityMock;
 
 
     @Before
@@ -79,14 +95,14 @@ public class SearcherUnitTest {
         when(indexer2.getName()).thenReturn("indexer2");
         when(indexer1.getConfig()).thenReturn(indexerConfigMock);
         when(indexer2.getConfig()).thenReturn(indexerConfigMock);
+        when(indexer1.getIndexerEntity()).thenReturn(indexerEntity);
         Category category = new Category();
         category.setName("cat");
         when(searchRequestMock.getCategory()).thenReturn(category);
-        when(indexerPicker.pickIndexers(searchRequestMock)).thenReturn(pickingResultMock);
+        when(indexerPicker.pickIndexers(any())).thenReturn(pickingResultMock);
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
-
+        when(indexerSearchRepository.findByIndexerEntityAndSearchEntity(any(), any())).thenReturn(indexerSearchEntityMock);
     }
-
 
     @Test
     public void shouldTransformToRssXml() throws Exception {
@@ -116,8 +132,62 @@ public class SearcherUnitTest {
         verify(duplicateDetector).detectDuplicates(searchResultItemsCaptor.capture());
 
         assertThat(searchResultItemsCaptor.getValue().size(), is(2));
+    }
+
+    @Test
+    public void shouldFollowOffsetAndLimit() throws Exception {
+        when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1));
+        when(duplicateDetector.detectDuplicates(any())).thenAnswer(new Answer<DuplicateDetectionResult>() {
+            @Override
+            public DuplicateDetectionResult answer(InvocationOnMock invocation) throws Throwable {
+                List<SearchResultItem> items = invocation.getArgument(0);
+                List<TreeSet<SearchResultItem>> sets = items.stream().map(x -> {
+                    return Sets.newTreeSet(Arrays.asList(x));
+                }).collect(Collectors.toList());
+
+                return new DuplicateDetectionResult(sets, HashMultiset.create());
+            }
+        });
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, true, 200, indexer1));
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 1);
+        searchRequest.setTitle("some title so it will be found in the search request cache");
+        SearchResult result = searcher.search(searchRequest);
+//        List<IndexerSearchResult> foundResults = result.getIndexerSearchResultMap().values().iterator().next();
+//        assertThat(foundResults.size(), is(1));
+//        assertThat(foundResults.get(0).getSearchResultItems().get(0).getTitle(), is("item0"));
+
+
+        searchRequest.setOffset(1);
+        result = searcher.search(searchRequest);
+//        foundResults = result.getIndexerSearchResultMap().values().iterator().next();
+//        assertThat(foundResults.size(), is(1));
+//        assertThat(foundResults.get(0).getSearchResultItems().get(0).getTitle(), is("item1"));
 
     }
+
+    private IndexerSearchResult mockIndexerSearchResult(int offset, int limit, boolean hasMoreResults, int totalAvailableResults, Indexer indexer) {
+
+        List<SearchResultItem> items = new ArrayList<>();
+        for (int i = offset; i < offset + limit; i++) {
+            SearchResultItem item = mock(SearchResultItem.class, "item" + i);
+            items.add(item);
+        }
+
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
+        indexerSearchResult.setSearchResultItems(items);
+        indexerSearchResult.setLimit(limit);
+        indexerSearchResult.setOffset(offset);
+        indexerSearchResult.setWasSuccessful(true);
+        indexerSearchResult.setHasMoreResults(hasMoreResults);
+        indexerSearchResult.setTotalResults(totalAvailableResults);
+        indexerSearchResult.setTotalResultsKnown(true);
+        indexerSearchResult.setIndexer(indexer);
+
+        return indexerSearchResult;
+    }
+
+
 
 
 }

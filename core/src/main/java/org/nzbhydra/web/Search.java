@@ -2,15 +2,12 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.Category;
-import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.OffsetAndLimitCalculation;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
@@ -42,7 +39,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -120,28 +116,31 @@ public class Search {
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
         SearchResponse response = new SearchResponse();
-        int totalResultsAvailable = searchResult.calculateNumberOfTotalAvailableResults();
-        response.setNumberOfAvailableResults(totalResultsAvailable);
-        response.setNumberOfRejectedResults(searchResult.getReasonsForRejection().entrySet().stream().mapToInt(Multiset.Entry::getCount).sum());
+
+        response.setNumberOfAvailableResults(searchResult.getNumberOfTotalAvailableResults());
+        response.setNumberOfRejectedResults(searchResult.getNumberOfRejectedResults());
         response.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
         response.setIndexerSearchMetaDatas(createIndexerSearchMetaDatas(searchResult));
         response.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
-        response.setNumberOfProcessedResults(searchResult.calculateNumberOfProcessedResults());
-        response.setNumberOfAcceptedResults(searchResult.calculateNumberOfAcceptedResults());
+        response.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
+        response.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
 
-        List<SearchResult> transformedSearchResults = transformSearchResults(searchResult);
-        int offset = searchRequest.getOffset().orElse(0);
-        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
-
-        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(offset, limit, transformedSearchResults.size());
-        if (splice.getLimit() != 0) {
-            offset = splice.getOffset();
-            limit = splice.getLimit();
-            response.setOffset(splice.getOffset());
-            response.setLimit(splice.getLimit());
-            response.setSearchResults(transformedSearchResults.subList(offset, offset + limit));
-            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, offset + limit, transformedSearchResults.size(), totalResultsAvailable);
-        }
+        List<SearchResult> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
+//        int offset = searchRequest.getOffset().orElse(0);
+//        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
+//
+//        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(offset, limit, transformedSearchResults.size());
+//        if (splice.getLimit() != 0) {
+//            offset = splice.getOffset();
+//            limit = splice.getLimit();
+//            response.setOffset(splice.getOffset());
+//            response.setLimit(splice.getLimit());
+//            response.setSearchResults(transformedSearchResults.subList(offset, offset + limit));
+//            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, offset + limit, transformedSearchResults.size(), totalResultsAvailable);
+//        }
+        response.setSearchResults(transformedSearchResults);
+        response.setOffset(response.getOffset());
+        response.setLimit(response.getLimit());
 
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
@@ -150,9 +149,7 @@ public class Search {
 
     private List<IndexerSearchMetaData> createIndexerSearchMetaDatas(org.nzbhydra.searching.SearchResult searchResult) {
         List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();
-        for (Entry<Indexer, List<IndexerSearchResult>> entry : searchResult.getIndexerSearchResultMap().entrySet()) {
-            //For now it's enough to get the data from the last metadata entry (even if multiple were done to get the needed amount of results)
-            IndexerSearchResult indexerSearchResult = Iterables.getLast(entry.getValue());
+        for (IndexerSearchResult indexerSearchResult : searchResult.getIndexerSearchResults()) {
             IndexerSearchMetaData indexerSearchMetaData = new IndexerSearchMetaData();
             indexerSearchMetaData.setDidSearch(true); //TODO
             indexerSearchMetaData.setErrorMessage(indexerSearchResult.getErrorMessage());
@@ -171,32 +168,29 @@ public class Search {
         return indexerSearchMetaDatas;
     }
 
-    private List<SearchResult> transformSearchResults(org.nzbhydra.searching.SearchResult searchResult) {
+    private List<SearchResult> transformSearchResults(List<SearchResultItem> searchResultItems) {
         List<SearchResult> transformedSearchResults = new ArrayList<>();
-        List<TreeSet<SearchResultItem>> duplicateGroups = searchResult.getDuplicateDetectionResult().getDuplicateGroups();
-        for (TreeSet<SearchResultItem> duplicateGroup : duplicateGroups) {
-            int groupResultsIdentifier = random.nextInt();
-            for (SearchResultItem item : duplicateGroup) {
 
-                SearchResultBuilder builder = SearchResult.builder()
-                        .category(item.getCategory().getName())
-                        .comments(item.getCommentsCount())
-                        .details_link(item.getDetails())
-                        .downloadType(item.getDownloadType().name())
-                        .files(item.getFiles())
-                        .grabs(item.getGrabs())
-                        .hasNfo(item.getHasNfo().name())
-                        .hash(groupResultsIdentifier)
-                        .indexer(item.getIndexer().getName())
-                        .indexerguid(item.getIndexerGuid())
-                        .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                        .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
-                        .searchResultId(item.getSearchResultId().toString())
-                        .size(item.getSize())
-                        .title(item.getTitle());
-                builder = setSearchResultDateRelatedValues(builder, item);
-                transformedSearchResults.add(builder.build());
-            }
+        for (SearchResultItem item : searchResultItems) {
+
+            SearchResultBuilder builder = SearchResult.builder()
+                    .category(item.getCategory().getName())
+                    .comments(item.getCommentsCount())
+                    .details_link(item.getDetails())
+                    .downloadType(item.getDownloadType().name())
+                    .files(item.getFiles())
+                    .grabs(item.getGrabs())
+                    .hasNfo(item.getHasNfo().name())
+                    .hash(item.getDuplicateIdentifier())
+                    .indexer(item.getIndexer().getName())
+                    .indexerguid(item.getIndexerGuid())
+                    .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
+                    .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
+                    .searchResultId(item.getSearchResultId().toString())
+                    .size(item.getSize())
+                    .title(item.getTitle());
+            builder = setSearchResultDateRelatedValues(builder, item);
+            transformedSearchResults.add(builder.build());
         }
         transformedSearchResults.sort(Comparator.comparingLong(SearchResult::getEpoch).reversed());
         return transformedSearchResults;

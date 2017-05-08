@@ -12,7 +12,13 @@ import java.util.TreeSet;
 @AllArgsConstructor
 public class DuplicateDetectionResult {
 
+    /**
+     * List of sets where every set contains search results which are logically identical (different indexer, same usenet posting)
+     */
     private List<TreeSet<SearchResultItem>> duplicateGroups;
+    /**
+     * For each indexer the number of results which were only found by this indexer
+     */
     private Multiset<Indexer> uniqueResultsPerIndexer;
 
 }
