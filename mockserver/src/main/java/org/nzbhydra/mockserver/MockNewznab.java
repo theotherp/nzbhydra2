@@ -94,7 +94,8 @@ public class MockNewznab {
             }
             int start = params.getOffset() == 0 ? 0 : params.getOffset();
             int end = Math.min(start + 10 - 1, 40);
-            rssRoot = generateResponse(start, end, "offsetTest");
+            rssRoot = generateResponse(start, end, "offsetTest", "duplicates".equals(params.getQ()));
+
             rssRoot.getRssChannel().getNewznabResponse().setTotal(40);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -115,7 +116,7 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            RssRoot rssRoot = generateResponse(0, endIndex, params.getApikey());
+            RssRoot rssRoot = generateResponse(0, endIndex, params.getApikey(), "duplicates".equals(params.getQ()));
             responsesPerApikey.put(endIndex, rssRoot);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -138,7 +139,7 @@ public class MockNewznab {
     }
 
 
-    private RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase) {
+    private RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates) {
 
         RssRoot rssRoot = new RssRoot();
         rssRoot.setVersion("2.0");
@@ -155,9 +156,21 @@ public class MockNewznab {
 
             RssItem item = new RssItem();
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));
-            item.setDescription("Some longer itemDescription that whatever" + i);
-            item.setTitle("indexer" + itemTitleBase + "-" + i);
+            String poster = "poster";
+            String group = "group";
             Instant pubDate = Instant.now().minus(i, ChronoUnit.DAYS); //The higher the index the older they get
+            String title = "indexer" + itemTitleBase + "-" + i;
+            if (generateDuplicates) {
+                if (random.nextBoolean()) {
+                    size = "1000000";
+                    title = "aDuplicate";
+                }
+            } else {
+                poster = poster + String.valueOf(random.nextInt());
+            }
+
+            item.setDescription("Some longer itemDescription that whatever" + i);
+            item.setTitle(title);
             item.setPubDate(pubDate);
             item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
@@ -169,8 +182,9 @@ public class MockNewznab {
             attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
             attributes.add(new NewznabAttribute("size", size));
             attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
-            attributes.add(new NewznabAttribute("poster", "poster"));
-            attributes.add(new NewznabAttribute("group", "group"));
+
+            attributes.add(new NewznabAttribute("poster", poster));
+            attributes.add(new NewznabAttribute("group", group));
             attributes.add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(1000))));
             if (random.nextBoolean()) {
                 attributes.add(new NewznabAttribute("nfo", String.valueOf(random.nextInt(2))));

@@ -123,7 +123,8 @@ public class ExternalApi {
     protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params) {
         logger.debug("Transforming searchResults");
 
-        RssRoot rssRoot = getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults());
+        int total = searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults() - searchResult.getNumberOfRemovedDuplicates();
+        RssRoot rssRoot = getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total);
         logger.debug("Finished transforming");
         return rssRoot;
     }

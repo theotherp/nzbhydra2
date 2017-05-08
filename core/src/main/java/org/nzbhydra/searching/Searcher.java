@@ -87,7 +87,9 @@ public class Searcher {
 
             //Remove duplicates for external searches
             if (searchRequest.getSource() == SearchSource.API) {
+                int beforeDuplicateRemoval = searchResultItems.size();
                 searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
+                searchResult.setNumberOfRemovedDuplicates(beforeDuplicateRemoval - searchResultItems.size());
             }
 
             //Set the rejection counts from all searches, this and previous
@@ -124,7 +126,11 @@ public class Searcher {
         if (limit != 0) {
             searchResult.setOffset(offset);
             searchResult.setLimit(limit);
-            logger.info("Returning results {}-{} from {} accepted results in cache. A total of {} results is available from indexers of which {} were already rejected", offset + 1, offset + limit, searchResultItems.size(), searchResult.getNumberOfTotalAvailableResults(), searchResult.getNumberOfRejectedResults());
+            String andRemoved = "";
+            if (searchRequest.getSource() == SearchSource.API) {
+                andRemoved = " and " + searchResult.getNumberOfRemovedDuplicates() + " were removed as duplicates";
+            }
+            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers of which {} were already rejected" + andRemoved, offset + 1, offset + limit, searchResultItems.size(), searchResult.getNumberOfTotalAvailableResults(), searchResult.getNumberOfRejectedResults());
             searchResult.setSearchResultItems(searchResultItems.subList(offset, offset + limit));
         }
     }

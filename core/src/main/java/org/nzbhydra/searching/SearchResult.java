@@ -16,14 +16,13 @@ public class SearchResult {
 
     private List<SearchResultItem> searchResultItems;
     private List<IndexerSearchResult> indexerSearchResults;
-    //private DuplicateDetectionResult duplicateDetectionResult;
     private int offset;
     private int limit;
     private Multiset<String> reasonsForRejection = HashMultiset.create();
     private IndexerForSearchSelection pickingResult;
     private Multiset<Indexer> uniqueResultsPerIndexer;
-
     private int numberOfTotalAvailableResults;
+    private int numberOfRemovedDuplicates;
 
 
     public int getNumberOfProcessedResults() {
