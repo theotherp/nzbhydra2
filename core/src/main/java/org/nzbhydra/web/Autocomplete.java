@@ -56,8 +56,8 @@ public class Autocomplete {
                     });
 
     @RequestMapping(value = "/internalapi/autocomplete/{type}/{input}", produces = "application/json")
-    public List<MediaInfoTO> downloadNzbInternal(@PathVariable("type") AutocompleteType type, @PathVariable("input") String input) throws ExecutionException {
-        return autocompleteCache.get(new CacheKey(type, input));
+    public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @PathVariable("input") String input) throws ExecutionException {
+        return autocompleteCache.get(new CacheKey(type, input)); //TODO Handle provider not finding anything more graceful (don't log exception with stacktrace etc)
     }
 
     @Data

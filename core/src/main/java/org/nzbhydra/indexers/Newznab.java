@@ -16,7 +16,6 @@ import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
-import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
@@ -45,7 +44,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,8 +81,6 @@ public class Newznab extends Indexer<Xml> {
         paramValueToIdMap.put("traktid", IdType.TRAKT);
     }
 
-    @Autowired
-    private InfoProvider infoProvider;
     @Autowired
     private Unmarshaller unmarshaller;
 
@@ -178,35 +174,6 @@ public class Newznab extends Indexer<Xml> {
                 query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(excludedWords);
             } else {
                 query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
-            }
-        }
-        return query;
-    }
-
-    protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
-        if (searchRequest.getQuery().isPresent()) {
-            query = searchRequest.getQuery().get();
-        } else {
-            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
-            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
-            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
-                if (searchRequest.getTitle().isPresent()) {
-                    query = searchRequest.getTitle().get();
-                } else {
-                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
-                    try {
-                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
-                        if (!mediaInfo.getTitle().isPresent()) {
-                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
-                        }
-                        query = mediaInfo.getTitle().get();
-
-                    } catch (InfoProviderException e) {
-                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
-                    }
-                }
-                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
             }
         }
         return query;

@@ -18,6 +18,10 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor;
@@ -41,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -76,6 +81,8 @@ public abstract class Indexer<T> {
     protected ResultAcceptor resultAcceptor;
     @Autowired
     protected CategoryProvider categoryProvider;
+    @Autowired
+    protected InfoProvider infoProvider;
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
@@ -254,6 +261,36 @@ public abstract class Indexer<T> {
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         handleSuccess(apiAccessType, responseTime, uri.toString());
         return result;
+    }
+
+    //TODO query generation for shows, ebooks
+    protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
+        if (searchRequest.getQuery().isPresent()) {
+            query = searchRequest.getQuery().get();
+        } else {
+            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
+            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
+            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
+                if (searchRequest.getTitle().isPresent()) {
+                    query = searchRequest.getTitle().get();
+                } else {
+                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
+                    try {
+                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
+                        if (!mediaInfo.getTitle().isPresent()) {
+                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
+                        }
+                        query = mediaInfo.getTitle().get();
+
+                    } catch (InfoProviderException e) {
+                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
+                    }
+                }
+                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+            }
+        }
+        return query;
     }
 
 

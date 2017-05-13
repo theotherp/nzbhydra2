@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.base.Joiner;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
@@ -9,6 +10,7 @@ import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +28,8 @@ import java.util.regex.Pattern;
 public class NzbIndex extends Indexer<RssRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbIndex.class);
-    private static final Pattern GUID_PATTERN = Pattern.compile(".*/release/(\\d+).*");
+    private static final Pattern GUID_PATTERN = Pattern.compile(".*/release/(\\d+).*", Pattern.DOTALL);
+    private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
     protected void completeIndexerSearchResult(RssRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult) {
@@ -56,6 +59,7 @@ public class NzbIndex extends Indexer<RssRoot> {
             matcher.find();
             item.setIndexerGuid(matcher.group(1));
             item.setCategory(categoryProvider.getNotAvailable());
+            item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
             item.setIndexer(this);
             item.setDownloadType(DownloadType.NZB);
             items.add(item);
@@ -66,9 +70,25 @@ public class NzbIndex extends Indexer<RssRoot> {
 
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", searchRequest.getLimit().orElse(100)).queryParam("hidecross", "1"); //TODO Limit
+        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", searchRequest.getLimit().orElse(100)).queryParam("hidecross", "1");
+        if (searchRequest.getMinsize().isPresent()) {
+            componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
+        } else if (config.getGeneralMinSize().isPresent()) {
+            componentsBuilder.queryParam("minsize", config.getGeneralMinSize().get());
+        }
+        if (searchRequest.getMaxsize().isPresent()) {
+            componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize().get());
+        }
+        if (searchRequest.getMinage().isPresent()) {
+            componentsBuilder.queryParam("minage", searchRequest.getMinage().get());
+        }
+        if (searchRequest.getMaxage().isPresent()) {
+            componentsBuilder.queryParam("age", searchRequest.getMaxage().get());
+        }
 
-        String query = searchRequest.getQuery().orElse(""); //TODO query generation
+        String query = "";
+        query = generateQueryIfApplicable(searchRequest, query); //TODO query generation for shows
+        query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
         //TODO paging
 
 //        componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
@@ -80,9 +100,37 @@ public class NzbIndex extends Indexer<RssRoot> {
         return componentsBuilder;
     }
 
+    private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {
+        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
+        requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
+        if (!requiredWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
+        }
+
+        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
+        excludedWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
+        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        if (!excludedWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + "-" + Joiner.on(" -").join(excludedWords);
+
+        }
+        return query;
+    }
+
     @Override
     public NfoResult getNfo(String guid) {
-        return null;
+        URI nfoUri = getBaseUri().pathSegment("nfo", guid).build().toUri();
+        try {
+            String html = getAndStoreResultToDatabase(nfoUri, String.class, IndexerApiAccessType.NFO);
+            Matcher matcher = NFO_PATTERN.matcher(html);
+            if (!matcher.find()) {
+                return NfoResult.withoutNfo();
+            }
+            return NfoResult.withNfo(matcher.group(1));
+        } catch (IndexerAccessException e) {
+            return NfoResult.unsuccessful(e.getMessage());
+        }
     }
 
     @Override
@@ -94,7 +142,6 @@ public class NzbIndex extends Indexer<RssRoot> {
     protected Logger getLogger() {
         return logger;
     }
-
 
     protected UriComponentsBuilder getBaseUri() {
         return UriComponentsBuilder.fromHttpUrl(config.getHost());
