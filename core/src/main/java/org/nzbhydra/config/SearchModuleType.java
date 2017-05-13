@@ -2,5 +2,6 @@ package org.nzbhydra.config;
 
 public enum SearchModuleType {
     NEWZNAB,
-    TORZNAB
+    TORZNAB,
+    NZBINDEX
 }

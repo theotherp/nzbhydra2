@@ -1,7 +1,6 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,9 +20,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
-import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
@@ -41,16 +38,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,7 +55,7 @@ import java.util.stream.Stream;
 @Getter
 @Setter
 @Component
-public class Newznab extends Indexer {
+public class Newznab extends Indexer<Xml> {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
@@ -90,10 +86,6 @@ public class Newznab extends Indexer {
     @Autowired
     private InfoProvider infoProvider;
     @Autowired
-    protected CategoryProvider categoryProvider;
-    @Autowired
-    private ResultAcceptor resultAcceptor;
-    @Autowired
     private Unmarshaller unmarshaller;
 
 
@@ -103,7 +95,8 @@ public class Newznab extends Indexer {
     }
 
 
-    protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest) throws IndexerSearchAbortedException {
+    @Override
+    protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
         UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
 
         String query = "";
@@ -122,6 +115,12 @@ public class Newznab extends Indexer {
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
 
 
+        if (limit != null) {
+            componentsBuilder.queryParam("limit", limit);
+        }
+        if (offset != null) {
+            componentsBuilder.queryParam("offset", offset);
+        }
         return componentsBuilder;
     }
 
@@ -257,76 +256,18 @@ public class Newznab extends Indexer {
         return componentsBuilder;
     }
 
-    @Override
-    protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException {
-        UriComponentsBuilder builder = buildSearchUrl(searchRequest);
-        builder.queryParam("offset", offset);
-        if (limit != null) {
-            builder.queryParam("limit", limit);
+    protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+        Xml response = getAndStoreResultToDatabase(uri, Xml.class, apiAccessType);
+        if (response instanceof RssError) {
+            //Base class doesn't know any RssErrors so we must handle this case specially
+            handleRssError((RssError) response, uri.toString());
+        } else if (!(response instanceof RssRoot)) {
+            throw new UnknownResponseException("Indexer returned unknown response");
         }
-        String url = builder.build().toUriString();
-
-
-        Xml response;
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        info("Calling {}", url);
-        try {
-            response = getAndStoreResultToDatabase(url, Xml.class, IndexerApiAccessType.SEARCH);
-            if (response instanceof RssError) {
-                //Base class doesn't know any RssErrors so we must handle this case specially
-                try {
-                    handleRssError((RssError) response, url);
-                } catch (IndexerAccessException e) {
-                    handleIndexerAccessException(e, url, IndexerApiAccessType.SEARCH);
-                    throw e;
-                }
-            } else if (!(response instanceof RssRoot)) {
-                throw new UnknownResponseException("Indexer returned unknown response");
-            }
-        } catch (IndexerAccessException e) {
-            IndexerSearchResult errorResult = new IndexerSearchResult(this, false);
-            errorResult.setErrorMessage(e.getMessage());
-            errorResult.setSearchResultItems(Collections.emptyList());
-
-            return errorResult;
-        }
-        long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        //noinspection ConstantConditions Actually checked above
-        RssRoot rssRoot = (RssRoot) response;
-
-        stopwatch.reset();
-        stopwatch.start();
-        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
-        List<SearchResultItem> searchResultItems = getSearchResultItems(rssRoot);
-        info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
-        AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
-        searchResultItems = acceptorResult.getAcceptedResults();
-        indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
-        int numberOfRejectedResults = acceptorResult.getNumberOfRejectedResults();
-
-        searchResultItems = persistSearchResults(searchResultItems);
-        indexerSearchResult.setSearchResultItems(searchResultItems);
-        indexerSearchResult.setResponseTime(responseTime);
-
-        NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
-        if (newznabResponse != null) {
-            indexerSearchResult.setTotalResultsKnown(true);
-            indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + numberOfRejectedResults);
-            indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(100);
-        } else {
-            indexerSearchResult.setTotalResultsKnown(false);
-            indexerSearchResult.setHasMoreResults(false);
-            indexerSearchResult.setOffset(0);
-            indexerSearchResult.setLimit(0);
-        }
-
-        int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
-        debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), numberOfRejectedResults);
-
-        return indexerSearchResult;
+        return response;
     }
+
+
 
     @Override
     public NfoResult getNfo(String guid) {
@@ -338,7 +279,7 @@ public class Newznab extends Indexer {
         }
         String result;
         try {
-            result = getAndStoreResultToDatabase(baseUri.toUriString(), String.class, IndexerApiAccessType.NFO);
+            result = getAndStoreResultToDatabase(baseUri.build().toUri(), String.class, IndexerApiAccessType.NFO);
         } catch (IndexerAccessException e) {
             return NfoResult.unsuccessful(e.getMessage());
         }
@@ -371,15 +312,32 @@ public class Newznab extends Indexer {
         throw new IndexerErrorCodeException(response);
     }
 
-    protected List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) {
+    @Override
+    protected List<SearchResultItem> getSearchResultItems(Xml rssRoot) {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
-        for (RssItem item : rssRoot.getRssChannel().getItems()) {
+        for (RssItem item : ((RssRoot) rssRoot).getRssChannel().getItems()) {
             SearchResultItem searchResultItem = createSearchResultItem(item);
             searchResultItems.add(searchResultItem);
         }
 
         return searchResultItems;
+    }
+
+    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult) {
+        NewznabResponse newznabResponse = ((RssRoot) response).getRssChannel().getNewznabResponse();
+        if (newznabResponse != null) {
+            indexerSearchResult.setTotalResultsKnown(true);
+            indexerSearchResult.setTotalResults(newznabResponse.getTotal());
+            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + acceptorResult.getNumberOfRejectedResults());
+            indexerSearchResult.setOffset(newznabResponse.getOffset());
+            indexerSearchResult.setLimit(100);
+        } else {
+            indexerSearchResult.setTotalResultsKnown(false);
+            indexerSearchResult.setHasMoreResults(false);
+            indexerSearchResult.setOffset(0);
+            indexerSearchResult.setLimit(0);
+        }
     }
 
     protected SearchResultItem createSearchResultItem(RssItem item) {

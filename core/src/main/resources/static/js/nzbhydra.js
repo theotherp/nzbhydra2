@@ -3253,6 +3253,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.isById = {value: true}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean
     $scope.availableIndexers = [];
+    $scope.selectedIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
 
     $scope.toggle = function (searchCategory) {
@@ -3337,10 +3338,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     function getSelectedIndexers() {
-        var activatedIndexers = _.filter($scope.availableIndexers).filter(function (indexer) {
-            return indexer.activated;
-        });
-        return _.pluck(activatedIndexers, "name").join("|");
+        return _.pluck($scope.selectedIndexers, "name").join("|");
     }
 
 
@@ -3408,7 +3406,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.toggleIndexer = function (indexer) {
-        $scope.indexers[indexer] = !$scope.indexers[indexer]
+        console.log($scope.availableIndexers[indexer.name].activated);
+        $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
+        console.log($scope.availableIndexers[indexer.name].activated);
     };
 
 
@@ -3423,7 +3423,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     function getAvailableIndexers() {
-        return _.chain(safeConfig.indexers).filter(function (indexer) {
+        var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
             return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
@@ -3431,6 +3431,12 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             .map(function (indexer) {
                 return {name: indexer.name, activated: isIndexerPreselected(indexer), categories: indexer.categories};
             }).value();
+        _.forEach(availableIndexersList, function (x) {
+            if (x.activated) {
+                $scope.selectedIndexers.push(x);
+            }
+        });
+        return availableIndexersList;
     }
 
 

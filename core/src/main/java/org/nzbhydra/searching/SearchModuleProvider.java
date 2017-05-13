@@ -7,6 +7,7 @@ import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.indexers.NzbIndex;
 import org.nzbhydra.indexers.Torznab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class SearchModuleProvider {
     static {
         searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
         searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
+        searchModuleClasses.put(SearchModuleType.NZBINDEX, NzbIndex.class);
     }
 
     @Autowired

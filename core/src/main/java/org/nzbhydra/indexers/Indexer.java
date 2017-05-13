@@ -18,7 +18,10 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.ResultAcceptor;
+import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -27,7 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -40,7 +45,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public abstract class Indexer {
+public abstract class Indexer<T> {
 
     public enum BackendType {
         NZEDB,
@@ -60,13 +65,17 @@ public abstract class Indexer {
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
-    private IndexerRepository indexerRepository;
+    protected IndexerRepository indexerRepository;
     @Autowired
-    private SearchResultRepository searchResultRepository;
+    protected SearchResultRepository searchResultRepository;
     @Autowired
-    private IndexerApiAccessRepository indexerApiAccessRepository;
+    protected IndexerApiAccessRepository indexerApiAccessRepository;
     @Autowired
     protected IndexerWebAccess indexerWebAccess;
+    @Autowired
+    protected ResultAcceptor resultAcceptor;
+    @Autowired
+    protected CategoryProvider categoryProvider;
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
@@ -75,28 +84,66 @@ public abstract class Indexer {
 
     }
 
-    public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException {
+    public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest, offset, limit);
+        } catch (IndexerSearchAbortedException e) {
+            logger.warn("Unexpected error while preparing search");
+            indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+        } catch (IndexerAccessException e) {
+            handleIndexerAccessException(e, "TODO", IndexerApiAccessType.SEARCH); //TODO do I actually need the url?
+            indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         } catch (Exception e) {
-            if (e instanceof IndexerSearchAbortedException) {
-                logger.warn("Unexpected error while preparing search");
-                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
-            } else {
-                logger.error("Unexpected error while searching", e);
-                try {
-                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
-                } catch (Exception e1) {
-                    logger.error("Error while handling indexer failure. API access was not saved to database", e1);
-                }
-                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            logger.error("Unexpected error while searching", e);
+            try {
+                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+            } catch (Exception e1) {
+                logger.error("Error while handling indexer failure. API access was not saved to database", e1);
             }
+            indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         }
+
         return indexerSearchResult;
     }
 
-    protected abstract IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException;
+    protected IndexerSearchResult searchInternal(SearchRequest searchRequest, int offset, Integer limit) throws IndexerSearchAbortedException, IndexerAccessException {
+        UriComponentsBuilder builder = buildSearchUrl(searchRequest, offset, limit);
+        URI url = builder.build().toUri();
+
+        T response;
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        info("Calling {}", url);
+
+        response = getAndStoreResultToDatabase(url, IndexerApiAccessType.SEARCH);
+        long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+
+        stopwatch.reset();
+        stopwatch.start();
+        IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
+        List<SearchResultItem> searchResultItems = getSearchResultItems(response);
+        info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
+        AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
+        searchResultItems = acceptorResult.getAcceptedResults();
+        indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
+
+        searchResultItems = persistSearchResults(searchResultItems);
+        indexerSearchResult.setSearchResultItems(searchResultItems);
+        indexerSearchResult.setResponseTime(responseTime);
+
+        completeIndexerSearchResult(response, indexerSearchResult, acceptorResult);
+
+        int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
+        debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), acceptorResult.getNumberOfRejectedResults());
+
+        return indexerSearchResult;
+    }
+
+    protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult);
+
+    protected abstract List<SearchResultItem> getSearchResultItems(T searchRequestResponse);
+
+    protected abstract UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException;
 
     public abstract NfoResult getNfo(String guid);
 
@@ -192,18 +239,20 @@ public abstract class Indexer {
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult, url);
     }
 
-    protected <T> T getAndStoreResultToDatabase(String url, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+    protected abstract T getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException;
+
+    protected <T> T getAndStoreResultToDatabase(URI uri, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Integer timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         T result;
         try {
-            result = indexerWebAccess.get(url, responseType, timeout);
+            result = indexerWebAccess.get(uri, responseType, timeout);
         } catch (IndexerAccessException e) {
-            handleIndexerAccessException(e, url, apiAccessType);
+            //handleIndexerAccessException(e, uri.toString(), apiAccessType);
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        handleSuccess(apiAccessType, responseTime, url);
+        handleSuccess(apiAccessType, responseTime, uri.toString());
         return result;
     }
 

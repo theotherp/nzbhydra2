@@ -151,6 +151,12 @@ public class RssMappingTest {
         assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
     }
 
+    @Test
+    public void shouldParseResponseFromNzbIndex() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("nzbIndexResponse.xml");
+        assertEquals(100, rssRoot.getRssChannel().getItems().size());
+    }
+
 
     private RssRoot getRssRootFromXml(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();

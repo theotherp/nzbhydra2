@@ -26,6 +26,9 @@ import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
@@ -62,7 +65,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -246,49 +248,37 @@ public class NewznabTest {
         mediaInfo.setTitle("someMovie");
         when(infoProviderMock.convert("imdbId", IdType.IMDB)).thenReturn(mediaInfo);
 
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&imdbid=imdbId&q=someMovie").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&imdbid=imdbId&q=someMovie").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         //Should use title if provided
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setTitle("anotherTitle");
-        UriComponents actual = testee.buildSearchUrl(searchRequest).build();
+        UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&q=anotherTitle&title=anotherTitle").build(), actual);
     }
 
-    @Test
+    @Test(expected = IndexerAuthException.class)
     public void shouldThrowAuthException() throws Exception {
-        doReturn(new RssError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(anyString(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new RssError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-
-        assertEquals("Indexer refused authentication. Error code: 101. Description: Wrong API key", errorMessageCaptor.getValue());
-        assertTrue(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerAccessResult.AUTH_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
-    @Test
+    @Test(expected = IndexerProgramErrorException.class)
     public void shouldThrowProgramErrorCodeException() throws Exception {
-        doReturn(new RssError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(anyString(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new RssError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-
-        assertEquals("Indexer returned error code 200 when URL http://127.0.0.1:1234/api?apikey&t=search&offset=0&limit=100 was called", errorMessageCaptor.getValue());
-        assertFalse(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerAccessResult.HYDRA_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
-    @Test
+    @Test(expected = IndexerErrorCodeException.class)
     public void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
-        doReturn(new RssError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(anyString(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new RssError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
-
-        assertEquals("Indexer returned with error code 123 and description Whatever", errorMessageCaptor.getValue());
-        assertFalse(disabledPermanentlyCaptor.getValue());
-        assertEquals(IndexerAccessResult.API_ERROR, indexerApiAccessResultCaptor.getValue());
     }
 
     @Test
@@ -316,23 +306,23 @@ public class NewznabTest {
     public void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=--a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=--a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery --a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
         searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("x", "y", "z"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z --a --b --c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest.getCategory().getForbiddenWords().add("catforbidden");
         searchRequest.getCategory().getRequiredWords().add("catrequired");
         baseConfig.getSearching().setForbiddenWords(Lists.newArrayList("globalforbidden"));
         baseConfig.getSearching().setRequiredWords(Lists.newArrayList("globalrequired"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z globalrequired catrequired --a --b --c --globalforbidden --catforbidden").build(), testee.buildSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -340,23 +330,23 @@ public class NewznabTest {
         testee.config.setBackend(BackendType.NZEDB);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         testee.config.setBackend(BackendType.NEWZNAB);
         testee.config.setHost("http://www.OMGwtfnzbs.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
     }
 
     @Test
@@ -367,13 +357,13 @@ public class NewznabTest {
         testee.config.setHost("http://www.nzbgeek.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"));
-        UriComponents actual = testee.buildSearchUrl(searchRequest).build();
+        UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
 
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=1 2 3 4 5 6 7 8 9 10 11 12").build(), actual);
 
         searchRequest.setQuery("a b c d");
         searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("x", "y", "z"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=a b c d 1 2 3 4 5 6 7 8").build(), testee.buildSearchUrl(searchRequest).build());
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=a b c d 1 2 3 4 5 6 7 8").build(), testee.buildSearchUrl(searchRequest, null, null).build());
     }
 
     @Test

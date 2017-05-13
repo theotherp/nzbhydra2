@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
@@ -92,7 +93,7 @@ public class IndexerForSearchSelector {
 
             selectedIndexers.add(indexer);
         }
-        logger.info("Picked {} out of {} indexers", selectedIndexers.size(), enabledIndexers.size());
+        logger.info("Picked {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
 
         return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
     }

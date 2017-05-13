@@ -4,6 +4,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,7 +24,8 @@ public class AppConfig {
     @Bean
     public RestTemplate getRestTemplate() {
         HostnameVerifier verifier = new NullHostnameVerifier();
-        MySimpleClientHttpRequestFactory factory = new MySimpleClientHttpRequestFactory(verifier);
+        //MySimpleClientHttpRequestFactory factory = new MySimpleClientHttpRequestFactory(verifier);
+        OkHttp3ClientHttpRequestFactory factory = new OkHttp3ClientHttpRequestFactory();
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(factory);

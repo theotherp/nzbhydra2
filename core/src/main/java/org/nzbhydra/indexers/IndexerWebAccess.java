@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -25,11 +26,12 @@ public class IndexerWebAccess {
     private ConfigProvider configProvider;
 
 
-    protected <T> T get(String url, Class<T> responseType, int timeout) throws IndexerAccessException {
+    protected <T> T get(URI uri, Class<T> responseType, int timeout) throws IndexerAccessException {
         HttpHeaders headers = new HttpHeaders();
         headers.add("User-Agent", configProvider.getBaseConfig().getSearching().getUserAgent());
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-        Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(url, HttpMethod.GET, requestEntity, responseType).getBody());
+
+        Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
         try {
             return future.get(timeout, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

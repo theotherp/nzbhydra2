@@ -96,6 +96,7 @@ General, Ideas
 - verify that retrieving user from remoteuser works with form based login and rememberme
 - when no indexers configured / available, on search page show a note and link to config
 - debug tab in system section to execute raw sql queries
+- log API access user agent in info column and show in history?
 
 currently not (yet) supported:
 - proxies

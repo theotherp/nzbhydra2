@@ -100,8 +100,7 @@
                             <button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" ng-model="indexer.activated"
-                                       ng-click="availableIndexers[indexer.name].activated=!availableIndexers[indexer.name].activated"> {{ indexer.name }}
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" data-checklist-model="selectedIndexers" data-checklist-value="indexer"> {{ indexer.name }}
                             </label>
 
                         </div>

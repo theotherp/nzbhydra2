@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +56,7 @@ public class NewznabChecker {
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         Xml xmlResponse;
         try {
-            xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").toUriString(), Xml.class, indexerConfig.getTimeout().orElse(baseConfig.getSearching().getTimeout()));
+            xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri(), Xml.class, indexerConfig.getTimeout().orElse(baseConfig.getSearching().getTimeout()));
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
                 return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
@@ -157,7 +158,7 @@ public class NewznabChecker {
         if (supportedIds.contains(IdType.IMDB) || supportedIds.contains(IdType.TMDB)) {
             supportedTypes.add(ActionAttribute.MOVIE);
         }
-        String uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUriString();
+        URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
         CapsRoot capsRoot = indexerWebAccess.get(uri, CapsRoot.class, timeout);
         if (capsRoot.getSearching().getAudioSearch() != null) {
             supportedTypes.add(ActionAttribute.AUDIO);
@@ -183,7 +184,7 @@ public class NewznabChecker {
     }
 
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, int timeout) throws IndexerAccessException {
-        String uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUriString();
+        URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         RssRoot rssRoot = indexerWebAccess.get(uri, RssRoot.class, timeout);
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer returned no results when searching with ID {}", request.getKey());
