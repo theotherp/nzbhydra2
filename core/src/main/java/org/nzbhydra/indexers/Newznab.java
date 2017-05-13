@@ -53,6 +53,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Getter
@@ -301,19 +302,19 @@ public class Newznab extends Indexer {
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
         indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
+        int numberOfRejectedResults = acceptorResult.getNumberOfRejectedResults();
 
         searchResultItems = persistSearchResults(searchResultItems);
         indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
-        //TODO account for rejected items
         NewznabResponse newznabResponse = rssRoot.getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size()); //TODO Not all indexers report an offset
+            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + numberOfRejectedResults);
             indexerSearchResult.setOffset(newznabResponse.getOffset());
-            indexerSearchResult.setLimit(10); //TODO replace with 100
+            indexerSearchResult.setLimit(100);
         } else {
             indexerSearchResult.setTotalResultsKnown(false);
             indexerSearchResult.setHasMoreResults(false);
@@ -322,7 +323,7 @@ public class Newznab extends Indexer {
         }
 
         int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
-        debug("Returning results {}-{} of {} available", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults());
+        debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), numberOfRejectedResults);
 
         return indexerSearchResult;
     }
@@ -370,7 +371,7 @@ public class Newznab extends Indexer {
         throw new IndexerErrorCodeException(response);
     }
 
-    private List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) {
+    protected List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
@@ -412,36 +413,63 @@ public class Newznab extends Indexer {
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
         searchResultItem.setCommentsLink(item.getComments());
+        parseAttributes(item, searchResultItem);
 
-        List<Integer> newznabCategories = new ArrayList<>();
-        for (NewznabAttribute attribute : item.getNewznabAttributes()) {
-            searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
-            if (attribute.getName().equals("usenetdate")) {
-                tryParseDate(attribute.getValue()).ifPresent(searchResultItem::setUsenetDate);
-            } else if (attribute.getName().equals("password") && !attribute.getValue().equals("0")) {
-                searchResultItem.setPassworded(true);
-            } else if (attribute.getName().equals("nfo")) {
-                searchResultItem.setHasNfo(attribute.getValue().equals("1") ? HasNfo.YES : HasNfo.NO);
-            } else if (attribute.getName().equals("info") && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
-                //Info attribute is always a link to an NFO
-                searchResultItem.setHasNfo(HasNfo.YES);
-            } else if (attribute.getName().equals("poster") && !attribute.getValue().equals("not available")) {
-                searchResultItem.setPoster(attribute.getValue());
-            } else if (attribute.getName().equals("group") && !attribute.getValue().equals("not available")) {
-                searchResultItem.setGroup(attribute.getValue());
-            } else if (attribute.getName().equals("files")) {
-                searchResultItem.setFiles(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("comments")) {
-                searchResultItem.setCommentsCount(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("grabs")) {
-                searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("guid")) {
-                searchResultItem.setIndexerGuid(attribute.getValue());
-            } else if (attribute.getName().equals("category")) {
-                newznabCategories.add(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("size")) {
-                searchResultItem.setSize(Long.valueOf(attribute.getValue()));
+        if (config.getHost().toLowerCase().contains("nzbgeek") && configProvider.getBaseConfig().getSearching().isRemoveObfuscated()) {
+            searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
+        }
+        if (configProvider.getBaseConfig().getSearching().isRemoveLanguage()) {
+            for (String language : LANGUAGES) {
+                if (searchResultItem.getTitle().endsWith(language)) {
+                    debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
+                    searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
+                }
             }
+        }
+        return searchResultItem;
+    }
+
+    private void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
+        List<Integer> newznabCategories = new ArrayList<>();
+        Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue));
+        searchResultItem.setAttributes(attributes);
+
+        if (attributes.containsKey("usenetdate")) {
+            tryParseDate(attributes.get("usenetdate")).ifPresent(searchResultItem::setUsenetDate);
+        }
+        if (attributes.containsKey("password") && !attributes.get("password").equals("0")) {
+            searchResultItem.setPassworded(true);
+        }
+        if (attributes.containsKey("nfo")) {
+            searchResultItem.setHasNfo(attributes.get("nfo").equals("1") ? HasNfo.YES : HasNfo.NO);
+        }
+        if (attributes.containsKey("info") && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
+            //Info attribute is always a link to an NFO
+            searchResultItem.setHasNfo(HasNfo.YES);
+        }
+        if (attributes.containsKey("poster") && !attributes.get("poster").equals("not available")) {
+            searchResultItem.setPoster(attributes.get("poster"));
+        }
+        if (attributes.containsKey("group") && !attributes.get("group").equals("not available")) {
+            searchResultItem.setGroup(attributes.get("group"));
+        }
+        if (attributes.containsKey("files")) {
+            searchResultItem.setFiles(Integer.valueOf(attributes.get("files")));
+        }
+        if (attributes.containsKey("comments")) {
+            searchResultItem.setCommentsCount(Integer.valueOf(attributes.get("comments")));
+        }
+        if (attributes.containsKey("grabs")) {
+            searchResultItem.setGrabs(Integer.valueOf(attributes.get("grabs")));
+        }
+        if (attributes.containsKey("guid")) {
+            searchResultItem.setIndexerGuid(attributes.get("guid"));
+        }
+        if (attributes.containsKey("category")) {
+            newznabCategories.add(Integer.valueOf(attributes.get("category")));
+        }
+        if (attributes.containsKey("size")) {
+            searchResultItem.setSize(Long.valueOf(attributes.get("size")));
         }
         if (!newznabCategories.isEmpty()) {
             searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories));
@@ -460,20 +488,6 @@ public class Newznab extends Indexer {
                 searchResultItem.setGroup(matcher.group(1));
             }
         }
-
-
-        if (config.getHost().toLowerCase().contains("nzbgeek") && configProvider.getBaseConfig().getSearching().isRemoveObfuscated()) {
-            searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
-        }
-        if (configProvider.getBaseConfig().getSearching().isRemoveLanguage()) {
-            for (String language : LANGUAGES) {
-                if (searchResultItem.getTitle().endsWith(language)) {
-                    debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
-                    searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
-                }
-            }
-        }
-        return searchResultItem;
     }
 
     protected Logger getLogger() {

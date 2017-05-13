@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,10 +23,10 @@ import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
+import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -99,43 +100,11 @@ public class SearcherUnitTest {
         Category category = new Category();
         category.setName("cat");
         when(searchRequestMock.getCategory()).thenReturn(category);
+        when(searchRequestMock.getInternalData()).thenReturn(new InternalData());
         when(indexerPicker.pickIndexers(any())).thenReturn(pickingResultMock);
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
         when(indexerSearchRepository.findByIndexerEntityAndSearchEntity(any(), any())).thenReturn(indexerSearchEntityMock);
-    }
 
-    @Test
-    public void shouldTransformToRssXml() throws Exception {
-        SearchResultItem searchResultItem1 = new SearchResultItem();
-        searchResultItem1.setTitle("searchResultItem1Title");
-        searchResultItem1.setIndexerScore(0);
-        searchResultItem1.setPubDate(Instant.ofEpochMilli(0));
-        when(searchResultMock1.getSearchResultItems()).thenReturn(Arrays.asList(searchResultItem1));
-        when(searchResultMock1.isWasSuccessful()).thenReturn(true);
-        when(searchResultMock1.getIndexer()).thenReturn(indexer1);
-        when(searchResultMock1.isHasMoreResults()).thenReturn(false);
-
-        SearchResultItem searchResultItem2 = new SearchResultItem();
-        searchResultItem2.setTitle("searchResultItem2Title");
-        searchResultItem2.setIndexerScore(0);
-        searchResultItem2.setPubDate(Instant.ofEpochMilli(1000));
-        when(searchResultMock2.getSearchResultItems()).thenReturn(Arrays.asList(searchResultItem2));
-        when(searchResultMock2.isWasSuccessful()).thenReturn(true);
-        when(searchResultMock2.getIndexer()).thenReturn(indexer2);
-        when(searchResultMock2.isHasMoreResults()).thenReturn(false);
-
-        when(indexer1.search(any(), eq(0), eq(0))).thenReturn(searchResultMock1);
-        when(indexer2.search(any(), eq(0), eq(0))).thenReturn(searchResultMock2);
-        when(searchModuleProviderMock.getIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
-
-        SearchResult searchResult = searcher.search(searchRequestMock);
-        verify(duplicateDetector).detectDuplicates(searchResultItemsCaptor.capture());
-
-        assertThat(searchResultItemsCaptor.getValue().size(), is(2));
-    }
-
-    @Test
-    public void shouldFollowOffsetAndLimit() throws Exception {
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1));
         when(duplicateDetector.detectDuplicates(any())).thenAnswer(new Answer<DuplicateDetectionResult>() {
             @Override
@@ -148,29 +117,62 @@ public class SearcherUnitTest {
                 return new DuplicateDetectionResult(sets, HashMultiset.create());
             }
         });
+    }
+
+
+    @Test
+    public void shouldFollowOffsetAndLimit() throws Exception {
         when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(mockIndexerSearchResult(0, 2, true, 200, indexer1));
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 1);
         searchRequest.setTitle("some title so it will be found in the search request cache");
         SearchResult result = searcher.search(searchRequest);
-//        List<IndexerSearchResult> foundResults = result.getIndexerSearchResultMap().values().iterator().next();
-//        assertThat(foundResults.size(), is(1));
-//        assertThat(foundResults.get(0).getSearchResultItems().get(0).getTitle(), is("item0"));
+        List<SearchResultItem> foundResults = result.getSearchResultItems();
+        assertThat(foundResults.size(), is(1));
+        assertThat(foundResults.get(0).getTitle(), is("item0"));
 
 
         searchRequest.setOffset(1);
         result = searcher.search(searchRequest);
-//        foundResults = result.getIndexerSearchResultMap().values().iterator().next();
-//        assertThat(foundResults.size(), is(1));
-//        assertThat(foundResults.get(0).getSearchResultItems().get(0).getTitle(), is("item1"));
+        foundResults = result.getSearchResultItems();
+        assertThat(foundResults.size(), is(1));
+        assertThat(foundResults.get(0).getTitle(), is("item1"));
 
+        verify(indexer1).search(any(), eq(0), any());
+        verify(indexer1, times(1)).search(any(), anyInt(), any());
+    }
+
+    @Test
+    public void shouldWorkWithRejectedItems() throws Exception {
+        IndexerSearchResult result1 = mockIndexerSearchResult(0, 9, true, 20, indexer1);
+        Multiset<String> reasons = HashMultiset.create();
+        reasons.add("foobar");
+        result1.setReasonsForRejection(reasons);
+        result1.setLimit(10);
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(result1, mockIndexerSearchResult(11, 10, false, 20, indexer1));
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 10);
+        searchRequest.setTitle("some title so it will be found in the search request cache");
+        SearchResult result = searcher.search(searchRequest);
+        List<SearchResultItem> foundResults = result.getSearchResultItems();
+        assertThat(foundResults.size(), is(10));
+
+        searchRequest.setOffset(10);
+        searchRequest.setLimit(100);
+        result = searcher.search(searchRequest);
+        foundResults = result.getSearchResultItems();
+        assertThat(foundResults.size(), is(9));
+
+        verify(indexer1).search(any(), eq(0), any());
+        verify(indexer1, times(2)).search(any(), anyInt(), any());
     }
 
     private IndexerSearchResult mockIndexerSearchResult(int offset, int limit, boolean hasMoreResults, int totalAvailableResults, Indexer indexer) {
 
         List<SearchResultItem> items = new ArrayList<>();
         for (int i = offset; i < offset + limit; i++) {
-            SearchResultItem item = mock(SearchResultItem.class, "item" + i);
+            SearchResultItem item = new SearchResultItem();
+            item.setTitle("item" + i);
             items.add(item);
         }
 
@@ -186,8 +188,6 @@ public class SearcherUnitTest {
 
         return indexerSearchResult;
     }
-
-
 
 
 }

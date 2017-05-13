@@ -26,7 +26,7 @@ public class IndexerConfig extends ValidatingConfig {
     private Integer downloadLimit = null;
     private boolean enabled;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction enabledForSearchSource;
+    private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
@@ -37,7 +37,7 @@ public class IndexerConfig extends ValidatingConfig {
     private String password = null;
     private boolean preselect;
     private Integer score = null;
-    private SearchModuleType searchModuleType;
+    private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
     private boolean showOnSearch;
     @JsonFormat(shape = Shape.STRING)
     private List<IdType> supportedSearchIds = new ArrayList<>();

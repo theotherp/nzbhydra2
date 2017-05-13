@@ -23,7 +23,8 @@ Config
 - !!! reloading config: Mostly done
 - find out which settings require a restart and mark them accordingly
 - !! test that yaml is updated with missing/new keys
-- on first start initialize config with secret, api key, etc and save to file. make sure existing file is not overwritten with defaults by mistake
+- !!on first start initialize config with secret, api key, etc and save to file.
+-- make sure existing file is not overwritten with defaults by mistake
 
 Downloader support: mostly done
 - sabnzbd
@@ -38,7 +39,7 @@ Indexer support
 - binsearch
 - nzbindex
 - anizb
-- nzbclub
+- !! nzbclub is down!!
 - !! checking caps
 - !! checking auth / connection: done
 
@@ -80,13 +81,13 @@ General, Ideas
 - !! delete results older than x, perhaps do this as first background task?
 - !! package static files in jar when delivering
 - !!! user agent http://springinpractice.com/2013/10/27/how-to-send-an-http-header-with-every-request-with-spring-resttemplate
-- proxy
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - !! Log / config sanitation
-- more config validation. make sure auth is properly configured, etc
+- !! more config validation. make sure auth is properly configured, etc
+- config validation with error and warning level. warn when eg no indexer capable of id search is enabled
 - !! Initialize config
 - !! timeout for indexer accesses is "global" (max time spent for access)
-- migrating from old installation (config and database), either via web call or via loading from file system
+- migrating from old installation (config and database), either via web call or via loading from file system. dont migrate searchresults. warn for all settings not taken over (like proxy)
 - !! restart dialog pings until recognizes successful restart
 - !! catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
@@ -94,6 +95,7 @@ General, Ideas
 - banner
 - verify that retrieving user from remoteuser works with form based login and rememberme
 - when no indexers configured / available, on search page show a note and link to config
+- debug tab in system section to execute raw sql queries
 
 currently not (yet) supported:
 - proxies

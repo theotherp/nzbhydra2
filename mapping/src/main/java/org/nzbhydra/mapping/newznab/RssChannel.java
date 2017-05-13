@@ -26,5 +26,4 @@ public class RssChannel {
     @XmlElement(name="item")
     private List<RssItem> items = new ArrayList<>();
 
-
 }

@@ -13,7 +13,7 @@ public class SearchingConfig extends ValidatingConfig {
 
     private boolean alwaysShowDuplicates;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction applyRestrictions;
+    private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
     //categorySettings ;
     private float duplicateAgeThreshold;
     private float duplicateSizeThresholdInPercent;
@@ -22,21 +22,21 @@ public class SearchingConfig extends ValidatingConfig {
     private List<String> forbiddenPosters = new ArrayList<>();
     private String forbiddenRegex;
     private List<String> forbiddenWords = new ArrayList<>();
-    private SearchSourceRestriction generateQueries;
+    private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction idFallbackToTitle;
+    private SearchSourceRestriction idFallbackToTitle = SearchSourceRestriction.NONE;
     private boolean idFallbackToTitlePerIndexer;
     private boolean ignorePassworded;
     private boolean ignoreTemporarilyDisabled;
     private int keepSearchResultsForDays;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
-    private NzbAccessType nzbAccessType;
+    private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
     private boolean removeLanguage;
     private boolean removeObfuscated;
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
-    private Integer timeout;
+    private Integer timeout = 30;
     private String userAgent;
     private boolean wrapApiErrors;
 

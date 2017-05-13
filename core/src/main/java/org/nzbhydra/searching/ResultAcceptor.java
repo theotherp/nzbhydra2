@@ -280,10 +280,14 @@ public class ResultAcceptor {
 
     @Data
     @AllArgsConstructor
-    public class AcceptorResult {
+    public static class AcceptorResult {
 
         private List<SearchResultItem> acceptedResults;
         private Multiset<String> reasonsForRejection;
+
+        public int getNumberOfRejectedResults() {
+            return reasonsForRejection.entrySet().stream().mapToInt(Multiset.Entry::getCount).sum();
+        }
 
     }
 

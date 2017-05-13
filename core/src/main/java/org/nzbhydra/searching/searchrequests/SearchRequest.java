@@ -55,7 +55,7 @@ public class SearchRequest {
         this.source = source;
         this.searchType = searchType;
         this.offset = offset == null ? 0 : offset;
-        this.limit = limit == null ? 10 : limit; //TODO Set to 100 or, better, make configurable for internal/external searches
+        this.limit = limit == null ? 100 : limit; //TODO Set to 100 or, better, make configurable for internal/external searches
     }
 
     public Optional<Set<String>> getIndexers() {

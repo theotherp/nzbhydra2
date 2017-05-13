@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
@@ -20,6 +23,7 @@ import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.Enclosure;
@@ -32,12 +36,18 @@ import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.builder.RssBuilder;
+import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.ResultAcceptor;
+import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -48,7 +58,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
@@ -56,6 +68,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -84,11 +97,15 @@ public class NewznabTest {
     @Mock
     private IndexerSearchRepository indexerSearchRepositoryMock;
     @Mock
+    private SearchResultRepository searchResultRepositoryMock;
+    @Mock
     private IndexerRepository indexerRepositoryMock;
     @Mock
     private IndexerApiAccessRepository indexerApiAccessRepositoryMock;
     @Mock
     private UriComponentsBuilder uriComponentsBuilderMock;
+    @Mock
+    private ResultAcceptor resultAcceptorMock;
     @Mock
     private Unmarshaller unmarshallerMock;
     @Captor
@@ -131,6 +148,57 @@ public class NewznabTest {
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
+
+        when(resultAcceptorMock.acceptResults(any(), any(), any())).thenAnswer(new Answer<AcceptorResult>() {
+            @Override
+            public AcceptorResult answer(InvocationOnMock invocation) throws Throwable {
+                return new AcceptorResult(invocation.getArgument(0), HashMultiset.create());
+            }
+        });
+    }
+
+    @Test
+    public void shouldReturnCorrectSearchResults() throws Exception {
+        RssRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
+        when(indexerWebAccessMock.get(any(), any(), anyInt())).thenReturn(root);
+
+        IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(indexerSearchResult.getSearchResultItems().size(), is(1));
+        assertThat(indexerSearchResult.getTotalResults(), is(1));
+        assertThat(indexerSearchResult.isHasMoreResults(), is(false));
+        assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));
+    }
+
+    @Test
+    public void shouldAccountForRejectedResults() throws Exception {
+        List<RssItem> items = Arrays.asList(
+                RssItemBuilder.builder("title1").build(),
+                RssItemBuilder.builder("title2").build(),
+                RssItemBuilder.builder("title3").build(),
+                RssItemBuilder.builder("title4").build(),
+                RssItemBuilder.builder("title5").build()
+        );
+        RssRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
+        when(indexerWebAccessMock.get(any(), any(), anyInt())).thenReturn(root);
+
+        //Two items will be rejected
+        when(resultAcceptorMock.acceptResults(any(), any(), any())).thenAnswer(new Answer<AcceptorResult>() {
+            @Override
+            public AcceptorResult answer(InvocationOnMock invocation) throws Throwable {
+                List<SearchResultItem> argument = invocation.getArgument(0);
+                HashMultiset<String> reasonsForRejection = HashMultiset.create();
+                reasonsForRejection.add("some reason", 2);
+                return new AcceptorResult(argument.subList(0, 3), reasonsForRejection);
+            }
+        });
+
+        IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+
+        assertThat(indexerSearchResult.getSearchResultItems().size(), is(3));
+        assertThat(indexerSearchResult.getTotalResults(), is(105));
+        assertThat(indexerSearchResult.isHasMoreResults(), is(false));
+        assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));
     }
 
     @Test
@@ -139,13 +207,14 @@ public class NewznabTest {
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvmazeId");
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
+
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
+
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
         assertTrue(params.containsKey("tmdbid"));
         assertTrue(params.containsKey("rid"));
         assertTrue(params.containsKey("tvmazeid"));
-
         verify(infoProviderMock, times(1)).convert(anyString(), any(IdType.class));
     }
 
@@ -317,6 +386,7 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("grabs", "20"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("comments", "30"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink(), is("http://indexer.com/nzb/123"));
@@ -336,9 +406,16 @@ public class NewznabTest {
         assertThat(item.getFiles(), is(10));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getCommentsCount(), is(30));
+        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000));
 
         rssItem.setRssGuid(new RssGuid("123", false));
-        assertThat(testee.createSearchResultItem(rssItem).getIndexerGuid(), is("123"));
+        rssItem.getNewznabAttributes().clear();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "1"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("nfo", "1"));
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getIndexerGuid(), is("123"));
+        assertThat(item.isPassworded(), is(true));
+        assertThat(item.getHasNfo(), is(HasNfo.YES));
     }
 
     private RssItem buildBasicRssItem() {

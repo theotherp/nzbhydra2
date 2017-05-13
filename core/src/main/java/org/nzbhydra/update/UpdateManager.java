@@ -195,7 +195,7 @@ public class UpdateManager implements InitializingBean {
             String responseBody = response.body().string();
             return objectMapper.readValue(responseBody, Release.class);
         } catch (IOException e) {
-            throw new UpdateException("Error while getting latest version", e);
+            throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }
     }
 

@@ -37,5 +37,4 @@ public class SearchResult {
         return reasonsForRejection.entrySet().stream().mapToInt(Multiset.Entry::getCount).sum();
     }
 
-
 }

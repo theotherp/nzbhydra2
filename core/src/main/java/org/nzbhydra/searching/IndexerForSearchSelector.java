@@ -231,7 +231,7 @@ public class IndexerForSearchSelector {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public class IndexerForSearchSelection {
+    public static class IndexerForSearchSelection {
         private Map<Indexer, String> notPickedIndexersWithReason = new HashMap<>();
         private List<Indexer> selectedIndexers = new ArrayList<>();
     }

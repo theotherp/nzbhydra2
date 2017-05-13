@@ -1,7 +1,6 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.IndexerSearchEntity;
 import org.nzbhydra.database.IndexerSearchRepository;
@@ -46,11 +45,9 @@ public class Searcher {
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
     @Autowired
-    private ConfigProvider configProvider;
-    @Autowired
     private SearchRepository searchRepository;
     @Autowired
-    private IndexerForSearchSelector indexerPicker;
+    protected IndexerForSearchSelector indexerPicker;
 
     /**
      * Maps a search request's hash to its cache entry
@@ -113,7 +110,7 @@ public class Searcher {
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
         int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
-        if (offset >= searchResultItems.size() - 1) {
+        if (offset >= searchResultItems.size()) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
             searchResult.setSearchResultItems(Collections.emptyList());
             return;
@@ -151,8 +148,8 @@ public class Searcher {
                 entity.setResultsCount(indexerSearchResult.getTotalResults());
                 entity.setSuccessful(indexerSearchResult.isWasSuccessful());
             }
-            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
-            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer()));
+            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size()); //TODO perhaps add?
+            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer())); //TODO perhaps add?
             indexerSearchRepository.save(entity);
         }
     }
