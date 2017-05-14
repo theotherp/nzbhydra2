@@ -3008,7 +3008,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     //Filter options
     $scope.categoriesForFiltering = [];
-    _.forEach(ConfigService.getSafe().categories, function (category) {
+    _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
