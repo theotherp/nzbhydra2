@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -33,14 +34,14 @@ public class AuthConfig extends ValidatingConfig {
 
 
     @Override
-    public List<String> validateConfig() {
+    public ConfigValidationResult validateConfig() {
         List<String> errors = new ArrayList<>();
         if (authType != AuthType.NONE && users.isEmpty()) {
             errors.add("You've enabled security but not defined any users");
-        } else if (restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
+        } else if (authType != AuthType.NONE && restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
             errors.add("You've restricted admin access but no user has admin rights");
         }
 
-        return errors;
+        return new ConfigValidationResult(errors.isEmpty(), errors, Collections.emptyList());
     }
 }

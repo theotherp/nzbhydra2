@@ -7796,6 +7796,12 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   margin-top: 10px;
   background-color: transparent;
 }
+.warning {
+  color: #f89406;
+}
+.error {
+  color: #ee5f5b;
+}
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;
 }

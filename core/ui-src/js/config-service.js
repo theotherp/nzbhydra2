@@ -16,20 +16,15 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         reloadConfig: reloadConfig
     };
 
-
-    function set(newConfig) {
+    function set(newConfig, ignoreWarnings) {
         var deferred = $q.defer();
         $http.put('internalapi/config', newConfig)
             .then(function (response) {
-                if (response.data.ok) {
-                    console.log("Settings saved. Updating cache");
+                if (response.data.ok && (ignoreWarnings || response.data.warningMessages.length === 0)) {
                     cache.put("config", newConfig);
                     invalidateSafe();
-                    deferred.resolve(response);
-                } else {
-                    deferred.reject(response);
                 }
-
+                deferred.resolve(response);
 
             }, function (errorresponse) {
                 console.log("Error saving settings:");

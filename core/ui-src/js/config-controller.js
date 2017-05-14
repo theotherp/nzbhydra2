@@ -25,7 +25,7 @@ angular
     .module('nzbhydraApp')
     .controller('ConfigController', ConfigController);
 
-function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, $state, growl) {
+function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, localStorageService, $state, growl) {
     $scope.config = config;
     $scope.submit = submit;
     $scope.activeTab = activeTab;
@@ -38,28 +38,101 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     });
 
 
+    function updateAndAskForRestartIfNecessary() {
+        $scope.form.$setPristine();
+        DownloaderCategoriesService.invalidate();
+        if ($scope.restartRequired) {
+            ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
+                yes: {
+                    onYes: function () {
+                        RestartService.restart();
+                    }
+                },
+                no: {
+                    onNo: function () {
+                        $scope.restartRequired = false;
+                    }
+                }
+            });
+        }
+    }
+
+    function handleConfigSetResponse(response, ignoreWarnings) {
+        if (angular.isUndefined(ignoreWarnings)) {
+            ignoreWarnings = localStorageService.get("ignoreWarnings") !== null ? localStorageService.get("ignoreWarnings") : false;
+        }
+        //Communication with server was successful but there might be validation errors and/or warnings
+        var warningMessages = response.data.warningMessages;
+        var errorMessages = response.data.errorMessages;
+        var showMessage = errorMessages.length > 0 || (warningMessages.length > 0 && !ignoreWarnings);
+
+        function extendMessageWithList(message, messages) {
+            _.forEach(messages, function (x) {
+                message += "<li>" + x + "</li>";
+            });
+            message += "</ul></span>";
+            return message;
+        }
+
+        if (showMessage) {
+            var options;
+            var message;
+            var title;
+            if (errorMessages.length > 0) { //Actual errors which cannot be ignored
+                title = "Config validation failed";
+                message = '<span class="error">The following errors have been found in your config. They need to be fixed.<ul>';
+                message = extendMessageWithList(message, response.data.errorMessages);
+                if (warningMessages.length > 0) {
+                    message += '<br><span class="warning">The following warnings were found. You can ignore them if you wish.<ul>';
+                    message = extendMessageWithList(message, response.data.warningMessages);
+                }
+                options = {
+                    yes: {
+                        onYes: function () {
+                        },
+                        text: "OK"
+                    }
+                };
+            } else if (warningMessages.length > 0) {
+                title = "Config validation warnings";
+                message = '<br><span class="warning">The following warnings have been found. You can ignore them if you wish. The config was already saved.<ul>';
+                message = extendMessageWithList(message, response.data.warningMessages);
+                options = {
+                    yes: {
+                        onYes: function () {
+                        },
+                        text: "Ignore warnings"
+                    },
+                    cancel: {
+                        onCancel: function () {
+                            localStorageService.set("ignoreWarnings", true);
+                            ConfigService.set($scope.config, true).then(function (response) {
+                                handleConfigSetResponse(response, true);
+                                updateAndAskForRestartIfNecessary();
+                            }, function (response) {
+                                //Actual error while setting or validating config
+                                growl.error(response.data);
+                            });
+                        },
+                        text: "Ignore and don't show again"
+                    }
+                };
+            }
+
+            ModalService.open(title, message, options, "md", "left");
+        }
+
+
+        // growl.error(response.data.errorMessages.join("<br>"));
+    }
+
     function submit() {
         if ($scope.form.$valid) {
-            ConfigService.set($scope.config).then(function () {
-                $scope.form.$setPristine();
-                DownloaderCategoriesService.invalidate();
-                if ($scope.restartRequired) {
-                    ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
-                        yes: {
-                            onYes: function () {
-                                RestartService.restart();
-                            }
-                        },
-                        no: {
-                            onNo: function () {
-                                $scope.restartRequired = false;
-                            }
-                        }
-                    });
-                }
+            ConfigService.set($scope.config, true).then(function (response) { //TODO Read from local storage
+                handleConfigSetResponse(response);
             }, function (response) {
-                console.log(response);
-                growl.error(response.data.errorMessages.join("<br>"));
+                //Actual error while setting or validating config
+                growl.error(response.data);
             });
 
         } else {

@@ -4,9 +4,6 @@ import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @ConfigurationProperties(prefix = "downloaders")
 public class DownloaderConfig extends ValidatingConfig {
@@ -31,7 +28,7 @@ public class DownloaderConfig extends ValidatingConfig {
     }
 
     @Override
-    public List<String> validateConfig() {
-        return new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        return new ConfigValidationResult();
     }
 }

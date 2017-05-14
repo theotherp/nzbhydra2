@@ -91,17 +91,19 @@ public class NzbHandler {
             }
             try {
                 File tempFile = File.createTempFile(result.getTitle(), "nzb");
+                logger.debug("Writing NZB to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
                 nzbFiles.add(tempFile);
             } catch (IOException e) {
-                logger.error("Unable to write NZB content to temporary file");
+                logger.error("Unable to write NZB content to temporary file: " + e.getMessage());
             }
         }
         if (nzbFiles.isEmpty()) {
             throw new RuntimeException("No NZBs could be retrieved");
         }
+        File zip = createZip(nzbFiles);
         logger.info("Successfully added {}/{} NZBs to ZIP", nzbFiles.size(), guids.size());
-        return createZip(nzbFiles);
+        return zip;
     }
 
     public File createZip(List<File> nzbFiles) throws Exception {

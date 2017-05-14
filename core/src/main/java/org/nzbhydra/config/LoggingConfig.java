@@ -3,9 +3,6 @@ package org.nzbhydra.config;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 public class LoggingConfig extends ValidatingConfig {
 
@@ -19,7 +16,7 @@ public class LoggingConfig extends ValidatingConfig {
     private boolean logUsername;
 
     @Override
-    public List<String> validateConfig() {
-        return new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        return new ConfigValidationResult();
     }
 }

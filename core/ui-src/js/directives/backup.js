@@ -26,7 +26,7 @@ function hydrabackup() {
 
         $scope.uploadBackupFile = function (file, errFiles) {
             RequestsErrorHandler.specificallyHandled(function () {
-                console.log("Hallo");
+
                 $scope.file = file;
                 $scope.errFile = errFiles && errFiles[0];
                 if (file) {

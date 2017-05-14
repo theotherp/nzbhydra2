@@ -93,7 +93,7 @@ public class IndexerConfig extends ValidatingConfig {
     }
 
     @Override
-    public List<String> validateConfig() {
-        return new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        return new ConfigValidationResult();
     }
 }

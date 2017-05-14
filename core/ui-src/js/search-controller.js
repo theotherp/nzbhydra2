@@ -247,9 +247,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.toggleIndexer = function (indexer) {
-        console.log($scope.availableIndexers[indexer.name].activated);
+
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
-        console.log($scope.availableIndexers[indexer.name].activated);
+
     };
 
 

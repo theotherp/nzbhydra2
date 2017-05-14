@@ -5,8 +5,6 @@ import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @ConfigurationProperties("main")
@@ -86,7 +84,7 @@ public class MainConfig extends ValidatingConfig {
     }
 
     @Override
-    public List<String> validateConfig() {
-        return new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        return new ConfigValidationResult();
     }
 }

@@ -6,8 +6,6 @@ nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
 
 angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
-    console.log("Starting");
-
     blockUIConfig.autoBlock = false;
     $urlMatcherFactoryProvider.strictMode(false);
 
@@ -667,7 +665,7 @@ nzbhydraapp.config(function ($provide) {
         return function (exception, cause) {
             $delegate(exception, cause);
             try {
-                console.log(exception);
+
                 if (angular.isDefined(exception.stack)) {
                     var stack = exception.stack.split('\n').map(function (line) {
                         return line.trim();

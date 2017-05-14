@@ -65,7 +65,7 @@ gulp.task('less', function () {
         .pipe(cached("bright"))
         .pipe(sourcemaps.init())
         .pipe(less())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
@@ -73,7 +73,7 @@ gulp.task('less', function () {
         .pipe(cached("grey"))
         .pipe(sourcemaps.init())
         .pipe(less())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
@@ -81,7 +81,7 @@ gulp.task('less', function () {
         .pipe(cached("dark"))
         .pipe(sourcemaps.init())
         .pipe(less())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
@@ -143,7 +143,7 @@ gulp.task('index', function () {
 });
 
 function swallowError(error) {
-    console.log(error.toString());
+
     this.emit('end');
 }
 

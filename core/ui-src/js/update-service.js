@@ -59,7 +59,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
                     //I fucking hate that untrusted HTML shit
                     changelog = $sce.trustAsHtml(changelog);
                     $scope.changelog = changelog;
-                    console.log(changelog);
+
                     $scope.ok = function () {
                         $uibModalInstance.dismiss();
                     };

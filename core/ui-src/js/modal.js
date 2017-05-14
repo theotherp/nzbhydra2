@@ -8,7 +8,7 @@ function ModalService($uibModal, $q) {
         open: open
     };
 
-    function open(headline, message, params, size) {
+    function open(headline, message, params, size, textAlign) {
         //params example:
         /*
          var p =
@@ -29,6 +29,9 @@ function ModalService($uibModal, $q) {
          }
          };
          */
+        if (angular.isUndefined(textAlign)) {
+            textAlign = "center";
+        }
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/modal.html',
             controller: 'ModalInstanceCtrl',
@@ -42,6 +45,9 @@ function ModalService($uibModal, $q) {
                 },
                 params: function () {
                     return params;
+                },
+                textAlign: function () {
+                    return textAlign;
                 }
             }
         });
@@ -59,13 +65,14 @@ angular
     .module('nzbhydraApp')
     .controller('ModalInstanceCtrl', ModalInstanceCtrl);
 
-function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params) {
+function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params, textAlign) {
 
     $scope.message = message;
     $scope.headline = headline;
     $scope.params = params;
     $scope.showCancel = angular.isDefined(params) && angular.isDefined(params.cancel);
     $scope.showNo = angular.isDefined(params) && angular.isDefined(params.no);
+    $scope.textAlign = textAlign;
 
     if (angular.isUndefined(params) || angular.isUndefined(params.yes)) {
         $scope.params = {

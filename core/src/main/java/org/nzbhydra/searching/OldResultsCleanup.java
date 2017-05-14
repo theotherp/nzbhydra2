@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -24,6 +25,7 @@ public class OldResultsCleanup {
     private static final long HOUR = 1000 * 60 * 60;
 
     @Scheduled(initialDelay = HOUR, fixedRate = HOUR)
+    @Transactional
     public void deleteOldResults() {
         logger.debug("Attempting to delete old search results");
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();

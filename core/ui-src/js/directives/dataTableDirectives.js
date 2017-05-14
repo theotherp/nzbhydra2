@@ -93,7 +93,7 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            console.log($scope.selected);
+
             var isActive = $scope.selected.entries.length < $scope.entries.length;
             $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }
@@ -120,7 +120,7 @@ function booleanFilter() {
         $scope.selected = {value: $scope.options[$scope.preselect].value};
 
         $scope.apply = function () {
-            console.log($scope.selected);
+
             $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value != $scope.options[0].value)
         }
     }

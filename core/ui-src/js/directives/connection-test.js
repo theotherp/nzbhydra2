@@ -17,7 +17,7 @@ function connectionTest() {
 
     function controller($scope) {
         $scope.message = "";
-        console.log($scope);
+
 
         var testButton = "#button-test-connection";
         var testMessage = "#message-test-connection";

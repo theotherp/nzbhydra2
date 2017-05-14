@@ -4,9 +4,6 @@ import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @ConfigurationProperties(prefix = "auth.users")
 public class UserAuthConfig extends ValidatingConfig {
@@ -21,7 +18,7 @@ public class UserAuthConfig extends ValidatingConfig {
     private String password;
 
     @Override
-    public List<String> validateConfig() {
-        return new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        return new ConfigValidationResult();
     }
 }

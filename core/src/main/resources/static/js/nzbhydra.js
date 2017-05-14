@@ -6,8 +6,6 @@ nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
 
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
-    console.log("Starting");
-
     blockUIConfig.autoBlock = false;
     $urlMatcherFactoryProvider.strictMode(false);
 
@@ -667,7 +665,7 @@ nzbhydraapp.config(["$provide", function ($provide) {
         return function (exception, cause) {
             $delegate(exception, cause);
             try {
-                console.log(exception);
+
                 if (angular.isDefined(exception.stack)) {
                     var stack = exception.stack.split('\n').map(function (line) {
                         return line.trim();
@@ -781,14 +779,14 @@ function titleRow() {
 
     function titleRowController($scope) {
         $scope.expanded = false;
-        console.log("Building title row");
+
         $scope.duplicatesToShow = duplicatesToShow;
         function duplicatesToShow() {
             if ($scope.expanded && $scope.duplicates.length > 1) {
-                console.log("Showing all duplicates in group");
+
                 return $scope.duplicates;
             } else {
-                console.log("Showing first duplicate in group");
+
                 return [$scope.duplicates[0]];
             }
         }
@@ -1263,7 +1261,7 @@ function duplicateGroup() {
 
         $scope.clickCheckbox = function (event) {
             var globalCheckboxIndex = $scope.rowIndex * 1000 + $scope.internalRowIndex * 100 + Number(event.currentTarget.dataset.checkboxIndex);
-            console.log(globalCheckboxIndex);
+
             $scope.$emit("checkboxClicked", event, globalCheckboxIndex, event.currentTarget.checked);
         };
 
@@ -1281,11 +1279,11 @@ function duplicateGroup() {
                             console.log("Indirectly clicked row with global index " + (globalDuplicateGroupIndex + i) + " setting new checkbox value to " + newValue);
                             var index = _.indexOf($scope.selected, $scope.duplicates[i]);
                             if (index == -1 && newValue) {
-                                console.log("Adding to selection");
+
                                 $scope.selected.push($scope.duplicates[i]);
                             } else if (index > -1 && !newValue) {
                                 $scope.selected.splice(index, 1);
-                                console.log("Removing from selection");
+
                             }
                         }
                     }
@@ -1490,7 +1488,7 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            console.log($scope.selected);
+
             var isActive = $scope.selected.entries.length < $scope.entries.length;
             $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }
@@ -1518,7 +1516,7 @@ function booleanFilter() {
         $scope.selected = {value: $scope.options[$scope.preselect].value};
 
         $scope.apply = function () {
-            console.log($scope.selected);
+
             $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value != $scope.options[0].value)
         }
     }
@@ -1630,7 +1628,7 @@ function connectionTest() {
 
     function controller($scope) {
         $scope.message = "";
-        console.log($scope);
+
 
         var testButton = "#button-test-connection";
         var testMessage = "#message-test-connection";
@@ -1744,7 +1742,7 @@ function hydrabackup() {
 
         $scope.uploadBackupFile = function (file, errFiles) {
             RequestsErrorHandler.specificallyHandled(function () {
-                console.log("Hallo");
+
                 $scope.file = file;
                 $scope.errFile = errFiles && errFiles[0];
                 if (file) {
@@ -1912,7 +1910,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
                     //I fucking hate that untrusted HTML shit
                     changelog = $sce.trustAsHtml(changelog);
                     $scope.changelog = changelog;
-                    console.log(changelog);
+
                     $scope.ok = function () {
                         $uibModalInstance.dismiss();
                     };
@@ -3397,9 +3395,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.toggleIndexer = function (indexer) {
-        console.log($scope.availableIndexers[indexer.name].activated);
+
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
-        console.log($scope.availableIndexers[indexer.name].activated);
+
     };
 
 
@@ -3612,7 +3610,7 @@ function ModalService($uibModal, $q) {
         open: open
     };
 
-    function open(headline, message, params, size) {
+    function open(headline, message, params, size, textAlign) {
         //params example:
         /*
          var p =
@@ -3633,6 +3631,9 @@ function ModalService($uibModal, $q) {
          }
          };
          */
+        if (angular.isUndefined(textAlign)) {
+            textAlign = "center";
+        }
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/modal.html',
             controller: 'ModalInstanceCtrl',
@@ -3646,6 +3647,9 @@ function ModalService($uibModal, $q) {
                 },
                 params: function () {
                     return params;
+                },
+                textAlign: function () {
+                    return textAlign;
                 }
             }
         });
@@ -3664,13 +3668,14 @@ angular
     .module('nzbhydraApp')
     .controller('ModalInstanceCtrl', ModalInstanceCtrl);
 
-function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params) {
+function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params, textAlign) {
 
     $scope.message = message;
     $scope.headline = headline;
     $scope.params = params;
     $scope.showCancel = angular.isDefined(params) && angular.isDefined(params.cancel);
     $scope.showNo = angular.isDefined(params) && angular.isDefined(params.no);
+    $scope.textAlign = textAlign;
 
     if (angular.isUndefined(params) || angular.isUndefined(params.yes)) {
         $scope.params = {
@@ -3717,7 +3722,7 @@ function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params)
         }
     });
 }
-ModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "headline", "message", "params"];
+ModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "headline", "message", "params", "textAlign"];
 
 angular
     .module('nzbhydraApp')
@@ -3836,7 +3841,7 @@ angular
     .controller('IndexController', IndexController);
 
 function IndexController($scope, $http, $stateParams, $state) {
-    console.log("Index");
+
     $state.go("root.search");
 }
 IndexController.$inject = ["$scope", "$http", "$stateParams", "$state"];
@@ -4490,7 +4495,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
     $scope.needsConnectionTest = false;
 
     $scope.obSubmit = function () {
-        console.log($scope);
+
         if ($scope.form.$valid) {
 
             var a = data.checkBeforeClose($scope, model).then(function () {
@@ -4664,7 +4669,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
 
-                    console.log("Updating downloader categories cache");
+
                     var categories = {downloader: categoriesResponse.data.categories};
                     return categoriesResponse.data.categories;
 
@@ -4698,12 +4703,12 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function select(category) {
         selectedCategory = category;
-        console.log("Selected category " + category);
+
         deferred.resolve(category);
     }
 
     function invalidate() {
-        console.log("Invalidating categories");
+
         categories = undefined;
     }
 }
@@ -4711,7 +4716,7 @@ DownloaderCategoriesService.$inject = ["$http", "$q", "$uibModal"];
 
 angular
     .module('nzbhydraApp').controller('DownloaderCategorySelectionController', ["$scope", "$uibModalInstance", "DownloaderCategoriesService", "categories", function ($scope, $uibModalInstance, DownloaderCategoriesService, categories) {
-    console.log(categories);
+
     $scope.categories = categories;
     $scope.select = function (category) {
         DownloaderCategoriesService.select(category);
@@ -4824,20 +4829,15 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         reloadConfig: reloadConfig
     };
 
-
-    function set(newConfig) {
+    function set(newConfig, ignoreWarnings) {
         var deferred = $q.defer();
         $http.put('internalapi/config', newConfig)
             .then(function (response) {
-                if (response.data.ok) {
-                    console.log("Settings saved. Updating cache");
+                if (response.data.ok && (ignoreWarnings || response.data.warningMessages.length === 0)) {
                     cache.put("config", newConfig);
                     invalidateSafe();
-                    deferred.resolve(response);
-                } else {
-                    deferred.reject(response);
                 }
-
+                deferred.resolve(response);
 
             }, function (errorresponse) {
                 console.log("Error saving settings:");
@@ -6973,7 +6973,7 @@ angular
     .module('nzbhydraApp')
     .controller('ConfigController', ConfigController);
 
-function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, $state, growl) {
+function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, localStorageService, $state, growl) {
     $scope.config = config;
     $scope.submit = submit;
     $scope.activeTab = activeTab;
@@ -6986,28 +6986,101 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     });
 
 
+    function updateAndAskForRestartIfNecessary() {
+        $scope.form.$setPristine();
+        DownloaderCategoriesService.invalidate();
+        if ($scope.restartRequired) {
+            ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
+                yes: {
+                    onYes: function () {
+                        RestartService.restart();
+                    }
+                },
+                no: {
+                    onNo: function () {
+                        $scope.restartRequired = false;
+                    }
+                }
+            });
+        }
+    }
+
+    function handleConfigSetResponse(response, ignoreWarnings) {
+        if (angular.isUndefined(ignoreWarnings)) {
+            ignoreWarnings = localStorageService.get("ignoreWarnings") !== null ? localStorageService.get("ignoreWarnings") : false;
+        }
+        //Communication with server was successful but there might be validation errors and/or warnings
+        var warningMessages = response.data.warningMessages;
+        var errorMessages = response.data.errorMessages;
+        var showMessage = errorMessages.length > 0 || (warningMessages.length > 0 && !ignoreWarnings);
+
+        function extendMessageWithList(message, messages) {
+            _.forEach(messages, function (x) {
+                message += "<li>" + x + "</li>";
+            });
+            message += "</ul></span>";
+            return message;
+        }
+
+        if (showMessage) {
+            var options;
+            var message;
+            var title;
+            if (errorMessages.length > 0) { //Actual errors which cannot be ignored
+                title = "Config validation failed";
+                message = '<span class="error">The following errors have been found in your config. They need to be fixed.<ul>';
+                message = extendMessageWithList(message, response.data.errorMessages);
+                if (warningMessages.length > 0) {
+                    message += '<br><span class="warning">The following warnings were found. You can ignore them if you wish.<ul>';
+                    message = extendMessageWithList(message, response.data.warningMessages);
+                }
+                options = {
+                    yes: {
+                        onYes: function () {
+                        },
+                        text: "OK"
+                    }
+                };
+            } else if (warningMessages.length > 0) {
+                title = "Config validation warnings";
+                message = '<br><span class="warning">The following warnings have been found. You can ignore them if you wish. The config was already saved.<ul>';
+                message = extendMessageWithList(message, response.data.warningMessages);
+                options = {
+                    yes: {
+                        onYes: function () {
+                        },
+                        text: "Ignore warnings"
+                    },
+                    cancel: {
+                        onCancel: function () {
+                            localStorageService.set("ignoreWarnings", true);
+                            ConfigService.set($scope.config, true).then(function (response) {
+                                handleConfigSetResponse(response, true);
+                                updateAndAskForRestartIfNecessary();
+                            }, function (response) {
+                                //Actual error while setting or validating config
+                                growl.error(response.data);
+                            });
+                        },
+                        text: "Ignore and don't show again"
+                    }
+                };
+            }
+
+            ModalService.open(title, message, options, "md", "left");
+        }
+
+
+        // growl.error(response.data.errorMessages.join("<br>"));
+    }
+
     function submit() {
         if ($scope.form.$valid) {
-            ConfigService.set($scope.config).then(function () {
-                $scope.form.$setPristine();
-                DownloaderCategoriesService.invalidate();
-                if ($scope.restartRequired) {
-                    ModalService.open("Restart required", "The changes you have made may require a restart to be effective.<br>Do you want to restart now?", {
-                        yes: {
-                            onYes: function () {
-                                RestartService.restart();
-                            }
-                        },
-                        no: {
-                            onNo: function () {
-                                $scope.restartRequired = false;
-                            }
-                        }
-                    });
-                }
+            ConfigService.set($scope.config, true).then(function (response) { //TODO Read from local storage
+                handleConfigSetResponse(response);
             }, function (response) {
-                console.log(response);
-                growl.error(response.data.errorMessages.join("<br>"));
+                //Actual error while setting or validating config
+                growl.error(response.data);
             });
 
         } else {
@@ -7138,7 +7211,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             }
         })
 }
-ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "$state", "growl"];
+ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl"];
 
 
 

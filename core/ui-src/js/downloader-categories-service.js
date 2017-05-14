@@ -30,7 +30,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
 
-                    console.log("Updating downloader categories cache");
+
                     var categories = {downloader: categoriesResponse.data.categories};
                     return categoriesResponse.data.categories;
 
@@ -64,19 +64,19 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function select(category) {
         selectedCategory = category;
-        console.log("Selected category " + category);
+
         deferred.resolve(category);
     }
 
     function invalidate() {
-        console.log("Invalidating categories");
+
         categories = undefined;
     }
 }
 
 angular
     .module('nzbhydraApp').controller('DownloaderCategorySelectionController', function ($scope, $uibModalInstance, DownloaderCategoriesService, categories) {
-    console.log(categories);
+
     $scope.categories = categories;
     $scope.select = function (category) {
         DownloaderCategoriesService.select(category);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -42,10 +43,10 @@ public class SearchingConfig extends ValidatingConfig {
 
 
     @Override
-    public List<String> validateConfig() {
-        List<String> errorMessages = new ArrayList<>();
-        checkRegex(errorMessages, requiredRegex, "The required regex in \"Searching\" is invalid");
-        checkRegex(errorMessages, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
-        return errorMessages;
+    public ConfigValidationResult validateConfig() {
+        List<String> errors = new ArrayList<>();
+        checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");
+        checkRegex(errors, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
+        return new ConfigValidationResult(errors.isEmpty(), errors, Collections.emptyList());
     }
 };

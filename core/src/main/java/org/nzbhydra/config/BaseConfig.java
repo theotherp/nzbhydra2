@@ -141,7 +141,6 @@ public class BaseConfig extends ValidatingConfig {
         return builder;
     }
 
-
     /**
      * Returns the original config as it was deployed
      *
@@ -159,14 +158,31 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     @Override
-    public List<String> validateConfig() {
-        List<String> errorMessages = new ArrayList<>();
-        errorMessages.addAll(auth.validateConfig());
-        errorMessages.addAll(categoriesConfig.validateConfig());
-        errorMessages.addAll(main.validateConfig());
-        errorMessages.addAll(searching.validateConfig());
+    public ConfigValidationResult validateConfig() {
+        ConfigValidationResult configValidationResult = new ConfigValidationResult();
+
+        ConfigValidationResult authValidation = auth.validateConfig();
+        configValidationResult.getErrorMessages().addAll(authValidation.getErrorMessages());
+        configValidationResult.getWarningMessages().addAll(authValidation.getWarningMessages());
+
+        ConfigValidationResult categoriesValidation = categoriesConfig.validateConfig();
+        configValidationResult.getErrorMessages().addAll(categoriesValidation.getErrorMessages());
+        configValidationResult.getWarningMessages().addAll(categoriesValidation.getWarningMessages());
+
+        ConfigValidationResult mainValidation = main.validateConfig();
+        configValidationResult.getErrorMessages().addAll(mainValidation.getErrorMessages());
+        configValidationResult.getWarningMessages().addAll(mainValidation.getWarningMessages());
+
+        ConfigValidationResult searchingValidation = searching.validateConfig();
+        configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
+        configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
+
+        configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
+
         //TODO indexers
         //TODO downloaders
-        return errorMessages;
+        return configValidationResult;
     }
+
+
 }

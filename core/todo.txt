@@ -34,13 +34,13 @@ NZB handling
 - downloading: partly done
 - referral, proxying: partly done
 - get details
-- downloading zip of NZBs
+- !! downloading zip of NZBs
 
 Indexer support
 - binsearch
 - nzbindex
 - anizb
-- !! nzbclub is down!!
+- !! nzbclub is gone!!
 - !! checking caps
 - !! checking auth / connection: done
 

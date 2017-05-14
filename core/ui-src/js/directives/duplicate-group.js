@@ -59,7 +59,7 @@ function duplicateGroup() {
 
         $scope.clickCheckbox = function (event) {
             var globalCheckboxIndex = $scope.rowIndex * 1000 + $scope.internalRowIndex * 100 + Number(event.currentTarget.dataset.checkboxIndex);
-            console.log(globalCheckboxIndex);
+
             $scope.$emit("checkboxClicked", event, globalCheckboxIndex, event.currentTarget.checked);
         };
 
@@ -77,11 +77,11 @@ function duplicateGroup() {
                             console.log("Indirectly clicked row with global index " + (globalDuplicateGroupIndex + i) + " setting new checkbox value to " + newValue);
                             var index = _.indexOf($scope.selected, $scope.duplicates[i]);
                             if (index == -1 && newValue) {
-                                console.log("Adding to selection");
+
                                 $scope.selected.push($scope.duplicates[i]);
                             } else if (index > -1 && !newValue) {
                                 $scope.selected.splice(index, 1);
-                                console.log("Removing from selection");
+
                             }
                         }
                     }

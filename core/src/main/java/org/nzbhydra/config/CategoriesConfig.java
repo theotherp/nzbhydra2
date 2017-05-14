@@ -27,22 +27,22 @@ public class CategoriesConfig extends ValidatingConfig {
     private List<Category> categories = new ArrayList<>();
 
     @Override
-    public List<String> validateConfig() {
-        ArrayList<String> errorMessages = new ArrayList<>();
+    public ConfigValidationResult validateConfig() {
+        ArrayList<String> errors = new ArrayList<>();
         for (Category category : categories) {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
-                errorMessages.add("Category " + category.getName() + " does not have any newznab categories configured");
+                errors.add("Category " + category.getName() + " does not have any newznab categories configured");
             }
-            checkRegex(errorMessages, category.getRequiredRegex(), "Category " + category.getName() + " uses an invalid required regex");
-            checkRegex(errorMessages, category.getForbiddenRegex(), "Category " + category.getName() + " uses an invalid forbidden regex");
+            checkRegex(errors, category.getRequiredRegex(), "Category " + category.getName() + " uses an invalid required regex");
+            checkRegex(errors, category.getForbiddenRegex(), "Category " + category.getName() + " uses an invalid forbidden regex");
         }
         List<Integer> allNewznabCategories = categories.stream().flatMap(x -> x.getNewznabCategories().stream()).collect(Collectors.toList());
         List<Integer> duplicateNewznabCategories = allNewznabCategories.stream().filter(x -> Collections.frequency(allNewznabCategories, 1) > 1).collect(Collectors.toList());
         if (!duplicateNewznabCategories.isEmpty()) {
-            errorMessages.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
+            errors.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
         }
 
-        return errorMessages;
+        return new ConfigValidationResult(errors.isEmpty(), errors, Collections.emptyList());
     }
 
 

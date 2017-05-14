@@ -359,7 +359,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.needsConnectionTest = false;
 
     $scope.obSubmit = function () {
-        console.log($scope);
+
         if ($scope.form.$valid) {
 
             var a = data.checkBeforeClose($scope, model).then(function () {
