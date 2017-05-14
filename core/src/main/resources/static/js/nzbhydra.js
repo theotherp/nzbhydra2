@@ -3256,7 +3256,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     $scope.selectedIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
 
-    $scope.toggle = function (searchCategory) {
+    $scope.toggleCategory = function (searchCategory) {
         $scope.category = searchCategory;
 
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
@@ -3337,9 +3337,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         });
     };
 
-    function getSelectedIndexers() {
-        return _.pluck($scope.selectedIndexers, "name").join("|");
-    }
+
 
 
     $scope.goToSearchUrl = function () {
@@ -3360,7 +3358,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         stateParams.minage = $scope.minage;
         stateParams.maxage = $scope.maxage;
         stateParams.category = $scope.category.name;
-        stateParams.indexers = encodeURIComponent(getSelectedIndexers());
+        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join("|"));
         $state.go("root.search", stateParams, {inherit: false, notify: true, reload: true});
     };
 
@@ -3423,6 +3421,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     function getAvailableIndexers() {
+        var alreadySelected = $scope.selectedIndexers;
+        var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
+        $scope.selectedIndexers = [];
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
             return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
         }).sortBy(function (indexer) {
@@ -3432,8 +3433,10 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
                 return {name: indexer.name, activated: isIndexerPreselected(indexer), categories: indexer.categories};
             }).value();
         _.forEach(availableIndexersList, function (x) {
-            if (x.activated) {
-                $scope.selectedIndexers.push(x);
+            var deselectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) === -1);
+            var selectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) > -1);
+            if ((x.activated && !deselectedBefore) || selectedBefore) {
+                $scope.selectedIndexers.push(x.name);
             }
         });
         return availableIndexersList;
@@ -3441,9 +3444,14 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
     $scope.toggleAllIndexers = function () {
-        angular.forEach($scope.availableIndexers, function (indexer) {
-            indexer.activated = !indexer.activated;
-        })
+        _.forEach($scope.availableIndexers, function (x) {
+            var index = _.indexOf($scope.selectedIndexers, x.name);
+            if (index === -1) {
+                $scope.selectedIndexers.push(x.name);
+            } else {
+                $scope.selectedIndexers.splice(index, 1);
+            }
+        });
     };
 
     $scope.searchInputChanged = function () {
@@ -6479,74 +6487,74 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     if (model.searchModuleType !== "ANIZB") {
         fieldset.push(
             {
-                key: 'categories',
+                key: 'enabledCategories',
                 type: 'horizontalMultiselect',
                 templateOptions: {
                     label: 'Enable for...',
                     help: 'You can decide that this indexer should only be used for certain categories',
                     options: [
                         {
-                            id: "movies",
+                            id: "Movies",
                             label: "Movies"
                         },
                         {
-                            id: "movieshd",
+                            id: "Movies HD",
                             label: "Movies HD"
                         },
                         {
-                            id: "moviessd",
+                            id: "Movies SD",
                             label: "Movies SD"
                         },
                         {
-                            id: "tv",
+                            id: "TV",
                             label: "TV"
                         },
                         {
-                            id: "tvhd",
+                            id: "TV HD",
                             label: "TV HD"
                         },
                         {
-                            id: "tvsd",
+                            id: "TV SD",
                             label: "TV SD"
                         },
                         {
-                            id: "anime",
+                            id: "Anime",
                             label: "Anime"
                         },
                         {
-                            id: "audio",
+                            id: "Audio",
                             label: "Audio"
                         },
                         {
-                            id: "flac",
+                            id: "Audio FLAC",
                             label: "Audio FLAC"
                         },
                         {
-                            id: "mp3",
+                            id: "Audio MP3",
                             label: "Audio MP3"
                         },
                         {
-                            id: "audiobook",
+                            id: "Audiobook",
                             label: "Audiobook"
                         },
                         {
-                            id: "console",
+                            id: "Console",
                             label: "Console"
                         },
                         {
-                            id: "pc",
+                            id: "PC",
                             label: "PC"
                         },
                         {
-                            id: "xxx",
+                            id: "XXX",
                             label: "XXX"
                         },
                         {
-                            id: "ebook",
+                            id: "Ebook",
                             label: "Ebook"
                         },
                         {
-                            id: "comic",
+                            id: "Comic",
                             label: "Comic"
                         }],
                     getPlaceholder: function () {

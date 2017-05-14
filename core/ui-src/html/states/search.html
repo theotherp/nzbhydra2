@@ -11,7 +11,7 @@
         <form class="form-horizontal">
             <div class="form-group">
 
-                <label for="inputEmail3" class="col-sm-2 control-label">Search</label>
+                <label class="col-sm-2 control-label">Search</label>
 
                 <div class="col-sm-10">
                     <div class="input-group">
@@ -23,7 +23,7 @@
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
                                     
                                     <li ng-repeat="category in categories">
-                                        <a href="" class="searchCategoryButton" ng-click="toggle(category)">{{ category.name }}</a>
+                                        <a href="" class="searchCategoryButton" ng-click="toggleCategory(category)">{{ category.name }}</a>
                                     </li>
                                 </ul>
                               
@@ -93,14 +93,14 @@
             <div class="col-md-3"></div>
             <form class="form-horizontal">
                 <div class="form-group">
-                    <label for="indexers" class="col-sm-2 control-label">Indexers</label>
+                    <label class="col-sm-2 control-label">Indexers</label>
 
                     <div class="col-md-10">
                         <div class="input-group" style="padding-top: 10px;">
                             <button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" data-checklist-model="selectedIndexers" data-checklist-value="indexer"> {{ indexer.name }}
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name"> {{ indexer.name }}
                             </label>
 
                         </div>
@@ -112,7 +112,7 @@
         <div class="col-md-3"></div>
         <form class="form-horizontal">
             <div class="form-group">
-                <label for="inputEmail3" class="col-sm-2 control-label">Age</label>
+                <label class="col-sm-2 control-label">Age</label>
 
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
@@ -128,7 +128,7 @@
                                ng-model-options='{ debounce: 500 }'>
                     </div>
                 </div>
-                <label for="inputEmail3" class="col-sm-5 control-label" style="width:5%">Size</label>
+                <label class="col-sm-5 control-label" style="width:5%">Size</label>
 
                 <div class="col-sm-3" style="width: 11%">
                     <div class="input-group">
