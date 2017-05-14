@@ -310,10 +310,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                         safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
                             return ConfigService.getSafe();
                         }],
-                        askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
-                            return $http.get("internalapi/askadmin");
-                        }],
-
+                        // askAdmin: ['loginRequired', '$http', function (loginRequired, $http) {
+                        //     return $http.get("internalapi/askadmin");
+                        // }],
                         activeTab: [function () {
                             return 0;
                         }],

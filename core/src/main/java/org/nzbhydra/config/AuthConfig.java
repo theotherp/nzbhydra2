@@ -35,12 +35,12 @@ public class AuthConfig extends ValidatingConfig {
     @Override
     public List<String> validateConfig() {
         List<String> errors = new ArrayList<>();
-        if (restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
-            errors.add("You've restricted admin access but no user has admin rights");
-        }
         if (authType != AuthType.NONE && users.isEmpty()) {
             errors.add("You've enabled security but not defined any users");
+        } else if (restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
+            errors.add("You've restricted admin access but no user has admin rights");
         }
+
         return errors;
     }
 }

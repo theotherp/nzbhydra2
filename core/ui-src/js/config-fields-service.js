@@ -131,12 +131,41 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Use SSL',
-                                help: 'I recommend using a reverse proxy instead of this. Requires restart.'
+                                help: 'Requires restart.'
                             },
                             watcher: {
                                 listener: restartListener
                             }
                         },
+                        {
+                            key: 'sslcert',
+                            hideExpression: '!model.ssl',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'SSL certificate file',
+                                required: true,
+                                help: 'Requires restart.'
+                            },
+                            watcher: {
+                                listener: restartListener
+                            }
+                        },
+                        {
+                            key: 'sslkey',
+                            hideExpression: '!model.ssl',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'SSL key file',
+                                required: true,
+                                help: 'Requires restart.'
+                            },
+                            watcher: {
+                                listener: restartListener
+                            }
+                        }
+                        /*
                         {
                             key: 'socksProxy',
                             type: 'horizontalInput',
@@ -176,34 +205,7 @@ function ConfigFields($injector) {
                                 listener: restartListener
                             }
                         },
-                        {
-                            key: 'sslcert',
-                            hideExpression: '!model.ssl',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'SSL certificate file',
-                                required: true,
-                                help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'sslkey',
-                            hideExpression: '!model.ssl',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'SSL key file',
-                                required: true,
-                                help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        }
+                         */
 
                     ]
                 },

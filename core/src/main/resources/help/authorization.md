@@ -11,7 +11,4 @@ You can decide for every user if he is allowed to:
 * view links for downloading NZBs and see their details
 * may select which indexers are used for search.
 
-Please note that the last two are purely visual.
-
-### Note
-You need to make sure that you don't restrict access to the admin area and have no user without access to that area.
+Please note that the last two are purely visual and will not be enforced.
