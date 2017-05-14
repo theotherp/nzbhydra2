@@ -99,8 +99,10 @@ public class Searcher {
             searchCacheEntry.setSearchResultItems(searchResultItems);
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
-        searchResult.setIndexerSearchResults(indexersToSearchAndTheirResults.entrySet().stream().map(x -> Iterables.getLast(x.getValue())).collect(Collectors.toList()));
+        searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerSearchResultsByIndexer().entrySet().stream().map(x -> Iterables.getLast(x.getValue())).collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
+        searchResultItems.sort(Comparator.comparingLong(x -> x.getBestDate().getEpochSecond()));
+        Collections.reverse(searchResultItems);
 
         spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItems);
 

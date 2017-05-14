@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -27,9 +26,12 @@ import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,6 @@ import static org.mockito.Mockito.when;
 
 //@RunWith(SpringRunner.class)
 //@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class})
-@Ignore //TODO Rewrite
 public class SearcherUnitTest {
 
     @InjectMocks
@@ -84,6 +85,7 @@ public class SearcherUnitTest {
     private IndexerForSearchSelection pickingResultMock;
     @Mock
     private IndexerSearchEntity indexerSearchEntityMock;
+    private Random random = new Random();
 
 
     @Before
@@ -102,7 +104,6 @@ public class SearcherUnitTest {
         when(searchRequestMock.getCategory()).thenReturn(category);
         when(searchRequestMock.getInternalData()).thenReturn(new InternalData());
         when(indexerPicker.pickIndexers(any())).thenReturn(pickingResultMock);
-        when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
         when(indexerSearchRepository.findByIndexerEntityAndSearchEntity(any(), any())).thenReturn(indexerSearchEntityMock);
 
         when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1));
@@ -143,6 +144,29 @@ public class SearcherUnitTest {
     }
 
     @Test
+    public void shouldReturnNewestFirst() throws Exception {
+        when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
+        Instant now = Instant.now();
+        IndexerSearchResult indexer1results = mockIndexerSearchResult(0, 100, true, 100, indexer1);
+        indexer1results.getSearchResultItems().get(0).setPubDate(now);
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(indexer1results);
+        IndexerSearchResult indexer2results = mockIndexerSearchResult(0, 100, true, 100, indexer2);
+        indexer2results.getSearchResultItems().get(0).setPubDate(now.minus(1, ChronoUnit.MINUTES));
+        when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(indexer2results);
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 2);
+        searchRequest.setTitle("some title so it will be found in the search request cache");
+        SearchResult result = searcher.search(searchRequest);
+        List<SearchResultItem> foundResults = result.getSearchResultItems();
+        assertThat(foundResults.size(), is(2));
+        assertThat(foundResults.get(0).getTitle(), is("item0"));
+        assertThat(foundResults.get(0).getIndexer(), is(indexer1));
+        assertThat(foundResults.get(1).getTitle(), is("item0"));
+        assertThat(foundResults.get(1).getIndexer(), is(indexer2));
+
+    }
+
+    @Test
     public void shouldWorkWithRejectedItems() throws Exception {
         IndexerSearchResult result1 = mockIndexerSearchResult(0, 9, true, 20, indexer1);
         Multiset<String> reasons = HashMultiset.create();
@@ -173,7 +197,9 @@ public class SearcherUnitTest {
         for (int i = offset; i < offset + limit; i++) {
             SearchResultItem item = new SearchResultItem();
             item.setTitle("item" + i);
+            item.setPubDate(Instant.now().minus(i, ChronoUnit.DAYS));
             items.add(item);
+            item.setIndexer(indexer);
         }
 
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult();
