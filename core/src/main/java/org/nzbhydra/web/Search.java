@@ -172,7 +172,6 @@ public class Search {
         List<SearchResult> transformedSearchResults = new ArrayList<>();
 
         for (SearchResultItem item : searchResultItems) {
-
             SearchResultBuilder builder = SearchResult.builder()
                     .category(item.getCategory().getName())
                     .comments(item.getCommentsCount())

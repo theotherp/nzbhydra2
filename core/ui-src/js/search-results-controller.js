@@ -117,6 +117,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     function sortAndFilter(results, query, minage, maxage, minsize, maxsize) {
+
         $scope.countFilteredOut = 0;
 
         function filterByAgeAndSize(item) {
@@ -158,7 +159,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                     } else {
                         sortPredicateValue = item[$scope.sortPredicate];
                     }
-                    //var sortPredicateValue = item[$scope.sortPredicate];
                     return $scope.sortReversed ? -sortPredicateValue : sortPredicateValue;
                 });
                 //Now sort the hash group by indexer score (inverted) so that the result with the highest indexer score is shown on top (or as the only one of a hash group if it's collapsed)

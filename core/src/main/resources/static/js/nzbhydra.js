@@ -942,7 +942,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
             }
             var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
             return $http.get(uri.toString()).then(function (response) {
-                if (response.data.success) {
+                if (response.data.successful) {
                     if (response.data.hasNfo) {
                         $scope.openModal("lg", response.data.content)
                     } else {
@@ -1326,22 +1326,22 @@ function downloadNzbzipButton() {
     function controller($scope, growl, FileDownloadService) {
 
         $scope.download = function () {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length == 0) {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
             } else {
-
                 var values = _.map($scope.searchResults, function (value) {
                     return value.searchResultId;
                 });
-                var link = "getnzbzip?searchresultids=" + values.join("|");
+                var link = "internalapi/nzbzip";
+
                 var searchTitle;
                 if (angular.isDefined($scope.searchTitle)) {
-                    searchTitle = " for " + $scope.searchTitle;
+                    searchTitle = " for " + $scope.searchTitle.replace("[^a-zA-Z0-9.-]", "_");
                 } else {
                     searchTitle = "";
                 }
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                FileDownloadService.downloadFile(link, filename);
+                FileDownloadService.downloadFile(link, filename, "POST", values);
             }
         }
     }
@@ -1368,7 +1368,7 @@ function downloadNzbsButton() {
         $scope.downloaders = NzbDownloadService.getEnabledDownloaders();
 
         $scope.download = function (downloader) {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length == 0) {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
             } else {
 
@@ -1377,7 +1377,7 @@ function downloadNzbsButton() {
                 });
 
                 NzbDownloadService.download(downloader, values).then(function (response) {
-                    if (response.data.success) {
+                    if (response.data.successful) {
                         growl.info("Successfully added " + response.data.added + " of " + response.data.of + " NZBs");
                     } else {
                         growl.error("Error while adding NZBs");
@@ -1740,7 +1740,7 @@ function hydrabackup() {
 
 
         $scope.createAndDownloadBackupFile = function () {
-            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip");
+            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET");
         };
 
         $scope.uploadBackupFile = function (file, errFiles) {
@@ -1836,7 +1836,7 @@ function addableNzb() {
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
-                if (response.data.success) {
+                if (response.data.successful) {
                     $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
                 } else {
                     $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
@@ -2636,6 +2636,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     function sortAndFilter(results, query, minage, maxage, minsize, maxsize) {
+
         $scope.countFilteredOut = 0;
 
         function filterByAgeAndSize(item) {
@@ -2677,7 +2678,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                     } else {
                         sortPredicateValue = item[$scope.sortPredicate];
                     }
-                    //var sortPredicateValue = item[$scope.sortPredicate];
                     return $scope.sortReversed ? -sortPredicateValue : sortPredicateValue;
                 });
                 //Now sort the hash group by indexer score (inverted) so that the result with the highest indexer score is shown on top (or as the only one of a hash group if it's collapsed)
@@ -3332,8 +3332,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             $scope.tvdbId = undefined;
         });
     };
-
-
 
 
     $scope.goToSearchUrl = function () {
@@ -4614,8 +4612,8 @@ function FileDownloadService($http, growl) {
 
     return service;
 
-    function downloadFile(link, filename) {
-        $http({method: 'GET', url: link, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+    function downloadFile(link, filename, method, data) {
+        $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
@@ -6730,8 +6728,8 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 type: 'select',
                 label: 'NZB access type',
                 options: [
-                    {name: 'Proxy NZBs from indexer', value: 'serve'},
-                    {name: 'Redirect to the indexer', value: 'redirect'}
+                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
+                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
                 ],
                 help: "How external access to NZBs is provided. Redirecting is recommended."
             }
@@ -6743,8 +6741,8 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 type: 'select',
                 label: 'NZB adding type',
                 options: [
-                    {name: 'Send link', value: 'link'},
-                    {name: 'Upload NZB', value: 'nzb'}
+                    {name: 'Send link', value: 'SEND_LINK'},
+                    {name: 'Upload NZB', value: 'UPLOAD'}
                 ],
                 help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data"
             }
@@ -6768,22 +6766,22 @@ function getDownloaderPresets() {
     return [[
         {
             name: "NZBGet",
-            type: "NZBGET",
+            downloaderType: "NZBGET",
             username: "nzbgetx",
-            nzbAddingType: "link",
-            nzbaccesstype: "redirect",
+            nzbAddingType: "SEND_LINK",
+            nzbaccesstype: "REDIRECT",
             iconCssClass: "",
-            downloadType: "nzb",
+            downloadType: "NZB",
             url: "http://nzbget:tegbzn6789@localhost:6789"
         },
         {
             url: "http://localhost:8086",
-            type: "SABNZBD",
+            downloaderType: "SABNZBD",
             name: "SABnzbd",
-            nzbAddingType: "link",
-            nzbaccesstype: "redirect",
+            nzbAddingType: "SEND_LINK",
+            nzbaccesstype: "REDIRECT",
             iconCssClass: "",
-            downloadType: "nzb"
+            downloadType: "NZB"
         }
     ]];
 }
@@ -6796,7 +6794,7 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
         message = "The connection to the " + whatFailed + " failed: " + data.message + "<br>Do you want to add it anyway?";
         yesText = "I know what I'm doing";
     } else {
-        message = "The connection to the " + whatFailed + " could not be tested, sorry";
+        message = "The connection to the " + whatFailed + " could not be tested, sorry. Please check the log.";
         yesText = "I'll risk it";
     }
     ModalService.open("Connection check failed", message, {

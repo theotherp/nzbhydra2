@@ -263,33 +263,51 @@ public abstract class Indexer<T> {
         return result;
     }
 
-    //TODO query generation for shows, ebooks
     protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
         if (searchRequest.getQuery().isPresent()) {
-            query = searchRequest.getQuery().get();
-        } else {
-            boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
-            boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
-            if (queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds) {
-                if (searchRequest.getTitle().isPresent()) {
-                    query = searchRequest.getTitle().get();
-                } else {
-                    Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
-                    try {
-                        MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
-                        if (!mediaInfo.getTitle().isPresent()) {
-                            throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
-                        }
-                        query = mediaInfo.getTitle().get();
+            return searchRequest.getQuery().get();
+        }
 
-                    } catch (InfoProviderException e) {
-                        throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
-                    }
+        boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
+        boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
+        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+        if (!(queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds)) {
+            logger.debug("Query generation not needed, possible or configured");
+            return query;
+        }
+
+        if (searchRequest.getTitle().isPresent()) {
+            query = searchRequest.getTitle().get();
+        } else if (searchRequest.getInternalData().getTitle().isPresent()) {
+            query = searchRequest.getInternalData().getTitle().get(); //TODO Currently never set, when should it?
+        } else {
+            Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
+            try {
+                MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
+                if (!mediaInfo.getTitle().isPresent()) {
+                    throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
-                info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+                query = mediaInfo.getTitle().get();
+            } catch (InfoProviderException e) {
+                throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
             }
         }
+
+        if (searchRequest.getSeason().isPresent()) {
+            if (searchRequest.getEpisode().isPresent()) {
+                query += String.format(" s%02des%02d", searchRequest.getSeason().get(), searchRequest.getEpisode().get()); //TODO daily shows
+            } else {
+                query += String.format(" s%02d", searchRequest.getSeason().get());
+            }
+        }
+
+        if (searchRequest.getAuthor().isPresent()) {
+            query += " " + searchRequest.getAuthor().get();
+        }
+
+
+        info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+
         return query;
     }
 

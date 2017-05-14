@@ -16,22 +16,22 @@ function downloadNzbzipButton() {
     function controller($scope, growl, FileDownloadService) {
 
         $scope.download = function () {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length == 0) {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
             } else {
-
                 var values = _.map($scope.searchResults, function (value) {
                     return value.searchResultId;
                 });
-                var link = "getnzbzip?searchresultids=" + values.join("|");
+                var link = "internalapi/nzbzip";
+
                 var searchTitle;
                 if (angular.isDefined($scope.searchTitle)) {
-                    searchTitle = " for " + $scope.searchTitle;
+                    searchTitle = " for " + $scope.searchTitle.replace("[^a-zA-Z0-9.-]", "_");
                 } else {
                     searchTitle = "";
                 }
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                FileDownloadService.downloadFile(link, filename);
+                FileDownloadService.downloadFile(link, filename, "POST", values);
             }
         }
     }

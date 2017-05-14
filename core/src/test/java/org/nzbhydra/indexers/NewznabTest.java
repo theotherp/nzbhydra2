@@ -490,7 +490,7 @@ public class NewznabTest {
         NfoResult nfo = testee.getNfo("guid");
 
         assertThat(nfo.getContent(), is("rawnfo"));
-        assertThat(nfo.isSuccess(), is(true));
+        assertThat(nfo.isSuccessful(), is(true));
         assertThat(nfo.isHasNfo(), is(true));
     }
 
@@ -509,13 +509,13 @@ public class NewznabTest {
         NfoResult nfo = testee.getNfo("guid");
 
         assertThat(nfo.getContent(), is("nfoInXml"));
-        assertThat(nfo.isSuccess(), is(true));
+        assertThat(nfo.isSuccessful(), is(true));
         assertThat(nfo.isHasNfo(), is(true));
 
         rssChannel.setNewznabResponse(new NewznabResponse(0, 0));
         nfo = testee.getNfo("guid");
         assertThat(nfo.isHasNfo(), is(false));
-        assertThat(nfo.isSuccess(), is(true));
+        assertThat(nfo.isSuccessful(), is(true));
     }
 
     @Test
@@ -526,7 +526,7 @@ public class NewznabTest {
         NfoResult nfo = testee.getNfo("guid");
 
         assertThat(nfo.getContent(), is("message"));
-        assertThat(nfo.isSuccess(), is(false));
+        assertThat(nfo.isSuccessful(), is(false));
         assertThat(nfo.isHasNfo(), is(false));
     }
 

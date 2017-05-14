@@ -1826,8 +1826,8 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 type: 'select',
                 label: 'NZB access type',
                 options: [
-                    {name: 'Proxy NZBs from indexer', value: 'serve'},
-                    {name: 'Redirect to the indexer', value: 'redirect'}
+                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
+                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
                 ],
                 help: "How external access to NZBs is provided. Redirecting is recommended."
             }
@@ -1839,8 +1839,8 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 type: 'select',
                 label: 'NZB adding type',
                 options: [
-                    {name: 'Send link', value: 'link'},
-                    {name: 'Upload NZB', value: 'nzb'}
+                    {name: 'Send link', value: 'SEND_LINK'},
+                    {name: 'Upload NZB', value: 'UPLOAD'}
                 ],
                 help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data"
             }
@@ -1864,22 +1864,22 @@ function getDownloaderPresets() {
     return [[
         {
             name: "NZBGet",
-            type: "NZBGET",
+            downloaderType: "NZBGET",
             username: "nzbgetx",
-            nzbAddingType: "link",
-            nzbaccesstype: "redirect",
+            nzbAddingType: "SEND_LINK",
+            nzbaccesstype: "REDIRECT",
             iconCssClass: "",
-            downloadType: "nzb",
+            downloadType: "NZB",
             url: "http://nzbget:tegbzn6789@localhost:6789"
         },
         {
             url: "http://localhost:8086",
-            type: "SABNZBD",
+            downloaderType: "SABNZBD",
             name: "SABnzbd",
-            nzbAddingType: "link",
-            nzbaccesstype: "redirect",
+            nzbAddingType: "SEND_LINK",
+            nzbaccesstype: "REDIRECT",
             iconCssClass: "",
-            downloadType: "nzb"
+            downloadType: "NZB"
         }
     ]];
 }
@@ -1892,7 +1892,7 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
         message = "The connection to the " + whatFailed + " failed: " + data.message + "<br>Do you want to add it anyway?";
         yesText = "I know what I'm doing";
     } else {
-        message = "The connection to the " + whatFailed + " could not be tested, sorry";
+        message = "The connection to the " + whatFailed + " could not be tested, sorry. Please check the log.";
         yesText = "I'll risk it";
     }
     ModalService.open("Connection check failed", message, {

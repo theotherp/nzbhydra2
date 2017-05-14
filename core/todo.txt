@@ -34,6 +34,7 @@ NZB handling
 - downloading: partly done
 - referral, proxying: partly done
 - get details
+- downloading zip of NZBs
 
 Indexer support
 - binsearch
@@ -97,6 +98,8 @@ General, Ideas
 - when no indexers configured / available, on search page show a note and link to config
 - debug tab in system section to execute raw sql queries
 - log API access user agent in info column and show in history?
+- proper GUI filtering of search results
+- if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 
 currently not (yet) supported:
 - proxies

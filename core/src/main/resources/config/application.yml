@@ -75,7 +75,7 @@ categoriesConfig:
           requiredRegex:
           requiredWords:
           preselect: true
-          searchType: SEARCH
+          searchType: BOOK
         - name: Ebook
           applyRestrictionsType: BOTH
           forbiddenRegex:

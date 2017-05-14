@@ -29,7 +29,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
             }
             var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
             return $http.get(uri.toString()).then(function (response) {
-                if (response.data.success) {
+                if (response.data.successful) {
                     if (response.data.hasNfo) {
                         $scope.openModal("lg", response.data.content)
                     } else {

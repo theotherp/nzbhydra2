@@ -17,7 +17,7 @@ function downloadNzbsButton() {
         $scope.downloaders = NzbDownloadService.getEnabledDownloaders();
 
         $scope.download = function (downloader) {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length == 0) {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
             } else {
 
@@ -26,7 +26,7 @@ function downloadNzbsButton() {
                 });
 
                 NzbDownloadService.download(downloader, values).then(function (response) {
-                    if (response.data.success) {
+                    if (response.data.successful) {
                         growl.info("Successfully added " + response.data.added + " of " + response.data.of + " NZBs");
                     } else {
                         growl.error("Error while adding NZBs");

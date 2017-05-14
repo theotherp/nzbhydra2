@@ -110,7 +110,6 @@ public class Newznab extends Indexer<Xml> {
         }
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
 
-
         if (limit != null) {
             componentsBuilder.queryParam("limit", limit);
         }
@@ -233,7 +232,6 @@ public class Newznab extends Indexer<Xml> {
         }
         return response;
     }
-
 
 
     @Override

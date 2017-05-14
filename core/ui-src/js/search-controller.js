@@ -183,8 +183,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
 
-
-
     $scope.goToSearchUrl = function () {
         //State params (query parameters) should all be lowercase
         var stateParams = {};

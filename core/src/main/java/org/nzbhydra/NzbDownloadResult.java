@@ -32,7 +32,7 @@ public class NzbDownloadResult {
         if (isRedirect()) {
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(getUrl()));
-            response = new ResponseEntity<>(headers, HttpStatus.TEMPORARY_REDIRECT);
+            response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
             response = new ResponseEntity<>(getNzbContent(), HttpStatus.OK);
         }

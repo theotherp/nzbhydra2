@@ -22,7 +22,7 @@ function addableNzb() {
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
-                if (response.data.success) {
+                if (response.data.successful) {
                     $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
                 } else {
                     $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";

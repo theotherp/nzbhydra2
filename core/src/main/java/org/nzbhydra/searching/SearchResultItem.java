@@ -70,6 +70,10 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         return ageInDays;
     }
 
+    public Instant getBestDate() {
+        return getUsenetDate().orElse(getPubDate());
+    }
+
     @Override
     public int compareTo(SearchResultItem o) {
         if (o == null) {

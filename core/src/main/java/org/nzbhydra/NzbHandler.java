@@ -23,8 +23,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Component
 public class NzbHandler {
@@ -72,6 +80,64 @@ public class NzbHandler {
 
             return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent);
         }
+    }
+
+    public File getNzbsAsZip(List<Long> guids, String usernameOrIp) throws Exception {
+        List<File> nzbFiles = new ArrayList<>();
+        for (Long guid : guids) {
+            NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, usernameOrIp);
+            if (!result.isSuccessful()) {
+                continue;
+            }
+            try {
+                File tempFile = File.createTempFile(result.getTitle(), "nzb");
+                Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
+                nzbFiles.add(tempFile);
+            } catch (IOException e) {
+                logger.error("Unable to write NZB content to temporary file");
+            }
+        }
+        if (nzbFiles.isEmpty()) {
+            throw new RuntimeException("No NZBs could be retrieved");
+        }
+        logger.info("Successfully added {}/{} NZBs to ZIP", nzbFiles.size(), guids.size());
+        return createZip(nzbFiles);
+    }
+
+    public File createZip(List<File> nzbFiles) throws Exception {
+        logger.info("Creating ZIP with NZBs");
+
+        File tempFile = File.createTempFile("nzbhydra", ".zip");
+        tempFile.deleteOnExit();
+        logger.debug("Using temp file {}", tempFile.getAbsolutePath());
+        FileOutputStream fos = new FileOutputStream(tempFile);
+        ZipOutputStream zos = new ZipOutputStream(fos);
+
+        for (File file : nzbFiles) {
+            addToZipFile(file, zos);
+            file.delete();
+        }
+
+        zos.close();
+        fos.close();
+
+        return tempFile;
+    }
+
+    private static void addToZipFile(File file, ZipOutputStream zos) throws IOException {
+        logger.debug("Adding file {} to temporary ZIP file", file.getAbsolutePath());
+        FileInputStream fis = new FileInputStream(file);
+        ZipEntry zipEntry = new ZipEntry(file.getName());
+        zos.putNextEntry(zipEntry);
+
+        byte[] bytes = new byte[1024];
+        int length;
+        while ((length = fis.read(bytes)) >= 0) {
+            zos.write(bytes, 0, length);
+        }
+
+        zos.closeEntry();
+        fis.close();
     }
 
 

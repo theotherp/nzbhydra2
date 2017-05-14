@@ -7,13 +7,13 @@ import java.io.Serializable;
 @Data
 public class NfoResult implements Serializable {
 
-    private boolean success;
+    private boolean successful;
     private boolean hasNfo;
     //Either the NFO or the error message if unsuccessful
     private String content;
 
-    private NfoResult(boolean success, boolean hasNfo, String content) {
-        this.success = success;
+    private NfoResult(boolean successful, boolean hasNfo, String content) {
+        this.successful = successful;
         this.hasNfo = hasNfo;
         this.content = content;
     }

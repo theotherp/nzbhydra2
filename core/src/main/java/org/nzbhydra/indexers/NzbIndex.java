@@ -11,6 +11,7 @@ import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
+import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +51,14 @@ public class NzbIndex extends Indexer<RssRoot> {
         List<SearchResultItem> items = new ArrayList<>();
         for (RssItem rssItem : rssRoot.getRssChannel().getItems()) {
             SearchResultItem item = new SearchResultItem();
-            item.setTitle(rssItem.getTitle());
             item.setPubDate(rssItem.getPubDate());
-            item.setGroup(rssItem.getCategory());
-            item.setLink(rssItem.getRssGuid().getGuid());
+            String nzbIndexLink = rssItem.getLink();
+            item.setTitle(nzbIndexLink.substring(nzbIndexLink.lastIndexOf('/') + 1, nzbIndexLink.length() - 4)); //Use the NZB name as title because it's already somewhat cleaned up
+            item.setAgePrecise(true);
+            item.setGroup(rssItem.getCategory().replace("a.b", "alt.binaries"));
+            item.setLink(rssItem.getEnclosure().getUrl());
             item.setSize(rssItem.getEnclosure().getLength());
-            Matcher matcher = GUID_PATTERN.matcher(rssItem.getLink());
+            Matcher matcher = GUID_PATTERN.matcher(nzbIndexLink);
             matcher.find();
             item.setIndexerGuid(matcher.group(1));
             item.setCategory(categoryProvider.getNotAvailable());
@@ -87,14 +90,9 @@ public class NzbIndex extends Indexer<RssRoot> {
         }
 
         String query = "";
-        query = generateQueryIfApplicable(searchRequest, query); //TODO query generation for shows
+        query = generateQueryIfApplicable(searchRequest, query);
         query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
-        //TODO paging
 
-//        componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
-//        query = generateQueryIfApplicable(searchRequest, query);
-//        query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
-        //addFurtherParametersToUri(searchRequest, componentsBuilder, query);
         componentsBuilder.queryParam("q", query);
 
         return componentsBuilder;
@@ -114,6 +112,15 @@ public class NzbIndex extends Indexer<RssRoot> {
         if (!excludedWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + "-" + Joiner.on(" -").join(excludedWords);
 
+        }
+        return query;
+    }
+
+    @Override
+    protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {
+        query = super.generateQueryIfApplicable(searchRequest, query);
+        if (searchRequest.getSearchType() == SearchType.BOOK) {
+            query += " ebook | pdf | mobi | epub";
         }
         return query;
     }

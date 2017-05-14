@@ -13,6 +13,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UsernameOrIpStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -31,7 +32,7 @@ public abstract class Downloader {
         this.downloaderConfig = downloaderConfig;
     }
 
-
+    @Transactional
     public GenericResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
         int countAddedNzbs = 0;

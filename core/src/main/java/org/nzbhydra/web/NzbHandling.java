@@ -1,5 +1,6 @@
 package org.nzbhydra.web;
 
+import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
@@ -10,15 +11,21 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.List;
 
 @RestController
 public class NzbHandling {
@@ -41,6 +48,27 @@ public class NzbHandling {
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
+    /**
+     * Provides an internal access to a ZIP file with NZBs via GUID
+     *
+     * @return The ZIP content or a generic response with an error
+     */
+    @RequestMapping(value = "/internalapi/nzbzip", produces = "application/x-nzb", method = RequestMethod.POST)
+    @Secured({"ROLE_USER"})
+    public Object downloadNzbZip(@RequestBody List<Long> guids, HttpServletRequest request) {
+        try {
+            File zipFile = nzbHandler.getNzbsAsZip(guids, UsernameOrIpStorage.usernameOrIp.get());
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
+                    .contentLength(zipFile.length())
+                    .body(new FileSystemResource(zipFile));
+        } catch (Exception e) {
+            logger.error("Error while creating ZIP with NZBs", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
 
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
@@ -61,7 +89,7 @@ public class NzbHandling {
     }
 
     /**
-     * Provides an external access to NZBs via GUID
+     * Provides an external access to NZBs via GUID and API key
      *
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */

@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 public class InternalData {
@@ -13,4 +14,7 @@ public class InternalData {
     private List<String> excludedWords = new ArrayList<>();
     private List<String> requiredWords = new ArrayList<>();
 
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
+    }
 }
