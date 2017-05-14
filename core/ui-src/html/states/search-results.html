@@ -37,7 +37,7 @@
                     <!-- First result in the list, show regularly -->
                     <tr>
                         <td class="text-left">
-                            <input ng-disabled="!ps.wasSuccessful" type="checkbox" ng-model="indexerDisplayState[ps.indexer.toLowerCase()]" ng-click="toggleIndexerDisplay(ps.indexerName)"
+                            <input ng-disabled="!ps.wasSuccessful" type="checkbox" data-checklist-model="indexerDisplayState" data-checklist-value="ps.indexerName" ng-click="toggleIndexerDisplay()"
                                    uib-tooltip="Uncheck to hide results from this indexer"
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"

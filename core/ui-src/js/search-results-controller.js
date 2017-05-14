@@ -22,7 +22,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
         $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});
     });
-    $scope.indexerDisplayState = []; //Stores if a indexerName's searchResults should be displayed or not
+    $scope.indexerDisplayState = {}; //Stores if a indexerName's searchResults should be displayed or not
     $scope.indexerResultsInfo = {}; //Stores information about the indexerName's searchResults like how many we already retrieved
     $scope.groupExpanded = {};
     $scope.selected = [];
@@ -49,9 +49,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.countFilteredOut = 0;
 
     //Initially set visibility of all found indexers to true, they're needed for initial filtering / sorting
-    _.forEach($scope.indexersearches, function (ps) {
-        $scope.indexerDisplayState[ps.indexerName.toLowerCase()] = true;
-    });
+    $scope.indexerDisplayState = _.pluck($scope.indexersearches, "indexerName");
 
     _.forEach($scope.indexersearches, function (ps) {
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
@@ -142,8 +140,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
 
         function getItemIndexerDisplayState(item) {
-            return true;
-            return $scope.indexerDisplayState[item.indexer.toLowerCase()];
+            return _.indexOf($scope.indexerDisplayState, item.indexer) > -1;
         }
 
         function getCleanedTitle(element) {
@@ -156,7 +153,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 //Sorting hash group's contents should not matter for size and age and title but might for category (we might remove this, it's probably mostly unnecessary)
                 var sortedHashGroup = _.sortBy(hashGroup, function (item) {
                     var sortPredicateValue;
-                    if ($scope.sortPredicate == "grabs") {
+                    if ($scope.sortPredicate === "grabs") {
                         sortPredicateValue = angular.isDefined(item.grabs) ? item.grabs : 0;
                     } else {
                         sortPredicateValue = item[$scope.sortPredicate];
@@ -172,7 +169,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             }
 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
-                if ($scope.sortPredicate == "grabs") {
+                if ($scope.sortPredicate === "grabs") {
                     sortPredicateValue = angular.isDefined(hashGroup[0].grabs) ? hashGroup[0].grabs : 0;
                 } else {
                     var sortPredicateValue = hashGroup[0][$scope.sortPredicate];
@@ -185,9 +182,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
             var sortPredicateValue;
-            if ($scope.sortPredicate == "title") {
+            if ($scope.sortPredicate === "title") {
                 sortPredicateValue = titleGroup[0][0].title.toLowerCase();
-            } else if ($scope.sortPredicate == "grabs") {
+            } else if ($scope.sortPredicate === "grabs") {
                 sortPredicateValue = angular.isDefined(titleGroup[0][0].grabs) ? titleGroup[0][0].grabs : 0;
             } else {
                 sortPredicateValue = titleGroup[0][0][$scope.sortPredicate];
@@ -252,10 +249,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         });
     }
 
-//Filters the results according to new visibility settings.
+    //Filters the results according to new visibility settings.
     $scope.toggleIndexerDisplay = toggleIndexerDisplay;
-    function toggleIndexerDisplay(indexer) {
-        $scope.indexerDisplayState[indexer.toLowerCase()] = $scope.indexerDisplayState[indexer.toLowerCase()];
+    function toggleIndexerDisplay() {
         startBlocking("Filtering. Sorry...").then(function () {
             $scope.filteredResults = sortAndFilter($scope.searchResults);
         }).then(function () {
