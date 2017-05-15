@@ -7075,10 +7075,9 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             }
 
             ModalService.open(title, message, options, "md", "left");
+        } else {
+            updateAndAskForRestartIfNecessary();
         }
-
-
-        // growl.error(response.data.errorMessages.join("<br>"));
     }
 
     function submit() {
