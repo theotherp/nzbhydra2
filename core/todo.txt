@@ -15,6 +15,7 @@ Searching
 - !!! query generation
 - !!! search history: mostly done
 - !!! hitlimit and downloadlimit
+- global retention
 
 Config
 - !!! Loading
@@ -99,7 +100,7 @@ General, Ideas
 - debug tab in system section to execute raw sql queries
 - log API access user agent in info column and show in history?
 - proper GUI filtering of search results
-- if indexer statuses is collapsed and at least one indexer had an error show a growl warning
+- !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 
 currently not (yet) supported:
 - proxies

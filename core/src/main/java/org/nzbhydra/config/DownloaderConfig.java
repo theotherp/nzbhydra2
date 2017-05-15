@@ -11,10 +11,7 @@ public class DownloaderConfig extends ValidatingConfig {
     @SensitiveData
     private String apiKey;
     private String defaultCategory;
-    /**
-     * TODO NZB or torrent
-     */
-    private String downloadType;
+    private DownloadType downloadType;
     private boolean enabled;
     private String iconCssClass;
     private String name;

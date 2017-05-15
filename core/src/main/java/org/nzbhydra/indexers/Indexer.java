@@ -99,12 +99,12 @@ public abstract class Indexer<T> {
             logger.warn("Unexpected error while preparing search");
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         } catch (IndexerAccessException e) {
-            handleIndexerAccessException(e, "TODO", IndexerApiAccessType.SEARCH); //TODO do I actually need the url?
+            handleIndexerAccessException(e, IndexerApiAccessType.SEARCH); //TODO do I actually need the url?
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         } catch (Exception e) {
             logger.error("Unexpected error while searching", e);
             try {
-                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, null); //TODO depending on type of error, perhaps not at all because it might be a bug
+                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //TODO depending on type of error, perhaps not at all because it might be a bug
             } catch (Exception e1) {
                 logger.error("Error while handling indexer failure. API access was not saved to database", e1);
             }
@@ -183,7 +183,7 @@ public abstract class Indexer<T> {
         return searchResultItems;
     }
 
-    protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime, String url) {
+    protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
         IndexerStatusEntity status = indexer.getStatus();
         status.setLevel(0);
         status.setDisabledPermanently(false);
@@ -195,11 +195,10 @@ public abstract class Indexer<T> {
         apiAccess.setResponseTime(responseTime);
         apiAccess.setResult(IndexerAccessResult.SUCCESSFUL);
         apiAccess.setTime(Instant.now());
-        apiAccess.setUrl(url);
         indexerApiAccessRepository.save(apiAccess);
     }
 
-    protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult, String url) {
+    protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
         IndexerStatusEntity status = indexer.getStatus();
         if (status.getLevel() == 0) {
             status.setFirstFailure(Instant.now());
@@ -222,28 +221,29 @@ public abstract class Indexer<T> {
         apiAccess.setResponseTime(responseTime);
         apiAccess.setResult(accessResult);
         apiAccess.setTime(Instant.now());
-        apiAccess.setUrl(url);
         indexerApiAccessRepository.save(apiAccess);
     }
 
-    protected void handleIndexerAccessException(IndexerAccessException e, String url, IndexerApiAccessType accessType) {
+    protected void handleIndexerAccessException(IndexerAccessException e, IndexerApiAccessType accessType) {
         boolean disablePermanently = false;
         IndexerAccessResult apiAccessResult;
+        String message = e.getMessage();
         if (e instanceof IndexerAuthException) {
             error("Indexer refused authentication");
             disablePermanently = true;
             apiAccessResult = IndexerAccessResult.AUTH_ERROR;
         } else if (e instanceof IndexerErrorCodeException) {
-            error(e.getMessage());
+            error(message);
             apiAccessResult = IndexerAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
-            error(e.getMessage());
+            message = e.getCause().getMessage();
+            error(message);
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
-            error(e.getMessage(), e);
+            error(message, e);
             apiAccessResult = IndexerAccessResult.HYDRA_ERROR;
         }
-        handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult, url);
+        handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult);
     }
 
     protected abstract T getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException;
@@ -259,7 +259,7 @@ public abstract class Indexer<T> {
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-        handleSuccess(apiAccessType, responseTime, uri.toString());
+        handleSuccess(apiAccessType, responseTime);
         return result;
     }
 

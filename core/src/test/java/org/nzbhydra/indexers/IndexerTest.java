@@ -170,7 +170,7 @@ public class IndexerTest {
     @Test
     public void handleSuccess() throws Exception {
         when(indexerMock.getIndexerEntity().getStatus()).thenReturn(statusMock);
-        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L, "url");
+        testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
 
         verify(statusMock).setDisabledPermanently(false);
         verify(statusMock).setLevel(0);
@@ -181,7 +181,7 @@ public class IndexerTest {
 
     @Test
     public void handleFailure() throws Exception {
-        testee.handleFailure("reason", true, null, null, null, null);
+        testee.handleFailure("reason", true, null, null, null);
         ArgumentCaptor<Instant> captor = ArgumentCaptor.forClass(Instant.class);
 
         verify(statusMock).setReason("reason");
@@ -202,7 +202,7 @@ public class IndexerTest {
         String result = (String) testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
         assertThat(result, is("result"));
-        verify(testee).handleSuccess(eq(IndexerApiAccessType.SEARCH), anyLong(), eq("url"));
+        verify(testee).handleSuccess(eq(IndexerApiAccessType.SEARCH), anyLong());
     }
 
     @Test(expected = IndexerAccessException.class)
@@ -212,22 +212,22 @@ public class IndexerTest {
 
         testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
-        verify(testee).handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
+        verify(testee).handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
     }
 
     @Test
     public void shouldHandleIndexerAccessException() throws Exception {
         IndexerAccessException exception = new IndexerAuthException("error");
-        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
-        verify(testee).handleFailure("error", true, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.AUTH_ERROR, "url");
+        testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("error", true, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.AUTH_ERROR);
 
         exception = new IndexerUnreachableException("error");
-        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
-        verify(testee).handleFailure("error", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR, "url");
+        testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("error", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR);
 
         exception = new IndexerErrorCodeException(new RssError("101", "errorMessage"));
-        testee.handleIndexerAccessException(exception, "url", IndexerApiAccessType.SEARCH);
-        verify(testee).handleFailure("Indexer returned with error code 101 and description errorMessage", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.API_ERROR, "url");
+        testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
+        verify(testee).handleFailure("Indexer returned with error code 101 and description errorMessage", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.API_ERROR);
     }
 
 

@@ -260,7 +260,7 @@ public class NewznabTest {
     @Test(expected = IndexerAuthException.class)
     public void shouldThrowAuthException() throws Exception {
         doReturn(new RssError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
+        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
     }
@@ -268,7 +268,7 @@ public class NewznabTest {
     @Test(expected = IndexerProgramErrorException.class)
     public void shouldThrowProgramErrorCodeException() throws Exception {
         doReturn(new RssError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
+        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
     }
@@ -276,7 +276,7 @@ public class NewznabTest {
     @Test(expected = IndexerErrorCodeException.class)
     public void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
         doReturn(new RssError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
-        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture(), any());
+        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
     }

@@ -36,7 +36,7 @@ public class Category {
     protected Integer maxSizePreset;
     protected Integer minSizePreset;
 
-    private boolean preselect;
+    private boolean preselect; //TODO whats this
 
     public Category(String name) {
         this.name = name;

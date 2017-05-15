@@ -43,7 +43,6 @@ public class IndexerApiAccessEntity {
     private IndexerApiAccessType accessType;
     private Long responseTime;
     private String error;
-    private String url;
     //TODO username / user ?
 
 
@@ -80,7 +79,6 @@ public class IndexerApiAccessEntity {
                 .add("accessType", accessType)
                 .add("responseTime", responseTime)
                 .add("error", error)
-                .add("url", url)
                 .toString();
     }
 }

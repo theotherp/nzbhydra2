@@ -14,15 +14,12 @@ public class MainConfig extends ValidatingConfig {
 
     @SensitiveData
     private String apiKey = null;
-    private String branch;
     private Integer configVersion;
     private boolean backupEverySunday;
-    private boolean debug;
     private String databaseFile;
     private String dereferer;
     @SensitiveData
     private String externalUrl = null;
-    private String gitPath;
     private String host;
     private String httpProxy = null;
     private String httpsProxy = null;
@@ -38,7 +35,7 @@ public class MainConfig extends ValidatingConfig {
     private String sslkey = null;
     private boolean startupBrowser;
     protected String theme;
-    protected String urlBase;
+    protected String urlBase = null;
     private boolean updateCheckEnabled;
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
@@ -47,9 +44,6 @@ public class MainConfig extends ValidatingConfig {
         this.apiKey = apiKey;
     }
 
-    public void setBranch(String branch) {
-        this.branch = branch;
-    }
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);
