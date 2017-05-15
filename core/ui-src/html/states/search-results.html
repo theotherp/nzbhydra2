@@ -57,7 +57,7 @@
                     <span ng-if="ps.didSearch">
                         <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.wasSuccessful, 'glyphicon-remove' : !ps.wasSuccessful}"></span>
 
-                            <span ng-if="$index == 0">{{ ps.errorMessage }}</span>
+                            <span ng-if="!ps.wasSuccessful">{{ ps.errorMessage }}</span>
                         </span>
                             </span>
                             <span ng-if="!ps.didSearch">

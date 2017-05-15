@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.base.Joiner;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -176,6 +177,25 @@ public class BaseConfig extends ValidatingConfig {
         ConfigValidationResult searchingValidation = searching.validateConfig();
         configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
+
+        if (!indexers.isEmpty()) {
+            if (indexers.stream().noneMatch(IndexerConfig::isEnabled)) {
+                configValidationResult.getWarningMessages().add("No indexers enabled. Searches will return empty results");
+            } else if (indexers.stream().allMatch(x -> x.getSupportedSearchIds().isEmpty())) {
+                if (searching.getGenerateQueries() == SearchSourceRestriction.NONE) {
+                    configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation searches using search IDs will return empty results.");
+                } else if (searching.getGenerateQueries() != SearchSourceRestriction.BOTH) {
+                    String name = searching.getGenerateQueries() == SearchSourceRestriction.API ? "internal" : "API";
+                    configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation " + name + " searches using search IDs will return empty results.");
+                }
+            }
+        }
+        if (!configValidationResult.getErrorMessages().isEmpty()) {
+            logger.warn("Config validation returned errors:\n" + Joiner.on("\n").join(configValidationResult.getErrorMessages()));
+        }
+        if (!configValidationResult.getWarningMessages().isEmpty()) {
+            logger.warn("Config validation returned warnings:\n" + Joiner.on("\n").join(configValidationResult.getWarningMessages()));
+        }
 
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
 

@@ -1,6 +1,5 @@
 package org.nzbhydra.web;
 
-import com.google.common.base.Joiner;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -41,8 +40,6 @@ public class Config {
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(config);
             configProvider.getBaseConfig().save();
-        } else {
-            logger.warn("Invalid config submitted:\n" + Joiner.on("\n").join(result.getErrorMessages()));
         }
         return result;
     }

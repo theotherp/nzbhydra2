@@ -114,12 +114,12 @@ Improvements
 - In the future: Cancel searches, self updating
 - Sends all available identifiers instead of just one
 - show which indexers where not picked for what reason
-- show how many results were rejected for what reason
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories
-- better validation for configuration
+- better validation for configuration, including warnings
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
+
 ...
 ++++
 

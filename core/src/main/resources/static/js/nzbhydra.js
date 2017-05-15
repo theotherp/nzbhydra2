@@ -2752,6 +2752,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
         $scope.numberOfLoadedResults = $scope.searchResults.length;
+        $scope.indexersearches = data.indexerSearchMetaDatas;
+
+        if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
+                return !x.wasSuccessful;
+            })) {
+            growl.info("Errors occurred during searching, Check indexer statuses")
+        }
     }
 
     $scope.loadMore = loadMore;
@@ -2810,7 +2817,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {
-        if (originalEvent.shiftKey && $scope.lastClicked != null) {
+        if (originalEvent.shiftKey && $scope.lastClicked !== null) {
             $scope.$broadcast("shiftClick", Number($scope.lastClicked), Number(rowIndex), Number($scope.lastClickedValue));
         }
         $scope.lastClicked = rowIndex;
