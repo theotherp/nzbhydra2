@@ -15,7 +15,7 @@ public class SafeDownloaderConfig {
 
     public SafeDownloaderConfig(DownloaderConfig downloaderConfig) {
         this.defaultCategory = downloaderConfig.getDefaultCategory();
-        this.downloadType = downloaderConfig.getDownloadType();
+        this.downloadType = downloaderConfig.getDownloadType().name();
         this.enabled = downloaderConfig.isEnabled();
         this.iconCssClass = downloaderConfig.getIconCssClass();
         this.name = downloaderConfig.getName();

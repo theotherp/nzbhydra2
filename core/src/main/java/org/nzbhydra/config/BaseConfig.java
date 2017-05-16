@@ -116,7 +116,11 @@ public class BaseConfig extends ValidatingConfig {
 
     public void load() throws IOException {
         File file = buildConfigFileFile();
-        replace(objectMapper.readValue(file, BaseConfig.class));
+        replace(getFromYamlFile(file));
+    }
+
+    private BaseConfig getFromYamlFile(File file) throws IOException {
+        return objectMapper.readValue(file, BaseConfig.class);
     }
 
     @JsonIgnore

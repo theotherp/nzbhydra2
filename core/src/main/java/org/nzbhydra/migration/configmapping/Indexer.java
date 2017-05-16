@@ -3,43 +3,12 @@ package org.nzbhydra.migration.configmapping;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-        "accessType",
-        "categories",
-        "downloadLimit",
-        "enabled",
-        "hitLimit",
-        "host",
-        "name",
-        "password",
-        "preselect",
-        "score",
-        "searchTypes",
-        "search_ids",
-        "showOnSearch",
-        "timeout",
-        "type",
-        "username",
-        "loadLimitOnRandom",
-        "generalMinSize",
-        "animeCategory",
-        "apikey",
-        "audiobookCategory",
-        "backend",
-        "comicCategory",
-        "ebookCategory",
-        "hitLimitResetTime",
-        "magazineCategory",
-        "generate_queries",
-        "userAgent"
-})
 @Data
 public class Indexer {
 

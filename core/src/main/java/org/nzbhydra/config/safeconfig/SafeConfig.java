@@ -20,7 +20,7 @@ public class SafeConfig {
 
     public SafeConfig(BaseConfig baseConfig) {
         this.authType = baseConfig.getAuth().getAuthType();
-        this.dereferer = baseConfig.getMain().getDereferer();
+        this.dereferer = baseConfig.getMain().getDereferer().orElse("");
         this.searching = new SafeSearchingConfig(baseConfig.getSearching());
         this.downloaders = baseConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
         this.logging = new SafeLoggingConfig(baseConfig.getMain().getLogging());

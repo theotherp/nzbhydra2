@@ -1,7 +1,12 @@
 package org.nzbhydra.migration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import joptsimple.internal.Strings;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
@@ -23,7 +28,7 @@ import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.UserAuthConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.configmapping.Auth;
 import org.nzbhydra.migration.configmapping.Categories;
 import org.nzbhydra.migration.configmapping.Downloader;
@@ -33,41 +38,97 @@ import org.nzbhydra.migration.configmapping.Main;
 import org.nzbhydra.migration.configmapping.OldConfig;
 import org.nzbhydra.migration.configmapping.Searching;
 import org.nzbhydra.migration.configmapping.User;
+import org.nzbhydra.searching.CategoryProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ConfigMigration {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);
+    private static final int NZBHYDRA1_CONFIG_VERSION = 39;
+
     @Autowired
-    private InfoProvider infoProvider;
+    private CategoryProvider categoryProvider;
     @Autowired
     private ConfigProvider configProvider;
 
-    public BaseConfig migrate(String oldConfigJson) throws IOException {
+    public MigrationResult migrate(String oldConfigJson) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
         OldConfig oldConfig = mapper.readValue(oldConfigJson, OldConfig.class);
+
         BaseConfig newConfig = configProvider.getBaseConfig();
+        mapper = new ObjectMapper(new YAMLFactory());
+        mapper.registerModule(new Jdk8Module());
+        newConfig = mapper.readValue(mapper.writeValueAsString(newConfig), BaseConfig.class); //Simple way of cloning the base config
 
-        //TODO wrap each call in try catch
-        migrateMain(oldConfig, newConfig);
-        migrateIndexers(oldConfig, newConfig);
-        migrateSearching(oldConfig);
-        migrateAuth(oldConfig);
-        migrateLogging(oldConfig);
-        migrateCategories(oldConfig);
-        migrateDownloaders(oldConfig);
+        List<String> messages = new ArrayList<>();
 
+        if (oldConfig.getMain().getConfigVersion() != NZBHYDRA1_CONFIG_VERSION) {
+            logger.warn("Unable to migrate config from config version {}. Aborting", oldConfig.getMain().getConfigVersion());
+            throw new IllegalStateException("Unable to migrate config from config version " + oldConfig.getMain().getConfigVersion());
+        }
 
-        return newConfig;
+        try {
+            messages.addAll(migrateMain(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating main settings", e);
+            messages.add("Error while migrating main settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateIndexers(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating indexer settings", e);
+            messages.add("Error while migrating indexer settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateSearching(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating searching settings", e);
+            messages.add("Error while migrating searching settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateAuth(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating auth settings", e);
+            messages.add("Error while migrating auth settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateLogging(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating logging settings", e);
+            messages.add("Error while migrating logging settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateCategories(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating category settings", e);
+            messages.add("Error while migrating category settings. Please check and set the values manually.");
+        }
+        try {
+            messages.addAll(migrateDownloaders(oldConfig, newConfig));
+        } catch (Exception e) {
+            logger.error("Error while migrating downloader settings", e);
+            messages.add("Error while migrating downloader settings. Please check and set the values manually.");
+        }
+
+        return new MigrationResult(newConfig, messages);
     }
 
-    private void migrateDownloaders(OldConfig oldConfig) {
+    private List<String> migrateDownloaders(OldConfig oldConfig, BaseConfig newConfig) {
+        List<String> messages = new ArrayList<>();
         List<DownloaderConfig> downloaders = new ArrayList<>();
         for (Downloader oldDownloader : oldConfig.getDownloaders()) {
             DownloaderConfig newDownloader = new DownloaderConfig();
@@ -76,7 +137,7 @@ public class ConfigMigration {
                 newDownloader.setDownloaderType(DownloaderType.NZBGET);
                 String url = (oldDownloader.isSsl() ? "https://" : "http://");
                 if (!Strings.isNullOrEmpty(oldDownloader.getUsername()) && !Strings.isNullOrEmpty(oldDownloader.getPassword())) {
-                    url += oldDownloader.getUsername() + "@" + oldDownloader.getPassword() + ":";
+                    url += oldDownloader.getUsername() + ":" + oldDownloader.getPassword() + "@";
                 }
                 url += oldDownloader.getHost() + ":" + oldDownloader.getPort();
                 newDownloader.setUrl(url);
@@ -86,26 +147,33 @@ public class ConfigMigration {
             }
             newDownloader.setName(oldDownloader.getName());
             try {
-                newDownloader.setNzbAddingType(NzbAddingType.valueOf((oldDownloader.getNzbAddingType().toUpperCase())));
+                newDownloader.setNzbAddingType(NzbAddingType.valueOf((oldDownloader.getNzbAddingType().toUpperCase().replace("LINK", "SEND_LINK").replace("NZB", "UPLOAD"))));
             } catch (IllegalArgumentException e) {
-                //TODO log as error
+                logAsWarningAndAdd(messages, "Unable to migrate NZB adding type for downloader '" + oldDownloader.getName() + "'. Setting it to 'Send link'.");
                 newDownloader.setNzbAddingType(NzbAddingType.SEND_LINK);
+            }
+            if (oldDownloader.getNzbaccesstype().equals("serve")) {
+                newDownloader.setNzbAccessType(NzbAccessType.PROXY);
+            } else {
+                newDownloader.setNzbAccessType(NzbAccessType.REDIRECT);
             }
             newDownloader.setIconCssClass(oldDownloader.getIconCssClass());
             newDownloader.setDefaultCategory(oldDownloader.getDefaultCategory());
             newDownloader.setDownloadType(DownloadType.NZB);
+            newDownloader.setEnabled(oldDownloader.isEnabled());
             downloaders.add(newDownloader);
         }
-        configProvider.getBaseConfig().setDownloaders(downloaders);
+        newConfig.setDownloaders(downloaders);
+        return messages;
     }
 
-    private void migrateCategories(OldConfig oldConfig) {
-        CategoriesConfig newCategories = configProvider.getBaseConfig().getCategoriesConfig();
+    private List<String> migrateCategories(OldConfig oldConfig, BaseConfig newConfig) {
+        CategoriesConfig newCategories = newConfig.getCategoriesConfig();
         Categories oldCategories = oldConfig.getCategories();
         newCategories.setEnableCategorySizes(oldCategories.isEnableCategorySizes());
         for (Category newCategory : newCategories.getCategories()) {
-            if (oldCategories.getCategories().containsKey(newCategory.getName())) {
-                org.nzbhydra.migration.configmapping.Category oldCat = oldCategories.getCategories().get(newCategory.getName());
+            if (oldCategories.getCategories().containsKey(newCategory.getName().replace(" ", "").toLowerCase())) {
+                org.nzbhydra.migration.configmapping.Category oldCat = oldCategories.getCategories().get(newCategory.getName().replace(" ", "").toLowerCase());
 
                 switch (oldCat.getApplyRestrictions()) {
                     case "internal":
@@ -117,14 +185,17 @@ public class ConfigMigration {
                     case "both":
                         newCategory.setApplyRestrictionsType(SearchSourceRestriction.BOTH);
                         break;
+                    default:
+                        newCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
+                        break;
                 }
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(oldCat.getForbiddenWords());
+                newCategory.setForbiddenWords(Strings.isNullOrEmpty(oldCat.getForbiddenWords()) ? Collections.emptyList() : Arrays.asList(oldCat.getForbiddenWords().replace(" ", "").split(",")));
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(oldCat.getRequiredWords());
+                newCategory.setRequiredWords(Strings.isNullOrEmpty(oldCat.getRequiredWords()) ? Collections.emptyList() : Arrays.asList(oldCat.getRequiredWords().replace(" ", "").split(",")));
                 switch (oldCat.getIgnoreResults()) {
                     case "internal":
                         newCategory.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
@@ -141,20 +212,24 @@ public class ConfigMigration {
                 }
             }
         }
+        return Collections.emptyList();
     }
 
-    private void migrateLogging(OldConfig oldConfig) {
-        LoggingConfig newLogging = configProvider.getBaseConfig().getMain().getLogging();
+    private List<String> migrateLogging(OldConfig oldConfig, BaseConfig newConfig) {
+        LoggingConfig newLogging = newConfig.getMain().getLogging();
         Logging oldLogging = oldConfig.getMain().getLogging();
         newLogging.setConsolelevel(oldLogging.getConsolelevel());
         newLogging.setLogfilelevel(oldLogging.getLogfilelevel());
         newLogging.setLogfilename(oldLogging.getLogfilename());
         newLogging.setLogMaxDays(oldLogging.getLogMaxSize());
         newLogging.setLogMaxSize(oldLogging.getKeepLogFiles());
+        return Collections.emptyList();
     }
 
-    private void migrateAuth(OldConfig oldConfig) {
-        AuthConfig newAuth = configProvider.getBaseConfig().getAuth();
+    private List<String> migrateAuth(OldConfig oldConfig, BaseConfig newConfig) {
+        logger.info("Migrating auth settings");
+        List<String> messages = new ArrayList<>();
+        AuthConfig newAuth = newConfig.getAuth();
         Auth oldAuth = oldConfig.getAuth();
         newAuth.setRestrictAdmin(oldAuth.isRestrictAdmin());
         newAuth.setRestrictSearch(oldAuth.isRestrictSearch());
@@ -164,7 +239,8 @@ public class ConfigMigration {
         try {
             newAuth.setAuthType(AuthType.valueOf((oldAuth.getAuthType().toUpperCase())));
         } catch (IllegalArgumentException e) {
-            //TODO log as error
+            logAsWarningAndAdd(messages, "Unable to migrate auth type. Setting it to 'None'");
+            newAuth.setAuthType(AuthType.NONE);
         }
         newAuth.setRememberUsers(oldAuth.isRestrictAdmin());
         for (User user : oldAuth.getUsers()) {
@@ -175,23 +251,37 @@ public class ConfigMigration {
             newUserConfig.setShowIndexerSelection(user.isShowIndexerSelection());
             newUserConfig.setUsername(user.getUsername());
             newUserConfig.setPassword(user.getPassword());
+            newAuth.getUsers().add(newUserConfig);
         }
+        return messages;
     }
 
-    private void migrateSearching(OldConfig oldConfig) {
-        SearchingConfig searchingConfig = configProvider.getBaseConfig().getSearching();
+    private void logAsWarningAndAdd(List<String> messages, String message) {
+        logger.warn(message);
+        messages.add(message);
+    }
+
+    private List<String> migrateSearching(OldConfig oldConfig, BaseConfig newConfig) {
+        logger.info("Migrating search settings");
+        List<String> messages = new ArrayList<>();
+        SearchingConfig searchingConfig = newConfig.getSearching();
         Searching oldSearching = oldConfig.getSearching();
         searchingConfig.setAlwaysShowDuplicates(oldSearching.isAlwaysShowDuplicates());
         try {
             searchingConfig.setApplyRestrictions(SearchSourceRestriction.valueOf(oldSearching.getApplyRestrictions().toUpperCase()));
         } catch (IllegalArgumentException e) {
-            //TODO log as error
+            searchingConfig.setApplyRestrictions(SearchSourceRestriction.BOTH);
+            logAsWarningAndAdd(messages, "Unable to migrate 'Enable for' in searching config. Setting it to 'Both'.");
         }
         searchingConfig.setDuplicateAgeThreshold(oldSearching.getDuplicateAgeThreshold());
         searchingConfig.setDuplicateSizeThresholdInPercent(oldSearching.getDuplicateSizeThresholdInPercent());
-        if (oldSearching.isIdFallbackToTitlePerIndexer()) {
-            //TODO Log that enabled for both
+        searchingConfig.setIdFallbackToTitlePerIndexer(oldSearching.isIdFallbackToTitlePerIndexer());
+        if (oldSearching.getIdFallbackToTitle().contains("internal") && oldSearching.getIdFallbackToTitle().contains("external")) {
             searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.BOTH);
+        } else if (oldSearching.getIdFallbackToTitle().contains("external")) {
+            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.API);
+        } else if (oldSearching.getIdFallbackToTitle().contains("internal")) {
+            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.INTERNAL);
         } else {
             searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.NONE);
         }
@@ -201,10 +291,12 @@ public class ConfigMigration {
             searchingConfig.setGenerateQueries(SearchSourceRestriction.INTERNAL);
         } else if (oldSearching.getGenerateQueries().contains("external")) {
             searchingConfig.setGenerateQueries(SearchSourceRestriction.API);
+        } else {
+            searchingConfig.setGenerateQueries(SearchSourceRestriction.NONE);
         }
         searchingConfig.setIgnorePassworded(oldSearching.isIgnorePassworded());
         searchingConfig.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
-        searchingConfig.setForbiddenWords(Arrays.asList(oldSearching.getForbiddenWords().split(",")));
+        searchingConfig.setForbiddenWords(Strings.isNullOrEmpty(oldSearching.getForbiddenWords()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenWords().replace(" ", "").split(",")));
         searchingConfig.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
             searchingConfig.setNzbAccessType(NzbAccessType.PROXY);
@@ -213,108 +305,168 @@ public class ConfigMigration {
         }
         searchingConfig.setRemoveLanguage(oldSearching.isRemoveLanguage());
         searchingConfig.setRemoveObfuscated(oldSearching.isRemoveObfuscated());
-        searchingConfig.setRequiredWords(Arrays.asList(oldSearching.getRequiredWords().split(",")));
+        searchingConfig.setRequiredWords(Strings.isNullOrEmpty(oldSearching.getRequiredWords()) ? Collections.emptyList() : Arrays.asList(oldSearching.getRequiredWords().replace(" ", "").split(",")));
         searchingConfig.setTimeout(oldSearching.getTimeout());
         searchingConfig.setUserAgent(oldSearching.getUserAgent());
         searchingConfig.setRequiredRegex(oldSearching.getRequiredRegex());
-        searchingConfig.setForbiddenRegex(oldSearching.getUserAgent());
-        searchingConfig.setForbiddenGroups(Arrays.asList(oldSearching.getForbiddenGroups().split(",")));
-        searchingConfig.setForbiddenPosters(Arrays.asList(oldSearching.getForbiddenPosters().split(",")));
+        searchingConfig.setForbiddenRegex(oldSearching.getForbiddenRegex());
+        searchingConfig.setForbiddenGroups(Strings.isNullOrEmpty(oldSearching.getForbiddenGroups()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenGroups().replace(" ", "").split(",")));
+        searchingConfig.setForbiddenPosters(Strings.isNullOrEmpty(oldSearching.getForbiddenPosters()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenPosters().replace(" ", "").split(",")));
+        searchingConfig.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
+        return messages;
     }
 
-    private void migrateMain(OldConfig oldConfig, BaseConfig newConfig) {
-        MainConfig mainConfig = configProvider.getBaseConfig().getMain();
+    private List<String> migrateMain(OldConfig oldConfig, BaseConfig newConfig) {
+        logger.info("Migrating main settings");
+        List<String> messages = new ArrayList<>();
+        MainConfig mainConfig = newConfig.getMain();
         Main oldMain = oldConfig.getMain();
         mainConfig.setApiKey(oldMain.getApikey());
-        mainConfig.setDereferer(oldMain.getApikey());
-        mainConfig.setExternalUrl(oldMain.getExternalUrl()); //replace port
+        mainConfig.setDereferer(Strings.isNullOrEmpty((oldMain.getApikey())) ? null : (oldMain.getApikey()));
+        mainConfig.setExternalUrl(Strings.isNullOrEmpty(oldMain.getExternalUrl()) ? null : oldMain.getExternalUrl());
         mainConfig.setHost(oldMain.getHost());
-        mainConfig.setPort(oldMain.getPort()); //Fix replace with actual port
-        mainConfig.setRepositoryBase(oldMain.getRepositoryBase());
         mainConfig.setShutdownForRestart(oldMain.isShutdownForRestart());
-        mainConfig.setSocksProxy(oldMain.getSocksProxy());
-        mainConfig.setHttpProxy(oldMain.getHttpProxy());
-        mainConfig.setHttpsProxy(oldMain.getHttpsProxy());
+        mainConfig.setSocksProxy(Strings.isNullOrEmpty(oldMain.getSocksProxy()) ? null : oldMain.getSocksProxy());
+        mainConfig.setHttpProxy(Strings.isNullOrEmpty(oldMain.getHttpProxy()) ? null : oldMain.getHttpProxy());
+        mainConfig.setHttpsProxy(Strings.isNullOrEmpty(oldMain.getHttpsProxy()) ? null : oldMain.getHttpsProxy());
+        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+            logAsWarningAndAdd(messages, "Proxies are not yet supported. Their proxy config was migrated but is currently effective.");
+        }
         mainConfig.setSsl(oldMain.isSsl());
-        mainConfig.setSslcert(oldMain.getSslcert());
-        mainConfig.setSslkey(oldMain.getSslkey());
+        mainConfig.setSslcert(Strings.isNullOrEmpty((oldMain.getSslcert())) ? null : (oldMain.getSslcert()));
+        mainConfig.setSslkey(Strings.isNullOrEmpty((oldMain.getSslkey())) ? null : (oldMain.getSslkey()));
         mainConfig.setStartupBrowser(oldMain.isStartupBrowser());
         mainConfig.setTheme(oldMain.getTheme());
-        mainConfig.setUrlBase(oldMain.getUrlBase());
+        mainConfig.setUrlBase(Strings.isNullOrEmpty((oldMain.getUrlBase())) ? null : (oldMain.getUrlBase()));
         mainConfig.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess()); //TODO actually use
         newConfig.setMain(mainConfig);
-        //TODO Throw warnings if proxy is set because taken over but not effective
+        return messages;
     }
 
-    private void migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {
+    private List<String> migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {
+        logger.info("Migrating indexers");
+        List<String> messages = new ArrayList<>();
         List<IndexerConfig> indexerConfigs = new ArrayList<>();
 
         for (Indexer oldIndexer : oldConfig.getIndexers()) {
-            //TODO wrap in try catch so if an error happens hopefully others can be migrated
-            IndexerConfig newIndexer = new IndexerConfig();
-            newIndexer.setEnabled(oldIndexer.isEnabled());
-            newIndexer.setHost(oldIndexer.getHost());
-            newIndexer.setTimeout(oldIndexer.getTimeout());
-            newIndexer.setDownloadLimit(oldIndexer.getDownloadLimit());
-            newIndexer.setHitLimit(oldIndexer.getHitLimit());
-            newIndexer.setHitLimitResetTime(oldIndexer.getHitLimitResetTime());
-            newIndexer.setName(oldIndexer.getName());
-            newIndexer.setApiKey(oldIndexer.getApikey());
-            newIndexer.setLoadLimitOnRandom(oldIndexer.getLoadLimitOnRandom());
-            newIndexer.setPassword(oldIndexer.getPassword());
-            newIndexer.setUsername(oldIndexer.getUsername());
-            newIndexer.setUserAgent(oldIndexer.getUserAgent());
-            newIndexer.setPreselect(oldIndexer.isPreselect());
-            newIndexer.setScore(oldIndexer.getScore());
-            if (!Strings.isNullOrEmpty(oldIndexer.getType())) {
-                try {
-                    newIndexer.setSearchModuleType(SearchModuleType.valueOf(oldIndexer.getAccessType().toUpperCase()));
-                } catch (IllegalArgumentException e) {
-                    //TODO log as error
+            logger.info("Migrating indexer {}", oldIndexer.getName());
+            try {
+                if (oldIndexer.getType().toUpperCase().equals("NZBCLUB")) {
+                    logAsWarningAndAdd(messages, "NZBClub doesn't exist anymore and will not be migrated");
                     continue;
                 }
-            } else {
-                //TODO log as error
-                continue;
-            }
-            if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB) {
-                if (!Strings.isNullOrEmpty(oldIndexer.getBackend())) {
+                IndexerConfig newIndexer = new IndexerConfig();
+                newIndexer.setEnabled(oldIndexer.isEnabled());
+                newIndexer.setHost(oldIndexer.getHost());
+                newIndexer.setTimeout(oldIndexer.getTimeout());
+                newIndexer.setDownloadLimit(oldIndexer.getDownloadLimit());
+                newIndexer.setHitLimit(oldIndexer.getHitLimit());
+                newIndexer.setHitLimitResetTime(oldIndexer.getHitLimitResetTime());
+                newIndexer.setName(oldIndexer.getName());
+                newIndexer.setApiKey(oldIndexer.getApikey());
+                newIndexer.setLoadLimitOnRandom(oldIndexer.getLoadLimitOnRandom());
+                newIndexer.setPassword(oldIndexer.getPassword());
+                newIndexer.setUsername(oldIndexer.getUsername());
+                newIndexer.setUserAgent(oldIndexer.getUserAgent());
+                newIndexer.setPreselect(oldIndexer.isPreselect());
+                newIndexer.setScore(oldIndexer.getScore());
+                if (!Strings.isNullOrEmpty(oldIndexer.getType())) {
                     try {
-                        newIndexer.setBackend(BackendType.valueOf(oldIndexer.getAccessType().toUpperCase()));
+                        newIndexer.setSearchModuleType(SearchModuleType.valueOf(oldIndexer.getType().toUpperCase()));
                     } catch (IllegalArgumentException e) {
-                        //TODO log as error
+                        logger.error("Error migrating indexer", e);
+                        logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
                         continue;
                     }
+                } else {
+                    logger.error("Error migrating indexer: Type is empty");
+                    logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
+                    continue;
                 }
-            }
-
-            newIndexer.setShowOnSearch(oldIndexer.isPreselect());
-            newIndexer.setEnabledCategories(oldIndexer.getCategories());
-            newIndexer.setSupportedSearchIds(null); //TODO
-            if (oldIndexer.getSearchTypes() != null && oldIndexer.getSearchTypes().isEmpty()) {
-                newIndexer.setSupportedSearchTypes(new ArrayList<>());
-                for (String s : oldIndexer.getSearchTypes()) {
-                    try {
-                        newIndexer.getSupportedSearchTypes().add(ActionAttribute.valueOf(s));
-                    } catch (IllegalArgumentException e) {
-                        //TODO log as error
+                if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB) {
+                    if (!Strings.isNullOrEmpty(oldIndexer.getBackend())) {
+                        try {
+                            newIndexer.setBackend(BackendType.valueOf(oldIndexer.getBackend().toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            logger.error("Error migrating indexer", e);
+                            logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
+                            continue;
+                        }
                     }
                 }
 
-            }
-            newIndexer.setCategoryMapping(new IndexerCategoryConfig()); //TODO
-            newIndexer.setGeneralMinSize(oldIndexer.getGeneralMinSize());
-            if (!Strings.isNullOrEmpty(oldIndexer.getAccessType())) {
-                try {
-                    newIndexer.setEnabledForSearchSource(SearchSourceRestriction.valueOf(oldIndexer.getAccessType().toUpperCase()));
-                } catch (IllegalArgumentException e) {
-                    newIndexer.setEnabledForSearchSource(SearchSourceRestriction.BOTH);
-                }
-            }
+                newIndexer.setShowOnSearch(oldIndexer.isPreselect());
+                List<String> enabledForCategories = new ArrayList<>();
+                for (String oldCat : oldIndexer.getCategories()) {
 
-            indexerConfigs.add(newIndexer);
+                    Optional<Category> first = categoryProvider.getCategories().stream().filter(x -> x.getName().toLowerCase().replace(" ", "").equals(oldCat.toLowerCase())).findFirst();
+                    if (first.isPresent()) {
+                        enabledForCategories.add(first.get().getName());
+                    } else {
+                        logAsWarningAndAdd(messages, "Unable to find category '" + oldCat + "'. Indexer '" + oldIndexer.getName() + "' will not be enabled for it.");
+                    }
+                }
+                newIndexer.setEnabledCategories(enabledForCategories);
+
+
+                List<IdType> supportedIdTypes = new ArrayList<>();
+                for (String s : oldIndexer.getSearchIds()) {
+                    try {
+                        String correctedSearchId = s.toUpperCase()
+                                .replace("TVMAZEID", "TVMAZE")
+                                .replace("TVDBID", "TVDB")
+                                .replace("TMDBID", "TMDB")
+                                .replace("IMDBID", "IMDB")
+                                .replace("TRAKTID", "TRAKT")
+                                .replace("RID", "TVRAGE");
+                        supportedIdTypes.add(IdType.valueOf(correctedSearchId));
+                    } catch (IllegalArgumentException e) {
+                        logger.error("Error migrating supported search ID", e);
+                        logAsWarningAndAdd(messages, "Unable to migrate supported search IDs for indexer '" + oldIndexer.getName() + "'. You should repeat the caps check for it.");
+                    }
+                }
+                newIndexer.setSupportedSearchIds(supportedIdTypes);
+
+
+                if (oldIndexer.getSearchTypes() != null && !oldIndexer.getSearchTypes().isEmpty()) {
+                    newIndexer.setSupportedSearchTypes(new ArrayList<>());
+                    for (String s : oldIndexer.getSearchTypes()) {
+                        try {
+                            newIndexer.getSupportedSearchTypes().add(ActionAttribute.valueOf(s.toUpperCase()));
+                        } catch (IllegalArgumentException e) {
+                            logger.error("Error migrating supported search type", e);
+                            logAsWarningAndAdd(messages, "Unable to migrate supported search types for indexer '" + oldIndexer.getName() + "'. You should repeat the caps check for it.");
+                        }
+                    }
+
+                }
+                newIndexer.setCategoryMapping(new IndexerCategoryConfig()); //TODO when implemented
+                newIndexer.setGeneralMinSize(oldIndexer.getGeneralMinSize());
+                if (!Strings.isNullOrEmpty(oldIndexer.getAccessType())) {
+                    try {
+                        newIndexer.setEnabledForSearchSource(SearchSourceRestriction.valueOf(oldIndexer.getAccessType().toUpperCase().replace("EXTERNAL", "API")));
+                    } catch (IllegalArgumentException e) {
+                        logger.error("Error migrating search source restriction", e);
+                        logAsWarningAndAdd(messages, "Unable to set 'Enabled for' for '" + oldIndexer.getName() + "'. Setting it to 'Both'.");
+                        newIndexer.setEnabledForSearchSource(SearchSourceRestriction.BOTH);
+                    }
+                }
+
+                indexerConfigs.add(newIndexer);
+            } catch (Exception e) {
+                logger.error("Error migrating indexer", e);
+                logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
+            }
         }
         newConfig.setIndexers(indexerConfigs);
+        return messages;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class MigrationResult {
+        private BaseConfig migratedConfig;
+        private List<String> messages;
     }
 
 }

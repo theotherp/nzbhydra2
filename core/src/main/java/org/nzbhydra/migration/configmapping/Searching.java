@@ -12,7 +12,6 @@ import java.util.List;
 @JsonPropertyOrder({
         "alwaysShowDuplicates",
         "applyRestrictions",
-        "categorySettings",
         "duplicateAgeThreshold",
         "duplicateSizeThresholdInPercent",
         "forbiddenGroups",

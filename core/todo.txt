@@ -25,7 +25,8 @@ Config
 - find out which settings require a restart and mark them accordingly
 - !! test that yaml is updated with missing/new keys
 - !!on first start initialize config with secret, api key, etc and save to file.
--- make sure existing file is not overwritten with defaults by mistake
+- make sure existing file is not overwritten with defaults by mistake
+- how to migrate from "old" yaml??
 
 Downloader support: mostly done
 - sabnzbd
@@ -101,6 +102,7 @@ General, Ideas
 - log API access user agent in info column and show in history?
 - proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
+- use config setting "isUseLocalUrlForApiAccess"
 
 currently not (yet) supported:
 - proxies

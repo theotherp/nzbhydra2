@@ -3,41 +3,9 @@ package org.nzbhydra.migration.configmapping;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-        "apikey",
-        "branch",
-        "configVersion",
-        "debug",
-        "dereferer",
-        "externalUrl",
-        "firstStart",
-        "flaskReloader",
-        "gitPath",
-        "host",
-        "httpProxy",
-        "httpsProxy",
-        "isFirstStart",
-        "keepSearchResultsForDays",
-        "logging",
-        "pollShown",
-        "port",
-        "repositoryBase",
-        "runThreaded",
-        "secret",
-        "shutdownForRestart",
-        "socksProxy",
-        "ssl",
-        "sslcert",
-        "sslkey",
-        "startupBrowser",
-        "theme",
-        "urlBase",
-        "useLocalUrlForApiAccess"
-})
 @Data
 public class Main {
 

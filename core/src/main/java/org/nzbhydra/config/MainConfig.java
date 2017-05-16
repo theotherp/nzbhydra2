@@ -77,6 +77,10 @@ public class MainConfig extends ValidatingConfig {
         return Optional.ofNullable(urlBase);
     }
 
+    public Optional<String> getDereferer() {
+        return Optional.ofNullable(dereferer);
+    }
+
     @Override
     public ConfigValidationResult validateConfig() {
         return new ConfigValidationResult();
