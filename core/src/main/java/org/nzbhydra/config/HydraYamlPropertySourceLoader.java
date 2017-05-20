@@ -44,7 +44,9 @@ public class HydraYamlPropertySourceLoader extends YamlPropertySourceLoader {
     }
 
 
-    private static class Processor extends YamlProcessor {
+    public static class Processor extends YamlProcessor {
+
+        protected ConfigMigration configMigration = new ConfigMigration();
 
         Processor(Resource resource, String profile) {
             if (profile == null) {
@@ -77,22 +79,16 @@ public class HydraYamlPropertySourceLoader extends YamlPropertySourceLoader {
             process(new MatchCallback() {
                 @Override
                 public void process(Properties properties, Map<String, Object> map) {
+                    //map is now a multi-level map with the structure of the YAML
+                    //Now would be a "good" time to migrate settings
+                    map = configMigration.migrate(map);
                     result.putAll(getFlattenedMap2(map));
                 }
             });
             return result;
         }
 
-        /**
-         * Return a flattened version of the given map, recursively following any nested Map
-         * or Collection values. Entries from the resulting map retain the same order as the
-         * source. When called with the Map from a {@link MatchCallback} the result will
-         * contain the same values as the {@link MatchCallback} Properties.
-         *
-         * @param source the source map
-         * @return a flattened map
-         * @since 4.1.3
-         */
+
         protected final Map<String, Object> getFlattenedMap2(Map<String, Object> source) {
             Map<String, Object> result = new LinkedHashMap<String, Object>();
             buildFlattenedMap(result, source, null);
@@ -127,8 +123,8 @@ public class HydraYamlPropertySourceLoader extends YamlPropertySourceLoader {
                                 Collections.singletonMap("[" + (count++) + "]", object), key);
                     }
                 } else {
-                    //result.put(key, (value != null ? value : ""));
-                    result.put(key, value);
+                    //result.put(key, (value != null ? value : "")); //Original Spring code
+                    result.put(key, value); // Actually use null where null was set
                 }
             }
         }

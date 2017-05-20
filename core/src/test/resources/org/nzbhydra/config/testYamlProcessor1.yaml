@@ -1,0 +1,7 @@
+main:
+    - "1"
+    - "2"
+sub1:
+    sub2:
+        sub2a: "x"
+    sub1a: "y"

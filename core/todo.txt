@@ -27,6 +27,7 @@ Config
 - !!on first start initialize config with secret, api key, etc and save to file.
 - make sure existing file is not overwritten with defaults by mistake
 - how to migrate from "old" yaml??
+- what happens when you overwrite a setting from the command line and then save from the GUI?
 
 Downloader support: mostly done
 - sabnzbd

@@ -52,10 +52,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class ConfigMigration {
+public class JsonConfigMigration {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);
-    private static final int NZBHYDRA1_CONFIG_VERSION = 39;
+    private static final Logger logger = LoggerFactory.getLogger(JsonConfigMigration.class);
+    private static final int NZBHYDRA1_SUPPORTED_CONFIG_VERSION = 39;
 
     @Autowired
     private CategoryProvider categoryProvider;
@@ -76,7 +76,7 @@ public class ConfigMigration {
 
         List<String> messages = new ArrayList<>();
 
-        if (oldConfig.getMain().getConfigVersion() != NZBHYDRA1_CONFIG_VERSION) {
+        if (oldConfig.getMain().getConfigVersion() != NZBHYDRA1_SUPPORTED_CONFIG_VERSION) {
             logger.warn("Unable to migrate config from config version {}. Aborting", oldConfig.getMain().getConfigVersion());
             throw new IllegalStateException("Unable to migrate config from config version " + oldConfig.getMain().getConfigVersion());
         }

@@ -3,7 +3,7 @@ package org.nzbhydra.indexers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
@@ -43,7 +43,7 @@ public class NewznabChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
     @Autowired
-    protected BaseConfig baseConfig;
+    protected ConfigProvider configProvider;
     @Autowired
     protected IndexerWebAccess indexerWebAccess;
 
@@ -56,7 +56,7 @@ public class NewznabChecker {
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         Xml xmlResponse;
         try {
-            xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri(), Xml.class, indexerConfig.getTimeout().orElse(baseConfig.getSearching().getTimeout()));
+            xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri(), Xml.class, indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()));
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
                 return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
@@ -91,7 +91,7 @@ public class NewznabChecker {
                 new CheckCapsRequest(indexerConfig, "movie", "imdbid", "0848228", "Avengers")
         );
         boolean allChecked = true;
-        Integer timeout = indexerConfig.getTimeout().orElse(baseConfig.getSearching().getTimeout()); //TODO Perhaps ignore timeout at ths point
+        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()); //TODO Perhaps ignore timeout at ths point
         List<Callable<SingleCheckCapsResponse>> callables = requests.stream().<Callable<SingleCheckCapsResponse>>map(checkCapsRequest -> () -> singleCheckCaps(checkCapsRequest, timeout)).collect(Collectors.toList());
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
         Set<IdType> supportedIds = Collections.emptySet();

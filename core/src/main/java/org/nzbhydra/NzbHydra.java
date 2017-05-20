@@ -66,6 +66,8 @@ public class NzbHydra {
     @Autowired
     private RestTemplate restTemplate;
 
+    private static boolean anySettingsOverwritten = false;
+
 
     public static void main(String[] args) throws Exception {
         OptionParser parser = new OptionParser();
@@ -89,6 +91,10 @@ public class NzbHydra {
             useIfSet(options, "port", "server.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");
 
+            if (anySettingsOverwritten) {
+                logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
+            }
+
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             hydraApplication.addListeners(new ApplicationPidFileWriter());
             NzbHydra.originalArgs = args;
@@ -106,6 +112,7 @@ public class NzbHydra {
     private static void useIfSet(OptionSet options, String optionKey, String propertyName, String propertyValue) {
         if (options.has(optionKey)) {
             System.setProperty(propertyName, propertyValue);
+            anySettingsOverwritten = true;
         }
     }
 

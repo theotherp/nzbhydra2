@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import org.nzbhydra.NzbDownloadResult;
 import org.nzbhydra.NzbHandler;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
@@ -59,7 +59,7 @@ public class ExternalApi {
     @Autowired
     protected NzbHandler nzbHandler;
     @Autowired
-    protected BaseConfig baseConfig;
+    protected ConfigProvider configProvider;
 
     @Autowired
     private CategoryProvider categoryProvider;
@@ -70,7 +70,7 @@ public class ExternalApi {
         logger.info("Received external API call: " + params);
 
         //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
-        if (baseConfig.getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), baseConfig.getMain().getApiKey().get())) {
+        if (configProvider.getBaseConfig().getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey().get())) {
             logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
@@ -89,7 +89,7 @@ public class ExternalApi {
                 throw new MissingParameterException("Missing ID/GUID");
             }
 
-            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), baseConfig.getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
+            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
             if (!downloadResult.isSuccessful()) {
                 throw new UnknownErrorException(downloadResult.getError());
             }
@@ -110,7 +110,7 @@ public class ExternalApi {
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity handleUnexpectedError(Exception e) {
         logger.error("Unexpected error while handling API request", e);
-        if (baseConfig.getSearching().isWrapApiErrors()) {
+        if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
             logger.debug("Wrapping error in empty search result");
             return ResponseEntity.status(200).body(getRssRoot(Collections.emptyList(), 0, 0));
         } else {

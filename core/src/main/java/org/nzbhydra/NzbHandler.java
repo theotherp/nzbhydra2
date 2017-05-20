@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.database.IndexerAccessResult;
@@ -40,7 +40,7 @@ public class NzbHandler {
     private static final Logger logger = LoggerFactory.getLogger(NzbHandler.class);
 
     @Autowired
-    protected BaseConfig baseConfig;
+    protected ConfigProvider configProvider;
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
@@ -147,15 +147,15 @@ public class NzbHandler {
         UriComponentsBuilder builder;
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
-            builder = baseConfig.getBaseUriBuilder();
+            builder = configProvider.getBaseConfig().getBaseUriBuilder();
             builder.path("/" + getName + "/user");
             builder.path("/" + String.valueOf(searchResultId));
         } else {
-            MainConfig main = baseConfig.getMain();
+            MainConfig main = configProvider.getBaseConfig().getMain();
             if (main.getExternalUrl().isPresent() && !main.isUseLocalUrlForApiAccess()) {
                 builder = UriComponentsBuilder.fromHttpUrl(main.getExternalUrl().get());
             } else {
-                builder = baseConfig.getBaseUriBuilder();
+                builder = configProvider.getBaseConfig().getBaseUriBuilder();
             }
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));

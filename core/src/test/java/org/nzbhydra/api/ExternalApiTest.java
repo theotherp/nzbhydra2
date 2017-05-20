@@ -3,7 +3,9 @@ package org.nzbhydra.api;
 import com.google.common.collect.HashMultiset;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.searching.DuplicateDetectionResult;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -13,6 +15,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.TreeSet;
 
+import static org.mockito.Mockito.when;
+
 
 public class ExternalApiTest {
 
@@ -21,9 +25,13 @@ public class ExternalApiTest {
     @MockBean
     private ExternalApi testee = new ExternalApi();
 
+    @Mock
+    private ConfigProvider configProviderMock;
+
+
     @Before
     public void setUp() {
-        testee.baseConfig = baseConfig;
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
     }
 
     @Test

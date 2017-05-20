@@ -20,7 +20,7 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.migration.ConfigMigration.MigrationResult;
+import org.nzbhydra.migration.JsonConfigMigration.MigrationResult;
 import org.nzbhydra.searching.CategoryProvider;
 
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class ConfigMigrationTest {
 
 
     @InjectMocks
-    private ConfigMigration testee = new ConfigMigration();
+    private JsonConfigMigration testee = new JsonConfigMigration();
 
     @Before
     public void setUp() throws Exception {

@@ -123,6 +123,10 @@ public class BaseConfig extends ValidatingConfig {
         return objectMapper.readValue(file, BaseConfig.class);
     }
 
+    public BaseConfig loadSavedConfig() throws IOException {
+        return objectMapper.readValue(buildConfigFileFile(), BaseConfig.class);
+    }
+
     @JsonIgnore
     public String getAsYamlString() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
