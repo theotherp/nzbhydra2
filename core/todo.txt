@@ -88,7 +88,7 @@ General, Ideas
 - wrap searches in ~30s timeout to prevent wrong code or other issues fucking up the system
 - !! Log / config sanitation
 - !! more config validation. make sure auth is properly configured, etc
-- config validation with error and warning level. warn when eg no indexer capable of id search is enabled
+- !! config validation with error and warning level. warn when eg no indexer capable of id search is enabled
 - !! Initialize config
 - !! timeout for indexer accesses is "global" (max time spent for access)
 - migrating from old installation (config and database), either via web call or via loading from file system. dont migrate searchresults. warn for all settings not taken over (like proxy)
@@ -104,6 +104,7 @@ General, Ideas
 - proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 - use config setting "isUseLocalUrlForApiAccess"
+- compare stats from python version and migrated
 
 currently not (yet) supported:
 - proxies

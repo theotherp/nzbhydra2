@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.orm.jpa.vendor.HibernateJpaSessionFactoryBean;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
+import javax.persistence.EntityManagerFactory;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -36,6 +38,13 @@ public class AppConfig {
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
+    }
+
+    @Bean
+    public HibernateJpaSessionFactoryBean sessionFactory(EntityManagerFactory emf) {
+        HibernateJpaSessionFactoryBean fact = new HibernateJpaSessionFactoryBean();
+        fact.setEntityManagerFactory(emf);
+        return fact;
     }
 
     public class MySimpleClientHttpRequestFactory extends SimpleClientHttpRequestFactory {

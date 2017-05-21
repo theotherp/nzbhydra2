@@ -1,0 +1,272 @@
+[
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 1, 
+    "reason": null, 
+    "id": 1
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 2, 
+    "reason": null, 
+    "id": 2
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 3, 
+    "first_failure": "2017-05-14T07:18:48.750000+00:00", 
+    "disabled_until": "2017-05-14T08:19:19.644000+00:00", 
+    "latest_failure": "2017-05-14T07:19:19.644000+00:00", 
+    "indexer": 3, 
+    "reason": "Connection failed: HTTPSConnectionPool(host='nzbindex.com', port=443): Max retries exceeded with url: /search?max=100&hidecross=1&more=1&q=american+beauty&minsize=1 (Caused by ProxyError('Cannot connect to proxy.', NewConnectionError('<requests.packages.urllib3.connection.VerifiedHTTPSConnection object at 0x049EA110>: Failed to establish a new connection: [Errno 10061] No connection could be made because the target machine actively refused it',)))", 
+    "id": 3
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 4, 
+    "reason": null, 
+    "id": 4
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 5, 
+    "reason": null, 
+    "id": 5
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 6, 
+    "reason": null, 
+    "id": 6
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 7, 
+    "reason": null, 
+    "id": 7
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 8, 
+    "reason": null, 
+    "id": 8
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 9, 
+    "reason": null, 
+    "id": 9
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 10, 
+    "reason": null, 
+    "id": 10
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 11, 
+    "reason": null, 
+    "id": 11
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 12, 
+    "reason": null, 
+    "id": 12
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 13, 
+    "reason": null, 
+    "id": 13
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 14, 
+    "reason": null, 
+    "id": 14
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 15, 
+    "reason": null, 
+    "id": 15
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 16, 
+    "reason": null, 
+    "id": 16
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 17, 
+    "reason": null, 
+    "id": 17
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 18, 
+    "reason": null, 
+    "id": 18
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 19, 
+    "reason": null, 
+    "id": 19
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 20, 
+    "reason": null, 
+    "id": 20
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 21, 
+    "reason": null, 
+    "id": 21
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 5, 
+    "first_failure": "2017-05-04T15:52:42.996000+00:00", 
+    "disabled_until": "2017-05-06T17:41:21.818000+00:00", 
+    "latest_failure": "2017-05-06T11:41:21.818000+00:00", 
+    "indexer": 22, 
+    "reason": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=tvsearch&offset=0&apikey=<APIKEY>&limit=100&cat=5000&password=<PASSWORD>", 
+    "id": 22
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 5, 
+    "first_failure": "2017-05-04T15:52:42.972000+00:00", 
+    "disabled_until": "2017-05-06T17:41:21.816000+00:00", 
+    "latest_failure": "2017-05-06T11:41:21.816000+00:00", 
+    "indexer": 23, 
+    "reason": "Connection failed: 500 Server Error:  for url: http://192.168.1.111:5080/api?extended=1&t=tvsearch&offset=0&apikey=<APIKEY>&limit=100&cat=5000&password=<PASSWORD>", 
+    "id": 23
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 24, 
+    "reason": null, 
+    "id": 24
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 5, 
+    "first_failure": "2017-05-04T15:52:42.988000+00:00", 
+    "disabled_until": "2017-05-06T17:41:21.810000+00:00", 
+    "latest_failure": "2017-05-06T11:41:21.810000+00:00", 
+    "indexer": 25, 
+    "reason": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=tvsearch&offset=0&apikey=<APIKEY>&limit=100&cat=5000&password=<PASSWORD>", 
+    "id": 25
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 5, 
+    "first_failure": "2017-05-04T15:52:42.999000+00:00", 
+    "disabled_until": "2017-05-06T17:41:21.814000+00:00", 
+    "latest_failure": "2017-05-06T11:41:21.814000+00:00", 
+    "indexer": 26, 
+    "reason": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=tvsearch&offset=0&apikey=<APIKEY>&limit=100&cat=5000&password=<PASSWORD>", 
+    "id": 26
+  }, 
+  {
+    "disabled_permanently": false, 
+    "level": 0, 
+    "first_failure": null, 
+    "disabled_until": null, 
+    "latest_failure": null, 
+    "indexer": 27, 
+    "reason": null, 
+    "id": 27
+  }
+]

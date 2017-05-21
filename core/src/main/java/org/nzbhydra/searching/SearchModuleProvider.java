@@ -32,6 +32,7 @@ public class SearchModuleProvider {
         searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
         searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
         searchModuleClasses.put(SearchModuleType.NZBINDEX, NzbIndex.class);
+        searchModuleClasses.put(SearchModuleType.BINSEARCH, NzbIndex.class); //TODO
     }
 
     @Autowired

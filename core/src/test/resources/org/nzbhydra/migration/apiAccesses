@@ -1,0 +1,110 @@
+[
+  {
+    "username": null, 
+    "url": "http://192.168.1.111:5080/api?extended=1&t=search&offset=0&apikey=2&limit=100&password=0&q=aquery",
+    "error": null,
+    "indexer_search": 1,
+    "response_successful": true,
+    "indexer": 23,
+    "time": 1495360863,
+    "type": "search",
+    "id": 1,
+    "response_time": 691
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=search&offset=0&apikey=5&limit=100&password=0&q=aquery",
+    "error": null,
+    "indexer_search": 2,
+    "response_successful": true,
+    "indexer": 26,
+    "time": 1495360863,
+    "type": "search",
+    "id": 2,
+    "response_time": 506
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=search&offset=0&apikey=4&limit=100&password=0&q=aquery",
+    "error": null,
+    "indexer_search": 3,
+    "response_successful": true,
+    "indexer": 25,
+    "time": 1495360863,
+    "type": "search",
+    "id": 3,
+    "response_time": 523
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=search&offset=0&apikey=1&limit=100&password=0&q=aquery",
+    "error": null,
+    "indexer_search": 4,
+    "response_successful": true,
+    "indexer": 22,
+    "time": 1495360863,
+    "type": "search",
+    "id": 4,
+    "response_time": 587
+  },
+  {
+    "username": null,
+    "url": "https://nzbindex.com/search?max=100&hidecross=1&more=1&q=aquery&minsize=1",
+    "error": "Connection failed: HTTPSConnectionPool(host='nzbindex.com', port=443): Max retries exceeded with url: /search?max=100&hidecross=1&more=1&q=aquery&minsize=1 (Caused by ProxyError('Cannot connect to proxy.', NewConnectionError('<requests.packages.urllib3.connection.VerifiedHTTPSConnection object at 0x04893130>: Failed to establish a new connection: [Errno 10061] No connection could be made because the target machine actively refused it',)))",
+    "indexer_search": 5,
+    "response_successful": false,
+    "indexer": 3,
+    "time": 1495360863,
+    "type": "search",
+    "id": 5,
+    "response_time": null
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=4&limit=100&cat=2000&password=0&imdbid=987",
+    "error": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=<APIKEY>&limit=100&cat=2000&password=<PASSWORD>&imdbid=987",
+    "indexer_search": 6,
+    "response_successful": false,
+    "indexer": 25,
+    "time": 1495360956,
+    "type": "search",
+    "id": 6,
+    "response_time": null
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=1&limit=100&cat=2000&password=0&imdbid=987",
+    "error": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=<APIKEY>&limit=100&cat=2000&password=<PASSWORD>&imdbid=987",
+    "indexer_search": 7,
+    "response_successful": false,
+    "indexer": 22,
+    "time": 1495360956,
+    "type": "search",
+    "id": 7,
+    "response_time": null
+  },
+  {
+    "username": null,
+    "url": "http://192.168.1.111:5080/api?extended=1&t=movie&offset=0&apikey=2&limit=100&cat=2000&password=0&imdbid=987",
+    "error": "Connection failed: 500 Server Error:  for url: http://192.168.1.111:5080/api?extended=1&t=movie&offset=0&apikey=<APIKEY>&limit=100&cat=2000&password=<PASSWORD>&imdbid=987",
+    "indexer_search": 8,
+    "response_successful": false,
+    "indexer": 23,
+    "time": 1495360956,
+    "type": "search",
+    "id": 8,
+    "response_time": null
+  },
+  {
+    "username": null,
+    "url": "http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=5&limit=100&cat=2000&password=0&imdbid=987",
+    "error": "Connection failed: 500 Server Error:  for url: http://127.0.0.1:5080/api?extended=1&t=movie&offset=0&apikey=<APIKEY>&limit=100&cat=2000&password=<PASSWORD>&imdbid=987",
+    "indexer_search": 9,
+    "response_successful": false,
+    "indexer": 26,
+    "time": 1495360956,
+    "type": "search",
+    "id": 9,
+    "response_time": null
+  }
+]

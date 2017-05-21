@@ -4,15 +4,14 @@ import com.google.common.base.MoreObjects;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.time.Instant;
@@ -29,8 +28,8 @@ public class IndexerApiAccessEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "indexer_id")
+    @ManyToOne//(fetch = FetchType.LAZY)
+    //@JoinColumn(name = "indexer_id")
     private IndexerEntity indexer;
 
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
@@ -42,6 +41,7 @@ public class IndexerApiAccessEntity {
     @Enumerated(EnumType.STRING)
     private IndexerApiAccessType accessType;
     private Long responseTime;
+    @Column(length = 4000)
     private String error;
     //TODO username / user ?
 

@@ -182,7 +182,7 @@ public class NzbHandler {
     }
 
     private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, String error) {
-        NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result, result.getTitle(), accessType, source, accessResult, usernameOrIp, error);
+        NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), accessType, source, accessResult, usernameOrIp, error);
 
         downloadRepository.save(downloadEntity);
     }

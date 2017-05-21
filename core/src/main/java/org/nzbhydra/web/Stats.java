@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.database.IndexerAccessResult;
+import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.StatsResponse;
 import org.nzbhydra.indexers.Indexer;
@@ -47,6 +48,9 @@ public class Stats {
     @RequestMapping(value = "/internalapi/stats")
     @Secured({"ROLE_STATS"})
     public StatsResponse getAllStats(@RequestBody StatsRequest statsRequest) {
+
+        //TODO move to other class
+
         logger.debug("Request for stats from {} to {}", statsRequest.getAfter(), statsRequest.getBefore());
 
         StatsResponse statsResponse = new StatsResponse();
@@ -231,7 +235,7 @@ public class Stats {
 
 
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
-        List<Integer> enabledIndexerIds = searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList());
+        List<Integer> enabledIndexerIds = searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
         String countByResultSql = "SELECT \n" +
                 "  INDEXER.ID AS indexerid,\n" +
                 "  x.counter as counter \n" +
@@ -295,7 +299,8 @@ public class Stats {
         List<IndexerApiAccessStatsEntry> indexerApiAccessStatsEntries = new ArrayList<>();
         for (Integer id : enabledIndexerIds) {
             IndexerApiAccessStatsEntry entry = new IndexerApiAccessStatsEntry();
-            entry.setIndexerName(indexerRepository.findOne(id).getName());
+            IndexerEntity indexerEntity = indexerRepository.findOne(id);
+            entry.setIndexerName(indexerEntity.getName());
 
             if (allAccessesCountMap.containsKey(id) && allAccessesCountMap.get(id) != null) {
                 if (successCountMap.get(id) != null) {

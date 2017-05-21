@@ -1,0 +1,92 @@
+[
+  {
+    "search": 2, 
+    "successful": true, 
+    "indexer": 23, 
+    "uniqueResults": 401,
+    "resultsCount": 401,
+    "processedResults": 401,
+    "time": "Sun, 21 May 2017 10:01:10 GMT",
+    "id": 1
+  },
+  {
+    "search": 2,
+    "successful": true,
+    "indexer": 26,
+    "uniqueResults": 101,
+    "resultsCount": 101,
+    "processedResults": 101,
+    "time": "Sun, 21 May 2017 10:01:10 GMT",
+    "id": 2
+  },
+  {
+    "search": 2,
+    "successful": true,
+    "indexer": 25,
+    "uniqueResults": 201,
+    "resultsCount": 201,
+    "processedResults": 201,
+    "time": "Sun, 21 May 2017 10:01:10 GMT",
+    "id": 3
+  },
+  {
+    "search": 2,
+    "successful": true,
+    "indexer": 22,
+    "uniqueResults": 501,
+    "resultsCount": 501,
+    "processedResults": 501,
+    "time": "Sun, 21 May 2017 10:01:10 GMT",
+    "id": 4
+  },
+  {
+    "search": 2,
+    "successful": false,
+    "indexer": 3,
+    "uniqueResults": null,
+    "resultsCount": 0,
+    "processedResults": null,
+    "time": "Sun, 21 May 2017 10:01:10 GMT",
+    "id": 5
+  },
+  {
+    "search": 4,
+    "successful": false,
+    "indexer": 25,
+    "uniqueResults": null,
+    "resultsCount": 0,
+    "processedResults": null,
+    "time": "Sun, 21 May 2017 10:02:37 GMT",
+    "id": 6
+  },
+  {
+    "search": 4,
+    "successful": false,
+    "indexer": 22,
+    "uniqueResults": null,
+    "resultsCount": 0,
+    "processedResults": null,
+    "time": "Sun, 21 May 2017 10:02:37 GMT",
+    "id": 7
+  },
+  {
+    "search": 4,
+    "successful": false,
+    "indexer": 23,
+    "uniqueResults": null,
+    "resultsCount": 0,
+    "processedResults": null,
+    "time": "Sun, 21 May 2017 10:02:37 GMT",
+    "id": 8
+  },
+  {
+    "search": 4,
+    "successful": false,
+    "indexer": 26,
+    "uniqueResults": null,
+    "resultsCount": 0,
+    "processedResults": null,
+    "time": "Sun, 21 May 2017 10:02:37 GMT",
+    "id": 9
+  }
+]

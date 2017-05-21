@@ -1,0 +1,62 @@
+[
+  {
+    "category": "TV",
+    "username": null,
+    "episode": null,
+    "title": null,
+    "season": null,
+    "author": null,
+    "identifier_key": "rid",
+    "internal": false,
+    "time": "Sun, 21 May 2017 10:00:39 GMT",
+    "query": null,
+    "type": "tv",
+    "id": 1,
+    "identifier_value": "1"
+  },
+  {
+    "category": "All",
+    "username": null,
+    "episode": null,
+    "title": null,
+    "season": null,
+    "author": null,
+    "identifier_key": null,
+    "internal": false,
+    "time": "Sun, 21 May 2017 10:01:02 GMT",
+    "query": "aquery",
+    "type": "general",
+    "id": 2,
+    "identifier_value": null
+  },
+  {
+    "category": "TV",
+    "username": null,
+    "episode": "2",
+    "title": null,
+    "season": "1",
+    "author": null,
+    "identifier_key": "tvdbid",
+    "internal": false,
+    "time": "Sun, 21 May 2017 10:02:23 GMT",
+    "query": null,
+    "type": "tv",
+    "id": 3,
+    "identifier_value": "456"
+  },
+  {
+    "category": "Movies",
+    "username": null,
+    "episode": null,
+    "title": null,
+    "season": null,
+    "author": null,
+    "identifier_key": "imdbid",
+    "internal": false,
+    "time": "Sun, 21 May 2017 10:02:36 GMT",
+    "query": null,
+    "type": "movie",
+    "id": 4,
+    "identifier_value": "987"
+  }
+]

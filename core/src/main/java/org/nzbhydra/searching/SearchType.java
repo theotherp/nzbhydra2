@@ -6,7 +6,6 @@ public enum SearchType {
     TVSEARCH,
     MOVIE,
     BOOK,
-    MUSIC,
-    EBOOK
+    MUSIC
 
 }

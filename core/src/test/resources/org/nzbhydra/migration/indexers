@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1, 
+    "name": "Binsearch"
+  }, 
+  {
+    "id": 2, 
+    "name": "NZBClub"
+  }, 
+  {
+    "id": 3, 
+    "name": "NZBIndex"
+  }, 
+  {
+    "id": 4, 
+    "name": "DogNZB"
+  }, 
+  {
+    "id": 5, 
+    "name": "Drunken Slug"
+  }, 
+  {
+    "id": 6, 
+    "name": "NZBs.org"
+  }, 
+  {
+    "id": 7, 
+    "name": "FreeNZBs"
+  }, 
+  {
+    "id": 8, 
+    "name": "BTN"
+  }, 
+  {
+    "id": 9, 
+    "name": "anizb"
+  }, 
+  {
+    "id": 10, 
+    "name": "NZBFindexer"
+  }, 
+  {
+    "id": 11, 
+    "name": "6box"
+  }, 
+  {
+    "id": 12, 
+    "name": "Tablua Rasa"
+  }, 
+  {
+    "id": 13, 
+    "name": "Jackett"
+  }, 
+  {
+    "id": 14, 
+    "name": "omgwtfnzbs"
+  }, 
+  {
+    "id": 15, 
+    "name": "omgwt68fnzbs"
+  }, 
+  {
+    "id": 16, 
+    "name": "omgwtfhknzbs"
+  }, 
+  {
+    "id": 17, 
+    "name": "omgwttrzrfnzbs"
+  }, 
+  {
+    "id": 18, 
+    "name": "DrunkenSlugWrongApiKey"
+  }, 
+  {
+    "id": 19, 
+    "name": "IPT"
+  }, 
+  {
+    "id": 20, 
+    "name": "nzbhydra2"
+  }, 
+  {
+    "id": 21, 
+    "name": "NZBGeek"
+  }, 
+  {
+    "id": 22, 
+    "name": "mock14"
+  }, 
+  {
+    "id": 23, 
+    "name": "mock1"
+  }, 
+  {
+    "id": 24, 
+    "name": "mock2"
+  }, 
+  {
+    "id": 25, 
+    "name": "mock3"
+  }, 
+  {
+    "id": 26, 
+    "name": "mock4"
+  }, 
+  {
+    "id": 27, 
+    "name": "NZB Finder"
+  }
+]

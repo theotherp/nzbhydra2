@@ -27,8 +27,6 @@ public class NzbDownloadEntity {
 
     @ManyToOne
     private IndexerEntity indexer;
-    @ManyToOne
-    private SearchResultEntity searchResult;
     @Enumerated(EnumType.STRING)
     private NzbAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
@@ -42,9 +40,8 @@ public class NzbDownloadEntity {
     private String title;
     private String usernameOrIp;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result, String usernameOrIp, String error) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result, String usernameOrIp, String error) {
         this.indexer = indexerEntity;
-        this.searchResult = searchResult;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
         this.accessSource = accessSource;
@@ -53,9 +50,8 @@ public class NzbDownloadEntity {
         this.usernameOrIp = usernameOrIp;
     }
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, SearchResultEntity searchResult, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result) {
         this.indexer = indexerEntity;
-        this.searchResult = searchResult;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
         this.accessSource = accessSource;

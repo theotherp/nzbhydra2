@@ -72,7 +72,7 @@ public class JsonConfigMigration {
         BaseConfig newConfig = configProvider.getBaseConfig();
         mapper = new ObjectMapper(new YAMLFactory());
         mapper.registerModule(new Jdk8Module());
-        newConfig = mapper.readValue(mapper.writeValueAsString(newConfig), BaseConfig.class); //Simple way of cloning the base config
+        newConfig = mapper.readValue(mapper.writeValueAsString(newConfig), BaseConfig.class); //Easy way of cloning the base config
 
         List<String> messages = new ArrayList<>();
 
@@ -124,6 +124,8 @@ public class JsonConfigMigration {
             messages.add("Error while migrating downloader settings. Please check and set the values manually.");
         }
 
+        configProvider.getBaseConfig().replace(newConfig);
+        configProvider.getBaseConfig().save();
         return new MigrationResult(newConfig, messages);
     }
 
@@ -338,7 +340,7 @@ public class JsonConfigMigration {
         mainConfig.setStartupBrowser(oldMain.isStartupBrowser());
         mainConfig.setTheme(oldMain.getTheme());
         mainConfig.setUrlBase(Strings.isNullOrEmpty((oldMain.getUrlBase())) ? null : (oldMain.getUrlBase()));
-        mainConfig.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess()); //TODO actually use
+        mainConfig.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
         newConfig.setMain(mainConfig);
         return messages;
     }
@@ -349,7 +351,7 @@ public class JsonConfigMigration {
         List<IndexerConfig> indexerConfigs = new ArrayList<>();
 
         for (Indexer oldIndexer : oldConfig.getIndexers()) {
-            logger.info("Migrating indexer {}", oldIndexer.getName());
+            logger.info("Migrating indexer {} from config", oldIndexer.getName());
             try {
                 if (oldIndexer.getType().toUpperCase().equals("NZBCLUB")) {
                     logAsWarningAndAdd(messages, "NZBClub doesn't exist anymore and will not be migrated");
@@ -372,7 +374,7 @@ public class JsonConfigMigration {
                 newIndexer.setScore(oldIndexer.getScore());
                 if (!Strings.isNullOrEmpty(oldIndexer.getType())) {
                     try {
-                        newIndexer.setSearchModuleType(SearchModuleType.valueOf(oldIndexer.getType().toUpperCase()));
+                        newIndexer.setSearchModuleType(SearchModuleType.valueOf(oldIndexer.getType().toUpperCase().replace("JACKETT", "TORZNAB")));
                     } catch (IllegalArgumentException e) {
                         logger.error("Error migrating indexer", e);
                         logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");

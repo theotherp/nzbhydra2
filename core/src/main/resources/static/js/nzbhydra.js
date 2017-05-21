@@ -4773,7 +4773,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
 
     $scope.$on("sort", function (event, column, sortMode) {
-        if (sortMode == 0) {
+        if (sortMode === 0) {
             column = "time";
             sortMode = 2;
         }
