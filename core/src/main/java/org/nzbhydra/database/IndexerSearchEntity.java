@@ -17,7 +17,7 @@ import java.util.Objects;
 public class IndexerSearchEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private int id;
 
     @ManyToOne

@@ -7,6 +7,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.migration.FromPythonMigration;
 import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,10 +155,12 @@ public class NzbHydra {
         return rssRoot;
     }
 
-    @RequestMapping(value = "/delete")
-    public String delete() {
-        searchResultRepository.deleteAll();
-        indexerRepository.deleteAll();
+    @Autowired
+    private FromPythonMigration migration;
+
+    @RequestMapping(value = "/migrate")
+    public String delete() throws Exception {
+        migration.migrate("http://127.0.0.1:5075/");
 
         return "Ok";
     }

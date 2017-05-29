@@ -2,7 +2,6 @@ package org.nzbhydra.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.Category;
@@ -10,15 +9,18 @@ import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessEntity;
+import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerSearchEntity;
+import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
+import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.logging.ProgressLogger;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -60,9 +62,16 @@ public class SqliteMigration {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private IndexerApiAccessRepository indexerApiAccessRepository;
+    @Autowired
+    private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
+
 
     protected ObjectMapper objectMapper = new ObjectMapper();
     protected TypeReference<Map<String, String>> mapTypeReference = new TypeReference<Map<String, String>>() {
@@ -76,20 +85,20 @@ public class SqliteMigration {
 
         logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
 
-        //indexerApiAccessRepository.deleteAll();
-        //indexerSearchRepository.deleteAll();
-        //searchRepository.deleteAll();
-//        downloadRepository.deleteAll();
-//        searchResultRepository.deleteAll();
-//        indexerRepository.deleteAll();
-        entityManager.createNativeQuery("TRUNCATE TABLE indexer AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE INDEXERAPIACCESS AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE indexersearch AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE search AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE indexerstatus AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE search_identifiers AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE IDENTIFIER_KEY_VALUE_PAIR AND COMMIT NO CHECK").executeUpdate();
-        entityManager.createNativeQuery("TRUNCATE TABLE SEARCHRESULT AND COMMIT NO CHECK").executeUpdate();
+        try {
+            entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE INDEXERAPIACCESS").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE indexersearch").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE search").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE indexerstatus").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE indexernzbdownload").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE SEARCHRESULT").executeUpdate();
+            entityManager.createNativeQuery("TRUNCATE TABLE indexer").executeUpdate();
+        } finally {
+            entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+        }
+
+
         migrate();
 
     }
@@ -101,7 +110,7 @@ public class SqliteMigration {
         migrateIndexerApiAccesses(oldIdToIndexersMap);
         migrateIndexerSearches(oldIdToIndexersMap, oldIdToSearchesMap);
         migrateDownloads(oldIdToIndexersMap);
-        //entityManager.createNativeQuery("SHUTDOWN ").executeUpdate();
+
         logger.info("Finished database migration");
     }
 
@@ -139,14 +148,12 @@ public class SqliteMigration {
         logger.info("Migrating {} indexer API accesses from old database", countIndexerApiAccesses);
         ResultSet oldIndexerApiAccesses = statement.executeQuery("SELECT * FROM INDEXERAPIACCESS");
         int countMigrated = 1;
-        Stopwatch stopwatch1 = Stopwatch.createUnstarted();
-        Stopwatch stopwatch2 = Stopwatch.createUnstarted();
         IndexerApiAccessEntity entity;
         ProgressLogger progressLogger = new ProgressLogger(logger, 5, TimeUnit.SECONDS);
         progressLogger.expectedUpdates = countIndexerApiAccesses;
         progressLogger.start();
+
         while (oldIndexerApiAccesses.next()) {
-            stopwatch1.start();
             entity = new IndexerApiAccessEntity();
             entity.setIndexer(oldIdToIndexersMap.get(oldIndexerApiAccesses.getInt("indexer_id")));
             entity.setTime(oldIndexerApiAccesses.getTimestamp("time").toInstant());
@@ -158,13 +165,11 @@ public class SqliteMigration {
             entity.setResult(oldIndexerApiAccesses.getBoolean("response_successful") ? IndexerAccessResult.SUCCESSFUL : IndexerAccessResult.CONNECTION_ERROR); //Close enough
             entity.setAccessType(IndexerApiAccessType.valueOf(oldIndexerApiAccesses.getString("type").toUpperCase()));
             entityManager.persist(entity);
-            stopwatch1.stop();
             progressLogger.lightUpdate();
 
             if (countMigrated++ % 50 == 0) {
                 entityManager.flush();
                 entityManager.clear();
-
             }
         }
         progressLogger.stop();
@@ -216,7 +221,6 @@ public class SqliteMigration {
             if (countMigrated++ % 50 == 0) {
                 entityManager.flush();
                 entityManager.clear();
-
             }
         }
         statement.close();

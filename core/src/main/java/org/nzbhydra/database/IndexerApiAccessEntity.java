@@ -25,7 +25,7 @@ import java.util.Objects;
 public class IndexerApiAccessEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     protected int id;
 
     @ManyToOne//(fetch = FetchType.LAZY)
