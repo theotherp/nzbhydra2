@@ -230,7 +230,7 @@ main:
   branch: "master"
   configVersion: 1
   backupEverySunday: true
-  databaseFile: "./database/nzbhydra.db"
+  databaseFile: "./database/nzbhydra"
   debug: false
   dereferer: null
   externalUrl: null

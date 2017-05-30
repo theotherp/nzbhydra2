@@ -1,6 +1,5 @@
 package org.nzbhydra.backup;
 
-import com.google.common.io.Files;
 import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,14 +10,19 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Writer;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class BackupAndRestore {
@@ -48,78 +52,39 @@ public class BackupAndRestore {
 
     public File backup() throws Exception {
         logger.info("Creating backup");
-        File configBackupFile = null;
-        File tempFile = null;
-        File tempFolder = null;
-        try {
-            File mainFolder = new File(""); //TODO make sure we're in the correct main folder
-            tempFolder = Files.createTempDir();
-            File backupFolder = new File(mainFolder, "backup");
-            if (!backupFolder.exists()) {
-                boolean created = backupFolder.mkdirs();
-                if (!created) {
-                    throw new IOException("Unable to create backup target folder " + backupFolder.getAbsolutePath());
-                }
-            }
-            backupDatabase(tempFolder);
 
-            configBackupFile = new File(tempFolder, "application.yml");
-            configProvider.getBaseConfig().save(configBackupFile);
-
-            tempFile = File.createTempFile("nzbhydra", ".zip");
-            logger.debug("Using temp file {}", tempFile.getAbsolutePath());
-            FileOutputStream fos = new FileOutputStream(tempFile);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-
-            for (File file : tempFolder.listFiles()) {
-                addToZipFile(file, zos);
-                file.delete();
-            }
-
-            zos.close();
-            fos.close();
-
-            File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss")) + ".zip");
-            logger.debug("Moving temporary ZIP to {}", backupZip.getAbsolutePath());
-            Files.move(tempFile, backupZip);
-            return backupZip;
-        } finally {
-            try {
-                if (tempFile != null) {
-                    tempFile.delete();
-                }
-                if (tempFolder != null) {
-                    tempFolder.delete();
-                }
-            } catch (Exception e) {
-                logger.warn("Error while deleting temporary file/folder: " + e.getMessage());
+        File mainFolder = new File(""); //TODO make sure we're in the correct main folder
+        File backupFolder = new File(mainFolder, "backup");
+        if (!backupFolder.exists()) {
+            boolean created = backupFolder.mkdirs();
+            if (!created) {
+                throw new IOException("Unable to create backup target folder " + backupFolder.getAbsolutePath());
             }
         }
+        File backupZip = new File(backupFolder, "nzbhydra-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss")) + ".zip");
+        backupDatabase(backupZip);
+        Map<String, String> env = new HashMap<>();
+        env.put("create", "true");
+        Path path = backupZip.toPath();
+        URI uri = URI.create("jar:" + path.toUri());
+        try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
+            Path nf = fs.getPath("application.yml");
+            try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+                writer.write(configProvider.getBaseConfig().getAsYamlString());
+            }
+        }
+
+        logger.info("Successfully wrote backup to file {}", backupZip.getAbsolutePath());
+        return backupZip;
+
     }
 
-    private static void addToZipFile(File file, ZipOutputStream zos) throws IOException {
-        logger.debug("Adding file {} to temporary ZIP file", file.getAbsolutePath());
-        FileInputStream fis = new FileInputStream(file);
-        ZipEntry zipEntry = new ZipEntry(file.getName());
-        zos.putNextEntry(zipEntry);
 
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zos.write(bytes, 0, length);
-        }
-
-        zos.closeEntry();
-        fis.close();
-    }
-
-    private void backupDatabase(File targetFolder) {
-        String formattedFolder = targetFolder.getAbsolutePath().replace("\\", "/");
-        if (!formattedFolder.endsWith("/")) {
-            formattedFolder += "/";
-        }
-        entityManager.createNativeQuery("BACKUP DATABASE TO '" + formattedFolder + "' BLOCKING as files;").executeUpdate();
-        logger.info("Wrote database backup files to {}", targetFolder.getAbsolutePath());
+    private void backupDatabase(File targetFile) {
+        logger.info("Backing up database");
+        String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
+        entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
+        logger.info("Wrote database backup files to {}", targetFile.getAbsolutePath());
     }
 
 }

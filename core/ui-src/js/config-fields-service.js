@@ -229,6 +229,24 @@ function ConfigFields($injector) {
                             }
                         }
                     ]
+                }, {
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'Database'},
+                    fieldGroup: [
+                        {
+                            key: 'databaseFile',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Database file',
+                                required: true,
+                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders.'
+                            },
+                            watcher: {
+                                listener: restartListener
+                            }
+                        }
+                    ]
                 },
                 {
                     wrapper: 'fieldset',

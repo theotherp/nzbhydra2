@@ -62,7 +62,8 @@ public class JsonConfigMigration {
     @Autowired
     private ConfigProvider configProvider;
 
-    public MigrationResult migrate(String oldConfigJson) throws IOException {
+    public ConfigMigrationResult migrate(String oldConfigJson) throws IOException {
+        logger.info("Migrating config from NZBHydra 1");
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -126,7 +127,7 @@ public class JsonConfigMigration {
 
         configProvider.getBaseConfig().replace(newConfig);
         configProvider.getBaseConfig().save();
-        return new MigrationResult(newConfig, messages);
+        return new ConfigMigrationResult(newConfig, messages);
     }
 
     private List<String> migrateDownloaders(OldConfig oldConfig, BaseConfig newConfig) {
@@ -466,7 +467,7 @@ public class JsonConfigMigration {
 
     @Data
     @AllArgsConstructor
-    public class MigrationResult {
+    public static class ConfigMigrationResult {
         private BaseConfig migratedConfig;
         private List<String> messages;
     }

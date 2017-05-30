@@ -9,18 +9,15 @@ import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.IndexerAccessResult;
 import org.nzbhydra.database.IndexerApiAccessEntity;
-import org.nzbhydra.database.IndexerApiAccessRepository;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerSearchEntity;
-import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.database.NzbDownloadEntity;
 import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.database.SearchRepository;
-import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.logging.ProgressLogger;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -41,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,25 +60,15 @@ public class SqliteMigration {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private CategoryProvider categoryProvider;
-    @Autowired
-    private IndexerApiAccessRepository indexerApiAccessRepository;
-    @Autowired
-    private IndexerSearchRepository indexerSearchRepository;
-    @Autowired
-    private SearchResultRepository searchResultRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
 
-
     protected ObjectMapper objectMapper = new ObjectMapper();
-    protected TypeReference<Map<String, String>> mapTypeReference = new TypeReference<Map<String, String>>() {
-    };
     protected TypeReference<List<Map<String, Object>>> listOfMapsTypeReference = new TypeReference<List<Map<String, Object>>>() {
     };
 
     @Transactional
-    public void migrate(String databaseFile) throws IOException, SQLException {
+    public List<String> migrate(String databaseFile) throws IOException, SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile);
 
         logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
@@ -98,9 +86,8 @@ public class SqliteMigration {
             entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
         }
 
-
         migrate();
-
+        return Collections.emptyList();
     }
 
     protected void migrate() throws IOException, SQLException {

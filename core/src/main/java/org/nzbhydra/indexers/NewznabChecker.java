@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 public class NewznabChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
+    public static final int MAX_CONNECTIONS = 2;
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -98,7 +99,8 @@ public class NewznabChecker {
         Set<ActionAttribute> supportedTypes = new HashSet<>();
         String backend = null;
         try {
-            ExecutorService executor = Executors.newFixedThreadPool(requests.size());//TODO Perhaps limit this to not hammer the indexer too much
+            logger.info("Will check capabilities of indexer {} using {} concurrent connections", indexerConfig.getName(), MAX_CONNECTIONS);
+            ExecutorService executor = Executors.newFixedThreadPool(MAX_CONNECTIONS);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {

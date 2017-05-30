@@ -2,15 +2,20 @@ package org.nzbhydra.config;
 
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.Optional;
 
 @ConfigurationProperties("main")
 @Component
 @Data
 public class MainConfig extends ValidatingConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
     @SensitiveData
     private String apiKey = null;
@@ -40,10 +45,13 @@ public class MainConfig extends ValidatingConfig {
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
 
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
+    public void setDatabaseFile(String databaseFile) {
+        if (!new File(databaseFile).isAbsolute() && !databaseFile.startsWith("./")) {
+            logger.warn("Database file setting seems to be relative but doesn't start with a \"./\". Will add it");
+        }
+        databaseFile = "./" + databaseFile;
+        this.databaseFile = databaseFile;
     }
-
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);
@@ -83,6 +91,7 @@ public class MainConfig extends ValidatingConfig {
 
     @Override
     public ConfigValidationResult validateConfig() {
+
         return new ConfigValidationResult();
     }
 }

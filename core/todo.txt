@@ -28,6 +28,9 @@ Config
 - make sure existing file is not overwritten with defaults by mistake
 - how to migrate from "old" yaml??
 - what happens when you overwrite a setting from the command line and then save from the GUI?
+- check for changing of database file. perhaps move old one over
+- make sure that database file starts with ./ for relative paths
+- save indexers in list by name to make finding them easier
 
 Downloader support: mostly done
 - sabnzbd
@@ -104,7 +107,8 @@ General, Ideas
 - proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 - use config setting "isUseLocalUrlForApiAccess"
-- compare stats from python version and migrated
+- !! compare stats from python version and migrated
+- episodes can be strings
 
 currently not (yet) supported:
 - proxies
