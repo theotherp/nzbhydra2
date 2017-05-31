@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('ModalService', ModalService);
 
-function ModalService($uibModal, $q) {
+function ModalService($uibModal) {
 
     return {
         open: open

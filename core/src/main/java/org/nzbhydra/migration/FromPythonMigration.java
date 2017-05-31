@@ -83,6 +83,7 @@ public class FromPythonMigration {
             logger.error("Error while migrating database", e);
             return MigrationResult.databaseMigrationFailed("Error while migrating database: " + e.getMessage(), configMigrationMessages);
         }
+        logger.info("Migration completed successfully");
         return MigrationResult.migrationSuccessful(configMigrationMessages);
     }
 

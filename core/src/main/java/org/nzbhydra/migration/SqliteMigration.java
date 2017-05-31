@@ -69,24 +69,25 @@ public class SqliteMigration {
 
     @Transactional
     public List<String> migrate(String databaseFile) throws IOException, SQLException {
-        connection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile);
+        try (Connection innerConnection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile)) {
+            connection = innerConnection;
+            logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
 
-        logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
+            try {
+                entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE INDEXERAPIACCESS").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE indexersearch").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE search").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE indexerstatus").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE indexernzbdownload").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE SEARCHRESULT").executeUpdate();
+                entityManager.createNativeQuery("TRUNCATE TABLE indexer").executeUpdate();
+            } finally {
+                entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+            }
 
-        try {
-            entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE INDEXERAPIACCESS").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE indexersearch").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE search").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE indexerstatus").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE indexernzbdownload").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE SEARCHRESULT").executeUpdate();
-            entityManager.createNativeQuery("TRUNCATE TABLE indexer").executeUpdate();
-        } finally {
-            entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
+            migrate();
         }
-
-        migrate();
         return Collections.emptyList();
     }
 
