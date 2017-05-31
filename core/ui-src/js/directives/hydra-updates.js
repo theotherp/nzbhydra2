@@ -29,6 +29,9 @@ function hydraupdates() {
             UpdateService.showChanges($scope.changelog);
         };
 
+        $scope.forceUpdate = function () {
+            UpdateService.update()
+        };
 
     }
 }

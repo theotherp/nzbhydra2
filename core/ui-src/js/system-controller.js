@@ -5,6 +5,11 @@ angular
 function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, ConfigService, NzbHydraControlService, $uibModal) {
 
     $scope.activeTab = activeTab;
+    $scope.foo = {
+        csv: "",
+        sql: ""
+    };
+
 
     $scope.shutdown = function () {
         NzbHydraControlService.shutdown().then(function () {
@@ -44,11 +49,6 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
             }
         });
     };
-
-    $scope.forceUpdate = function () {
-        UpdateService.update()
-    };
-
 
     $scope.migrate = function () {
         var modalInstance = $uibModal.open({
@@ -98,7 +98,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         {
             active: false,
             state: 'root.system.bugreport',
-            name: "Bugreport"
+            name: "Bugreport / Debug"
         },
         {
             active: false,
@@ -123,7 +123,19 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
             a.click();
             document.body.removeChild(a);
         });
+    };
+
+    $scope.executeSql = function () {
+        $http.post('internalapi/debuginfos/executesql', $scope.foo.sql).success(function (data) {
+            if (data.successful) {
+                $scope.foo.csv = data.message;
+            } else {
+                growl.error(data.message);
+            }
+        });
     }
+
+
 
 }
 

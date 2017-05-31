@@ -102,7 +102,7 @@ General, Ideas
 - banner
 - verify that retrieving user from remoteuser works with form based login and rememberme
 - when no indexers configured / available, on search page show a note and link to config
-- debug tab in system section to execute raw sql queries
+- ! debug tab in system section to execute raw sql queries
 - log API access user agent in info column and show in history?
 - proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
@@ -129,6 +129,7 @@ Improvements
 - better validation for configuration, including warnings
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
+- option to execute SQL queries for debugging
 
 ...
 ++++
