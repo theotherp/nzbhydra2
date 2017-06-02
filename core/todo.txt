@@ -109,7 +109,7 @@ General, Ideas
 - use config setting "isUseLocalUrlForApiAccess"
 - !! compare stats from python version and migrated
 - episodes can be strings
-- option to download torrent file to predefined folder
+- !! option to download torrent file to predefined folder
 
 currently not (yet) supported:
 - proxies
@@ -130,6 +130,8 @@ Improvements
 - store IP address in search / download history. opt-in. use nullable column. show what available in history
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - option to execute SQL queries for debugging
+- option for torrent black hole
+
 
 ...
 ++++

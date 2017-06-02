@@ -51,11 +51,12 @@ public class NzbHandler {
     public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
-            logger.error("NZB download request with invalid/outdated GUID " + guid);
+            logger.error("Download request with invalid/outdated GUID {}", guid);
 
-            return NzbDownloadResult.createErrorResult("NZB download request with invalid/outdated GUID " + guid);
+            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid);
         }
-        logger.info("NZB download request for {} from indexer {}", result.getTitle(), result.getIndexer().getName());
+        String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
+        logger.info("{} download request for {} from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
@@ -74,7 +75,7 @@ public class NzbHandler {
 
             long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
             //TODO CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
-            logger.info("NZB download from indexer successfully completed in {}ms", responseTime);
+            logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
             saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.SUCCESSFUL, usernameOrIp, null);
 

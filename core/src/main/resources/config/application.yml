@@ -223,7 +223,9 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
-downloaders: []
+downloading:
+    downloaders: []
+    saveTorrentsTo: null
 indexers: []
 main:
   apiKey: null

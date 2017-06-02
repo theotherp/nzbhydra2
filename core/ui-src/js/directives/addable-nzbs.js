@@ -15,10 +15,11 @@ function addableNzbs() {
 
     function controller($scope, NzbDownloadService) {
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
-            if ($scope.downloadType != "NZB") {
-                return downloader.downloadType == $scope.downloadType
+            if ($scope.downloadType !== "NZB") {
+                return downloader.downloadType === $scope.downloadType
             }
             return true;
         });
+        console.log($scope.downloaders);
     }
 }

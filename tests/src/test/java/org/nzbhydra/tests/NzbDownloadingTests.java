@@ -105,8 +105,8 @@ public class NzbDownloadingTests {
         downloaderConfig.setNzbAccessType(NzbAccessType.REDIRECT);
         downloaderConfig.setNzbAddingType(NzbAddingType.SEND_LINK);
         downloaderConfig.setApiKey("apikey");
-        baseConfig.getDownloaders().clear();
-        baseConfig.getDownloaders().add(downloaderConfig);
+        baseConfig.getDownloading().getDownloaders().clear();
+        baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
         downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, baseConfig));
     }
 
@@ -127,7 +127,7 @@ public class NzbDownloadingTests {
 
     @Test
     public void shouldSendUrlToDownloader() throws Exception {
-        baseConfig.getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
+        baseConfig.getDownloading().getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
 
         HttpRequest expectedRequest = HttpRequest.request("/sabnzbd/api").withQueryStringParameter("mode", "addurl").withQueryStringParameter("name", "http://127.0.0.1:5076/getnzb/user/" + searchResultId).withMethod("POST");
         mockServer.when(expectedRequest).respond(HttpResponse.response().withStatusCode(200).withBody("{\"isStatus\":true}"));

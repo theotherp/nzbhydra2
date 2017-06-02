@@ -170,6 +170,7 @@ public abstract class Indexer<T> {
                 searchResultEntity.setDetails(item.getDetails());
                 searchResultEntity.setIndexerGuid(item.getIndexerGuid());
                 searchResultEntity.setFirstFound(Instant.now());
+                searchResultEntity.setDownloadType(item.getDownloadType());
                 searchResultEntities.add(searchResultEntity);
             }
             //TODO Unify guid and searchResultId which are the same

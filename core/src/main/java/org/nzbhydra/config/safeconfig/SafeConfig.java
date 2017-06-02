@@ -14,15 +14,16 @@ public class SafeConfig {
     private AuthType authType;
     private String dereferer;
     private SafeSearchingConfig searching;
+    private SafeDownloadingConfig downloading;
     private SafeLoggingConfig logging;
-    private List<SafeDownloaderConfig> downloaders;
+
     private List<SafeIndexerConfig> indexers;
 
     public SafeConfig(BaseConfig baseConfig) {
         this.authType = baseConfig.getAuth().getAuthType();
         this.dereferer = baseConfig.getMain().getDereferer().orElse("");
         this.searching = new SafeSearchingConfig(baseConfig.getSearching());
-        this.downloaders = baseConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
+        this.downloading = new SafeDownloadingConfig(baseConfig.getDownloading());
         this.logging = new SafeLoggingConfig(baseConfig.getMain().getLogging());
         this.indexers = baseConfig.getIndexers().stream().map(SafeIndexerConfig::new).collect(Collectors.toList());
         this.categoriesConfig = new SafeCategoriesConfig(baseConfig.getCategoriesConfig());

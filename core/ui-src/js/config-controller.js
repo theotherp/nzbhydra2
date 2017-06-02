@@ -197,10 +197,10 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         },
         {
             active: false,
-            state: 'root.config.downloader',
-            name: 'Downloaders',
-            model: ConfigModel.downloaders,
-            fields: $scope.fields.downloaders,
+            state: 'root.config.downloading',
+            name: 'Downloading',
+            model: ConfigModel.downloading,
+            fields: $scope.fields.downloading,
             options: {}
         },
         {

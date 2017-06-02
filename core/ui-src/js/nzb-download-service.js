@@ -13,7 +13,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     function sendNzbAddCommand(downloader, searchresultids, category) {
         var params = {downloaderName: downloader.name, searchResultIds: searchresultids};
-        if (category != "No category") {
+        if (category !== "No category") {
             params["category"] = category;
         }
         return $http.put("internalapi/downloader/addNzbs", params);
@@ -23,7 +23,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
         var category = downloader.defaultCategory;
 
-        if ((_.isUndefined(category) || category == "" || category == null) && category != "No category") {
+        if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchresultids, category)
             }, function (error) {
@@ -35,7 +35,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
     }
 
     function getEnabledDownloaders() {
-        return _.filter(ConfigService.getSafe().downloaders, "enabled");
+        return _.filter(ConfigService.getSafe().downloading.downloaders, "enabled");
     }
 }
 

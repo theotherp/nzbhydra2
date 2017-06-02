@@ -138,8 +138,8 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                 }
             }
         })
-        .state("root.config.downloader", {
-            url: "/downloader",
+        .state("root.config.downloading", {
+            url: "/downloading",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/config.html",
@@ -158,7 +158,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return 4;
                         }],
                         $title: ["$stateParams", function ($stateParams) {
-                            return "Config (Downloader)"
+                            return "Config (Downloading)"
                         }]
                     }
                 }
@@ -847,6 +847,40 @@ function tabOrChart() {
 
     };
 
+}
+
+angular
+    .module('nzbhydraApp')
+    .directive('sendTorrentToBlackhole', sendTorrentToBlackhole);
+
+function sendTorrentToBlackhole() {
+    controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
+    return {
+        templateUrl: 'static/html/directives/send-torrent-to-blackhole.html',
+        scope: {
+            searchResultId: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, $http, growl, ConfigService) {
+        $scope.useBlackhole = ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "";
+        $scope.cssClass = "glyphicon-save-file";
+        $scope.add = function () {
+            $scope.cssClass = "nzb-spinning";
+            $http.get("internalapi/saveTorrent/" + $scope.searchResultId).then(function (response) {
+                if (response.data.successful) {
+                    $scope.cssClass = "glyphicon-ok";
+                } else {
+                    $scope.cssClass = "glyphicon-remove";
+                    growl.error(response.data.message);
+                }
+            });
+
+        };
+
+
+    }
 }
 
 angular
@@ -1803,11 +1837,12 @@ function addableNzbs() {
 
     function controller($scope, NzbDownloadService) {
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
-            if ($scope.downloadType != "NZB") {
-                return downloader.downloadType == $scope.downloadType
+            if ($scope.downloadType !== "NZB") {
+                return downloader.downloadType === $scope.downloadType
             }
             return true;
         });
+        console.log($scope.downloaders);
     }
 }
 
@@ -1995,7 +2030,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
 
     $scope.activeTab = activeTab;
     $scope.foo = {
-        csv:"",
+        csv: "",
         sql: ""
     };
 
@@ -3694,7 +3729,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     function sendNzbAddCommand(downloader, searchresultids, category) {
         var params = {downloaderName: downloader.name, searchResultIds: searchresultids};
-        if (category != "No category") {
+        if (category !== "No category") {
             params["category"] = category;
         }
         return $http.put("internalapi/downloader/addNzbs", params);
@@ -3704,7 +3739,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
         var category = downloader.defaultCategory;
 
-        if ((_.isUndefined(category) || category == "" || category == null) && category != "No category") {
+        if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchresultids, category)
             }, function (error) {
@@ -3716,7 +3751,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
     }
 
     function getEnabledDownloaders() {
-        return _.filter(ConfigService.getSafe().downloaders, "enabled");
+        return _.filter(ConfigService.getSafe().downloading.downloaders, "enabled");
     }
 }
 NzbDownloadService.$inject = ["$http", "ConfigService", "DownloaderCategoriesService"];
@@ -5188,45 +5223,45 @@ function ConfigFields($injector) {
                             }
                         }
                         /*
-                        {
-                            key: 'socksProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'SOCKS proxy',
-                                placeholder: 'socks5://user:pass@127.0.0.1:1080',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'httpProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'HTTP proxy',
-                                placeholder: 'http://user:pass@10.0.0.1:1080',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'httpsProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'HTTPS proxy',
-                                placeholder: 'https://user:pass@10.0.0.1:1090',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
+                         {
+                         key: 'socksProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'SOCKS proxy',
+                         placeholder: 'socks5://user:pass@127.0.0.1:1080',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
+                         {
+                         key: 'httpProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'HTTP proxy',
+                         placeholder: 'http://user:pass@10.0.0.1:1080',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
+                         {
+                         key: 'httpsProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'HTTPS proxy',
+                         placeholder: 'https://user:pass@10.0.0.1:1090',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
                          */
 
                     ]
@@ -5892,36 +5927,58 @@ function ConfigFields($injector) {
                 }
             ],
 
-            downloaders: [
+            downloading: [
                 {
-                    type: "arrayConfig",
-                    data: {
-                        defaultModel: {
-                            enabled: true
-                        },
-                        entryTemplateUrl: 'downloaderEntry.html',
-                        presets: function () {
-                            return getDownloaderPresets();
-                        },
-                        checkAddingAllowed: function () {
-                            return true;
-                        },
-                        presetsOnly: true,
-                        addNewText: 'Add new downloader',
-                        fieldsFunction: getDownloaderBoxFields,
-                        allowDeleteFunction: function () {
-                            return true;
-                        },
-                        checkBeforeClose: function (scope, model) {
-                            var DownloaderCheckBeforeCloseService = $injector.get("DownloaderCheckBeforeCloseService");
-                            return DownloaderCheckBeforeCloseService.check(scope, model);
-                        },
-                        resetFunction: function (scope) {
-                            scope.options.resetModel();
-                            scope.options.resetModel();
-                        }
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'General'},
+                    fieldGroup: [
+                        {
+                            key: 'saveTorrentsTo',
+                            type: 'horizontalInput',
 
-                    }
+                            templateOptions: {
+                                label: 'Torrent black hole',
+                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.'
+                            }
+                        }
+                    ]
+
+                },
+                {
+                    wrapper: 'fieldset',
+                    key: 'downloaders',
+                    templateOptions: {label: 'Downloaders'},
+                    fieldGroup: [
+                        {
+                            type: "arrayConfig",
+                            data: {
+                                defaultModel: {
+                                    enabled: true
+                                },
+                                entryTemplateUrl: 'downloaderEntry.html',
+                                presets: function () {
+                                    return getDownloaderPresets();
+                                },
+                                checkAddingAllowed: function () {
+                                    return true;
+                                },
+                                presetsOnly: true,
+                                addNewText: 'Add new downloader',
+                                fieldsFunction: getDownloaderBoxFields,
+                                allowDeleteFunction: function () {
+                                    return true;
+                                },
+                                checkBeforeClose: function (scope, model) {
+                                    var DownloaderCheckBeforeCloseService = $injector.get("DownloaderCheckBeforeCloseService");
+                                    return DownloaderCheckBeforeCloseService.check(scope, model);
+                                },
+                                resetFunction: function (scope) {
+                                    scope.options.resetModel();
+                                    scope.options.resetModel();
+                                }
+                            }
+                        }
+                    ]
                 }
             ],
 
@@ -7285,10 +7342,10 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         },
         {
             active: false,
-            state: 'root.config.downloader',
-            name: 'Downloaders',
-            model: ConfigModel.downloaders,
-            fields: $scope.fields.downloaders,
+            state: 'root.config.downloading',
+            name: 'Downloading',
+            model: ConfigModel.downloading,
+            fields: $scope.fields.downloading,
             options: {}
         },
         {

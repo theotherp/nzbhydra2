@@ -138,8 +138,8 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                 }
             }
         })
-        .state("root.config.downloader", {
-            url: "/downloader",
+        .state("root.config.downloading", {
+            url: "/downloading",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/config.html",
@@ -158,7 +158,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return 4;
                         }],
                         $title: function ($stateParams) {
-                            return "Config (Downloader)"
+                            return "Config (Downloading)"
                         }
                     }
                 }

@@ -85,26 +85,26 @@ public class ConfigMigrationTest {
         assertThat(auth.getUsers().get(0).getUsername(), is("auser"));
         assertThat(auth.getUsers().get(0).getPassword(), is("apass"));
 
-        assertThat(result.getMigratedConfig().getDownloaders().size(), is(3));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getName(), is("NZBGet"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getDefaultCategory(), is("No category"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getDownloaderType(), is(DownloaderType.NZBGET));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getDownloadType(), is(DownloadType.NZB));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getIconCssClass(), is("someClass"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getUrl(), is("http://nzbget:nzbget@127.0.0.1:6789"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).isEnabled(), is(true));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getNzbAccessType(), is(NzbAccessType.PROXY));
-        assertThat(result.getMigratedConfig().getDownloaders().get(0).getNzbAddingType(), is(NzbAddingType.SEND_LINK));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().size(), is(3));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getName(), is("NZBGet"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDefaultCategory(), is("No category"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDownloaderType(), is(DownloaderType.NZBGET));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDownloadType(), is(DownloadType.NZB));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getIconCssClass(), is("someClass"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUrl(), is("http://nzbget:nzbget@127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).isEnabled(), is(true));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAccessType(), is(NzbAccessType.PROXY));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAddingType(), is(NzbAddingType.SEND_LINK));
 
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getName(), is("SABnzbd"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getDownloaderType(), is(DownloaderType.SABNZBD));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getDownloadType(), is(DownloadType.NZB));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getUrl(), is("http://127.0.0.1:8085/sabnzbd/"));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).isEnabled(), is(false));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getNzbAccessType(), is(NzbAccessType.REDIRECT));
-        assertThat(result.getMigratedConfig().getDownloaders().get(1).getNzbAddingType(), is(NzbAddingType.UPLOAD));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getName(), is("SABnzbd"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getDownloaderType(), is(DownloaderType.SABNZBD));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getDownloadType(), is(DownloadType.NZB));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getUrl(), is("http://127.0.0.1:8085/sabnzbd/"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).isEnabled(), is(false));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAccessType(), is(NzbAccessType.REDIRECT));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAddingType(), is(NzbAddingType.UPLOAD));
 
-        assertThat(result.getMigratedConfig().getDownloaders().get(2).getUrl(), is("https://nzbgetx:tegbzn6789x@127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUrl(), is("https://nzbgetx:tegbzn6789x@127.0.0.1:6789"));
 
         assertThat(result.getMigratedConfig().getIndexers().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getName(), is("Binsearch"));

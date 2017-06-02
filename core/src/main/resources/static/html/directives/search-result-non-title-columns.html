@@ -33,12 +33,20 @@
            tooltip-trigger="mouseenter">
             <i class="fa fa-info" aria-hidden="true" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
-        <a target="_self" href="{{ ::result.downloadType == 'NZB' ? 'getnzb' : 'gettorrent' }}/user/{{ ::result.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-           class="no-underline"
-           uib-tooltip="Download {{ ::result.downloadType == 'NZB' ? 'NZB' : 'Torrent' }}"
-           tooltip-placement="top"
-           tooltip-trigger="mouseenter"><span>{{ ::result.downloadType == 'NZB' ? 'NZB' : 'Torrent' }}</span>
-        </a>
+        <span ng-switch on="result.downloadType">
+            <span ng-switch-when="TORRENT">
+                <send-torrent-to-blackhole search-result-id="result.searchResultId"></send-torrent-to-blackhole>
+            </span>
+            <span ng-switch-default>
+                <a target="_self" href="getnzb/user/{{ ::result.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                   class="no-underline"
+                   uib-tooltip="Download NZB"
+                   tooltip-placement="top"
+                   tooltip-trigger="mouseenter"><span>NZB</span>
+                </a>
+            </span>
+        </span>
+
     </span>
     <addable-nzbs search-result-id="result.searchResultId" download-type="result.downloadType"></addable-nzbs>
 </td>

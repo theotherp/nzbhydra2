@@ -2,10 +2,13 @@ package org.nzbhydra.database;
 
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
+import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -55,6 +58,8 @@ public class SearchResultEntity {
     protected String link;
     @Column(length = 4000)
     protected String details;
+    @Enumerated(EnumType.STRING)
+    protected DownloadType downloadType;
 
     public void setId(long id) {
         this.id = id;
@@ -82,5 +87,9 @@ public class SearchResultEntity {
 
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public void setDownloadType(DownloadType downloadType) {
+        this.downloadType = downloadType;
     }
 }

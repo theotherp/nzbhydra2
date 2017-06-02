@@ -166,7 +166,7 @@ public class JsonConfigMigration {
             newDownloader.setEnabled(oldDownloader.isEnabled());
             downloaders.add(newDownloader);
         }
-        newConfig.setDownloaders(downloaders);
+        newConfig.getDownloading().setDownloaders(downloaders);
         return messages;
     }
 

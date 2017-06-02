@@ -47,8 +47,8 @@ public class DownloaderProvider implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (baseConfig.getDownloaders() != null) {
-            List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloaders();
+        if (baseConfig.getDownloading().getDownloaders() != null) {
+            List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloading().getDownloaders();
             downloadersMap.clear();
             for (DownloaderConfig downloaderConfig : downloaderConfigs) {
                 logger.info("Found downloader {}", downloaderConfig.getName());

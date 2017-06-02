@@ -49,7 +49,7 @@ public class BaseConfig extends ValidatingConfig {
 
     private AuthConfig auth = new AuthConfig();
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
-    private List<DownloaderConfig> downloaders = new ArrayList<>();
+    private DownloadingConfig downloading = new DownloadingConfig();
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
@@ -64,7 +64,7 @@ public class BaseConfig extends ValidatingConfig {
         main = newConfig.getMain();
         categoriesConfig = newConfig.getCategoriesConfig();
         indexers = newConfig.getIndexers();
-        downloaders = newConfig.getDownloaders();
+        downloading = newConfig.getDownloading();
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
 
@@ -186,6 +186,10 @@ public class BaseConfig extends ValidatingConfig {
         configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
 
+        ConfigValidationResult downloadingValidation = downloading.validateConfig();
+        configValidationResult.getErrorMessages().addAll(downloadingValidation.getErrorMessages());
+        configValidationResult.getWarningMessages().addAll(downloadingValidation.getWarningMessages());
+
         if (!indexers.isEmpty()) {
             if (indexers.stream().noneMatch(IndexerConfig::isEnabled)) {
                 configValidationResult.getWarningMessages().add("No indexers enabled. Searches will return empty results");
@@ -207,8 +211,6 @@ public class BaseConfig extends ValidatingConfig {
 
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
 
-        //TODO indexers
-        //TODO downloaders
         return configValidationResult;
     }
 

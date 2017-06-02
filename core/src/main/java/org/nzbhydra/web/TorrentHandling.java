@@ -1,9 +1,13 @@
 package org.nzbhydra.web;
 
+import com.google.common.io.Files;
+import org.nzbhydra.GenericResponse;
+import org.nzbhydra.NzbDownloadResult;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 
 @RestController
 public class TorrentHandling {
@@ -48,6 +53,29 @@ public class TorrentHandling {
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid, HttpServletRequest request) {
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+    }
+
+    /**
+     * Provides an external access to torrent via GUID for users.
+     *
+     * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
+     */
+    @RequestMapping(value = "/internalapi/saveTorrent/{guid}")
+    @Secured({"ROLE_USER"})
+    public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid, HttpServletRequest request) {
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get());
+        if (!downloadResult.isSuccessful()) {
+            return GenericResponse.notOk(downloadResult.getError());
+        }
+        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo(), downloadResult.getTitle() + ".torrent");
+        try {
+            Files.write(downloadResult.getNzbContent().getBytes(), torrent);
+            logger.info("Saved torrent file to {}", torrent.getAbsolutePath());
+        } catch (Exception e) {
+            logger.error("Error saving torrent file", e);
+            return GenericResponse.notOk("Error saving torrent file: " + e.getMessage());
+        }
+        return GenericResponse.ok();
     }
 
     /**

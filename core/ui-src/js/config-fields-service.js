@@ -166,45 +166,45 @@ function ConfigFields($injector) {
                             }
                         }
                         /*
-                        {
-                            key: 'socksProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'SOCKS proxy',
-                                placeholder: 'socks5://user:pass@127.0.0.1:1080',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'httpProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'HTTP proxy',
-                                placeholder: 'http://user:pass@10.0.0.1:1080',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'httpsProxy',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'HTTPS proxy',
-                                placeholder: 'https://user:pass@10.0.0.1:1090',
-                                help: "IPv4 only"
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
+                         {
+                         key: 'socksProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'SOCKS proxy',
+                         placeholder: 'socks5://user:pass@127.0.0.1:1080',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
+                         {
+                         key: 'httpProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'HTTP proxy',
+                         placeholder: 'http://user:pass@10.0.0.1:1080',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
+                         {
+                         key: 'httpsProxy',
+                         type: 'horizontalInput',
+                         templateOptions: {
+                         type: 'text',
+                         label: 'HTTPS proxy',
+                         placeholder: 'https://user:pass@10.0.0.1:1090',
+                         help: "IPv4 only"
+                         },
+                         watcher: {
+                         listener: restartListener
+                         }
+                         },
                          */
 
                     ]
@@ -870,36 +870,58 @@ function ConfigFields($injector) {
                 }
             ],
 
-            downloaders: [
+            downloading: [
                 {
-                    type: "arrayConfig",
-                    data: {
-                        defaultModel: {
-                            enabled: true
-                        },
-                        entryTemplateUrl: 'downloaderEntry.html',
-                        presets: function () {
-                            return getDownloaderPresets();
-                        },
-                        checkAddingAllowed: function () {
-                            return true;
-                        },
-                        presetsOnly: true,
-                        addNewText: 'Add new downloader',
-                        fieldsFunction: getDownloaderBoxFields,
-                        allowDeleteFunction: function () {
-                            return true;
-                        },
-                        checkBeforeClose: function (scope, model) {
-                            var DownloaderCheckBeforeCloseService = $injector.get("DownloaderCheckBeforeCloseService");
-                            return DownloaderCheckBeforeCloseService.check(scope, model);
-                        },
-                        resetFunction: function (scope) {
-                            scope.options.resetModel();
-                            scope.options.resetModel();
-                        }
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'General'},
+                    fieldGroup: [
+                        {
+                            key: 'saveTorrentsTo',
+                            type: 'horizontalInput',
 
-                    }
+                            templateOptions: {
+                                label: 'Torrent black hole',
+                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.'
+                            }
+                        }
+                    ]
+
+                },
+                {
+                    wrapper: 'fieldset',
+                    key: 'downloaders',
+                    templateOptions: {label: 'Downloaders'},
+                    fieldGroup: [
+                        {
+                            type: "arrayConfig",
+                            data: {
+                                defaultModel: {
+                                    enabled: true
+                                },
+                                entryTemplateUrl: 'downloaderEntry.html',
+                                presets: function () {
+                                    return getDownloaderPresets();
+                                },
+                                checkAddingAllowed: function () {
+                                    return true;
+                                },
+                                presetsOnly: true,
+                                addNewText: 'Add new downloader',
+                                fieldsFunction: getDownloaderBoxFields,
+                                allowDeleteFunction: function () {
+                                    return true;
+                                },
+                                checkBeforeClose: function (scope, model) {
+                                    var DownloaderCheckBeforeCloseService = $injector.get("DownloaderCheckBeforeCloseService");
+                                    return DownloaderCheckBeforeCloseService.check(scope, model);
+                                },
+                                resetFunction: function (scope) {
+                                    scope.options.resetModel();
+                                    scope.options.resetModel();
+                                }
+                            }
+                        }
+                    ]
                 }
             ],
 
