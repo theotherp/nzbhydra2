@@ -144,7 +144,7 @@ public class NzbHydra {
 
     @Bean
     public CacheManager getCacheManager() {
-        GuavaCacheManager guavaCacheManager = new GuavaCacheManager("infos", "titles");
+        GuavaCacheManager guavaCacheManager = new GuavaCacheManager("infos", "titles", "dev");
         return guavaCacheManager;
     }
 

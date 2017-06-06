@@ -22,7 +22,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     _.forEach(SearchService.getLastResults().notPickedIndexersWithReason, function (k, v) {
         $scope.notPickedIndexersWithReason.push({"indexer": v, "reason": k});
     });
-    $scope.indexerDisplayState = {}; //Stores if a indexerName's searchResults should be displayed or not
     $scope.indexerResultsInfo = {}; //Stores information about the indexerName's searchResults like how many we already retrieved
     $scope.groupExpanded = {};
     $scope.selected = [];
@@ -48,8 +47,24 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.countFilteredOut = 0;
 
-    //Initially set visibility of all found indexers to true, they're needed for initial filtering / sorting
-    $scope.indexerDisplayState = _.pluck($scope.indexersearches, "indexerName");
+    $scope.sortModel = {
+        //TODO: Used saved preference
+        column: "time",
+        sortMode: 2,
+        reversed: false
+    };
+    $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
+    $scope.filterModel = {};
+
+
+    $scope.indexersForFiltering = [];
+    _.forEach($scope.indexersearches, function (indexer) {
+        $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})
+    });
+    $scope.categoriesForFiltering = [];
+    _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
+        $scope.categoriesForFiltering.push({label: category.name, id: category.name})
+    });
 
     _.forEach($scope.indexersearches, function (ps) {
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
@@ -78,88 +93,128 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         blockUI.start(message);
         $timeout(function () {
             deferred.resolve();
-        }, 100);
+        }, 10);
         return deferred.promise;
     }
 
-    //Set sorting according to the predicate. If it's the same as the old one, reverse, if not sort by the given default (so that age is descending, name ascending, etc.)
-    //Sorting (and filtering) are really slow (about 2 seconds for 1000 results from 5 indexers) but I haven't found any way of making it faster, apart from the tracking
-    $scope.setSorting = setSorting;
-    function setSorting(predicate, reversedDefault) {
-        if (predicate === $scope.sortPredicate) {
-            $scope.sortReversed = !$scope.sortReversed;
-        } else {
-            $scope.sortReversed = reversedDefault;
-        }
-        $scope.sortPredicate = predicate;
+
+    function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
             $scope.filteredResults = sortAndFilter($scope.searchResults);
             blockUI.reset();
-            localStorageService.set("sorting", {predicate: predicate, reversed: $scope.sortReversed});
+            localStorageService.set("sorting", {predicate: $scope.predicate, reversed: $scope.sortReversed});
         });
     }
 
-    $scope.inlineFilter = inlineFilter;
-    function inlineFilter(result) {
-        var ok = true;
-        ok = ok && $scope.titleFilter && result.title.toLowerCase().indexOf($scope.titleFilter) > -1;
-        ok = ok && $scope.minSizeFilter && $scope.minSizeFilter * 1024 * 1024 < result.size;
-        ok = ok && $scope.maxSizeFilter && $scope.maxSizeFilter * 1024 * 1024 > result.size;
-        return ok;
-    }
-
-
-    $scope.$on("searchInputChanged", function (event, query, minage, maxage, minsize, maxsize) {
-        $scope.filteredResults = sortAndFilter($scope.searchResults, query, minage, maxage, minsize, maxsize);
+    $scope.$on("sort", function (event, column, sortMode, reversed) {
+        if (sortMode === 0) {
+            $scope.sortModel = {
+                //TODO: Used saved preference
+                column: "age",
+                sortMode: 1,
+                reversed: true
+            };
+        } else {
+            $scope.sortModel = {
+                column: column,
+                sortMode: sortMode,
+                reversed: reversed
+            };
+        }
+        $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
+        blockAndUpdate();
     });
+
+    $scope.$on("filter", function (event, column, filterModel, isActive) {
+        if (filterModel.filterValue && isActive) {
+            $scope.filterModel[column] = filterModel;
+        } else {
+            delete $scope.filterModel[column];
+        }
+        blockAndUpdate();
+    });
+
 
     $scope.resort = function () {
     };
 
-    function sortAndFilter(results, query, minage, maxage, minsize, maxsize) {
+    function sortAndFilter(results) {
+        var query;
+        var words;
+        if ("title" in $scope.filterModel) {
+            query = $scope.filterModel.title.filterValue;
+            words = query.toLowerCase().split(" ");
+        }
+        function filter(item) {
+            if ("size" in $scope.filterModel) {
+                var filterValue = $scope.filterModel.size.filterValue;
+                if (angular.isDefined(filterValue.min) && item.size / 1024 / 1024 < filterValue.min) {
+                    return false;
+                }
+                if (angular.isDefined(filterValue.max) && item.size / 1024 / 1024 > filterValue.max) {
+                    return false;
+                }
+            }
 
-        $scope.countFilteredOut = 0;
+            if ("age" in $scope.filterModel) {
+                var filterValue = $scope.filterModel.age.filterValue;
+                var ageDays = moment.utc().diff(moment.unix(item.epoch), "days");
+                if (angular.isDefined(filterValue.min) && ageDays < filterValue.min) {
+                    return false;
+                }
+                if (angular.isDefined(filterValue.max) && ageDays > filterValue.max) {
+                    return false;
+                }
+            }
 
-        function filterByAgeAndSize(item) {
-            var ok = true;
-            ok = ok && (!_.isNumber(minsize) || item.size / 1024 / 1024 >= minsize)
-                && (!_.isNumber(maxsize) || item.size / 1024 / 1024 <= maxsize)
-                && (!_.isNumber(minage) || item.age_days >= Number(minage))
-                && (!_.isNumber(maxage) || item.age_days <= Number(maxage));
+            if ("grabs" in $scope.filterModel) {
+                var filterValue = $scope.filterModel.grabs.filterValue;
+                if (angular.isDefined(filterValue.min) && item.grabs < filterValue.min) {
+                    return false;
+                }
+                if (angular.isDefined(filterValue.max) && item.grabs > filterValue.max) {
+                    return false;
+                }
+            }
 
-            if (ok && query) {
-                var words = query.toLowerCase().split(" ");
-                ok = _.every(words, function (word) {
+            if ("title" in $scope.filterModel) {
+                var ok = _.every(words, function (word) {
                     return item.title.toLowerCase().indexOf(word) > -1;
                 });
+                if (!ok) return false;
             }
-            if (!ok) {
-                $scope.countFilteredOut++;
+            if ("indexer" in $scope.filterModel) {
+                if (_.indexOf($scope.filterModel.indexer.filterValue, item.indexer) === -1) {
+                    return false;
+                }
             }
-            return ok;
+            if ("category" in $scope.filterModel) {
+                if (_.indexOf($scope.filterModel.category.filterValue, item.category) === -1) {
+                    return false;
+                }
+            }
+            return true;
         }
 
-
-        function getItemIndexerDisplayState(item) {
-            return _.indexOf($scope.indexerDisplayState, item.indexer) > -1;
-        }
 
         function getCleanedTitle(element) {
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
 
-        function createSortedHashgroups(titleGroup) {
+        var sortPredicate = $scope.sortModel.column;
+        var sortReversed = $scope.sortModel.reversed;
 
+        function createSortedHashgroups(titleGroup) {
             function createHashGroup(hashGroup) {
                 //Sorting hash group's contents should not matter for size and age and title but might for category (we might remove this, it's probably mostly unnecessary)
                 var sortedHashGroup = _.sortBy(hashGroup, function (item) {
                     var sortPredicateValue;
-                    if ($scope.sortPredicate === "grabs") {
+                    if (sortPredicate === "grabs") {
                         sortPredicateValue = angular.isDefined(item.grabs) ? item.grabs : 0;
                     } else {
-                        sortPredicateValue = item[$scope.sortPredicate];
+                        sortPredicateValue = item[sortPredicate];
                     }
-                    return $scope.sortReversed ? -sortPredicateValue : sortPredicateValue;
+                    return sortReversed ? -sortPredicateValue : sortPredicateValue;
                 });
                 //Now sort the hash group by indexer score (inverted) so that the result with the highest indexer score is shown on top (or as the only one of a hash group if it's collapsed)
                 sortedHashGroup = _.sortBy(sortedHashGroup, function (item) {
@@ -169,12 +224,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             }
 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
-                if ($scope.sortPredicate === "grabs") {
+                if (sortPredicate === "grabs") {
                     sortPredicateValue = angular.isDefined(hashGroup[0].grabs) ? hashGroup[0].grabs : 0;
                 } else {
-                    var sortPredicateValue = hashGroup[0][$scope.sortPredicate];
+                    var sortPredicateValue = hashGroup[0][sortPredicate];
                 }
-                return $scope.sortReversed ? -sortPredicateValue : sortPredicateValue;
+                return sortReversed ? -sortPredicateValue : sortPredicateValue;
             }
 
             return _.chain(titleGroup).groupBy("hash").map(createHashGroup).sortBy(getHashGroupFirstElementSortPredicate).value();
@@ -182,22 +237,19 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
             var sortPredicateValue;
-            if ($scope.sortPredicate === "title") {
+            if (sortPredicate === "title") {
                 sortPredicateValue = titleGroup[0][0].title.toLowerCase();
-            } else if ($scope.sortPredicate === "grabs") {
+            } else if (sortPredicate === "grabs") {
                 sortPredicateValue = angular.isDefined(titleGroup[0][0].grabs) ? titleGroup[0][0].grabs : 0;
             } else {
-                sortPredicateValue = titleGroup[0][0][$scope.sortPredicate];
+                sortPredicateValue = titleGroup[0][0][sortPredicate];
             }
 
             return sortPredicateValue;
         }
 
         var filtered = _.chain(results)
-        //Filter by age, size and title
-            .filter(filterByAgeAndSize)
-            //Remove elements of which the indexer is currently hidden
-            .filter(getItemIndexerDisplayState)
+            .filter(filter)
             //Make groups of results with the same title
             .groupBy(getCleanedTitle)
             //For every title group make subgroups of duplicates and sort the group    
@@ -205,11 +257,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             //And then sort the title group using its first hashgroup's first item (the group itself is already sorted and so are the hash groups)    
             .sortBy(getTitleGroupFirstElementsSortPredicate)
             .value();
-        if ($scope.sortReversed) {
+        if ($scope.sortModel.sortMode === 2) {
             filtered = filtered.reverse();
-        }
-        if ($scope.countFilteredOut > 0) {
-            growl.info("Filtered " + $scope.countFilteredOut + " of the retrieved results");
         }
 
         $scope.lastClicked = null;

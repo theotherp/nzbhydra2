@@ -297,11 +297,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         });
     };
 
-    $scope.searchInputChanged = function () {
-        $scope.$broadcast("searchInputChanged", $scope.query !== $stateParams.query ? $scope.query : null, $scope.minage, $scope.maxage, $scope.minsize, $scope.maxsize);
-    };
-
-
     $scope.formatRequest = function (request) {
         return $sce.trustAsHtml(SearchHistoryService.formatRequest(request, false, true, true, true));
     };

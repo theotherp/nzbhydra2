@@ -104,7 +104,7 @@ General, Ideas
 - when no indexers configured / available, on search page show a note and link to config
 - ! debug tab in system section to execute raw sql queries
 - log API access user agent in info column and show in history?
-- proper GUI filtering of search results
+- !! proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 - use config setting "isUseLocalUrlForApiAccess"
 - !! compare stats from python version and migrated
@@ -131,6 +131,7 @@ Improvements
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - option to execute SQL queries for debugging
 - option for torrent black hole
+- proper postfiltering of results on GUI
 
 
 ...

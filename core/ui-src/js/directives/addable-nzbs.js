@@ -20,6 +20,5 @@ function addableNzbs() {
             }
             return true;
         });
-        console.log($scope.downloaders);
     }
 }

@@ -7469,7 +7469,7 @@ a.disabled:hover {
 }
 .result-title {
   font-size: 13px;
-  width: 50%;
+  width: 48.5%;
 }
 .result-indexer {
   font-size: 12px;
@@ -7485,11 +7485,11 @@ a.disabled:hover {
 }
 .result-details {
   font-size: 12px;
-  width: 4%;
+  width: 5%;
 }
 .result-age {
   font-size: 12px;
-  width: 4%;
+  width: 4.5%;
 }
 .result-links {
   font-size: 12px;

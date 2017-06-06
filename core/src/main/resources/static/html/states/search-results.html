@@ -37,11 +37,7 @@
                     <!-- First result in the list, show regularly -->
                     <tr>
                         <td class="text-left">
-                            <input ng-disabled="!ps.wasSuccessful" type="checkbox" data-checklist-model="indexerDisplayState" data-checklist-value="ps.indexerName" ng-click="toggleIndexerDisplay()"
-                                   uib-tooltip="Uncheck to hide results from this indexer"
-                                   tooltip-placement="top"
-                                   tooltip-trigger="mouseenter"
-                            />{{ ps.indexerName }}
+                            {{ ps.indexerName }}
                         </td>
                         <td class="text-left">
                     <span ng-if="ps.didSearch">
@@ -70,7 +66,7 @@
 
                     <tr ng-repeat-start="ps in notPickedIndexersWithReason" ng-if="0"></tr>
                     <tr>
-                        <td class="text-left" style="padding-left: 21px">
+                        <td class="text-left">
                             {{ ps.indexer }}
                         </td>
                         <td class="text-left">
@@ -171,26 +167,46 @@
         <thead class="search-results-header">
         <tr class="search-results-row">
             <th class="col-md-12 cursor-default search-results-cell result-title">
-                <!--<input type="checkbox" ng-click="invertSelection()" display="float:left; width:1%" uib-tooltip="Invert selection." tooltip-placement="top" tooltip-trigger="mouseenter"/>-->
-
-                <span ng-click="setSorting('title', false)" style="vertical-align: top; float:right; width:98%">
-                Title <span ng-show="sortPredicate=='title'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
-                    </span>
+                <column-sortable column="title" reversed="false" start-mode="1">Title
+                </column-sortable>
+                <column-filter-wrapper>
+                    <freetext-filter column="title"/>
+                </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-indexer" ng-click="setSorting('indexer', false)" style="text-align: right">
-                Indexer <span ng-show="sortPredicate=='indexer'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            <th class="col-md-1 cursor-default search-results-cell result-indexer">
+                <column-sortable column="indexer" reversed="false" start-mode="1">Indexer
+                </column-sortable>
+                <column-filter-wrapper>
+                    <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true"/>
+                </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-category" ng-click="setSorting('category', false)" style="vertical-align: top; text-align: right">
-                Category <span ng-show="sortPredicate=='category'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            <th class="col-md-1 cursor-default search-results-cell result-category">
+                <column-sortable column="category" reversed="false" start-mode="1">Category
+                </column-sortable>
+                <column-filter-wrapper>
+                    <checkboxes-filter column="category" entries="categoriesForFiltering" preselect="true" show-invert="true"/>
+                </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-size" ng-click="setSorting('size', true)" style="vertical-align: top; text-align: right">
-                Size <span ng-show="sortPredicate=='size'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            <th class="col-md-1 cursor-default search-results-cell result-size" style="vertical-align: top; text-align: right">
+                <column-sortable column="size" reversed="false" start-mode="2">Size
+                </column-sortable>
+                <column-filter-wrapper>
+                    <number-range-filter column="size"/>
+                </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-details" ng-click="setSorting('grabs', true)" style="vertical-align: top; text-align: right">
-                Grabs <span ng-show="sortPredicate=='grabs'" class="caret" ng-class="{'caret-reversed': !sortReversed}"></span>
+            <th class="col-md-1 cursor-default search-results-cell result-details" style="vertical-align: top; text-align: right">
+                <column-sortable column="grabs" reversed="false" start-mode="2">Grabs
+                </column-sortable>
+                <column-filter-wrapper>
+                    <number-range-filter column="grabs"/>
+                </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-age" ng-click="setSorting('epoch', true)" style="vertical-align: top; text-align: right">
-                Age <span ng-show="sortPredicate=='epoch'" class="caret" ng-class="{'caret-reversed': sortReversed}"></span>
+            <th class="col-md-1 cursor-default search-results-cell result-age" style="vertical-align: top; text-align: right">
+                <column-sortable column="age" reversed="true" start-mode="1">Age
+                </column-sortable>
+                <column-filter-wrapper>
+                    <number-range-filter column="age"/>
+                </column-filter-wrapper>
             </th>
             <th class="col-md-3 search-results-cell result-links" style="vertical-align: top">
                 Links

@@ -147,7 +147,6 @@ function timeFilter() {
             startingDay: 1
         };
 
-
         $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
         $scope.format = $scope.formats[0];
         $scope.altInputFormats = ['M!/d!/yyyy'];
@@ -175,6 +174,29 @@ function timeFilter() {
     }
 }
 
+angular
+    .module('nzbhydraApp').directive("numberRangeFilter", numberRangeFilter);
+
+function numberRangeFilter() {
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterNumberRange.html\'"/>',
+        scope: {
+            column: "@",
+            min: "<",
+            max: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+        $scope.filterValue = {min: undefined, max: undefined};
+        $scope.apply = function () {
+            var isActive = $scope.filterValue.min || $scope.filterValue.max;
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, isActive)
+        }
+    }
+}
+
 
 angular
     .module('nzbhydraApp').directive("columnSortable", columnSortable);
@@ -185,27 +207,61 @@ function columnSortable() {
         templateUrl: "static/html/dataTable/columnSortable.html",
         transclude: true,
         scope: {
-            sortMode: "@", //0: no sorting, 1: asc, 2: desc
-            column: "@"
+            sortMode: "<", //0: no sorting, 1: asc, 2: desc
+            column: "@",
+            reversed: "<",
+            startMode: "<"
         },
         controller: controller
     };
 
     function controller($scope) {
 
+
         if (angular.isUndefined($scope.sortMode)) {
             $scope.sortMode = 0;
         }
 
-        $scope.$on("newSortColumn", function (event, column) {
-            if (column != $scope.column) {
-                $scope.sortMode = 0;
+        if (angular.isUndefined($scope.startMode)) {
+            $scope.startMode = 1;
+        }
+
+        $scope.sortModel = {
+            sortMode: $scope.sortMode,
+            column: $scope.column,
+            reversed: $scope.reversed,
+            startMode: $scope.startMode
+        };
+
+
+        $scope.$on("newSortColumn", function (event, column, sortMode) {
+            if (column !== $scope.sortModel.column) {
+                $scope.sortModel.sortMode = 0;
+            } else {
+                $scope.sortModel.sortMode = sortMode;
             }
         });
 
         $scope.sort = function () {
-            $scope.sortMode = ($scope.sortMode + 1) % 3;
-            $scope.$emit("sort", $scope.column, $scope.sortMode)
+            //0 -> 1 -> 2
+            //0 -> 2 -> 1
+            if ($scope.sortModel.sortMode === 0 || angular.isUndefined($scope.sortModel.sortMode)) {
+                $scope.sortModel.sortMode = $scope.sortModel.startMode;
+            } else if ($scope.sortModel.sortMode === 1) {
+                if ($scope.sortModel.startMode === 1) {
+                    $scope.sortModel.sortMode = 2;
+                } else {
+                    $scope.sortModel.sortMode = 0;
+                }
+            } else if ($scope.sortModel.sortMode === 2) {
+                if ($scope.sortModel.startMode === 2) {
+                    $scope.sortModel.sortMode = 1;
+                } else {
+                    $scope.sortModel.sortMode = 0;
+                }
+            }
+
+            $scope.$emit("sort", $scope.sortModel.column, $scope.sortModel.sortMode, $scope.sortModel.reversed)
         };
 
     }

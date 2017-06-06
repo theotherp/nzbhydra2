@@ -24,6 +24,7 @@ import org.nzbhydra.web.mapping.TvSearchRequestParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,15 +56,25 @@ public class Search {
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private NzbHandler nzbHandler;
+    SearchResponse response = null;
 
 
     private Random random = new Random();
 
     @Secured({"ROLE_USER"})
+    @Cacheable(cacheNames = "dev", sync = true)
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody BasicSearchRequestParameters parameters, HttpServletRequest request) {
+        //TODO remove dev stuff
+        if ("fortesting".equals(parameters.getQuery()) && response != null) {
+            return response;
+        }
         SearchRequest searchRequest = createSearchRequest(parameters, request);
-        return handleSearchRequest(searchRequest);
+        SearchResponse searchResponse = handleSearchRequest(searchRequest);
+        if ("fortesting".equals(parameters.getQuery())) {
+            response = searchResponse;
+        }
+        return searchResponse;
     }
 
     //TODO Replace specific searches with general one. Set all settings that are available. What is actually used is later determined by the search type
