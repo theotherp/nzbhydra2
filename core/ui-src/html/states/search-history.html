@@ -9,21 +9,21 @@
         <thead>
         <tr>
             <th class="col-md-2">
-                <column-sortable column="time" style="width: 10%">Time
+                <column-sortable column="time" style="width: 10%" reversed="false" start-mode="1">Time
                 </column-sortable>
                 <column-filter-wrapper>
                     <time-filter column="time" selected="preselectedTimeInterval"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-8" style="width: 30%">
-                <column-sortable column="query">Query
+                <column-sortable column="query" reversed="false" start-mode="1">Query
                 </column-sortable>
                 <column-filter-wrapper>
                     <freetext-filter column="query"/>
                 </column-filter-wrapper>
             </th>
             <th style="width: 10%">
-                <column-sortable column="category_name">Category
+                <column-sortable column="category_name" reversed="false" start-mode="1">Category
                 </column-sortable>
                 <column-filter-wrapper>
                     <checkboxes-filter column="category_name" entries="categoriesForFiltering" preselect="true" show-invert="true"/>
@@ -33,14 +33,14 @@
                 Additional parameters
             </th>
             <th class="col-md-1" style="width: 8%">
-                <column-sortable column="source">Source
+                <column-sortable column="source" reversed="false" start-mode="1">Source
                 </column-sortable>
                 <column-filter-wrapper>
                     <boolean-filter column="source" options="accessOptionsForFiltering" preselect="0"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-2" style="width: 10%">
-                <column-sortable column="username_or_ip">User / IP</column-sortable>
+                <column-sortable column="username_or_ip" reversed="false" start-mode="1">User / IP</column-sortable>
                 <column-filter-wrapper>
                     <freetext-filter column="username_or_ip"/>
                 </column-filter-wrapper>

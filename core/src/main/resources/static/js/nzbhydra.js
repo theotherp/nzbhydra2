@@ -1,8 +1,8 @@
 var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies']);
 
-nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
-    $compileProvider.debugInfoEnabled(false);
-}]);
+// nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
+//     $compileProvider.debugInfoEnabled(false);
+// }]);
 
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
@@ -1431,7 +1431,7 @@ angular
     .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
 
 function columnFilterWrapper() {
-    controller.$inject = ["$scope"];
+    controller.$inject = ["$scope", "$document"];
     return {
         restrict: "E",
         templateUrl: 'static/html/dataTable/columnFilterOuter.html',
@@ -1439,10 +1439,14 @@ function columnFilterWrapper() {
         controllerAs: 'columnFilterWrapperCtrl',
         scope: true,
         bindToController: true,
-        controller: controller
+        controller: controller,
+        link: function (scope, element, attr) {
+            scope.element = element;
+
+        }
     };
 
-    function controller($scope) {
+    function controller($scope, $document) {
         var vm = this;
 
         vm.open = false;
@@ -1458,8 +1462,11 @@ function columnFilterWrapper() {
         $scope.$on("filter", function (event, column, filterModel, isActive) {
             vm.open = false;
             vm.isActive = isActive;
-        })
+        });
+
+
     }
+
 }
 
 
@@ -1618,16 +1625,27 @@ function numberRangeFilter() {
         scope: {
             column: "@",
             min: "<",
-            max: "<"
+            max: "<",
+            addon: "@"
         },
         controller: controller
     };
 
     function controller($scope) {
         $scope.filterValue = {min: undefined, max: undefined};
-        $scope.apply = function () {
+        function apply() {
             var isActive = $scope.filterValue.min || $scope.filterValue.max;
             $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, isActive)
+        }
+
+        $scope.apply = function () {
+            apply();
+        };
+
+        $scope.onKeypress = function (keyEvent) {
+            if (keyEvent.which === 13) {
+                apply();
+            }
         }
     }
 }
@@ -1666,16 +1684,20 @@ function columnSortable() {
             sortMode: $scope.sortMode,
             column: $scope.column,
             reversed: $scope.reversed,
-            startMode: $scope.startMode
+            startMode: $scope.startMode,
+            active: false
         };
 
 
         $scope.$on("newSortColumn", function (event, column, sortMode) {
+            $scope.sortModel.active = column === $scope.sortModel.column;
+
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
-            } else {
+            } else if (angular.isDefined(sortMode)) {
                 $scope.sortModel.sortMode = sortMode;
             }
+
         });
 
         $scope.sort = function () {
@@ -1691,6 +1713,9 @@ function columnSortable() {
                 }
             } else if ($scope.sortModel.sortMode === 2) {
                 if ($scope.sortModel.startMode === 2) {
+                    $scope.sortModel.sortMode = 1;
+                } else if ($scope.sortModel.active) {
+                    //Prevent active filters to going back to 0 and then being set to 2
                     $scope.sortModel.sortMode = 1;
                 } else {
                     $scope.sortModel.sortMode = 0;
@@ -2727,14 +2752,8 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
-    if (localStorageService.get("sorting") !== null) {
-        var sorting = localStorageService.get("sorting");
-        $scope.sortPredicate = sorting.predicate;
-        $scope.sortReversed = sorting.reversed;
-    } else {
-        $scope.sortPredicate = "epoch";
-        $scope.sortReversed = true;
-    }
+    
+    
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -2761,22 +2780,29 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
+    
+    var allSearchResults;
+    var sortModel;
+    var filterModel = {};
+    $scope.filterModel = {};
+    if (localStorageService.get("sorting") !== null) {
+        var sorting = localStorageService.get("sorting");
+        sortModel = localStorageService.get("sorting");
+    } else {
+        sortModel = {
+            column: "time",
+            sortMode: 2,
+            reversed: false
+        };
+    }
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
 
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
     };
-
-    $scope.countFilteredOut = 0;
-
-    $scope.sortModel = {
-        //TODO: Used saved preference
-        column: "time",
-        sortMode: 2,
-        reversed: false
-    };
-    $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
-    $scope.filterModel = {};
 
 
     $scope.indexersForFiltering = [];
@@ -2787,7 +2813,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
-
     _.forEach($scope.indexersearches, function (ps) {
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
     });
@@ -2822,28 +2847,27 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.searchResults);
+            $scope.filteredResults = sortAndFilter(allSearchResults);
             blockUI.reset();
-            localStorageService.set("sorting", {predicate: $scope.predicate, reversed: $scope.sortReversed});
+            localStorageService.set("sorting", sortModel);
         });
     }
 
     $scope.$on("sort", function (event, column, sortMode, reversed) {
         if (sortMode === 0) {
-            $scope.sortModel = {
-                //TODO: Used saved preference
+            sortModel = {
                 column: "age",
                 sortMode: 1,
                 reversed: true
             };
         } else {
-            $scope.sortModel = {
+            sortModel = {
                 column: column,
                 sortMode: sortMode,
                 reversed: reversed
             };
         }
-        $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         blockAndUpdate();
     });
 
@@ -2923,8 +2947,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
 
-        var sortPredicate = $scope.sortModel.column;
-        var sortReversed = $scope.sortModel.reversed;
+        var sortPredicate = sortModel.column;
+        var sortReversed = sortModel.reversed;
 
         function createSortedHashgroups(titleGroup) {
             function createHashGroup(hashGroup) {
@@ -2979,7 +3003,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             //And then sort the title group using its first hashgroup's first item (the group itself is already sorted and so are the hash groups)    
             .sortBy(getTitleGroupFirstElementsSortPredicate)
             .value();
-        if ($scope.sortModel.sortMode === 2) {
+        if (sortModel.sortMode === 2) {
             filtered = filtered.reverse();
         }
 
@@ -2999,14 +3023,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        $scope.searchResults = previousSearchResults.concat(data.searchResults);
-        $scope.filteredResults = sortAndFilter($scope.searchResults);
+        allSearchResults = previousSearchResults.concat(data.searchResults);
+        $scope.filteredResults = sortAndFilter(allSearchResults);
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
-        $scope.numberOfLoadedResults = $scope.searchResults.length;
+        $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
 
         if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
@@ -3021,25 +3045,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
             SearchService.loadMore($scope.numberOfLoadedResults, limit).then(function (data) {
-                setDataFromSearchResult(data, $scope.searchResults);
+                setDataFromSearchResult(data, allSearchResults);
                 stopBlocking();
             });
         });
     }
 
-    //Filters the results according to new visibility settings.
-    $scope.toggleIndexerDisplay = toggleIndexerDisplay;
-    function toggleIndexerDisplay() {
-        startBlocking("Filtering. Sorry...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.searchResults);
-        }).then(function () {
-            stopBlocking();
-        });
-    }
+
 
     $scope.countResults = countResults;
     function countResults() {
-        return $scope.searchResults.length;
+        return allSearchResults.length;
     }
 
     $scope.invertSelection = function invertSelection() {
@@ -3250,15 +3266,18 @@ angular
     .controller('SearchHistoryController', SearchHistoryController);
 
 
-function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter) {
+function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
     };
-    $scope.sortModel = {
+    var sortModel = {
         column: "time",
         sortMode: 2
     };
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
     $scope.filterModel = {};
 
     //Filter options
@@ -3274,7 +3293,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.totalRequests = history.data.totalElements;
 
     $scope.update = function () {
-        SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (history) {
+        SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
             $scope.searchRequests = history.data.content;
             $scope.totalRequests = history.data.totalElements;
         });
@@ -3282,14 +3301,17 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     $scope.$on("sort", function (event, column, sortMode) {
         if (sortMode === 0) {
-            column = "time";
-            sortMode = 2;
+            sortModel = {
+                column: "time",
+                sortMode: 2
+            };
+        } else {
+            sortModel = {
+                column: column,
+                sortMode: sortMode
+            };
         }
-        $scope.sortModel = {
-            column: column,
-            sortMode: sortMode
-        };
-        $scope.$broadcast("newSortColumn", column);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         $scope.update();
     });
 
@@ -3406,7 +3428,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
 
 }
-SearchHistoryController.$inject = ["$scope", "$state", "SearchHistoryService", "ConfigService", "history", "$sce", "$filter"];
+SearchHistoryController.$inject = ["$scope", "$state", "SearchHistoryService", "ConfigService", "history", "$sce", "$filter", "$timeout"];
 
 angular
     .module('nzbhydraApp')
@@ -4985,15 +5007,18 @@ angular
     .controller('DownloadHistoryController', DownloadHistoryController);
 
 
-function DownloadHistoryController($scope, StatsService, downloads, ConfigService) {
+function DownloadHistoryController($scope, StatsService, downloads, ConfigService, $timeout) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
     };
-    $scope.sortModel = {
+    var sortModel = {
         column: "time",
         sortMode: 2
     };
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
     $scope.filterModel = {};
 
     //Filter options
@@ -5015,7 +5040,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
 
     $scope.update = function () {
-        StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (downloads) {
+        StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {
             $scope.nzbDownloads = downloads.data.content;
             $scope.totalDownloads = downloads.data.totalElements;
         });
@@ -5027,11 +5052,11 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
             column = "time";
             sortMode = 2;
         }
-        $scope.sortModel = {
+        sortModel = {
             column: column,
             sortMode: sortMode
         };
-        $scope.$broadcast("newSortColumn", column);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         $scope.update();
     });
 
@@ -5056,7 +5081,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     })
 
 }
-DownloadHistoryController.$inject = ["$scope", "StatsService", "downloads", "ConfigService"];
+DownloadHistoryController.$inject = ["$scope", "StatsService", "downloads", "ConfigService", "$timeout"];
 
 angular
     .module('nzbhydraApp')

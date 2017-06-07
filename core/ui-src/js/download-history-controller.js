@@ -3,15 +3,18 @@ angular
     .controller('DownloadHistoryController', DownloadHistoryController);
 
 
-function DownloadHistoryController($scope, StatsService, downloads, ConfigService) {
+function DownloadHistoryController($scope, StatsService, downloads, ConfigService, $timeout) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
     };
-    $scope.sortModel = {
+    var sortModel = {
         column: "time",
         sortMode: 2
     };
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
     $scope.filterModel = {};
 
     //Filter options
@@ -33,7 +36,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
 
     $scope.update = function () {
-        StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (downloads) {
+        StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {
             $scope.nzbDownloads = downloads.data.content;
             $scope.totalDownloads = downloads.data.totalElements;
         });
@@ -45,11 +48,11 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
             column = "time";
             sortMode = 2;
         }
-        $scope.sortModel = {
+        sortModel = {
             column: column,
             sortMode: sortMode
         };
-        $scope.$broadcast("newSortColumn", column);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         $scope.update();
     });
 

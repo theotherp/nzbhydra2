@@ -5,14 +5,7 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
-    if (localStorageService.get("sorting") !== null) {
-        var sorting = localStorageService.get("sorting");
-        $scope.sortPredicate = sorting.predicate;
-        $scope.sortReversed = sorting.reversed;
-    } else {
-        $scope.sortPredicate = "epoch";
-        $scope.sortReversed = true;
-    }
+
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -40,21 +33,28 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
 
+    var allSearchResults;
+    var sortModel;
+    var filterModel = {};
+    $scope.filterModel = {};
+    if (localStorageService.get("sorting") !== null) {
+        var sorting = localStorageService.get("sorting");
+        sortModel = localStorageService.get("sorting");
+    } else {
+        sortModel = {
+            column: "time",
+            sortMode: 2,
+            reversed: false
+        };
+    }
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
+
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
     };
-
-    $scope.countFilteredOut = 0;
-
-    $scope.sortModel = {
-        //TODO: Used saved preference
-        column: "time",
-        sortMode: 2,
-        reversed: false
-    };
-    $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
-    $scope.filterModel = {};
 
 
     $scope.indexersForFiltering = [];
@@ -65,7 +65,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
-
     _.forEach($scope.indexersearches, function (ps) {
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
     });
@@ -100,28 +99,27 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.searchResults);
+            $scope.filteredResults = sortAndFilter(allSearchResults);
             blockUI.reset();
-            localStorageService.set("sorting", {predicate: $scope.predicate, reversed: $scope.sortReversed});
+            localStorageService.set("sorting", sortModel);
         });
     }
 
     $scope.$on("sort", function (event, column, sortMode, reversed) {
         if (sortMode === 0) {
-            $scope.sortModel = {
-                //TODO: Used saved preference
+            sortModel = {
                 column: "age",
                 sortMode: 1,
                 reversed: true
             };
         } else {
-            $scope.sortModel = {
+            sortModel = {
                 column: column,
                 sortMode: sortMode,
                 reversed: reversed
             };
         }
-        $scope.$broadcast("newSortColumn", $scope.sortModel.column, $scope.sortModel.sortMode);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         blockAndUpdate();
     });
 
@@ -201,8 +199,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
 
-        var sortPredicate = $scope.sortModel.column;
-        var sortReversed = $scope.sortModel.reversed;
+        var sortPredicate = sortModel.column;
+        var sortReversed = sortModel.reversed;
 
         function createSortedHashgroups(titleGroup) {
             function createHashGroup(hashGroup) {
@@ -257,7 +255,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             //And then sort the title group using its first hashgroup's first item (the group itself is already sorted and so are the hash groups)    
             .sortBy(getTitleGroupFirstElementsSortPredicate)
             .value();
-        if ($scope.sortModel.sortMode === 2) {
+        if (sortModel.sortMode === 2) {
             filtered = filtered.reverse();
         }
 
@@ -277,14 +275,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        $scope.searchResults = previousSearchResults.concat(data.searchResults);
-        $scope.filteredResults = sortAndFilter($scope.searchResults);
+        allSearchResults = previousSearchResults.concat(data.searchResults);
+        $scope.filteredResults = sortAndFilter(allSearchResults);
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
-        $scope.numberOfLoadedResults = $scope.searchResults.length;
+        $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
 
         if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
@@ -299,25 +297,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
             SearchService.loadMore($scope.numberOfLoadedResults, limit).then(function (data) {
-                setDataFromSearchResult(data, $scope.searchResults);
+                setDataFromSearchResult(data, allSearchResults);
                 stopBlocking();
             });
         });
     }
 
-    //Filters the results according to new visibility settings.
-    $scope.toggleIndexerDisplay = toggleIndexerDisplay;
-    function toggleIndexerDisplay() {
-        startBlocking("Filtering. Sorry...").then(function () {
-            $scope.filteredResults = sortAndFilter($scope.searchResults);
-        }).then(function () {
-            stopBlocking();
-        });
-    }
+
 
     $scope.countResults = countResults;
     function countResults() {
-        return $scope.searchResults.length;
+        return allSearchResults.length;
     }
 
     $scope.invertSelection = function invertSelection() {

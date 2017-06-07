@@ -3,15 +3,18 @@ angular
     .controller('SearchHistoryController', SearchHistoryController);
 
 
-function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter) {
+function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
     };
-    $scope.sortModel = {
+    var sortModel = {
         column: "time",
         sortMode: 2
     };
+    $timeout(function () {
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+    }, 10);
     $scope.filterModel = {};
 
     //Filter options
@@ -27,7 +30,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.totalRequests = history.data.totalElements;
 
     $scope.update = function () {
-        SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, $scope.sortModel).then(function (history) {
+        SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
             $scope.searchRequests = history.data.content;
             $scope.totalRequests = history.data.totalElements;
         });
@@ -35,14 +38,17 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     $scope.$on("sort", function (event, column, sortMode) {
         if (sortMode === 0) {
-            column = "time";
-            sortMode = 2;
+            sortModel = {
+                column: "time",
+                sortMode: 2
+            };
+        } else {
+            sortModel = {
+                column: column,
+                sortMode: sortMode
+            };
         }
-        $scope.sortModel = {
-            column: column,
-            sortMode: sortMode
-        };
-        $scope.$broadcast("newSortColumn", column);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
         $scope.update();
     });
 

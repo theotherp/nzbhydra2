@@ -9,10 +9,14 @@ function columnFilterWrapper() {
         controllerAs: 'columnFilterWrapperCtrl',
         scope: true,
         bindToController: true,
-        controller: controller
+        controller: controller,
+        link: function (scope, element, attr) {
+            scope.element = element;
+
+        }
     };
 
-    function controller($scope) {
+    function controller($scope, $document) {
         var vm = this;
 
         vm.open = false;
@@ -28,8 +32,11 @@ function columnFilterWrapper() {
         $scope.$on("filter", function (event, column, filterModel, isActive) {
             vm.open = false;
             vm.isActive = isActive;
-        })
+        });
+
+
     }
+
 }
 
 
@@ -183,16 +190,27 @@ function numberRangeFilter() {
         scope: {
             column: "@",
             min: "<",
-            max: "<"
+            max: "<",
+            addon: "@"
         },
         controller: controller
     };
 
     function controller($scope) {
         $scope.filterValue = {min: undefined, max: undefined};
-        $scope.apply = function () {
+        function apply() {
             var isActive = $scope.filterValue.min || $scope.filterValue.max;
             $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, isActive)
+        }
+
+        $scope.apply = function () {
+            apply();
+        };
+
+        $scope.onKeypress = function (keyEvent) {
+            if (keyEvent.which === 13) {
+                apply();
+            }
         }
     }
 }
@@ -230,16 +248,20 @@ function columnSortable() {
             sortMode: $scope.sortMode,
             column: $scope.column,
             reversed: $scope.reversed,
-            startMode: $scope.startMode
+            startMode: $scope.startMode,
+            active: false
         };
 
 
         $scope.$on("newSortColumn", function (event, column, sortMode) {
+            $scope.sortModel.active = column === $scope.sortModel.column;
+
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
-            } else {
+            } else if (angular.isDefined(sortMode)) {
                 $scope.sortModel.sortMode = sortMode;
             }
+
         });
 
         $scope.sort = function () {
@@ -255,6 +277,9 @@ function columnSortable() {
                 }
             } else if ($scope.sortModel.sortMode === 2) {
                 if ($scope.sortModel.startMode === 2) {
+                    $scope.sortModel.sortMode = 1;
+                } else if ($scope.sortModel.active) {
+                    //Prevent active filters to going back to 0 and then being set to 2
                     $scope.sortModel.sortMode = 1;
                 } else {
                     $scope.sortModel.sortMode = 0;
