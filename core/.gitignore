@@ -10,3 +10,5 @@ target/
 /logs
 /config
 /database/
+*.log
+*.db.*
