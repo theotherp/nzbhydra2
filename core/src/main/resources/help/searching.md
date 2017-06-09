@@ -31,6 +31,6 @@ NZB downloads from Hydra can either be achieved by redirecting the requester to 
 indexer and serving this. Redirecting has the advantage that it causes the least load on Hydra but also the disadvantage that the requester 
 might be forwarded to an indexer link that contains the indexer's API key. To prevent that select to proxy NZBs.
 
-By default all found results are stored in the database for 7 days until they're deleted. After that any links to Hydra results still 
+By default all found results are stored in the database for 14 days until they're deleted. After that any links to Hydra results still 
 stored elsewhere become invalid. You can increase the limit if you want, the disc space needed is negligible (about 75 MB for 7 days on 
 my server):

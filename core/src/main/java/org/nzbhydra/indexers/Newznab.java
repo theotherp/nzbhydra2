@@ -347,6 +347,7 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
         searchResultItem.setCommentsLink(item.getComments());
+        searchResultItem.setOriginalCategory(item.getCategory());
         parseAttributes(item, searchResultItem);
 
         if (config.getHost().toLowerCase().contains("nzbgeek") && configProvider.getBaseConfig().getSearching().isRemoveObfuscated()) {

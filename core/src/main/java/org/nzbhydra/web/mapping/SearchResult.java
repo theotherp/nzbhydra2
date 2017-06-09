@@ -24,7 +24,6 @@ public class SearchResult {
     private String indexerguid;
     private Integer indexerscore;
     private String link;
-    private String pubdate_utc;
     private String searchResultId;
     private Long size;
     private String title;

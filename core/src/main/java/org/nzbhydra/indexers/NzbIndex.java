@@ -59,9 +59,14 @@ public class NzbIndex extends Indexer<RssRoot> {
             item.setLink(rssItem.getEnclosure().getUrl());
             item.setSize(rssItem.getEnclosure().getLength());
             Matcher matcher = GUID_PATTERN.matcher(nzbIndexLink);
-            matcher.find();
+            boolean found = matcher.find();
+            if (!found) {
+                logger.error("Unable to parse '{}' result for link. Skipping it", nzbIndexLink);
+                continue;
+            }
             item.setIndexerGuid(matcher.group(1));
             item.setCategory(categoryProvider.getNotAvailable());
+            item.setOriginalCategory("N/A");
             item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
             item.setIndexer(this);
             item.setDownloadType(DownloadType.NZB);

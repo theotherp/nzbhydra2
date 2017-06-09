@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
@@ -48,6 +49,8 @@ public class Search {
 
     private static final Logger logger = LoggerFactory.getLogger(Search.class);
 
+    @Autowired
+    private ConfigProvider configProvider;
     @Autowired
     private Searcher searcher;
     @Autowired
@@ -137,18 +140,6 @@ public class Search {
         response.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
 
         List<SearchResult> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
-//        int offset = searchRequest.getOffset().orElse(0);
-//        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
-//
-//        OffsetAndLimitCalculation splice = searcher.calculateOffsetAndLimit(offset, limit, transformedSearchResults.size());
-//        if (splice.getLimit() != 0) {
-//            offset = splice.getOffset();
-//            limit = splice.getLimit();
-//            response.setOffset(splice.getOffset());
-//            response.setLimit(splice.getLimit());
-//            response.setSearchResults(transformedSearchResults.subList(offset, offset + limit));
-//            logger.info("Returning results {}-{} from {} results in cache. A total of {} results is available from indexers", offset + 1, offset + limit, transformedSearchResults.size(), totalResultsAvailable);
-//        }
         response.setSearchResults(transformedSearchResults);
         response.setOffset(response.getOffset());
         response.setLimit(response.getLimit());
@@ -184,7 +175,7 @@ public class Search {
 
         for (SearchResultItem item : searchResultItems) {
             SearchResultBuilder builder = SearchResult.builder()
-                    .category(item.getCategory().getName())
+                    .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
                     .comments(item.getCommentsCount())
                     .details_link(item.getDetails())
                     .downloadType(item.getDownloadType().name())
@@ -200,6 +191,7 @@ public class Search {
                     .size(item.getSize())
                     .title(item.getTitle());
             builder = setSearchResultDateRelatedValues(builder, item);
+
             transformedSearchResults.add(builder.build());
         }
         transformedSearchResults.sort(Comparator.comparingLong(SearchResult::getEpoch).reversed());
@@ -218,8 +210,7 @@ public class Search {
         }
         builder = builder
                 .age_precise(item.isAgePrecise())
-                .epoch(date.getEpochSecond())
-                .pubdate_utc("todo"); //TODO Check if needed at all
+                .epoch(date.getEpochSecond());
         return builder;
     }
 

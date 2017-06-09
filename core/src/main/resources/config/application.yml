@@ -279,7 +279,7 @@ searching:
   idFallbackToTitlePerIndexer: false
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
-  keepSearchResultsForDays: 7
+  keepSearchResultsForDays: 14
   maxAge: null
   nzbAccessType: "REDIRECT"
   removeLanguage: false
@@ -288,4 +288,5 @@ searching:
   requiredWords: []
   timeout: 20
   userAgent: "NZBHydra"
+  useOriginalCategories: false
   wrapApiErrors: false

@@ -5833,6 +5833,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'useOriginalCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Use original categories',
+                                help: 'Enable to use the category descriptions provided by the indexer'
+                            }
+                        },
+                        {
                             key: 'nzbAccessType',
                             type: 'horizontalSelect',
                             templateOptions: {

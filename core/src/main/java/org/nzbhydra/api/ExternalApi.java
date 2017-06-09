@@ -93,7 +93,7 @@ public class ExternalApi {
             return getCaps();
         }
 
-
+        logger.error("Incorrect API request: {}", params);
         RssError error = new RssError("200", "Unknown or incorrect parameter"); //TODO log or throw as exeption so it's logged
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
@@ -207,7 +207,7 @@ public class ExternalApi {
         rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
         rssItem.setComments(searchResultItem.getCommentsLink());
         rssItem.setDescription(searchResultItem.getDescription());
-        rssItem.setDescription(searchResultItem.getCategory().getName());
+        rssItem.setDescription(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());
         return rssItem;
     }
 

@@ -44,6 +44,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String indexerGuid;
     private Integer indexerScore;
     private String link;
+    private String originalCategory;
     private boolean passworded;
     private String poster = null;
     private Instant pubDate = null;
