@@ -253,15 +253,14 @@ function columnSortable() {
         };
 
 
-        $scope.$on("newSortColumn", function (event, column, sortMode) {
+        $scope.$on("newSortColumn", function (event, column, sortMode, reversed) {
             $scope.sortModel.active = column === $scope.sortModel.column;
-
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
-            } else if (angular.isDefined(sortMode)) {
+            } else {
                 $scope.sortModel.sortMode = sortMode;
+                // $scope.sortModel.reversed = reversed;
             }
-
         });
 
         $scope.sort = function () {

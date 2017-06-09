@@ -1693,15 +1693,14 @@ function columnSortable() {
         };
 
 
-        $scope.$on("newSortColumn", function (event, column, sortMode) {
+        $scope.$on("newSortColumn", function (event, column, sortMode, reversed) {
             $scope.sortModel.active = column === $scope.sortModel.column;
-
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
-            } else if (angular.isDefined(sortMode)) {
+            } else {
                 $scope.sortModel.sortMode = sortMode;
+                // $scope.sortModel.reversed = reversed;
             }
-
         });
 
         $scope.sort = function () {
@@ -2792,13 +2791,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         sortModel = localStorageService.get("sorting");
     } else {
         sortModel = {
-            column: "time",
+            column: "epoch",
             sortMode: 2,
             reversed: false
         };
     }
     $timeout(function () {
-        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode, sortModel.reversed);
     }, 10);
 
     $scope.foo = {
@@ -2858,8 +2857,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.$on("sort", function (event, column, sortMode, reversed) {
         if (sortMode === 0) {
             sortModel = {
-                column: "age",
-                sortMode: 1,
+                column: "epoch",
+                sortMode: 2,
                 reversed: true
             };
         } else {
@@ -2869,7 +2868,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 reversed: reversed
             };
         }
-        $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode);
+        $timeout(function () {
+            $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode, sortModel.reversed);
+        }, 10);
         blockAndUpdate();
     });
 
