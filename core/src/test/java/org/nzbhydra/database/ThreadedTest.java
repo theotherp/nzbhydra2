@@ -34,7 +34,7 @@ public class ThreadedTest {
                     SearchEntity searchEntity = new SearchEntity();
                     searchEntity.setQuery("query");
                     searchEntity.setSearchType(SearchType.SEARCH);
-                    searchEntity.setEpisode(123);
+                    searchEntity.setEpisode("123");
                     searchEntity.setSeason(234);
                     searchRepository.save(searchEntity);
                 }

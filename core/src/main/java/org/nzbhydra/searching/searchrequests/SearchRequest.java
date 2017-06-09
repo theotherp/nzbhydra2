@@ -46,7 +46,7 @@ public class SearchRequest {
     protected Map<InfoProvider.IdType, String> identifiers = new HashMap<>();
     protected String title;
     protected Integer season;
-    protected Integer episode;
+    protected String episode;
     protected String author = null;
 
     private InternalData internalData = new InternalData();
@@ -98,7 +98,7 @@ public class SearchRequest {
         return Optional.ofNullable(season);
     }
 
-    public Optional<Integer> getEpisode() {
+    public Optional<String> getEpisode() {
         return Optional.ofNullable(episode);
     }
 

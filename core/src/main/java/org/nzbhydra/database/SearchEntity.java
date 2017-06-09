@@ -41,7 +41,7 @@ public class SearchEntity {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
     private Integer season;
-    private Integer episode;
+    private String episode;
     @Enumerated(EnumType.STRING)
     private SearchType searchType;
     private String usernameOrIp;

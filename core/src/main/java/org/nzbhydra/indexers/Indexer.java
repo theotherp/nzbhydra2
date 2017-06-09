@@ -296,7 +296,14 @@ public abstract class Indexer<T> {
 
         if (searchRequest.getSeason().isPresent()) {
             if (searchRequest.getEpisode().isPresent()) {
-                query += String.format(" s%02des%02d", searchRequest.getSeason().get(), searchRequest.getEpisode().get()); //TODO daily shows
+                try {
+                    int episodeInt = Integer.parseInt(searchRequest.getEpisode().get());
+                    query += String.format(" s%02des%02d", searchRequest.getSeason().get(), episodeInt);
+                } catch (NumberFormatException e) {
+                    String extendWith = String.format(" s%02d", searchRequest.getSeason().get()) + searchRequest.getEpisode().get();
+                    query += extendWith;
+                    logger.debug("{} doesn't seem to be an integer, extending query with '{}'", searchRequest.getEpisode().get(), extendWith);
+                }
             } else {
                 query += String.format(" s%02d", searchRequest.getSeason().get());
             }

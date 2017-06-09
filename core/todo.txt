@@ -83,6 +83,12 @@ Windows GUI
 - perhaps use java gui: https://github.com/kemitix/spring-boot-awt-gui-demo or http://stackoverflow.com/questions/22864008/how-to-configure-spring-boot-with-swing-application
 - in that case updating will get even worse...
 
+News
+- poll periodically from repo for news
+- show news on startup for any given version
+- only show news to admins
+- save display state in database instead of cookie
+
 General, Ideas
 - !! open browser on startup
 - !! delete results older than x, perhaps do this as first background task?
@@ -108,7 +114,7 @@ General, Ideas
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
 - use config setting "isUseLocalUrlForApiAccess"
 - !! compare stats from python version and migrated
-- episodes can be strings
+- !! episodes can be strings
 - !! option to download torrent file to predefined folder
 
 currently not (yet) supported:

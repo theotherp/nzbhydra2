@@ -244,7 +244,7 @@ public class SqliteMigration {
             entity.setCategoryName(newCategory);
             entity.setUsernameOrIp(oldSearches.getString("username"));
             entity.setSeason(oldSearches.getObject("season") != null ? oldSearches.getInt("season") : null);
-            entity.setEpisode(oldSearches.getObject("episode") != null ? oldSearches.getInt("episode") : null);
+            entity.setEpisode(oldSearches.getString("episode"));
             entity.setQuery(oldSearches.getString("query"));
             entity.setAuthor(oldSearches.getString("author"));
             entity.setTitle(oldSearches.getString("title"));

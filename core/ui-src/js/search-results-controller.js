@@ -35,7 +35,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     var allSearchResults;
     var sortModel;
-    var filterModel = {};
     $scope.filterModel = {};
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");

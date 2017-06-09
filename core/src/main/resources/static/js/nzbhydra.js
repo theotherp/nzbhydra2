@@ -1,8 +1,12 @@
 var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies']);
 
-// nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
-//     $compileProvider.debugInfoEnabled(false);
-// }]);
+nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
+    $compileProvider.debugInfoEnabled(false);
+}]);
+
+nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
+    //$animateProvider.classNameFilter(/ng-animate-enabled/);
+}]);
 
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
@@ -2752,8 +2756,7 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
 
-    
-    
+
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -2780,10 +2783,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
-    
+
     var allSearchResults;
     var sortModel;
-    var filterModel = {};
     $scope.filterModel = {};
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
