@@ -86,7 +86,7 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
-        if (params.getQ().equals("offsettest")) {
+        if (params.getQ() != null && params.getQ().equals("offsettest")) {
             RssRoot rssRoot = new RssRoot();
             rssRoot.getRssChannel().setNewznabResponse(new NewznabResponse(0, 0));
             if (params.getOffset() >= 40) {

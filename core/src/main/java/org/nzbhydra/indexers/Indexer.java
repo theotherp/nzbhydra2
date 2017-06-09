@@ -256,7 +256,6 @@ public abstract class Indexer<T> {
         try {
             result = indexerWebAccess.get(uri, responseType, timeout);
         } catch (IndexerAccessException e) {
-            //handleIndexerAccessException(e, uri.toString(), apiAccessType);
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);

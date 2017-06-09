@@ -26,7 +26,7 @@ public class SimpleErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return "/error";
+        return "error";
     }
 
     @RequestMapping(value = "/error", produces = MediaType.APPLICATION_JSON_VALUE)
