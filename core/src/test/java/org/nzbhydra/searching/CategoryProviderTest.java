@@ -75,6 +75,9 @@ public class CategoryProviderTest {
         //Specific trumps general
         assertThat(testee.fromNewznabCategories(Arrays.asList(4090)).getName(), is("4090"));
 
+        //Use the more specific one
+        assertThat(testee.fromNewznabCategories(Arrays.asList(4000, 4090)).getName(), is("4090"));
+
         //None found
         assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is("All"));
 

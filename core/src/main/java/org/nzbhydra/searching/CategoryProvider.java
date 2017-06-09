@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -136,11 +137,15 @@ public class CategoryProvider implements InitializingBean {
     }
 
     protected Category getCategory(List<Integer> cats) {
-        Optional<Category> matchingCategory = categories.stream().filter(x -> x.getNewznabCategories().stream().anyMatch(cats::contains)).findFirst();
-
-        if (matchingCategory.isPresent()) {
-            return matchingCategory.get();
+        cats.sort((o1, o2) -> Integer.compare(o2, o1));
+        Optional<Category> matchingCategory;
+        for (Integer cat : cats) {
+            matchingCategory = categories.stream().filter(x -> x.getNewznabCategories().stream().anyMatch(y -> Objects.equals(y, cat))).findFirst();
+            if (matchingCategory.isPresent()) {
+                return matchingCategory.get();
+            }
         }
+
         //Let's try to find a more general one
         matchingCategory = categories.stream().filter(x -> cats.stream().anyMatch(y -> x.getNewznabCategories().contains(y / 1000 * 1000))).findFirst();
         return matchingCategory.orElse(null);

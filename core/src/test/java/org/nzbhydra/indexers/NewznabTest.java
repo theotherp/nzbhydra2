@@ -405,6 +405,7 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("comments", "30"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5050"));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink(), is("http://indexer.com/nzb/123"));
@@ -424,7 +425,7 @@ public class NewznabTest {
         assertThat(item.getFiles(), is(10));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getCommentsCount(), is(30));
-        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000));
+        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050));
 
         rssItem.setRssGuid(new RssGuid("123", false));
         rssItem.getNewznabAttributes().clear();

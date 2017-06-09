@@ -365,8 +365,8 @@ public class Newznab extends Indexer<Xml> {
     }
 
     private void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
-        List<Integer> newznabCategories = new ArrayList<>();
-        Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> a));
+        Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
+        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(newznabAttribute -> Integer.parseInt(newznabAttribute.getValue())).collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
 
         if (attributes.containsKey("usenetdate")) {
@@ -399,9 +399,6 @@ public class Newznab extends Indexer<Xml> {
         }
         if (attributes.containsKey("guid")) {
             searchResultItem.setIndexerGuid(attributes.get("guid"));
-        }
-        if (attributes.containsKey("category")) {
-            newznabCategories.add(Integer.valueOf(attributes.get("category")));
         }
         if (attributes.containsKey("size")) {
             searchResultItem.setSize(Long.valueOf(attributes.get("size")));
