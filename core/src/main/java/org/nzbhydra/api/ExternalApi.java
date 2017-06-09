@@ -2,6 +2,8 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.NzbDownloadResult;
 import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.ConfigProvider;
@@ -44,17 +46,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
 public class ExternalApi {
+
+    private static final int MAX_CACHE_SIZE = 5;
+    private static final int MAX_CACHE_AGE_HOURS = 24;
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
@@ -66,11 +78,14 @@ public class ExternalApi {
     protected NzbHandler nzbHandler;
     @Autowired
     protected ConfigProvider configProvider;
-
     @Autowired
     private CategoryProvider categoryProvider;
+    protected Clock clock = Clock.systemUTC();
 
-    @RequestMapping(value = "/api", produces = MediaType.APPLICATION_RSS_XML_VALUE)
+    private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
+
+
+    @RequestMapping(value = {"/api", "/rss"}, produces = MediaType.APPLICATION_RSS_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
 
         logger.info("Received external API call: " + params);
@@ -82,7 +97,11 @@ public class ExternalApi {
         }
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            return search(params);
+            if (params.getCachetime() != null) {
+                return handleCachingSearch(params);
+            }
+            RssRoot searchResult = search(params);
+            return new ResponseEntity<>(searchResult, HttpStatus.OK);
         }
 
         if (params.getT() == ActionAttribute.GET) {
@@ -96,6 +115,36 @@ public class ExternalApi {
         logger.error("Incorrect API request: {}", params);
         RssError error = new RssError("200", "Unknown or incorrect parameter"); //TODO log or throw as exeption so it's logged
         return new ResponseEntity<Object>(error, HttpStatus.OK);
+    }
+
+
+    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params) {
+        //Remove old entries
+        cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
+
+        CacheEntryValue cacheEntryValue;
+        if (cache.containsKey(params.cacheKey())) {
+            cacheEntryValue = cache.get(params.cacheKey());
+            if (cacheEntryValue.getLastUpdate().isAfter(clock.instant().minus(params.getCachetime(), ChronoUnit.MINUTES))) {
+                Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(params.getCachetime(), ChronoUnit.MINUTES);
+                logger.info("Returning cached search result. Next update of search will be done at {}", nextUpdate);
+                return new ResponseEntity<>(cacheEntryValue.getSearchResult(), HttpStatus.OK);
+            } else {
+                logger.info("Updating search because cache time is exceeded");
+            }
+        }
+        //Remove oldest entry when max size is reached
+        if (cache.size() == MAX_CACHE_SIZE) {
+            Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().sorted(Comparator.comparing(o -> o.getValue().getLastUpdate())).findFirst();
+            //Should always be the case anyway
+            logger.info("Removing oldest entry from cache because its limit of {} is reached", MAX_CACHE_SIZE);
+            keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
+        }
+
+        RssRoot searchResult = search(params);
+        logger.info("Putting search result into cache");
+        cache.put(params.cacheKey(), new CacheEntryValue(params, clock.instant(), searchResult));
+        return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
 
     protected ResponseEntity<?> getCaps() {
@@ -136,14 +185,14 @@ public class ExternalApi {
         return downloadResult.getAsResponseEntity();
     }
 
-    protected ResponseEntity<?> search(NewznabParameters params) {
+    protected RssRoot search(NewznabParameters params) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         SearchResult searchResult = searcher.search(searchRequest);
 
         RssRoot transformedResults = transformResults(searchResult, params);
         logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
-        return new ResponseEntity<>(transformedResults, HttpStatus.OK);
+        return transformedResults;
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -245,6 +294,14 @@ public class ExternalApi {
         }
 
         return searchRequest;
+    }
+
+    @Data
+    @AllArgsConstructor
+    private class CacheEntryValue {
+        private NewznabParameters params;
+        private Instant lastUpdate;
+        private RssRoot searchResult;
     }
 
 }

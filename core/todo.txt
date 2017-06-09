@@ -100,11 +100,11 @@ General, Ideas
 - !! config validation with error and warning level. warn when eg no indexer capable of id search is enabled
 - !! Initialize config
 - !! timeout for indexer accesses is "global" (max time spent for access)
-- migrating from old installation (config and database), either via web call or via loading from file system. dont migrate searchresults. warn for all settings not taken over (like proxy)
+- !! migrating from old installation (config and database), either via web call or via loading from file system. dont migrate searchresults. warn for all settings not taken over (like proxy)
 - !! restart dialog pings until recognizes successful restart
 - !! catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - dashboard in stats section, downloads, API searches, normal searches, application errors in the last x days
-- rss functionality with configurable caching, perhaps with cache interval as parameter
+- !! rss functionality with configurable caching, perhaps with cache interval as parameter
 - banner
 - verify that retrieving user from remoteuser works with form based login and rememberme
 - when no indexers configured / available, on search page show a note and link to config
@@ -116,7 +116,7 @@ General, Ideas
 - !! compare stats from python version and migrated
 - !! episodes can be strings
 - !! option to download torrent file to predefined folder
-- caps (don't support audio)
+- ! caps (don't support audio)
 
 currently not (yet) supported:
 - proxies
