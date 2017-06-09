@@ -1,4 +1,4 @@
-package org.nzbhydra.mapping.gtihub;
+package org.nzbhydra.mapping.github;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
