@@ -139,6 +139,8 @@ Improvements
 - option to execute SQL queries for debugging
 - option for torrent black hole
 - proper postfiltering of results on GUI
+- rss functionality with configurable caching, with cache interval as parameter
+- option to display indexers' category names instead of mapped ones
 
 
 ...
