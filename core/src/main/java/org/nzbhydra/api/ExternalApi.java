@@ -16,6 +16,12 @@ import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.caps.CapsLimits;
+import org.nzbhydra.mapping.newznab.caps.CapsRetention;
+import org.nzbhydra.mapping.newznab.caps.CapsRoot;
+import org.nzbhydra.mapping.newznab.caps.CapsSearch;
+import org.nzbhydra.mapping.newznab.caps.CapsSearching;
+import org.nzbhydra.mapping.newznab.caps.CapsServer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
@@ -75,30 +81,69 @@ public class ExternalApi {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        Stopwatch stopwatch = Stopwatch.createStarted();
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            SearchResult searchResult = search(params);
-
-            RssRoot transformedResults = transformResults(searchResult, params);
-            logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
-            return new ResponseEntity<>(transformedResults, HttpStatus.OK);
+            return search(params);
         }
 
         if (params.getT() == ActionAttribute.GET) {
-            if (Strings.isNullOrEmpty(params.getId())) {
-                throw new MissingParameterException("Missing ID/GUID");
-            }
-
-            NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
-            if (!downloadResult.isSuccessful()) {
-                throw new UnknownErrorException(downloadResult.getError());
-            }
-
-            return downloadResult.getAsResponseEntity();
+            return getNzb(params);
         }
+
+        if (params.getT() == ActionAttribute.CAPS) {
+            return getCaps();
+        }
+
 
         RssError error = new RssError("200", "Unknown or incorrect parameter"); //TODO log or throw as exeption so it's logged
         return new ResponseEntity<Object>(error, HttpStatus.OK);
+    }
+
+    protected ResponseEntity<?> getCaps() {
+        CapsRoot capsRoot = new CapsRoot();
+        capsRoot.setRetention(new CapsRetention(3000));
+        capsRoot.setLimits(new CapsLimits(100, 100)); //TODO link to global setting when implemented
+
+        CapsServer capsServer = new CapsServer();
+        capsServer.setEmail("theotherp@gmx.de");
+        capsServer.setTitle("NZBHydra 2");
+        capsServer.setUrl("TODO"); //TODO
+        capsRoot.setServer(capsServer);
+
+        CapsSearching capsSearching = new CapsSearching();
+        capsSearching.setSearch(new CapsSearch("yes", "q,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        capsSearching.setTvSearch(new CapsSearch("yes", "q,rid,tvdbid,tvmazeid,traktid,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        capsSearching.setMovieSearch(new CapsSearch("yes", "q,imdbid,tmdbid,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        capsSearching.setBookSearch(new CapsSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
+        capsSearching.setAudioSearch(new CapsSearch("no", ""));
+        capsRoot.setSearching(capsSearching);
+
+        capsRoot.setCategories(null);
+        //TODO categories, actually needed for anything?
+
+        return new ResponseEntity<>(capsRoot, HttpStatus.OK);
+    }
+
+    protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
+        if (Strings.isNullOrEmpty(params.getId())) {
+            throw new MissingParameterException("Missing ID/GUID");
+        }
+
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
+        if (!downloadResult.isSuccessful()) {
+            throw new UnknownErrorException(downloadResult.getError());
+        }
+
+        return downloadResult.getAsResponseEntity();
+    }
+
+    protected ResponseEntity<?> search(NewznabParameters params) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        SearchRequest searchRequest = buildBaseSearchRequest(params);
+        SearchResult searchResult = searcher.search(searchRequest);
+
+        RssRoot transformedResults = transformResults(searchResult, params);
+        logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
+        return new ResponseEntity<>(transformedResults, HttpStatus.OK);
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -166,11 +211,6 @@ public class ExternalApi {
         return rssItem;
     }
 
-
-    private SearchResult search(NewznabParameters params) {
-        SearchRequest searchRequest = buildBaseSearchRequest(params);
-        return searcher.search(searchRequest);
-    }
 
     private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());

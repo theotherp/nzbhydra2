@@ -10,6 +10,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.RssError;
@@ -25,6 +26,7 @@ import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
+import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.UnknownResponseException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -93,7 +95,12 @@ public class Newznab extends Indexer<Xml> {
 
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-        UriComponentsBuilder componentsBuilder = getBaseUri().queryParam("t", searchRequest.getSearchType().name().toLowerCase());
+        UriComponentsBuilder componentsBuilder = getBaseUri();
+        SearchType searchType = searchRequest.getSearchType();
+        if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
+            searchType = SearchType.SEARCH;
+        }
+        componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase());
 
         String query = "";
 
@@ -124,11 +131,22 @@ public class Newznab extends Indexer<Xml> {
             componentsBuilder.queryParam("q", query);
         }
 
-        if (searchRequest.getSeason().isPresent()) {
-            componentsBuilder.queryParam("season", searchRequest.getSeason().get());
+        if (config.getSupportedSearchTypes().contains(ActionAttribute.TVSEARCH)) {
+            if (searchRequest.getSeason().isPresent()) {
+                componentsBuilder.queryParam("season", searchRequest.getSeason().get());
+            }
+            if (searchRequest.getEpisode().isPresent()) {
+                componentsBuilder.queryParam("ep", searchRequest.getEpisode().get());
+            }
         }
-        if (searchRequest.getEpisode().isPresent()) {
-            componentsBuilder.queryParam("ep", searchRequest.getEpisode().get());
+
+        if (config.getSupportedSearchTypes().contains(ActionAttribute.BOOK)) {
+            if (searchRequest.getTitle().isPresent()) {
+                componentsBuilder.queryParam("title", searchRequest.getTitle().get());
+            }
+            if (searchRequest.getAuthor().isPresent()) {
+                componentsBuilder.queryParam("author", searchRequest.getAuthor().get());
+            }
         }
 
         if (searchRequest.getMinage().isPresent()) {
@@ -143,13 +161,6 @@ public class Newznab extends Indexer<Xml> {
         }
         if (searchRequest.getMaxsize().isPresent()) {
             componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize().get());
-        }
-
-        if (searchRequest.getTitle().isPresent()) {
-            componentsBuilder.queryParam("title", searchRequest.getTitle().get());
-        }
-        if (searchRequest.getAuthor().isPresent()) {
-            componentsBuilder.queryParam("author", searchRequest.getAuthor().get());
         }
 
         if (configProvider.getBaseConfig().getSearching().isIgnorePassworded()) {

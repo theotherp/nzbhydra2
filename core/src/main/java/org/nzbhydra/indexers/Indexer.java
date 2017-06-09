@@ -18,6 +18,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
@@ -28,6 +29,7 @@ import org.nzbhydra.searching.ResultAcceptor;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -268,10 +270,11 @@ public abstract class Indexer<T> {
             return searchRequest.getQuery().get();
         }
 
+        boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
         boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
         boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
-        if (!(queryGenerationPossible && queryGenerationEnabled && indexerDoesntSupportAnyOfTheProvidedIds)) {
+        if (!(queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType))) {
             logger.debug("Query generation not needed, possible or configured");
             return query;
         }
@@ -308,12 +311,13 @@ public abstract class Indexer<T> {
             }
         }
 
-        if (searchRequest.getAuthor().isPresent()) {
-            query += " " + searchRequest.getAuthor().get();
+        if (searchRequest.getSearchType() == SearchType.BOOK && !config.getSupportedSearchTypes().contains(ActionAttribute.BOOK)) {
+            if (searchRequest.getAuthor().isPresent()) {
+                query += " " + searchRequest.getAuthor().get();
+            }
         }
 
-
-        info("Indexer does not support any of the supported IDs. The following query was generated: " + query);
+        info("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
 
         return query;
     }

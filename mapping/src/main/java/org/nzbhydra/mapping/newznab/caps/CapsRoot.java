@@ -14,6 +14,9 @@ import java.util.ArrayList;
 public class CapsRoot {
 
     @XmlElement
+    private CapsServer server;
+
+    @XmlElement
     private CapsLimits limits;
 
     @XmlElement

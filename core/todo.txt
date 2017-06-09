@@ -116,6 +116,7 @@ General, Ideas
 - !! compare stats from python version and migrated
 - !! episodes can be strings
 - !! option to download torrent file to predefined folder
+- caps (don't support audio)
 
 currently not (yet) supported:
 - proxies

@@ -29,6 +29,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
@@ -254,7 +255,34 @@ public class NewznabTest {
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setTitle("anotherTitle");
         UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&q=anotherTitle&title=anotherTitle").build(), actual);
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&q=anotherTitle").build(), actual);
+    }
+
+    @Test
+    public void shouldGenerateQueryIfBookSearchTypeNotSupported() throws Exception {
+        testee.config = new IndexerConfig();
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
+        testee.config.setHost("http://www.indexer.com");
+        testee.config.setSupportedSearchIds(Collections.emptyList());
+        testee.config.setSupportedSearchTypes(Collections.emptyList());
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.BOOK, 0, 100);
+        searchRequest.setAuthor("author");
+        searchRequest.setTitle("title");
+
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&q=title author").build(), testee.buildSearchUrl(searchRequest, null, null).build());
+    }
+
+    @Test
+    public void shouldUseAuthorAndTitleIfBookSearchSupported() throws Exception {
+        testee.config = new IndexerConfig();
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
+        testee.config.setHost("http://www.indexer.com");
+        testee.config.setSupportedSearchTypes(Arrays.asList(ActionAttribute.BOOK));
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.BOOK, 0, 100);
+        searchRequest.setAuthor("author");
+        searchRequest.setTitle("title");
+
+        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&q=title&t=book&author=author&title=title").build(), testee.buildSearchUrl(searchRequest, null, null).build());
     }
 
     @Test(expected = IndexerAuthException.class)

@@ -11,6 +11,4 @@ public enum ActionAttribute {
     GET,
     DETAILS,
     GETNFO
-
-
 }
