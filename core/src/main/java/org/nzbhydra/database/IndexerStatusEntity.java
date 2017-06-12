@@ -58,6 +58,6 @@ public class IndexerStatusEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, indexer.getName());
+        return Objects.hash(super.hashCode(), id, indexer != null ? indexer.getName() : 0);
     }
 }

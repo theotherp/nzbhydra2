@@ -12,5 +12,24 @@
         </label>
     </div>
 
-    <pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>
+    <!--<pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>-->
+    <table class="table table-hover">
+        <thead class="search-results-header">
+        <th>Time (newest first)</th>
+        <th>Level</th>
+        <th>Message</th>
+        </thead>
+        <tbody>
+        <tr ng-repeat="line in jsonLogLines">
+            <td>{{::line["@timestamp"] | formatTimestamp}}</td>
+            <td>{{::line.level}}</td>
+            <td>{{::line.message}}</td>
+
+        </tr>
+        </tbody>
+
+
+    </table>
+
+
 </div>

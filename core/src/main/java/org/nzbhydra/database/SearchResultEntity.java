@@ -27,7 +27,7 @@ import java.time.Instant;
         )
 public class SearchResultEntity {
 
-    @Id
+
     @GenericGenerator(
             name = "search-result-sequence",
             strategy = "org.nzbhydra.database.SearchResultSequenceGenerator",
@@ -36,7 +36,7 @@ public class SearchResultEntity {
                     value = "hibernate_sequence"
             )
     )
-
+    @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
     protected long id;
 

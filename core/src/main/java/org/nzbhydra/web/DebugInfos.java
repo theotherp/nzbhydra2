@@ -5,13 +5,17 @@ import org.nzbhydra.logging.LogContentProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
 @RestController
 public class DebugInfos {
@@ -31,6 +35,18 @@ public class DebugInfos {
         } catch (IOException e) {
             logger.error("Error while getting log file content", e);
             return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/jsonlogs", method = RequestMethod.GET)
+    public ResponseEntity<List<HashMap<String, Object>>> logsAsJson(@RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit) {
+        try {
+            List<HashMap<String, Object>> jsonObjects = logContentProvider.getLogsAsJsonLines(offset == null ? 0 : offset, limit == null ? 250 : limit);
+            return ResponseEntity.ok(jsonObjects);
+        } catch (IOException e) {
+            logger.error("Error while getting log file content", e);
+            return ResponseEntity.status(500).build();
         }
     }
 

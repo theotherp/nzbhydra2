@@ -1175,9 +1175,17 @@ function hydralog() {
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
 
 
+        // function getAndShowLog() {
+        //     return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
+        //         $scope.log = $sce.trustAsHtml(data.message);
+        //     });
+        // }
+        //
+        // $scope.logPromise = getAndShowLog();
+
         function getAndShowLog() {
-            return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
-                $scope.log = $sce.trustAsHtml(data.message);
+            return $http.get("internalapi/debuginfos/jsonlogs").success(function (data) {
+                $scope.jsonLogLines = angular.fromJson(data);
             });
         }
 
@@ -1221,6 +1229,17 @@ function hydralog() {
         if ($scope.doUpdateLog) {
             startUpdateLogInterval();
         }
+
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('formatTimestamp', formatTimestamp);
+
+function formatTimestamp() {
+    return function (date) {
+        return moment(date).local().format("YYYY-MM-DD HH:mm");
 
     }
 }
