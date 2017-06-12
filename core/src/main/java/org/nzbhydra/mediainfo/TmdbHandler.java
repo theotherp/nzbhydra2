@@ -5,6 +5,8 @@ import com.uwetrottmann.tmdb2.entities.FindResults;
 import com.uwetrottmann.tmdb2.entities.Movie;
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
 import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
@@ -15,11 +17,14 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class TmdbHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
 
     @Value("${nzbhydra.tmdb.apikey}")
     protected String tmdbApiKey;
@@ -86,12 +91,13 @@ public class TmdbHandler {
                 throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
             }
             if (response.body().total_results == 0) {
-                throw new InfoProviderException(String.format("TMDB query for title %s returned no searchResults", title));
+                logger.info("TMDB query for title '{}' returned no searchResults", title);
+                return Collections.emptyList();
             }
             movies = response.body().results;
         } catch (IOException e) {
-            //logger.error("Error while contacting TMDB", e);
-            throw new InfoProviderException("Error while contacting TMDB", e);
+            logger.error("Error while contacting TMDB", e);
+            return Collections.emptyList();
         }
 
         return movies.stream().map(this::getSearchResultFromMovie).collect(Collectors.toList());

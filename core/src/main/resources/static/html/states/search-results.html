@@ -1,4 +1,4 @@
-<div class="row" ng-if="indexersearches" style="margin-top: 25px">
+<div class="row" ng-if="indexersearches.length" style="margin-top: 25px">
 
     <div class="col-md-5"></div>
     <div class="col-md-10" style="padding-right: 0px">
@@ -50,13 +50,13 @@
                     </span>
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.didSearch">
+                    <span ng-if="::ps.didSearch">
                         <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.wasSuccessful, 'glyphicon-remove' : !ps.wasSuccessful}"></span>
 
-                            <span ng-if="!ps.wasSuccessful">{{ ps.errorMessage }}</span>
+                            <span ng-if="::!ps.wasSuccessful">{{ ps.errorMessage }}</span>
                         </span>
                             </span>
-                            <span ng-if="!ps.didSearch">
+                            <span ng-if="::!ps.didSearch">
                         Did not search.
                     </span>
                         </td>
@@ -119,8 +119,17 @@
     </div>
 </div>
 
-
-<div class="row" ng-if="indexersearches" style="margin-top: 10px">
+<div class="row" ng-if="::indexersearches.length == 0" style="margin-top: 50px">
+    <div class="well">
+        <h2>No indexers were selected for this search</h2>
+    </div>
+</div>
+<div class="row" ng-if="::indexersearches.length >= 0 && numberOfAvailableResults === 0" style="margin-top: 50px">
+    <div class="well">
+        <h2>No results were found for this search</h2>
+    </div>
+</div>
+<div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0" style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
         <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default">Show duplicates</input>
         <button class="btn btn-default" ng-click="invertSelection()">Invert selection</button>

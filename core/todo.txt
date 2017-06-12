@@ -57,6 +57,7 @@ Torrent support
 Updater: Proof of concept with wrapper works
 - update notification
 - self updating
+- function to show dialog instead of updating when a manual update is needed for some reason (pulled from repo file)
 
 Process control
 - Restart: Works, based on wrapper
@@ -88,6 +89,7 @@ News
 - show news on startup for any given version
 - only show news to admins
 - save display state in database instead of cookie
+- new section for news
 
 General, Ideas
 - !! open browser on startup
@@ -116,7 +118,9 @@ General, Ideas
 - !! compare stats from python version and migrated
 - !! episodes can be strings
 - !! option to download torrent file to predefined folder
-- ! caps (don't support audio)
+- !! caps (don't support audio)
+- !! show special message when no search results were found and/or no indexers were picked
+- use json output for log4j/logback and show properly in gui
 
 currently not (yet) supported:
 - proxies

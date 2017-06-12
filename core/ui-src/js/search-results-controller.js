@@ -33,8 +33,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
 
-    var allSearchResults;
-    var sortModel;
+    var allSearchResults = [];
+    var sortModel = {};
     $scope.filterModel = {};
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");

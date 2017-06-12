@@ -18,4 +18,12 @@ public class BasicSearchRequestParameters {
     protected String category;
     protected Set<String> indexers;
 
+    private String title;
+    private String imdbId;
+    private String tmdbId;
+
+    private String tvrageId;
+    private String tvdbId;
+    private String tvmazeId;
+
 }

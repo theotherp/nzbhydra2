@@ -93,7 +93,11 @@ public class IndexerForSearchSelector {
 
             selectedIndexers.add(indexer);
         }
-        logger.info("Picked {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
+        if (selectedIndexers.isEmpty()) {
+            logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled");
+        } else {
+            logger.info("Picked {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
+        }
 
         return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
     }

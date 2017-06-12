@@ -2677,7 +2677,7 @@ function SearchService($http) {
 
 
     function search(category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
-        var uri;
+        var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.query = query;
         searchRequestParameters.title = title;
@@ -2685,26 +2685,19 @@ function SearchService($http) {
         searchRequestParameters.maxsize = maxsize;
         searchRequestParameters.minage = minage;
         searchRequestParameters.maxage = maxage;
+        searchRequestParameters.category = category;
         if (!angular.isUndefined(indexers) && indexers !== null) {
             searchRequestParameters.indexers = indexers.split("|");
         }
 
-        searchRequestParameters.category = category;
-
         if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
-            uri = new URI("internalapi/search/movie");
-
             searchRequestParameters.tmdbId = tmdbid;
             searchRequestParameters.imdbId = imdbId;
         } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
-            uri = new URI("internalapi/search/tv");
-
             searchRequestParameters.tvdbId = tvdbId;
             searchRequestParameters.tvrageId = rid;
             searchRequestParameters.season = season;
             searchRequestParameters.episode = episode;
-        } else {
-            uri = new URI("internalapi/search");
         }
 
         lastExecutedQuery = uri;
@@ -2783,8 +2776,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
 
-    var allSearchResults;
-    var sortModel;
+    var allSearchResults = [];
+    var sortModel = {};
     $scope.filterModel = {};
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
