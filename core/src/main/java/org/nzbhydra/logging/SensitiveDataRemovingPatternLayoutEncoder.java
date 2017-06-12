@@ -2,69 +2,33 @@ package org.nzbhydra.logging;
 
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.CoreConstants;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEncoder {
 
     private Charset charset;
 
-    private boolean immediateFlush = true;
-
-    void writeHeader() throws IOException {
-        if (layout != null && (outputStream != null)) {
-            StringBuilder sb = new StringBuilder();
-            appendIfNotNull(sb, layout.getFileHeader());
-            appendIfNotNull(sb, layout.getPresentationHeader());
-            if (sb.length() > 0) {
-                sb.append(CoreConstants.LINE_SEPARATOR);
-                // If at least one of file header or presentation header were not
-                // null, then append a line separator.
-                // This should be useful in most cases and should not hurt.
-                outputStream.write(convertToBytes(sb.toString()));
-                outputStream.flush();
-            }
-        }
+    public Charset getCharset() {
+        return charset;
     }
 
-    public void close() throws IOException {
-        writeFooter();
-    }
-
-    void writeFooter() throws IOException {
-        if (layout != null && outputStream != null) {
-            StringBuilder sb = new StringBuilder();
-            appendIfNotNull(sb, layout.getPresentationFooter());
-            appendIfNotNull(sb, layout.getFileFooter());
-            if (sb.length() > 0) {
-                outputStream.write(convertToBytes(sb.toString()));
-                outputStream.flush();
-            }
-        }
+    public void setCharset(Charset charset) {
+        this.charset = charset;
     }
 
     private byte[] convertToBytes(String s) {
         if (charset == null) {
             return s.getBytes();
         } else {
-            try {
-                return s.getBytes(charset.name());
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("An existing charset cannot possibly be unsupported.");
-            }
+            return s.getBytes(charset);
         }
     }
 
-    public void doEncode(ILoggingEvent event) throws IOException {
+    public byte[] encode(ILoggingEvent event) {
         String txt = layout.doLayout(event);
         txt = removeSensitiveData(txt);
-        outputStream.write(convertToBytes(txt));
-        if (immediateFlush) {
-            outputStream.flush();
-        }
+        return convertToBytes(txt);
     }
 
     private String removeSensitiveData(String txt) {
@@ -74,10 +38,5 @@ public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEnco
         return txt;
     }
 
-    private void appendIfNotNull(StringBuilder sb, String s) {
-        if (s != null) {
-            sb.append(s);
-        }
-    }
 
 }

@@ -1,5 +1,5 @@
 <configuration>
-    <springProperty scope="context" name="logging.file" source="main.logging.logfilename" defaultValue="logs/nzbhydra.log"/>
+    <springProperty scope="context" name="logging.folder" source="main.logging.logfilename" defaultValue="logs"/>
     <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="10"/>
@@ -31,20 +31,6 @@
         <destinationLogger>org.springframework.boot</destinationLogger>
     </appender>
 
-    <logger name="org.nzbhydra" level="DEBUG"/>
-    <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>
-    <logger name="org.apache.catalina.util.LifecycleBase" level="ERROR"/>
-    <logger name="org.apache.coyote.http11.Http11NioProtocol" level="WARN"/>
-    <logger name="org.apache.sshd.common.util.SecurityUtils" level="WARN"/>
-    <logger name="org.apache.tomcat.util.net.NioSelectorPool" level="WARN"/>
-    <logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="ERROR"/>
-    <logger name="org.hibernate.validator.internal.util.Version" level="WARN"/>
-    <logger name="org.thymeleaf.*" level="WARN"/>
-    <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
-    <logger name="org.springframework.boot.actuate.endpoint.jmx" additivity="false">
-        <appender-ref ref="DEBUG_LEVEL_REMAPPER"/>
-    </logger>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -63,9 +49,9 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${logging.level.file}</level>
         </filter>
-        <file>${logging.file}</file>
+        <file>${logging.folder}/nzbhydra2.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.file}.%d</fileNamePattern>
+            <fileNamePattern>${logging.folder}/nzbhydra2.log.%d</fileNamePattern>
             <maxHistory>${logging.logMaxDays}</maxHistory>
         </rollingPolicy>
         <triggeringPolicy
@@ -73,6 +59,31 @@
             <MaxFileSize>${logging.logMaxSize}MB</MaxFileSize>
         </triggeringPolicy>
     </appender>
+
+    <appender name="STASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <file>${logging.folder}/nzbhydra2-log.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${logging.folder}/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeContext>false</includeContext>
+        </encoder>
+
+    </appender>
+
+    <logger name="org.nzbhydra" level="DEBUG">
+        <appender-ref ref="STASH"/>
+    </logger>
+    <logger name="org.spring" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.thymeleaf" level="WARN"/>
+    <logger name="org.eclipse" level="WARN"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
