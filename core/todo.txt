@@ -120,7 +120,8 @@ General, Ideas
 - !! option to download torrent file to predefined folder
 - !! caps (don't support audio)
 - !! show special message when no search results were found and/or no indexers were picked
-- use json output for log4j/logback and show properly in gui
+- add business level logger for json, only log important stuff there
+- sqlite-jdbc.jar is big, perhaps load only when required?
 
 currently not (yet) supported:
 - proxies
@@ -142,9 +143,10 @@ Improvements
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - option to execute SQL queries for debugging
 - option for torrent black hole
-- proper postfiltering of results on GUI
+- proper postfiltering of results in GUI
 - rss functionality with configurable caching, with cache interval as parameter
 - option to display indexers' category names instead of mapped ones
+- improved log view in GUI
 
 
 ...

@@ -19,14 +19,14 @@
         <th>Level</th>
         <th>Message</th>
         </thead>
-    <tbody>
-    <tr ng-repeat="line in jsonLogLines">
-        <td>{{::line["@timestamp"] | formatTimestamp}}</td>
-        <td>{{::line.level}}</td>
-        <td>{{::line.message}}</td>
+        <tbody>
+        <tr ng-repeat="line in jsonLogLines">
+            <td>{{::line["@timestamp"] | formatTimestamp}}</td>
+            <td>{{::line.level}}</td>
+            <td>{{::line.message}}</td>
 
-    </tr>
-    </tbody>
+        </tr>
+        </tbody>
 
 
     </table>

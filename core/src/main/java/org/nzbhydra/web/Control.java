@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,14 @@ public class Control {
     @RequestMapping(value = "/internalapi/control/shutdown", method = RequestMethod.GET)
     public GenericResponse shutdown() throws Exception {
         logger.info("Shutting down due to external request");
-        updateManager.exitWithReturnCode(0);
+        new Thread(() -> {
+            try {
+                Thread.sleep(100);
+                NzbHydra.shutdown();
+            } catch (InterruptedException e) {
+                logger.error("Error", e);
+            }
+        }).start();
         return GenericResponse.ok();
     }
 
@@ -30,9 +38,15 @@ public class Control {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
     public GenericResponse restart() throws Exception {
-        logger.info("Shutting down due to external request. Restart will be handled by wrapper");
-        updateManager.exitWithReturnCode(2);
-        logger.debug("Returning restart OK");
+        logger.info("Restarting due to external request");
+        new Thread(() -> {
+            try {
+                Thread.sleep(100);
+                NzbHydra.restart();
+            } catch (InterruptedException e) {
+                logger.error("Error", e);
+            }
+        }).start();
         return GenericResponse.ok();
     }
 

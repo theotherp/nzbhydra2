@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +36,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URLClassLoader;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -52,6 +55,7 @@ public class NzbHydra {
     public static String[] originalArgs;
 
     private static ConfigurableApplicationContext applicationContext;
+    private static URLClassLoader urlClassLoader;
 
     @Autowired
     private ConfigProvider configProvider;
@@ -104,6 +108,41 @@ public class NzbHydra {
             }
             applicationContext = hydraApplication.run(args);
         }
+    }
+
+    public static ConfigurableApplicationContext start(URLClassLoader urlClassLoader) throws Exception {
+        String[] params = new String[]{};
+        //main(params);
+        SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+        NzbHydra.urlClassLoader = urlClassLoader;
+        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(NzbHydra.urlClassLoader);
+        hydraApplication.setResourceLoader(resourceLoader);
+        applicationContext = hydraApplication.run();
+
+        return applicationContext;
+    }
+
+    public static void shutdown() {
+        applicationContext.close();
+        try {
+            urlClassLoader.loadClass("com.example.demo.NzbHydraWrapper").getDeclaredMethod("doShutdown").invoke(null);
+        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException e) {
+            logger.error("Error while trying to shutdown", e);
+        }
+    }
+
+    public static void close() {
+        applicationContext.close();
+    }
+
+    public static void restart() {
+        try {
+            urlClassLoader.loadClass("com.example.demo.NzbHydraWrapper").getDeclaredMethod("doRestart").invoke(null);
+        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException e) {
+            logger.error("Error while trying to restart", e);
+        }
+
+
     }
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
