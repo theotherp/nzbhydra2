@@ -1,0 +1,14 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.idea/*
+*.iws
+*.ipr
+/bower_components
+/node_modules
+/nzbhydra.db.*
+*.pid
+/logs
+/config
+/database/
+*.log
+*.db.*
