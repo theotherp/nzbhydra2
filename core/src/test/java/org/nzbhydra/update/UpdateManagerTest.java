@@ -12,7 +12,7 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.verify.VerificationTimes;
-import org.nzbhydra.update.gtihubmapping.Release;
+import org.nzbhydra.mapping.github.Release;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

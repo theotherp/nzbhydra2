@@ -50,8 +50,9 @@ public class DownloaderProvider implements InitializingBean {
         if (baseConfig.getDownloading().getDownloaders() != null) {
             List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloading().getDownloaders();
             downloadersMap.clear();
+            logger.info("Loading downloads");
             for (DownloaderConfig downloaderConfig : downloaderConfigs) {
-                logger.info("Found downloader {}", downloaderConfig.getName());
+                logger.info("Initializing downloader {}", downloaderConfig.getName());
                 try {
                     Downloader downloader = beanFactory.createBean(downloaderClasses.get(downloaderConfig.getDownloaderType()));
                     downloader.intialize(downloaderConfig);

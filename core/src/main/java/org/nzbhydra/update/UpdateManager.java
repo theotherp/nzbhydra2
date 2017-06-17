@@ -11,8 +11,8 @@ import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
-import org.nzbhydra.update.gtihubmapping.Asset;
-import org.nzbhydra.update.gtihubmapping.Release;
+import org.nzbhydra.mapping.github.Asset;
+import org.nzbhydra.mapping.github.Release;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,17 +22,14 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class UpdateManager implements InitializingBean {
@@ -52,6 +49,7 @@ public class UpdateManager implements InitializingBean {
     protected Instant lastCheckedForNewVersion = Instant.ofEpochMilli(0L);
     private SemanticVersion latestVersion;
     private ObjectMapper objectMapper;
+    private Lock lock = new ReentrantLock();
 
     public UpdateManager() {
         objectMapper = new ObjectMapper();
@@ -154,35 +152,30 @@ public class UpdateManager implements InitializingBean {
                 FileUtils.cleanDirectory(updateFolder);
             }
 
-            Path tempDirectory = Files.createTempDirectory("nzbhydraupdate");
-            updateZip = new File(tempDirectory.toFile(), asset.getName());
-            updateZip.deleteOnExit();
+            updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
             Files.copy(inputStream, updateZip.toPath());
-            logger.debug("Unzipping files to {}", updateFolder);
-            unzip(updateZip, updateFolder);
-
-//            updateZip = new File ("update"); //TODO Make sure we're in the main folder and not wherever
-//            updateZip = new File (updateZip, asset.getName());
-//            Files.copy(inputStream, updateZip.toPath());
-//            logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
         } catch (IOException e) {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
         logger.info("Shutting down to let wrapper execute the update");
-        exitWithReturnCode(1);
+        exitWithReturnCode(11);
     }
 
     private SemanticVersion getLatestVersion() throws UpdateException {
         try {
+            //Lock calls to this method so multiple concurrent calls don't hammer the server
+            lock.lock();
             if (Instant.now().minus(15, ChronoUnit.MINUTES).isAfter(lastCheckedForNewVersion)) {
                 Release latestRelease = getLatestRelease();
                 latestVersion = new SemanticVersion(latestRelease.getTagName());
-                lastCheckedForNewVersion = Instant.now();
+                lastCheckedForNewVersion = Instant.now(); //Save first, in case of errors will try again later
             }
             return latestVersion;
         } catch (ParseException e) {
             throw new UpdateException("Error while checking for latest version", e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -199,23 +192,6 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
-
-    private void unzip(File zipFilepath, File outputFolder) throws IOException {
-        ZipFile zipFile = new ZipFile(zipFilepath, ZipFile.OPEN_READ, Charset.defaultCharset());
-
-        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements()) {
-            ZipEntry zipEntry = entries.nextElement();
-            String fileName = zipEntry.getName();
-            File newFile = new File(outputFolder + File.separator + fileName);
-
-            logger.debug("Unzipping file {}", newFile.getAbsolutePath());
-
-            new File(newFile.getParent()).mkdirs();
-            Files.copy(zipFile.getInputStream(zipEntry), newFile.toPath());
-        }
-        zipFile.close();
-    }
 
     public void exitWithReturnCode(final int returnCode) {
         new Thread(() -> {

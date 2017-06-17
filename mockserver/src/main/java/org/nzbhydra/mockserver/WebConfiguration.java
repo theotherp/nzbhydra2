@@ -3,10 +3,12 @@ package org.nzbhydra.mockserver;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
@@ -18,6 +20,18 @@ import java.util.Map;
 @Configuration
 public class WebConfiguration extends WebMvcConfigurationSupport {
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/")
+                .setCacheControl(CacheControl.noCache())
+                .resourceChain(false)
+        //.addResolver(new VersionResourceResolver().addContentVersionStrategy("/static/js/**", "/static/css/**"))
+        ;
+
+
+        registry.setOrder(0);
+    }
 
     @Bean
     public RequestMappingHandlerMapping requestMappingHandlerMapping() {

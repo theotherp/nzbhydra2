@@ -16,7 +16,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         } else {
             blockUI.start(message + " Will reload page when NZB Hydra is back.");
             $timeout(function () {
-                $http.get("internalapi/control/ping").then(function () {
+                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
                         blockUI.start("Reloading page...");
                         $window.location.reload();

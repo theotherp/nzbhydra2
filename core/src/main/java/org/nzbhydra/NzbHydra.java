@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,9 +35,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -55,7 +53,6 @@ public class NzbHydra {
     public static String[] originalArgs;
 
     private static ConfigurableApplicationContext applicationContext;
-    private static URLClassLoader urlClassLoader;
 
     @Autowired
     private ConfigProvider configProvider;
@@ -77,15 +74,17 @@ public class NzbHydra {
     public static void main(String[] args) throws Exception {
         OptionParser parser = new OptionParser();
         parser.accepts("config", "Define path to config yaml file ").withRequiredArg().defaultsTo("config/application.yml");
-        parser.accepts("database", "Define path to database base file").withRequiredArg().defaultsTo("database/nzbhydra.db");
+        parser.accepts("database", "Define path to database base file. Begin with ./ for relativ folders").withRequiredArg().defaultsTo("./database/nzbhydra.db");
         parser.accepts("host", "Run on this host").withRequiredArg();
-        parser.accepts("help", "Print help");
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withRequiredArg();
+        parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
         OptionSet options = parser.parse(args);
-        if (options.has("help")) {
+        if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
+            System.out.println("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
+        } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
             System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
@@ -108,41 +107,6 @@ public class NzbHydra {
             }
             applicationContext = hydraApplication.run(args);
         }
-    }
-
-    public static ConfigurableApplicationContext start(URLClassLoader urlClassLoader) throws Exception {
-        String[] params = new String[]{};
-        //main(params);
-        SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-        NzbHydra.urlClassLoader = urlClassLoader;
-        DefaultResourceLoader resourceLoader = new DefaultResourceLoader(NzbHydra.urlClassLoader);
-        hydraApplication.setResourceLoader(resourceLoader);
-        applicationContext = hydraApplication.run();
-
-        return applicationContext;
-    }
-
-    public static void shutdown() {
-        applicationContext.close();
-        try {
-            urlClassLoader.loadClass("com.example.demo.NzbHydraWrapper").getDeclaredMethod("doShutdown").invoke(null);
-        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException e) {
-            logger.error("Error while trying to shutdown", e);
-        }
-    }
-
-    public static void close() {
-        applicationContext.close();
-    }
-
-    public static void restart() {
-        try {
-            urlClassLoader.loadClass("com.example.demo.NzbHydraWrapper").getDeclaredMethod("doRestart").invoke(null);
-        } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException | NoSuchMethodException e) {
-            logger.error("Error while trying to restart", e);
-        }
-
-
     }
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
@@ -180,7 +144,6 @@ public class NzbHydra {
     }
 
 
-
     @Bean
     public CacheManager getCacheManager() {
         GuavaCacheManager guavaCacheManager = new GuavaCacheManager("infos", "titles", "dev");
@@ -213,8 +176,6 @@ public class NzbHydra {
     @RequestMapping("/test")
     @Transactional
     public String test() throws IOException, ExecutionException, InterruptedException {
-
-
 
 
         return "Ok";

@@ -48,8 +48,8 @@ public class MainConfig extends ValidatingConfig {
     public void setDatabaseFile(String databaseFile) {
         if (!new File(databaseFile).isAbsolute() && !databaseFile.startsWith("./")) {
             logger.warn("Database file setting seems to be relative but doesn't start with a \"./\". Will add it");
+            databaseFile = "./" + databaseFile;
         }
-        databaseFile = "./" + databaseFile;
         this.databaseFile = databaseFile;
     }
 

@@ -2066,11 +2066,11 @@ function UpdateService($http, growl, blockUI, RestartService) {
 
 
     function update() {
-        blockUI.start("Updating. Please stand by...");
+        blockUI.start("Downloading update. Please stand by...");
         $http.get("internalapi/updates/installUpdate").then(function (data) {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                growl.info("Installed update...");
+                RestartService.restart("Shutting down Hydra for Update.");
             },
             function () {
                 blockUI.reset();
@@ -2079,8 +2079,6 @@ function UpdateService($http, growl, blockUI, RestartService) {
     }
 }
 UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService"];
-
-
 angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
@@ -3790,7 +3788,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         } else {
             blockUI.start(message + " Will reload page when NZB Hydra is back.");
             $timeout(function () {
-                $http.get("internalapi/control/ping").then(function () {
+                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
                         blockUI.start("Reloading page...");
                         $window.location.reload();

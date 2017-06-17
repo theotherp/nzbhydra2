@@ -77,7 +77,7 @@ public class SearchModuleProvider {
         for (IndexerConfig config : indexers) {
             try {
                 Indexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
-                logger.info("Found indexer {}", config.getName());
+                logger.info("Initializing indexer {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());
                 if (indexerEntity == null) {

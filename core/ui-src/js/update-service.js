@@ -74,11 +74,11 @@ function UpdateService($http, growl, blockUI, RestartService) {
 
 
     function update() {
-        blockUI.start("Updating. Please stand by...");
+        blockUI.start("Downloading update. Please stand by...");
         $http.get("internalapi/updates/installUpdate").then(function (data) {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                growl.info("Installed update...");
+                RestartService.restart("Shutting down Hydra for Update.");
             },
             function () {
                 blockUI.reset();
@@ -86,4 +86,3 @@ function UpdateService($http, growl, blockUI, RestartService) {
             });
     }
 }
-
