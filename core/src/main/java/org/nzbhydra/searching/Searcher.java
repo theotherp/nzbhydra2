@@ -1,6 +1,8 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.database.IdentifierKeyValuePair;
 import org.nzbhydra.database.IndexerSearchEntity;
 import org.nzbhydra.database.IndexerSearchRepository;
@@ -17,22 +19,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -49,10 +49,15 @@ public class Searcher {
     @Autowired
     protected IndexerForSearchSelector indexerPicker;
 
+
     /**
      * Maps a search request's hash to its cache entry
      */
-    private final ConcurrentHashMap<Integer, SearchCacheEntry> searchRequestCache = new ConcurrentHashMap<>();
+    private final Map<Integer, SearchCacheEntry> searchRequestCache = ExpiringMap.builder()
+            .maxSize(20)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expiration(5, TimeUnit.MINUTES)
+            .build();
 
     public SearchResult search(SearchRequest searchRequest) {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
@@ -159,15 +164,6 @@ public class Searcher {
     protected SearchCacheEntry getSearchCacheEntry(SearchRequest searchRequest) {
         SearchCacheEntry searchCacheEntry;
 
-        //Remove entries older than 5 minutes
-        Iterator<Map.Entry<Integer, SearchCacheEntry>> iterator = searchRequestCache.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, SearchCacheEntry> next = iterator.next();
-            if (next.getValue().getLastAccessed().plus(5, ChronoUnit.MINUTES).isBefore(Instant.now())) {
-                searchRequestCache.remove(next.getKey());
-            }
-        }
-
         if (searchRequest.getOffset().orElse(0) == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
             //New search
             SearchEntity searchEntity = new SearchEntity();
@@ -219,9 +215,10 @@ public class Searcher {
             List<Future<IndexerSearchResult>> futures = executor.invokeAll(callables);
             for (Future<IndexerSearchResult> future : futures) {
                 try {
-                    List<IndexerSearchResult> previousIndexerSearchResults = indexerSearchResults.get(future.get().getIndexer());
-                    previousIndexerSearchResults.add(future.get());
-                    indexerSearchResults.put(future.get().getIndexer(), previousIndexerSearchResults);
+                    IndexerSearchResult indexerSearchResult = future.get();
+                    List<IndexerSearchResult> previousIndexerSearchResults = indexerSearchResults.get(indexerSearchResult.getIndexer());
+                    previousIndexerSearchResults.add(indexerSearchResult);
+                    indexerSearchResults.put(indexerSearchResult.getIndexer(), previousIndexerSearchResults);
                 } catch (ExecutionException e) {
                     logger.error("Unexpected error while searching", e);
                 }
