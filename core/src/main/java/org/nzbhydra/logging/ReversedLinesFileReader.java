@@ -165,7 +165,12 @@ public class ReversedLinesFileReader implements Closeable {
      */
     public String readLine() throws IOException {
 
-        String line = currentFilePart.readLine();
+        String line = null;
+        try {
+            line = currentFilePart.readLine();
+        } catch (NullPointerException e) {
+            //Line was null
+        }
         while (line == null) {
             currentFilePart = currentFilePart.rollOver();
             if (currentFilePart != null) {

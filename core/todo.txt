@@ -146,7 +146,7 @@ Improvements
 - proper postfiltering of results in GUI
 - rss functionality with configurable caching, with cache interval as parameter
 - option to display indexers' category names instead of mapped ones
-- improved log view in GUI
+- improved log view in GUI (like in radarr/sonarr except for all messages)
 
 
 ...
