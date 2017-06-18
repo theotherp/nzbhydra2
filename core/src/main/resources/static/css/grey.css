@@ -7802,6 +7802,16 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 .error {
   color: #ee5f5b;
 }
+@media (min-width: 1000px) {
+  .modal-xl {
+    width: 950px;
+  }
+}
+@media (min-width: 1500px) {
+  .modal-xl {
+    width: 1400px;
+  }
+}
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;
 }

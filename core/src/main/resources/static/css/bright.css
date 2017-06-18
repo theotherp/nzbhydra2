@@ -7802,6 +7802,16 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 .error {
   color: #ff4136;
 }
+@media (min-width: 1000px) {
+  .modal-xl {
+    width: 950px;
+  }
+}
+@media (min-width: 1500px) {
+  .modal-xl {
+    width: 1400px;
+  }
+}
 .nav-tabs > li > a:hover {
   border-color: #eeeeee #eeeeee transparent;
   background-color: transparent;

@@ -1163,33 +1163,41 @@ angular
     .directive('hydralog', hydralog);
 
 function hydralog() {
-    controller.$inject = ["$scope", "$http", "$sce", "$interval", "localStorageService"];
+    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService"];
     return {
         templateUrl: "static/html/directives/log.html",
         controller: controller
     };
 
-    function controller($scope, $http, $sce, $interval, localStorageService) {
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService) {
         $scope.tailInterval = null;
         $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
 
+        $scope.active = 0;
+        $scope.currentJsonIndex = 0;
+        $scope.hasMoreJsonLines = true;
 
-        // function getAndShowLog() {
-        //     return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
-        //         $scope.log = $sce.trustAsHtml(data.message);
-        //     });
-        // }
-        //
-        // $scope.logPromise = getAndShowLog();
-
-        function getAndShowLog() {
-            return $http.get("internalapi/debuginfos/jsonlogs").success(function (data) {
-                $scope.jsonLogLines = angular.fromJson(data);
-            });
+        function getLog(index) {
+            if ($scope.active === 0) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).success(function (data) {
+                    $scope.jsonLogLines = angular.fromJson(data.lines);
+                    $scope.hasMoreJsonLines = data.hasMore;
+                });
+            } else {
+                return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
+                    $scope.log = $sce.trustAsHtml(data.message);
+                });
+            }
         }
 
-        $scope.logPromise = getAndShowLog();
+        $scope.logPromise = getLog();
+
+
+        $scope.select = function (index) {
+            $scope.active = index;
+            $scope.update();
+        };
 
         $scope.scrollToBottom = function () {
             document.getElementById("logfile").scrollTop = 10000000;
@@ -1197,20 +1205,46 @@ function hydralog() {
         };
 
         $scope.update = function () {
-            getAndShowLog();
-            $scope.scrollToBottom();
+            getLog($scope.currentJsonIndex);
+            if ($scope.active === 1) {
+                $scope.scrollToBottom();
+            }
+        };
+
+        //600 lines
+        //0 + 500 = 500
+        //
+
+        $scope.getOlderFormatted = function () {
+            getLog($scope.currentJsonIndex + 500).then(function () {
+                $scope.currentJsonIndex += 500;
+                // if ($scope.hasMoreJsonLines) {
+                // } else {
+                //     $scope.currentJsonIndex += $scope.jsonLogLines.length;
+                // }
+            });
+
+        };
+
+        $scope.getNewerFormatted = function () {
+            var index = Math.max($scope.currentJsonIndex - 500, 0);
+            getLog(index);
+            $scope.currentJsonIndex = index;
         };
 
         function startUpdateLogInterval() {
             $scope.tailInterval = $interval(function () {
-                getAndShowLog();
-                if ($scope.doTailLog) {
-                    $scope.scrollToBottom();
+                if ($scope.active === 1) {
+                    $scope.update();
+                    if ($scope.doTailLog && $scope.active === 1) {
+                        $scope.scrollToBottom();
+                    }
                 }
             }, 5000);
         }
 
-        $scope.toggleUpdate = function () {
+        $scope.toggleUpdate = function (doUpdateLog) {
+            $scope.doUpdateLog = doUpdateLog;
             if ($scope.doUpdateLog) {
                 startUpdateLogInterval();
             } else if ($scope.tailInterval !== null) {
@@ -1226,12 +1260,41 @@ function hydralog() {
             localStorageService.set("doTailLog", $scope.doTailLog);
         };
 
+        $scope.openModal = function openModal(entry) {
+            var modalInstance = $uibModal.open({
+                templateUrl: 'log-entry.html',
+                controller: LogModalInstanceCtrl,
+                size: "xl",
+                resolve: {
+                    entry: function () {
+                        return entry;
+                    }
+                }
+            });
+
+            modalInstance.result.then();
+        };
+
         if ($scope.doUpdateLog) {
             startUpdateLogInterval();
         }
 
     }
 }
+
+angular
+    .module('nzbhydraApp')
+    .controller('LogModalInstanceCtrl', LogModalInstanceCtrl);
+
+function LogModalInstanceCtrl($scope, $uibModalInstance, entry) {
+
+    $scope.entry = entry;
+
+    $scope.ok = function () {
+        $uibModalInstance.dismiss();
+    };
+}
+LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
 
 angular
     .module('nzbhydraApp')
@@ -1244,7 +1307,16 @@ function formatTimestamp() {
     }
 }
 
+angular
+    .module('nzbhydraApp')
+    .filter('formatClassname', formatClassname);
 
+function formatClassname() {
+    return function (fqn) {
+        return fqn.substr(fqn.lastIndexOf(".")+1);
+
+    }
+}
 angular
     .module('nzbhydraApp').directive('focusOn', focusOn);
 

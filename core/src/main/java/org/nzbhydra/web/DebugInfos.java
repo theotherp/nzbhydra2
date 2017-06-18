@@ -2,6 +2,7 @@ package org.nzbhydra.web;
 
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.logging.LogContentProvider;
+import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 
 @RestController
 public class DebugInfos {
@@ -31,6 +30,9 @@ public class DebugInfos {
     @RequestMapping(value = "/internalapi/debuginfos/logfilecontent", method = RequestMethod.GET)
     public GenericResponse logfileContent() {
         try {
+            if (logContentProvider.getLogFileSize() > 5 * 1024 * 1024) {
+                return GenericResponse.notOk("Log file too big");
+            }
             return GenericResponse.ok(logContentProvider.getLog());
         } catch (IOException e) {
             logger.error("Error while getting log file content", e);
@@ -40,9 +42,9 @@ public class DebugInfos {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/jsonlogs", method = RequestMethod.GET)
-    public ResponseEntity<List<HashMap<String, Object>>> logsAsJson(@RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit) {
+    public ResponseEntity<JsonLogResponse> logsAsJson(@RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit) {
         try {
-            List<HashMap<String, Object>> jsonObjects = logContentProvider.getLogsAsJsonLines(offset == null ? 0 : offset, limit == null ? 250 : limit);
+            JsonLogResponse jsonObjects = logContentProvider.getLogsAsJsonLines(offset == null ? 0 : offset, limit == null ? 500 : limit);
             return ResponseEntity.ok(jsonObjects);
         } catch (IOException e) {
             logger.error("Error while getting log file content", e);
