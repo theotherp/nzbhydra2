@@ -92,7 +92,6 @@ public class Stats {
                 "  )\n" +
                 "  countall\n" +
                 "  LEFT OUTER JOIN indexer indexer\n" +
-                "    ON dl.indexer_id = indexer.id\n" +
                 "WHERE dl.indexer_id IN (:indexerIds)\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "GROUP BY indexer.id, indexer.NAME, countall";

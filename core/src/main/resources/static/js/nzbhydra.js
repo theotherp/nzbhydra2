@@ -3651,24 +3651,24 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $inter
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
-            modalInstance.close();
-            if (!isSearchCancelled) {
-                $state.go("root.search.results", {
-                    minsize: $scope.minsize,
-                    maxsize: $scope.maxsize,
-                    minage: $scope.minage,
-                    maxage: $scope.maxage
-                }, {
-                    inherit: true
-                });
-                $scope.tmdbId = undefined;
-                $scope.imdbId = undefined;
-                $scope.tvdbId = undefined;
-            }
-        },
-        function() {
-            modalInstance.close();
-        });
+                modalInstance.close();
+                if (!isSearchCancelled) {
+                    $state.go("root.search.results", {
+                        minsize: $scope.minsize,
+                        maxsize: $scope.maxsize,
+                        minage: $scope.minage,
+                        maxage: $scope.maxage
+                    }, {
+                        inherit: true
+                    });
+                    $scope.tmdbId = undefined;
+                    $scope.imdbId = undefined;
+                    $scope.tvdbId = undefined;
+                }
+            },
+            function () {
+                modalInstance.close();
+            });
         //TODO close modal in case of error
     };
 
@@ -3683,10 +3683,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $inter
                 searchRequestId: function () {
                     return searchRequestId;
                 },
-                onCancel: function() {
+                onCancel: function () {
                     function cancel() {
                         isSearchCancelled = true;
                     }
+
                     return cancel;
                 }
             }

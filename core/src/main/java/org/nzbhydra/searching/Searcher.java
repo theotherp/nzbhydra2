@@ -56,7 +56,7 @@ public class Searcher {
     private final Map<Integer, SearchCacheEntry> searchRequestCache = ExpiringMap.builder()
             .maxSize(20)
             .expirationPolicy(ExpirationPolicy.ACCESSED)
-            .expiration(5, TimeUnit.SECONDS)
+            .expiration(5, TimeUnit.MINUTES)
             .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
             .build();
 
