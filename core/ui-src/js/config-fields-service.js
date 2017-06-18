@@ -493,7 +493,7 @@ function ConfigFields($injector) {
                                 label: 'Apply word restrictions',
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'API searches', value: 'API'},
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
@@ -539,7 +539,7 @@ function ConfigFields($injector) {
                                 label: 'Generate queries',
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'API searches', value: 'API'},
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
@@ -780,7 +780,7 @@ function ConfigFields($injector) {
                                     label: 'Apply restrictions',
                                     options: [
                                         {name: 'Internal searches', value: 'INTERNAL'},
-                                        {name: 'API searches', value: 'EXTERNAL'},
+                                        {name: 'API searches', value: 'API'},
                                         {name: 'All searches', value: 'BOTH'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
@@ -851,7 +851,7 @@ function ConfigFields($injector) {
                                     label: 'Ignore results',
                                     options: [
                                         {name: 'For internal searches', value: 'INTERNAL'},
-                                        {name: 'For API searches', value: 'EXTERNAL'},
+                                        {name: 'For API searches', value: 'API'},
                                         {name: 'For all searches', value: 'BOTH'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
@@ -1620,7 +1620,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                     label: 'Enable for...',
                     options: [
                         {name: 'Internal searches only', value: 'INTERNAL'},
-                        {name: 'API searches only', value: 'EXTERNAL'},
+                        {name: 'API searches only', value: 'API'},
                         {name: 'Internal and API searches', value: 'BOTH'}
                     ]
                 }

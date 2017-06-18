@@ -229,15 +229,12 @@ downloading:
 indexers: []
 main:
   apiKey: null
-  branch: "master"
   configVersion: 1
   backupEverySunday: true
   databaseFile: "./database/nzbhydra"
-  debug: false
   dereferer: null
   externalUrl: null
   firstStart: false
-  gitPath: null
   host: "0.0.0.0"
   httpProxy: null
   httpsProxy: null

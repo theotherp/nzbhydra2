@@ -7648,6 +7648,9 @@ input:focus + .input-group-addon {
 .has-spinner.active {
   cursor: progress;
 }
+.waiting-cursor {
+  cursor: progress;
+}
 .has-spinner.active .spinner {
   opacity: 1;
   width: auto;

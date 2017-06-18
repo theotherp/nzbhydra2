@@ -384,9 +384,9 @@ public class Stats {
 
     private String buildWhereFromStatsRequest(boolean useAnd, StatsRequest statsRequest) {
         return (useAnd ? " AND " : " WHERE ") +
-                (statsRequest.getAfter() != null ? " TIME > TIMESTAMP(" + statsRequest.getAfter().getEpochSecond() + ") " : "") +
+                (statsRequest.getAfter() != null ? " TIME > DATEADD('SECOND', " + statsRequest.getAfter().getEpochSecond() + ", DATE '1970-01-01') " : "") +
                 ((statsRequest.getBefore() != null && statsRequest.getAfter() != null) ? " AND " : " ") +
-                (statsRequest.getBefore() != null ? " TIME < TIMESTAMP(" + statsRequest.getBefore().getEpochSecond() + ") " : "");
+                (statsRequest.getBefore() != null ? " TIME < DATEADD('SECOND', " + statsRequest.getBefore().getEpochSecond() + ", DATE '1970-01-01') " : "");
     }
 
 

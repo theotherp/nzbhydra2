@@ -48,6 +48,7 @@ public class SearchRequest {
     protected Integer season;
     protected String episode;
     protected String author = null;
+    protected long searchRequestId;
 
     private InternalData internalData = new InternalData();
 

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class BasicSearchRequestParameters {
+public class SearchRequestParameters {
 
     protected String query;
     protected Integer offset;
@@ -25,5 +25,7 @@ public class BasicSearchRequestParameters {
     private String tvrageId;
     private String tvdbId;
     private String tvmazeId;
+
+    private long searchRequestId; //Sent by the GUI to identify this search when getting updates for it
 
 }

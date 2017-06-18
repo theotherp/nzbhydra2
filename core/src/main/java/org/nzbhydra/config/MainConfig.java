@@ -46,7 +46,7 @@ public class MainConfig extends ValidatingConfig {
     private boolean useLocalUrlForApiAccess;
 
     public void setDatabaseFile(String databaseFile) {
-        if (!new File(databaseFile).isAbsolute() && !databaseFile.startsWith("./")) {
+        if (databaseFile != null && !new File(databaseFile).isAbsolute() && !databaseFile.startsWith("./")) {
             logger.warn("Database file setting seems to be relative but doesn't start with a \"./\". Will add it");
             databaseFile = "./" + databaseFile;
         }

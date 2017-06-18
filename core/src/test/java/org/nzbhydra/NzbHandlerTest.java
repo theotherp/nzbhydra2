@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -21,6 +22,7 @@ public class NzbHandlerTest {
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
     }
 

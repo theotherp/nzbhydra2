@@ -27,6 +27,7 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchMessageEvent;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
@@ -34,6 +35,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -85,6 +87,8 @@ public abstract class Indexer<T> {
     protected CategoryProvider categoryProvider;
     @Autowired
     protected InfoProvider infoProvider;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
@@ -97,14 +101,18 @@ public abstract class Indexer<T> {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest, offset, limit);
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
         } catch (IndexerSearchAbortedException e) {
             logger.warn("Unexpected error while preparing search");
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName()));
         } catch (IndexerAccessException e) {
             handleIndexerAccessException(e, IndexerApiAccessType.SEARCH); //TODO do I actually need the url?
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName()));
         } catch (Exception e) {
             logger.error("Unexpected error while searching", e);
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
             try {
                 handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //TODO depending on type of error, perhaps not at all because it might be a bug
             } catch (Exception e1) {
@@ -112,6 +120,7 @@ public abstract class Indexer<T> {
             }
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         }
+
 
         return indexerSearchResult;
     }
@@ -239,7 +248,7 @@ public abstract class Indexer<T> {
             error(message);
             apiAccessResult = IndexerAccessResult.API_ERROR;
         } else if (e instanceof IndexerUnreachableException) {
-            message = e.getCause().getMessage();
+            message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             error(message);
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {

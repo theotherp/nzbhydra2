@@ -24,6 +24,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,7 +58,7 @@ public class ExternalApiTest {
         baseConfig.setMain(new MainConfig());
         baseConfig.getMain().setApiKey("apikey");
 
-        when(searchRequestFactory.getSearchRequest(any(), any(), any(), any(), any())).thenReturn(new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 100));
+        when(searchRequestFactory.getSearchRequest(any(), any(), any(), anyLong(), any(), any())).thenReturn(new SearchRequest(SearchSource.API, SearchType.SEARCH, 0, 100));
         when(searcher.search(any())).thenReturn(searchResult);
         when(searchResult.getNumberOfAcceptedResults()).thenReturn(10);
         when(searchResult.getNumberOfProcessedResults()).thenReturn(10);

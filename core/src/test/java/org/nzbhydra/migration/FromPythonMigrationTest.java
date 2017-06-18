@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.migration.FromPythonMigration.MigrationResult;
 import org.nzbhydra.migration.FromPythonMigration.OkHttpResponse;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
@@ -38,6 +39,8 @@ public class FromPythonMigrationTest {
     private SqliteMigration sqliteMigration;
     @Mock
     private ConfigMigrationResult configMigrationResult;
+    @Mock
+    private BackupAndRestore backupAndRestore;
 
     @InjectMocks
     private FromPythonMigration testee = new FromPythonMigration();

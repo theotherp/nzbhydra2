@@ -10,10 +10,12 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.DownloadType;
 import org.nzbhydra.config.DownloaderType;
+import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.config.SearchModuleType;
@@ -41,6 +43,12 @@ public class ConfigMigrationTest {
     @Mock
     private Category categoryMock1;
     @Mock
+    private BaseConfig baseConfig;
+    @Mock
+    private MainConfig mainConfigMock;
+    @Mock
+    private CategoriesConfig categoriesConfigMock;
+    @Mock
     private Category categoryMock2;
     private Category animeCategory = new Category("Anime");
     private Category audioCategory = new Category("Audio");
@@ -52,15 +60,16 @@ public class ConfigMigrationTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        when(baseConfig.getCategoriesConfig()).thenReturn(categoriesConfigMock);
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.getMain().setPort(5076);
-        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig, this.baseConfig);
 
         when(categoryProviderMock.getCategories()).thenReturn(Arrays.asList(categoryMock1, categoryMock2, animeCategory, audioCategory));
         when(categoryMock1.getName()).thenReturn("Movies");
         when(categoryMock2.getName()).thenReturn("Movies HD");
-        baseConfig.getCategoriesConfig().getCategories().add(animeCategory);
-        baseConfig.getCategoriesConfig().getCategories().add(audioCategory);
+        when(this.baseConfig.getCategoriesConfig()).thenReturn(categoriesConfigMock);
+        baseConfig.getCategoriesConfig().setCategories(Arrays.asList(animeCategory, audioCategory));
     }
 
     @Test

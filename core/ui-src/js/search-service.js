@@ -13,13 +13,15 @@ function SearchService($http) {
     return {
         search: search,
         getLastResults: getLastResults,
-        loadMore: loadMore
+        loadMore: loadMore,
+        getMessages: getMessages
     };
 
 
-    function search(category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(searchRequestId, category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
+        searchRequestParameters.searchRequestId = searchRequestId;
         searchRequestParameters.query = query;
         searchRequestParameters.title = title;
         searchRequestParameters.minsize = minsize;
@@ -51,6 +53,10 @@ function SearchService($http) {
         lastExecutedSearchRequestParameters.limit = limit;
 
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
+    }
+
+    function getMessages(searchRequestId) {
+        return $http.get("internalapi/search/messages", {params: {searchrequestid: searchRequestId}});
     }
 
     function processData(response) {

@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
@@ -45,8 +46,11 @@ public class NewznabCheckerTest {
     private BaseConfig baseConfig;
     @Mock
     private SearchingConfig searchingConfig;
+    @Mock
+    private ConfigProvider configProviderMock;
     @InjectMocks
     private NewznabChecker testee = new NewznabChecker();
+
 
     private IndexerConfig indexerConfig;
 
@@ -57,6 +61,7 @@ public class NewznabCheckerTest {
         indexerConfig.setHost("http://127.0.0.1:1234");
         indexerConfig.setApiKey("apikey");
         when(searchingConfig.getTimeout()).thenReturn(1);
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         capsRoot = new CapsRoot();
         capsRoot.setSearching(new CapsSearching());

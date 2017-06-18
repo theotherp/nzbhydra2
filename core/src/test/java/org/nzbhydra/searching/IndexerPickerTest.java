@@ -19,8 +19,10 @@ import org.nzbhydra.database.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.searching.IndexerForSearchSelector.InnerInstance;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 
 import java.time.Instant;
@@ -39,6 +41,8 @@ import java.util.Set;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -71,12 +75,15 @@ public class IndexerPickerTest {
     @Mock
     private SearchingConfig searchingConfig;
     @Mock
+    private ApplicationEventPublisher eventPublisher;
+    @Mock
     private Category category;
 
     private Map<Indexer, String> count;
 
     @InjectMocks
-    private IndexerForSearchSelector testee = new IndexerForSearchSelector();
+    private IndexerForSearchSelector outerClass;
+    private InnerInstance testee;
 
     @Before
     public void setUp() throws Exception {
@@ -90,6 +97,22 @@ public class IndexerPickerTest {
         when(indexerEntity.getStatus()).thenReturn(indexerStatusEntity);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         when(category.getName()).thenReturn("category");
+        testee = outerClass.getInnerInstanceInstance(searchRequest);
+    }
+
+    @Test
+    public void instancesShouldBeDifferent() {
+        SearchRequest searchRequest1 = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        InnerInstance instance1 = outerClass.getInnerInstanceInstance(searchRequest1);
+        SearchRequest searchRequest2 = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 200);
+        InnerInstance instance2 = outerClass.getInnerInstanceInstance(searchRequest2);
+
+        assertThat(instance1.searchRequest, is(searchRequest1));
+        assertThat(instance2.searchRequest, is(searchRequest2));
+
+        instance1.notSelectedIndersWithReason.put(indexer, "message");
+        assertThat(instance1.notSelectedIndersWithReason.size(), is(1));
+        assertThat(instance2.notSelectedIndersWithReason.size(), is(0));
     }
 
     @Test
@@ -98,19 +121,19 @@ public class IndexerPickerTest {
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("anotherIndexer")));
 
-        assertFalse(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
+        assertFalse(testee.checkIndexerSelectedByUser(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
+        assertTrue(testee.checkIndexerSelectedByUser(indexer));
 
 
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("indexer")));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
+        assertTrue(testee.checkIndexerSelectedByUser(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkIndexerSelectedByUser(searchRequest, count, indexer));
+        assertTrue(testee.checkIndexerSelectedByUser(indexer));
     }
 
     @Test
@@ -118,27 +141,27 @@ public class IndexerPickerTest {
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(false);
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(null);
-        assertTrue(testee.checkIndexerStatus(count, indexer));
+        assertTrue(testee.checkIndexerStatus(indexer));
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(Instant.now().plus(1, ChronoUnit.DAYS));
-        assertFalse(testee.checkIndexerStatus(count, indexer));
+        assertFalse(testee.checkIndexerStatus(indexer));
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(Instant.now().minus(1, ChronoUnit.DAYS));
-        assertTrue(testee.checkIndexerStatus(count, indexer));
+        assertTrue(testee.checkIndexerStatus(indexer));
 
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(true);
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(null);
-        assertTrue(testee.checkIndexerStatus(count, indexer));
+        assertTrue(testee.checkIndexerStatus(indexer));
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(Instant.now().plus(1, ChronoUnit.DAYS));
-        assertTrue(testee.checkIndexerStatus(count, indexer));
+        assertTrue(testee.checkIndexerStatus(indexer));
 
         when(indexerStatusEntity.getDisabledUntil()).thenReturn(Instant.now().minus(1, ChronoUnit.DAYS));
-        assertTrue(testee.checkIndexerStatus(count, indexer));
+        assertTrue(testee.checkIndexerStatus(indexer));
 
         when(indexerStatusEntity.getDisabledPermanently()).thenReturn(true);
-        assertFalse(testee.checkIndexerStatus(count, indexer));
+        assertFalse(testee.checkIndexerStatus(indexer));
     }
 
     @Test
@@ -146,29 +169,29 @@ public class IndexerPickerTest {
         when(searchRequest.getCategory()).thenReturn(category);
         when(indexerConfigMock.getEnabledCategories()).thenReturn(Collections.emptyList());
 
-        assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
+        assertTrue(testee.checkDisabledForCategory(indexer));
 
         when(indexerConfigMock.getEnabledCategories()).thenReturn(Arrays.asList("anotherCategory"));
-        assertFalse(testee.checkDisabledForCategory(searchRequest, count, indexer));
+        assertFalse(testee.checkDisabledForCategory(indexer));
 
         when(indexerConfigMock.getEnabledCategories()).thenReturn(Arrays.asList(("category")));
-        assertTrue(testee.checkDisabledForCategory(searchRequest, count, indexer));
+        assertTrue(testee.checkDisabledForCategory(indexer));
     }
 
     @Test
     public void shouldCheckForLoadLimiting() {
         when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.empty());
-        assertTrue(testee.checkLoadLimiting(count, indexer));
+        assertTrue(testee.checkLoadLimiting(indexer));
 
         when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.of(1));
         for (int i = 0; i < 50; i++) {
-            assertTrue(testee.checkLoadLimiting(count, indexer));
+            assertTrue(testee.checkLoadLimiting(indexer));
         }
 
         when(indexerConfigMock.getLoadLimitOnRandom()).thenReturn(Optional.of(2));
         int countNotPicked = 0;
         for (int i = 0; i < 500; i++) {
-            countNotPicked += testee.checkLoadLimiting(count, indexer) ? 0 : 1;
+            countNotPicked += testee.checkLoadLimiting(indexer) ? 0 : 1;
         }
         assertTrue(countNotPicked > 0);
     }
@@ -179,10 +202,10 @@ public class IndexerPickerTest {
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
         when(indexerConfigMock.getEnabledForSearchSource()).thenReturn(SearchSourceRestriction.API);
 
-        assertFalse(testee.checkSearchSource(searchRequest, count, indexer));
+        assertFalse(testee.checkSearchSource(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkSearchSource(searchRequest, count, indexer));
+        assertTrue(testee.checkSearchSource(indexer));
     }
 
     @Test
@@ -192,25 +215,25 @@ public class IndexerPickerTest {
 
         when(searchRequest.getQuery()).thenReturn(Optional.empty());
         when(infoProviderMock.canConvertAny(provided, supported)).thenReturn(true);
-        assertTrue(testee.checkSearchId(searchRequest, count, indexer));
+        assertTrue(testee.checkSearchId(indexer));
 
         //Search ID doesn't matter if a query is provided
         when(searchRequest.getQuery()).thenReturn(Optional.of("a query"));
         when(infoProviderMock.canConvertAny(provided, supported)).thenReturn(false);
-        assertTrue(testee.checkSearchId(searchRequest, count, indexer));
+        assertTrue(testee.checkSearchId(indexer));
 
         //When no IDs are provided and no query is provided the ID check should be successful (might be an update query)
         provided = new HashSet<>();
         when(searchRequest.getQuery()).thenReturn(Optional.empty());
         verify(infoProviderMock, never()).canConvertAny(provided, supported);
-        assertTrue(testee.checkSearchId(searchRequest, count, indexer));
+        assertTrue(testee.checkSearchId(indexer));
     }
 
     @Test
     public void shouldIgnoreHitAndDownloadLimitIfNoneAreSet() {
         when(indexerConfigMock.getHitLimit()).thenReturn(Optional.empty());
         when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.empty());
-        testee.checkIndexerHitLimit(count, indexer);
+        testee.checkIndexerHitLimit(indexer);
         verify(nzbDownloadRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
         verify(indexerApiAccessRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
     }
@@ -219,7 +242,7 @@ public class IndexerPickerTest {
     public void shouldIgnoreHitLimitIfNotYetReached() {
         when(indexerConfigMock.getHitLimit()).thenReturn(Optional.of(10));
         when(indexerApiAccessRepository.findByIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
-        boolean result = testee.checkIndexerHitLimit(count, indexer);
+        boolean result = testee.checkIndexerHitLimit(indexer);
         assertTrue(result);
         verify(indexerApiAccessRepository).findByIndexerOrderByTimeDesc(any(), any());
     }
@@ -228,7 +251,7 @@ public class IndexerPickerTest {
     public void shouldIgnoreDownloadLimitIfNotYetReached() {
         when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.of(10));
         when(nzbDownloadRepository.findByIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
-        boolean result = testee.checkIndexerHitLimit(count, indexer);
+        boolean result = testee.checkIndexerHitLimit(indexer);
         assertTrue(result);
         verify(nzbDownloadRepository).findByIndexerOrderByTimeDesc(any(), any());
     }

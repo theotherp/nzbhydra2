@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,7 @@ public class ExternalApi {
     @Autowired
     private CategoryProvider categoryProvider;
     protected Clock clock = Clock.systemUTC();
+    private Random random = new Random();
 
     private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
@@ -263,7 +265,7 @@ public class ExternalApi {
 
     private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat()), random.nextInt(1000000), params.getOffset(), params.getLimit());
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());

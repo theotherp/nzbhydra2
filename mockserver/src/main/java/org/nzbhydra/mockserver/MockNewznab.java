@@ -105,6 +105,10 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().equals("sleep")) {
+            Thread.sleep(random.nextInt(5000));
+        }
+
         int endIndex;
         int key = 0;
         try {

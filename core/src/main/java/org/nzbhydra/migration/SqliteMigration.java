@@ -51,7 +51,7 @@ public class SqliteMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(SqliteMigration.class);
 
-    private Connection connection;
+    protected Connection connection;
     @Autowired
     private SearchRepository searchRepository;
     @Autowired

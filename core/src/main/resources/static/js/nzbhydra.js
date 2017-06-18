@@ -1211,17 +1211,9 @@ function hydralog() {
             }
         };
 
-        //600 lines
-        //0 + 500 = 500
-        //
-
         $scope.getOlderFormatted = function () {
             getLog($scope.currentJsonIndex + 500).then(function () {
                 $scope.currentJsonIndex += 500;
-                // if ($scope.hasMoreJsonLines) {
-                // } else {
-                //     $scope.currentJsonIndex += $scope.jsonLogLines.length;
-                // }
             });
 
         };
@@ -1313,7 +1305,7 @@ angular
 
 function formatClassname() {
     return function (fqn) {
-        return fqn.substr(fqn.lastIndexOf(".")+1);
+        return fqn.substr(fqn.lastIndexOf(".") + 1);
 
     }
 }
@@ -2761,13 +2753,15 @@ function SearchService($http) {
     return {
         search: search,
         getLastResults: getLastResults,
-        loadMore: loadMore
+        loadMore: loadMore,
+        getMessages: getMessages
     };
 
 
-    function search(category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(searchRequestId, category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
+        searchRequestParameters.searchRequestId = searchRequestId;
         searchRequestParameters.query = query;
         searchRequestParameters.title = title;
         searchRequestParameters.minsize = minsize;
@@ -2799,6 +2793,10 @@ function SearchService($http) {
         lastExecutedSearchRequestParameters.limit = limit;
 
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
+    }
+
+    function getMessages(searchRequestId) {
+        return $http.get("internalapi/search/messages", {params: {searchrequestid: searchRequestId}});
     }
 
     function processData(response) {
@@ -3519,7 +3517,7 @@ angular
     .module('nzbhydraApp')
     .controller('SearchController', SearchController);
 
-function SearchController($scope, $http, $stateParams, $state, $window, $filter, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, blockUI, $element, ModalService, SearchHistoryService) {
+function SearchController($scope, $http, $stateParams, $state, $uibModal, $interval, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, $element, SearchHistoryService) {
 
     function getNumberOrUndefined(number) {
         if (_.isUndefined(number) || _.isNaN(number) || number === "") {
@@ -3532,6 +3530,9 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
             return undefined;
         }
     }
+
+    var searchRequestId = 0;
+    var isSearchCancelled = false;
 
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
@@ -3570,43 +3571,6 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
     var safeConfig = ConfigService.getSafe();
     $scope.showIndexerSelection = HydraAuthService.getUserInfos().showIndexerSelection;
-
-    //Doesn't belong here but whatever
-    var firstStartThreeDaysAgo = ConfigService.getSafe().firstStart < moment().subtract(3, "days").unix();
-    var doShowSurvey = (ConfigService.getSafe().pollShown === 0 && firstStartThreeDaysAgo) || ConfigService.getSafe().pollShown === 1;
-    if (doShowSurvey) {
-        var message;
-        if (ConfigService.getSafe().pollShown === 0) {
-            message = "Dear user, I would like to ask you to answer a short query about NZB Hydra. It is absolutely anonymous and will not take more than a couple of minutes. You would help me a lot!";
-        } else {
-            message = "Dear user, thank you for answering my last survey. Unfortunately I'm an idiot and didn't know that SurveyMonkey would only show me the first 100 results. Please be so kind and answer the new survey :-)";
-        }
-        ModalService.open("User query",
-            message, {
-                yes: {
-                    onYes: function () {
-                        $window.open($filter("dereferer")("https://goo.gl/forms/F3PwtEor2krBxLcR2"), "_blank");
-                        $http.get("internalapi/pollshown", {params: {selection: 1}});
-                        ConfigService.getSafe().pollShown = 2;
-                    },
-                    text: "Yes, I want to help. Take me there."
-                },
-                cancel: {
-                    onCancel: function () {
-                        $http.get("internalapi/pollshown", {params: {selection: 0}});
-                        ConfigService.getSafe().pollShown = 0;
-                    },
-                    text: "Not now. Remind me."
-                },
-                no: {
-                    onNo: function () {
-                        $http.get("internalapi/pollshown", {params: {selection: -1}});
-                        ConfigService.getSafe().pollShown = -1;
-                    },
-                    text: "Nah, feck off!"
-                }
-            });
-    }
 
 
     $scope.typeAheadWait = 300;
@@ -3680,22 +3644,52 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
         }
     };
 
-
     $scope.startSearch = function () {
-        blockUI.start("Searching...");
+        isSearchCancelled = false;
+        searchRequestId = Math.round(Math.random() * 999999);
+        var modalInstance = $scope.openModal(searchRequestId);
+
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
-        SearchService.search($scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
-            $state.go("root.search.results", {
-                minsize: $scope.minsize,
-                maxsize: $scope.maxsize,
-                minage: $scope.minage,
-                maxage: $scope.maxage
-            }, {
-                inherit: true
-            });
-            $scope.tmdbId = undefined;
-            $scope.imdbId = undefined;
-            $scope.tvdbId = undefined;
+        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+            modalInstance.close();
+            if (!isSearchCancelled) {
+                $state.go("root.search.results", {
+                    minsize: $scope.minsize,
+                    maxsize: $scope.maxsize,
+                    minage: $scope.minage,
+                    maxage: $scope.maxage
+                }, {
+                    inherit: true
+                });
+                $scope.tmdbId = undefined;
+                $scope.imdbId = undefined;
+                $scope.tvdbId = undefined;
+            }
+        },
+        function() {
+            modalInstance.close();
+        });
+        //TODO close modal in case of error
+    };
+
+    $scope.openModal = function openModal(searchRequestId) {
+        return $uibModal.open({
+            templateUrl: 'static/html/search-messages.html',
+            controller: SearchUpdateModalInstanceCtrl,
+            size: "md",
+            backdrop: "static",
+            backdropClass: "waiting-cursor",
+            resolve: {
+                searchRequestId: function () {
+                    return searchRequestId;
+                },
+                onCancel: function() {
+                    function cancel() {
+                        isSearchCancelled = true;
+                    }
+                    return cancel;
+                }
+            }
         });
     };
 
@@ -3764,9 +3758,7 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
     };
 
     $scope.toggleIndexer = function (indexer) {
-
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
-
     };
 
 
@@ -3840,7 +3832,45 @@ function SearchController($scope, $http, $stateParams, $state, $window, $filter,
 
 
 }
-SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$window", "$filter", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "blockUI", "$element", "ModalService", "SearchHistoryService"];
+SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$uibModal", "$interval", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "$element", "SearchHistoryService"];
+
+angular
+    .module('nzbhydraApp')
+    .controller('SearchUpdateModalInstanceCtrl', SearchUpdateModalInstanceCtrl);
+
+function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
+
+    var updateSearchMessagesInterval = undefined;
+    $scope.messages = undefined;
+
+    updateSearchMessagesInterval = $interval(function () {
+        SearchService.getMessages(searchRequestId).then(function (data) {
+                $scope.messages = data.data;
+            },
+            function () {
+                $interval.cancel(updateSearchMessagesInterval);
+            }
+        );
+    }, 500);
+
+    $scope.cancelSearch = function () {
+        if (angular.isDefined(updateSearchMessagesInterval)) {
+            $interval.cancel(updateSearchMessagesInterval);
+        }
+        onCancel();
+        $uibModalInstance.dismiss();
+    };
+
+
+    $scope.$on('$destroy', function () {
+        if (angular.isDefined(updateSearchMessagesInterval)) {
+            $interval.cancel(updateSearchMessagesInterval);
+        }
+    });
+
+
+}
+SearchUpdateModalInstanceCtrl.$inject = ["$scope", "$interval", "SearchService", "$uibModalInstance", "searchRequestId", "onCancel"];
 
 angular
     .module('nzbhydraApp')
@@ -5760,7 +5790,7 @@ function ConfigFields($injector) {
                                 label: 'Apply word restrictions',
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'API searches', value: 'API'},
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
@@ -5806,7 +5836,7 @@ function ConfigFields($injector) {
                                 label: 'Generate queries',
                                 options: [
                                     {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'EXTERNAL'},
+                                    {name: 'API searches', value: 'API'},
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
@@ -6047,7 +6077,7 @@ function ConfigFields($injector) {
                                     label: 'Apply restrictions',
                                     options: [
                                         {name: 'Internal searches', value: 'INTERNAL'},
-                                        {name: 'API searches', value: 'EXTERNAL'},
+                                        {name: 'API searches', value: 'API'},
                                         {name: 'All searches', value: 'BOTH'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
@@ -6118,7 +6148,7 @@ function ConfigFields($injector) {
                                     label: 'Ignore results',
                                     options: [
                                         {name: 'For internal searches', value: 'INTERNAL'},
-                                        {name: 'For API searches', value: 'EXTERNAL'},
+                                        {name: 'For API searches', value: 'API'},
                                         {name: 'For all searches', value: 'BOTH'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
@@ -6888,7 +6918,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                     label: 'Enable for...',
                     options: [
                         {name: 'Internal searches only', value: 'INTERNAL'},
-                        {name: 'API searches only', value: 'EXTERNAL'},
+                        {name: 'API searches only', value: 'API'},
                         {name: 'Internal and API searches', value: 'BOTH'}
                     ]
                 }

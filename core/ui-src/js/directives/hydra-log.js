@@ -50,17 +50,9 @@ function hydralog() {
             }
         };
 
-        //600 lines
-        //0 + 500 = 500
-        //
-
         $scope.getOlderFormatted = function () {
             getLog($scope.currentJsonIndex + 500).then(function () {
                 $scope.currentJsonIndex += 500;
-                // if ($scope.hasMoreJsonLines) {
-                // } else {
-                //     $scope.currentJsonIndex += $scope.jsonLogLines.length;
-                // }
             });
 
         };
