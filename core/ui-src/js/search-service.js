@@ -14,7 +14,7 @@ function SearchService($http) {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
-        getMessages: getMessages
+        getSearchState: getSearchState
     };
 
 
@@ -55,8 +55,8 @@ function SearchService($http) {
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
 
-    function getMessages(searchRequestId) {
-        return $http.get("internalapi/search/messages", {params: {searchrequestid: searchRequestId}});
+    function getSearchState(searchRequestId) {
+        return $http.get("internalapi/search/state", {params: {searchrequestid: searchRequestId}});
     }
 
     function processData(response) {

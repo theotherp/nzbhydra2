@@ -159,7 +159,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $inter
 
     $scope.openModal = function openModal(searchRequestId) {
         return $uibModal.open({
-            templateUrl: 'static/html/search-messages.html',
+            templateUrl: 'static/html/search-state.html',
             controller: SearchUpdateModalInstanceCtrl,
             size: "md",
             backdrop: "static",
@@ -327,10 +327,16 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
 
     var updateSearchMessagesInterval = undefined;
     $scope.messages = undefined;
+    $scope.indexerSelectionFinished = false;
+    $scope.indexersSelected = 0;
+    $scope.indexersFinished = 0;
 
     updateSearchMessagesInterval = $interval(function () {
-        SearchService.getMessages(searchRequestId).then(function (data) {
-                $scope.messages = data.data;
+        SearchService.getSearchState(searchRequestId).then(function (data) {
+                $scope.messages = data.data.messages;
+                $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
+                $scope.indexersSelected = data.data.indexersSelected;
+                $scope.indexersFinished = data.data.indexersFinished;
             },
             function () {
                 $interval.cancel(updateSearchMessagesInterval);

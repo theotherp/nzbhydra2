@@ -118,6 +118,8 @@ public class IndexerForSearchSelector {
                 logger.info("Selected {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
             }
 
+            eventPublisher.publishEvent(new IndexerSelectionEvent(searchRequest, selectedIndexers.size()));
+
             return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
         }
 

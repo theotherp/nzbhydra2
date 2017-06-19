@@ -24,6 +24,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
@@ -120,7 +121,7 @@ public abstract class Indexer<T> {
             }
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         }
-
+        eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
 
         return indexerSearchResult;
     }

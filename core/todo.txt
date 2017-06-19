@@ -151,7 +151,7 @@ Improvements
 - rss functionality with configurable caching, with cache interval as parameter
 - option to display indexers' category names instead of mapped ones
 - improved log view in GUI (like in radarr/sonarr except for all messages)
-- Show messages while searching and (somewhat) allow to cancel
+- Show messages and progress while searching and (somewhat) allow to cancel
 
 
 ...

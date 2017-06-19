@@ -2,11 +2,15 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.IndexerSearchFinishedEvent;
+import org.nzbhydra.searching.IndexerSelectionEvent;
 import org.nzbhydra.searching.InternalSearchResultProcessor;
 import org.nzbhydra.searching.SearchMessageEvent;
 import org.nzbhydra.searching.SearchType;
@@ -30,10 +34,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @RestController
 public class Search {
@@ -50,8 +55,9 @@ public class Search {
     private InternalSearchResultProcessor searchResultProcessor;
 
     private SearchResponse response = null;
+    private Lock lock = new ReentrantLock();
 
-    private Map<Long, List<String>> searchMessages = ExpiringMap.builder()
+    private Map<Long, SearchState> searchStates = ExpiringMap.builder()
             .maxSize(100)
             .expiration(30, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
@@ -80,15 +86,15 @@ public class Search {
             response = searchResponse;
         }
 
-        searchMessages.remove(searchRequest.getSearchRequestId());
+        searchStates.remove(searchRequest.getSearchRequestId());
 
         return searchResponse;
     }
 
     @Secured({"ROLE_USER"})
-    @RequestMapping(value = "/internalapi/search/messages", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<String> getSearchMessages(@RequestParam("searchrequestid") long searchRequestId) {
-        return searchMessages.getOrDefault(searchRequestId, Collections.emptyList());
+    @RequestMapping(value = "/internalapi/search/state", produces = MediaType.APPLICATION_JSON_VALUE)
+    public SearchState getSearchState(@RequestParam("searchrequestid") long searchRequestId) {
+        return searchStates.getOrDefault(searchRequestId, new SearchState());
     }
 
     private SearchRequest createSearchRequest(@RequestBody SearchRequestParameters parameters) {
@@ -125,16 +131,51 @@ public class Search {
         }
 
         //Initialize messages for this search request
-        searchMessages.put(searchRequest.getSearchRequestId(), new ArrayList<>());
+        searchStates.put(searchRequest.getSearchRequestId(), new SearchState());
 
         return searchRequest;
     }
 
     @EventListener
-    public void handleSearchMessageEvent(SearchMessageEvent searchMessageEvent) {
-        if (searchMessages.containsKey(searchMessageEvent.getSearchRequest().getSearchRequestId())) {
-            searchMessages.get(searchMessageEvent.getSearchRequest().getSearchRequestId()).add(searchMessageEvent.getMessage());
+    public void handleSearchMessageEvent(SearchMessageEvent event) {
+        if (searchStates.containsKey(event.getSearchRequest().getSearchRequestId())) {
+            lock.lock();
+            SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
+            searchState.getMessages().add(event.getMessage());
+            lock.unlock();
         }
+    }
+
+    @EventListener
+    public void handleIndexerSelectionEvent(IndexerSelectionEvent event) {
+        if (searchStates.containsKey(event.getSearchRequest().getSearchRequestId())) {
+            lock.lock();
+            SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
+            searchState.setIndexerSelectionFinished(true);
+            searchState.setIndexersSelected(event.getIndexersSelected());
+            lock.unlock();
+        }
+    }
+
+    @EventListener
+    public void handleIndexerSearchFinishedEvent(IndexerSearchFinishedEvent event) {
+        if (searchStates.containsKey(event.getSearchRequest().getSearchRequestId())) {
+            lock.lock();
+            SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
+            searchState.setIndexersFinished(searchState.getIndexersFinished() + 1);
+            lock.unlock();
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    private class SearchState {
+
+        private boolean indexerSelectionFinished = false;
+        private int indexersSelected = 0;
+        private int indexersFinished = 0;
+        private List<String> messages = new ArrayList<>();
+
     }
 
 }
