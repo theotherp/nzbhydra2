@@ -102,6 +102,11 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         },
         {
             active: false,
+            state: 'root.system.news',
+            name: "News"
+        },
+        {
+            active: false,
             state: 'root.system.about',
             name: "About"
         }

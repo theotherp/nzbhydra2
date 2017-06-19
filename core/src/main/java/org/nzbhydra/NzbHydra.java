@@ -90,7 +90,7 @@ public class NzbHydra {
             System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
         } else {
             System.setProperty("spring.config.location", (String) options.valueOf("config"));
-            useIfSet(options, "database", "main.databaseFile");
+            useIfSet(options, "database", "main.databaseFolder");
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");

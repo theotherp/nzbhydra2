@@ -1,0 +1,12 @@
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-10">
+        <div class="panel panel-default " ng-repeat="entry in news">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{entry.version}}</h3>
+            </div>
+            <div class="panel-body" ng-bind-html="entry.news">
+            </div>
+        </div>
+    </div>
+</div>

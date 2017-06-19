@@ -26,11 +26,12 @@ Config
 - !! test that yaml is updated with missing/new keys
 - !!on first start initialize config with secret, api key, etc and save to file.
 - make sure existing file is not overwritten with defaults by mistake
-- how to migrate from "old" yaml??
-- what happens when you overwrite a setting from the command line and then save from the GUI?
+- !! (works I guess) how to migrate from "old" yaml??
+- !!show warning: what happens when you overwrite a setting from the command line and then save from the GUI?
 - check for changing of database file. perhaps move old one over
-- make sure that database file starts with ./ for relative paths
-- save indexers in list by name to make finding them easier
+- !! make sure that database file starts with ./ for relative paths
+- !! sort indexers in config by name to make finding them easier
+- how to handle change of database file from GUI?
 
 Downloader support: mostly done
 - sabnzbd
@@ -51,8 +52,9 @@ Indexer support
 - !! checking auth / connection: done
 
 Torrent support
-- special handling
-- downloading directly
+- !! special handling
+- !! downloading directly
+- !! black hole
 
 Updater: Proof of concept with wrapper works
 - update notification
@@ -79,10 +81,10 @@ Backups
 - create periodically (done, but needs to be checked if actually executed
 - create before updating
 - test what happens when search is executed while backup is made
+- how to handle differences in config / database file location between command line parameters, old and new config
 
 Windows GUI
-- perhaps use java gui: https://github.com/kemitix/spring-boot-awt-gui-demo or http://stackoverflow.com/questions/22864008/how-to-configure-spring-boot-with-swing-application
-- in that case updating will get even worse...
+- no windows gui for now, service or console
 
 News
 - poll periodically from repo for news
@@ -109,7 +111,7 @@ General, Ideas
 - !! rss functionality with configurable caching, perhaps with cache interval as parameter
 - banner
 - verify that retrieving user from remoteuser works with form based login and rememberme
-- when no indexers configured / available, on search page show a note and link to config
+- !! when no indexers configured / available, on search page show a note and link to config
 - ! debug tab in system section to execute raw sql queries
 - log API access user agent in info column and show in history?
 - !! proper GUI filtering of search results
@@ -120,8 +122,10 @@ General, Ideas
 - !! option to download torrent file to predefined folder
 - !! caps (don't support audio)
 - !! show special message when no search results were found and/or no indexers were picked
-- add business level logger for json, only log important stuff there
+- !! won't do it: add business level logger for json, only log important stuff there
 - sqlite-jdbc.jar is big, perhaps load only when required?
+- delete *.json.* log files
+- progressbar for search (how many indexers were already searched)
 
 currently not (yet) supported:
 - proxies

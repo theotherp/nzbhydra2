@@ -34,7 +34,7 @@ public class SemanticVersionTest {
         String[] ids = {
                 "ok", "not_ok"
         };
-        new SemanticVersion(0, 0, 0, ids, ids);
+        new SemanticVersion(0, 0, 0);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -63,7 +63,6 @@ public class SemanticVersionTest {
         assertEquals(1, v.major);
         assertEquals(2, v.minor);
         assertEquals(3, v.patch);
-        assertEquals("alpha", v.preRelase[0]);
         assertEquals("1.2.3-alpha.1", v.toString());
     }
 
@@ -80,7 +79,6 @@ public class SemanticVersionTest {
         assertEquals(1, v.major);
         assertEquals(2, v.minor);
         assertEquals(3, v.patch);
-        assertEquals("build", v.buildMeta[0]);
         assertEquals("1.2.3+build.1", v.toString());
     }
 
@@ -90,8 +88,6 @@ public class SemanticVersionTest {
         assertEquals(1, v.major);
         assertEquals(2, v.minor);
         assertEquals(3, v.patch);
-        assertEquals("alpha", v.preRelase[0]);
-        assertEquals("build", v.buildMeta[0]);
         assertEquals("1.2.3-alpha.1+build.1", v.toString());
     }
 

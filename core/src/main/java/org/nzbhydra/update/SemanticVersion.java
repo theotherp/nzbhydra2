@@ -1,79 +1,46 @@
 package org.nzbhydra.update;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 //Taken from http://blog.onyxbits.de/a-fast-java-parser-for-semantic-versioning-with-correct-precedence-ordering-380/
-public final class SemanticVersion implements Comparable<SemanticVersion> {
+
+public final class SemanticVersion implements Comparable<SemanticVersion>, Serializable {
 
     /**
      * Major version number
      */
-    public final int major;
+    public int major;
 
     /**
      * Minor version number
      */
-    public final int minor;
+    public int minor;
 
     /**
      * Patch level
      */
-    public final int patch;
+    public int patch;
 
-    /**
-     * Pre-release tags (potentially empty, but never null)
-     */
-    public final String[] preRelase;
 
-    /**
-     * Build meta data tags (potentially empty, but never null)
-     */
-    public final String[] buildMeta;
-
-    /**
-     * Construct a new plain version object
-     *
-     * @param major major version number. Must not be negative
-     * @param minor minor version number. Must not be negative
-     * @param patch patchlevel. Must not be negative.
-     */
-    public SemanticVersion(int major, int minor, int patch) {
-        this(major, minor, patch, new String[0], new String[0]);
+    public SemanticVersion() {
     }
 
     /**
      * Construct a fully featured version object with all bells and whistles.
-     *
-     * @param major      major version number (must not be negative)
+     *  @param major      major version number (must not be negative)
      * @param minor      minor version number (must not be negative)
      * @param patch      patch level (must not be negative).
-     * @param preRelease pre release identifiers. Must not be null, all parts must match
-     *                   "[0-9A-Za-z-]+".
-     * @param buildMeta  build meta identifiers. Must not be null, all parts must match
-     *                   "[0-9A-Za-z-]+".
      */
-    public SemanticVersion(int major, int minor, int patch, String[] preRelease,
-                           String[] buildMeta) {
+    public SemanticVersion(int major, int minor, int patch) {
         if (major < 0 || minor < 0 || patch < 0) {
             throw new IllegalArgumentException("Versionnumbers must be positive!");
         }
-        this.buildMeta = new String[buildMeta.length];
-        this.preRelase = new String[preRelease.length];
+
         Pattern p = Pattern.compile("[0-9A-Za-z-]+");
-        for (int i = 0; i < preRelease.length; i++) {
-            if (preRelease[i] == null || !p.matcher(preRelease[i]).matches()) {
-                throw new IllegalArgumentException("Pre Release tag: " + i);
-            }
-            this.preRelase[i] = preRelease[i];
-        }
-        for (int i = 0; i < buildMeta.length; i++) {
-            if (buildMeta[i] == null || !p.matcher(buildMeta[i]).matches()) {
-                throw new IllegalArgumentException("Build Meta tag: " + i);
-            }
-            this.buildMeta[i] = buildMeta[i];
-        }
+
 
         this.major = major;
         this.minor = minor;
@@ -96,55 +63,11 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
      * Construct a version object by parsing a string.
      *
      * @param version version in flat string format
-     * @throws ParseException if the version string does not conform to the semver specs.
      */
-    public SemanticVersion(String version) throws ParseException {
-        if (version.startsWith("v")) {
-            version = version.substring(1);
-        }
-        vParts = new int[3];
-        preParts = new ArrayList<String>(5);
-        metaParts = new ArrayList<String>(5);
-        input = version.replace("v", "").toCharArray();
-        if (!stateMajor()) { // Start recursive descend
-            throw new ParseException(version, errPos);
-        }
-        major = vParts[0];
-        minor = vParts[1];
-        patch = vParts[2];
-        preRelase = preParts.toArray(new String[preParts.size()]);
-        buildMeta = metaParts.toArray(new String[metaParts.size()]);
+    public SemanticVersion(String version) {
+        setAsString(version);
     }
 
-    /**
-     * Check if this version has a given build Meta tags.
-     *
-     * @param tag the tag to check for.
-     * @return true if the tag is found in {@link SemanticVersion#buildMeta}.
-     */
-    public boolean hasBuildMeta(String tag) {
-        for (String s : buildMeta) {
-            if (s.equals(tag)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if this version has a given pre release tag.
-     *
-     * @param tag the tag to check for
-     * @return true if the tag is found in {@link SemanticVersion#preRelase}.
-     */
-    public boolean hasPreRelease(String tag) {
-        for (String s : preRelase) {
-            if (s.equals(tag)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Convenience method to check if this version is an update.
@@ -154,6 +77,10 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
      */
     public boolean isUpdateFor(SemanticVersion v) {
         return compareTo(v) > 0;
+    }
+
+    public boolean isSameOrNewer(SemanticVersion v) {
+        return compareTo(v) >= 0;
     }
 
     /**
@@ -166,15 +93,6 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
         return isUpdateFor(v) && (major == v.major);
     }
 
-    /**
-     * Convenience method to check if this is a stable version.
-     *
-     * @return true if the major version number is greater than zero and there are
-     * no pre release tags.
-     */
-    public boolean isStable() {
-        return major > 0 && preRelase.length == 0;
-    }
 
     @Override
     public String toString() {
@@ -184,24 +102,7 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
         ret.append(minor);
         ret.append('.');
         ret.append(patch);
-        if (preRelase.length > 0) {
-            ret.append('-');
-            for (int i = 0; i < preRelase.length; i++) {
-                ret.append(preRelase[i]);
-                if (i < preRelase.length - 1) {
-                    ret.append('.');
-                }
-            }
-        }
-        if (buildMeta.length > 0) {
-            ret.append('+');
-            for (int i = 0; i < buildMeta.length; i++) {
-                ret.append(buildMeta[i]);
-                if (i < buildMeta.length - 1) {
-                    ret.append('.');
-                }
-            }
-        }
+
         return ret.toString();
     }
 
@@ -222,22 +123,7 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
         if (ov.major != major || ov.minor != minor || ov.patch != patch) {
             return false;
         }
-        if (ov.preRelase.length != preRelase.length) {
-            return false;
-        }
-        for (int i = 0; i < preRelase.length; i++) {
-            if (!preRelase[i].equals(ov.preRelase[i])) {
-                return false;
-            }
-        }
-        if (ov.buildMeta.length != buildMeta.length) {
-            return false;
-        }
-        for (int i = 0; i < buildMeta.length; i++) {
-            if (!buildMeta[i].equals(ov.buildMeta[i])) {
-                return false;
-            }
-        }
+
         return true;
     }
 
@@ -248,53 +134,9 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
             result = minor - v.minor;
             if (result == 0) { // Same minor
                 result = patch - v.patch;
-                if (result == 0) { // Same patch
-                    if (preRelase.length == 0 && v.preRelase.length > 0) {
-                        result = 1; // No pre release wins over pre release
-                    }
-                    if (v.preRelase.length == 0 && preRelase.length > 0) {
-                        result = -1; // No pre release wins over pre release
-                    }
-                    if (preRelase.length > 0 && v.preRelase.length > 0) {
-                        int len = Math.min(preRelase.length, v.preRelase.length);
-                        int count = 0;
-                        for (count = 0; count < len; count++) {
-                            result = comparePreReleaseTag(count, v);
-                            if (result != 0) {
-                                break;
-                            }
-                        }
-                        if (result == 0 && count == len) { // Longer version wins.
-                            result = preRelase.length - v.preRelase.length;
-                        }
-                    }
-                }
             }
         }
         return result;
-    }
-
-    private int comparePreReleaseTag(int pos, SemanticVersion ov) {
-        Integer here = null;
-        Integer there = null;
-        try {
-            here = Integer.parseInt(preRelase[pos], 10);
-        } catch (NumberFormatException e) {
-        }
-        try {
-            there = Integer.parseInt(ov.preRelase[pos], 10);
-        } catch (NumberFormatException e) {
-        }
-        if (here != null && there == null) {
-            return -1; // Strings take precedence over numbers
-        }
-        if (here == null && there != null) {
-            return 1; // Strings take precedence over numbers
-        }
-        if (here == null && there == null) {
-            return (preRelase[pos].compareTo(ov.preRelase[pos])); // ASCII compare
-        }
-        return here.compareTo(there); // Number compare
     }
 
     // Parser implementation below
@@ -420,4 +262,26 @@ public final class SemanticVersion implements Comparable<SemanticVersion> {
         errPos = pos;
         return false;
     }
+
+    public String getAsString() {
+        return toString();
+    }
+
+    public void setAsString(String version) {
+        if (version.startsWith("v")) {
+            version = version.substring(1);
+        }
+        vParts = new int[3];
+        preParts = new ArrayList<String>(5);
+        metaParts = new ArrayList<String>(5);
+        input = version.replace("v", "").toCharArray();
+        if (!stateMajor()) { // Start recursive descend
+            throw new RuntimeException("Error whith version number");
+        }
+        major = vParts[0];
+        minor = vParts[1];
+        patch = vParts[2];
+    }
+
+
 }

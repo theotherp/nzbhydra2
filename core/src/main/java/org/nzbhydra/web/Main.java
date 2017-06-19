@@ -1,6 +1,6 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.auth.UserInfos;
+import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.safeconfig.SafeConfig;
@@ -22,7 +22,7 @@ public class Main {
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
-    private UserInfos userInfos;
+    private UserInfosProvider userInfos;
     private SafeConfig safeConfig = null;
 
     private SafeConfig getSafeConfig() {

@@ -8,6 +8,7 @@ import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,6 +53,11 @@ public class MockGithub {
     @RequestMapping(value = "/changelog.md", method = RequestMethod.GET, produces = org.springframework.http.MediaType.TEXT_HTML_VALUE)
     public String changelog() throws Exception {
         return "changelog";
+    }
+
+    @RequestMapping(value = "/theotherp/nzbhydra/master/news.md", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public String news() throws Exception {
+        return "[{\"showForVersion\":{\"major\":2,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news2.0.0\"},{\"showForVersion\":{\"major\":1,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news1.0.0\"},{\"showForVersion\":{\"major\":3,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news3.0.0\"},{\"showForVersion\":{\"major\":0,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news0.0.0\"}]";
     }
 
     @Configuration

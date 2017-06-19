@@ -1,6 +1,6 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.auth.UserInfos;
+import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.web.mapping.BootstrappedData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -19,7 +19,7 @@ import java.security.Principal;
 public class Auth {
 
     @Autowired
-    private UserInfos userInfos;
+    private UserInfosProvider userInfos;
 
     @RequestMapping(value = "/internalapi/askadmin", method = RequestMethod.GET)
     @Secured({"ROLE_ADMIN"})

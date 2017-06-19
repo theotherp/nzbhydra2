@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-public class UserInfos {
+public class UserInfosProvider {
 
     @Autowired
     private ConfigProvider configProvider;

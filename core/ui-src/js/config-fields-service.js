@@ -234,13 +234,13 @@ function ConfigFields($injector) {
                     templateOptions: {label: 'Database'},
                     fieldGroup: [
                         {
-                            key: 'databaseFile',
+                            key: 'databaseFolder',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'text',
-                                label: 'Database file',
+                                label: 'Database folder',
                                 required: true,
-                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders.'
+                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders. Changing this will not move the existing database file(s)'
                             },
                             watcher: {
                                 listener: restartListener
@@ -299,12 +299,13 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'logfilename',
+                            key: 'logFolder',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'text',
-                                label: 'Log file',
-                                required: true
+                                label: 'Log files base folder',
+                                required: true,
+                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders'
                             },
                             watcher: {
                                 listener: restartListener
@@ -397,14 +398,22 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Open browser on startup'
                             }
-                        }
-                        ,
+                        },
                         {
                             key: 'backupEverySunday',
                             type: 'horizontalSwitch',
                             templateOptions: {
-                                type: 'number',
+                                type: 'switch',
                                 label: 'Backup every sunday'
+                            }
+                        },
+                        {
+                            key: 'snowNews',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show news',
+                                help: "Hydra will occasionally show news when opened. You can always find them in the system section"
                             }
                         }
                     ]
@@ -455,7 +464,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Forbidden words',
                                 placeholder: 'separate, with, commas, like, this',
-                                help: "Results with any of these words in the title will be ignored"
+                                help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before"
                             }
                         },
                         {
@@ -464,7 +473,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden regex',
-                                help: 'Must not be present in a title (case insensitive)'
+                                help: 'Must not be present in a title (title is converted to lowercase before)'
                             }
                         },
                         {
@@ -474,7 +483,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Required words',
                                 placeholder: 'separate, with, commas, like, this',
-                                help: "Only results with at least one of these words in the title will be used"
+                                help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
                             }
                         },
                         {
@@ -483,7 +492,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required regex',
-                                help: 'Must be present in a title (case insensitive)'
+                                help: 'Must be present in a title (title is converted to lowercase before)'
                             }
                         },
                         {
@@ -743,7 +752,8 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required words',
-                                    placeholder: 'separate, with, commas, like, this'
+                                    placeholder: 'separate, with, commas, like, this',
+                                    help: "Title is converted to lowercase before"
                                 }
                             },
                             {
@@ -752,7 +762,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required regex',
-                                    help: 'Must be present in a title (case insensitive)'
+                                    help: 'Must be present in a title (title is converted to lowercase before)'
                                 }
                             },
                             {
@@ -761,7 +771,8 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden words',
-                                    placeholder: 'separate, with, commas, like, this'
+                                    placeholder: 'separate, with, commas, like, this',
+                                    help: "Title is converted to lowercase before"
                                 }
                             },
                             {
@@ -770,7 +781,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden regex',
-                                    help: 'Must not be present in a title (case insensitive)'
+                                    help: 'Must not be present in a title (title is converted to lowercase before)'
                                 }
                             },
                             {

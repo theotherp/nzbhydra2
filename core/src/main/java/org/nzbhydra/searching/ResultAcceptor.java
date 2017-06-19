@@ -180,7 +180,7 @@ public class ResultAcceptor {
 
     protected boolean checkForForbiddenGroup(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getGroup().isPresent()) {
-            if (configProvider.getBaseConfig().getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().get().contains(x))) {
+            if (configProvider.getBaseConfig().getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().isPresent() && item.getGroup().get().contains(x))) {
                 logger.debug("Found forbidden group {}", item.getGroup().get());
                 reasonsForRejection.add("In forbidden group");
                 return false;
@@ -191,7 +191,7 @@ public class ResultAcceptor {
 
     protected boolean checkForForbiddenPoster(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getPoster().isPresent()) {
-            if (configProvider.getBaseConfig().getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().get().contains(x))) {
+            if (configProvider.getBaseConfig().getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().isPresent() && item.getPoster().get().contains(x))) {
                 logger.debug("Found forbidden poster {}", item.getPoster().get());
                 reasonsForRejection.add("In forbidden poster");
                 return false;
@@ -201,12 +201,12 @@ public class ResultAcceptor {
     }
 
     protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex) {
-        if (!Strings.isNullOrEmpty(requiredRegex) && !Pattern.compile(requiredRegex).matcher(item.getTitle()).find()) {
+        if (!Strings.isNullOrEmpty(requiredRegex) && !Pattern.compile(requiredRegex).matcher(item.getTitle().toLowerCase()).find()) {
             logger.debug("Did not find required regex in {}", item.getTitle());
             reasonsForRejection.add("Required regex doesn't match");
             return false;
         }
-        if (!Strings.isNullOrEmpty(forbiddenRegex) && Pattern.compile(forbiddenRegex).matcher(item.getTitle()).find()) {
+        if (!Strings.isNullOrEmpty(forbiddenRegex) && Pattern.compile(forbiddenRegex).matcher(item.getTitle().toLowerCase()).find()) {
             logger.debug("Found forbidden regex in {}", item.getTitle());
             reasonsForRejection.add("Forbidden regex matches");
             return false;

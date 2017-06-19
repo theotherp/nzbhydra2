@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class BaseConfig extends ValidatingConfig {
     public void replace(BaseConfig newConfig) {
         main = newConfig.getMain();
         categoriesConfig = newConfig.getCategoriesConfig();
-        indexers = newConfig.getIndexers();
+        indexers = newConfig.getIndexers().stream().sorted(Comparator.comparing(IndexerConfig::getName)).collect(Collectors.toList());
         downloading = newConfig.getDownloading();
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();

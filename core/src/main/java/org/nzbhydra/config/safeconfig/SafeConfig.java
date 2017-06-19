@@ -16,6 +16,7 @@ public class SafeConfig {
     private SafeSearchingConfig searching;
     private SafeDownloadingConfig downloading;
     private SafeLoggingConfig logging;
+    private boolean showNews;
 
     private List<SafeIndexerConfig> indexers;
 
@@ -27,6 +28,7 @@ public class SafeConfig {
         this.logging = new SafeLoggingConfig(baseConfig.getMain().getLogging());
         this.indexers = baseConfig.getIndexers().stream().map(SafeIndexerConfig::new).collect(Collectors.toList());
         this.categoriesConfig = new SafeCategoriesConfig(baseConfig.getCategoriesConfig());
+        this.showNews = baseConfig.getMain().isShowNews();
     }
 
     public String getAuthType() {

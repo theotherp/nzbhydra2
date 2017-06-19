@@ -115,7 +115,7 @@ public class IndexerForSearchSelector {
             if (selectedIndexers.isEmpty()) {
                 logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled");
             } else {
-                logger.info("Picked {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
+                logger.info("Selected {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
             }
 
             return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
@@ -184,8 +184,10 @@ public class IndexerForSearchSelector {
                             && (searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().isEmpty())
                             && !searchRequest.getIndexers().get().contains(indexer.getName());
             if (indexerNotSelectedByUser) {
-                String message = String.format("Not using %s because it was not selected by the user", indexer.getName());
-                return handleIndexerNotSelected(indexer, message, "Not selected by the user");
+                //Don't send a search log message for this because showing it to the leader would be useless. He knows he hasn't selected it
+                logger.info(String.format("Not using %s because it was not selected by the user", indexer.getName()));
+                notSelectedIndersWithReason.put(indexer, "Not selected by the user");
+                return false;
             }
             return true;
         }

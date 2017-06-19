@@ -21,7 +21,7 @@ public class MainConfig extends ValidatingConfig {
     private String apiKey = null;
     private Integer configVersion;
     private boolean backupEverySunday;
-    private String databaseFile;
+    private String databaseFolder;
     private String dereferer;
     @SensitiveData
     private String externalUrl = null;
@@ -33,6 +33,7 @@ public class MainConfig extends ValidatingConfig {
     private int port;
     private String repositoryBase;
     private String secret;
+    private boolean showNews;
     private boolean shutdownForRestart;
     private String socksProxy = null;
     private boolean ssl;
@@ -45,12 +46,15 @@ public class MainConfig extends ValidatingConfig {
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
 
-    public void setDatabaseFile(String databaseFile) {
-        if (databaseFile != null && !new File(databaseFile).isAbsolute() && !databaseFile.startsWith("./")) {
+    public void setDatabaseFolder(String databaseFolder) {
+        if (databaseFolder != null && !new File(databaseFolder).isAbsolute() && !databaseFolder.startsWith("./")) {
             logger.warn("Database file setting seems to be relative but doesn't start with a \"./\". Will add it");
-            databaseFile = "./" + databaseFile;
+            databaseFolder = "./" + databaseFolder;
         }
-        this.databaseFile = databaseFile;
+        if (databaseFolder != null && databaseFolder.endsWith("/")) {
+            databaseFolder = databaseFolder.substring(0, databaseFolder.length() - 1);
+        }
+        this.databaseFolder = databaseFolder;
     }
 
     public Optional<String> getExternalUrl() {
@@ -88,6 +92,7 @@ public class MainConfig extends ValidatingConfig {
     public Optional<String> getDereferer() {
         return Optional.ofNullable(dereferer);
     }
+
 
     @Override
     public ConfigValidationResult validateConfig() {

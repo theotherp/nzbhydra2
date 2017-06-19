@@ -231,8 +231,8 @@ main:
   apiKey: null
   configVersion: 1
   backupEverySunday: true
-  databaseFile: "./database/nzbhydra"
-  dereferer: null
+  databaseFolder: "./database"
+  dereferer: "http://www.dereferer.org/?$s"
   externalUrl: null
   firstStart: false
   host: "0.0.0.0"
@@ -242,7 +242,7 @@ main:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
     logfilelevel: "INFO"
-    logfilename: "logs"
+    logFolder: "./logs"
     logMaxSize: 10
     logIpAddresses: true
     logMaxDays: 30
@@ -250,6 +250,7 @@ main:
   port: 5076
   repositoryBase: "https://github.com/theotherp"
   secret: "TODO generate"
+  showNews: true
   shutdownForRestart: false
   socksProxy: null
   ssl: false

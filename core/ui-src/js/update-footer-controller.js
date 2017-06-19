@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
 
-function UpdateFooterController($scope, UpdateService, HydraAuthService) {
+function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, $uibModal, ConfigService) {
 
     $scope.updateAvailable = false;
     $scope.checked = false;
@@ -37,6 +37,38 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService) {
 
     $scope.showChangelog = function () {
         UpdateService.showChanges();
+    };
+
+    if (ConfigService.getSafe().showNews) {
+        return $http.get("internalapi/news/forcurrentversion").success(function (data) {
+            if (data && data.length > 0) {
+                $uibModal.open({
+                    templateUrl: 'static/html/news-modal.html',
+                    controller: NewsModalInstanceCtrl,
+                    size: "lg",
+                    resolve: {
+                        news: function () {
+                            return data;
+                        }
+                    }
+                });
+                $http.put("internalapi/news/saveshown");
+            }
+        });
     }
 
+
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
+
+function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
+
+    $scope.news = news;
+
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
 }

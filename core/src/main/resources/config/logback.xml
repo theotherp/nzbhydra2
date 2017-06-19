@@ -1,5 +1,5 @@
 <configuration>
-    <springProperty scope="context" name="logging.folder" source="main.logging.logfilename" defaultValue="logs"/>
+    <springProperty scope="context" name="logging.folder" source="main.logging.logFolder" defaultValue="./logs"/>
     <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="10"/>

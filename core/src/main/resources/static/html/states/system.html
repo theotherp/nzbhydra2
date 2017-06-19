@@ -31,7 +31,11 @@
         <ng-include src="'static/html/bugreport.html'"></ng-include>
     </div>
 
-    <div class="system-tab-content" ng-if="activeTab==5">
+    <div class="system-tab-content" ng-if="activeTab==5" style="text-align: left">
+        <hydra-news></hydra-news>
+    </div>
+
+    <div class="system-tab-content" ng-if="activeTab==6">
         <ng-include src="'static/html/about.html'"></ng-include>
     </div>
 </div>

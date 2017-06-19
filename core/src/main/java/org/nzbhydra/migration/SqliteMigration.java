@@ -68,8 +68,8 @@ public class SqliteMigration {
     };
 
     @Transactional
-    public List<String> migrate(String databaseFile) throws IOException, SQLException {
-        try (Connection innerConnection = DriverManager.getConnection("jdbc:sqlite:" + databaseFile)) {
+    public List<String> migrate(String databaseFolder) throws IOException, SQLException {
+        try (Connection innerConnection = DriverManager.getConnection("jdbc:sqlite:" + databaseFolder)) {
             connection = innerConnection;
             logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
 

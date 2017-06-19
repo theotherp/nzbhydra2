@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -106,7 +105,7 @@ public class UpdateManager implements InitializingBean {
                 try {
                     //Newest version first
                     return new SemanticVersion(o2.getTagName()).compareTo(new SemanticVersion(o1.getTagName()));
-                } catch (ParseException e) {
+                } catch (RuntimeException e) {
                     logger.error("Error comparing versions {} and {}", o1, o2);
                     return 0;
                 }
@@ -122,7 +121,7 @@ public class UpdateManager implements InitializingBean {
 
             String html = Markdown.renderMarkdownAsHtml(allChanges);
             return html;
-        } catch (IOException | ParseException e) {
+        } catch (IOException | RuntimeException e) {
             throw new UpdateException("Error while getting changelog", e);
         }
     }
@@ -169,10 +168,10 @@ public class UpdateManager implements InitializingBean {
             if (Instant.now().minus(15, ChronoUnit.MINUTES).isAfter(lastCheckedForNewVersion)) {
                 Release latestRelease = getLatestRelease();
                 latestVersion = new SemanticVersion(latestRelease.getTagName());
-                lastCheckedForNewVersion = Instant.now(); //Save first, in case of errors will try again later
+                lastCheckedForNewVersion = Instant.now();
             }
             return latestVersion;
-        } catch (ParseException e) {
+        } catch (RuntimeException e) {
             throw new UpdateException("Error while checking for latest version", e);
         } finally {
             lock.unlock();

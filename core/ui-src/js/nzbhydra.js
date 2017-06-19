@@ -417,6 +417,29 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                 }
             }
         })
+        .state("root.system.news", {
+            url: "/news",
+            views: {
+                'container@': {
+                    templateUrl: "static/html/states/system.html",
+                    controller: "SystemController",
+                    resolve: {
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        }],
+                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.getSafe();
+                        }],
+                        activeTab: [function () {
+                            return 5;
+                        }],
+                        $title: function ($stateParams) {
+                            return "System (News)"
+                        }
+                    }
+                }
+            }
+        })
         .state("root.system.about", {
             url: "/about",
             views: {
