@@ -1,0 +1,25 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>bin</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <!--Would prefer to use a moduleset here or otherwise reference the -exec.jar but didn't get it to work-->
+            <directory>../core/target</directory>
+            <outputDirectory>./lib/</outputDirectory>
+            <includes>
+                <include>*exec.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <!--Would prefer to use a moduleset here or otherwise reference the -exec.jar but didn't get it to work-->
+            <directory>include</directory>
+            <outputDirectory>./</outputDirectory>
+            <lineEnding>unix</lineEnding>
+        </fileSet>
+    </fileSets>
+</assembly>

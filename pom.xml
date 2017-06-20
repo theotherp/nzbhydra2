@@ -4,27 +4,10 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
-        <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
-        <jackson.version>2.8.9</jackson.version>
-        <lombok.version>1.16.16</lombok.version>
-        <guava.version>20.0</guava.version>
-        <spring.oxm.version>4.3.9.RELEASE</spring.oxm.version>
-        <spring.security.test.version>4.2.3.RELEASE</spring.security.test.version>
-        <spring.test.version>4.3.9.RELEASE</spring.test.version>
-        <logback.version>1.2.3</logback.version>
-    </properties>
-
     <groupId>org.nzbhydra</groupId>
     <artifactId>parentpom</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Usenet meta search</name>
 
     <modules>
@@ -32,8 +15,9 @@
         <module>mapping</module>
         <module>mockserver</module>
         <module>tests</module>
+        <module>windows-release</module>
+        <module>linux-release</module>
     </modules>
-
 
     <build>
         <pluginManagement>
@@ -41,14 +25,27 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.6.1</version>
                     <configuration>
-                        <source>${maven.compiler.source}</source>
-                        <target>${maven.compiler.source}</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
+
+
+        <plugins>
+
+
+        </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
