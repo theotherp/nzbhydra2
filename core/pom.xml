@@ -3,33 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.nzbhydra</groupId>
-    <artifactId>core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <modules>
-        <!--<module>../tests</module>-->
-    </modules>
-    <packaging>jar</packaging>
-
-    <name>core</name>
-    <description>Demo project for Spring Boot</description>
-
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.2.RELEASE</version>
-        <relativePath/>
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>parentpom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jetty.version>9.1.0.v20131115</jetty.version>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
-    </properties>
+    <artifactId>core</artifactId>
 
     <build>
         <plugins>
@@ -57,35 +37,19 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-assembly-plugin</artifactId>-->
-            <!--<version>3.0.0</version>-->
-            <!--<configuration>-->
-            <!--<descriptorRefs>-->
-            <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
-            <!--</descriptorRefs>-->
-
-            <!--</configuration>-->
-            <!--<executions>-->
-            <!--<execution>-->
-            <!--<id>assemble-all</id>-->
-            <!--<phase>package</phase>-->
-            <!--<goals>-->
-            <!--<goal>single</goal>-->
-            <!--</goals>-->
-            <!--</execution>-->
-            <!--</executions>-->
-            <!--</plugin>-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>1.5.2.RELEASE</version>
+                <version>${spring.boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <!--Add classifier to fat jar because otherwise depending modules won't find classes in the JAR-->
+                            <classifier>exec</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -93,45 +57,53 @@
     </build>
 
     <dependencies>
+        <!-- internal -->
+        <dependency>
+            <groupId>org.nzbhydra</groupId>
+            <artifactId>mapping</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!-- spring (boot) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-oxm</artifactId>
-            <version>4.2.4.RELEASE</version>
+            <version>${spring.oxm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>${spring.boot.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -152,34 +124,28 @@
             <version>3.16.1</version>
         </dependency>
 
-        <!-- internal -->
-        <dependency>
-            <groupId>org.nzbhydra</groupId>
-            <artifactId>mapping</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-
         <!--Jackson-->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>2.8.6</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.8.4</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.8.7</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!-- Misc -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -190,6 +156,7 @@
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring4</artifactId>
+            <version>3.0.6.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -242,6 +209,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
+            <version>${spring.boot.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -249,7 +217,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -266,12 +234,18 @@
             <artifactId>logback-access</artifactId>
             <version>1.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
 
         <!-- tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>1.5.2.RELEASE</version>
+            <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>core</artifactId>
-        <groupId>org.nzbhydra</groupId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../core/pom.xml</relativePath>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>parentpom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
 
     <artifactId>tests</artifactId>
 
@@ -22,21 +22,24 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>20.0</version>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
 
         <dependency>
@@ -48,6 +51,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.boot.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
@@ -58,12 +62,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
+            <version>${spring.boot.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <version>${spring.boot.version}</version>
         </dependency>
 
         <dependency>
@@ -72,21 +77,15 @@
             <version>3.10.4</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>RELEASE</version>
+            <version>${spring.test.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.nzbhydra</groupId>
-            <artifactId>core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${spring.security.test.version}</version>
         </dependency>
 
     </dependencies>

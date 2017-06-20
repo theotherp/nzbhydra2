@@ -3,57 +3,46 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.nzbhydra</groupId>
-    <artifactId>mockserver</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>mockserver</name>
-    <description>Mock server to serve GitHub and newznab and other requests</description>
-
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.2.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>parentpom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-    </properties>
+    <artifactId>mockserver</artifactId>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-oxm</artifactId>
-            <version>4.2.4.RELEASE</version>
-        </dependency>
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-oxm</artifactId>
+            <version>${spring.oxm.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.boot.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -63,6 +52,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
             </plugin>
         </plugins>
     </build>
