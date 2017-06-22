@@ -2500,8 +2500,8 @@ function StatsService($http) {
         getDownloadHistory: getDownloadHistory
     };
 
-    function getStats(after, before) {
-        return $http.post("internalapi/stats", {after: after, before: before}).success(function (response) {
+    function getStats(after, before, includeDisabled) {
+        return $http.post("internalapi/stats", {after: after, before: before, includeDisabled: includeDisabled}).success(function (response) {
             return response.data;
         });
     }
@@ -2540,7 +2540,7 @@ angular
     .module('nzbhydraApp')
     .controller('StatsController', StatsController);
 
-function StatsController($scope, $filter, StatsService, blockUI) {
+function StatsController($scope, $filter, StatsService, blockUI, localStorageService) {
 
     $scope.dateOptions = {
         dateDisabled: false,
@@ -2551,6 +2551,9 @@ function StatsController($scope, $filter, StatsService, blockUI) {
     var initializingBefore = true;
     $scope.afterDate = moment().subtract(30, "days").toDate();
     $scope.beforeDate = moment().add(1, "days").toDate();
+    $scope.foo = {
+        includeDisabledIndexersInStats: localStorageService.get("includeDisabledIndexersInStats") !== null ? localStorageService.get("includeDisabledIndexersInStats") : false
+    };
     updateStats();
 
 
@@ -2570,11 +2573,16 @@ function StatsController($scope, $filter, StatsService, blockUI) {
         opened: false
     };
 
+    $scope.toggleIncludeDisabledIndexers = function(){
+        localStorageService.set("includeDisabledIndexersInStats", $scope.foo.includeDisabledIndexersInStats);
+        updateStats();
+    };
+
     function updateStats() {
         blockUI.start("Updating stats...");
         var after = $scope.afterDate != null ? $scope.afterDate : null;
         var before = $scope.beforeDate != null ? $scope.beforeDate : null;
-        StatsService.get(after, before).then(function (stats) {
+        StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
             $scope.setStats(stats);
         });
 
@@ -2819,7 +2827,7 @@ function StatsController($scope, $filter, StatsService, blockUI) {
 
 
 }
-StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI"];
+StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService"];
 
 //
 angular

@@ -72,7 +72,7 @@ public class Stats {
     }
 
     private List<IndexerDownloadShare> getIndexerDownloadShares(final StatsRequest statsRequest) {
-        if (searchModuleProvider.getEnabledIndexers().size() == 0) {
+        if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
         }
@@ -97,7 +97,7 @@ public class Stats {
                 "GROUP BY indexer.id, indexer.NAME, countall";
 
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("indexerIds", searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
+        query.setParameter("indexerIds", searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
         List resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
@@ -134,7 +134,7 @@ public class Stats {
                 "ORDER BY avgIndexerResponseTime ASC NULLS LAST";
 
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("indexerIds", searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
+        query.setParameter("indexerIds", searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
         List resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
@@ -205,7 +205,8 @@ public class Stats {
                 "          )) AND INDEXERSEARCH.successful\n" +
                 "         )) FORALL";
 
-        for (Indexer indexer : searchModuleProvider.getEnabledIndexers()) {
+        List<Indexer> indexersToInclude = statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers();
+        for (Indexer indexer : indexersToInclude) {
             Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerId", indexer.getIndexerEntity().getId());
 
             Object[] resultSet = (Object[]) countQuery.getSingleResult();
@@ -234,7 +235,7 @@ public class Stats {
 
 
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
-        List<Integer> enabledIndexerIds = searchModuleProvider.getEnabledIndexers().stream().map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
+        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
         String countByResultSql = "SELECT \n" +
                 "  INDEXER.ID AS indexerid,\n" +
                 "  x.counter as counter \n" +
@@ -266,7 +267,7 @@ public class Stats {
                 "ORDER BY INDEXER_ID NULLS LAST";
 
         Query countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", enabledIndexerIds);
+        countQuery.setParameter("indexerIds", indexerIdsToInclude);
         countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.SUCCESSFUL.name()));
 
         Map<Integer, BigInteger> successCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
@@ -275,28 +276,28 @@ public class Stats {
 
 
         countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", enabledIndexerIds);
+        countQuery.setParameter("indexerIds", indexerIdsToInclude);
         countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.CONNECTION_ERROR.name()));
         Map<Integer, BigInteger> connectionErrorCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
         countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", enabledIndexerIds);
+        countQuery.setParameter("indexerIds", indexerIdsToInclude);
         countQuery.setParameter("resultTypes", Arrays.stream(IndexerAccessResult.values()).map(Enum::name).collect(Collectors.toList()));
         Map<Integer, BigInteger> allAccessesCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
                 HashMap::putAll);
 
         countQuery = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
-        countQuery.setParameter("indexerIds", enabledIndexerIds);
+        countQuery.setParameter("indexerIds", indexerIdsToInclude);
         Map<Integer, Double> accessesPerDayCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
                 (map, i) -> map.put((Integer) i[0], (Double) i[1]),
                 HashMap::putAll);
 
 
         List<IndexerApiAccessStatsEntry> indexerApiAccessStatsEntries = new ArrayList<>();
-        for (Integer id : enabledIndexerIds) {
+        for (Integer id : indexerIdsToInclude) {
             IndexerApiAccessStatsEntry entry = new IndexerApiAccessStatsEntry();
             IndexerEntity indexerEntity = indexerRepository.findOne(id);
             entry.setIndexerName(indexerEntity.getName());

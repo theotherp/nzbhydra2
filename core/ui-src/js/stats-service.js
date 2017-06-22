@@ -9,8 +9,8 @@ function StatsService($http) {
         getDownloadHistory: getDownloadHistory
     };
 
-    function getStats(after, before) {
-        return $http.post("internalapi/stats", {after: after, before: before}).success(function (response) {
+    function getStats(after, before, includeDisabled) {
+        return $http.post("internalapi/stats", {after: after, before: before, includeDisabled: includeDisabled}).success(function (response) {
             return response.data;
         });
     }

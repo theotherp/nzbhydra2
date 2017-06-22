@@ -106,12 +106,12 @@ public class StatsComponentTest {
         apiAccessRepository.save(apiAccess3);
 
         //Access #3 is not included
-        List<AverageResponseTime> averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now()));
+        List<AverageResponseTime> averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now(), true));
         assertEquals(1, averageResponseTimes.size());
         assertEquals(1500D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
 
         //Access #3 is included
-        averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(101, ChronoUnit.DAYS), Instant.now()));
+        averageResponseTimes = stats.averageResponseTimes(new StatsRequest(Instant.now().minus(101, ChronoUnit.DAYS), Instant.now(), true));
         assertEquals(1, averageResponseTimes.size());
         assertEquals(2333D, averageResponseTimes.get(0).getAvgResponseTime(), 0D);
     }
@@ -129,7 +129,7 @@ public class StatsComponentTest {
         searchRepository.save(Arrays.asList(searchFriday, searchThursday1, searchThursday2, searchSunday));
 
 
-        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("SEARCH", new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS)));
+        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("SEARCH", new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS), true));
         assertEquals(7, result.size());
 
         assertEquals("Thu", result.get(3).getDay());
@@ -161,7 +161,7 @@ public class StatsComponentTest {
         downloadRepository.save(Arrays.asList(downloadFriday, downloadSunday, downloadThursday1, downloadThursday2));
 
 
-        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(downloadFriday.getTime().minus(10, ChronoUnit.DAYS), downloadFriday.getTime().plus(10, ChronoUnit.DAYS)));
+        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(downloadFriday.getTime().minus(10, ChronoUnit.DAYS), downloadFriday.getTime().plus(10, ChronoUnit.DAYS), true));
         assertEquals(7, result.size());
 
         assertEquals("Thu", result.get(3).getDay());
@@ -187,7 +187,7 @@ public class StatsComponentTest {
         searchRepository.save(Arrays.asList(search12, search16a, search16b, search23));
 
 
-        List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS)));
+        List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS), true));
         assertEquals(24, result.size());
         assertEquals(Integer.valueOf(1), result.get(12).getCount());
         assertEquals(Integer.valueOf(2), result.get(16).getCount());
@@ -215,14 +215,14 @@ public class StatsComponentTest {
         apiAccess4.setTime(Instant.now().minus(14, ChronoUnit.DAYS));
         apiAccessRepository.save(apiAccess4);
 
-        List<IndexerApiAccessStatsEntry> result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS)));
+        List<IndexerApiAccessStatsEntry> result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
         assertEquals(1, result.size());
         //One yesterday, two today: 1.5 on average
         assertEquals(1.5D, result.get(0).getAverageAccessesPerDay(), 0D);
         //One with connection error, one with another error, one successful
         assertEquals(33D, result.get(0).getPercentSuccessful(), 1D);
 
-        result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(20, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS)));
+        result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(20, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
         assertEquals(1, result.size());
         //One yesterday, two today, one 14 days ago: 4/3=1.33 on average
         assertEquals(1.33D, result.get(0).getAverageAccessesPerDay(), 0.01D);
@@ -283,7 +283,7 @@ public class StatsComponentTest {
         }
 
 
-        List<IndexerSearchResultsShare> result = stats.getIndexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS)));
+        List<IndexerSearchResultsShare> result = stats.getIndexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
         assertEquals(2, result.size());
         assertEquals("indexer1", result.get(0).getIndexerName());
         assertNotNull(result.get(0).getTotalShare());
