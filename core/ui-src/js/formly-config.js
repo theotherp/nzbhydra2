@@ -88,7 +88,11 @@ angular
             ].join(' '),
             controller: function ($scope) {
                 $scope.generate = function () {
-                    $scope.model[$scope.options.key] = (Math.random() * 1e32).toString(36);
+                    var result = "";
+                    var length = 24;
+                    var chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+                    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+                    $scope.model[$scope.options.key] = result;
                 }
             }
         });
@@ -97,7 +101,6 @@ angular
             name: 'testConnection',
             templateUrl: 'button-test-connection.html'
         });
-
 
         formlyConfigProvider.setType({
             name: 'horizontalTestConnection',

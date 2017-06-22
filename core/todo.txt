@@ -125,10 +125,15 @@ General, Ideas
 - !! won't do it: add business level logger for json, only log important stuff there
 - sqlite-jdbc.jar is big, perhaps load only when required?
 - delete *.json.* log files
-- progressbar for search (how many indexers were already searched)
+- !! progressbar for search (how many indexers were already searched)
+- make sure indexer caps config is complete, don't enable until so
+- button to switch inclusion of currently disabled indexers in stats
+- category parsing is not reliable. perhaps try to parse the category name given in the main category tag first and then go by newznab category
+- !! apikey generation in chrome only uses the first half of the available characters
 
 currently not (yet) supported:
 - proxies
+- multiple query generations per search
 
 
 ++++
