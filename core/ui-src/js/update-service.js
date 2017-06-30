@@ -78,7 +78,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
         $http.get("internalapi/updates/installUpdate").then(function (data) {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                RestartService.restart("Shutting down Hydra for Update.");
+                RestartService.restart("Downloaded update. Shutting down Hydra for wrapper to execute update.");
             },
             function () {
                 blockUI.reset();

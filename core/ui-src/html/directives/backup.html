@@ -1,9 +1,6 @@
 <div style="text-align: left; margin: auto; width: 800px">
 
-    <a href="internalapi/backup/backup" target="_self">
-        <button class="btn btn-primary">Create and download backup</button>
-    </a>
-
+    <button class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>
 
     <br>
     <br>
@@ -23,6 +20,7 @@
                 <th class="col-md-1" style="text-align: left">Restore</th>
             </tr>
             <tr ng-repeat="backup in backups" class="row">
+                <!--<td class="col-md-15" style="text-align: left"><a href="internalapi/getbackupfile?filename={{ backup.filename }}" target="_self">{{ backup.filename }}</a></td>-->
                 <td class="col-md-15" style="text-align: left"><a href="internalapi/getbackupfile?filename={{ backup.filename }}" target="_self">{{ backup.filename }}</a></td>
                 <td class="col-md-4" style="text-align: left">{{ backup.creationDate | reformatDate }}</td>
                 <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat" ng-click="restoreFromFile(backup.filename)"></span></td>

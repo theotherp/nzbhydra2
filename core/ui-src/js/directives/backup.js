@@ -21,7 +21,9 @@ function hydrabackup() {
 
 
         $scope.createAndDownloadBackupFile = function () {
-            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET");
+            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET").then(function () {
+                $scope.refreshBackupList();
+            });
         };
 
         $scope.uploadBackupFile = function (file, errFiles) {

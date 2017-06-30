@@ -11,7 +11,7 @@ function FileDownloadService($http, growl) {
     return service;
 
     function downloadFile(link, filename, method, data) {
-        $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        return $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);

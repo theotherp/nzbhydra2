@@ -1987,7 +1987,9 @@ function hydrabackup() {
 
 
         $scope.createAndDownloadBackupFile = function () {
-            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET");
+            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET").then(function () {
+                $scope.refreshBackupList();
+            });
         };
 
         $scope.uploadBackupFile = function (file, errFiles) {
@@ -2179,7 +2181,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
         $http.get("internalapi/updates/installUpdate").then(function (data) {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                RestartService.restart("Shutting down Hydra for Update.");
+                RestartService.restart("Downloaded update. Shutting down Hydra for wrapper to execute update.");
             },
             function () {
                 blockUI.reset();
@@ -5108,7 +5110,7 @@ function FileDownloadService($http, growl) {
     return service;
 
     function downloadFile(link, filename, method, data) {
-        $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        return $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
