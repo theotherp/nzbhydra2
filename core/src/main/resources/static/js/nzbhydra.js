@@ -4014,7 +4014,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         }, 3000);
 
 
-}
+    }
 }
 RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService"];
 

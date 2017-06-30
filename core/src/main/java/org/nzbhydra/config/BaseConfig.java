@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,14 +98,7 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public static File buildConfigFileFile() throws IOException {
-        File configFile;
-        if (System.getProperty("spring.config.location") != null) {
-            configFile = new File(System.getProperty("spring.config.location"));
-        } else {
-            configFile = new File(System.getProperty("nzbhydra.dataFolder"), "nzbhydra.yml");
-        }
-
-        return configFile;
+        return new File(NzbHydra.getDataFolder(), "nzbhydra.yml");
     }
 
     public void load() throws IOException {

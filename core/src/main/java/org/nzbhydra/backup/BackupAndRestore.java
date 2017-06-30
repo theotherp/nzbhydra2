@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
@@ -92,8 +93,7 @@ public class BackupAndRestore {
     }
 
     protected File getBackupFolder() {
-        File mainFolder = new File(System.getProperty("nzbhydra.dataFolder")); //TODO make sure we're in the correct main folder
-        return new File(mainFolder, "backup");
+        return new File(NzbHydra.getDataFolder(), "backup");
     }
 
     public List<BackupEntry> getExistingBackups() {
@@ -137,8 +137,7 @@ public class BackupAndRestore {
     }
 
     protected void restoreFromFile(File backupFile) throws IOException {
-        File mainFolder = new File(System.getProperty("nzbhydra.dataFolder"));
-        File restoreFolder = new File(mainFolder, "restore");
+        File restoreFolder = new File(NzbHydra.getDataFolder(), "restore");
         if (restoreFolder.exists()) {
             FileUtils.cleanDirectory(restoreFolder);
             FileUtils.deleteDirectory(restoreFolder);

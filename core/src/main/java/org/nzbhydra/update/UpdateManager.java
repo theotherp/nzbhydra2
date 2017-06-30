@@ -11,6 +11,7 @@ import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.slf4j.Logger;
@@ -148,7 +149,7 @@ public class UpdateManager implements InitializingBean {
         try {
             Response response = client.newCall(request).execute();
             InputStream inputStream = response.body().byteStream();
-            File updateFolder = new File("update");
+            File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
                 Files.createDirectory(updateFolder.toPath());
             } else {

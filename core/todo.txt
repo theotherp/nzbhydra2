@@ -81,7 +81,7 @@ Backups
 - create periodically (done, but needs to be checked if actually executed
 - create before updating
 - test what happens when search is executed while backup is made
-- how to handle differences in config / database file location between command line parameters, old and new config
+- !! how to handle differences in config / database file location between command line parameters, old and new config
 
 Windows GUI
 - no windows gui for now, service or console

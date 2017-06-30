@@ -57,6 +57,7 @@ public class NzbHydra {
 
     @Autowired
     private ConfigProvider configProvider;
+    private static String dataFolder = null;
     @Autowired
     private SearchResultRepository searchResultRepository;
 
@@ -89,7 +90,6 @@ public class NzbHydra {
         } else if (options.has("version")) {
             System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
         } else {
-            String dataFolder;
             if (options.has("datafolder")) {
                 dataFolder = (String) options.valueOf("datafolder");
             } else {
@@ -131,6 +131,10 @@ public class NzbHydra {
 
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
+    }
+
+    public static String getDataFolder() {
+        return dataFolder;
     }
 
     @EventListener
