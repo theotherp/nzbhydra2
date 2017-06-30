@@ -33,6 +33,6 @@ public class CategoryConverter implements AttributeConverter<Category, String> {
 
     @Override
     public Category convertToEntityAttribute(String categoryName) {
-        return categoryProvider.getByName(categoryName);
+        return categoryProvider.getByInternalName(categoryName);
     }
 }

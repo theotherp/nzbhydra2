@@ -51,7 +51,6 @@ public class CategoryProvider implements InitializingBean {
         naCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
         naCategory.setMayBeSelected(false);
         naCategory.setSearchType(null);
-
     }
 
     @Override
@@ -79,7 +78,7 @@ public class CategoryProvider implements InitializingBean {
         this.categories = categories;
     }
 
-    public Category getByName(String name) {
+    public Category getByInternalName(String name) {
         if (name == null) {
             return getNotAvailable();
         }
@@ -110,7 +109,7 @@ public class CategoryProvider implements InitializingBean {
         }
 
         try {
-            return fromNewznabCategories(Arrays.stream(cats.split(",")).map(Integer::valueOf).collect(Collectors.toList()));
+            return fromNewznabCategories(Arrays.stream(cats.split(",")).map(Integer::valueOf).collect(Collectors.toList()), getNotAvailable());
         } catch (NumberFormatException e) {
             logger.error("Unable to parse categories string '{}'", cats);
             return getNotAvailable();
@@ -123,7 +122,7 @@ public class CategoryProvider implements InitializingBean {
      * @param cats List of newznab categories
      * @return The matching configured category or "All" if none is found
      */
-    public Category fromNewznabCategories(List<Integer> cats) {
+    public Category fromNewznabCategories(List<Integer> cats, Category defaultCategory) {
         if (cats == null || cats.size() == 0) {
             return CategoriesConfig.allCategory;
         }
@@ -133,8 +132,9 @@ public class CategoryProvider implements InitializingBean {
             return matchingCategory;
         }
 
-        return CategoriesConfig.allCategory;
+        return defaultCategory;
     }
+
 
     protected Category getCategory(List<Integer> cats) {
         cats.sort((o1, o2) -> Integer.compare(o2, o1));

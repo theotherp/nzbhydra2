@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<caps>
+    <!-- server information -->
+    <server appversion="0.2.3p" version="0.1" title="DOGnzb" email="noreply@dognzb.cr" url="http://dognzb.cr/"/>
+    <limits max="100" default="100"/>
+    <retention days="3427"/>
+    <searching>
+        <search available="yes" supportedParams="q,group"/>
+        <tv-search available="yes" supportedParams="q,rid,tvdbid,season,ep"/>
+        <movie-search available="yes" supportedParams="q,imdbid,genre"/>
+        <audio-search available="yes" supportedParams="q,album,artist,label,trak,year,genre"/>
+    </searching>
+
+    <categories>
+
+        <category id="5000" name="TV">
+            <subcat id="5020" name="Foreign"/>
+            <subcat id="5030" name="SD"/>
+            <subcat id="5040" name="HD"/>
+            <subcat id="5045" name="4K"/>
+            <subcat id="5050" name="Other"/>
+            <subcat id="5060" name="Sport"/>
+            <subcat id="5070" name="Anime"/>
+            <subcat id="5080" name="Documentary"/>
+
+        </category>
+
+        <category id="2000" name="Movies">
+            <subcat id="2010" name="Foreign"/>
+            <subcat id="2020" name="Other"/>
+            <subcat id="2030" name="SD"/>
+            <subcat id="2040" name="HD"/>
+            <subcat id="2045" name="4K"/>
+            <subcat id="2050" name="BluRay"/>
+            <subcat id="2060" name="3D"/>
+            <subcat id="2070" name="Mobile"/>
+
+        </category>
+
+        <category id="4000" name="Apps">
+            <subcat id="4010" name="0day"/>
+            <subcat id="4020" name="ISO"/>
+            <subcat id="4030" name="Apple"/>
+
+        </category>
+
+        <category id="1000" name="Gaming">
+            <subcat id="1010" name="NDS"/>
+            <subcat id="1020" name="PSP"/>
+            <subcat id="1030" name="Wii"/>
+            <subcat id="1050" name="Xbox 360"/>
+            <subcat id="1080" name="Playstation 3"/>
+            <subcat id="1090" name="Xbox One"/>
+            <subcat id="1100" name="Playstation 4"/>
+            <subcat id="4050" name="PC"/>
+
+        </category>
+
+        <category id="3000" name="Audio">
+            <subcat id="3010" name="MP3"/>
+            <subcat id="3020" name="Video"/>
+            <subcat id="3030" name="Audiobook"/>
+            <subcat id="3040" name="Lossless"/>
+            <subcat id="3050" name="Other"/>
+
+        </category>
+
+        <category id="7000" name="Books">
+            <subcat id="7010" name="Magazines"/>
+            <subcat id="7020" name="Ebook"/>
+            <subcat id="7030" name="Comics"/>
+
+        </category>
+
+        <category id="6000" name="Adult">
+            <subcat id="6010" name="DVD"/>
+            <subcat id="6020" name="WMV"/>
+            <subcat id="6030" name="SD"/>
+            <subcat id="6040" name="HD"/>
+            <subcat id="6045" name="4K"/>
+            <subcat id="6050" name="Pack"/>
+            <subcat id="6060" name="ImgSet"/>
+            <subcat id="6070" name="Other"/>
+
+        </category>
+
+        <category id="8000" name="Misc">
+            <subcat id="8010" name="Other"/>
+
+        </category>
+
+    </categories>
+
+
+    <groups>
+        <group id="239" name="alt.binaries.3d" description="" lastupdate=""/>
+        <group id="384" name="alt.binaries.aa" description="" lastupdate="Tue, 13 Jun 2017 13:07:02 -0600"/>
+        <group id="256" name="alt.binaries.all-your-base-are-belong-to-us" description="" lastupdate=""/>
+        <group id="138" name="alt.binaries.anime" description="" lastupdate="Tue, 27 Jun 2017 18:51:18 -0600"/>
+        <group id="329" name="alt.binaries.astronomy" description="" lastupdate=""/>
+        <group id="31" name="alt.binaries.ath" description="" lastupdate=""/>
+        <group id="126" name="alt.binaries.b4e" description="" lastupdate="Tue, 27 Jun 2017 18:50:48 -0600"/>
+        <group id="390" name="alt.binaries.beatles" description="" lastupdate=""/>
+        <group id="90" name="alt.binaries.bloaf" description="" lastupdate="Fri, 30 Jun 2017 08:56:48 -0600"/>
+        <group id="152" name="alt.binaries.blu-ray" description="" lastupdate="Thu, 29 Jun 2017 19:04:07 -0600"/>
+        <group id="221" name="alt.binaries.boneless.nl" description="" lastupdate=""/>
+        <group id="166" name="alt.binaries.british.drama" description="" lastupdate="Fri, 30 Jun 2017 09:49:45 -0600"/>
+        <group id="405" name="alt.binaries.bungabunga" description="" lastupdate=""/>
+        <group id="219" name="alt.binaries.cats" description="" lastupdate="Tue, 20 Jun 2017 16:30:48 -0600"/>
+        <group id="386" name="alt.binaries.cbts" description="" lastupdate="Sat, 10 Jun 2017 15:03:24 -0600"/>
+        <group id="400" name="alt.binaries.cccb" description="" lastupdate=""/>
+        <group id="40" name="alt.binaries.cd.image" description="" lastupdate="Thu, 29 Jun 2017 00:22:58 -0600"/>
+        <group id="87" name="alt.binaries.cd.lossless" description="" lastupdate=""/>
+        <group id="215" name="alt.binaries.chello" description="" lastupdate=""/>
+        <group id="106" name="alt.binaries.classic.tv.shows" description="" lastupdate="Fri, 30 Jun 2017 01:24:56 -0600"/>
+        <group id="124" name="alt.binaries.comics.dcp" description="" lastupdate="Thu, 29 Jun 2017 19:03:46 -0600"/>
+        <group id="38" name="alt.binaries.console.ps3" description="" lastupdate="Wed, 28 Jun 2017 12:41:02 -0600"/>
+        <group id="36" name="alt.binaries.country.mp3" description="" lastupdate="Sat, 17 Jun 2017 23:54:03 -0600"/>
+        <group id="85" name="alt.binaries.dc" description="" lastupdate="Fri, 30 Jun 2017 07:44:23 -0600"/>
+        <group id="86" name="alt.binaries.documentaries" description="" lastupdate="Tue, 27 Jun 2017 04:38:55 -0600"/>
+        <group id="217" name="alt.binaries.downunder" description="" lastupdate=""/>
+        <group id="226" name="alt.binaries.dream" description="" lastupdate="Sun, 18 Jun 2017 22:01:28 -0600"/>
+        <group id="151" name="alt.binaries.drummers" description="" lastupdate=""/>
+        <group id="409" name="alt.binaries.dump" description="" lastupdate=""/>
+        <group id="237" name="alt.binaries.dvd" description="" lastupdate="Thu, 29 Jun 2017 23:30:02 -0600"/>
+        <group id="391" name="alt.binaries.dvd-r" description="" lastupdate=""/>
+        <group id="167" name="alt.binaries.dvd.classics" description="" lastupdate=""/>
+        <group id="95" name="alt.binaries.dvd.movies" description="" lastupdate="Sat, 24 Jun 2017 12:33:20 -0600"/>
+        <group id="175" name="alt.binaries.dvd.music" description="" lastupdate=""/>
+        <group id="177" name="alt.binaries.dvd9" description="" lastupdate="Fri, 30 Jun 2017 09:43:48 -0600"/>
+        <group id="3" name="alt.binaries.dvdr" description="" lastupdate="Tue, 06 Jun 2017 10:31:18 -0600"/>
+        <group id="395" name="alt.binaries.dvdrip" description="" lastupdate=""/>
+        <group id="28" name="alt.binaries.e-book" description="" lastupdate="Thu, 29 Jun 2017 14:00:29 -0600"/>
+        <group id="52" name="alt.binaries.e-book.flood" description="" lastupdate="Thu, 29 Jun 2017 13:57:01 -0600"/>
+        <group id="163" name="alt.binaries.e-book.magazines" description="" lastupdate="Fri, 30 Jun 2017 08:17:54 -0600"/>
+        <group id="41" name="alt.binaries.e-book.technical" description="" lastupdate="Tue, 27 Jun 2017 05:37:12 -0600"/>
+        <group id="96" name="alt.binaries.ebook" description="" lastupdate=""/>
+        <group id="160" name="alt.binaries.ebook.technical" description="" lastupdate=""/>
+        <group id="162" name="alt.binaries.ebooks.technical" description="" lastupdate="Mon, 19 Jun 2017 03:45:52 -0600"/>
+        <group id="33" name="alt.binaries.erotica" description="" lastupdate="Fri, 30 Jun 2017 09:29:57 -0600"/>
+        <group id="42" name="alt.binaries.erotica.divx" description="" lastupdate=""/>
+        <group id="82" name="alt.binaries.etc" description="" lastupdate="Fri, 30 Jun 2017 09:33:21 -0600"/>
+        <group id="227" name="alt.binaries.font" description="" lastupdate=""/>
+        <group id="179" name="alt.binaries.ftd" description="" lastupdate="Fri, 30 Jun 2017 07:53:08 -0600"/>
+        <group id="34" name="alt.binaries.games" description="" lastupdate="Fri, 30 Jun 2017 07:48:53 -0600"/>
+        <group id="12" name="alt.binaries.games.xbox360" description="" lastupdate="Sun, 25 Jun 2017 16:42:35 -0600"/>
+        <group id="120" name="alt.binaries.ghosts" description="" lastupdate="Sat, 17 Jun 2017 15:19:57 -0600"/>
+        <group id="170" name="alt.binaries.global.quake" description="" lastupdate=""/>
+        <group id="122" name="alt.binaries.hdtv" description="" lastupdate="Fri, 30 Jun 2017 09:25:13 -0600"/>
+        <group id="385" name="alt.binaries.hdtv.repost" description="" lastupdate=""/>
+        <group id="11" name="alt.binaries.hdtv.x264" description="" lastupdate="Fri, 30 Jun 2017 07:53:40 -0600"/>
+        <group id="274" name="alt.binaries.howard-stern" description="" lastupdate="Wed, 28 Jun 2017 10:45:27 -0600"/>
+        <group id="388" name="alt.binaries.ibm-pc.warez" description="" lastupdate=""/>
+        <group id="171" name="alt.binaries.illuminaten" description="" lastupdate=""/>
+        <group id="18" name="alt.binaries.inner-sanctum" description="" lastupdate="Fri, 30 Jun 2017 09:20:41 -0600"/>
+        <group id="271" name="alt.binaries.kleverig" description="" lastupdate=""/>
+        <group id="499" name="alt.binaries.korea" description="" lastupdate=""/>
+        <group id="182" name="alt.binaries.lou" description="" lastupdate=""/>
+        <group id="27" name="alt.binaries.mac" description="" lastupdate="Wed, 07 Jun 2017 06:17:12 -0600"/>
+        <group id="401" name="alt.binaries.mac.osx.apps" description="" lastupdate=""/>
+        <group id="406" name="alt.binaries.machnur" description="" lastupdate=""/>
+        <group id="212" name="alt.binaries.milo" description="" lastupdate=""/>
+        <group id="83" name="alt.binaries.misc" description="" lastupdate="Fri, 30 Jun 2017 09:38:13 -0600"/>
+        <group id="25" name="alt.binaries.mma" description="" lastupdate="Thu, 29 Jun 2017 16:51:47 -0600"/>
+        <group id="214" name="alt.binaries.mojo" description="" lastupdate="Sun, 04 Jun 2017 12:44:09 -0600"/>
+        <group id="102" name="alt.binaries.mom" description="" lastupdate="Fri, 30 Jun 2017 09:19:42 -0600"/>
+        <group id="17" name="alt.binaries.moovee" description="" lastupdate="Fri, 30 Jun 2017 06:25:07 -0600"/>
+        <group id="132" name="alt.binaries.movies" description="" lastupdate="Fri, 30 Jun 2017 09:12:26 -0600"/>
+        <group id="394" name="alt.binaries.movies.1080i" description="" lastupdate=""/>
+        <group id="5" name="alt.binaries.movies.divx" description="" lastupdate="Fri, 30 Jun 2017 07:32:11 -0600"/>
+        <group id="149" name="alt.binaries.movies.divx.french" description="" lastupdate="Tue, 27 Jun 2017 18:27:07 -0600"/>
+        <group id="53" name="alt.binaries.movies.erotica" description="" lastupdate=""/>
+        <group id="148" name="alt.binaries.movies.french" description="" lastupdate="Thu, 29 Jun 2017 10:49:25 -0600"/>
+        <group id="7" name="alt.binaries.movies.xvid" description="" lastupdate="Fri, 30 Jun 2017 08:27:02 -0600"/>
+        <group id="403" name="alt.binaries.mp3.abooks" description="" lastupdate=""/>
+        <group id="67" name="alt.binaries.mp3.audiobooks" description="" lastupdate="Sun, 18 Jun 2017 07:50:14 -0600"/>
+        <group id="383" name="alt.binaries.mp3.german.hoerbuecher" description="" lastupdate=""/>
+        <group id="23" name="alt.binaries.mpeg.video.music" description="" lastupdate=""/>
+        <group id="4" name="alt.binaries.multimedia" description="" lastupdate="Fri, 30 Jun 2017 09:34:55 -0600"/>
+        <group id="137" name="alt.binaries.multimedia.anime.highspeed" description="" lastupdate="Fri, 30 Jun 2017 09:27:39 -0600"/>
+        <group id="139" name="alt.binaries.multimedia.anime.repost" description="" lastupdate=""/>
+        <group id="73" name="alt.binaries.multimedia.cartoons" description="" lastupdate="Thu, 15 Jun 2017 12:27:37 -0600"/>
+        <group id="184" name="alt.binaries.multimedia.cooking" description="" lastupdate="Sun, 11 Jun 2017 09:37:27 -0600"/>
+        <group id="404" name="alt.binaries.multimedia.fitness" description="" lastupdate=""/>
+        <group id="496" name="alt.binaries.multimedia.reality-tv" description="" lastupdate=""/>
+        <group id="261" name="alt.binaries.multimedia.scifi" description="" lastupdate="Thu, 29 Jun 2017 08:42:59 -0600"/>
+        <group id="74" name="alt.binaries.multimedia.sports" description="" lastupdate="Tue, 27 Jun 2017 04:22:30 -0600"/>
+        <group id="387" name="alt.binaries.multimedia.startrek" description="" lastupdate=""/>
+        <group id="187" name="alt.binaries.multimedia.vintage-film" description="" lastupdate="Wed, 28 Jun 2017 00:29:39 -0600"/>
+        <group id="286" name="alt.binaries.newzbin" description="" lastupdate=""/>
+        <group id="159" name="alt.binaries.nospam.cheerleaders" description="" lastupdate=""/>
+        <group id="188" name="alt.binaries.nzbpirates" description="" lastupdate=""/>
+        <group id="189" name="alt.binaries.nzbroyalty" description="" lastupdate=""/>
+        <group id="399" name="alt.binaries.paxer" description="" lastupdate=""/>
+        <group id="323" name="alt.binaries.pictures.comic-strips" description="" lastupdate=""/>
+        <group id="46" name="alt.binaries.pro-wrestling" description="" lastupdate="Fri, 09 Jun 2017 14:10:31 -0600"/>
+        <group id="39" name="alt.binaries.scary.exe.files" description="" lastupdate=""/>
+        <group id="500" name="alt.binaries.solar-xl" description="" lastupdate="Fri, 30 Jun 2017 09:29:04 -0600"/>
+        <group id="497" name="alt.binaries.sony.psvita" description="" lastupdate=""/>
+        <group id="114" name="alt.binaries.sound.audiobooks" description="" lastupdate=""/>
+        <group id="147" name="alt.binaries.sounds.flac" description="" lastupdate="Fri, 30 Jun 2017 01:11:09 -0600"/>
+        <group id="413" name="alt.binaries.sounds.flac.classical" description="" lastupdate=""/>
+        <group id="47" name="alt.binaries.sounds.lossless" description="" lastupdate="Fri, 30 Jun 2017 05:32:19 -0600"/>
+        <group id="104" name="alt.binaries.sounds.lossless.1960s" description="" lastupdate="Mon, 26 Jun 2017 02:53:50 -0600"/>
+        <group id="396" name="alt.binaries.sounds.lossless.24bit" description="" lastupdate=""/>
+        <group id="76" name="alt.binaries.sounds.lossless.classical" description="" lastupdate="Thu, 29 Jun 2017 19:36:58 -0600"/>
+        <group id="100" name="alt.binaries.sounds.lossless.country" description="" lastupdate="Sat, 24 Jun 2017 04:52:16 -0600"/>
+        <group id="410" name="alt.binaries.sounds.lossless.jazz" description="" lastupdate=""/>
+        <group id="66" name="alt.binaries.sounds.mp3" description="" lastupdate="Fri, 23 Jun 2017 14:12:58 -0600"/>
+        <group id="62" name="alt.binaries.sounds.mp3.1950s" description="" lastupdate=""/>
+        <group id="63" name="alt.binaries.sounds.mp3.1970s" description="" lastupdate=""/>
+        <group id="64" name="alt.binaries.sounds.mp3.1980s" description="" lastupdate=""/>
+        <group id="37" name="alt.binaries.sounds.mp3.1990s" description="" lastupdate="Fri, 23 Jun 2017 05:06:10 -0600"/>
+        <group id="60" name="alt.binaries.sounds.mp3.2000s" description="" lastupdate="Fri, 23 Jun 2017 05:18:59 -0600"/>
+        <group id="50" name="alt.binaries.sounds.mp3.bluegrass" description="" lastupdate="Tue, 06 Jun 2017 12:51:52 -0600"/>
+        <group id="61" name="alt.binaries.sounds.mp3.christian" description="" lastupdate=""/>
+        <group id="193" name="alt.binaries.sounds.mp3.classic-rock" description="" lastupdate=""/>
+        <group id="26" name="alt.binaries.sounds.mp3.classical" description="" lastupdate="Thu, 29 Jun 2017 17:40:39 -0600"/>
+        <group id="22" name="alt.binaries.sounds.mp3.complete_cd" description="" lastupdate="Tue, 27 Jun 2017 13:19:20 -0600"/>
+        <group id="70" name="alt.binaries.sounds.mp3.dance" description="" lastupdate="Tue, 27 Jun 2017 11:21:23 -0600"/>
+        <group id="411" name="alt.binaries.sounds.mp3.easy-listening" description="" lastupdate=""/>
+        <group id="398" name="alt.binaries.sounds.mp3.folk" description="" lastupdate=""/>
+        <group id="194" name="alt.binaries.sounds.mp3.full_albums" description="" lastupdate="Tue, 27 Jun 2017 00:15:03 -0600"/>
+        <group id="72" name="alt.binaries.sounds.mp3.heavy-metal" description="" lastupdate="Sun, 25 Jun 2017 14:25:23 -0600"/>
+        <group id="408" name="alt.binaries.sounds.mp3.indie" description="" lastupdate="Tue, 27 Jun 2017 14:34:54 -0600"/>
+        <group id="55" name="alt.binaries.sounds.mp3.jazz" description="" lastupdate="Fri, 30 Jun 2017 06:45:57 -0600"/>
+        <group id="94" name="alt.binaries.sounds.mp3.jazz.vocals" description="" lastupdate=""/>
+        <group id="92" name="alt.binaries.sounds.mp3.musicals" description="" lastupdate="Tue, 06 Jun 2017 13:29:23 -0600"/>
+        <group id="78" name="alt.binaries.sounds.mp3.nospam" description="" lastupdate=""/>
+        <group id="108" name="alt.binaries.sounds.mp3.opera" description="" lastupdate=""/>
+        <group id="117" name="alt.binaries.sounds.mp3.progressive-country" description="" lastupdate="Sun, 11 Jun 2017 03:48:36 -0600"/>
+        <group id="131" name="alt.binaries.sounds.mp3.rap-hiphop" description="" lastupdate=""/>
+        <group id="68" name="alt.binaries.sounds.mp3.rap-hiphop.full-albums" description="" lastupdate=""/>
+        <group id="195" name="alt.binaries.sounds.mp3.reggae" description="" lastupdate="Tue, 20 Jun 2017 17:51:55 -0600"/>
+        <group id="84" name="alt.binaries.sounds.mp3.rock" description="" lastupdate=""/>
+        <group id="196" name="alt.binaries.sounds.mp3.soul-rhythm-and-blues" description="" lastupdate=""/>
+        <group id="412" name="alt.binaries.sounds.mp3.soundtracks" description="" lastupdate=""/>
+        <group id="80" name="alt.binaries.sounds.radio.british" description="" lastupdate=""/>
+        <group id="275" name="alt.binaries.sounds.radio.coasttocoast.am" description="" lastupdate=""/>
+        <group id="277" name="alt.binaries.sounds.radio.misc" description="" lastupdate=""/>
+        <group id="431" name="alt.binaries.squaresoft" description="" lastupdate=""/>
+        <group id="213" name="alt.binaries.tatu" description="" lastupdate="Fri, 30 Jun 2017 09:49:45 -0600"/>
+        <group id="20" name="alt.binaries.teevee" description="" lastupdate="Fri, 30 Jun 2017 09:43:49 -0600"/>
+        <group id="43" name="alt.binaries.test" description="" lastupdate="Fri, 30 Jun 2017 09:49:45 -0600"/>
+        <group id="197" name="alt.binaries.the-terminal" description="" lastupdate=""/>
+        <group id="254" name="alt.binaries.town.xxx" description="" lastupdate=""/>
+        <group id="241" name="alt.binaries.triballs" description="" lastupdate=""/>
+        <group id="228" name="alt.binaries.tun" description="" lastupdate="Fri, 09 Jun 2017 11:46:40 -0600"/>
+        <group id="99" name="alt.binaries.tv" description="" lastupdate="Fri, 30 Jun 2017 09:43:23 -0600"/>
+        <group id="324" name="alt.binaries.tv.big-brother" description="" lastupdate="Fri, 30 Jun 2017 09:32:30 -0600"/>
+        <group id="146" name="alt.binaries.tv.deutsch" description="" lastupdate="Thu, 29 Jun 2017 15:43:30 -0600"/>
+        <group id="30" name="alt.binaries.tvseries" description="" lastupdate="Fri, 30 Jun 2017 09:36:49 -0600"/>
+        <group id="198" name="alt.binaries.u4all" description="" lastupdate=""/>
+        <group id="244" name="alt.binaries.u4e" description="" lastupdate=""/>
+        <group id="229" name="alt.binaries.ucc" description="" lastupdate=""/>
+        <group id="223" name="alt.binaries.ufg" description="" lastupdate=""/>
+        <group id="246" name="alt.binaries.usc" description="" lastupdate=""/>
+        <group id="199" name="alt.binaries.usenet-space-cowboys" description="" lastupdate=""/>
+        <group id="200" name="alt.binaries.usenet2day" description="" lastupdate=""/>
+        <group id="201" name="alt.binaries.usenetrevolution" description="" lastupdate=""/>
+        <group id="402" name="alt.binaries.warez.ibm-pc.german" description="" lastupdate=""/>
+        <group id="389" name="alt.binaries.warez.ibm-pc.german.games" description="" lastupdate=""/>
+        <group id="442" name="alt.binaries.warez.win95-apps" description="" lastupdate=""/>
+        <group id="145" name="alt.binaries.wb" description="" lastupdate=""/>
+        <group id="392" name="alt.binaries.welovelori" description="" lastupdate=""/>
+        <group id="14" name="alt.binaries.wmvhd" description="" lastupdate=""/>
+        <group id="136" name="alt.binaries.worms" description="" lastupdate=""/>
+        <group id="44" name="alt.binaries.x" description="" lastupdate="Fri, 30 Jun 2017 01:48:40 -0600"/>
+        <group id="15" name="alt.binaries.x264" description="" lastupdate="Sat, 24 Jun 2017 09:40:47 -0600"/>
+        <group id="397" name="alt.dvdnordic.org" description="" lastupdate=""/>
+        <group id="393" name="dk.binaries.film" description="" lastupdate="Fri, 30 Jun 2017 09:27:04 -0600"/>
+
+    </groups>
+
+    <genres>
+        <genres id="537" categoryid="6000" name=""/>
+        <genres id="39" categoryid="3000" name=""/>
+        <genres id="573" categoryid="6000" name=" 18+ Teens"/>
+        <genres id="541" categoryid="6000" name=" Action"/>
+        <genres id="453" categoryid="6000" name=" Affairs &#38;amp; Love Triangles"/>
+        <genres id="384" categoryid="6000" name=" All Sex"/>
+        <genres id="426" categoryid="6000" name=" Alt Girls"/>
+        <genres id="417" categoryid="6000" name=" Amateur"/>
+        <genres id="391" categoryid="6000" name=" Anal"/>
+        <genres id="588" categoryid="6000" name=" Animation"/>
+        <genres id="560" categoryid="6000" name=" Anime"/>
+        <genres id="395" categoryid="6000" name=" Asian"/>
+        <genres id="489" categoryid="6000" name=" Ass to Mouth"/>
+        <genres id="439" categoryid="6000" name=" Athletes"/>
+        <genres id="435" categoryid="6000" name=" Auditions"/>
+        <genres id="528" categoryid="6000" name=" Australian"/>
+        <genres id="411" categoryid="6000" name=" Babysitter"/>
+        <genres id="493" categoryid="6000" name=" Ballet"/>
+        <genres id="543" categoryid="6000" name=" Balls"/>
+        <genres id="546" categoryid="6000" name=" Barebacking"/>
+        <genres id="504" categoryid="6000" name=" BBW"/>
+        <genres id="585" categoryid="6000" name=" BDSM"/>
+        <genres id="396" categoryid="6000" name=" Big Boobs"/>
+        <genres id="470" categoryid="6000" name=" Big Budget"/>
+        <genres id="398" categoryid="6000" name=" Big Butt"/>
+        <genres id="382" categoryid="6000" name=" Big Cocks"/>
+        <genres id="594" categoryid="6000" name=" Big Pussies"/>
+        <genres id="475" categoryid="6000" name=" Bikini Babes"/>
+        <genres id="393" categoryid="6000" name=" Black"/>
+        <genres id="462" categoryid="6000" name=" Blondes"/>
+        <genres id="578" categoryid="6000" name=" Blowbang"/>
+        <genres id="455" categoryid="6000" name=" Blowjobs"/>
+        <genres id="443" categoryid="6000" name=" Bondage"/>
+        <genres id="433" categoryid="6000" name=" Boxed Sets"/>
+        <genres id="474" categoryid="6000" name=" Brazilian"/>
+        <genres id="478" categoryid="6000" name=" Brides &#38;amp; Weddings"/>
+        <genres id="467" categoryid="6000" name=" British"/>
+        <genres id="460" categoryid="6000" name=" Brunettes"/>
+        <genres id="601" categoryid="6000" name=" Bukkake"/>
+        <genres id="553" categoryid="6000" name=" Canadian"/>
+        <genres id="436" categoryid="6000" name=" Celebrity"/>
+        <genres id="459" categoryid="6000" name=" CFNM"/>
+        <genres id="473" categoryid="6000" name=" Cheerleaders"/>
+        <genres id="549" categoryid="6000" name=" Chinese"/>
+        <genres id="562" categoryid="6000" name=" Christmas"/>
+        <genres id="468" categoryid="6000" name=" Classic"/>
+        <genres id="599" categoryid="6000" name=" Cock Play"/>
+        <genres id="413" categoryid="6000" name=" College"/>
+        <genres id="465" categoryid="6000" name=" Comedy"/>
+        <genres id="377" categoryid="6000" name=" Compilation"/>
+        <genres id="477" categoryid="6000" name=" Cops"/>
+        <genres id="486" categoryid="6000" name=" Cosplay"/>
+        <genres id="472" categoryid="6000" name=" Cougars"/>
+        <genres id="427" categoryid="6000" name=" Couples"/>
+        <genres id="409" categoryid="6000" name=" Cream Pie"/>
+        <genres id="402" categoryid="6000" name=" Cuckolds"/>
+        <genres id="483" categoryid="6000" name=" Cum Swapping"/>
+        <genres id="410" categoryid="6000" name=" Cumshots"/>
+        <genres id="503" categoryid="6000" name=" Czech"/>
+        <genres id="554" categoryid="6000" name=" Dancing"/>
+        <genres id="403" categoryid="6000" name=" Deep Throat"/>
+        <genres id="587" categoryid="6000" name=" Dirty Talk"/>
+        <genres id="505" categoryid="6000" name=" Documentary"/>
+        <genres id="440" categoryid="6000" name=" Domination"/>
+        <genres id="457" categoryid="6000" name=" Double Anal"/>
+        <genres id="458" categoryid="6000" name=" Double Penetration"/>
+        <genres id="591" categoryid="6000" name=" Double Vaginal Penetration"/>
+        <genres id="559" categoryid="6000" name=" Drama"/>
+        <genres id="424" categoryid="6000" name=" Erotic Vignette"/>
+        <genres id="536" categoryid="6000" name=" Erotica"/>
+        <genres id="380" categoryid="6000" name=" European"/>
+        <genres id="498" categoryid="6000" name=" Exclusives"/>
+        <genres id="431" categoryid="6000" name=" Face Sitting"/>
+        <genres id="451" categoryid="6000" name=" Facials"/>
+        <genres id="507" categoryid="6000" name=" Family"/>
+        <genres id="414" categoryid="6000" name=" Family Roleplay"/>
+        <genres id="444" categoryid="6000" name=" Fantasy"/>
+        <genres id="421" categoryid="6000" name=" Feature"/>
+        <genres id="487" categoryid="6000" name=" Felching"/>
+        <genres id="432" categoryid="6000" name=" Female Domination"/>
+        <genres id="390" categoryid="6000" name=" Fetish"/>
+        <genres id="430" categoryid="6000" name=" Fetish Wear"/>
+        <genres id="441" categoryid="6000" name=" First Anal"/>
+        <genres id="488" categoryid="6000" name=" First Double Penetration"/>
+        <genres id="428" categoryid="6000" name=" First Interracial"/>
+        <genres id="550" categoryid="6000" name=" Fishnet"/>
+        <genres id="580" categoryid="6000" name=" Fishnets"/>
+        <genres id="405" categoryid="6000" name=" Foot Fetish"/>
+        <genres id="574" categoryid="6000" name=" Footjob"/>
+        <genres id="381" categoryid="6000" name=" Foreign"/>
+        <genres id="583" categoryid="6000" name=" French"/>
+        <genres id="434" categoryid="6000" name=" Gangbang"/>
+        <genres id="565" categoryid="6000" name=" Gaper"/>
+        <genres id="447" categoryid="6000" name=" Gaping"/>
+        <genres id="551" categoryid="6000" name=" German"/>
+        <genres id="509" categoryid="6000" name=" Girls Gone Wild"/>
+        <genres id="544" categoryid="6000" name=" Girls in Socks"/>
+        <genres id="469" categoryid="6000" name=" Glasses"/>
+        <genres id="449" categoryid="6000" name=" Glory Hole"/>
+        <genres id="371" categoryid="6000" name=" Gonzo"/>
+        <genres id="603" categoryid="6000" name=" Goth Girls"/>
+        <genres id="461" categoryid="6000" name=" Grannies"/>
+        <genres id="404" categoryid="6000" name=" Hairy"/>
+        <genres id="552" categoryid="6000" name=" Handjob &#38;amp; Footjob"/>
+        <genres id="418" categoryid="6000" name=" Handjobs"/>
+        <genres id="555" categoryid="6000" name=" HBO"/>
+        <genres id="557" categoryid="6000" name=" Hidden Camera"/>
+        <genres id="479" categoryid="6000" name=" Horror"/>
+        <genres id="568" categoryid="6000" name=" Hotwife"/>
+        <genres id="482" categoryid="6000" name=" Indian"/>
+        <genres id="540" categoryid="6000" name=" Interactive Sex"/>
+        <genres id="383" categoryid="6000" name=" Interracial"/>
+        <genres id="534" categoryid="6000" name=" Italian"/>
+        <genres id="454" categoryid="6000" name=" Japanese"/>
+        <genres id="494" categoryid="6000" name=" Jeans &#38;amp; Denim"/>
+        <genres id="579" categoryid="6000" name=" Lactation"/>
+        <genres id="589" categoryid="6000" name=" Latex &#38;amp; Leather"/>
+        <genres id="596" categoryid="6000" name=" Latex &#38;amp; Leather Items"/>
+        <genres id="397" categoryid="6000" name=" Latin"/>
+        <genres id="590" categoryid="6000" name=" LGBTQ"/>
+        <genres id="592" categoryid="6000" name=" Life Guard"/>
+        <genres id="392" categoryid="6000" name=" Lingerie"/>
+        <genres id="399" categoryid="6000" name=" Made For Women"/>
+        <genres id="412" categoryid="6000" name=" Maid"/>
+        <genres id="456" categoryid="6000" name=" Massage"/>
+        <genres id="429" categoryid="6000" name=" Masturbation"/>
+        <genres id="375" categoryid="6000" name=" Mature"/>
+        <genres id="484" categoryid="6000" name=" Midgets"/>
+        <genres id="376" categoryid="6000" name=" MILF"/>
+        <genres id="423" categoryid="6000" name=" Military"/>
+        <genres id="471" categoryid="6000" name=" Muscled Babes"/>
+        <genres id="511" categoryid="6000" name=" Mystery"/>
+        <genres id="373" categoryid="6000" name=" Naturally Busty"/>
+        <genres id="600" categoryid="6000" name=" Nipple Play"/>
+        <genres id="420" categoryid="6000" name=" Nurses &#38;amp; Doctors"/>
+        <genres id="485" categoryid="6000" name=" Oddities"/>
+        <genres id="389" categoryid="6000" name=" Office"/>
+        <genres id="374" categoryid="6000" name=" Oiled"/>
+        <genres id="387" categoryid="6000" name=" Old &#38;amp; Young Females (18+)"/>
+        <genres id="425" categoryid="6000" name=" Older Men"/>
+        <genres id="561" categoryid="6000" name=" On The Job"/>
+        <genres id="408" categoryid="6000" name=" Orgy"/>
+        <genres id="394" categoryid="6000" name=" Panties &#38;amp; Thongs"/>
+        <genres id="406" categoryid="6000" name=" Pantyhose &#38;amp; Stocking"/>
+        <genres id="422" categoryid="6000" name=" Parody"/>
+        <genres id="581" categoryid="6000" name=" Pegging"/>
+        <genres id="558" categoryid="6000" name=" Penthouse"/>
+        <genres id="567" categoryid="6000" name=" Petite"/>
+        <genres id="490" categoryid="6000" name=" Pigtails"/>
+        <genres id="538" categoryid="6000" name=" Pirates"/>
+        <genres id="372" categoryid="6000" name=" Point Of View"/>
+        <genres id="407" categoryid="6000" name=" Prebooks"/>
+        <genres id="499" categoryid="6000" name=" Pregnant"/>
+        <genres id="497" categoryid="6000" name=" Prison Chicks"/>
+        <genres id="416" categoryid="6000" name=" Public Sex"/>
+        <genres id="535" categoryid="6000" name=" Reality"/>
+        <genres id="446" categoryid="6000" name=" Redhead"/>
+        <genres id="502" categoryid="6000" name=" Revenge"/>
+        <genres id="480" categoryid="6000" name=" Reverse Gangbangs"/>
+        <genres id="464" categoryid="6000" name=" Rimming"/>
+        <genres id="598" categoryid="6000" name=" Rocky Relationships"/>
+        <genres id="463" categoryid="6000" name=" Romance"/>
+        <genres id="466" categoryid="6000" name=" Russian"/>
+        <genres id="566" categoryid="6000" name=" Schoolgirls"/>
+        <genres id="491" categoryid="6000" name=" Science Fiction"/>
+        <genres id="495" categoryid="6000" name=" Sex Machines"/>
+        <genres id="388" categoryid="6000" name=" Sex Toy Play"/>
+        <genres id="386" categoryid="6000" name=" Shaved"/>
+        <genres id="378" categoryid="6000" name=" Small Tits"/>
+        <genres id="452" categoryid="6000" name=" Smoking"/>
+        <genres id="506" categoryid="6000" name=" Softcore"/>
+        <genres id="510" categoryid="6000" name=" Spanish"/>
+        <genres id="577" categoryid="6000" name=" Spanking"/>
+        <genres id="501" categoryid="6000" name=" Spies &#38;amp; Secret Agents"/>
+        <genres id="542" categoryid="6000" name=" Sports"/>
+        <genres id="476" categoryid="6000" name=" Spring Break"/>
+        <genres id="448" categoryid="6000" name=" Squirting"/>
+        <genres id="379" categoryid="6000" name=" Star showcase"/>
+        <genres id="437" categoryid="6000" name=" Stripping"/>
+        <genres id="564" categoryid="6000" name=" Superhero"/>
+        <genres id="584" categoryid="6000" name=" SuperSavers"/>
+        <genres id="450" categoryid="6000" name=" Swallowing"/>
+        <genres id="539" categoryid="6000" name=" Swashbucklers"/>
+        <genres id="445" categoryid="6000" name=" Swingers"/>
+        <genres id="438" categoryid="6000" name=" Tattoo"/>
+        <genres id="419" categoryid="6000" name=" Teachers"/>
+        <genres id="556" categoryid="6000" name=" Television"/>
+        <genres id="586" categoryid="6000" name=" Thai"/>
+        <genres id="401" categoryid="6000" name=" Threesomes"/>
+        <genres id="496" categoryid="6000" name=" Tit Fucking"/>
+        <genres id="415" categoryid="6000" name=" Transsexual"/>
+        <genres id="593" categoryid="6000" name=" Triple Penetration"/>
+        <genres id="530" categoryid="6000" name=" True Romance"/>
+        <genres id="529" categoryid="6000" name=" Twins"/>
+        <genres id="481" categoryid="6000" name=" Vampires"/>
+        <genres id="442" categoryid="6000" name=" Virgin"/>
+        <genres id="400" categoryid="6000" name=" Voyeurism"/>
+        <genres id="492" categoryid="6000" name=" Water Play"/>
+        <genres id="575" categoryid="6000" name=" Web Amateur"/>
+        <genres id="570" categoryid="6000" name=" Weddings"/>
+        <genres id="508" categoryid="6000" name=" Western"/>
+        <genres id="385" categoryid="6000" name=" Wives"/>
+        <genres id="500" categoryid="6000" name=" Wrestling &#38;amp; Fighting"/>
+        <genres id="572" categoryid="6000" name="18+ Schoolgirls"/>
+        <genres id="343" categoryid="6000" name="18+ Teen Transsexuals"/>
+        <genres id="149" categoryid="6000" name="18+ Teens"/>
+        <genres id="294" categoryid="6000" name="4 Hour"/>
+        <genres id="1" categoryid="1000" name="Action"/>
+        <genres id="2" categoryid="1000" name="Action"/>
+        <genres id="3" categoryid="1000" name="Action"/>
+        <genres id="41" categoryid="2000" name="Action"/>
+        <genres id="104" categoryid="5000" name="Action"/>
+        <genres id="189" categoryid="6000" name="Action"/>
+        <genres id="516" categoryid="5000" name="Action &#38; Adventure"/>
+        <genres id="101" categoryid="2000" name="Action &#38; Adventure"/>
+        <genres id="57" categoryid="5000" name="Action and Adventure"/>
+        <genres id="333" categoryid="2000" name="Adult"/>
+        <genres id="6" categoryid="1000" name="Adventure"/>
+        <genres id="48" categoryid="2000" name="Adventure"/>
+        <genres id="105" categoryid="5000" name="Adventure"/>
+        <genres id="178" categoryid="6000" name="Affairs &#38;amp; Love Triangles"/>
+        <genres id="136" categoryid="6000" name="All Girl"/>
+        <genres id="130" categoryid="6000" name="All Sex"/>
+        <genres id="231" categoryid="6000" name="Alt Girls"/>
+        <genres id="16" categoryid="3000" name="Alternative Rock"/>
+        <genres id="124" categoryid="6000" name="Amateur"/>
+        <genres id="166" categoryid="6000" name="Anal"/>
+        <genres id="61" categoryid="2000" name="Animation"/>
+        <genres id="79" categoryid="5000" name="Animation"/>
+        <genres id="595" categoryid="2000" name="Anime"/>
+        <genres id="352" categoryid="6000" name="Anime"/>
+        <genres id="11" categoryid="1000" name="Arcade"/>
+        <genres id="285" categoryid="6000" name="Artcore"/>
+        <genres id="165" categoryid="6000" name="Asian"/>
+        <genres id="300" categoryid="6000" name="Ass To Mouth"/>
+        <genres id="190" categoryid="6000" name="Athletes"/>
+        <genres id="177" categoryid="6000" name="Auditions"/>
+        <genres id="237" categoryid="6000" name="Australian"/>
+        <genres id="160" categoryid="6000" name="Babysitter"/>
+        <genres id="347" categoryid="6000" name="Ballet"/>
+        <genres id="357" categoryid="6000" name="Balls"/>
+        <genres id="339" categoryid="6000" name="Barebacking"/>
+        <genres id="597" categoryid="6000" name="BDSM"/>
+        <genres id="359" categoryid="6000" name="Beginner Anal"/>
+        <genres id="151" categoryid="6000" name="Big Boobs"/>
+        <genres id="210" categoryid="6000" name="Big Budget"/>
+        <genres id="153" categoryid="6000" name="Big Butt"/>
+        <genres id="288" categoryid="6000" name="Big Butts"/>
+        <genres id="145" categoryid="6000" name="Big Cocks"/>
+        <genres id="223" categoryid="6000" name="Big Dicks"/>
+        <genres id="251" categoryid="6000" name="Big Tits"/>
+        <genres id="208" categoryid="6000" name="Bikini Babes"/>
+        <genres id="327" categoryid="2000" name="Biography"/>
+        <genres id="164" categoryid="6000" name="Black"/>
+        <genres id="227" categoryid="6000" name="Blondes"/>
+        <genres id="569" categoryid="6000" name="Blowbang"/>
+        <genres id="125" categoryid="6000" name="Blowjobs"/>
+        <genres id="23" categoryid="3000" name="Blues"/>
+        <genres id="35" categoryid="1000" name="Board Games"/>
+        <genres id="289" categoryid="6000" name="Bondage"/>
+        <genres id="219" categoryid="6000" name="Boxed Sets"/>
+        <genres id="257" categoryid="6000" name="Brazilian"/>
+        <genres id="256" categoryid="6000" name="Brides &#38;amp; Weddings"/>
+        <genres id="99" categoryid="2000" name="British"/>
+        <genres id="184" categoryid="6000" name="British"/>
+        <genres id="33" categoryid="3000" name="Broadway &#38; Vocalists"/>
+        <genres id="174" categoryid="6000" name="Brunettes"/>
+        <genres id="304" categoryid="6000" name="Camel Toe"/>
+        <genres id="303" categoryid="6000" name="Canadian"/>
+        <genres id="37" categoryid="1000" name="Cards"/>
+        <genres id="103" categoryid="1000" name="Casino"/>
+        <genres id="261" categoryid="6000" name="Celebrity"/>
+        <genres id="262" categoryid="6000" name="Cheerleaders"/>
+        <genres id="92" categoryid="5000" name="Children"/>
+        <genres id="38" categoryid="3000" name="Children's Music"/>
+        <genres id="298" categoryid="6000" name="Chinese"/>
+        <genres id="27" categoryid="3000" name="Christian &#38; Gospel"/>
+        <genres id="563" categoryid="6000" name="Christmas"/>
+        <genres id="233" categoryid="6000" name="Classic"/>
+        <genres id="19" categoryid="3000" name="Classic Rock"/>
+        <genres id="29" categoryid="3000" name="Classical"/>
+        <genres id="167" categoryid="6000" name="College"/>
+        <genres id="42" categoryid="2000" name="Comedy"/>
+        <genres id="58" categoryid="5000" name="Comedy"/>
+        <genres id="221" categoryid="6000" name="Comedy"/>
+        <genres id="155" categoryid="6000" name="Compilation"/>
+        <genres id="313" categoryid="1000" name="Construction and Management Simulation"/>
+        <genres id="312" categoryid="6000" name="Cops"/>
+        <genres id="215" categoryid="6000" name="Cosplay"/>
+        <genres id="161" categoryid="6000" name="Cougars"/>
+        <genres id="17" categoryid="3000" name="Country"/>
+        <genres id="152" categoryid="6000" name="Couples"/>
+        <genres id="367" categoryid="5000" name="Crap"/>
+        <genres id="179" categoryid="6000" name="Cream Pie"/>
+        <genres id="43" categoryid="2000" name="Crime"/>
+        <genres id="106" categoryid="5000" name="Crime"/>
+        <genres id="218" categoryid="6000" name="Cuckolds"/>
+        <genres id="602" categoryid="6000" name="Cult Film"/>
+        <genres id="193" categoryid="6000" name="Cum Swapping"/>
+        <genres id="158" categoryid="6000" name="Cumshots"/>
+        <genres id="361" categoryid="6000" name="Czech"/>
+        <genres id="18" categoryid="3000" name="Dance &#38; Electronic"/>
+        <genres id="302" categoryid="6000" name="Dancing"/>
+        <genres id="284" categoryid="6000" name="Deep Throat"/>
+        <genres id="78" categoryid="2000" name="Disaster"/>
+        <genres id="305" categoryid="6000" name="Documentary"/>
+        <genres id="65" categoryid="2000" name="Documentary"/>
+        <genres id="85" categoryid="5000" name="Documentary"/>
+        <genres id="249" categoryid="6000" name="Domination"/>
+        <genres id="259" categoryid="6000" name="Double Anal"/>
+        <genres id="229" categoryid="6000" name="Double Penetration"/>
+        <genres id="44" categoryid="2000" name="Drama"/>
+        <genres id="59" categoryid="5000" name="Drama"/>
+        <genres id="324" categoryid="6000" name="Drama"/>
+        <genres id="67" categoryid="2000" name="Eastern"/>
+        <genres id="75" categoryid="2000" name="Erotic"/>
+        <genres id="186" categoryid="6000" name="Erotic Vignette"/>
+        <genres id="277" categoryid="6000" name="Erotica"/>
+        <genres id="162" categoryid="6000" name="European"/>
+        <genres id="156" categoryid="6000" name="Exclusives"/>
+        <genres id="213" categoryid="6000" name="Face Sitting"/>
+        <genres id="206" categoryid="6000" name="Facials"/>
+        <genres id="50" categoryid="2000" name="Family"/>
+        <genres id="362" categoryid="6000" name="Family"/>
+        <genres id="110" categoryid="5000" name="Family"/>
+        <genres id="354" categoryid="6000" name="Family Roleplay"/>
+        <genres id="77" categoryid="2000" name="Fan Film"/>
+        <genres id="62" categoryid="2000" name="Fantasy"/>
+        <genres id="80" categoryid="5000" name="Fantasy"/>
+        <genres id="216" categoryid="6000" name="Fantasy"/>
+        <genres id="140" categoryid="6000" name="Feature"/>
+        <genres id="335" categoryid="6000" name="Felching"/>
+        <genres id="214" categoryid="6000" name="Female Domination"/>
+        <genres id="226" categoryid="6000" name="FemDom"/>
+        <genres id="126" categoryid="6000" name="Fetish"/>
+        <genres id="263" categoryid="6000" name="Fetish Wear"/>
+        <genres id="311" categoryid="1000" name="Fighting"/>
+        <genres id="74" categoryid="2000" name="Film Noir"/>
+        <genres id="328" categoryid="2000" name="Film-Noir"/>
+        <genres id="366" categoryid="6000" name="First Anal"/>
+        <genres id="364" categoryid="6000" name="First Boy"/>
+        <genres id="370" categoryid="6000" name="First Double Penetration"/>
+        <genres id="365" categoryid="6000" name="First Interracial"/>
+        <genres id="341" categoryid="6000" name="Fishnet"/>
+        <genres id="571" categoryid="6000" name="Fishnets"/>
+        <genres id="319" categoryid="1000" name="Flight Simulator"/>
+        <genres id="36" categoryid="1000" name="Flying"/>
+        <genres id="15" categoryid="3000" name="Folk"/>
+        <genres id="109" categoryid="5000" name="Food"/>
+        <genres id="204" categoryid="6000" name="Foot Fetish"/>
+        <genres id="47" categoryid="2000" name="Foreign"/>
+        <genres id="163" categoryid="6000" name="Foreign"/>
+        <genres id="87" categoryid="5000" name="Game Show"/>
+        <genres id="513" categoryid="5000" name="Game-show"/>
+        <genres id="334" categoryid="2000" name="Game-Show"/>
+        <genres id="180" categoryid="6000" name="Gangbang"/>
+        <genres id="349" categoryid="6000" name="Gangsta"/>
+        <genres id="576" categoryid="6000" name="Gaper"/>
+        <genres id="192" categoryid="6000" name="Gaping"/>
+        <genres id="199" categoryid="6000" name="Gay"/>
+        <genres id="299" categoryid="6000" name="German"/>
+        <genres id="337" categoryid="6000" name="Girls Gone Wild"/>
+        <genres id="291" categoryid="6000" name="Girls in Socks"/>
+        <genres id="235" categoryid="6000" name="Glasses"/>
+        <genres id="209" categoryid="6000" name="Glory Hole"/>
+        <genres id="142" categoryid="6000" name="Gonzo"/>
+        <genres id="253" categoryid="6000" name="Grannies"/>
+        <genres id="238" categoryid="6000" name="Hairy"/>
+        <genres id="320" categoryid="6000" name="Handjob &#38;amp; Footjob"/>
+        <genres id="268" categoryid="6000" name="Handjobs"/>
+        <genres id="20" categoryid="3000" name="Hard Rock &#38; Metal"/>
+        <genres id="321" categoryid="6000" name="Hidden Camera"/>
+        <genres id="336" categoryid="6000" name="High Definition"/>
+        <genres id="242" categoryid="6000" name="Historical"/>
+        <genres id="514" categoryid="5000" name="History"/>
+        <genres id="70" categoryid="2000" name="History"/>
+        <genres id="81" categoryid="2000" name="Holiday"/>
+        <genres id="91" categoryid="5000" name="Home and Garden"/>
+        <genres id="338" categoryid="6000" name="Home Made"/>
+        <genres id="519" categoryid="5000" name="Home-and-garden"/>
+        <genres id="200" categoryid="6000" name="Homosexuality"/>
+        <genres id="51" categoryid="2000" name="Horror"/>
+        <genres id="317" categoryid="1000" name="Horror"/>
+        <genres id="111" categoryid="5000" name="Horror"/>
+        <genres id="194" categoryid="6000" name="Horror"/>
+        <genres id="245" categoryid="6000" name="Hosiery"/>
+        <genres id="275" categoryid="6000" name="Indian"/>
+        <genres id="63" categoryid="2000" name="Indie"/>
+        <genres id="296" categoryid="6000" name="Interactive Sex"/>
+        <genres id="154" categoryid="6000" name="Interracial"/>
+        <genres id="350" categoryid="6000" name="Italian"/>
+        <genres id="201" categoryid="6000" name="Japanese"/>
+        <genres id="26" categoryid="3000" name="Jazz"/>
+        <genres id="271" categoryid="6000" name="Jeans &#38;amp; Denim"/>
+        <genres id="524" categoryid="5000" name="Kids"/>
+        <genres id="72" categoryid="2000" name="Kids"/>
+        <genres id="157" categoryid="6000" name="Latin"/>
+        <genres id="25" categoryid="3000" name="Latin Music"/>
+        <genres id="171" categoryid="6000" name="Legal Teen"/>
+        <genres id="315" categoryid="1000" name="Life Simulation"/>
+        <genres id="295" categoryid="6000" name="Lingerie"/>
+        <genres id="137" categoryid="6000" name="Made For Women"/>
+        <genres id="181" categoryid="6000" name="Maid"/>
+        <genres id="353" categoryid="6000" name="Massage"/>
+        <genres id="141" categoryid="6000" name="Masturbation"/>
+        <genres id="143" categoryid="6000" name="Mature"/>
+        <genres id="344" categoryid="6000" name="Midgets"/>
+        <genres id="144" categoryid="6000" name="MILF"/>
+        <genres id="283" categoryid="6000" name="Military"/>
+        <genres id="96" categoryid="5000" name="Mini-Series"/>
+        <genres id="24" categoryid="3000" name="Miscellaneous"/>
+        <genres id="348" categoryid="1000" name="MMO"/>
+        <genres id="512" categoryid="5000" name="Music"/>
+        <genres id="318" categoryid="1000" name="Music"/>
+        <genres id="69" categoryid="2000" name="Music"/>
+        <genres id="523" categoryid="5000" name="Musical"/>
+        <genres id="68" categoryid="2000" name="Musical"/>
+        <genres id="274" categoryid="6000" name="Mystery"/>
+        <genres id="52" categoryid="2000" name="Mystery"/>
+        <genres id="342" categoryid="5000" name="Mystery"/>
+        <genres id="531" categoryid="2000" name="N/A"/>
+        <genres id="191" categoryid="6000" name="Naturally Busty"/>
+        <genres id="84" categoryid="2000" name="Neo-noir"/>
+        <genres id="28" categoryid="3000" name="New Age"/>
+        <genres id="329" categoryid="2000" name="News"/>
+        <genres id="95" categoryid="5000" name="News"/>
+        <genres id="176" categoryid="6000" name="Nurses &#38;amp; Doctors"/>
+        <genres id="345" categoryid="6000" name="Oddities"/>
+        <genres id="173" categoryid="6000" name="Office"/>
+        <genres id="248" categoryid="6000" name="Oiled"/>
+        <genres id="196" categoryid="6000" name="Old &#38;amp; Young Females (18+)"/>
+        <genres id="252" categoryid="6000" name="Older"/>
+        <genres id="239" categoryid="6000" name="Older Men"/>
+        <genres id="360" categoryid="6000" name="On The Job"/>
+        <genres id="290" categoryid="6000" name="Orgies"/>
+        <genres id="129" categoryid="6000" name="Orgy"/>
+        <genres id="183" categoryid="6000" name="Panties &#38;amp; Thongs"/>
+        <genres id="187" categoryid="6000" name="Pantyhose &#38;amp; Stocking"/>
+        <genres id="355" categoryid="6000" name="Parody"/>
+        <genres id="582" categoryid="6000" name="Peach DVD"/>
+        <genres id="322" categoryid="6000" name="Penthouse"/>
+        <genres id="244" categoryid="6000" name="Pigtails"/>
+        <genres id="278" categoryid="6000" name="Pirates"/>
+        <genres id="310" categoryid="1000" name="Platform"/>
+        <genres id="247" categoryid="6000" name="Plot Based"/>
+        <genres id="169" categoryid="6000" name="Point Of View"/>
+        <genres id="14" categoryid="3000" name="Pop"/>
+        <genres id="175" categoryid="6000" name="Pregnant"/>
+        <genres id="260" categoryid="6000" name="Prison Chicks"/>
+        <genres id="232" categoryid="6000" name="Public Sex"/>
+        <genres id="7" categoryid="1000" name="Puzzle"/>
+        <genres id="21" categoryid="3000" name="R&#38;B"/>
+        <genres id="10" categoryid="1000" name="Racing"/>
+        <genres id="12" categoryid="3000" name="Rap &#38; Hip-Hop"/>
+        <genres id="369" categoryid="6000" name="Realistic Body Parts"/>
+        <genres id="86" categoryid="5000" name="Reality"/>
+        <genres id="102" categoryid="2000" name="Reality"/>
+        <genres id="135" categoryid="6000" name="Reality"/>
+        <genres id="330" categoryid="2000" name="Reality-TV"/>
+        <genres id="358" categoryid="6000" name="Redhead"/>
+        <genres id="325" categoryid="6000" name="Redheads"/>
+        <genres id="292" categoryid="6000" name="Revenge"/>
+        <genres id="236" categoryid="6000" name="Reverse Gangbangs"/>
+        <genres id="9" categoryid="1000" name="Rhythm"/>
+        <genres id="188" categoryid="6000" name="Rimming"/>
+        <genres id="548" categoryid="2000" name="Road"/>
+        <genres id="73" categoryid="2000" name="Road Movie"/>
+        <genres id="13" categoryid="3000" name="Rock"/>
+        <genres id="5" categoryid="1000" name="Role-Playing"/>
+        <genres id="46" categoryid="2000" name="Romance"/>
+        <genres id="346" categoryid="5000" name="Romance"/>
+        <genres id="220" categoryid="6000" name="Romance"/>
+        <genres id="265" categoryid="6000" name="Russian"/>
+        <genres id="316" categoryid="1000" name="Sandbox"/>
+        <genres id="326" categoryid="2000" name="Sci-Fi"/>
+        <genres id="520" categoryid="5000" name="Sci-Fi &#38; Fantasy"/>
+        <genres id="83" categoryid="2000" name="Sci-Fi &#38; Fantasy"/>
+        <genres id="518" categoryid="5000" name="Science Fiction"/>
+        <genres id="53" categoryid="2000" name="Science Fiction"/>
+        <genres id="217" categoryid="6000" name="Science Fiction"/>
+        <genres id="545" categoryid="2000" name="Science-fiction"/>
+        <genres id="93" categoryid="5000" name="Science-Fiction"/>
+        <genres id="134" categoryid="6000" name="Series"/>
+        <genres id="282" categoryid="6000" name="Sex Machines"/>
+        <genres id="205" categoryid="6000" name="Sex Toy Play"/>
+        <genres id="276" categoryid="6000" name="Shaved"/>
+        <genres id="308" categoryid="1000" name="Shooter"/>
+        <genres id="64" categoryid="2000" name="Short"/>
+        <genres id="287" categoryid="6000" name="Shot on Film"/>
+        <genres id="32" categoryid="1000" name="Simulation"/>
+        <genres id="240" categoryid="6000" name="Small Tits"/>
+        <genres id="351" categoryid="6000" name="Smoking"/>
+        <genres id="255" categoryid="6000" name="Smothering"/>
+        <genres id="98" categoryid="5000" name="Soap"/>
+        <genres id="306" categoryid="6000" name="Softcore"/>
+        <genres id="30" categoryid="3000" name="Soundtracks"/>
+        <genres id="185" categoryid="6000" name="Spanish"/>
+        <genres id="90" categoryid="5000" name="Special Interest"/>
+        <genres id="521" categoryid="5000" name="Special-interest"/>
+        <genres id="258" categoryid="6000" name="Spies &#38;amp; Secret Agents"/>
+        <genres id="182" categoryid="6000" name="Spoofs &#38;amp; Parodies"/>
+        <genres id="82" categoryid="2000" name="Sport"/>
+        <genres id="89" categoryid="5000" name="Sport"/>
+        <genres id="94" categoryid="2000" name="Sporting Event"/>
+        <genres id="532" categoryid="2000" name="Sporting-event"/>
+        <genres id="8" categoryid="1000" name="Sports"/>
+        <genres id="527" categoryid="5000" name="Sports"/>
+        <genres id="533" categoryid="2000" name="Sports"/>
+        <genres id="340" categoryid="6000" name="Sports"/>
+        <genres id="60" categoryid="2000" name="Sports Film"/>
+        <genres id="297" categoryid="6000" name="Spring Break"/>
+        <genres id="230" categoryid="6000" name="Squirting"/>
+        <genres id="356" categoryid="6000" name="Star showcase"/>
+        <genres id="332" categoryid="1000" name="Stealth"/>
+        <genres id="139" categoryid="6000" name="Strap-Ons"/>
+        <genres id="4" categoryid="1000" name="Strategy"/>
+        <genres id="127" categoryid="6000" name="Stripping"/>
+        <genres id="71" categoryid="2000" name="Suspense"/>
+        <genres id="107" categoryid="5000" name="Suspense"/>
+        <genres id="159" categoryid="6000" name="Swallowing"/>
+        <genres id="279" categoryid="6000" name="Swashbucklers"/>
+        <genres id="211" categoryid="6000" name="Swingers"/>
+        <genres id="515" categoryid="5000" name="Talk"/>
+        <genres id="88" categoryid="5000" name="Talk Show"/>
+        <genres id="517" categoryid="5000" name="Talk-show"/>
+        <genres id="331" categoryid="2000" name="Talk-Show"/>
+        <genres id="207" categoryid="6000" name="Tattoo"/>
+        <genres id="203" categoryid="6000" name="Teachers"/>
+        <genres id="286" categoryid="6000" name="Tease"/>
+        <genres id="307" categoryid="6000" name="Television"/>
+        <genres id="148" categoryid="6000" name="Threesomes"/>
+        <genres id="172" categoryid="6000" name="Threesomes &#38; More"/>
+        <genres id="45" categoryid="2000" name="Thriller"/>
+        <genres id="108" categoryid="5000" name="Thriller"/>
+        <genres id="281" categoryid="6000" name="Throat Jobs"/>
+        <genres id="212" categoryid="6000" name="Tit Fucking"/>
+        <genres id="270" categoryid="6000" name="Toy Play"/>
+        <genres id="202" categoryid="6000" name="Transsexual"/>
+        <genres id="280" categoryid="5000" name="Travel"/>
+        <genres id="34" categoryid="1000" name="Trivia"/>
+        <genres id="363" categoryid="6000" name="True Romance"/>
+        <genres id="526" categoryid="5000" name="TV Movie"/>
+        <genres id="76" categoryid="2000" name="TV movie"/>
+        <genres id="547" categoryid="2000" name="Tv-movie"/>
+        <genres id="241" categoryid="6000" name="Twins"/>
+        <genres id="31" categoryid="1000" name="Unknown"/>
+        <genres id="195" categoryid="6000" name="Vampires"/>
+        <genres id="368" categoryid="5000" name="Variety"/>
+        <genres id="309" categoryid="1000" name="Vehicle Simulation"/>
+        <genres id="272" categoryid="6000" name="Virgin"/>
+        <genres id="264" categoryid="6000" name="Voyeurism"/>
+        <genres id="522" categoryid="5000" name="War"/>
+        <genres id="49" categoryid="2000" name="War"/>
+        <genres id="525" categoryid="5000" name="War &#38; Politics"/>
+        <genres id="100" categoryid="2000" name="War &#38; Politics"/>
+        <genres id="222" categoryid="6000" name="Water Play"/>
+        <genres id="267" categoryid="6000" name="Western"/>
+        <genres id="66" categoryid="2000" name="Western"/>
+        <genres id="97" categoryid="5000" name="Western"/>
+        <genres id="150" categoryid="6000" name="Wives"/>
+        <genres id="22" categoryid="3000" name="World Music"/>
+        <genres id="301" categoryid="6000" name="Wrestling"/>
+        <genres id="243" categoryid="6000" name="Wrestling &#38;amp; Fighting"/>
+
+    </genres>
+
+</caps>

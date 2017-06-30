@@ -393,7 +393,7 @@ public class Newznab extends Indexer<Xml> {
             searchResultItem.setSize(Long.valueOf(attributes.get("size")));
         }
         if (!newznabCategories.isEmpty()) {
-            searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories));
+            searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }

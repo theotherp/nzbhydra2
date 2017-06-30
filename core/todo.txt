@@ -87,11 +87,11 @@ Windows GUI
 - no windows gui for now, service or console
 
 News
-- poll periodically from repo for news
-- show news on startup for any given version
-- only show news to admins
-- save display state in database instead of cookie
-- new section for news
+- !! poll periodically from repo for news
+- !! show news on startup for any given version
+- !! only show news to admins
+- !! save display state in database instead of cookie
+- !! new section for news
 
 General, Ideas
 - !! open browser on startup
@@ -128,10 +128,11 @@ General, Ideas
 - !! progressbar for search (how many indexers were already searched)
 - make sure indexer caps config is complete, don't enable until so
 - !! button to switch inclusion of currently disabled indexers in stats
-- category parsing is not reliable. perhaps try to parse the category name given in the main category tag first and then go by newznab category
+- category parsing is not reliable but I don't have any idea how to solve that properly and reliably
 - !! apikey generation in chrome only uses the first half of the available characters
 - adapt migration to latest version (sslca, removeTrailing, etc...)
 - ssl, needs to be explained in wiki/readme
+- when all indexers were selected in GUI don't set the parameter
 
 currently not (yet) supported:
 - proxies

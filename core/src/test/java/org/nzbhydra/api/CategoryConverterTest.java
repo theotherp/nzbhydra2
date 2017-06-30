@@ -38,7 +38,7 @@ public class CategoryConverterTest {
     @Test
     public void convertToEntityAttribute() throws Exception {
         Category category = new Category();
-        when(categoryProviderMock.getByName("name")).thenReturn(category);
+        when(categoryProviderMock.getByInternalName("name")).thenReturn(category);
         assertThat(testee.convertToEntityAttribute("name"), is(category));
     }
 

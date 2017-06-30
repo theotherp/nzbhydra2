@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +59,7 @@ public class MockGithub {
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/news.md", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     public String news() throws Exception {
-        return "[{\"showForVersion\":{\"major\":2,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news2.0.0\"},{\"showForVersion\":{\"major\":1,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news1.0.0\"},{\"showForVersion\":{\"major\":3,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news3.0.0\"},{\"showForVersion\":{\"major\":0,\"minor\":0,\"patch\":0},\"newsAsMarkdown\":\"news0.0.0\"}]";
+        return Resources.toString(Resources.getResource(MockGithub.class, "/static/news.md"), Charsets.UTF_8);
     }
 
     @Configuration

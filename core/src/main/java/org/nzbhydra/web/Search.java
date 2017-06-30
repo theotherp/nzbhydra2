@@ -98,7 +98,7 @@ public class Search {
     }
 
     private SearchRequest createSearchRequest(@RequestBody SearchRequestParameters parameters) {
-        Category category = categoryProvider.getByName(parameters.getCategory());
+        Category category = categoryProvider.getByInternalName(parameters.getCategory());
         SearchType searchType = category.getSearchType() == null ? SearchType.SEARCH : category.getSearchType();
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.INTERNAL, category, parameters.getSearchRequestId(), parameters.getOffset(), parameters.getLimit());
         searchRequest.setIndexers(parameters.getIndexers());

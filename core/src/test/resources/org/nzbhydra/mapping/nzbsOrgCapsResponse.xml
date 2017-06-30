@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<caps>
+    <server appversion="0.2.3p-nzbs" version="0.1" title="NZBs(dot)ORG" strapline="Home of the NZB Harvester" email="admin@nzbs.org" url="https://nzbs.org/"
+            image="https://nzbs.org/theme/default/images/banner.jpg"/>
+    <limits max="100" default="100"/>
+
+    <registration available="yes" open="no"/>
+
+    <searching>
+        <search available="yes" supportedParams="q"/>
+        <tv-search available="yes" supportedParams="q,rid,tvdbid,tvmazeid,season,ep"/>
+        <movie-search available="yes" supportedParams="q,imdbid"/>
+        <audio-search available="yes" supportedParams="artist"/>
+    </searching>
+
+    <categories>
+        <category id="1000" name="Console">
+            <subcat id="1010" name="NDS"/>
+            <subcat id="1090" name="PS2"/>
+            <subcat id="1080" name="PS3"/>
+            <subcat id="1020" name="PSP"/>
+            <subcat id="1030" name="Wii"/>
+            <subcat id="1040" name="Xbox"/>
+            <subcat id="1050" name="Xbox 360"/>
+        </category>
+        <category id="2000" name="Movies">
+            <subcat id="2070" name="3D"/>
+            <subcat id="2010" name="DVD"/>
+            <subcat id="2060" name="Foreign"/>
+            <subcat id="2050" name="Other"/>
+            <subcat id="2020" name="WMV-HD"/>
+            <subcat id="2030" name="XviD"/>
+            <subcat id="2040" name="x264"/>
+        </category>
+        <category id="3000" name="Music">
+            <subcat id="3040" name="FLAC"/>
+            <subcat id="3010" name="MP3"/>
+            <subcat id="3020" name="Video"/>
+        </category>
+        <category id="4000" name="Apps" description="Apps">
+            <subcat id="4010" name="0day"/>
+            <subcat id="4070" name="Android"/>
+            <subcat id="4050" name="Ebook"/>
+            <subcat id="4060" name="IOS"/>
+            <subcat id="4020" name="ISO"/>
+            <subcat id="4030" name="Mac"/>
+            <subcat id="4040" name="Phone"/>
+        </category>
+        <category id="5000" name="TV">
+            <subcat id="5090" name="BoxHD"/>
+            <subcat id="5070" name="BoxSD"/>
+            <subcat id="5010" name="DVD"/>
+            <subcat id="5080" name="Foreign"/>
+            <subcat id="5040" name="HD"/>
+            <subcat id="5060" name="Other"/>
+            <subcat id="5030" name="SD"/>
+        </category>
+        <category id="6000" name="XXX">
+            <subcat id="6070" name="Anime"/>
+            <subcat id="6020" name="Clip"/>
+            <subcat id="6010" name="DVD"/>
+            <subcat id="6060" name="IMGSET"/>
+            <subcat id="6050" name="Pack"/>
+            <subcat id="6030" name="XviD"/>
+            <subcat id="6040" name="x264"/>
+        </category>
+        <category id="7000" name="Other">
+            <subcat id="7040" name="Anime"/>
+            <subcat id="7010" name="Misc"/>
+        </category>
+    </categories>
+
+    <genres>
+        <genre id="124" categoryid="3000" name="Acapella"/>
+        <genre id="35" categoryid="3000" name="Acid"/>
+        <genre id="75" categoryid="3000" name="Acid Jazz"/>
+        <genre id="74" categoryid="3000" name="Acid Punk"/>
+        <genre id="100" categoryid="3000" name="Acoustic"/>
+        <genre id="168" categoryid="1000" name="Action"/>
+        <genre id="151" categoryid="1000" name="Adventure"/>
+        <genre id="21" categoryid="3000" name="Alternative"/>
+        <genre id="41" categoryid="3000" name="Alternative Rock"/>
+        <genre id="27" categoryid="3000" name="Ambient"/>
+        <genre id="146" categoryid="3000" name="Anime"/>
+        <genre id="152" categoryid="1000" name="Arcade"/>
+        <genre id="91" categoryid="3000" name="Avantgarde"/>
+        <genre id="117" categoryid="3000" name="Ballad"/>
+        <genre id="42" categoryid="3000" name="Bass"/>
+        <genre id="136" categoryid="3000" name="Beat"/>
+        <genre id="86" categoryid="3000" name="Bebob"/>
+        <genre id="97" categoryid="3000" name="Big Band"/>
+        <genre id="139" categoryid="3000" name="Black Metal"/>
+        <genre id="90" categoryid="3000" name="Bluegrass"/>
+        <genre id="1" categoryid="3000" name="Blues"/>
+        <genre id="153" categoryid="1000" name="Board Games"/>
+        <genre id="108" categoryid="3000" name="Booty Bass"/>
+        <genre id="133" categoryid="3000" name="BritPop"/>
+        <genre id="171" categoryid="3000" name="Broadway &amp; Vocalists"/>
+        <genre id="66" categoryid="3000" name="Cabaret"/>
+        <genre id="154" categoryid="1000" name="Cards"/>
+        <genre id="155" categoryid="1000" name="Casino"/>
+        <genre id="89" categoryid="3000" name="Celtic"/>
+        <genre id="105" categoryid="3000" name="Chamber Music"/>
+        <genre id="103" categoryid="3000" name="Chanson"/>
+        <genre id="169" categoryid="3000" name="Children&#039;s Music"/>
+        <genre id="98" categoryid="3000" name="Chorus"/>
+        <genre id="173" categoryid="3000" name="Christian &amp; Gospel"/>
+        <genre id="137" categoryid="3000" name="Christian Gangsta"/>
+        <genre id="62" categoryid="3000" name="Christian Rap"/>
+        <genre id="142" categoryid="3000" name="Christian Rock"/>
+        <genre id="2" categoryid="3000" name="Classic Rock"/>
+        <genre id="33" categoryid="3000" name="Classical"/>
+        <genre id="113" categoryid="3000" name="Club"/>
+        <genre id="129" categoryid="3000" name="Club-House"/>
+        <genre id="58" categoryid="3000" name="Comedy"/>
+        <genre id="185" categoryid="3000" name="Contemporary"/>
+        <genre id="199" categoryid="3000" name="Contemporrary Christian"/>
+        <genre id="3" categoryid="3000" name="Country"/>
+        <genre id="202" categoryid="3000" name="CPOP"/>
+        <genre id="140" categoryid="3000" name="Crossover"/>
+        <genre id="59" categoryid="3000" name="Cult"/>
+        <genre id="4" categoryid="3000" name="Dance"/>
+        <genre id="165" categoryid="3000" name="Dance &amp; Electronic"/>
+        <genre id="126" categoryid="3000" name="Dance Hall"/>
+        <genre id="193" categoryid="3000" name="Dancehall"/>
+        <genre id="51" categoryid="3000" name="Darkwave"/>
+        <genre id="23" categoryid="3000" name="Death Metal"/>
+        <genre id="5" categoryid="3000" name="Disco"/>
+        <genre id="128" categoryid="3000" name="Drum &amp; Bass"/>
+        <genre id="123" categoryid="3000" name="Drum Solo"/>
+        <genre id="121" categoryid="3000" name="Duet"/>
+        <genre id="99" categoryid="3000" name="Easy Listening"/>
+        <genre id="53" categoryid="3000" name="Electronic"/>
+        <genre id="49" categoryid="3000" name="Ethnic"/>
+        <genre id="125" categoryid="3000" name="Euro-House"/>
+        <genre id="26" categoryid="3000" name="Euro-Techno"/>
+        <genre id="55" categoryid="3000" name="Eurodance"/>
+        <genre id="194" categoryid="3000" name="Eurodisco"/>
+        <genre id="85" categoryid="3000" name="Fast Fusion"/>
+        <genre id="156" categoryid="1000" name="Flying"/>
+        <genre id="81" categoryid="3000" name="Folk"/>
+        <genre id="82" categoryid="3000" name="Folk-Rock"/>
+        <genre id="116" categoryid="3000" name="Folklore"/>
+        <genre id="120" categoryid="3000" name="Freestyle"/>
+        <genre id="6" categoryid="3000" name="Funk"/>
+        <genre id="31" categoryid="3000" name="Fusion"/>
+        <genre id="37" categoryid="3000" name="Game"/>
+        <genre id="60" categoryid="3000" name="Gangsta"/>
+        <genre id="127" categoryid="3000" name="Goa"/>
+        <genre id="39" categoryid="3000" name="Gospel"/>
+        <genre id="50" categoryid="3000" name="Gothic"/>
+        <genre id="92" categoryid="3000" name="Gothic Rock"/>
+        <genre id="7" categoryid="3000" name="Grunge"/>
+        <genre id="80" categoryid="3000" name="Hard Rock"/>
+        <genre id="167" categoryid="3000" name="Hard Rock &amp; Metal"/>
+        <genre id="130" categoryid="3000" name="Hardcore"/>
+        <genre id="178" categoryid="3000" name="Hardstyle"/>
+        <genre id="138" categoryid="3000" name="Heavy Metal"/>
+        <genre id="8" categoryid="3000" name="Hip-Hop"/>
+        <genre id="36" categoryid="3000" name="House"/>
+        <genre id="101" categoryid="3000" name="Humour"/>
+        <genre id="132" categoryid="3000" name="Indie"/>
+        <genre id="20" categoryid="3000" name="Industrial"/>
+        <genre id="34" categoryid="3000" name="Instrumental"/>
+        <genre id="47" categoryid="3000" name="Instrumental Pop"/>
+        <genre id="48" categoryid="3000" name="Instrumental Rock"/>
+        <genre id="9" categoryid="3000" name="Jazz"/>
+        <genre id="30" categoryid="3000" name="Jazz+Funk"/>
+        <genre id="147" categoryid="3000" name="JPop"/>
+        <genre id="64" categoryid="3000" name="Jungle"/>
+        <genre id="87" categoryid="3000" name="Latin"/>
+        <genre id="170" categoryid="3000" name="Latin Music"/>
+        <genre id="192" categoryid="3000" name="Live Performance"/>
+        <genre id="72" categoryid="3000" name="Lo-Fi"/>
+        <genre id="46" categoryid="3000" name="Meditative"/>
+        <genre id="143" categoryid="3000" name="Merengue"/>
+        <genre id="10" categoryid="3000" name="Metal"/>
+        <genre id="175" categoryid="3000" name="Miscellaneous"/>
+        <genre id="150" categoryid="3000" name="Music Concert"/>
+        <genre id="177" categoryid="3000" name="Music Video &amp; Concerts"/>
+        <genre id="78" categoryid="3000" name="Musical"/>
+        <genre id="83" categoryid="3000" name="National Folk"/>
+        <genre id="134" categoryid="3000" name="Negerpunk"/>
+        <genre id="11" categoryid="3000" name="New Age"/>
+        <genre id="67" categoryid="3000" name="New Wave"/>
+        <genre id="40" categoryid="3000" name="Noise"/>
+        <genre id="12" categoryid="3000" name="Oldies"/>
+        <genre id="104" categoryid="3000" name="Opera"/>
+        <genre id="13" categoryid="3000" name="Other"/>
+        <genre id="76" categoryid="3000" name="Polka"/>
+        <genre id="135" categoryid="3000" name="Polsk Punk"/>
+        <genre id="14" categoryid="3000" name="Pop"/>
+        <genre id="54" categoryid="3000" name="Pop-Folk"/>
+        <genre id="110" categoryid="3000" name="Porn Groove"/>
+        <genre id="201" categoryid="3000" name="Pornogrind"/>
+        <genre id="118" categoryid="3000" name="Power Ballad"/>
+        <genre id="24" categoryid="3000" name="Pranks"/>
+        <genre id="109" categoryid="3000" name="Primus"/>
+        <genre id="93" categoryid="3000" name="Progressive Rock"/>
+        <genre id="68" categoryid="3000" name="Psychadelic"/>
+        <genre id="187" categoryid="3000" name="Psychedelic"/>
+        <genre id="94" categoryid="3000" name="Psychedelic Rock"/>
+        <genre id="191" categoryid="3000" name="Psychobilly"/>
+        <genre id="44" categoryid="3000" name="Punk"/>
+        <genre id="122" categoryid="3000" name="Punk Rock"/>
+        <genre id="182" categoryid="3000" name="Punkrock"/>
+        <genre id="157" categoryid="1000" name="Puzzle"/>
+        <genre id="15" categoryid="3000" name="R&amp;B"/>
+        <genre id="158" categoryid="1000" name="Racing"/>
+        <genre id="16" categoryid="3000" name="Rap"/>
+        <genre id="174" categoryid="3000" name="Rap &amp; Hip-Hop"/>
+        <genre id="69" categoryid="3000" name="Rave"/>
+        <genre id="17" categoryid="3000" name="Reggae"/>
+        <genre id="200" categoryid="3000" name="Reggaeton"/>
+        <genre id="77" categoryid="3000" name="Retro"/>
+        <genre id="88" categoryid="3000" name="Revival"/>
+        <genre id="159" categoryid="1000" name="Rhythm"/>
+        <genre id="18" categoryid="3000" name="Rock"/>
+        <genre id="79" categoryid="3000" name="Rock &amp; Roll"/>
+        <genre id="160" categoryid="1000" name="Role-Playing"/>
+        <genre id="144" categoryid="3000" name="Salsa"/>
+        <genre id="115" categoryid="3000" name="Samba"/>
+        <genre id="111" categoryid="3000" name="Satire"/>
+        <genre id="70" categoryid="3000" name="Showtunes"/>
+        <genre id="161" categoryid="1000" name="Simulation"/>
+        <genre id="22" categoryid="3000" name="Ska"/>
+        <genre id="112" categoryid="3000" name="Slow Jam"/>
+        <genre id="96" categoryid="3000" name="Slow Rock"/>
+        <genre id="106" categoryid="3000" name="Sonata"/>
+        <genre id="43" categoryid="3000" name="Soul"/>
+        <genre id="38" categoryid="3000" name="Sound Clip"/>
+        <genre id="25" categoryid="3000" name="Soundtrack"/>
+        <genre id="180" categoryid="3000" name="Soundtracks"/>
+        <genre id="57" categoryid="3000" name="Southern Rock"/>
+        <genre id="102" categoryid="3000" name="Speech"/>
+        <genre id="162" categoryid="1000" name="Sports"/>
+        <genre id="163" categoryid="1000" name="Strategy"/>
+        <genre id="84" categoryid="3000" name="Swing"/>
+        <genre id="95" categoryid="3000" name="Symphonic Rock"/>
+        <genre id="107" categoryid="3000" name="Symphony"/>
+        <genre id="148" categoryid="3000" name="SynthPop"/>
+        <genre id="114" categoryid="3000" name="Tango"/>
+        <genre id="19" categoryid="3000" name="Techno"/>
+        <genre id="52" categoryid="3000" name="Techno-Industrial"/>
+        <genre id="145" categoryid="3000" name="Thrash Metal"/>
+        <genre id="61" categoryid="3000" name="Top 40"/>
+        <genre id="71" categoryid="3000" name="Trailer"/>
+        <genre id="32" categoryid="3000" name="Trance"/>
+        <genre id="73" categoryid="3000" name="Tribal"/>
+        <genre id="28" categoryid="3000" name="Trip-Hop"/>
+        <genre id="164" categoryid="1000" name="Trivia"/>
+        <genre id="172" categoryid="1000" name="Unknown"/>
+        <genre id="188" categoryid="3000" name="Unknown"/>
+        <genre id="181" categoryid="3000" name="Urban"/>
+        <genre id="29" categoryid="3000" name="Vocal"/>
+        <genre id="166" categoryid="3000" name="World Music"/>
+        <genre id="195" categoryid="3000" name="Xian Metalcore"/>
+        <genre id="Action" categoryid="2000" name="Action"/>
+        <genre id="Adventure" categoryid="2000" name="Adventure"/>
+        <genre id="Animation" categoryid="2000" name="Animation"/>
+        <genre id="Biography" categoryid="2000" name="Biography"/>
+        <genre id="Comedy" categoryid="2000" name="Comedy"/>
+        <genre id="Crime" categoryid="2000" name="Crime"/>
+        <genre id="Disaster" categoryid="2000" name="Disaster"/>
+        <genre id="Documentary" categoryid="2000" name="Documentary"/>
+        <genre id="Drama" categoryid="2000" name="Drama"/>
+        <genre id="Eastern" categoryid="2000" name="Eastern"/>
+        <genre id="Family" categoryid="2000" name="Family"/>
+        <genre id="Fantasy" categoryid="2000" name="Fantasy"/>
+        <genre id="Film-Noir" categoryid="2000" name="Film-Noir"/>
+        <genre id="Game-Show" categoryid="2000" name="Game-Show"/>
+        <genre id="History" categoryid="2000" name="History"/>
+        <genre id="Holiday" categoryid="2000" name="Holiday"/>
+        <genre id="Horror" categoryid="2000" name="Horror"/>
+        <genre id="Music" categoryid="2000" name="Music"/>
+        <genre id="Musical" categoryid="2000" name="Musical"/>
+        <genre id="Mystery" categoryid="2000" name="Mystery"/>
+        <genre id="News" categoryid="2000" name="News"/>
+        <genre id="Reality-TV" categoryid="2000" name="Reality-TV"/>
+        <genre id="Road Movie" categoryid="2000" name="Road Movie"/>
+        <genre id="Romance" categoryid="2000" name="Romance"/>
+        <genre id="Sci-Fi" categoryid="2000" name="Sci-Fi"/>
+        <genre id="Sport" categoryid="2000" name="Sport"/>
+        <genre id="Suspense" categoryid="2000" name="Suspense"/>
+        <genre id="Talk-Show" categoryid="2000" name="Talk-Show"/>
+        <genre id="Thriller" categoryid="2000" name="Thriller"/>
+        <genre id="War" categoryid="2000" name="War"/>
+        <genre id="Western" categoryid="2000" name="Western"/>
+    </genres>
+    <resolutions>
+        <resolution id="0" name="Unknown"/>
+        <resolution id="1" name="SD"/>
+        <resolution id="2" name="HD"/>
+        <resolution id="3" name="HD+"/>
+        <resolution id="4" name="4k"/>
+    </resolutions>
+    <released>
+        <rlsd id="1" name="Rls&#039;d"/>
+        <rlsd id="2" name="Rls&#039;d +No Nukes"/>
+    </released>
+    <formats>
+        <format id="0" name="Unknown"/>
+        <format id="1" name="XviD"/>
+        <format id="2" name="x264"/>
+        <format id="3" name="h264"/>
+        <format id="4" name="DVDR"/>
+        <format id="5" name="MPEG2"/>
+        <format id="6" name="BLURAY"/>
+        <format id="7" name="DIVX"/>
+        <format id="8" name="WMV"/>
+        <format id="9" name="MP4"/>
+        <format id="10" name="FLV"/>
+        <format id="11" name="F4V"/>
+        <format id="12" name="MOV"/>
+        <format id="13" name="MPG"/>
+        <format id="14" name="MP3"/>
+        <format id="15" name="FLAC"/>
+        <format id="16" name="x265"/>
+    </formats>
+    <languages>
+        <language id="DK" name="Danish"/>
+        <language id="NL" name="Dutch"/>
+        <language id="EN" name="English"/>
+        <language id="FI" name="Finnish"/>
+        <language id="BE" name="Flemish"/>
+        <language id="FR" name="French"/>
+        <language id="DE" name="German"/>
+        <language id="GR" name="Greek"/>
+        <language id="IL" name="Hebrew"/>
+        <language id="IS" name="Icelandic"/>
+        <language id="IT" name="Italian"/>
+        <language id="JP" name="Japanese"/>
+        <language id="KR" name="Korean"/>
+        <language id="NO" name="Norwegian"/>
+        <language id="PL" name="Polish"/>
+        <language id="RO" name="Romanian"/>
+        <language id="RU" name="Russian"/>
+        <language id="SL" name="Slovakian"/>
+        <language id="ES" name="Spanish"/>
+        <language id="SE" name="Swedish"/>
+        <language id="TR" name="Turkish"/>
+        <language id="VI" name="Vietnamese"/>
+    </languages>
+</caps>

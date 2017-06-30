@@ -59,34 +59,34 @@ public class CategoryProviderTest {
 
     @Test
     public void fromNewznabCategories() throws Exception {
-        assertThat(testee.fromNewznabCategories(Arrays.asList(3000)).getName(), is("3000,3030"));
-        assertThat(testee.fromNewznabCategories(Arrays.asList(3030)).getName(), is("3000,3030"));
-        assertThat(testee.fromNewznabCategories(Arrays.asList(7020)).getName(), is("7020,8010"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(3000), CategoriesConfig.allCategory).getName(), is("3000,3030"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(3030), CategoriesConfig.allCategory).getName(), is("3000,3030"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(7020), CategoriesConfig.allCategory).getName(), is("7020,8010"));
 
         //Different order
-        assertThat(testee.fromNewznabCategories(Arrays.asList(7020,8010)).getName(), is("7020,8010"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(7020, 8010), CategoriesConfig.allCategory).getName(), is("7020,8010"));
 
         //One general category
-        assertThat(testee.fromNewznabCategories(Arrays.asList(4000)).getName(), is("4000"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(4000), CategoriesConfig.allCategory).getName(), is("4000"));
 
         //Generalized (4020 matches 4000)
-        assertThat(testee.fromNewznabCategories(Arrays.asList(4020)).getName(), is("4000"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(4020), CategoriesConfig.allCategory).getName(), is("4000"));
 
         //Specific trumps general
-        assertThat(testee.fromNewznabCategories(Arrays.asList(4090)).getName(), is("4090"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(4090), CategoriesConfig.allCategory).getName(), is("4090"));
 
         //Use the more specific one
-        assertThat(testee.fromNewznabCategories(Arrays.asList(4000, 4090)).getName(), is("4090"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(4000, 4090), CategoriesConfig.allCategory).getName(), is("4090"));
 
         //None found
-        assertThat(testee.fromNewznabCategories(Arrays.asList(7090)).getName(), is("All"));
+        assertThat(testee.fromNewznabCategories(Arrays.asList(7090), CategoriesConfig.allCategory).getName(), is("All"));
 
         //String input
         assertThat(testee.fromNewznabCategories("4000").getName(), is("4000"));
         assertThat(testee.fromNewznabCategories("7020,8010").getName(), is("7020,8010"));
 
         //No cats
-        assertThat(testee.fromNewznabCategories(Collections.emptyList()).getName(), is("All"));
+        assertThat(testee.fromNewznabCategories(Collections.emptyList(), CategoriesConfig.allCategory).getName(), is("All"));
         assertThat(testee.fromNewznabCategories("").getName(), is("N/A"));
 
     }

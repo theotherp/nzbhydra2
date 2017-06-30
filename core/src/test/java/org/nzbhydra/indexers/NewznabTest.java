@@ -426,7 +426,7 @@ public class NewznabTest {
         assertThat(item.getFiles(), is(10));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getCommentsCount(), is(30));
-        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050));
+        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050), null);
 
         rssItem.setRssGuid(new RssGuid("123", false));
         rssItem.getNewznabAttributes().clear();
