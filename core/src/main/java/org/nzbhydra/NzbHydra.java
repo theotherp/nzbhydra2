@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
@@ -73,8 +74,7 @@ public class NzbHydra {
 
     public static void main(String[] args) throws Exception {
         OptionParser parser = new OptionParser();
-        parser.accepts("config", "Define path to config yaml file ").withRequiredArg().defaultsTo("config/application.yml");
-        parser.accepts("database", "Define path to database base file. Begin with ./ for relativ folders").withRequiredArg().defaultsTo("./database/nzbhydra.db");
+        parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
         parser.accepts("host", "Run on this host").withRequiredArg();
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withRequiredArg();
@@ -89,8 +89,17 @@ public class NzbHydra {
         } else if (options.has("version")) {
             System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
         } else {
-            System.setProperty("spring.config.location", (String) options.valueOf("config"));
-            useIfSet(options, "database", "main.databaseFolder");
+            String dataFolder;
+            if (options.has("datafolder")) {
+                dataFolder = (String) options.valueOf("datafolder");
+            } else {
+                dataFolder = "./data";
+            }
+            dataFolder = new File(dataFolder).getCanonicalPath();
+            logger.info("Using data folder {}", dataFolder);
+
+            System.setProperty("nzbhydra.dataFolder", dataFolder);
+            System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");

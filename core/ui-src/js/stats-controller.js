@@ -44,7 +44,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         blockUI.start("Updating stats...");
         var after = $scope.afterDate != null ? $scope.afterDate : null;
         var before = $scope.beforeDate != null ? $scope.beforeDate : null;
-        StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
+        $scope.statsLoadingPromise = StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
             $scope.setStats(stats);
         });
 

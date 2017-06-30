@@ -57,9 +57,9 @@ Torrent support
 - !! black hole
 
 Updater: Proof of concept with wrapper works
-- update notification
+- !! update notification
 - self updating
-- function to show dialog instead of updating when a manual update is needed for some reason (pulled from repo file)
+- not now: function to show dialog instead of updating when a manual update is needed for some reason (pulled from repo file)
 
 Process control
 - Restart: Works, based on wrapper
@@ -133,6 +133,7 @@ General, Ideas
 - adapt migration to latest version (sslca, removeTrailing, etc...)
 - ssl, needs to be explained in wiki/readme
 - when all indexers were selected in GUI don't set the parameter
+- !! use common data dir instead of settings for database and config file
 
 currently not (yet) supported:
 - proxies

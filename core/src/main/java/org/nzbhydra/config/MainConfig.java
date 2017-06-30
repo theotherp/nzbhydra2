@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.Optional;
 
 @ConfigurationProperties("main")
@@ -21,7 +20,6 @@ public class MainConfig extends ValidatingConfig {
     private String apiKey = null;
     private Integer configVersion;
     private boolean backupEverySunday;
-    private String databaseFolder;
     private String dereferer;
     @SensitiveData
     private String externalUrl = null;
@@ -45,17 +43,6 @@ public class MainConfig extends ValidatingConfig {
     private boolean updateCheckEnabled;
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
-
-    public void setDatabaseFolder(String databaseFolder) {
-        if (databaseFolder != null && !new File(databaseFolder).isAbsolute() && !databaseFolder.startsWith("./")) {
-            logger.warn("Database file setting seems to be relative but doesn't start with a \"./\". Will add it");
-            databaseFolder = "./" + databaseFolder;
-        }
-        if (databaseFolder != null && databaseFolder.endsWith("/")) {
-            databaseFolder = databaseFolder.substring(0, databaseFolder.length() - 1);
-        }
-        this.databaseFolder = databaseFolder;
-    }
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);

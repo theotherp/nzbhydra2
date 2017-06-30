@@ -229,24 +229,6 @@ function ConfigFields($injector) {
                             }
                         }
                     ]
-                }, {
-                    wrapper: 'fieldset',
-                    templateOptions: {label: 'Database'},
-                    fieldGroup: [
-                        {
-                            key: 'databaseFolder',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Database folder',
-                                required: true,
-                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders. Changing this will not move the existing database file(s)'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        }
-                    ]
                 },
                 {
                     wrapper: 'fieldset',
@@ -293,19 +275,6 @@ function ConfigFields($injector) {
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
                                 ]
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-                        {
-                            key: 'logFolder',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Log files base folder',
-                                required: true,
-                                help: 'Relative path starting with "./" or absolute path. Use "/" to separate folders'
                             },
                             watcher: {
                                 listener: restartListener
@@ -408,7 +377,7 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'snowNews',
+                            key: 'showNews',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',

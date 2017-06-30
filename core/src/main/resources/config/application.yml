@@ -231,7 +231,6 @@ main:
   apiKey: null
   configVersion: 1
   backupEverySunday: true
-  databaseFolder: "./database"
   dereferer: "http://www.dereferer.org/?$s"
   externalUrl: null
   firstStart: false

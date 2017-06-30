@@ -1,5 +1,5 @@
 <configuration>
-    <springProperty scope="context" name="logging.folder" source="main.logging.logFolder" defaultValue="./logs"/>
+    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
     <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="10"/>
@@ -51,9 +51,9 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>${logging.level.file}</level>
         </filter>
-        <file>${logging.folder}/nzbhydra2.log</file>
+        <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.folder}/nzbhydra2.log.%d</fileNamePattern>
+            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.log.%d</fileNamePattern>
             <maxHistory>${logging.logMaxDays}</maxHistory>
         </rollingPolicy>
         <triggeringPolicy
@@ -66,9 +66,9 @@
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>info</level>
         </filter>
-        <file>${logging.folder}/nzbhydra2-log.json</file>
+        <file>${logging.baseFolder}/logs/nzbhydra2-log.json</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.folder}/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
+            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
             <maxHistory>1</maxHistory>
         </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">

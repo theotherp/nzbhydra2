@@ -53,7 +53,7 @@ public class BackupAndRestore {
     public File backup() throws Exception {
         logger.info("Creating backup");
 
-        File mainFolder = new File(""); //TODO make sure we're in the correct main folder
+        File mainFolder = new File(System.getProperty("nzbhydra.dataFolder")); //TODO make sure we're in the correct main folder
         File backupFolder = new File(mainFolder, "backup");
         if (!backupFolder.exists()) {
             boolean created = backupFolder.mkdirs();
@@ -68,7 +68,7 @@ public class BackupAndRestore {
         Path path = backupZip.toPath();
         URI uri = URI.create("jar:" + path.toUri());
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
-            Path nf = fs.getPath("application.yml");
+            Path nf = fs.getPath("nzbhydra.yml");
             try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
                 writer.write(configProvider.getBaseConfig().getAsYamlString());
             }

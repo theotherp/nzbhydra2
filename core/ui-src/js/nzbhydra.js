@@ -454,7 +454,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 5;
+                            return 6;
                         }],
                         $title: function ($stateParams) {
                             return "System (About)"

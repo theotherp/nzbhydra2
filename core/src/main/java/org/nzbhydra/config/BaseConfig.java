@@ -74,7 +74,7 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public void save(File targetFile) throws IOException {
-        logger.info("Writing config to file {}", targetFile.getAbsolutePath());
+        logger.info("Writing config to file {}", targetFile.getCanonicalPath());
         objectMapper.writeValue(targetFile, this);
     }
 
@@ -87,7 +87,7 @@ public class BaseConfig extends ValidatingConfig {
     public void init() throws IOException {
         File file = buildConfigFileFile();
         if (!file.exists()) {
-            logger.info("Config file {} does not exist and will be initialized", file.getAbsolutePath());
+            logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());
             Random random = new Random();
             main.setApiKey(new BigInteger(130, random).toString(32));
             main.setSecret(new BigInteger(130, random).toString(32));
@@ -98,20 +98,12 @@ public class BaseConfig extends ValidatingConfig {
 
     private File buildConfigFileFile() throws IOException {
         File configFile;
-        File configFolder;
         if (System.getProperty("spring.config.location") != null) {
             configFile = new File(System.getProperty("spring.config.location"));
-            configFolder = configFile.getParentFile();
         } else {
-            configFolder = new File("config");
-            configFile = new File(configFolder, "application.yml");
+            configFile = new File(System.getProperty("nzbhydra.dataFolder"), "nzbhydra.yml");
         }
-        if (!configFolder.exists()) {
-            boolean created = configFolder.mkdirs();
-            if (!created) {
-                throw new IOException("Unable to create config folder " + configFolder.getAbsolutePath());
-            }
-        }
+
         return configFile;
     }
 

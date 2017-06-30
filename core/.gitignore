@@ -12,3 +12,4 @@ target/
 /database/
 *.log
 *.db.*
+/data
