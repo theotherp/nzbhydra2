@@ -34,6 +34,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class UpdateManager implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdateManager.class);
+    public static final int SHUTDOWN_RETURN_CODE = 0;
+    public static final int UPDATE_RETURN_CODE = 11;
+    public static final int RESTART_RETURN_CODE = 22;
+    public static final int RESTORE_RETURN_CODE = 33;
 
     @Value("${nzbhydra.repositoryBaseUrl}")
     protected String repositoryBaseUrl;
@@ -158,7 +162,7 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
         logger.info("Shutting down to let wrapper execute the update");
-        exitWithReturnCode(11);
+        exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 
     private SemanticVersion getLatestVersion() throws UpdateException {

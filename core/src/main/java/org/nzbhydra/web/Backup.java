@@ -1,6 +1,7 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.backup.BackupAndRestore.BackupEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +13,12 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
 
 @RestController
 public class Backup {
@@ -43,5 +47,22 @@ public class Backup {
         }
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/backup/list", method = RequestMethod.GET)
+    public List<BackupEntry> listBackups() throws Exception {
+        return backup.getExistingBackups();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/backup/restore", method = RequestMethod.GET)
+    public GenericResponse restore(@RequestParam String filename) throws Exception {
+        return backup.restore(filename);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/backup/restorefile", method = RequestMethod.POST)
+    public GenericResponse restoreFromUpload(@RequestParam("file") MultipartFile file) throws Exception {
+        return backup.restoreFromFile(file.getInputStream());
+    }
 
 }

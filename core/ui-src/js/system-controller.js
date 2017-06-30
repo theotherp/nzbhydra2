@@ -32,23 +32,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         })
     };
 
-    $scope.deleteLogAndDatabase = function () {
-        ModalService.open("Delete log and db", "Are you absolutely sure you want to delete your database and log files? Hydra will restart to do that.", {
-            yes: {
-                onYes: function () {
-                    NzbHydraControlService.deleteLogAndDb();
-                    RestartService.countdown();
-                },
-                text: "Yes, delete log and database"
-            },
-            no: {
-                onCancel: function () {
 
-                },
-                text: "Nah"
-            }
-        });
-    };
 
     $scope.migrate = function () {
         var modalInstance = $uibModal.open({

@@ -22,7 +22,7 @@ public class Control {
     @RequestMapping(value = "/internalapi/control/shutdown", method = RequestMethod.GET)
     public GenericResponse shutdown() throws Exception {
         logger.info("Shutting down due to external request");
-        updateManager.exitWithReturnCode(0);
+        updateManager.exitWithReturnCode(UpdateManager.SHUTDOWN_RETURN_CODE);
         return GenericResponse.ok();
     }
 
@@ -31,7 +31,7 @@ public class Control {
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
     public GenericResponse restart() throws Exception {
         logger.info("Shutting down due to external request. Restart will be handled by wrapper");
-        updateManager.exitWithReturnCode(22);
+        updateManager.exitWithReturnCode(UpdateManager.RESTART_RETURN_CODE);
         logger.debug("Returning restart OK");
         return GenericResponse.ok();
     }

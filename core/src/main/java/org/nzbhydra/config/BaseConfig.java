@@ -96,7 +96,7 @@ public class BaseConfig extends ValidatingConfig {
         save();
     }
 
-    private File buildConfigFileFile() throws IOException {
+    public static File buildConfigFileFile() throws IOException {
         File configFile;
         if (System.getProperty("spring.config.location") != null) {
             configFile = new File(System.getProperty("spring.config.location"));

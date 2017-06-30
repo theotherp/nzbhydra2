@@ -32,8 +32,8 @@ function hydrabackup() {
                 if (file) {
                     $scope.uploadActive = true;
                     file.upload = Upload.upload({
-                        url: 'internalapi/restorebackup',
-                        data: {content: file}
+                        url: 'internalapi/backup/restorefile',
+                        file: file
                     });
 
                     file.upload.then(function (response) {
@@ -55,7 +55,7 @@ function hydrabackup() {
 
         $scope.restoreFromFile = function (filename) {
             BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.restart("Restore successful.");
+                    RestartService.countdown2("Extraction of backup successful. Restarting for wrapper to restore data.");
                 },
                 function (response) {
                     growl.error(response.data);

@@ -6,7 +6,8 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
 
     return {
         restart: restart,
-        countdown: countdown
+        countdown: countdown,
+        countdown2: countdown2
     };
 
 
@@ -46,5 +47,16 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
                 growl.info("Unable to send restart command.");
             }
         )
+    }
+
+    function countdown2(message) {
+        message = angular.isDefined(message) ? message + " " : "";
+
+        blockUI.start(message + " Will reload page when NZB Hydra is back.");
+        $timeout(function () {
+            internalCaR(message, 0);
+        }, 3000);
+
+
     }
 }

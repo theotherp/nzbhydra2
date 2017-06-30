@@ -1998,8 +1998,8 @@ function hydrabackup() {
                 if (file) {
                     $scope.uploadActive = true;
                     file.upload = Upload.upload({
-                        url: 'internalapi/restorebackup',
-                        data: {content: file}
+                        url: 'internalapi/backup/restorefile',
+                        file: file
                     });
 
                     file.upload.then(function (response) {
@@ -2021,7 +2021,7 @@ function hydrabackup() {
 
         $scope.restoreFromFile = function (filename) {
             BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.restart("Restore successful.");
+                    RestartService.countdown2("Extraction of backup successful. Restarting for wrapper to restore data.");
                 },
                 function (response) {
                     growl.error(response.data);
@@ -2299,23 +2299,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         })
     };
 
-    $scope.deleteLogAndDatabase = function () {
-        ModalService.open("Delete log and db", "Are you absolutely sure you want to delete your database and log files? Hydra will restart to do that.", {
-            yes: {
-                onYes: function () {
-                    NzbHydraControlService.deleteLogAndDb();
-                    RestartService.countdown();
-                },
-                text: "Yes, delete log and database"
-            },
-            no: {
-                onCancel: function () {
 
-                },
-                text: "Nah"
-            }
-        });
-    };
 
     $scope.migrate = function () {
         var modalInstance = $uibModal.open({
@@ -3978,7 +3962,8 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
 
     return {
         restart: restart,
-        countdown: countdown
+        countdown: countdown,
+        countdown2: countdown2
     };
 
 
@@ -4019,6 +4004,17 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
             }
         )
     }
+
+    function countdown2(message) {
+        message = angular.isDefined(message) ? message + " " : "";
+
+        blockUI.start(message + " Will reload page when NZB Hydra is back.");
+        $timeout(function () {
+            internalCaR(message, 0);
+        }, 3000);
+
+
+}
 }
 RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService"];
 
@@ -7783,13 +7779,13 @@ function BackupService($http) {
 
 
     function getBackupsList() {
-        return $http.get('internalapi/getbackups').then(function (data) {
-            return data.data.backups;
+        return $http.get('internalapi/backup/list').then(function (data) {
+            return data.data;
         });
     }
 
     function restoreFromFile(filename) {
-        return $http.get('internalapi/restorefrombackupfile', {params: {filename: filename}}).then(function (response) {
+        return $http.get('internalapi/backup/restore', {params: {filename: filename}}).then(function (response) {
             return response;
         });
     }

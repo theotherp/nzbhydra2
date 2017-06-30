@@ -11,13 +11,13 @@ function BackupService($http) {
 
 
     function getBackupsList() {
-        return $http.get('internalapi/getbackups').then(function (data) {
-            return data.data.backups;
+        return $http.get('internalapi/backup/list').then(function (data) {
+            return data.data;
         });
     }
 
     function restoreFromFile(filename) {
-        return $http.get('internalapi/restorefrombackupfile', {params: {filename: filename}}).then(function (response) {
+        return $http.get('internalapi/backup/restore', {params: {filename: filename}}).then(function (response) {
             return response;
         });
     }
