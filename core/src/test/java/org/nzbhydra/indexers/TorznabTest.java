@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -90,6 +91,7 @@ public class TorznabTest {
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
     }
 
 

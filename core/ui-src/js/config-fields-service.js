@@ -641,20 +641,12 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'removeLanguage',
-                            type: 'horizontalSwitch',
+                            key: 'removeTrailing',
+                            type: 'horizontalInput',
                             templateOptions: {
-                                type: 'switch',
-                                label: 'Remove language from newznab titles',
-                                help: 'Some indexers add the language to the result title, preventing proper duplicate detection'
-                            }
-                        },
-                        {
-                            key: 'removeObfuscated',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Remove "obfuscated" from nzbgeek titles'
+                                type: 'text',
+                                label: 'Remove trailing...',
+                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces'
                             }
                         },
                         {

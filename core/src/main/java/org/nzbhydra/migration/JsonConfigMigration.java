@@ -55,7 +55,7 @@ import java.util.Optional;
 public class JsonConfigMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigMigration.class);
-    private static final int NZBHYDRA1_SUPPORTED_CONFIG_VERSION = 39;
+    private static final int NZBHYDRA1_SUPPORTED_CONFIG_VERSION = 40;
 
     @Autowired
     private CategoryProvider categoryProvider;
@@ -193,12 +193,12 @@ public class JsonConfigMigration {
                         break;
                 }
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(Strings.isNullOrEmpty(oldCat.getForbiddenWords()) ? Collections.emptyList() : Arrays.asList(oldCat.getForbiddenWords().replace(" ", "").split(",")));
+                newCategory.setForbiddenWords(getListFromCommaSeparatedString(oldCat.getForbiddenWords()));
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(Strings.isNullOrEmpty(oldCat.getRequiredWords()) ? Collections.emptyList() : Arrays.asList(oldCat.getRequiredWords().replace(" ", "").split(",")));
+                newCategory.setRequiredWords(getListFromCommaSeparatedString(oldCat.getRequiredWords()));
                 switch (oldCat.getIgnoreResults()) {
                     case "internal":
                         newCategory.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
@@ -299,24 +299,27 @@ public class JsonConfigMigration {
         }
         searchingConfig.setIgnorePassworded(oldSearching.isIgnorePassworded());
         searchingConfig.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
-        searchingConfig.setForbiddenWords(Strings.isNullOrEmpty(oldSearching.getForbiddenWords()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenWords().replace(" ", "").split(",")));
+        searchingConfig.setForbiddenWords(getListFromCommaSeparatedString(oldSearching.getForbiddenWords()));
         searchingConfig.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
             searchingConfig.setNzbAccessType(NzbAccessType.PROXY);
         } else {
             searchingConfig.setNzbAccessType(NzbAccessType.REDIRECT);
         }
-        searchingConfig.setRemoveLanguage(oldSearching.isRemoveLanguage());
-        searchingConfig.setRemoveObfuscated(oldSearching.isRemoveObfuscated());
-        searchingConfig.setRequiredWords(Strings.isNullOrEmpty(oldSearching.getRequiredWords()) ? Collections.emptyList() : Arrays.asList(oldSearching.getRequiredWords().replace(" ", "").split(",")));
+        searchingConfig.setRemoveTrailing(getListFromCommaSeparatedString(oldSearching.getRemoveTrailing()));
+        searchingConfig.setRequiredWords(getListFromCommaSeparatedString(oldSearching.getRequiredWords()));
         searchingConfig.setTimeout(oldSearching.getTimeout());
         searchingConfig.setUserAgent(oldSearching.getUserAgent());
         searchingConfig.setRequiredRegex(oldSearching.getRequiredRegex());
         searchingConfig.setForbiddenRegex(oldSearching.getForbiddenRegex());
-        searchingConfig.setForbiddenGroups(Strings.isNullOrEmpty(oldSearching.getForbiddenGroups()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenGroups().replace(" ", "").split(",")));
-        searchingConfig.setForbiddenPosters(Strings.isNullOrEmpty(oldSearching.getForbiddenPosters()) ? Collections.emptyList() : Arrays.asList(oldSearching.getForbiddenPosters().replace(" ", "").split(",")));
+        searchingConfig.setForbiddenGroups(getListFromCommaSeparatedString(oldSearching.getForbiddenGroups()));
+        searchingConfig.setForbiddenPosters(getListFromCommaSeparatedString(oldSearching.getForbiddenPosters()));
         searchingConfig.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
         return messages;
+    }
+
+    private List<String> getListFromCommaSeparatedString(String commaSeparatedString) {
+        return Strings.isNullOrEmpty(commaSeparatedString) ? Collections.emptyList() : Arrays.asList(commaSeparatedString.replace(" ", "").split(","));
     }
 
     private List<String> migrateMain(OldConfig oldConfig, BaseConfig newConfig) {

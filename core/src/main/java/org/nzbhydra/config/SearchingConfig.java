@@ -33,8 +33,7 @@ public class SearchingConfig extends ValidatingConfig {
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
-    private boolean removeLanguage;
-    private boolean removeObfuscated;
+    private List<String> removeTrailing;
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
     private Integer timeout = 30;

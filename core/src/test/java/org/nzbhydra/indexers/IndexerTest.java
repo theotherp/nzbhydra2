@@ -157,7 +157,6 @@ public class IndexerTest {
         item.setIndexer(indexerMock);
         when(searchResultRepositoryMock.findByIndexerAndIndexerGuid(indexerEntityMock, "guid")).thenReturn(searchResultEntityMock);
 
-
         testee.persistSearchResults(Collections.singletonList(item));
 
         verify(searchResultRepositoryMock).save(searchResultEntitiesCaptor.capture());

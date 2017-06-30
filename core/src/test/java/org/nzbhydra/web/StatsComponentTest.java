@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.database.IndexerAccessResult;
@@ -64,6 +65,8 @@ public class StatsComponentTest {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private ConfigProvider configProvider;
 
     @Autowired
     private Stats stats;
@@ -215,27 +218,27 @@ public class StatsComponentTest {
         apiAccess4.setTime(Instant.now().minus(14, ChronoUnit.DAYS));
         apiAccessRepository.save(apiAccess4);
 
-        List<IndexerApiAccessStatsEntry> result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
+        List<IndexerApiAccessStatsEntry> result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
         assertEquals(1, result.size());
         //One yesterday, two today: 1.5 on average
         assertEquals(1.5D, result.get(0).getAverageAccessesPerDay(), 0D);
         //One with connection error, one with another error, one successful
         assertEquals(33D, result.get(0).getPercentSuccessful(), 1D);
 
-        result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(20, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
+        result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(20, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
         assertEquals(1, result.size());
         //One yesterday, two today, one 14 days ago: 4/3=1.33 on average
         assertEquals(1.33D, result.get(0).getAverageAccessesPerDay(), 0.01D);
         //One with connection error, one with another error, two successful
         assertEquals(50D, result.get(0).getPercentSuccessful(), 0D);
+
+        //Now include diabled
+        result = stats.indexerApiAccesses(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
+        assertEquals(2, result.size());
     }
 
     @Test
     public void shouldCalculateSearchShares() {
-        //Enable indexer 2 first
-        indexerConfig2.setEnabled(true);
-        searchModuleConfigProvider.setIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
-        searchModuleProvider.loadIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
         {
             //Search with a query, two indexers involved, both returned results, one had an unsuccessful additional search
             SearchEntity search1 = new SearchEntity();
@@ -288,6 +291,16 @@ public class StatsComponentTest {
         assertEquals("indexer1", result.get(0).getIndexerName());
         assertNotNull(result.get(0).getTotalShare());
         //900 from this one, 600 from the other one:
+        assertEquals(60F, result.get(0).getTotalShare(), 1F);
+        assertNotNull(result.get(0).getUniqueShare());
+        assertEquals(70F, result.get(0).getUniqueShare(), 0F);
+
+        //Now don't include disabled indexers
+        result = stats.getIndexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
+        assertEquals(1, result.size());
+        assertEquals("indexer1", result.get(0).getIndexerName());
+        assertNotNull(result.get(0).getTotalShare());
+        //900 from this one, 600 from the other one. The stats are the same as above because although the second indexer is currently disabled it was still part of the search
         assertEquals(60F, result.get(0).getTotalShare(), 1F);
         assertNotNull(result.get(0).getUniqueShare());
         assertEquals(70F, result.get(0).getUniqueShare(), 0F);

@@ -29,6 +29,7 @@ import java.util.Arrays;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -178,8 +179,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().isIgnoreTemporarilyDisabled(), is(true));
         assertThat(result.getMigratedConfig().getSearching().getMaxAge(), is(2000));
         assertThat(result.getMigratedConfig().getSearching().getNzbAccessType(), is(NzbAccessType.REDIRECT));
-        assertThat(result.getMigratedConfig().getSearching().isRemoveLanguage(), is(true));
-        assertThat(result.getMigratedConfig().getSearching().isRemoveObfuscated(), is(false));
+        assertThat(result.getMigratedConfig().getSearching().getRemoveTrailing(), hasItems("Spanish", "-German", ".rar"));
         assertThat(result.getMigratedConfig().getSearching().getRequiredRegex(), is(nullValue()));
         assertThat(result.getMigratedConfig().getSearching().getRequiredWords(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getTimeout(), is(20));

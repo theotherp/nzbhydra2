@@ -19,23 +19,7 @@ public class SemanticVersionTest {
         assertEquals(v1, v2);
     }
 
-    @Test(expected = ParseException.class)
-    public void testWontParse() throws ParseException {
-        new SemanticVersion("won't parse");
-    }
 
-    @Test(expected = ParseException.class)
-    public void testBroken() throws ParseException {
-        new SemanticVersion("1..2");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testIdentifiers() {
-        String[] ids = {
-                "ok", "not_ok"
-        };
-        new SemanticVersion(0, 0, 0);
-    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testOutOfBounds() {
@@ -57,39 +41,17 @@ public class SemanticVersionTest {
         assertEquals("11.22.33", v.toString());
     }
 
-    @Test
-    public void testParseRelease() throws ParseException {
-        SemanticVersion v = new SemanticVersion("1.2.3-alpha.1");
-        assertEquals(1, v.major);
-        assertEquals(2, v.minor);
-        assertEquals(3, v.patch);
-        assertEquals("1.2.3-alpha.1", v.toString());
-    }
 
-    @Test
-    public void testParseReleaseWithLeadingV() throws ParseException {
-        SemanticVersion v = new SemanticVersion("v1.2.3-alpha.1");
-        assertEquals(1, v.major);
-        assertEquals("1.2.3-alpha.1", v.toString());
-    }
 
     @Test
     public void testParseMeta() throws ParseException {
-        SemanticVersion v = new SemanticVersion("1.2.3+build.1");
+        SemanticVersion v = new SemanticVersion("1.2.3");
         assertEquals(1, v.major);
         assertEquals(2, v.minor);
         assertEquals(3, v.patch);
-        assertEquals("1.2.3+build.1", v.toString());
+        assertEquals("1.2.3", v.toString());
     }
 
-    @Test
-    public void testParseReleaseMeta() throws ParseException {
-        SemanticVersion v = new SemanticVersion("1.2.3-alpha.1+build.1");
-        assertEquals(1, v.major);
-        assertEquals(2, v.minor);
-        assertEquals(3, v.patch);
-        assertEquals("1.2.3-alpha.1+build.1", v.toString());
-    }
 
     @Test
     public void testNewer() {
@@ -121,17 +83,4 @@ public class SemanticVersionTest {
                 .isCompatibleUpdateFor(new SemanticVersion(1, 1, 0)));
     }
 
-    @Test
-    public void testPreRelease() throws ParseException {
-        assertTrue(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(
-                "1.1.1-alpha")));
-        assertFalse(new SemanticVersion("1.1.1-alpha")
-                .isUpdateFor(new SemanticVersion("1.1.1-alpha")));
-        assertFalse(new SemanticVersion("1.1.1-alpha.1")
-                .isUpdateFor(new SemanticVersion("1.1.1-alpha.1.1")));
-        assertTrue(new SemanticVersion("1.1.1-alpha.1.one")
-                .isUpdateFor(new SemanticVersion("1.1.1-alpha.1.1")));
-        assertTrue(new SemanticVersion("1.1.1-alpha.1.one")
-                .isUpdateFor(new SemanticVersion("1.1.1-alpha.1.1.1")));
-    }
 }

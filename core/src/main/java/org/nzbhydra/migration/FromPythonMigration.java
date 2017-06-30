@@ -57,8 +57,8 @@ public class FromPythonMigration {
             Map<String, String> versionsData = new ObjectMapper().readValue(versionsResponse.getBody(), mapTypeReference);
             String currentVersionString = versionsData.get("currentVersion");
             SemanticVersion currentVersion = new SemanticVersion(currentVersionString);
-            if (currentVersion.compareTo(new SemanticVersion("0.2.219")) < 0) {
-                String msg = "Unable to migrate from NZBHydra 1 version " + currentVersionString + ". Must be at least 0.2.219";
+            if (currentVersion.compareTo(new SemanticVersion("0.2.220")) < 0) {
+                String msg = "Unable to migrate from NZBHydra 1 version " + currentVersionString + ". Must be at least 0.2.220";
                 logger.error(msg);
                 return MigrationResult.requirementsNotMet(msg);
             }

@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
+import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.database.IndexerAccessResult;
@@ -343,6 +344,21 @@ public abstract class Indexer<T> {
 
     public IndexerEntity getIndexerEntity() {
         return indexer;
+    }
+
+    public String cleanUpTitle(String title) {
+        if (Strings.isNullOrEmpty(title)) {
+            return title;
+        }
+        title = title.trim();
+        for (String word : configProvider.getBaseConfig().getSearching().getRemoveTrailing()) {
+            if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
+                title = title.substring(0, title.length() - word.length()).trim();
+                debug("Removing trailing {} from title {}", word, title);
+                return title;
+            }
+        }
+        return title;
     }
 
     public Optional<Instant> tryParseDate(String dateString) {

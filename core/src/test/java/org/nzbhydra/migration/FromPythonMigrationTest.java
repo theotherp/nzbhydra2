@@ -74,7 +74,7 @@ public class FromPythonMigrationTest {
         MigrationResult result = testee.migrate("xyz");
 
         assertThat(result.isRequirementsMet(), is(false));
-        assertThat(result.getError(), is("Unable to migrate from NZBHydra 1 version 0.2.100. Must be at least 0.2.219"));
+        assertThat(result.getError(), is("Unable to migrate from NZBHydra 1 version 0.2.100. Must be at least 0.2.220"));
         assertThat(result.isDatabaseMigrated(), is(false));
         assertThat(result.isConfigMigrated(), is(false));
         assertThat(result.getWarningMessages().size(), is(0));

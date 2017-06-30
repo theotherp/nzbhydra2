@@ -150,6 +150,7 @@ public class NewznabTest {
 
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
 
         when(resultAcceptorMock.acceptResults(any(), any(), any())).thenAnswer(new Answer<AcceptorResult>() {
@@ -494,23 +495,20 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldRemoveTrailingLanguages() throws Exception {
-        baseConfig.getSearching().setRemoveLanguage(true);
+    public void shouldRemoveTrailingWords() throws Exception {
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("English", "-Obfuscated", " spanish"));
         RssItem rssItem = buildBasicRssItem();
-        rssItem.setTitle("Some title English");
 
+        rssItem.setTitle("Some title English");
+        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+
+        rssItem.setTitle("Some title-Obfuscated");
+        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
+
+        rssItem.setTitle("Some title Spanish");
         assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
     }
 
-    @Test
-    public void shouldRemoveObfuscatedFromNzbGeek() throws Exception {
-        baseConfig.getSearching().setRemoveObfuscated(true);
-        testee.config.setHost("nzbgeek");
-        RssItem rssItem = buildBasicRssItem();
-        rssItem.setTitle("Some title -Obfuscated");
-
-        assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title "));
-    }
 
     @Test
     public void shouldReturnNfoFromRaw() throws Exception {

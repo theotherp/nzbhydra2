@@ -18,7 +18,6 @@ public class Torznab extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
 
-
     protected SearchResultItem createSearchResultItem(RssItem item) {
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
 

@@ -26,8 +26,7 @@ import java.util.List;
         "ignoreTemporarilyDisabled",
         "maxAge",
         "nzbAccessType",
-        "removeLanguage",
-        "removeObfuscated",
+        "removeTrailing",
         "requiredRegex",
         "requiredWords",
         "timeout",
@@ -68,10 +67,8 @@ public class Searching {
     public Integer maxAge;
     @JsonProperty("nzbAccessType")
     public String nzbAccessType;
-    @JsonProperty("removeLanguage")
-    public boolean removeLanguage;
-    @JsonProperty("removeObfuscated")
-    public boolean removeObfuscated;
+    @JsonProperty("removeTrailing")
+    public String removeTrailing;
     @JsonProperty("requiredRegex")
     public String requiredRegex;
     @JsonProperty("requiredWords")

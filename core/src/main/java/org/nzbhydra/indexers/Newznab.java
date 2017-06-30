@@ -338,7 +338,7 @@ public class Newznab extends Indexer<Xml> {
 
         searchResultItem.setFirstFound(Instant.now());
         searchResultItem.setIndexer(this);
-        searchResultItem.setTitle(item.getTitle());
+        searchResultItem.setTitle(cleanUpTitle(item.getTitle()));
         searchResultItem.setSize(item.getEnclosure().getLength());
         searchResultItem.setPubDate(item.getPubDate());
         searchResultItem.setIndexerScore(config.getScore().orElse(null));
@@ -350,17 +350,6 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setOriginalCategory(item.getCategory());
         parseAttributes(item, searchResultItem);
 
-        if (config.getHost().toLowerCase().contains("nzbgeek") && configProvider.getBaseConfig().getSearching().isRemoveObfuscated()) {
-            searchResultItem.setTitle(searchResultItem.getTitle().replace("-Obfuscated", ""));
-        }
-        if (configProvider.getBaseConfig().getSearching().isRemoveLanguage()) {
-            for (String language : LANGUAGES) {
-                if (searchResultItem.getTitle().endsWith(language)) {
-                    debug("Removing trailing {} from title {}", language, searchResultItem.getTitle());
-                    searchResultItem.setTitle(searchResultItem.getTitle().substring(0, searchResultItem.getTitle().length() - language.length()));
-                }
-            }
-        }
         return searchResultItem;
     }
 
