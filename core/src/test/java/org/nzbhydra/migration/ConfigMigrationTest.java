@@ -150,9 +150,10 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getApiKey().get(), is("apikey"));
         assertThat(result.getMigratedConfig().getMain().getExternalUrl().get(), is("externalUrl"));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
-        assertThat(result.getMigratedConfig().getMain().getHttpProxy().get(), is("http://192.168.1.111:808"));
-        assertThat(result.getMigratedConfig().getMain().getHttpsProxy().get(), is("httpsProxy"));
-        assertThat(result.getMigratedConfig().getMain().getSocksProxy().get(), is("socksProxy"));
+        assertThat(result.getMigratedConfig().getMain().getProxyHost().get(), is("proxydomain.com"));
+        assertThat(result.getMigratedConfig().getMain().getProxyUsername(), is("user"));
+        assertThat(result.getMigratedConfig().getMain().getProxyPassword(), is("pass"));
+        assertThat(result.getMigratedConfig().getMain().getProxyPort(), is(1080));
         assertThat(result.getMigratedConfig().getMain().getPort(), is(5076));
         assertThat(result.getMigratedConfig().getMain().isShutdownForRestart(), is(true));
         assertThat(result.getMigratedConfig().getMain().isSsl(), is(true));

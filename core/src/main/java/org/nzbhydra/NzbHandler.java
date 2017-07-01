@@ -1,7 +1,6 @@
 package org.nzbhydra;
 
 import com.google.common.base.Stopwatch;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.nzbhydra.config.ConfigProvider;
@@ -14,6 +13,7 @@ import org.nzbhydra.database.SearchResultEntity;
 import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.NfoResult;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -47,6 +47,8 @@ public class NzbHandler {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
+    @Autowired
+    private HydraOkHttp3ClientHttpRequestFactory clientHttpRequestFactory;
 
     public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
@@ -189,10 +191,9 @@ public class NzbHandler {
     }
 
     private String downloadNzb(SearchResultEntity result) throws IOException {
-        OkHttpClient httpClient = new OkHttpClient();
         Request request = new Request.Builder().url(result.getLink()).build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
         return response.body().string();
     }
 

@@ -15,6 +15,7 @@
         <module>mapping</module>
         <module>mockserver</module>
         <module>tests</module>
+        <module>sockslib</module>
         <module>windows-release</module>
         <module>linux-release</module>
     </modules>

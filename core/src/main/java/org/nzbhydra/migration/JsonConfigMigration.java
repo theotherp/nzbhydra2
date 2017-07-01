@@ -45,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -332,9 +334,28 @@ public class JsonConfigMigration {
         mainConfig.setExternalUrl(Strings.isNullOrEmpty(oldMain.getExternalUrl()) ? null : oldMain.getExternalUrl());
         mainConfig.setHost(oldMain.getHost());
         mainConfig.setShutdownForRestart(oldMain.isShutdownForRestart());
-        mainConfig.setSocksProxy(Strings.isNullOrEmpty(oldMain.getSocksProxy()) ? null : oldMain.getSocksProxy());
-        mainConfig.setHttpProxy(Strings.isNullOrEmpty(oldMain.getHttpProxy()) ? null : oldMain.getHttpProxy());
-        mainConfig.setHttpsProxy(Strings.isNullOrEmpty(oldMain.getHttpsProxy()) ? null : oldMain.getHttpsProxy());
+        if (!Strings.isNullOrEmpty(oldMain.getHttpProxy()) || Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+            messages.add("HTTP(S) proxies are currently not supported");
+        }
+        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy())) {
+            try {
+                URL url = new URL(oldMain.getSocksProxy());
+                mainConfig.setProxyHost(url.getHost());
+                mainConfig.setProxyPort(url.getPort());
+                String userInfo = url.getUserInfo();
+                if (userInfo != null) {
+                    String[] userAndPass = userInfo.split(":");
+                    mainConfig.setProxyUsername(userAndPass[0]);
+                    mainConfig.setProxyPassword(userAndPass[1]);
+                }
+            } catch (MalformedURLException e) {
+                logger.error("Unable to parse old SOCKS proxy value " + oldMain.getSocksProxy(), e);
+                messages.add("Unable to parse old SOCKS proxy value " + oldMain.getSocksProxy() + ". Error message: " + e.getMessage());
+            }
+
+        }
+
+
         if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
             logAsWarningAndAdd(messages, "Proxies are not yet supported. Their proxy config was migrated but is currently effective.");
         }

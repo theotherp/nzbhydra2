@@ -46,4 +46,5 @@ public class NzbHandlerTest {
         assertEquals("http://127.0.0.1:1234/getnzb/user/123", testee.getNzbDownloadLink(123L, true, DownloadType.NZB));
     }
 
+
 }

@@ -235,8 +235,6 @@ main:
   externalUrl: null
   firstStart: false
   host: "0.0.0.0"
-  httpProxy: null
-  httpsProxy: null
   logging:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
@@ -247,11 +245,16 @@ main:
     logMaxDays: 30
     logUsername: false
   port: 5076
+  proxyHost: null
+  proxyPort: 1080
+  proxyIgnoreLocal: true
+  proxyIgnoreDomains: null
+  proxyUsername: null
+  proxyPassword: null
   repositoryBase: "https://github.com/theotherp"
   secret: "TODO generate"
   showNews: true
   shutdownForRestart: false
-  socksProxy: null
   ssl: false
   sslcert: null
   sslkey: null
@@ -261,6 +264,7 @@ main:
   urlBase: "/"
   useCsrf: true
   useLocalUrlForApiAccess: true
+  verifySsl: true
 searching:
   alwaysShowDuplicates: false
   applyRestrictions: "NONE"

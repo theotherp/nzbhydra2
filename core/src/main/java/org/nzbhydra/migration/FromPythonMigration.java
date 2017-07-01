@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.nzbhydra.backup.BackupAndRestore;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.SemanticVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,8 @@ public class FromPythonMigration {
     private SqliteMigration sqliteMigration;
     @Autowired
     private BackupAndRestore backupAndRestore;
+    @Autowired
+    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     protected TypeReference<Map<String, String>> mapTypeReference = new TypeReference<Map<String, String>>() {
     };
 
@@ -93,9 +95,8 @@ public class FromPythonMigration {
             migrationBuilder.pathSegment("internalapi", internalApiPath).toUriString();
             String url = migrationBuilder.toUriString();
             logger.info("Connecting to URL {}", url);
-            OkHttpClient client = new OkHttpClient.Builder().build();
             Request request = new Builder().url(url).build();
-            Response response = client.newCall(request).execute();
+            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
             return new OkHttpResponse(response.body().string(), response.isSuccessful(), response.message());
         } catch (Exception e) {
             return new OkHttpResponse("", false, e.getMessage());

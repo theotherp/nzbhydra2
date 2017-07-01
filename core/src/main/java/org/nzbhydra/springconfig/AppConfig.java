@@ -1,44 +1,30 @@
 package org.nzbhydra.springconfig;
 
-import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.orm.jpa.vendor.HibernateJpaSessionFactoryBean;
 import org.springframework.web.client.RestTemplate;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.persistence.EntityManagerFactory;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 
 
 @Configuration
 public class AppConfig {
 
     @Autowired
-    private ConfigProvider configProvider;
+    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
     @Bean
     public RestTemplate getRestTemplate() {
-        HostnameVerifier verifier = new NullHostnameVerifier();
-        //MySimpleClientHttpRequestFactory factory = new MySimpleClientHttpRequestFactory(verifier);
-        OkHttp3ClientHttpRequestFactory factory = new OkHttp3ClientHttpRequestFactory();
+        HydraOkHttp3ClientHttpRequestFactory factory = requestFactory;
 
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(factory);
         return restTemplate;
     }
 
-    public class NullHostnameVerifier implements HostnameVerifier {
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-    }
 
     @Bean
     public HibernateJpaSessionFactoryBean sessionFactory(EntityManagerFactory emf) {
@@ -47,23 +33,9 @@ public class AppConfig {
         return fact;
     }
 
-    public class MySimpleClientHttpRequestFactory extends SimpleClientHttpRequestFactory {
 
-        private final HostnameVerifier verifier;
 
-        public MySimpleClientHttpRequestFactory(HostnameVerifier verifier) {
-            this.verifier = verifier;
-        }
 
-        @Override
-        protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {
-            if (connection instanceof HttpsURLConnection) {
-                ((HttpsURLConnection) connection).setHostnameVerifier(verifier);
-            }
-            super.prepareConnection(connection, httpMethod);
-        }
-
-    }
 
 
 }

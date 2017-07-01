@@ -164,49 +164,73 @@ function ConfigFields($injector) {
                             watcher: {
                                 listener: restartListener
                             }
-                        }
-                        /*
-                         {
-                         key: 'socksProxy',
-                         type: 'horizontalInput',
-                         templateOptions: {
-                         type: 'text',
-                         label: 'SOCKS proxy',
-                         placeholder: 'socks5://user:pass@127.0.0.1:1080',
-                         help: "IPv4 only"
-                         },
-                         watcher: {
-                         listener: restartListener
-                         }
-                         },
-                         {
-                         key: 'httpProxy',
-                         type: 'horizontalInput',
-                         templateOptions: {
-                         type: 'text',
-                         label: 'HTTP proxy',
-                         placeholder: 'http://user:pass@10.0.0.1:1080',
-                         help: "IPv4 only"
-                         },
-                         watcher: {
-                         listener: restartListener
-                         }
-                         },
-                         {
-                         key: 'httpsProxy',
-                         type: 'horizontalInput',
-                         templateOptions: {
-                         type: 'text',
-                         label: 'HTTPS proxy',
-                         placeholder: 'https://user:pass@10.0.0.1:1090',
-                         help: "IPv4 only"
-                         },
-                         watcher: {
-                         listener: restartListener
-                         }
-                         },
-                         */
+                        },
 
+                        {
+                            wrapper: 'fieldset',
+                            templateOptions: {
+                                label: 'Proxy'
+                            }
+                            ,
+                            fieldGroup: [
+                                {
+                                    key: 'proxyHost',
+                                    type: 'horizontalInput',
+                                    templateOptions: {
+                                        type: 'text',
+                                        label: 'SOCKS proxy host',
+                                        placeholder: 'Set to use a SOCKS proxy',
+                                        help: "IPv4 only"
+                                    }
+                                },
+                                {
+                                    key: 'proxyPort',
+                                    type: 'horizontalInput',
+                                    hideExpression: '!model.proxyHost',
+                                    templateOptions: {
+                                        type: 'number',
+                                        label: 'Proxy port',
+                                        placeholder: '1080'
+                                    }
+                                },
+                                {
+                                    key: 'proxyUsername',
+                                    type: 'horizontalInput',
+                                    hideExpression: '!model.proxyHost',
+                                    templateOptions: {
+                                        type: 'text',
+                                        label: 'Proxy username'
+                                    }
+                                },
+                                {
+                                    key: 'proxyPassword',
+                                    type: 'horizontalInput',
+                                    hideExpression: '!model.proxyHost',
+                                    templateOptions: {
+                                        type: 'password',
+                                        label: 'Proxy password'
+                                    }
+                                },
+                                {
+                                    key: 'proxyIgnoreLocal',
+                                    type: 'horizontalSwitch',
+                                    templateOptions: {
+                                        type: 'switch',
+                                        label: 'Bypass local addresses'
+                                    }
+                                },
+                                {
+                                    key: 'proxyIgnoreDomains',
+                                    type: 'horizontalInput',
+                                    hideExpression: '!model.proxyHost',
+                                    templateOptions: {
+                                        type: 'text',
+                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive',
+                                        label: 'Bypass domains'
+                                    }
+                                }
+                            ]
+                        }
                     ]
                 },
                 {
@@ -254,6 +278,18 @@ function ConfigFields($injector) {
                                 label: 'Dereferer',
                                 help: 'Redirect external links to hide your instance. Insert $s for target URL. Delete to disable.'
                             }
+                        },
+                        {
+                            key: 'verifySsl',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                label: 'Verify SSL certificates',
+                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart.'
+                            },
+                            watcher: {
+                                listener: restartListener
+                            }
+
                         }
                     ]
                 },
@@ -418,12 +454,73 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'ignorePassworded',
-                            type: 'horizontalSwitch',
+                            key: 'generateQueries',
+                            type: 'horizontalSelect',
                             templateOptions: {
-                                type: 'switch',
-                                label: 'Ignore passworded releases',
-                                help: "Not all indexers provide this information"
+                                label: 'Generate queries',
+                                options: [
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'API'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "Generate queries for indexers which do not support ID based searches"
+                            }
+                        },
+                        //TODO fallback
+                        /*
+                         {
+                         key: 'idFallbackToTitle',
+                         type: 'horizontalMultiselect',
+                         templateOptions: {
+                         label: 'Fallback to title queries',
+                         options: [
+                         {label: 'Internal searches', id: 'internal'},
+                         {label: 'API searches', id: 'external'}
+                         ],
+                         help: "When no results were found for a query ID search again using the title"
+                         }
+                         },
+                         {
+                         key: 'idFallbackToTitlePerIndexer',
+                         type: 'horizontalSwitch',
+                         templateOptions: {
+                         type: 'switch',
+                         label: 'Fallback per indexer',
+                         help: "If enabled, fallback will occur on a per-indexer basis"
+                         }
+                         },
+                         */
+                        {
+                            key: 'userAgent',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'User agent',
+                                required: true
+                            }
+                        }
+
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Result filters'
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'applyRestrictions',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                label: 'Apply word filters',
+                                options: [
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'API'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "For which type of search word/regex filters will be applied"
                             }
                         },
                         {
@@ -464,20 +561,7 @@ function ConfigFields($injector) {
                                 help: 'Must be present in a title (title is converted to lowercase before)'
                             }
                         },
-                        {
-                            key: 'applyRestrictions',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                label: 'Apply word restrictions',
-                                options: [
-                                    {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'API'},
-                                    {name: 'All searches', value: 'BOTH'},
-                                    {name: 'Never', value: 'NONE'}
-                                ],
-                                help: "For which type of search word restrictions will be applied"
-                            }
-                        },
+
                         {
                             key: 'forbiddenGroups',
                             type: 'horizontalInput',
@@ -511,43 +595,22 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'generateQueries',
-                            type: 'horizontalSelect',
+                            key: 'ignorePassworded',
+                            type: 'horizontalSwitch',
                             templateOptions: {
-                                label: 'Generate queries',
-                                options: [
-                                    {name: 'Internal searches', value: 'INTERNAL'},
-                                    {name: 'API searches', value: 'API'},
-                                    {name: 'All searches', value: 'BOTH'},
-                                    {name: 'Never', value: 'NONE'}
-                                ],
-                                help: "Generate queries for indexers which do not support ID based searches"
+                                type: 'switch',
+                                label: 'Ignore passworded releases',
+                                help: "Not all indexers provide this information"
                             }
-                        },
-                        //TODO fallback
-                        /*
-                         {
-                         key: 'idFallbackToTitle',
-                         type: 'horizontalMultiselect',
-                         templateOptions: {
-                         label: 'Fallback to title queries',
-                         options: [
-                         {label: 'Internal searches', id: 'internal'},
-                         {label: 'API searches', id: 'external'}
-                         ],
-                         help: "When no results were found for a query ID search again using the title"
-                         }
-                         },
-                         {
-                         key: 'idFallbackToTitlePerIndexer',
-                         type: 'horizontalSwitch',
-                         templateOptions: {
-                         type: 'switch',
-                         label: 'Fallback per indexer',
-                         help: "If enabled, fallback will occur on a per-indexer basis"
-                         }
-                         },
-                         */
+                        }
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Result processing'
+                    },
+                    fieldGroup: [
                         {
                             key: 'wrapApiErrors',
                             type: 'horizontalSwitch',
@@ -557,24 +620,6 @@ function ConfigFields($injector) {
                                 help: 'When enabled accessing tools will think the search was completed successfully but without results'
                             }
                         },
-                        {
-                            key: 'userAgent',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'User agent',
-                                required: true
-                            }
-                        }
-
-                    ]
-                },
-                {
-                    wrapper: 'fieldset',
-                    templateOptions: {
-                        label: 'Result processing'
-                    },
-                    fieldGroup: [
                         {
                             key: 'duplicateSizeThresholdInPercent',
                             type: 'horizontalPercentInput',
@@ -598,15 +643,6 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'hours'
                                 }
-                            }
-                        },
-                        {
-                            key: 'alwaysShowDuplicates',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Always show duplicates',
-                                help: 'Activate to show duplicates in search results by default'
                             }
                         },
                         {
@@ -641,17 +677,34 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'keepSearchResultsForDays',
-                            type: 'horizontalInput',
+                            wrapper: 'fieldset',
                             templateOptions: {
-                                type: 'number',
-                                label: 'Store results for ...',
-                                addonRight: {
-                                    text: 'days'
+                                label: 'Other'
+                            },
+                            fieldGroup: [
+                                {
+                                    key: 'keepSearchResultsForDays',
+                                    type: 'horizontalInput',
+                                    templateOptions: {
+                                        type: 'number',
+                                        label: 'Store results for ...',
+                                        addonRight: {
+                                            text: 'days'
+                                        },
+                                        required: true,
+                                        help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
+                                    }
                                 },
-                                required: true,
-                                help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
-                            }
+                                {
+                                    key: 'alwaysShowDuplicates',
+                                    type: 'horizontalSwitch',
+                                    templateOptions: {
+                                        type: 'switch',
+                                        label: 'Always show duplicates',
+                                        help: 'Activate to show duplicates in search results by default'
+                                    }
+                                }
+                            ]
                         }
                     ]
                 }

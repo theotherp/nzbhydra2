@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Joiner;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
@@ -14,9 +13,11 @@ import org.nzbhydra.Markdown;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -46,10 +47,12 @@ public class UpdateManager implements InitializingBean {
     @Value("${nzbhydra.changelogUrl}")
     protected String changelogUrl;
 
+    @Autowired
+    protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
+
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;
 
-    protected OkHttpClient client = new OkHttpClient();
     protected Instant lastCheckedForNewVersion = Instant.ofEpochMilli(0L);
     private SemanticVersion latestVersion;
     private ObjectMapper objectMapper;
@@ -81,7 +84,7 @@ public class UpdateManager implements InitializingBean {
     public String getFullChangelog() throws UpdateException {
         Request request = new Builder().url(changelogUrl).build();
         try {
-            Response response = client.newCall(request).execute();
+            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
             if (!response.isSuccessful()) {
                 throw new UpdateException("Error while getting changelog from GitHub: " + response.message());
             }
@@ -102,7 +105,7 @@ public class UpdateManager implements InitializingBean {
             String url = repositoryBaseUrl + "/releases";
             logger.debug("Loading changes since current version {} from GitHub using URL", currentVersion, url);
             Request request = new Builder().url(url).build();
-            Response response = client.newCall(request).execute();
+            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
             String responseBody = response.body().string();
             List<Release> releases = objectMapper.readValue(responseBody, new TypeReference<List<Release>>() {
             });
@@ -147,7 +150,7 @@ public class UpdateManager implements InitializingBean {
 
         File updateZip;
         try {
-            Response response = client.newCall(request).execute();
+            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
             InputStream inputStream = response.body().byteStream();
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
@@ -188,7 +191,7 @@ public class UpdateManager implements InitializingBean {
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
             Request request = new Builder().url(url).build();
-            Response response = client.newCall(request).execute();
+            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
             String responseBody = response.body().string();
             return objectMapper.readValue(responseBody, Release.class);
         } catch (IOException e) {

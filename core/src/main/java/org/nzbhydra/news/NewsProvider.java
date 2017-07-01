@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.nzbhydra.database.ShownNews;
 import org.nzbhydra.database.ShownNewsRepository;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.SemanticVersion;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
@@ -33,6 +33,8 @@ public class NewsProvider {
     private ShownNewsRepository shownNewsRepository;
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
     @Value("${nzbhydra.newsUrl}")
     protected String newsUrl;
@@ -69,10 +71,9 @@ public class NewsProvider {
 
 
     protected String getNewsFromGithub() throws IOException {
-        OkHttpClient httpClient = new OkHttpClient();
         Request request = new Request.Builder().url(newsUrl).build();
 
-        Response response = httpClient.newCall(request).execute();
+        Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
         return response.body().string();
     }
 

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @ConfigurationProperties("main")
@@ -24,16 +25,19 @@ public class MainConfig extends ValidatingConfig {
     @SensitiveData
     private String externalUrl = null;
     private String host;
-    private String httpProxy = null;
-    private String httpsProxy = null;
     private boolean firstStart;
     private LoggingConfig logging = new LoggingConfig();
     private int port;
+    private String proxyHost = null;
+    private int proxyPort;
+    private boolean proxyIgnoreLocal;
+    private List<String> proxyIgnoreDomains;
+    private String proxyUsername;
+    private String proxyPassword;
     private String repositoryBase;
     private String secret;
     private boolean showNews;
     private boolean shutdownForRestart;
-    private String socksProxy = null;
     private boolean ssl;
     private String sslcert = null;
     private String sslkey = null;
@@ -43,25 +47,18 @@ public class MainConfig extends ValidatingConfig {
     private boolean updateCheckEnabled;
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
+    private boolean verifySsl;
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);
     }
 
+    public Optional<String> getProxyHost() {
+        return Optional.ofNullable(proxyHost);
+    }
+
     public Optional<String> getApiKey() {
         return Optional.ofNullable(apiKey);
-    }
-
-    public Optional<String> getHttpProxy() {
-        return Optional.ofNullable(httpProxy);
-    }
-
-    public Optional<String> getHttpsProxy() {
-        return Optional.ofNullable(httpsProxy);
-    }
-
-    public Optional<String> getSocksProxy() {
-        return Optional.ofNullable(socksProxy);
     }
 
     public Optional<String> getSslcert() {

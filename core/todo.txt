@@ -116,7 +116,7 @@ General, Ideas
 - log API access user agent in info column and show in history?
 - !! proper GUI filtering of search results
 - !!! if indexer statuses is collapsed and at least one indexer had an error show a growl warning
-- use config setting "isUseLocalUrlForApiAccess"
+- !! use config setting "isUseLocalUrlForApiAccess"
 - !! compare stats from python version and migrated
 - !! episodes can be strings
 - !! option to download torrent file to predefined folder
@@ -136,10 +136,11 @@ General, Ideas
 - !! use common data dir instead of settings for database and config file
 - !! ip and username must be removed from log when creating debug infos, obviously removing them before doesn't make sense when allowing to log them in the first place
 - simple web hook to inform about search and/or download. provide title, downloader id (if available), etc.
+- fallback to title/query if no results were found when searching with an id
 
 
 currently not (yet) supported:
-- proxies
+- http(s) proxies
 - multiple query generations per search
 
 
