@@ -34,6 +34,7 @@ public class LogAnonymizer {
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             log = log.replaceAll("User=" + userAuthConfig.getUsername(), "User:<USERNAME>");
         }
+        log = log.replaceAll("IP=\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b", "IP=<IP>");
 
         return log;
     }

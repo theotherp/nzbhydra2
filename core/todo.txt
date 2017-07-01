@@ -134,7 +134,9 @@ General, Ideas
 - ssl, needs to be explained in wiki/readme
 - when all indexers were selected in GUI don't set the parameter
 - !! use common data dir instead of settings for database and config file
-- ip and username must be removed from log when creating debug infos, obviously removing them before doesn't make sense when allowing to log them in the first place
+- !! ip and username must be removed from log when creating debug infos, obviously removing them before doesn't make sense when allowing to log them in the first place
+- simple web hook to inform about search and/or download. provide title, downloader id (if available), etc.
+
 
 currently not (yet) supported:
 - proxies

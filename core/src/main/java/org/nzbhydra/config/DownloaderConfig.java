@@ -18,6 +18,7 @@ public class DownloaderConfig extends ValidatingConfig {
     private NzbAccessType nzbAccessType;
     private NzbAddingType nzbAddingType;
     private DownloaderType downloaderType;
+    @SensitiveData
     private String url;
 
     public DownloaderType getDownloaderType() {
