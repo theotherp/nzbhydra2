@@ -1,5 +1,6 @@
 package org.nzbhydra.okhttp;
 
+import okhttp3.OkHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -7,9 +8,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ProxyType;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory.SF;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -51,6 +59,40 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
         assertThat(testee.isUriToBeIgnoredByProxy("subdomain.otherdomain.ORG"), is(false));
         assertThat(testee.isUriToBeIgnoredByProxy("somedomain.com"), is(false));
+    }
+
+    @Test
+    public void shouldNotUseProxyIfNotConfigured() throws URISyntaxException {
+        baseConfig.getMain().setProxyType(ProxyType.NONE);
+        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        assertThat(client.socketFactory() instanceof SF, is(false));
+        assertThat(client.proxy(), is(nullValue()));
+    }
+
+    @Test
+    public void shouldUseHttpProxyIfConfigured() throws URISyntaxException {
+        baseConfig.getMain().setProxyType(ProxyType.HTTP);
+        baseConfig.getMain().setProxyHost("proxyhost");
+        baseConfig.getMain().setProxyPort(1234);
+        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        assertThat(client.proxy().address(), equalTo(new InetSocketAddress("proxyhost", 1234)));
+    }
+
+    @Test
+    public void shouldUseSocksProxyIfConfigured() throws URISyntaxException {
+        baseConfig.getMain().setProxyType(ProxyType.SOCKS);
+        baseConfig.getMain().setProxyHost("proxyhost");
+        OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        assertThat(client.socketFactory() instanceof SF, is(true));
+        assertThat(((SF) client.socketFactory()).host, is("proxyhost"));
+        assertThat(((SF) client.socketFactory()).username, is(nullValue()));
+        assertThat(((SF) client.socketFactory()).password, is(nullValue()));
+
+        baseConfig.getMain().setProxyUsername("user");
+        baseConfig.getMain().setProxyPassword("pass");
+        client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
+        assertThat(((SF) client.socketFactory()).username, is("user"));
+        assertThat(((SF) client.socketFactory()).password, is("pass"));
     }
 
 

@@ -73,8 +73,9 @@ public class NewsProvider {
     protected String getNewsFromGithub() throws IOException {
         Request request = new Request.Builder().url(newsUrl).build();
 
-        Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-        return response.body().string();
+        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            return response.body().string();
+        }
     }
 
 

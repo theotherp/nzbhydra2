@@ -84,11 +84,12 @@ public class UpdateManager implements InitializingBean {
     public String getFullChangelog() throws UpdateException {
         Request request = new Builder().url(changelogUrl).build();
         try {
-            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-            if (!response.isSuccessful()) {
-                throw new UpdateException("Error while getting changelog from GitHub: " + response.message());
+            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    throw new UpdateException("Error while getting changelog from GitHub: " + response.message());
+                }
+                return response.body().string();
             }
-            return response.body().string();
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog from GitHub", e);
         }
@@ -104,9 +105,8 @@ public class UpdateManager implements InitializingBean {
         try {
             String url = repositoryBaseUrl + "/releases";
             logger.debug("Loading changes since current version {} from GitHub using URL", currentVersion, url);
-            Request request = new Builder().url(url).build();
-            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-            String responseBody = response.body().string();
+            String responseBody = executeRequest(url);
+
             List<Release> releases = objectMapper.readValue(responseBody, new TypeReference<List<Release>>() {
             });
             releases.sort((o1, o2) -> {
@@ -134,6 +134,13 @@ public class UpdateManager implements InitializingBean {
         }
     }
 
+    protected String executeRequest(String url) throws IOException {
+        Request request = new Builder().url(url).build();
+        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            return response.body().string();
+        }
+    }
+
 
     public void installUpdate() throws UpdateException {
         Release latestRelease = getLatestRelease();
@@ -149,8 +156,8 @@ public class UpdateManager implements InitializingBean {
         Request request = new Builder().url(url).build();
 
         File updateZip;
-        try {
-            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
+        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+
             InputStream inputStream = response.body().byteStream();
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
@@ -191,9 +198,10 @@ public class UpdateManager implements InitializingBean {
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
             Request request = new Builder().url(url).build();
-            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-            String responseBody = response.body().string();
-            return objectMapper.readValue(responseBody, Release.class);
+            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+                String responseBody = response.body().string();
+                return objectMapper.readValue(responseBody, Release.class);
+            }
         } catch (IOException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }

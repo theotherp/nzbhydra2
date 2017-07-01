@@ -96,8 +96,9 @@ public class FromPythonMigration {
             String url = migrationBuilder.toUriString();
             logger.info("Connecting to URL {}", url);
             Request request = new Builder().url(url).build();
-            Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-            return new OkHttpResponse(response.body().string(), response.isSuccessful(), response.message());
+            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+                return new OkHttpResponse(response.body().string(), response.isSuccessful(), response.message());
+            }
         } catch (Exception e) {
             return new OkHttpResponse("", false, e.getMessage());
         }

@@ -18,12 +18,16 @@ package org.nzbhydra.okhttp;
 
 import com.google.common.net.InetAddresses;
 import joptsimple.internal.Strings;
+import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.Route;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.ProxyType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -51,6 +55,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -78,6 +84,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
      * @see OkHttpClient.Builder#readTimeout(long, TimeUnit)
      */
     public void setReadTimeout(int readTimeout) {
+        //TODO
         this.client = this.client.newBuilder()
                 .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
                 .build();
@@ -90,6 +97,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
      * @see OkHttpClient.Builder#writeTimeout(long, TimeUnit)
      */
     public void setWriteTimeout(int writeTimeout) {
+        //TODO
         this.client = this.client.newBuilder()
                 .writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
                 .build();
@@ -102,6 +110,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
      * @see OkHttpClient.Builder#connectTimeout(long, TimeUnit)
      */
     public void setConnectTimeout(int connectTimeout) {
+        //TODO
         this.client = this.client.newBuilder()
                 .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
                 .build();
@@ -153,33 +162,40 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     public Builder getOkHttpClientBuilder(URI requestUri) {
-        Builder builder = new OkHttpClient().newBuilder();
+        Builder builder = getBaseBuilder();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
             builder = getUnsafeOkHttpClientBuilder(builder);
         }
 
         MainConfig main = configProvider.getBaseConfig().getMain();
-        if (main.getProxyHost().isPresent()) {
-            //Skip if local URL
-            if (isUriToBeIgnoredByProxy(requestUri.getHost())) {
-                logger.debug("Not using proxy for request to {}", requestUri.getHost());
-                return builder;
-            }
+        if (main.getProxyType() == ProxyType.NONE) {
+            return builder;
+        }
 
-            builder = builder.socketFactory(new SF(main.getProxyHost().get(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword()));
+        if (isUriToBeIgnoredByProxy(requestUri.getHost())) {
+            logger.debug("Not using proxy for request to {}", requestUri.getHost());
+            return builder;
+        }
+
+        if (main.getProxyType() == ProxyType.SOCKS) {
+            builder = builder.socketFactory(new SF(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword()));
         } else {
-            //I'm not sure how to use HTTPS proxies and haven't found a way to test it. So currently only SOCKS is supported
-//            builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress("host", 3128))).proxyAuthenticator((Route route, Response response) -> {
-//                if (response.request().header("Proxy-Authorization") != null) {
-//                    return null; // Give up, we've already failed to authenticate.
-//                }
-//
-//                String credential = Credentials.basic("username", "password");
-//                return response.request().newBuilder()
-//                        .header("Proxy-Authorization", credential).build();
-//            });
+            builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort()))).proxyAuthenticator((Route route, Response response) -> {
+                if (response.request().header("Proxy-Authorization") != null) {
+                    logger.warn("Authentication with proxy failed");
+                    return null; // Give up, we've already failed to authenticate.
+                }
+
+                String credential = Credentials.basic(main.getProxyUsername(), main.getProxyPassword());
+                return response.request().newBuilder()
+                        .header("Proxy-Authorization", credential).build();
+            });
         }
         return builder;
+    }
+
+    protected Builder getBaseBuilder() {
+        return new OkHttpClient().newBuilder();
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {
@@ -267,12 +283,12 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
     }
 
-    private class SF extends SocketFactory {
+    protected class SF extends SocketFactory {
 
-        private String host;
-        private int port;
-        private String username;
-        private String password;
+        protected String host;
+        protected int port;
+        protected String username;
+        protected String password;
 
         public SF(String host, int port, String username, String password) {
             this.host = host;

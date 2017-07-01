@@ -1,5 +1,7 @@
 package org.nzbhydra.config;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ public class MainConfig extends ValidatingConfig {
     private boolean firstStart;
     private LoggingConfig logging = new LoggingConfig();
     private int port;
+    @JsonFormat(shape = Shape.STRING)
+    private ProxyType proxyType;
     private String proxyHost = null;
     private int proxyPort;
     private boolean proxyIgnoreLocal;
@@ -51,10 +55,6 @@ public class MainConfig extends ValidatingConfig {
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);
-    }
-
-    public Optional<String> getProxyHost() {
-        return Optional.ofNullable(proxyHost);
     }
 
     public Optional<String> getApiKey() {

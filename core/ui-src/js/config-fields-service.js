@@ -174,8 +174,22 @@ function ConfigFields($injector) {
                             ,
                             fieldGroup: [
                                 {
+                                    key: 'proxyType',
+                                    type: 'horizontalSelect',
+                                    templateOptions: {
+                                        type: 'select',
+                                        label: 'Use proxy',
+                                        options: [
+                                            {name: 'None', value: 'NONE'},
+                                            {name: 'SOCKS', value: 'SOCKS'},
+                                            {name: 'HTTP(S)', value: 'HTTP'}
+                                        ]
+                                    }
+                                },
+                                {
                                     key: 'proxyHost',
                                     type: 'horizontalInput',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'text',
                                         label: 'SOCKS proxy host',
@@ -186,7 +200,7 @@ function ConfigFields($injector) {
                                 {
                                     key: 'proxyPort',
                                     type: 'horizontalInput',
-                                    hideExpression: '!model.proxyHost',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'number',
                                         label: 'Proxy port',
@@ -196,7 +210,7 @@ function ConfigFields($injector) {
                                 {
                                     key: 'proxyUsername',
                                     type: 'horizontalInput',
-                                    hideExpression: '!model.proxyHost',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'text',
                                         label: 'Proxy username'
@@ -205,7 +219,7 @@ function ConfigFields($injector) {
                                 {
                                     key: 'proxyPassword',
                                     type: 'horizontalInput',
-                                    hideExpression: '!model.proxyHost',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'password',
                                         label: 'Proxy password'
@@ -214,6 +228,7 @@ function ConfigFields($injector) {
                                 {
                                     key: 'proxyIgnoreLocal',
                                     type: 'horizontalSwitch',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'switch',
                                         label: 'Bypass local addresses'
@@ -222,7 +237,7 @@ function ConfigFields($injector) {
                                 {
                                     key: 'proxyIgnoreDomains',
                                     type: 'horizontalInput',
-                                    hideExpression: '!model.proxyHost',
+                                    hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'text',
                                         help: 'Separate by comma. You can use wildcards (*). Case insensitive',

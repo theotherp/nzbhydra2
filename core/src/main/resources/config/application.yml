@@ -245,6 +245,7 @@ main:
     logMaxDays: 30
     logUsername: false
   port: 5076
+  proxyType: NONE
   proxyHost: null
   proxyPort: 1080
   proxyIgnoreLocal: true

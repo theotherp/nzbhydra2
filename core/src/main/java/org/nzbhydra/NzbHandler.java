@@ -193,8 +193,9 @@ public class NzbHandler {
     private String downloadNzb(SearchResultEntity result) throws IOException {
         Request request = new Request.Builder().url(result.getLink()).build();
 
-        Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute();
-        return response.body().string();
+        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            return response.body().string();
+        }
     }
 
 }

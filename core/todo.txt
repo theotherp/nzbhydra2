@@ -140,7 +140,6 @@ General, Ideas
 
 
 currently not (yet) supported:
-- http(s) proxies
 - multiple query generations per search
 
 
