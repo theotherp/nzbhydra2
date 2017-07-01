@@ -280,15 +280,14 @@ public class JsonConfigMigration {
         }
         searchingConfig.setDuplicateAgeThreshold(oldSearching.getDuplicateAgeThreshold());
         searchingConfig.setDuplicateSizeThresholdInPercent(oldSearching.getDuplicateSizeThresholdInPercent());
-        searchingConfig.setIdFallbackToTitlePerIndexer(oldSearching.isIdFallbackToTitlePerIndexer());
         if (oldSearching.getIdFallbackToTitle().contains("internal") && oldSearching.getIdFallbackToTitle().contains("external")) {
-            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.BOTH);
+            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.BOTH);
         } else if (oldSearching.getIdFallbackToTitle().contains("external")) {
-            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.API);
+            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.API);
         } else if (oldSearching.getIdFallbackToTitle().contains("internal")) {
-            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.INTERNAL);
+            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.INTERNAL);
         } else {
-            searchingConfig.setIdFallbackToTitle(SearchSourceRestriction.NONE);
+            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.NONE);
         }
         if (oldSearching.getGenerateQueries().size() == 2) {
             searchingConfig.setGenerateQueries(SearchSourceRestriction.BOTH);

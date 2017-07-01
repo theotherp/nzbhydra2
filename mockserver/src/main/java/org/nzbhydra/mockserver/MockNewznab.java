@@ -86,6 +86,12 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
+        if (params.getRid() != null && params.getQ() == null) {
+            RssRoot rssRoot = generateResponse(0, -1, params.getApikey(), false);
+            logger.info("Returning no results for rid based search without query");
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getQ() != null && params.getQ().equals("offsettest")) {
             RssRoot rssRoot = new RssRoot();
             rssRoot.getRssChannel().setNewznabResponse(new NewznabResponse(0, 0));

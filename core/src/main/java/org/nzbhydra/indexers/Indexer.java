@@ -25,6 +25,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.FallbackSearchInitiatedEvent;
 import org.nzbhydra.searching.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor;
@@ -33,6 +34,7 @@ import org.nzbhydra.searching.SearchMessageEvent;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +105,23 @@ public abstract class Indexer<T> {
         IndexerSearchResult indexerSearchResult;
         try {
             indexerSearchResult = searchInternal(searchRequest, offset, limit);
-            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+
+            boolean fallbackNeeded = indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest.getSource());
+            if (fallbackNeeded) {
+                info("No results found for ID based search. Will do a fallback search using a generated query");
+
+                //Search should be shown as successful (albeit empty) and should result in the number of expected finished searches to be increased
+                eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " did not return any results. Will do a fallback search"));
+                eventPublisher.publishEvent(new FallbackSearchInitiatedEvent(searchRequest));
+
+                searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+                indexerSearchResult = searchInternal(searchRequest, offset, limit);
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed fallback search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+            } else {
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Indexer " + getName() + " completed search successfully with " + indexerSearchResult.getTotalResults() + " total results"));
+            }
+
         } catch (IndexerSearchAbortedException e) {
             logger.warn("Unexpected error while preparing search");
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
@@ -284,14 +302,16 @@ public abstract class Indexer<T> {
         boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
         boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource()) || searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
         if (!(queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType))) {
             logger.debug("Query generation not needed, possible or configured");
             return query;
         }
+        searchRequest.getInternalData().setFallbackState(FallbackState.USED);
 
         if (searchRequest.getTitle().isPresent()) {
             query = searchRequest.getTitle().get();
+            logger.debug("Search request provided title {}. Using that as query base.", query);
         } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get(); //TODO Currently never set, when should it?
         } else {
@@ -302,6 +322,7 @@ public abstract class Indexer<T> {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
                 query = mediaInfo.getTitle().get();
+                logger.debug("Determined title to be {}. Using that as query base.", query);
             } catch (InfoProviderException e) {
                 throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
             }
@@ -309,6 +330,7 @@ public abstract class Indexer<T> {
 
         if (searchRequest.getSeason().isPresent()) {
             if (searchRequest.getEpisode().isPresent()) {
+                logger.debug("Using season {} and episode {} for query generation", searchRequest.getSeason().get(), searchRequest.getEpisode().get());
                 try {
                     int episodeInt = Integer.parseInt(searchRequest.getEpisode().get());
                     query += String.format(" s%02des%02d", searchRequest.getSeason().get(), episodeInt);
@@ -318,6 +340,7 @@ public abstract class Indexer<T> {
                     logger.debug("{} doesn't seem to be an integer, extending query with '{}'", searchRequest.getEpisode().get(), extendWith);
                 }
             } else {
+                logger.debug("Using season {} for query generation", searchRequest.getSeason().get());
                 query += String.format(" s%02d", searchRequest.getSeason().get());
             }
         }
@@ -325,6 +348,7 @@ public abstract class Indexer<T> {
         if (searchRequest.getSearchType() == SearchType.BOOK && !config.getSupportedSearchTypes().contains(ActionAttribute.BOOK)) {
             if (searchRequest.getAuthor().isPresent()) {
                 query += " " + searchRequest.getAuthor().get();
+                logger.debug("Using author {} in query", searchRequest.getAuthor().get());
             }
         }
 

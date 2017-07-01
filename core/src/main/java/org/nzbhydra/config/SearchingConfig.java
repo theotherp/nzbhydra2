@@ -25,8 +25,7 @@ public class SearchingConfig extends ValidatingConfig {
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
     @JsonFormat(shape = Shape.STRING)
-    private SearchSourceRestriction idFallbackToTitle = SearchSourceRestriction.NONE;
-    private boolean idFallbackToTitlePerIndexer;
+    private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded;
     private boolean ignoreTemporarilyDisabled;
     private int keepSearchResultsForDays;

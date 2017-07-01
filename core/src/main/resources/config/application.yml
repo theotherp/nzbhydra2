@@ -277,8 +277,7 @@ searching:
   forbiddenRegex: null
   forbiddenWords: []
   generateQueries: "NONE"
-  idFallbackToTitle: "NONE"
-  idFallbackToTitlePerIndexer: false
+  idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
   keepSearchResultsForDays: 14

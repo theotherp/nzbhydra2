@@ -9,6 +9,7 @@ import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.FallbackSearchInitiatedEvent;
 import org.nzbhydra.searching.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.IndexerSelectionEvent;
 import org.nzbhydra.searching.InternalSearchResultProcessor;
@@ -153,6 +154,17 @@ public class Search {
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             searchState.setIndexerSelectionFinished(true);
             searchState.setIndexersSelected(event.getIndexersSelected());
+            lock.unlock();
+        }
+    }
+
+    @EventListener
+    public void handleFallbackSearchInitatedEvent(FallbackSearchInitiatedEvent event) {
+        //An indexer will do a fallback search, meaning we'll have to wait for another indexer search. On the GUI side that's the same as if one more indexer had been selected
+        if (searchStates.containsKey(event.getSearchRequest().getSearchRequestId())) {
+            lock.lock();
+            SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
+            searchState.setIndexersSelected(searchState.getIndexersSelected() + 1);
             lock.unlock();
         }
     }

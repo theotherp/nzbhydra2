@@ -136,7 +136,7 @@ General, Ideas
 - !! use common data dir instead of settings for database and config file
 - !! ip and username must be removed from log when creating debug infos, obviously removing them before doesn't make sense when allowing to log them in the first place
 - simple web hook to inform about search and/or download. provide title, downloader id (if available), etc.
-- fallback to title/query if no results were found when searching with an id
+- !! fallback to title/query if no results were found when searching with an id
 
 
 currently not (yet) supported:

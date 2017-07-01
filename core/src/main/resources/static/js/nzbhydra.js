@@ -5878,30 +5878,22 @@ function ConfigFields($injector) {
                                 help: "Generate queries for indexers which do not support ID based searches"
                             }
                         },
-                        //TODO fallback
-                        /*
-                         {
-                         key: 'idFallbackToTitle',
-                         type: 'horizontalMultiselect',
-                         templateOptions: {
-                         label: 'Fallback to title queries',
-                         options: [
-                         {label: 'Internal searches', id: 'internal'},
-                         {label: 'API searches', id: 'external'}
-                         ],
-                         help: "When no results were found for a query ID search again using the title"
-                         }
-                         },
-                         {
-                         key: 'idFallbackToTitlePerIndexer',
-                         type: 'horizontalSwitch',
-                         templateOptions: {
-                         type: 'switch',
-                         label: 'Fallback per indexer',
-                         help: "If enabled, fallback will occur on a per-indexer basis"
-                         }
-                         },
-                         */
+                        {
+                            key: 'idFallbackToQueryGeneration',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                label: 'Fallback to generated queries',
+                                options: [
+                                    {name: 'Internal searches', value: 'INTERNAL'},
+                                    {name: 'API searches', value: 'API'},
+                                    {name: 'All searches', value: 'BOTH'},
+                                    {name: 'Never', value: 'NONE'}
+                                ],
+                                help: "When no results were found for a query ID search again using a generated query"
+                            }
+                        },
+
+
                         {
                             key: 'userAgent',
                             type: 'horizontalInput',

@@ -174,8 +174,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().getForbiddenWords(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenRegex(), is(nullValue()));
         assertThat(result.getMigratedConfig().getSearching().getGenerateQueries(), is(SearchSourceRestriction.NONE));
-        assertThat(result.getMigratedConfig().getSearching().isIdFallbackToTitlePerIndexer(), is(false));
-        assertThat(result.getMigratedConfig().getSearching().getIdFallbackToTitle(), is(SearchSourceRestriction.INTERNAL));
+        assertThat(result.getMigratedConfig().getSearching().getIdFallbackToQueryGeneration(), is(SearchSourceRestriction.INTERNAL));
         assertThat(result.getMigratedConfig().getSearching().isIgnorePassworded(), is(true));
         assertThat(result.getMigratedConfig().getSearching().isIgnoreTemporarilyDisabled(), is(true));
         assertThat(result.getMigratedConfig().getSearching().getMaxAge(), is(2000));

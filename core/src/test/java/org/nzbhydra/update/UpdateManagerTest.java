@@ -2,10 +2,12 @@ package org.nzbhydra.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import okhttp3.OkHttpClient.Builder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
@@ -13,6 +15,7 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.verify.VerificationTimes;
 import org.nzbhydra.mapping.github.Release;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -21,6 +24,8 @@ import java.util.Arrays;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 public class UpdateManagerTest {
@@ -29,6 +34,8 @@ public class UpdateManagerTest {
     private HttpRequest releasesRequest;
     private HttpRequest changelogRequest;
     private ClientAndServer mockServer;
+    @Mock
+    private HydraOkHttp3ClientHttpRequestFactory requestFactoryMock;
 
     private static String changelog = "some changes";
 
@@ -69,6 +76,8 @@ public class UpdateManagerTest {
         changelogRequest = HttpRequest.request().withPath("/changelog.md");
         mockServer.when(changelogRequest).respond(HttpResponse.response().withBody(changelog).withHeaders(
                 new Header("Content-Type", "application/raw; charset=utf-8")));
+
+        when(requestFactoryMock.getOkHttpClientBuilder(any())).thenReturn(new Builder());
     }
 
     @After
