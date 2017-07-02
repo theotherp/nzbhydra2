@@ -1,6 +1,7 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
+import joptsimple.internal.Strings;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
@@ -33,13 +34,13 @@ public class NzbIndex extends Indexer<RssRoot> {
     private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
-    protected void completeIndexerSearchResult(RssRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult) {
-        //Never provide more than the first 100 results, RSS doesn't allow paging
+    protected void completeIndexerSearchResult(RssRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+        //Never provide more than the first 250 results, RSS doesn't allow paging
         indexerSearchResult.setTotalResultsKnown(true);
         indexerSearchResult.setTotalResults(acceptorResult.getNumberOfRejectedResults() + indexerSearchResult.getSearchResultItems().size());
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setOffset(0);
-        indexerSearchResult.setLimit(100);
+        indexerSearchResult.setLimit(250);
     }
 
     @Override
@@ -78,7 +79,7 @@ public class NzbIndex extends Indexer<RssRoot> {
 
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", searchRequest.getLimit().orElse(100)).queryParam("hidecross", "1");
+        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", 250).queryParam("hidecross", "1");
         if (searchRequest.getMinsize().isPresent()) {
             componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
         } else if (config.getGeneralMinSize().isPresent()) {
@@ -96,6 +97,11 @@ public class NzbIndex extends Indexer<RssRoot> {
 
         String query = "";
         query = generateQueryIfApplicable(searchRequest, query);
+
+        if (Strings.isNullOrEmpty(query)) {
+            throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
+        }
+
         query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
 
         componentsBuilder.queryParam("q", query);

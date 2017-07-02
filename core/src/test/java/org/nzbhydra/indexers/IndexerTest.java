@@ -115,7 +115,7 @@ public class IndexerTest {
 
 
         @Override
-        protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult) {
+        protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
             indexerSearchResult.setTotalResults(searchResultItemsToReturn.size());
             indexerSearchResult.setHasMoreResults(false);
         }

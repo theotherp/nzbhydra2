@@ -300,7 +300,7 @@ public class Newznab extends Indexer<Xml> {
         return searchResultItems;
     }
 
-    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult) {
+    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
         NewznabResponse newznabResponse = ((RssRoot) response).getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);

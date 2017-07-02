@@ -5889,7 +5889,7 @@ function ConfigFields($injector) {
                                     {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
-                                help: "When no results were found for a query ID search again using a generated query"
+                                help: "When no results were found for a query ID search again using a generated query. Will only affect "
                             }
                         },
 

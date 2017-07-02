@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
 import static org.junit.Assert.assertEquals;
@@ -29,7 +28,6 @@ public class NzbHandlerTest {
 
     @Test
     public void shouldBuildCorrectNzbLink() {
-        baseConfig.getMain().setProxyType(ProxyType.SOCKS);
         baseConfig.getMain().setApiKey(null);
         baseConfig.getMain().setSsl(false);
         baseConfig.getMain().setHost("0.0.0.0");

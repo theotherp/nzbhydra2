@@ -11,6 +11,7 @@ import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -49,6 +49,8 @@ public class UpdateManager implements InitializingBean {
 
     @Autowired
     protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    @Autowired
+    private BackupAndRestore backupAndRestore;
 
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;
@@ -158,7 +160,6 @@ public class UpdateManager implements InitializingBean {
         File updateZip;
         try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
 
-            InputStream inputStream = response.body().byteStream();
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
                 Files.createDirectory(updateFolder.toPath());
@@ -168,10 +169,14 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
-            Files.copy(inputStream, updateZip.toPath());
+            Files.copy(response.body().byteStream(), updateZip.toPath());
         } catch (IOException e) {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
+
+        logger.info("Creating backup before shutting down");
+        backupAndRestore.createBackup();
+
         logger.info("Shutting down to let wrapper execute the update");
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }

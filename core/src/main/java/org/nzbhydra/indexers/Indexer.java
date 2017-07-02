@@ -17,6 +17,7 @@ import org.nzbhydra.database.SearchResultRepository;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -169,7 +170,7 @@ public abstract class Indexer<T> {
         indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
-        completeIndexerSearchResult(response, indexerSearchResult, acceptorResult);
+        completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest);
 
         int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
         debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), acceptorResult.getNumberOfRejectedResults());
@@ -177,9 +178,24 @@ public abstract class Indexer<T> {
         return indexerSearchResult;
     }
 
-    protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult);
+    /**
+     * Responsible for filling the meta data of the IndexerSearchResult, e.g. number of available results and the used offset
+     *
+     * @param response            The web response from the indexer
+     * @param indexerSearchResult The result to fill
+     * @param acceptorResult      The result acceptor result
+     * @param searchRequest       The original search request
+     */
+    protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest);
 
-    protected abstract List<SearchResultItem> getSearchResultItems(T searchRequestResponse);
+    /**
+     * Parse the given indexer web response and return the search result items
+     *
+     * @param searchRequestResponse The web response, e.g. an RssRoot or an HTML string
+     * @return A list of SearchResultItems or empty
+     * @throws IndexerParsingException Thrown when the web response could not be parsed
+     */
+    protected abstract List<SearchResultItem> getSearchResultItems(T searchRequestResponse) throws IndexerParsingException;
 
     protected abstract UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException;
 
@@ -278,8 +294,26 @@ public abstract class Indexer<T> {
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult);
     }
 
+    /**
+     * Implementations should call {link #getAndStoreResultToDatabase(java.net.URI, java.lang.Class, org.nzbhydra.database.IndexerApiAccessType)} with the class of the response
+     *
+     * @param uri Called URI
+     * @param apiAccessType Access type
+     * @return The response from the indexer
+     * @throws IndexerAccessException
+     */
     protected abstract T getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException;
 
+    /**
+     * Makes a call to the URI, saves the access result to the database and returns the web call response
+     *
+     * @param uri URI to call
+     * @param responseType The type to expect from the response (e.g. RssRoot.class or String.class)
+     * @param apiAccessType The API access type, needed for the database entry
+     * @param <T> Type to expect from the call
+     * @return The web response
+     * @throws IndexerAccessException
+     */
     protected <T> T getAndStoreResultToDatabase(URI uri, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Integer timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
@@ -307,7 +341,9 @@ public abstract class Indexer<T> {
             logger.debug("Query generation not needed, possible or configured");
             return query;
         }
-        searchRequest.getInternalData().setFallbackState(FallbackState.USED);
+        if (searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED) {
+            searchRequest.getInternalData().setFallbackState(FallbackState.USED); //
+        }
 
         if (searchRequest.getTitle().isPresent()) {
             query = searchRequest.getTitle().get();

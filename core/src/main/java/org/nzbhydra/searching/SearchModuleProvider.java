@@ -5,6 +5,7 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.indexers.Binsearch;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.indexers.NzbIndex;
@@ -32,7 +33,7 @@ public class SearchModuleProvider {
         searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
         searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
         searchModuleClasses.put(SearchModuleType.NZBINDEX, NzbIndex.class);
-        searchModuleClasses.put(SearchModuleType.BINSEARCH, NzbIndex.class); //TODO
+        searchModuleClasses.put(SearchModuleType.BINSEARCH, Binsearch.class);
     }
 
     @Autowired

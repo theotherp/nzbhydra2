@@ -1,7 +1,7 @@
 GUI
 - !!! Reverse proxy support (done in settings)
-- Config (getting, setting): Mostly done
-- Update notification: Mostly done
+- !!! Config (getting, setting)
+- !! Update notification
 - !!! basic Searching
 - !!! searching with exclusion
 - !!! searching by ID, autocomplete
@@ -9,13 +9,13 @@ GUI
 Searching
 - return indexerName access data to show in GUI
 - !! pick indexers: show in GUI
-- exclusions: mostly done
+- !! exclusions
 - !!! rejecting search results: mostly done
 - !!! ID conversion: mostly done
 - !!! query generation
 - !!! search history: mostly done
 - !!! hitlimit and downloadlimit
-- global retention
+- !!! global retention
 
 Config
 - !!! Loading
@@ -28,10 +28,8 @@ Config
 - make sure existing file is not overwritten with defaults by mistake
 - !! (works I guess) how to migrate from "old" yaml??
 - !!show warning: what happens when you overwrite a setting from the command line and then save from the GUI?
-- check for changing of database file. perhaps move old one over
 - !! make sure that database file starts with ./ for relative paths
 - !! sort indexers in config by name to make finding them easier
-- how to handle change of database file from GUI?
 
 Downloader support: mostly done
 - sabnzbd
@@ -45,7 +43,7 @@ NZB handling
 
 Indexer support
 - binsearch
-- nzbindex
+- !! nzbindex
 - anizb
 - !! nzbclub is gone!!
 - !! checking caps
@@ -77,7 +75,7 @@ History & stats
 
 Backups
 - !! Save
-- Restore: Probably using the wrapper
+- !! Restore: Using the wrapper
 - create periodically (done, but needs to be checked if actually executed
 - create before updating
 - test what happens when search is executed while backup is made
@@ -138,20 +136,25 @@ General, Ideas
 - simple web hook to inform about search and/or download. provide title, downloader id (if available), etc.
 - !! fallback to title/query if no results were found when searching with an id
 
-
 currently not (yet) supported:
 - multiple query generations per search
+
+disclaimer:
+- nzbindex is accessed using RSS, so 100 results max
 
 
 ++++
 Improvements
 - Way faster (searching, database handling, processing, stats). TODO: Get some numbers
 - Hopefully more stable in the long run
+- proper postfiltering of results in GUI
+- Show messages and progress while searching and (somewhat) allow to cancel
+- Sends all available identifiers instead of just one (may provide more results for id based searches in some cases)
+- rss functionality with configurable caching, with cache interval as parameter
+- improved log view in GUI (like in radarr/sonarr except for all messages)
 - Fully unicode compatible TODO: Test this ;-)
 - Background processes
 - In the future: Self updating
-- Sends all available identifiers instead of just one
-- show which indexers where not picked for what reason
 - Reverse proxy support is better (doesn't matter if called by trailing slash)
 - Option to add and remove categories
 - better validation for configuration, including warnings
@@ -159,11 +162,8 @@ Improvements
 - catch all API errors and let user decide if a) code 500 is returned b) XML with error code c) empty results
 - option to execute SQL queries for debugging
 - option for torrent black hole
-- proper postfiltering of results in GUI
-- rss functionality with configurable caching, with cache interval as parameter
 - option to display indexers' category names instead of mapped ones
-- improved log view in GUI (like in radarr/sonarr except for all messages)
-- Show messages and progress while searching and (somewhat) allow to cancel
+- button to switch inclusion of disabled indexers in stats
 
 
 ...

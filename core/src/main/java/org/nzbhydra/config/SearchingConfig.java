@@ -7,6 +7,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 
 @Data
@@ -32,7 +33,7 @@ public class SearchingConfig extends ValidatingConfig {
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
-    private List<String> removeTrailing;
+    private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
     private Integer timeout = 30;
@@ -40,6 +41,9 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean useOriginalCategories;
     private boolean wrapApiErrors;
 
+    public Optional<Integer> getMaxAge() {
+        return Optional.ofNullable(maxAge);
+    }
 
     @Override
     public ConfigValidationResult validateConfig() {

@@ -113,7 +113,7 @@ public class IndexerForSearchSelector {
                 selectedIndexers.add(indexer);
             }
             if (selectedIndexers.isEmpty()) {
-                logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled");
+                logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled. You can enable query generation to work around this.");
             } else {
                 logger.info("Selected {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
             }

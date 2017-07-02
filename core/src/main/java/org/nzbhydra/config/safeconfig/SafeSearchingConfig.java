@@ -14,7 +14,7 @@ public class SafeSearchingConfig {
     public SafeSearchingConfig(SearchingConfig searchingConfig) {
         alwaysShowDuplicates = searchingConfig.isAlwaysShowDuplicates();
         enableCategorySizes = searchingConfig.isEnableCategorySizes();
-        maxAge = searchingConfig.getMaxAge();
+        maxAge = searchingConfig.getMaxAge().orElse(null);
     }
 
 
