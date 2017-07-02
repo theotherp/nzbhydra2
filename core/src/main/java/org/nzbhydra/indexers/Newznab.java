@@ -347,13 +347,13 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setDescription(item.getDescription());
         searchResultItem.setDownloadType(DownloadType.NZB);
         searchResultItem.setCommentsLink(item.getComments());
-        searchResultItem.setOriginalCategory(item.getCategory());
+        searchResultItem.setOriginalCategory(item.getCategory()); //May be overwritten by mapping in attributes
         parseAttributes(item, searchResultItem);
 
         return searchResultItem;
     }
 
-    private void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
+    protected void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
         List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(newznabAttribute -> Integer.parseInt(newznabAttribute.getValue())).collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
@@ -392,8 +392,13 @@ public class Newznab extends Indexer<Xml> {
         if (attributes.containsKey("size")) {
             searchResultItem.setSize(Long.valueOf(attributes.get("size")));
         }
+
         if (!newznabCategories.isEmpty()) {
+            //TODO Account for specific mapping (anime, comic, etc) so that items aren't accidentally put into the wrong category (e.g. some indexers use 5070 not for anime but something different)
             searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
+            //Use the indexer's own category mapping to build the category name
+            Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
+            searchResultItem.setOriginalCategory(config.getCategoryMapping().getNameFromId(mostSpecific));
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }

@@ -1,5 +1,8 @@
 package org.nzbhydra.indexers;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -7,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
@@ -14,17 +18,22 @@ import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.caps.CapsLimits;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 
 import java.net.URI;
+import java.util.HashSet;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,8 +74,9 @@ public class NewznabCheckerTest {
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         capsRoot = new CapsRoot();
         capsRoot.setSearching(new CapsSearching());
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), CapsRoot.class, 1))
-                .thenReturn(capsRoot);
+        CapsLimits capsLimits = new CapsLimits(200, 100);
+        capsRoot.setLimits(capsLimits);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), CapsRoot.class, 1)).thenReturn(capsRoot);
     }
 
 
@@ -109,6 +119,32 @@ public class NewznabCheckerTest {
         assertTrue(checkCapsRespone.isAllChecked());
 
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
+    }
+
+    @Test
+    public void shouldIdentifyCategoryMapping() throws Exception {
+        String xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/nzbsOrgCapsResponse.xml"), Charsets.UTF_8);
+        capsRoot = new XmlMapper().readValue(xml, CapsRoot.class);
+        when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
+
+        IndexerCategoryConfig categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);
+        assertThat(categoryConfig.getAnime().isPresent(), is(true));
+        assertThat(categoryConfig.getAnime().get(), is(7040));
+        assertThat(categoryConfig.getNameFromId(7040), is("Other Anime"));
+        assertThat(categoryConfig.getNameFromId(5040), is("TV HD"));
+
+        //Test with dog which has different mappings
+        xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/dognzbCapsResponse.xml"), Charsets.UTF_8);
+        capsRoot = new XmlMapper().readValue(xml, CapsRoot.class);
+        when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
+
+        categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);
+        assertThat(categoryConfig.getAnime().isPresent(), is(true));
+        assertThat(categoryConfig.getAnime().get(), is(5070));
+        assertThat(categoryConfig.getComic().isPresent(), is(true));
+        assertThat(categoryConfig.getComic().get(), is(7030));
+        assertThat(categoryConfig.getNameFromId(7040), is("N/A"));
+        assertThat(categoryConfig.getNameFromId(5040), is("TV HD"));
     }
 
     @Test

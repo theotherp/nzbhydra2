@@ -1,5 +1,6 @@
 package org.nzbhydra.mapping.newznab.caps;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -23,7 +24,7 @@ public class CapsLimits {
     @XmlAttribute
     private Integer max;
 
-    @XmlAttribute(name = "default")
+    @JacksonXmlProperty(localName = "default")
     private Integer defaultValue;
 
 

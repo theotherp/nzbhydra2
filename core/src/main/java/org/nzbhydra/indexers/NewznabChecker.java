@@ -5,6 +5,8 @@ import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerCategoryConfig;
+import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
+import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -135,7 +137,7 @@ public class NewznabChecker {
 
         IndexerCategoryConfig indexerCategoryConfig = new IndexerCategoryConfig();
         try {
-            indexerCategoryConfig = readAndAnalyzeCapsPage(indexerConfig, supportedTypes, supportedIds, timeout);
+            indexerCategoryConfig = getIndexerCategoryConfig(indexerConfig, supportedTypes, supportedIds, timeout);
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
         }
@@ -153,7 +155,7 @@ public class NewznabChecker {
         return new CheckCapsRespone(supportedIds, supportedTypes, indexerCategoryConfig, backendType, allChecked);
     }
 
-    private IndexerCategoryConfig readAndAnalyzeCapsPage(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
+    protected IndexerCategoryConfig getIndexerCategoryConfig(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
         if (supportedIds.contains(IdType.TVDB) || supportedIds.contains(IdType.TVRAGE) || supportedIds.contains(IdType.TVMAZE) || supportedIds.contains(IdType.TRAKT)) {
             supportedTypes.add(ActionAttribute.TVSEARCH);
         }
@@ -169,12 +171,14 @@ public class NewznabChecker {
             supportedTypes.add(ActionAttribute.BOOK);
         }
 
-        List<CapsCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
-        for (CapsCategory category : capsRoot.getCategories().getCategories()) {
-            categories.addAll(category.getSubCategories());
-        }
         IndexerCategoryConfig categoryConfig = new IndexerCategoryConfig();
-        Optional<CapsCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime")).findFirst();
+        List<CapsCategory> categories = readAndConvertCategories(capsRoot, categoryConfig);
+        setCategorySpecificMappings(categoryConfig, categories);
+        return categoryConfig;
+    }
+
+    private void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsCategory> categories) {
+        Optional<CapsCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime") && x.getId() / 1000 != 6).findFirst(); //Sometimes 6070 is anime as subcategory of porn, don't use that
         anime.ifPresent(capsCategory -> categoryConfig.setAnime(capsCategory.getId()));
         Optional<CapsCategory> audiobook = categories.stream().filter(x -> x.getName().toLowerCase().contains("audiobook")).findFirst();
         audiobook.ifPresent(capsCategory -> categoryConfig.setAudiobook(capsCategory.getId()));
@@ -182,7 +186,18 @@ public class NewznabChecker {
         comic.ifPresent(capsCategory -> categoryConfig.setComic(capsCategory.getId()));
         Optional<CapsCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
         ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
-        return categoryConfig;
+    }
+
+    private List<CapsCategory> readAndConvertCategories(CapsRoot capsRoot, IndexerCategoryConfig categoryConfig) {
+        List<CapsCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
+        List<MainCategory> configMainCategories = new ArrayList<>();
+        for (CapsCategory category : capsRoot.getCategories().getCategories()) {
+            categories.addAll(category.getSubCategories());
+            List<SubCategory> configSubcats = category.getSubCategories().stream().map(x -> new SubCategory(x.getId(), x.getName())).collect(Collectors.toList());
+            configMainCategories.add(new MainCategory(category.getId(), category.getName(), configSubcats));
+        }
+        categoryConfig.setCategories(configMainCategories);
+        return categories;
     }
 
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, int timeout) throws IndexerAccessException {

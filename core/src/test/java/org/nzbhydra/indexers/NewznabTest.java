@@ -13,6 +13,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
+import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -436,6 +438,24 @@ public class NewznabTest {
         assertThat(item.getIndexerGuid(), is("123"));
         assertThat(item.isPassworded(), is(true));
         assertThat(item.getHasNfo(), is(HasNfo.YES));
+    }
+
+    @Test
+    public void shouldUseIndexersCategoryMappingToBuildOriginalCategoryName() throws Exception {
+        testee.config.getCategoryMapping().setCategories(Arrays.asList(new MainCategory(5000, "TV", Arrays.asList(new SubCategory(5040, "HD")))));
+        RssItem rssItem = buildBasicRssItem();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5040"));
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
+        SearchResultItem searchResultItem = new SearchResultItem();
+
+        testee.parseAttributes(rssItem, searchResultItem);
+        assertThat(searchResultItem.getOriginalCategory(), is("TV HD"));
+
+        rssItem.getNewznabAttributes().clear();
+        rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "1234"));
+        testee.parseAttributes(rssItem, searchResultItem);
+        assertThat(searchResultItem.getOriginalCategory(), is("N/A"));
+
     }
 
     private RssItem buildBasicRssItem() {

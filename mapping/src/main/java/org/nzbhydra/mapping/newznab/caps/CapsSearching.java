@@ -1,5 +1,6 @@
 package org.nzbhydra.mapping.newznab.caps;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,16 +16,16 @@ public class CapsSearching {
     @XmlElement(name = "search")
     private CapsSearch search;
 
-    @XmlElement(name = "tv-search")
+    @JacksonXmlProperty(localName = "tv-search")
     private CapsSearch tvSearch;
 
-    @XmlElement(name = "movie-search")
+    @JacksonXmlProperty(localName = "movie-search")
     private CapsSearch movieSearch;
 
-    @XmlElement(name = "audio-search")
+    @JacksonXmlProperty(localName = "audio-search")
     private CapsSearch audioSearch;
 
-    @XmlElement(name = "book-search")
+    @JacksonXmlProperty(localName = "book-search")
     private CapsSearch bookSearch;
 
 

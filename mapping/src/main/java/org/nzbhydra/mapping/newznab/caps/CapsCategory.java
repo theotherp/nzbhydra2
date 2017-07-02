@@ -1,14 +1,16 @@
 package org.nzbhydra.mapping.newznab.caps;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "category")
@@ -16,6 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CapsCategory {
 
     public CapsCategory(int id, String name) {
@@ -23,12 +26,13 @@ public class CapsCategory {
         this.name = name;
     }
 
-    @XmlAttribute
+    @JacksonXmlProperty(isAttribute = true)
     private int id;
-    @XmlAttribute
+    @JacksonXmlProperty(isAttribute = true)
     private String name;
-    @XmlElement(name = "subcat")
-    private List<CapsCategory> subCategories;
+    @JacksonXmlProperty(localName = "subcat")
+    @JacksonXmlElementWrapper(useWrapping = false)
+    private List<CapsCategory> subCategories = new ArrayList<>();
 
 
 }
