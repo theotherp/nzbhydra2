@@ -101,20 +101,20 @@ public class NewznabCheckerTest {
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(6, checkCapsRespone.getSupportedSearchIds().size());
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVDB));
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVRAGE));
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TVMAZE));
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TRAKT));
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(IMDB));
-        assertTrue(checkCapsRespone.getSupportedSearchIds().contains(TMDB));
+        assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVDB));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVRAGE));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVMAZE));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TRAKT));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(IMDB));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TMDB));
 
-        assertEquals(3, checkCapsRespone.getSupportedSearchTypes().size());
-        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.AUDIO));
-        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.TVSEARCH));
-        assertTrue(checkCapsRespone.getSupportedSearchTypes().contains(ActionAttribute.MOVIE));
+        assertEquals(3, checkCapsRespone.getIndexerConfig().getSupportedSearchTypes().size());
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchTypes().contains(ActionAttribute.AUDIO));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchTypes().contains(ActionAttribute.TVSEARCH));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchTypes().contains(ActionAttribute.MOVIE));
 
-        assertEquals(BackendType.NZEDB, checkCapsRespone.getBackend());
+        assertEquals(BackendType.NZEDB, checkCapsRespone.getIndexerConfig().getBackend());
 
         assertTrue(checkCapsRespone.isAllChecked());
 
@@ -164,7 +164,7 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(0, checkCapsRespone.getSupportedSearchIds().size());
+        assertEquals(0, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
     }
 
@@ -186,7 +186,7 @@ public class NewznabCheckerTest {
                 .thenThrow(new IndexerAccessException("some error"));
 
         NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(5, checkCapsRespone.getSupportedSearchIds().size());
+        assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllChecked());
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
     }

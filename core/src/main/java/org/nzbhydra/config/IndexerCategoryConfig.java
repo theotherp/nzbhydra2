@@ -42,6 +42,10 @@ public class IndexerCategoryConfig {
         return Optional.ofNullable(ebook);
     }
 
+    public Optional<Integer> getMagazine() {
+        return Optional.ofNullable(magazine);
+    }
+
     public List<MainCategory> getCategories() {
         return categories;
     }

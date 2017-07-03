@@ -12,6 +12,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.Category;
+import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
 import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
@@ -67,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -123,6 +126,9 @@ public class NewznabTest {
     BaseConfig baseConfigMock;
     @Mock
     SearchingConfig searchingConfigMock;
+    Category animeCategory = new Category("anime");
+    Category naCategory = new Category("n/a");
+    Category otherCategory = new Category("other");
     @Mock
     private ConfigProvider configProviderMock;
 
@@ -161,6 +167,10 @@ public class NewznabTest {
                 return new AcceptorResult(invocation.getArgument(0), HashMultiset.create());
             }
         });
+        animeCategory.setSubtype(Subtype.ANIME);
+        when(categoryProviderMock.fromSubtype(Subtype.ANIME)).thenReturn(Optional.of(animeCategory));
+        when(categoryProviderMock.fromNewznabCategories(any(), any())).thenAnswer(x -> x.getArgument(1));
+        when(categoryProviderMock.getNotAvailable()).thenReturn(naCategory);
     }
 
     @Test
@@ -428,7 +438,7 @@ public class NewznabTest {
         assertThat(item.getFiles(), is(10));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getCommentsCount(), is(30));
-        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050), null);
+        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050), naCategory);
 
         rssItem.setRssGuid(new RssGuid("123", false));
         rssItem.getNewznabAttributes().clear();
@@ -575,6 +585,22 @@ public class NewznabTest {
         assertThat(nfo.getContent(), is("message"));
         assertThat(nfo.isSuccessful(), is(false));
         assertThat(nfo.isHasNfo(), is(false));
+    }
+
+    @Test
+    public void shouldComputeCategory() throws Exception {
+        when(categoryProviderMock.fromNewznabCategories(any(), any())).thenReturn(otherCategory);
+        testee.config.getCategoryMapping().setAnime(1010);
+        SearchResultItem item = new SearchResultItem();
+
+        //Found a specific mapping
+        testee.computeCategory(item, Arrays.asList(1000, 1010));
+        assertThat(item.getCategory(), is(animeCategory));
+
+        //Didn't find a specific mapping, use the general one from the categories
+        testee.computeCategory(item, Arrays.asList(3030));
+        assertThat(item.getCategory(), is(otherCategory));
+
     }
 
 

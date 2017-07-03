@@ -5,11 +5,13 @@ import org.junit.Test;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.Category.Subtype;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -42,11 +44,13 @@ public class CategoryProviderTest {
 
         category = new Category();
         category.setName("4090");
+        category.setSubtype(Subtype.COMIC);
         category.setNewznabCategories(Arrays.asList(4090));
         categories.add(category);
 
         category = new Category();
         category.setName("7020,8010");
+        category.setSubtype(Subtype.ANIME);
         category.setNewznabCategories(Arrays.asList(7020, 8010));
         categories.add(category);
         BaseConfig baseConfig = new BaseConfig();
@@ -88,7 +92,16 @@ public class CategoryProviderTest {
         //No cats
         assertThat(testee.fromNewznabCategories(Collections.emptyList(), CategoriesConfig.allCategory).getName(), is("All"));
         assertThat(testee.fromNewznabCategories("").getName(), is("N/A"));
+    }
 
+    @Test
+    public void shouldFindBySubtype() {
+        Optional<Category> animeOptional = testee.fromSubtype(Subtype.ANIME);
+        assertThat(animeOptional.isPresent(), is(true));
+        assertThat(animeOptional.get().getName(), is("7020,8010"));
+
+        Optional<Category> magazineOptional = testee.fromSubtype(Subtype.MAGAZINE);
+        assertThat(magazineOptional.isPresent(), is(false));
     }
 
 }

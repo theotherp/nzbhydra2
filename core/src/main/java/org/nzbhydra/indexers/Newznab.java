@@ -4,6 +4,9 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.config.Category;
+import org.nzbhydra.config.Category.Subtype;
+import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
@@ -47,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -85,6 +90,7 @@ public class Newznab extends Indexer<Xml> {
 
     @Autowired
     private Unmarshaller unmarshaller;
+    private ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
 
     protected UriComponentsBuilder getBaseUri() {
@@ -393,15 +399,7 @@ public class Newznab extends Indexer<Xml> {
             searchResultItem.setSize(Long.valueOf(attributes.get("size")));
         }
 
-        if (!newznabCategories.isEmpty()) {
-            //TODO Account for specific mapping (anime, comic, etc) so that items aren't accidentally put into the wrong category (e.g. some indexers use 5070 not for anime but something different)
-            searchResultItem.setCategory(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
-            //Use the indexer's own category mapping to build the category name
-            Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
-            searchResultItem.setOriginalCategory(config.getCategoryMapping().getNameFromId(mostSpecific));
-        } else {
-            searchResultItem.setCategory(categoryProvider.getNotAvailable());
-        }
+        computeCategory(searchResultItem, newznabCategories);
 
         if (searchResultItem.getHasNfo() == HasNfo.MAYBE && (config.getBackend() == BackendType.NNTMUX || config.getBackend() == BackendType.NZEDB)) {
             //For these backends if not specified it doesn't exist
@@ -413,6 +411,34 @@ public class Newznab extends Indexer<Xml> {
             if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
                 searchResultItem.setGroup(matcher.group(1));
             }
+        }
+    }
+
+    protected void computeCategory(SearchResultItem searchResultItem, List<Integer> newznabCategories) {
+        if (!newznabCategories.isEmpty()) {
+            Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
+            IndexerCategoryConfig mapping = config.getCategoryMapping();
+            Category category = idToCategory.computeIfAbsent(mostSpecific, x -> {
+                //TODO This could be prettier
+                Optional<Category> categoryOptional = Optional.empty();
+                if (mapping.getAnime().isPresent() && Objects.equals(mapping.getAnime().get(), mostSpecific)) {
+                    categoryOptional = categoryProvider.fromSubtype(Subtype.ANIME);
+                } else if (mapping.getAudiobook().isPresent() && Objects.equals(mapping.getAudiobook().get(), mostSpecific)) {
+                    categoryOptional = categoryProvider.fromSubtype(Subtype.AUDIOBOOK);
+                } else if (mapping.getEbook().isPresent() && Objects.equals(mapping.getEbook().get(), mostSpecific)) {
+                    categoryOptional = categoryProvider.fromSubtype(Subtype.EBOOK);
+                } else if (mapping.getComic().isPresent() && Objects.equals(mapping.getComic().get(), mostSpecific)) {
+                    categoryOptional = categoryProvider.fromSubtype(Subtype.COMIC);
+                } else if (mapping.getMagazine().isPresent() && Objects.equals(mapping.getMagazine().get(), mostSpecific)) {
+                    categoryOptional = categoryProvider.fromSubtype(Subtype.MAGAZINE);
+                }
+                return categoryOptional.orElse(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
+            });
+            searchResultItem.setCategory(category);
+            //Use the indexer's own category mapping to build the category name
+            searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
+        } else {
+            searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
     }
 

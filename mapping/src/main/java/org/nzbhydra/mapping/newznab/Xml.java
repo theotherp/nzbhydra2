@@ -11,7 +11,7 @@ import java.io.StringWriter;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({RssError.class, RssRoot.class})
-public abstract class Xml {
+public class Xml {
 
     public String toXmlString() {
         try (StringWriter writer = new StringWriter()) {

@@ -3,6 +3,7 @@ package org.nzbhydra.searching;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties
 @EnableConfigurationProperties
 public class CategoryProvider implements InitializingBean {
+
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryProvider.class);
 
@@ -115,6 +117,11 @@ public class CategoryProvider implements InitializingBean {
             return getNotAvailable();
         }
     }
+
+    public Optional<Category> fromSubtype(Subtype subtype) {
+        return categories.stream().filter(x -> x.getSubtype() == subtype).findFirst();
+    }
+
 
     /**
      * Should only be called for conversion of incoming searches. Returns the "All" category if no matching category is found

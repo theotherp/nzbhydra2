@@ -1,10 +1,11 @@
 package org.nzbhydra.mapping.newznab;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +20,13 @@ public class RssChannel {
     private String webMaster;
     private String generator;
 
-    @XmlElement(name = "response", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
+    //@XmlElement(name = "response", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
+    @JacksonXmlProperty(localName = "response", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
     private NewznabResponse newznabResponse;
 
 
-    @XmlElement(name="item")
+    @JacksonXmlProperty(localName = "item")
+    @JacksonXmlElementWrapper(useWrapping = false)
     private List<RssItem> items = new ArrayList<>();
 
 }

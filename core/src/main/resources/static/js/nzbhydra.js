@@ -5058,12 +5058,7 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model.supportedSearchIds = data.supportedSearchIds;
-            model.supportedSearchTypes = data.supportedSearchTypes;
-            model.enabledCategories = [];
-            model.categoryConfig = data.categoryConfig;
-            model.backend = data.backend;
-            //deferred.resolve({supportedSearchIds: data.supportedSearchIds, supportedSearchTypes: data.supportedSearchTypes}, model);
+            model = data;
             deferred.resolve(data);
 
         }).error(function () {
@@ -7446,6 +7441,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     }
 
+    //Called when the button is clicked
     function checkCaps(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";

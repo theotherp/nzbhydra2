@@ -124,6 +124,7 @@ public class NewznabChecker {
                 }
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(x -> Newznab.paramValueToIdMap.get(x.getKey())).collect(Collectors.toSet());
+            indexerConfig.setSupportedSearchIds(new ArrayList<>(supportedIds));
             if (supportedIds.isEmpty()) {
                 logger.info("The indexer does not support searching by any IDs");
             } else {
@@ -135,9 +136,9 @@ public class NewznabChecker {
             allChecked = false;
         }
 
-        IndexerCategoryConfig indexerCategoryConfig = new IndexerCategoryConfig();
         try {
-            indexerCategoryConfig = getIndexerCategoryConfig(indexerConfig, supportedTypes, supportedIds, timeout);
+            indexerConfig.setCategoryMapping(getIndexerCategoryConfig(indexerConfig, supportedTypes, supportedIds, timeout));
+            indexerConfig.setSupportedSearchTypes(new ArrayList<>(supportedTypes));
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
         }
@@ -150,9 +151,10 @@ public class NewznabChecker {
             logger.error("Indexer reported unknown backend type {}. Will use newznab for now. Please report this.", backend);
             backendType = BackendType.NEWZNAB;
         }
+        indexerConfig.setBackend(backendType);
 
-        //TODO Return response that says if an error occured but still return any found IDs and types
-        return new CheckCapsRespone(supportedIds, supportedTypes, indexerCategoryConfig, backendType, allChecked);
+        //TODO Only return successfully if everything went ok, no half baked results
+        return new CheckCapsRespone(indexerConfig, allChecked);
     }
 
     protected IndexerCategoryConfig getIndexerCategoryConfig(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
@@ -197,6 +199,7 @@ public class NewznabChecker {
             configMainCategories.add(new MainCategory(category.getId(), category.getName(), configSubcats));
         }
         categoryConfig.setCategories(configMainCategories);
+
         return categories;
     }
 
@@ -241,10 +244,7 @@ public class NewznabChecker {
     @Data
     @AllArgsConstructor
     public class CheckCapsRespone {
-        private Set<IdType> supportedSearchIds;
-        private Set<ActionAttribute> supportedSearchTypes;
-        private IndexerCategoryConfig categoryConfig;
-        private BackendType backend;
+        private IndexerConfig indexerConfig;
         private boolean allChecked;
     }
 

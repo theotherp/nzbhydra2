@@ -2049,6 +2049,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     }
 
+    //Called when the button is clicked
     function checkCaps(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";

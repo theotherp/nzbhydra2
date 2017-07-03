@@ -1,12 +1,12 @@
 package org.nzbhydra.mapping.newznab;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
 
 @XmlRootElement(name = "guid")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -14,7 +14,10 @@ import javax.xml.bind.annotation.XmlValue;
 public class RssGuid {
 
     public RssGuid() {
+    }
 
+    public RssGuid(String guid) {
+        this.guid = guid;
     }
 
     public RssGuid(String guid, boolean isPermaLink) {
@@ -22,10 +25,11 @@ public class RssGuid {
         this.isPermaLink = isPermaLink;
     }
 
-    @XmlValue
+    //@XmlValue
+    @JacksonXmlText
     private String guid;
 
-    @XmlAttribute
+    @JacksonXmlProperty(isAttribute = true)
     private boolean isPermaLink = false;
 
 

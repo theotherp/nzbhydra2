@@ -14,6 +14,15 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Category {
 
+    public enum Subtype {
+        NONE,
+        ANIME,
+        AUDIOBOOK,
+        COMIC,
+        EBOOK,
+        MAGAZINE
+    }
+
 
     /**
      * Internal name
@@ -36,7 +45,8 @@ public class Category {
     protected Integer maxSizePreset;
     protected Integer minSizePreset;
 
-    private boolean preselect; //TODO whats this
+    private boolean preselect;
+    private Subtype subtype = Subtype.NONE;
 
     public Category(String name) {
         this.name = name;
