@@ -4735,6 +4735,7 @@ angular
         });
 
         formlyConfigProvider.setType({
+            //BUtton
             name: 'checkCaps',
             templateUrl: 'button-check-caps.html',
             controller: function ($scope, ConfigBoxService, ModalService) {
@@ -4756,6 +4757,7 @@ angular
                     angular.element(testButton).addClass("btn-danger");
                 }
 
+                //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
 
@@ -4935,10 +4937,10 @@ angular
                     });
 
 
-                    modalInstance.result.then(function () {
+                    modalInstance.result.then(function (returnedModel) {
                         $scope.form.$setDirty(true);
                         if (angular.isDefined(callback)) {
-                            callback(true);
+                            callback(true, returnedModel);
                         }
                     }, function () {
                         if (angular.isDefined(callback)) {
@@ -4960,9 +4962,10 @@ angular
 
                         $scope.isInitial = true;
 
-                        $scope._showBox(model, entriesCollection, true, function (isSubmitted) {
+                        $scope._showBox(model, entriesCollection, true, function (isSubmitted, returnedModel) {
                             if (isSubmitted) {
-                                entriesCollection.push(model);
+                                //Here is where the entry is actually added to the model
+                                entriesCollection.push(angular.isDefined(returnedModel) ? returnedModel : model);
                             }
                         });
                     } else {
@@ -4991,8 +4994,11 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
 
         if ($scope.form.$valid) {
 
-            var a = data.checkBeforeClose($scope, model).then(function () {
-                $uibModalInstance.close($scope);
+            var a = data.checkBeforeClose($scope, model).then(function (data) {
+                if (angular.isDefined(data)) {
+                    $scope.model = data;
+                }
+                $uibModalInstance.close(data);
             });
         } else {
             growl.error("Config invalid. Please check your settings.");
@@ -5043,7 +5049,7 @@ function ConfigBoxService($http, $q) {
         $http.post(url, settings).success(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
             if (result.successful) {
-                deferred.resolve();
+                deferred.resolve({checked: true, message: null, model: result});
             } else {
                 deferred.reject({checked: true, message: result.message});
             }
@@ -5058,7 +5064,7 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model = data;
+            model = data.indexerConfig;
             deferred.resolve(data);
 
         }).error(function () {
@@ -5948,7 +5954,10 @@ function ConfigFields($injector) {
                                 label: 'Required words',
                                 placeholder: 'separate, with, commas, like, this',
                                 help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
-                            }
+                            },
+                            parsers: [function (value) {
+                                return value === "" || value === null ? [] : value
+                            }]
                         },
                         {
                             key: 'requiredRegex',
@@ -6150,12 +6159,27 @@ function ConfigFields($injector) {
                                     label: 'Search type',
                                     options: [
                                         {name: 'General', value: 'SEARCH'},
-                                        {name: 'Audio', value: 'AUDIO'},
+                                        {name: 'Audio', value: 'MUSIC'},
                                         {name: 'EBook', value: 'BOOK'},
                                         {name: 'Movie', value: 'MOVIE'},
                                         {name: 'TV', value: 'TVSEARCH'}
                                     ],
-                                    help: "Determines how indexers will be search and if autocompletion is available in the GUI"
+                                    help: "Determines how indexers will be searched and if autocompletion is available in the GUI"
+                                }
+                            },
+                            {
+                                key: 'subtype',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Sub type',
+                                    options: [
+                                        {name: 'Anime', value: 'ANIME'},
+                                        {name: 'Audiobook', value: 'AUDIOBOOK'},
+                                        {name: 'Comic', value: 'COMIC'},
+                                        {name: 'Ebook', value: 'EBOOK'},
+                                        {name: 'None', value: 'NONE'}
+                                    ],
+                                    help: "Special search type. Used for indexer specific mappings between categories and newznab IDs"
                                 }
                             },
                             {
@@ -6167,6 +6191,15 @@ function ConfigFields($injector) {
                                     placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
+                                ,
+                                parsers: [function (value) {
+                                    return value === "" || value === null || isNaN(value) ? [] : value
+                                }],
+                                formatters: [
+                                    function (value) {
+                                        return value === [] || value === null || isNaN(value) ? [] : ""
+                                    }
+                                ]
                             },
                             {
                                 key: 'requiredRegex',
@@ -6296,7 +6329,8 @@ function ConfigFields($injector) {
                             preselect: true,
                             requiredRegex: null,
                             requiredWords: null,
-                            searchType: "SEARCH"
+                            searchType: "SEARCH",
+                            subType: "NONE"
                         }
                     }
                 }
@@ -7408,8 +7442,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
         if (!scope.needsConnectionTest) {
-            checkCaps(scope, model).then(function () {
-                deferred.resolve();
+            checkCapsWhenClosing(scope, model).then(function () {
+                deferred.resolve(model);
             }, function () {
                 deferred.reject();
             });
@@ -7418,11 +7452,11 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
             scope.spinnerActive = true;
             var url = "internalapi/indexer/checkConnection"; //TODO
             ConfigBoxService.checkConnection(url, model).then(function () {
-                    checkCaps(scope, model).then(function () {
+                    checkCapsWhenClosing(scope, model).then(function (data) {
                         blockUI.reset();
                         scope.spinnerActive = false;
                         growl.info("Connection to the indexer tested successfully");
-                        deferred.resolve();
+                        deferred.resolve(data);
                     }, function () {
                         blockUI.reset();
                         scope.spinnerActive = false;
@@ -7441,8 +7475,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     }
 
-    //Called when the button is clicked
-    function checkCaps(scope, model) {
+    //Called when the indexer dialog is closed
+    function checkCapsWhenClosing(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
@@ -7457,7 +7491,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
                     } else {
                         growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");
                     }
-                    deferred.resolve();
+                    deferred.resolve(data.indexerConfig);
                 },
                 function () {
                     blockUI.reset();
@@ -7619,13 +7653,9 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 message = '<br><span class="warning">The following warnings have been found. You can ignore them if you wish. The config was already saved.<ul>';
                 message = extendMessageWithList(message, response.data.warningMessages);
                 options = {
-                    yes: {
-                        onYes: function () {
-                        },
-                        text: "Ignore warnings"
-                    },
                     cancel: {
                         onCancel: function () {
+                            $scope.form.$setPristine();
                             localStorageService.set("ignoreWarnings", true);
                             ConfigService.set($scope.config, true).then(function (response) {
                                 handleConfigSetResponse(response, true);
@@ -7635,7 +7665,13 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                                 growl.error(response.data);
                             });
                         },
-                        text: "Ignore and don't show again"
+                        text: "OK, never show again"
+                    },
+                    yes: {
+                        onYes: function () {
+                            $scope.form.$setPristine();
+                        },
+                        text: "OK"
                     }
                 };
             }

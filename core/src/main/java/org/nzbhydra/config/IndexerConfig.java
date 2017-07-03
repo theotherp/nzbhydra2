@@ -88,9 +88,6 @@ public class IndexerConfig extends ValidatingConfig {
         return Optional.ofNullable(userAgent);
     }
 
-    public void setEnabledCategories(List<String> enabledCategories) {
-        this.enabledCategories = enabledCategories;
-    }
 
     @Override
     public ConfigValidationResult validateConfig() {

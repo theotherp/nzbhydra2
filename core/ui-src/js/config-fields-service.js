@@ -557,7 +557,10 @@ function ConfigFields($injector) {
                                 label: 'Required words',
                                 placeholder: 'separate, with, commas, like, this',
                                 help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
-                            }
+                            },
+                            parsers: [function (value) {
+                                return value === "" || value === null ? [] : value
+                            }]
                         },
                         {
                             key: 'requiredRegex',
@@ -759,12 +762,27 @@ function ConfigFields($injector) {
                                     label: 'Search type',
                                     options: [
                                         {name: 'General', value: 'SEARCH'},
-                                        {name: 'Audio', value: 'AUDIO'},
+                                        {name: 'Audio', value: 'MUSIC'},
                                         {name: 'EBook', value: 'BOOK'},
                                         {name: 'Movie', value: 'MOVIE'},
                                         {name: 'TV', value: 'TVSEARCH'}
                                     ],
-                                    help: "Determines how indexers will be search and if autocompletion is available in the GUI"
+                                    help: "Determines how indexers will be searched and if autocompletion is available in the GUI"
+                                }
+                            },
+                            {
+                                key: 'subtype',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Sub type',
+                                    options: [
+                                        {name: 'Anime', value: 'ANIME'},
+                                        {name: 'Audiobook', value: 'AUDIOBOOK'},
+                                        {name: 'Comic', value: 'COMIC'},
+                                        {name: 'Ebook', value: 'EBOOK'},
+                                        {name: 'None', value: 'NONE'}
+                                    ],
+                                    help: "Special search type. Used for indexer specific mappings between categories and newznab IDs"
                                 }
                             },
                             {
@@ -776,6 +794,15 @@ function ConfigFields($injector) {
                                     placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
+                                ,
+                                parsers: [function (value) {
+                                    return value === "" || value === null || isNaN(value) ? [] : value
+                                }],
+                                formatters: [
+                                    function (value) {
+                                        return value === [] || value === null || isNaN(value) ? [] : ""
+                                    }
+                                ]
                             },
                             {
                                 key: 'requiredRegex',
@@ -905,7 +932,8 @@ function ConfigFields($injector) {
                             preselect: true,
                             requiredRegex: null,
                             requiredWords: null,
-                            searchType: "SEARCH"
+                            searchType: "SEARCH",
+                            subType: "NONE"
                         }
                     }
                 }
@@ -2016,8 +2044,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
         if (!scope.needsConnectionTest) {
-            checkCaps(scope, model).then(function () {
-                deferred.resolve();
+            checkCapsWhenClosing(scope, model).then(function () {
+                deferred.resolve(model);
             }, function () {
                 deferred.reject();
             });
@@ -2026,11 +2054,11 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
             scope.spinnerActive = true;
             var url = "internalapi/indexer/checkConnection"; //TODO
             ConfigBoxService.checkConnection(url, model).then(function () {
-                    checkCaps(scope, model).then(function () {
+                    checkCapsWhenClosing(scope, model).then(function (data) {
                         blockUI.reset();
                         scope.spinnerActive = false;
                         growl.info("Connection to the indexer tested successfully");
-                        deferred.resolve();
+                        deferred.resolve(data);
                     }, function () {
                         blockUI.reset();
                         scope.spinnerActive = false;
@@ -2049,8 +2077,8 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
 
     }
 
-    //Called when the button is clicked
-    function checkCaps(scope, model) {
+    //Called when the indexer dialog is closed
+    function checkCapsWhenClosing(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
@@ -2065,7 +2093,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
                     } else {
                         growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");
                     }
-                    deferred.resolve();
+                    deferred.resolve(data.indexerConfig);
                 },
                 function () {
                     blockUI.reset();

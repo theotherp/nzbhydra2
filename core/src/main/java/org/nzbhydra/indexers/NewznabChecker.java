@@ -182,12 +182,18 @@ public class NewznabChecker {
     private void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsCategory> categories) {
         Optional<CapsCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime") && x.getId() / 1000 != 6).findFirst(); //Sometimes 6070 is anime as subcategory of porn, don't use that
         anime.ifPresent(capsCategory -> categoryConfig.setAnime(capsCategory.getId()));
+
         Optional<CapsCategory> audiobook = categories.stream().filter(x -> x.getName().toLowerCase().contains("audiobook")).findFirst();
         audiobook.ifPresent(capsCategory -> categoryConfig.setAudiobook(capsCategory.getId()));
+
         Optional<CapsCategory> comic = categories.stream().filter(x -> x.getName().toLowerCase().contains("comic")).findFirst();
         comic.ifPresent(capsCategory -> categoryConfig.setComic(capsCategory.getId()));
+
         Optional<CapsCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
         ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
+
+        Optional<CapsCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine")).findFirst();
+        magazine.ifPresent(capsCategory -> categoryConfig.setMagazine(capsCategory.getId()));
     }
 
     private List<CapsCategory> readAndConvertCategories(CapsRoot capsRoot, IndexerCategoryConfig categoryConfig) {

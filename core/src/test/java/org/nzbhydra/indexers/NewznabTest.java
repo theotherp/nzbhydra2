@@ -600,7 +600,29 @@ public class NewznabTest {
         //Didn't find a specific mapping, use the general one from the categories
         testee.computeCategory(item, Arrays.asList(3030));
         assertThat(item.getCategory(), is(otherCategory));
+    }
 
+    @Test
+    public void shouldBuildCorrectSearchUrl() throws Exception {
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        String uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, is("http://127.0.0.1:1234/api?apikey&t=search&limit=100&offset=0"));
+
+        otherCategory.setNewznabCategories(Arrays.asList(2000));
+        request.setCategory(otherCategory);
+        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, is("http://127.0.0.1:1234/api?apikey&t=search&cat=2000&limit=100&offset=0"));
+
+        otherCategory.setNewznabCategories(Arrays.asList(2030, 2040));
+        request.setCategory(otherCategory);
+        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, is("http://127.0.0.1:1234/api?apikey&t=search&cat=2030,2040&limit=100&offset=0"));
+
+        animeCategory.setSubtype(Subtype.ANIME);
+        request.setCategory(animeCategory);
+        testee.getConfig().getCategoryMapping().setAnime(9090);
+        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, is("http://127.0.0.1:1234/api?apikey&t=search&cat=9090&limit=100&offset=0"));
     }
 
 

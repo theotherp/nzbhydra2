@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -75,6 +76,7 @@ public class IndexerCategoryConfig {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class MainCategory {
         private int id;
         private String name;
@@ -83,6 +85,7 @@ public class IndexerCategoryConfig {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class SubCategory {
         private int id;
         private String name;

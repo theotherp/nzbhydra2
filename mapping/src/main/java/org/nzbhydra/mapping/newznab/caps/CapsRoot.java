@@ -1,7 +1,5 @@
 package org.nzbhydra.mapping.newznab.caps;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,7 +11,6 @@ import java.util.ArrayList;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "caps")
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class CapsRoot {
 
     @XmlElement
@@ -28,7 +25,7 @@ public class CapsRoot {
     @XmlElement
     private CapsSearching searching;
 
-    @JacksonXmlProperty(localName = "categories")
+    @XmlElement(name = "categories")
     private CapsCategories categories = new CapsCategories(new ArrayList<>());
 
 

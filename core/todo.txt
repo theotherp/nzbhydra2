@@ -135,8 +135,12 @@ General, Ideas
 - !! ip and username must be removed from log when creating debug infos, obviously removing them before doesn't make sense when allowing to log them in the first place
 - simple web hook to inform about search and/or download. provide title, downloader id (if available), etc.
 - !! fallback to title/query if no results were found when searching with an id
-- add a "category type" to categories, e.g. comic, anime, audiobook, etc. When a result is found and identified as such (by whatever means) then we use that category's settings (filter, restrictions, etc). it should also override the used newznab category when searching with that category from gui
-- torznab categories don't work because jackson doesn't allow the same attr twice
+- !! add a "category type" to categories, e.g. comic, anime, audiobook, etc. When a result is found and identified as such (by whatever means) then we use that category's settings (filter, restrictions, etc). it should also override the used newznab category when searching with that category from gui
+- !! ignoring warnings when saving config doesn't work
+- when migrating we need to handle missing category mappings. perhaps add every indexer disabled and let the user do that? or try to check every indexer and disable the failed ones
+- !! actually set and use category subtypes, add selection box for it
+- !! magazine category, subtype, etc
+
 
 currently not (yet) supported:
 - multiple query generations per search

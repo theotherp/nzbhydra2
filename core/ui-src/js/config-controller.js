@@ -98,13 +98,9 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 message = '<br><span class="warning">The following warnings have been found. You can ignore them if you wish. The config was already saved.<ul>';
                 message = extendMessageWithList(message, response.data.warningMessages);
                 options = {
-                    yes: {
-                        onYes: function () {
-                        },
-                        text: "Ignore warnings"
-                    },
                     cancel: {
                         onCancel: function () {
+                            $scope.form.$setPristine();
                             localStorageService.set("ignoreWarnings", true);
                             ConfigService.set($scope.config, true).then(function (response) {
                                 handleConfigSetResponse(response, true);
@@ -114,7 +110,13 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                                 growl.error(response.data);
                             });
                         },
-                        text: "Ignore and don't show again"
+                        text: "OK, never show again"
+                    },
+                    yes: {
+                        onYes: function () {
+                            $scope.form.$setPristine();
+                        },
+                        text: "OK"
                     }
                 };
             }

@@ -1,6 +1,5 @@
 package org.nzbhydra.mapping.newznab.caps;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -9,7 +8,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @Data
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class CapsServer {
 
     public CapsServer() {

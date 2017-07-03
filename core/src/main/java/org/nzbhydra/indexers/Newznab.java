@@ -172,6 +172,25 @@ public class Newznab extends Indexer<Xml> {
         if (configProvider.getBaseConfig().getSearching().isIgnorePassworded()) {
             componentsBuilder.queryParam("password", "0");
         }
+
+        List<Integer> categoryIds = new ArrayList<>();
+        if (searchRequest.getCategory().getSubtype() == Subtype.ANIME && config.getCategoryMapping().getAnime().isPresent()) {
+            categoryIds = Arrays.asList(config.getCategoryMapping().getAnime().get());
+        } else if (searchRequest.getCategory().getSubtype() == Subtype.AUDIOBOOK && config.getCategoryMapping().getAudiobook().isPresent()) {
+            categoryIds = Arrays.asList(config.getCategoryMapping().getAudiobook().get());
+        } else if (searchRequest.getCategory().getSubtype() == Subtype.COMIC && config.getCategoryMapping().getComic().isPresent()) {
+            categoryIds = Arrays.asList(config.getCategoryMapping().getComic().get());
+        } else if (searchRequest.getCategory().getSubtype() == Subtype.EBOOK && config.getCategoryMapping().getEbook().isPresent()) {
+            categoryIds = Arrays.asList(config.getCategoryMapping().getEbook().get());
+        } else if (searchRequest.getCategory().getSubtype() == Subtype.MAGAZINE && config.getCategoryMapping().getMagazine().isPresent()) {
+            categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
+        } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
+            categoryIds = searchRequest.getCategory().getNewznabCategories();
+        }
+        if (!categoryIds.isEmpty()) {
+            componentsBuilder.queryParam("cat", Joiner.on(",").join(categoryIds));
+        }
+
     }
 
     private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {

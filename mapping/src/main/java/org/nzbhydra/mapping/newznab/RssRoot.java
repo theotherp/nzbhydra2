@@ -1,6 +1,5 @@
 package org.nzbhydra.mapping.newznab;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,7 +16,7 @@ public class RssRoot extends Xml {
     @XmlAttribute
     private String version = "2.0";
 
-    @JacksonXmlProperty(localName = "channel")
+    @XmlElement(name = "channel")
     private RssChannel rssChannel = new RssChannel();
 
     @XmlElement(name = "error")

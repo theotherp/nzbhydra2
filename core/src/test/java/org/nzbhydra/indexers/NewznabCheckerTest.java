@@ -1,6 +1,5 @@
 package org.nzbhydra.indexers;
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -22,7 +21,11 @@ import org.nzbhydra.mapping.newznab.caps.CapsLimits;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
+import org.springframework.oxm.Unmarshaller;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
+import javax.xml.transform.stream.StreamSource;
+import java.io.StringReader;
 import java.net.URI;
 import java.util.HashSet;
 
@@ -59,6 +62,7 @@ public class NewznabCheckerTest {
     private ConfigProvider configProviderMock;
     @InjectMocks
     private NewznabChecker testee = new NewznabChecker();
+    private Unmarshaller unmarshaller = new Jaxb2Marshaller();
 
 
     private IndexerConfig indexerConfig;
@@ -124,7 +128,7 @@ public class NewznabCheckerTest {
     @Test
     public void shouldIdentifyCategoryMapping() throws Exception {
         String xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/nzbsOrgCapsResponse.xml"), Charsets.UTF_8);
-        capsRoot = new XmlMapper().readValue(xml, CapsRoot.class);
+        capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
 
         IndexerCategoryConfig categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);
@@ -135,7 +139,7 @@ public class NewznabCheckerTest {
 
         //Test with dog which has different mappings
         xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/dognzbCapsResponse.xml"), Charsets.UTF_8);
-        capsRoot = new XmlMapper().readValue(xml, CapsRoot.class);
+        capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
 
         categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);

@@ -53,7 +53,7 @@ public class MockNewznab {
         apikeyToResultCount.put(5, 100);
     }
 
-    private static final List<Integer> newznabCategories = Arrays.asList(1000, 2000, 5000, 5040, 5035);
+    private static final List<Integer> newznabCategories = Arrays.asList(1000, 2000, 5000, 5040, 5035, 9090, 9000, 7020, 2030);
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
     public String nzbDownload(@PathVariable String nzbId) throws Exception {
@@ -147,7 +147,8 @@ public class MockNewznab {
         capsRoot.setSearching(searching);
         CapsCategories capsCategories = new CapsCategories(Arrays.asList(
                 new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD"))),
-                new CapsCategory(7000, "Other", Arrays.asList(new CapsCategory(7020, "EBook")))
+                new CapsCategory(7000, "Other", Arrays.asList(new CapsCategory(7020, "EBook"))),
+                new CapsCategory(9000, "Misc", Arrays.asList(new CapsCategory(9090, "Anime")))
         ));
         capsRoot.setCategories(capsCategories);
         return new ResponseEntity<Object>(capsRoot, HttpStatus.OK);

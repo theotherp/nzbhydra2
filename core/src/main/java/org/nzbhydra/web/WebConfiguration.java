@@ -108,7 +108,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
      */
     @Bean
     public Jaxb2Marshaller marshaller() {
-
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         Map<String, Boolean> map = new HashMap<>();
         map.put(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

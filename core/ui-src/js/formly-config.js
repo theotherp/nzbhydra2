@@ -109,6 +109,7 @@ angular
         });
 
         formlyConfigProvider.setType({
+            //BUtton
             name: 'checkCaps',
             templateUrl: 'button-check-caps.html',
             controller: function ($scope, ConfigBoxService, ModalService) {
@@ -130,6 +131,7 @@ angular
                     angular.element(testButton).addClass("btn-danger");
                 }
 
+                //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
 
@@ -309,10 +311,10 @@ angular
                     });
 
 
-                    modalInstance.result.then(function () {
+                    modalInstance.result.then(function (returnedModel) {
                         $scope.form.$setDirty(true);
                         if (angular.isDefined(callback)) {
-                            callback(true);
+                            callback(true, returnedModel);
                         }
                     }, function () {
                         if (angular.isDefined(callback)) {
@@ -334,9 +336,10 @@ angular
 
                         $scope.isInitial = true;
 
-                        $scope._showBox(model, entriesCollection, true, function (isSubmitted) {
+                        $scope._showBox(model, entriesCollection, true, function (isSubmitted, returnedModel) {
                             if (isSubmitted) {
-                                entriesCollection.push(model);
+                                //Here is where the entry is actually added to the model
+                                entriesCollection.push(angular.isDefined(returnedModel) ? returnedModel : model);
                             }
                         });
                     } else {
@@ -365,8 +368,11 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
 
         if ($scope.form.$valid) {
 
-            var a = data.checkBeforeClose($scope, model).then(function () {
-                $uibModalInstance.close($scope);
+            var a = data.checkBeforeClose($scope, model).then(function (data) {
+                if (angular.isDefined(data)) {
+                    $scope.model = data;
+                }
+                $uibModalInstance.close(data);
             });
         } else {
             growl.error("Config invalid. Please check your settings.");
@@ -417,7 +423,7 @@ function ConfigBoxService($http, $q) {
         $http.post(url, settings).success(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
             if (result.successful) {
-                deferred.resolve();
+                deferred.resolve({checked: true, message: null, model: result});
             } else {
                 deferred.reject({checked: true, message: result.message});
             }
@@ -432,7 +438,7 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model = data;
+            model = data.indexerConfig;
             deferred.resolve(data);
 
         }).error(function () {

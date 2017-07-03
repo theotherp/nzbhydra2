@@ -188,6 +188,8 @@ public class BaseConfig extends ValidatingConfig {
                     configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation " + name + " searches using search IDs will return empty results.");
                 }
             }
+        } else {
+            configValidationResult.getWarningMessages().add("No indexers configured. You won't get any results");
         }
         if (!configValidationResult.getErrorMessages().isEmpty()) {
             logger.warn("Config validation returned errors:\n" + Joiner.on("\n").join(configValidationResult.getErrorMessages()));

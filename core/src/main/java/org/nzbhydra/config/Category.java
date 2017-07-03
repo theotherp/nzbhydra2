@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@SuppressWarnings("unchecked")
 @ConfigurationProperties(prefix = "categories")
 @Data
 @NoArgsConstructor
@@ -66,6 +67,18 @@ public class Category {
                 com.google.common.base.Objects.equal(minSizePreset, other.minSizePreset) &&
                 com.google.common.base.Objects.equal(preselect, other.preselect) &&
                 com.google.common.base.Objects.equal(requiredRegex, other.requiredRegex);
+    }
+
+    public void setRequiredWords(Object requiredWords) {
+        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (ArrayList<String>) requiredWords;
+    }
+
+    public void setForbiddenWords(Object forbiddenWords) {
+        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenWords;
+    }
+
+    public void setNewznabCategories(Object newznabCategories) {
+        this.newznabCategories = newznabCategories instanceof String ? new ArrayList<>() : (ArrayList<Integer>) newznabCategories;
     }
 
     @Override

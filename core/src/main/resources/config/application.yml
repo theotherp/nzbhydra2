@@ -37,6 +37,7 @@ categoriesConfig:
           requiredWords: ["mp3", "flac"]
           preselect: true
           searchType: MUSIC
+          subtype: NONE
         - name: Audiobook
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -50,6 +51,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: MUSIC
+          subtype: AUDIOBOOK
         - name: Comic
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -63,6 +65,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
+          subtype: COMIC
         - name: Console
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -76,6 +79,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: BOOK
+          subtype: NONE
         - name: Ebook
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -90,6 +94,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
+          subtype: EBOOK
         - name: FLAC
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -103,6 +108,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: MUSIC
+          subtype: NONE
         - name: Movies
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -116,6 +122,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: MOVIE
+          subtype: NONE
         - name: Movies HD
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -132,6 +139,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: MOVIE
+          subtype: NONE
         - name: Movies SD
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -158,6 +166,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: MUSIC
+          subtype: NONE
         - name: PC
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -171,6 +180,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
+          subtype: NONE
         - name: TV
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -184,6 +194,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: TVSEARCH
+          subtype: NONE
         - name: TV HD
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -197,6 +208,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: TVSEARCH
+          subtype: NONE
         - name: TV SD
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -210,6 +222,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: TVSEARCH
+          subtype: NONE
         - name: XXX
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -223,6 +236,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
+          subtype: NONE
 downloading:
     downloaders: []
     saveTorrentsTo: null

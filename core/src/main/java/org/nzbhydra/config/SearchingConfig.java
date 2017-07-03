@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 
+@SuppressWarnings("unchecked")
 @Data
 public class SearchingConfig extends ValidatingConfig {
 
@@ -43,6 +44,26 @@ public class SearchingConfig extends ValidatingConfig {
 
     public Optional<Integer> getMaxAge() {
         return Optional.ofNullable(maxAge);
+    }
+
+    public void setRequiredWords(Object requiredWords) {
+        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (ArrayList<String>) requiredWords;
+    }
+
+    public void setForbiddenWords(Object forbiddenWords) {
+        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenWords;
+    }
+
+    public void setForbiddenGroups(Object forbiddenGroups) {
+        this.forbiddenGroups = forbiddenGroups instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenGroups;
+    }
+
+    public void setForbiddenPosters(Object forbiddenPosters) {
+        this.forbiddenPosters = forbiddenPosters instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenPosters;
+    }
+
+    public void setRemoveTrailing(Object removeTrailing) {
+        this.removeTrailing = removeTrailing instanceof String ? new ArrayList<>() : (ArrayList<String>) removeTrailing;
     }
 
     @Override
