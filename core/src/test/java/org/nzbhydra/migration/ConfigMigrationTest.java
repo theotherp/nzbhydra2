@@ -177,7 +177,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().getIdFallbackToQueryGeneration(), is(SearchSourceRestriction.INTERNAL));
         assertThat(result.getMigratedConfig().getSearching().isIgnorePassworded(), is(true));
         assertThat(result.getMigratedConfig().getSearching().isIgnoreTemporarilyDisabled(), is(true));
-        assertThat(result.getMigratedConfig().getSearching().getMaxAge(), is(2000));
+        assertThat(result.getMigratedConfig().getSearching().getMaxAge().get(), is(2000));
         assertThat(result.getMigratedConfig().getSearching().getNzbAccessType(), is(NzbAccessType.REDIRECT));
         assertThat(result.getMigratedConfig().getSearching().getRemoveTrailing(), hasItems("Spanish", "-German", ".rar"));
         assertThat(result.getMigratedConfig().getSearching().getRequiredRegex(), is(nullValue()));

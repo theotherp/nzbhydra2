@@ -42,28 +42,32 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean useOriginalCategories;
     private boolean wrapApiErrors;
 
+    public SearchingConfig() {
+        //removeTrailing = new ArrayList<>(Arrays.asList(".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian"));
+    }
+
     public Optional<Integer> getMaxAge() {
         return Optional.ofNullable(maxAge);
     }
 
     public void setRequiredWords(Object requiredWords) {
-        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (ArrayList<String>) requiredWords;
+        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (List<String>) requiredWords;
     }
 
     public void setForbiddenWords(Object forbiddenWords) {
-        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenWords;
+        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (List<String>) forbiddenWords;
     }
 
     public void setForbiddenGroups(Object forbiddenGroups) {
-        this.forbiddenGroups = forbiddenGroups instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenGroups;
+        this.forbiddenGroups = forbiddenGroups instanceof String ? new ArrayList<>() : (List<String>) forbiddenGroups;
     }
 
     public void setForbiddenPosters(Object forbiddenPosters) {
-        this.forbiddenPosters = forbiddenPosters instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenPosters;
+        this.forbiddenPosters = forbiddenPosters instanceof String ? new ArrayList<>() : (List<String>) forbiddenPosters;
     }
 
     public void setRemoveTrailing(Object removeTrailing) {
-        this.removeTrailing = removeTrailing instanceof String ? new ArrayList<>() : (ArrayList<String>) removeTrailing;
+        this.removeTrailing = removeTrailing instanceof String ? new ArrayList<>() : (List<String>) removeTrailing;
     }
 
     @Override

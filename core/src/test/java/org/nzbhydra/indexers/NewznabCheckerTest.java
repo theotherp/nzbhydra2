@@ -21,8 +21,8 @@ import org.nzbhydra.mapping.newznab.caps.CapsLimits;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
+import org.nzbhydra.web.WebConfiguration;
 import org.springframework.oxm.Unmarshaller;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
@@ -48,6 +48,7 @@ import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVMAZE;
 import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVRAGE;
 
 @SuppressWarnings("ALL")
+
 public class NewznabCheckerTest {
 
 
@@ -62,7 +63,7 @@ public class NewznabCheckerTest {
     private ConfigProvider configProviderMock;
     @InjectMocks
     private NewznabChecker testee = new NewznabChecker();
-    private Unmarshaller unmarshaller = new Jaxb2Marshaller();
+    private Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 
 
     private IndexerConfig indexerConfig;

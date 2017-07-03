@@ -70,15 +70,15 @@ public class Category {
     }
 
     public void setRequiredWords(Object requiredWords) {
-        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (ArrayList<String>) requiredWords;
+        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (List<String>) requiredWords;
     }
 
     public void setForbiddenWords(Object forbiddenWords) {
-        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (ArrayList<String>) forbiddenWords;
+        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (List<String>) forbiddenWords;
     }
 
     public void setNewznabCategories(Object newznabCategories) {
-        this.newznabCategories = newznabCategories instanceof String ? new ArrayList<>() : (ArrayList<Integer>) newznabCategories;
+        this.newznabCategories = newznabCategories instanceof String ? new ArrayList<>() : (List<Integer>) newznabCategories;
     }
 
     @Override
