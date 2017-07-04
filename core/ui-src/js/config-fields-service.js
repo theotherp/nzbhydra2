@@ -532,11 +532,10 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'forbiddenWords',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden words',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before"
                             }
                         },
@@ -551,16 +550,12 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'requiredWords',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required words',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
-                            },
-                            parsers: [function (value) {
-                                return value === "" || value === null ? [] : value
-                            }]
+                            }
                         },
                         {
                             key: 'requiredRegex',
@@ -574,21 +569,19 @@ function ConfigFields($injector) {
 
                         {
                             key: 'forbiddenGroups',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden groups',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: 'Posts from any groups containing any of these words will be ignored'
                             }
                         },
                         {
                             key: 'forbiddenPosters',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden posters',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: 'Posts from any posters containing any of these words will be ignored'
                             }
                         },
@@ -657,7 +650,7 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'removeTrailing',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Remove trailing...',
@@ -787,22 +780,12 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'requiredWords',
-                                type: 'horizontalInput',
+                                type: 'horizontalChips',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required words',
-                                    placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
-                                ,
-                                parsers: [function (value) {
-                                    return value === "" || value === null || isNaN(value) ? [] : value
-                                }],
-                                formatters: [
-                                    function (value) {
-                                        return value === [] || value === null || isNaN(value) ? [] : ""
-                                    }
-                                ]
                             },
                             {
                                 key: 'requiredRegex',
@@ -815,11 +798,10 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'forbiddenWords',
-                                type: 'horizontalInput',
+                                type: 'horizontalChips',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden words',
-                                    placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
                             },

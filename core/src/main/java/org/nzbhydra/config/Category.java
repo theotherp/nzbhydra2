@@ -69,17 +69,6 @@ public class Category {
                 com.google.common.base.Objects.equal(requiredRegex, other.requiredRegex);
     }
 
-    public void setRequiredWords(Object requiredWords) {
-        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (List<String>) requiredWords;
-    }
-
-    public void setForbiddenWords(Object forbiddenWords) {
-        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (List<String>) forbiddenWords;
-    }
-
-    public void setNewznabCategories(Object newznabCategories) {
-        this.newznabCategories = newznabCategories instanceof String ? new ArrayList<>() : (List<Integer>) newznabCategories;
-    }
 
     @Override
     public boolean equals(Object o) {

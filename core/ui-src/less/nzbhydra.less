@@ -958,3 +958,70 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
     width: 1400px;
   }
 }
+
+.chip-tmpl {
+  display: inline-block;
+  margin: 0 5px 5px 0;
+}
+
+.default-chip {
+  border: 1px solid @input-border;
+  border-radius: 5px;
+  background: @input-bg;
+  color: @input-color;
+  padding: 0 2px 0 2px;
+}
+
+.chip-tmpl:focus {
+  outline: none;
+}
+
+chip-tmpl:focus .default-chip {
+  border: 2px solid #9e9e9e;
+  background: @input-bg;
+  color: @input-color;
+}
+
+.chip-failed .default-chip {
+  color: @brand-danger;
+}
+
+.chips {
+  display: block;
+  padding: 2px 5px 1px 5px;
+  background: @input-bg;
+  height: unset;
+  min-height: 34px;
+}
+
+.chip-control {
+  background: @input-bg;
+  color: @input-color;
+  margin-top: 5px;
+}
+
+.chips > div {
+  display: inline;
+}
+
+.chips > div > input {
+  height: 100%;
+  border: none;
+  font-size: 14px;
+}
+
+.chips > div > input:focus {
+  outline: none;
+}
+
+.chip-out-focus {
+  border: 1px solid @input-border;
+}
+
+.chip-in-focus {
+  border: 1px solid @input-border-focus;
+}
+
+.remove-chip {
+  font-size: 10px;
+}

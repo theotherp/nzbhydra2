@@ -50,26 +50,6 @@ public class SearchingConfig extends ValidatingConfig {
         return Optional.ofNullable(maxAge);
     }
 
-    public void setRequiredWords(Object requiredWords) {
-        this.requiredWords = requiredWords instanceof String ? new ArrayList<>() : (List<String>) requiredWords;
-    }
-
-    public void setForbiddenWords(Object forbiddenWords) {
-        this.forbiddenWords = forbiddenWords instanceof String ? new ArrayList<>() : (List<String>) forbiddenWords;
-    }
-
-    public void setForbiddenGroups(Object forbiddenGroups) {
-        this.forbiddenGroups = forbiddenGroups instanceof String ? new ArrayList<>() : (List<String>) forbiddenGroups;
-    }
-
-    public void setForbiddenPosters(Object forbiddenPosters) {
-        this.forbiddenPosters = forbiddenPosters instanceof String ? new ArrayList<>() : (List<String>) forbiddenPosters;
-    }
-
-    public void setRemoveTrailing(Object removeTrailing) {
-        this.removeTrailing = removeTrailing instanceof String ? new ArrayList<>() : (List<String>) removeTrailing;
-    }
-
     @Override
     public ConfigValidationResult validateConfig() {
         List<String> errors = new ArrayList<>();

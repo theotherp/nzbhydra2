@@ -1,4 +1,4 @@
-var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies']);
+var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(false);
@@ -4697,6 +4697,20 @@ angular
         });
 
         formlyConfigProvider.setType({
+            name: 'horizontalChips',
+            extends: 'horizontalInput',
+            template: '<chips ng-model="model[options.key]" class="chips form-control">'+
+            '            <chip-tmpl class="chip-tmp">'+
+            '                <div class="default-chip">'+
+            '                    {{chip}}'+
+            '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>'+
+            '                </div>'+
+            '            </chip-tmpl>'+
+            '            <input chip-control class="chip-control"></input>' +
+            '        </chips>'
+        });
+
+        formlyConfigProvider.setType({
             name: 'percentInput',
             template: [
                 '<input type="number" class="form-control" placeholder="Percent" ng-model="model[options.key]" ng-pattern="/^[0-9]+(\.[0-9]{1,2})?$/" step="0.01" required />'
@@ -5929,11 +5943,10 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'forbiddenWords',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden words',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before"
                             }
                         },
@@ -5948,16 +5961,12 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'requiredWords',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required words',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
-                            },
-                            parsers: [function (value) {
-                                return value === "" || value === null ? [] : value
-                            }]
+                            }
                         },
                         {
                             key: 'requiredRegex',
@@ -5971,21 +5980,19 @@ function ConfigFields($injector) {
 
                         {
                             key: 'forbiddenGroups',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden groups',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: 'Posts from any groups containing any of these words will be ignored'
                             }
                         },
                         {
                             key: 'forbiddenPosters',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden posters',
-                                placeholder: 'separate, with, commas, like, this',
                                 help: 'Posts from any posters containing any of these words will be ignored'
                             }
                         },
@@ -6054,7 +6061,7 @@ function ConfigFields($injector) {
                         },
                         {
                             key: 'removeTrailing',
-                            type: 'horizontalInput',
+                            type: 'horizontalChips',
                             templateOptions: {
                                 type: 'text',
                                 label: 'Remove trailing...',
@@ -6184,22 +6191,12 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'requiredWords',
-                                type: 'horizontalInput',
+                                type: 'horizontalChips',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required words',
-                                    placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
-                                ,
-                                parsers: [function (value) {
-                                    return value === "" || value === null || isNaN(value) ? [] : value
-                                }],
-                                formatters: [
-                                    function (value) {
-                                        return value === [] || value === null || isNaN(value) ? [] : ""
-                                    }
-                                ]
                             },
                             {
                                 key: 'requiredRegex',
@@ -6212,11 +6209,10 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'forbiddenWords',
-                                type: 'horizontalInput',
+                                type: 'horizontalChips',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden words',
-                                    placeholder: 'separate, with, commas, like, this',
                                     help: "Title is converted to lowercase before"
                                 }
                             },
