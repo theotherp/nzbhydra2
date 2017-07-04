@@ -4699,13 +4699,13 @@ angular
         formlyConfigProvider.setType({
             name: 'horizontalChips',
             extends: 'horizontalInput',
-            template: '<chips ng-model="model[options.key]" class="chips form-control">'+
-            '            <chip-tmpl class="chip-tmp">'+
-            '                <div class="default-chip">'+
-            '                    {{chip}}'+
-            '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>'+
-            '                </div>'+
-            '            </chip-tmpl>'+
+            template: '<chips ng-model="model[options.key]" class="chips form-control">' +
+            '            <chip-tmpl class="chip-tmp">' +
+            '                <div class="default-chip">' +
+            '                    {{chip}}' +
+            '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>' +
+            '                </div>' +
+            '            </chip-tmpl>' +
             '            <input chip-control class="chip-control"></input>' +
             '        </chips>'
         });

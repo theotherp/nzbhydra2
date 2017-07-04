@@ -192,7 +192,7 @@ public class NewznabChecker {
         Optional<CapsCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
         ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
 
-        Optional<CapsCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine")).findFirst();
+        Optional<CapsCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine") || x.getName().toLowerCase().contains("mags")).findFirst();
         magazine.ifPresent(capsCategory -> categoryConfig.setMagazine(capsCategory.getId()));
     }
 
