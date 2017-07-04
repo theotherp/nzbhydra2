@@ -148,10 +148,15 @@ angular
                 //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
-
                     var url = "internalapi/indexer/checkCaps";
-                    ConfigBoxService.checkCaps(url, $scope.model).then(function (data, model) {
-                        angular.element(testMessage).text("Supports: " + data.supportedSearchIds + "," ? data.supportedSearchIds && data.supportedSearchTypes : "" + data.supportedSearchTypes);
+                    ConfigBoxService.checkCaps(url, $scope.model).then(function (data) {
+                        $scope.model.supportedSearchIds = data.indexerConfig.supportedSearchIds;
+                        $scope.model.supportedSearchTypes = data.indexerConfig.supportedSearchTypes;
+                        $scope.model.categoryMapping = data.indexerConfig.categoryMapping;
+                        if (data.indexerConfig.supportedSearchIds.length > 0) {
+                            var message = "Supports " + data.indexerConfig.supportedSearchIds;
+                            angular.element(testMessage).text(message);
+                        }
                         showSuccess();
                     }, function (message) {
                         angular.element(testMessage).text(message);
@@ -452,8 +457,7 @@ function ConfigBoxService($http, $q) {
         var deferred = $q.defer();
 
         $http.post(url, model).success(function (data) {
-            model = data.indexerConfig;
-            deferred.resolve(data);
+            deferred.resolve(data, model);
 
         }).error(function () {
             deferred.reject("Unknown error");

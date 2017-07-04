@@ -115,6 +115,11 @@ public class MockNewznab {
             Thread.sleep(random.nextInt(5000));
         }
 
+        if (params.getTmdbid() != null) {
+            RssRoot rssRoot = generateResponse(0, 10, "avengers", "duplicates".equals(params.getQ()));
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         int endIndex;
         int key = 0;
         try {
@@ -127,6 +132,7 @@ public class MockNewznab {
         } else {
             endIndex = 0;
         }
+
 
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);

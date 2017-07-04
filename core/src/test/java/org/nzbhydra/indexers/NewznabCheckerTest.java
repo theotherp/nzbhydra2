@@ -27,7 +27,6 @@ import org.springframework.oxm.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.HashSet;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -132,7 +131,7 @@ public class NewznabCheckerTest {
         capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
 
-        IndexerCategoryConfig categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);
+        IndexerCategoryConfig categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
         assertThat(categoryConfig.getAnime().get(), is(7040));
         assertThat(categoryConfig.getNameFromId(7040), is("Other Anime"));
@@ -143,7 +142,7 @@ public class NewznabCheckerTest {
         capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(CapsRoot.class), anyInt())).thenReturn(capsRoot);
 
-        categoryConfig = testee.getIndexerCategoryConfig(indexerConfig, new HashSet<>(), new HashSet<>(), 100);
+        categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
         assertThat(categoryConfig.getAnime().get(), is(5070));
         assertThat(categoryConfig.getComic().isPresent(), is(true));

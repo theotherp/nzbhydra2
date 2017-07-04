@@ -26,7 +26,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -93,12 +92,12 @@ public class NewznabChecker {
                 new CheckCapsRequest(indexerConfig, "movie", "tmdbid", "1399", "Avengers"),
                 new CheckCapsRequest(indexerConfig, "movie", "imdbid", "0848228", "Avengers")
         );
+
         boolean allChecked = true;
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()); //TODO Perhaps ignore timeout at ths point
         List<Callable<SingleCheckCapsResponse>> callables = requests.stream().<Callable<SingleCheckCapsResponse>>map(checkCapsRequest -> () -> singleCheckCaps(checkCapsRequest, timeout)).collect(Collectors.toList());
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
-        Set<IdType> supportedIds = Collections.emptySet();
-        Set<ActionAttribute> supportedTypes = new HashSet<>();
+        Set<IdType> supportedIds;
         String backend = null;
         try {
             logger.info("Will check capabilities of indexer {} using {} concurrent connections", indexerConfig.getName(), MAX_CONNECTIONS);
@@ -124,12 +123,12 @@ public class NewznabChecker {
                 }
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(x -> Newznab.paramValueToIdMap.get(x.getKey())).collect(Collectors.toSet());
-            indexerConfig.setSupportedSearchIds(new ArrayList<>(supportedIds));
             if (supportedIds.isEmpty()) {
                 logger.info("The indexer does not support searching by any IDs");
             } else {
                 logger.info("The indexer supports searching using the following IDs: " + supportedIds.stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
+            indexerConfig.setSupportedSearchIds(new ArrayList<>(supportedIds));
 
         } catch (InterruptedException e) {
             logger.error("Unexpected error while checking caps", e);
@@ -137,8 +136,7 @@ public class NewznabChecker {
         }
 
         try {
-            indexerConfig.setCategoryMapping(getIndexerCategoryConfig(indexerConfig, supportedTypes, supportedIds, timeout));
-            indexerConfig.setSupportedSearchTypes(new ArrayList<>(supportedTypes));
+            indexerConfig.setCategoryMapping(setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, timeout));
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
         }
@@ -157,21 +155,24 @@ public class NewznabChecker {
         return new CheckCapsRespone(indexerConfig, allChecked);
     }
 
-    protected IndexerCategoryConfig getIndexerCategoryConfig(IndexerConfig indexerConfig, Set<ActionAttribute> supportedTypes, Set<IdType> supportedIds, int timeout) throws IndexerAccessException {
-        if (supportedIds.contains(IdType.TVDB) || supportedIds.contains(IdType.TVRAGE) || supportedIds.contains(IdType.TVMAZE) || supportedIds.contains(IdType.TRAKT)) {
-            supportedTypes.add(ActionAttribute.TVSEARCH);
+    protected IndexerCategoryConfig setSupportedSearchTypesAndIndexerCategoryMapping(IndexerConfig indexerConfig, int timeout) throws IndexerAccessException {
+        List<IdType> supportedSearchIds = indexerConfig.getSupportedSearchIds();
+        List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
+        if (supportedSearchIds.contains(IdType.TVDB) || supportedSearchIds.contains(IdType.TVRAGE) || supportedSearchIds.contains(IdType.TVMAZE) || supportedSearchIds.contains(IdType.TRAKT)) {
+            supportedSearchTypes.add(ActionAttribute.TVSEARCH);
         }
-        if (supportedIds.contains(IdType.IMDB) || supportedIds.contains(IdType.TMDB)) {
-            supportedTypes.add(ActionAttribute.MOVIE);
+        if (supportedSearchIds.contains(IdType.IMDB) || supportedSearchIds.contains(IdType.TMDB)) {
+            supportedSearchTypes.add(ActionAttribute.MOVIE);
         }
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
         CapsRoot capsRoot = indexerWebAccess.get(uri, CapsRoot.class, timeout);
         if (capsRoot.getSearching().getAudioSearch() != null) {
-            supportedTypes.add(ActionAttribute.AUDIO);
+            supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
         if (capsRoot.getSearching().getBookSearch() != null) {
-            supportedTypes.add(ActionAttribute.BOOK);
+            supportedSearchTypes.add(ActionAttribute.BOOK);
         }
+        indexerConfig.setSupportedSearchTypes(supportedSearchTypes);
 
         IndexerCategoryConfig categoryConfig = new IndexerCategoryConfig();
         List<CapsCategory> categories = readAndConvertCategories(capsRoot, categoryConfig);
@@ -194,6 +195,7 @@ public class NewznabChecker {
 
         Optional<CapsCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine") || x.getName().toLowerCase().contains("mags")).findFirst();
         magazine.ifPresent(capsCategory -> categoryConfig.setMagazine(capsCategory.getId()));
+
     }
 
     private List<CapsCategory> readAndConvertCategories(CapsRoot capsRoot, IndexerCategoryConfig categoryConfig) {
