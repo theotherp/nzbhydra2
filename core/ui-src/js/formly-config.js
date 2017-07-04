@@ -150,9 +150,12 @@ angular
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
                     var url = "internalapi/indexer/checkCaps";
                     ConfigBoxService.checkCaps(url, $scope.model).then(function (data) {
+                        //Formly doesn't allow replacing the model so we need to set all the relevant values ourselves
                         $scope.model.supportedSearchIds = data.indexerConfig.supportedSearchIds;
                         $scope.model.supportedSearchTypes = data.indexerConfig.supportedSearchTypes;
                         $scope.model.categoryMapping = data.indexerConfig.categoryMapping;
+                        $scope.model.configComplete = data.indexerConfig.configComplete;
+                        $scope.model.enabled = data.indexerConfig.enabled;
                         if (data.indexerConfig.supportedSearchIds.length > 0) {
                             var message = "Supports " + data.indexerConfig.supportedSearchIds;
                             angular.element(testMessage).text(message);
@@ -386,7 +389,6 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.obSubmit = function () {
 
         if ($scope.form.$valid) {
-
             var a = data.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
                     $scope.model = data;

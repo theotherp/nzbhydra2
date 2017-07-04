@@ -87,6 +87,9 @@ public class IndexerForSearchSelector {
             logger.debug("Picking indexers out of " + enabledIndexers.size());
 
             for (Indexer indexer : enabledIndexers) {
+                if (!checkIndexerConfigComplete(indexer)) {
+                    continue;
+                }
                 if (!checkSearchSource(indexer)) {
                     continue;
                 }
@@ -121,6 +124,14 @@ public class IndexerForSearchSelector {
             eventPublisher.publishEvent(new IndexerSelectionEvent(searchRequest, selectedIndexers.size()));
 
             return new IndexerForSearchSelection(notSelectedIndersWithReason, selectedIndexers);
+        }
+
+        protected boolean checkIndexerConfigComplete(Indexer indexer) {
+            if (!indexer.getConfig().isConfigComplete()) {
+                String message = "Not using " + indexer.getName() + " because configuration is not complete. Please open it in the GUI and complete the config. Call the caps check manually to make sure everything is checked.";
+                return handleIndexerNotSelected(indexer, message, "Configuration incomplete");
+            }
+            return true;
         }
 
         protected boolean checkSearchId(Indexer indexer) {

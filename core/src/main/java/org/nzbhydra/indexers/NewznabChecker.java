@@ -58,7 +58,9 @@ public class NewznabChecker {
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         Xml xmlResponse;
         try {
-            xmlResponse = indexerWebAccess.get(getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri(), Xml.class, indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()));
+            URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
+            xmlResponse = indexerWebAccess.get(uri, Xml.class, indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()));
+            logger.info("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
                 return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
@@ -150,6 +152,8 @@ public class NewznabChecker {
             backendType = BackendType.NEWZNAB;
         }
         indexerConfig.setBackend(backendType);
+        indexerConfig.setConfigComplete(allChecked);
+        indexerConfig.setEnabled(allChecked);
 
         //TODO Only return successfully if everything went ok, no half baked results
         return new CheckCapsRespone(indexerConfig, allChecked);

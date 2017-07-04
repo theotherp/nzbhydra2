@@ -466,7 +466,7 @@ public class JsonConfigMigration {
                     }
 
                 }
-                newIndexer.setCategoryMapping(new IndexerCategoryConfig()); //TODO when implemented
+                newIndexer.setCategoryMapping(new IndexerCategoryConfig());
                 newIndexer.setGeneralMinSize(oldIndexer.getGeneralMinSize());
                 if (!Strings.isNullOrEmpty(oldIndexer.getAccessType())) {
                     try {
@@ -477,6 +477,12 @@ public class JsonConfigMigration {
                         newIndexer.setEnabledForSearchSource(SearchSourceRestriction.BOTH);
                     }
                 }
+                if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB || newIndexer.getSearchModuleType() == SearchModuleType.TORZNAB) {
+                    newIndexer.setEnabled(false);
+                    newIndexer.setConfigComplete(false);
+                } else {
+                    newIndexer.setConfigComplete(true);
+                }
 
                 indexerConfigs.add(newIndexer);
             } catch (Exception e) {
@@ -484,6 +490,10 @@ public class JsonConfigMigration {
                 logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
             }
         }
+        if (indexerConfigs.stream().anyMatch(x -> x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)) {
+            logAsWarningAndAdd(messages, "Newznab / torznab indexers were added as disabled. You will need to check each indexer's capabilities in the indexer config before you can use them.");
+        }
+
         newConfig.setIndexers(indexerConfigs);
         return messages;
     }

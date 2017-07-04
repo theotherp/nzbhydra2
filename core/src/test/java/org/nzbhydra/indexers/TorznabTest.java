@@ -116,7 +116,6 @@ public class TorznabTest {
         assertThat(item.isAgePrecise(), is(true));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getDownloadType(), is(DownloadType.TORRENT));
-
     }
 
     private RssItem buildBasicRssItem() {

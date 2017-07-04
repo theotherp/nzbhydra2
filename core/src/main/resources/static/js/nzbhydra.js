@@ -4776,9 +4776,12 @@ angular
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
                     var url = "internalapi/indexer/checkCaps";
                     ConfigBoxService.checkCaps(url, $scope.model).then(function (data) {
-                        $scope.model.supportedSearchIds =data.indexerConfig.supportedSearchIds;
-                        $scope.model.supportedSearchTypes =data.indexerConfig.supportedSearchTypes;
+                        //Formly doesn't allow replacing the model so we need to set all the relevant values ourselves
+                        $scope.model.supportedSearchIds = data.indexerConfig.supportedSearchIds;
+                        $scope.model.supportedSearchTypes = data.indexerConfig.supportedSearchTypes;
                         $scope.model.categoryMapping = data.indexerConfig.categoryMapping;
+                        $scope.model.configComplete = data.indexerConfig.configComplete;
+                        $scope.model.enabled = data.indexerConfig.enabled;
                         if (data.indexerConfig.supportedSearchIds.length > 0) {
                             var message = "Supports " + data.indexerConfig.supportedSearchIds;
                             angular.element(testMessage).text(message);
@@ -5012,7 +5015,6 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
     $scope.obSubmit = function () {
 
         if ($scope.form.$valid) {
-
             var a = data.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
                     $scope.model = data;
@@ -6399,7 +6401,8 @@ function ConfigFields($injector) {
                         defaultModel: {
                             apiKey: null,
                             backend: 'NEWZNAB',
-                            categoryMapping: {anime: null, audiobook: null, comic: null, ebook: null}, //TODO
+                            configComplete: false,
+                            categoryMapping: null,
                             downloadLimit: null,
                             enabled: true,
                             enabledCategories: [],
@@ -6415,8 +6418,8 @@ function ConfigFields($injector) {
                             score: 0,
                             searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
-                            supportedSearchIds: undefined, //["imdbId", "rid", "tvdbId"],
-                            supportedSearchTypes: undefined, //["tvsearch", "movie"]
+                            supportedSearchIds: undefined,
+                            supportedSearchTypes: undefined,
                             timeout: null,
                             username: null,
                             userAgent: null
@@ -6744,6 +6747,7 @@ function getIndexerPresets(configuredIndexers) {
         ],
         [
             {
+                configComplete: true,
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
                 supportedSearchIds: [],
@@ -6756,6 +6760,7 @@ function getIndexerPresets(configuredIndexers) {
             {
                 enabledForSearchSource: "BOTH",
                 categories: ["anime"],
+                configComplete: true,
                 downloadLimit: null,
                 enabled: false,
                 hitLimit: null,
@@ -6776,6 +6781,7 @@ function getIndexerPresets(configuredIndexers) {
             {
                 enabledForSearchSource: "INTERNAL",
                 categories: [],
+                configComplete: true,
                 downloadLimit: null,
                 enabled: true,
                 hitLimit: null,
@@ -6796,27 +6802,7 @@ function getIndexerPresets(configuredIndexers) {
             {
                 enabledForSearchSource: "INTERNAL",
                 categories: [],
-                downloadLimit: null,
-                enabled: true,
-                hitLimit: null,
-                hitLimitResetTime: null,
-                host: "https://www.nzbclub.com",
-                loadLimitOnRandom: null,
-                name: "NZBClub",
-                password: null,
-                preselect: true,
-                score: 0,
-                supportedSearchIds: [],
-                supportedSearchTypes: [],
-                showOnSearch: true,
-                timeout: null,
-                searchModuleType: "NZBCLUB",
-                username: null
-
-            },
-            {
-                enabledForSearchSource: "INTERNAL",
-                categories: [],
+                configComplete: true,
                 downloadLimit: null,
                 enabled: true,
                 generalMinSize: 1,
@@ -7488,16 +7474,20 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, bloc
                     scope.spinnerActive = false;
                     if (data.allChecked) {
                         growl.info("Successfully tested capabilites of indexer");
+                        data.indexerConfig.enabled = true;
                     } else {
-                        growl.warn("An error occured during checking the indexer's capabilities. You may want to repeat the check later.");
+                        ModalService.open("Incomplete caps check", "The capabilities of the indexer could not be checked completely. You will need to try again now or later. The indexer will not be usable until the check was completed.");
+                        data.indexerConfig.enabled = false;
                     }
                     deferred.resolve(data.indexerConfig);
                 },
                 function () {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    model.supportedSearchIds = [];
-                    model.supportedSearchTypes = [];
+                    model.configComplete = false;
+                    model.enabled = false;
+                    model.supportedSearchIds = undefined;
+                    model.supportedSearchTypes = undefined;
                     ModalService.open("Error testing capabilities", "The capabilities of the indexer could not be checked. The indexer won't be used for ID based searches (IMDB, TVDB, etc.). You may repeat the check manually at any time.");
                     deferred.resolve();
                 }).finally(

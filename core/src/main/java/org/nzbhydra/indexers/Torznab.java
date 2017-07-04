@@ -19,7 +19,10 @@ public class Torznab extends Newznab {
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
 
     protected SearchResultItem createSearchResultItem(RssItem item) {
+        item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
+
+        //TODO: Category is in main category tag, not in attributes
 
         searchResultItem.setGrabs(item.getGrabs());
         for (TorznabAttribute attribute : item.getTorznabAttributes()) {

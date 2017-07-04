@@ -120,6 +120,11 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getImdbid() != null) {
+            RssRoot rssRoot = generateResponse(0, 10, "avengers", "duplicates".equals(params.getQ()));
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         int endIndex;
         int key = 0;
         try {
@@ -141,6 +146,18 @@ public class MockNewznab {
             responsesPerApikey.put(endIndex, rssRoot);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
+    }
+
+    @RequestMapping(value = "/torznab/api", produces = MediaType.TEXT_XML_VALUE)
+    public ResponseEntity<? extends Object> torznabapi(NewznabParameters params) throws Exception {
+        RssRoot rssRoot = generateResponse(0, 10, "torznab", false);
+        for (RssItem item : rssRoot.getRssChannel().getItems()) {
+            item.setNewznabAttributes(new ArrayList<>());
+            item.getTorznabAttributes().add(new TorznabAttribute("seeders", "123"));
+            item.getTorznabAttributes().add(new TorznabAttribute("peers", "456"));
+            item.setCategory("5000");
+        }
+        return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
     }
 
     private ResponseEntity<?> getCaps() {

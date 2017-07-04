@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -149,6 +150,29 @@ public class RssMappingTest {
 
         assertEquals(Integer.valueOf(20000), rssRoot.getRssChannel().getNewznabResponse().getTotal());
         assertNotNull(rssRoot.getRssChannel().getItems().get(0).getPubDate());
+    }
+
+    @Test
+    public void shouldParseResponseFromCardigann() throws Exception {
+        RssRoot rssRoot = getRssRootFromXml("btnJackettResponse.xml");
+
+        RssChannel channel = rssRoot.getRssChannel();
+        assertThat(channel.getDescription(), is("Needs no description.."));
+
+        NewznabResponse newznabResponse = channel.getNewznabResponse();
+        assertThat(newznabResponse, is(nullValue()));
+
+        List<RssItem> items = channel.getItems();
+        assertThat(items.size(), is(3));
+        RssItem item = items.get(0);
+        assertThat(item.getTitle(), is("The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster"));
+        assertThat(item.getRssGuid().getGuid(), is("https://unicasthe.net/torrents.php?action=download&id=799031&authkey=authkey&torrent_pass=torrentPass"));
+        assertThat(item.getLink(), is("http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent"));
+        assertThat(item.getCategory(), is("5000"));
+        assertThat(item.getEnclosure().getLength(), is(1459519537L));
+        assertThat(item.getTorznabAttributes().size(), is(6));
+        assertThat(item.getTorznabAttributes().get(0).getName(), is("rageid"));
+        assertThat(item.getTorznabAttributes().get(0).getValue(), is("6126"));
     }
 
     @Test

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="1.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+    <channel>
+        <atom:link href="http://127.0.0.1:9117/" rel="self" type="application/rss+xml"/>
+        <title>unicasthenet</title>
+        <description>Needs no description..</description>
+        <link>https://unicasthe.net/</link>
+        <lanuage>en-us</lanuage>
+        <category>search</category>
+        <image>
+            <url>http://127.0.0.1:9117/logos/unicasthenet.png</url>
+            <title>unicasthenet</title>
+            <link>https://unicasthe.net/</link>
+            <description>unicasthenet</description>
+        </image>
+        <item>
+            <title>The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster</title>
+            <guid>https://unicasthe.net/torrents.php?action=download&amp;id=799031&amp;authkey=authkey&amp;torrent_pass=torrentPass</guid>
+            <comments>https://unicasthe.net/torrents.php?id=416127&amp;torrentid=799031</comments>
+            <pubDate>Wed, 21 Jun 2017 22:05:02 +0200</pubDate>
+            <size>1459519537</size>
+            <description>The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster</description>
+            <link>http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&amp;file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent
+            </link>
+            <category>5000</category>
+            <enclosure
+                    url="http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&amp;file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent"
+                    length="1459519537" type="application/x-bittorrent"/>
+            <torznab:attr name="rageid" value="6126"/>
+            <torznab:attr name="thetvdb" value="70870"/>
+            <torznab:attr name="imdb" value="176095"/>
+            <torznab:attr name="seeders" value="13"/>
+            <torznab:attr name="peers" value="13"/>
+            <torznab:attr name="minimumratio" value="1"/>
+        </item>
+        <item>
+            <title>Found.in.Space.S02.720p.BluRay.FLAC1.0.x264-DON</title>
+            <guid>https://unicasthe.net/torrents.php?action=download&amp;id=797583&amp;authkey=authkey&amp;torrent_pass=torrentPass</guid>
+            <comments>https://unicasthe.net/torrents.php?id=36229&amp;torrentid=797583</comments>
+            <pubDate>Sun, 18 Jun 2017 16:17:56 +0200</pubDate>
+            <size>89120387616</size>
+            <description>Found.in.Return.S02.720p.BluRay.FLAC1.0.x264-DON</description>
+            <link>http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff2&amp;file=Found.in.Space.S02.720p.BluRay.FLAC1.0.x264-DON.torrent</link>
+            <category>5000</category>
+            <enclosure url="http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff2&amp;file=Found.in.Space.S02.720p.BluRay.FLAC1.0.x264-DON.torrent" length="89120387616"
+                       type="application/x-bittorrent"/>
+            <torznab:attr name="rageid" value="4286"/>
+            <torznab:attr name="thetvdb" value="72923"/>
+            <torznab:attr name="imdb" value="58824"/>
+            <torznab:attr name="seeders" value="5"/>
+            <torznab:attr name="peers" value="5"/>
+            <torznab:attr name="minimumratio" value="1"/>
+        </item>
+        <item>
+            <title>What.Next.S01E05.HDTV.x264-FiHTV</title>
+            <guid>https://unicasthe.net/torrents.php?action=download&amp;id=796628&amp;authkey=authkey&amp;torrent_pass=torrentPass</guid>
+            <comments>https://unicasthe.net/torrents.php?id=419147&amp;torrentid=796628</comments>
+            <pubDate>Fri, 16 Jun 2017 08:14:01 +0200</pubDate>
+            <size>203852632</size>
+            <description>What.Next.S01E05.HDTV.x264-FiHTV</description>
+            <link>http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff3&amp;file=What.Next.S01E05.HDTV.x264-FiHTV.torrent</link>
+            <category>5000</category>
+            <enclosure url="http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff3&amp;file=What.Next.S01E05.HDTV.x264-FiHTV.torrent" length="203852632" type="application/x-bittorrent"/>
+            <torznab:attr name="rageid" value="0"/>
+            <torznab:attr name="thetvdb" value="285662"/>
+            <torznab:attr name="seeders" value="14"/>
+            <torznab:attr name="peers" value="14"/>
+            <torznab:attr name="minimumratio" value="1"/>
+        </item>
+    </channel>
+</rss>

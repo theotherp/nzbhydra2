@@ -122,9 +122,12 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getIndexers().get(0).isEnabled(), is(false));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getTimeout().get(), is(9));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getSearchModuleType(), is(SearchModuleType.BINSEARCH));
+        assertThat(result.getMigratedConfig().getIndexers().get(0).isConfigComplete(), is(true));
 
         assertThat(result.getMigratedConfig().getIndexers().get(1).getSearchModuleType(), is(SearchModuleType.NZBINDEX));
         assertThat(result.getMigratedConfig().getIndexers().get(1).getEnabledForSearchSource(), is(SearchSourceRestriction.BOTH));
+        assertThat(result.getMigratedConfig().getIndexers().get(1).isEnabled(), is(true));
+        assertThat(result.getMigratedConfig().getIndexers().get(1).isConfigComplete(), is(true));
 
         assertThat(result.getMigratedConfig().getIndexers().get(2).getSearchModuleType(), is(SearchModuleType.NEWZNAB));
         assertThat(result.getMigratedConfig().getIndexers().get(2).getApiKey(), is("apikey"));
@@ -141,6 +144,8 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getIndexers().get(2).getHitLimitResetTime().get(), is(3));
         assertThat(result.getMigratedConfig().getIndexers().get(2).isPreselect(), is(true));
         assertThat(result.getMigratedConfig().getIndexers().get(2).getScore().get(), is(10));
+        assertThat("Newznab indexers should be disabled until caps were checked", result.getMigratedConfig().getIndexers().get(2).isEnabled(), is(false));
+        assertThat("Newznab indexers should be marked with config incomplete", result.getMigratedConfig().getIndexers().get(2).isConfigComplete(), is(false));
 
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().contains("Movies"), is(true));
