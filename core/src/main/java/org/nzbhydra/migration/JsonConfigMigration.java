@@ -22,6 +22,7 @@ import org.nzbhydra.config.LoggingConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
+import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
@@ -348,11 +349,24 @@ public class JsonConfigMigration {
         if (!Strings.isNullOrEmpty(oldMain.getHttpProxy()) || Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
             messages.add("HTTP(S) proxies are currently not supported");
         }
-        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy())) {
+        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || Strings.isNullOrEmpty(oldMain.getHttpProxy()) || Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+            String urlString;
+            ProxyType proxyType;
+            if (!Strings.isNullOrEmpty(oldMain.getSocksProxy())) {
+                urlString = oldMain.getSocksProxy();
+                proxyType = ProxyType.SOCKS;
+            } else if (Strings.isNullOrEmpty(oldMain.getHttpProxy())) {
+                urlString = oldMain.getHttpProxy();
+                proxyType = ProxyType.HTTP;
+            } else {
+                urlString = oldMain.getHttpsProxy();
+                proxyType = ProxyType.HTTP;
+            }
             try {
-                URL url = new URL(oldMain.getSocksProxy());
+                URL url = new URL(urlString);
                 mainConfig.setProxyHost(url.getHost());
                 mainConfig.setProxyPort(url.getPort());
+                mainConfig.setProxyType(proxyType);
                 String userInfo = url.getUserInfo();
                 if (userInfo != null) {
                     String[] userAndPass = userInfo.split(":");
@@ -360,8 +374,8 @@ public class JsonConfigMigration {
                     mainConfig.setProxyPassword(userAndPass[1]);
                 }
             } catch (MalformedURLException e) {
-                logger.error("Unable to parse old SOCKS proxy value " + oldMain.getSocksProxy(), e);
-                messages.add("Unable to parse old SOCKS proxy value " + oldMain.getSocksProxy() + ". Error message: " + e.getMessage());
+                logger.error("Unable to parse old proxy URL " + urlString, e);
+                messages.add("Unable to parse old proxy URL " + urlString + ". Error message: " + e.getMessage());
             }
 
         }

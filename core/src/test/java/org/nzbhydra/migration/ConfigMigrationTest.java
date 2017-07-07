@@ -23,6 +23,7 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
+import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.indexers.CheckCapsRespone;
@@ -184,6 +185,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getApiKey().get(), is("apikey"));
         assertThat(result.getMigratedConfig().getMain().getExternalUrl().get(), is("externalUrl"));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
+        assertThat(result.getMigratedConfig().getMain().getProxyType(), is(ProxyType.SOCKS));
         assertThat(result.getMigratedConfig().getMain().getProxyHost(), is("proxydomain.com"));
         assertThat(result.getMigratedConfig().getMain().getProxyUsername(), is("user"));
         assertThat(result.getMigratedConfig().getMain().getProxyPassword(), is("pass"));
