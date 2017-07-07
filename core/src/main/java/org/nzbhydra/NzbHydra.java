@@ -75,6 +75,8 @@ public class NzbHydra {
 
 
     public static void main(String[] args) throws Exception {
+        LoggerFactory.getILoggerFactory();
+
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
         parser.accepts("host", "Run on this host").withRequiredArg();

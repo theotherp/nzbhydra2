@@ -49,7 +49,7 @@ public class Main {
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String index2(HttpSession session, HttpServletRequest request, Principal principal) {
         setSessionAttributes(session, principal);
-        return "index";
+        return "login";
     }
 
     @RequestMapping(value = "/config", method = RequestMethod.GET)
@@ -81,6 +81,7 @@ public class Main {
 
         session.setAttribute("baseUrl", (configProvider.getBaseConfig().getMain().getUrlBase().orElse("/") + "/").replace("//", "/"));
         session.setAttribute("bootstrap", bootstrappedData);
+        session.setAttribute("cssUrl", "static/css/" + configProvider.getBaseConfig().getMain().getTheme() + ".css");
     }
 
 

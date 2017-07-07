@@ -142,7 +142,8 @@ General, Ideas
 - when migrating we need to handle missing category mappings. perhaps add every indexer disabled and let the user do that? or try to check every indexer and disable the failed ones
 - !! actually set and use category subtypes, add selection box for it
 - !! magazine category, subtype, etc
-
+- replace NZB link text with icon
+- !! (by using web security login page) reduce bootstrapped data so only data actually required for the login is contained before user is authenticated. or scramble it
 
 currently not (yet) supported:
 - multiple query generations per search

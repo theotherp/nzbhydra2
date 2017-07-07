@@ -56,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/internalapi/userinfos").permitAll()
                     //.anyRequest().authenticated()
                     .and()
-                    .formLogin().loginPage("/login").permitAll()
+                    .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
                     .and()
                     .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
                     .and();
