@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.google.common.base.Objects;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
@@ -93,5 +94,26 @@ public class IndexerConfig extends ValidatingConfig {
     @Override
     public ConfigValidationResult validateConfig() {
         return new ConfigValidationResult();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        IndexerConfig that = (IndexerConfig) o;
+        return Objects.equal(host, that.host) &&
+                Objects.equal(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), host, name);
     }
 }

@@ -2311,19 +2311,10 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         });
 
         modalInstance.result.then(function () {
-
+            ConfigService.reloadConfig();
         }, function () {
 
         });
-
-        /*
-         var baseUrl = prompt("Please enter the base URL of NZBHydra 1. If an admin account is configured provide username and password like this: http://user:pass@127.0.0.1:5075.", "http://127.0.0.1:5075");
-         if (baseUrl === null) {
-         return;
-         }
-         growl.info("Starting migration. This may take a while for big databases...");
-
-         */
     };
 
 

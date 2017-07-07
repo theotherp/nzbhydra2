@@ -4,9 +4,13 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
@@ -15,11 +19,14 @@ import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.DownloadType;
 import org.nzbhydra.config.DownloaderType;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.indexers.CheckCapsRespone;
+import org.nzbhydra.indexers.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
@@ -33,6 +40,9 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ConfigMigrationTest {
@@ -50,7 +60,13 @@ public class ConfigMigrationTest {
     @Mock
     private CategoriesConfig categoriesConfigMock;
     @Mock
+    private NewznabChecker newznabCheckerMock;
+    @Captor
+    private ArgumentCaptor<IndexerConfig> indexerConfigsCaptor;
+
+    @Mock
     private Category categoryMock2;
+
     private Category animeCategory = new Category("Anime");
     private Category audioCategory = new Category("Audio");
 
@@ -71,6 +87,13 @@ public class ConfigMigrationTest {
         when(categoryMock2.getName()).thenReturn("Movies HD");
         when(this.baseConfig.getCategoriesConfig()).thenReturn(categoriesConfigMock);
         baseConfig.getCategoriesConfig().setCategories(Arrays.asList(animeCategory, audioCategory));
+
+        when(newznabCheckerMock.checkCaps(any())).thenAnswer(new Answer<CheckCapsRespone>() {
+            @Override
+            public CheckCapsRespone answer(InvocationOnMock invocation) throws Throwable {
+                return new CheckCapsRespone(invocation.getArgument(0), true);
+            }
+        });
     }
 
     @Test
@@ -144,12 +167,18 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getIndexers().get(2).getHitLimitResetTime().get(), is(3));
         assertThat(result.getMigratedConfig().getIndexers().get(2).isPreselect(), is(true));
         assertThat(result.getMigratedConfig().getIndexers().get(2).getScore().get(), is(10));
+        assertThat("Previously disabled indexer should still be disabled", result.getMigratedConfig().getIndexers().get(2).isEnabled(), is(false));
+        assertThat("Previously disabled indexer should have incomplete config because its caps were not checked", result.getMigratedConfig().getIndexers().get(2).isConfigComplete(), is(false));
         assertThat("Newznab indexers should be disabled until caps were checked", result.getMigratedConfig().getIndexers().get(2).isEnabled(), is(false));
         assertThat("Newznab indexers should be marked with config incomplete", result.getMigratedConfig().getIndexers().get(2).isConfigComplete(), is(false));
 
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().contains("Movies"), is(true));
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().contains("Movies HD"), is(true));
+        assertThat("Previously enabled indexer should still be enabled", result.getMigratedConfig().getIndexers().get(3).isEnabled(), is(true));
+        assertThat("Previously enabled indexer should have ccomplete config because its caps were checked", result.getMigratedConfig().getIndexers().get(3).isConfigComplete(), is(true));
+        verify(newznabCheckerMock, times(1)).checkCaps(indexerConfigsCaptor.capture());
+        assertThat(indexerConfigsCaptor.getValue().getName(), is("Drunken Slug"));
 
         //TODO Test that optionals return notPresent with "" in old config
         assertThat(result.getMigratedConfig().getMain().getApiKey().get(), is("apikey"));
@@ -214,7 +243,6 @@ public class ConfigMigrationTest {
         }
         assertThat(animeChecked, is(true));
         assertThat(audioChecked, is(true));
-
 
     }
 

@@ -253,12 +253,5 @@ public class NewznabChecker {
         private String backend;
     }
 
-    @Data
-    @AllArgsConstructor
-    public class CheckCapsRespone {
-        private IndexerConfig indexerConfig;
-        private boolean allChecked;
-    }
-
 
 }

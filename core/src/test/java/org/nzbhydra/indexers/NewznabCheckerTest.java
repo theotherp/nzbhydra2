@@ -104,7 +104,7 @@ public class NewznabCheckerTest {
 
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
 
-        NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVDB));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVRAGE));
@@ -167,7 +167,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 1))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
-        NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(0, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
     }
@@ -189,7 +189,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 1))
                 .thenThrow(new IndexerAccessException("some error"));
 
-        NewznabChecker.CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllChecked());
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());

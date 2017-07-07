@@ -26,7 +26,9 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.UserAuthConfig;
+import org.nzbhydra.indexers.CheckCapsRespone;
 import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.indexers.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.configmapping.Auth;
@@ -50,8 +52,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Component
 public class JsonConfigMigration {
@@ -63,6 +73,8 @@ public class JsonConfigMigration {
     private CategoryProvider categoryProvider;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private NewznabChecker newznabChecker;
 
     public ConfigMigrationResult migrate(String oldConfigJson) throws IOException {
         logger.info("Migrating config from NZBHydra 1");
@@ -372,6 +384,7 @@ public class JsonConfigMigration {
     private List<String> migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {
         logger.info("Migrating indexers");
         List<String> messages = new ArrayList<>();
+        Map<String, Boolean> originalEnabledState = new HashMap<>();
         List<IndexerConfig> indexerConfigs = new ArrayList<>();
 
         for (Indexer oldIndexer : oldConfig.getIndexers()) {
@@ -383,6 +396,7 @@ public class JsonConfigMigration {
                 }
                 IndexerConfig newIndexer = new IndexerConfig();
                 newIndexer.setEnabled(oldIndexer.isEnabled());
+                originalEnabledState.put(oldIndexer.getName(), oldIndexer.isEnabled());
                 newIndexer.setHost(oldIndexer.getHost());
                 newIndexer.setTimeout(oldIndexer.getTimeout());
                 newIndexer.setDownloadLimit(oldIndexer.getDownloadLimit());
@@ -480,6 +494,7 @@ public class JsonConfigMigration {
                 if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB || newIndexer.getSearchModuleType() == SearchModuleType.TORZNAB) {
                     newIndexer.setEnabled(false);
                     newIndexer.setConfigComplete(false);
+                    logger.info("Adding {} disabled for now because the config is incomplete", newIndexer.getName());
                 } else {
                     newIndexer.setConfigComplete(true);
                 }
@@ -490,12 +505,43 @@ public class JsonConfigMigration {
                 logAsWarningAndAdd(messages, "Unable to migrate indexer '" + oldIndexer.getName() + "'. You will need to add it manually.");
             }
         }
-        if (indexerConfigs.stream().anyMatch(x -> x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)) {
-            logAsWarningAndAdd(messages, "Newznab / torznab indexers were added as disabled. You will need to check each indexer's capabilities in the indexer config before you can use them.");
-        }
+        checkCapsForEnabledNewznabIndexers(messages, originalEnabledState, indexerConfigs);
 
         newConfig.setIndexers(indexerConfigs);
         return messages;
+    }
+
+    private void checkCapsForEnabledNewznabIndexers(List<String> messages, Map<String, Boolean> originalEnabledState, List<IndexerConfig> indexerConfigs) {
+        List<IndexerConfig> enabledNewznabIndexers = indexerConfigs.stream().filter(x -> (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB) && originalEnabledState.get(x.getName())).collect(Collectors.toList());
+        if (!enabledNewznabIndexers.isEmpty()) {
+            logger.info("Checking caps and getting category mapping infos for all previously enabled newznab/torznab indexers");
+            ExecutorService executor = Executors.newFixedThreadPool(enabledNewznabIndexers.size());
+            List<Callable<CheckCapsRespone>> callables = enabledNewznabIndexers.stream().<Callable<CheckCapsRespone>>map(indexerConfig -> () -> newznabChecker.checkCaps(indexerConfig)).collect(Collectors.toList());
+            try {
+                List<Future<CheckCapsRespone>> futures = executor.invokeAll(callables);
+                for (Future<CheckCapsRespone> future : futures) {
+                    try {
+                        CheckCapsRespone checkCapsRespone = future.get();
+                        IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
+                        if (checkCapsRespone.isAllChecked()) {
+                            logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
+                            indexerConfig.setEnabled(true);
+                            indexerConfig.setConfigComplete(true);
+                            indexerConfig = checkCapsRespone.getIndexerConfig();
+                            enabledNewznabIndexers.set(enabledNewznabIndexers.indexOf(indexerConfig), indexerConfig);
+                        } else {
+                            logAsWarningAndAdd(messages, "Caps check for " + indexerConfig.getName() + " failed. You'll need to repeat it manually from the config section before you can use the indexer");
+                        }
+                    } catch (ExecutionException e) {
+                        logAsWarningAndAdd(messages, "Caps check for an indexer failed. You'll need to repeat it manually from the config section before you can use the indexer");
+                    }
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     @Data
