@@ -15,7 +15,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         if (timer === 45) {
             blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
         } else {
-            blockUI.start(message + " Will reload page when NZB Hydra is back.");
+            blockUI.start(message + " Will reload page when NZBHydra is back.");
             $timeout(function () {
                 $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
@@ -26,7 +26,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
                     internalCaR(message, timer + 1);
                 });
             }, 1000);
-            blockUI.start(message + " Will reload page when NZB Hydra is back.");
+            blockUI.start(message + " Will reload page when NZBHydra is back.");
         }
     }
 
@@ -37,7 +37,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                blockUI.start(message + " Will reload page when NZB Hydra is back.");
+                blockUI.start(message + " Will reload page when NZBHydra is back.");
                 $timeout(function () {
                     internalCaR(message, 0);
                 }, 3000)
@@ -52,7 +52,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function countdown2(message) {
         message = angular.isDefined(message) ? message + " " : "";
 
-        blockUI.start(message + " Will reload page when NZB Hydra is back.");
+        blockUI.start(message + " Will reload page when NZBHydra is back.");
         $timeout(function () {
             internalCaR(message, 0);
         }, 3000);

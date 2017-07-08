@@ -30,7 +30,7 @@ function addableNzb() {
                 }
             }, function () {
                 $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                growl.error("An unexpected error occurred while trying to contact NZB Hydra or add the NZB.");
+                growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
             })
         };
 

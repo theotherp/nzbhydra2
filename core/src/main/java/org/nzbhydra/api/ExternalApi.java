@@ -230,7 +230,7 @@ public class ExternalApi {
         RssRoot rssRoot = new RssRoot();
 
         RssChannel rssChannel = new RssChannel();
-        rssChannel.setTitle("NZB Hydra 2");
+        rssChannel.setTitle("NZBHydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
         rssChannel.setNewznabResponse(new NewznabResponse(offset, total));

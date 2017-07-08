@@ -1039,7 +1039,6 @@ function ConfigFields($injector) {
                     }
                 }
             ],
-
             auth: [
                 {
                     key: 'authType',

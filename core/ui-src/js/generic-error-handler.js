@@ -30,7 +30,7 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
                         message += "<br><br>Exception: " + rejection.data.exception;
                     }
                 } else {
-                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + JSON.stringify(rejection);
+                    message = "An unknown error occurred while communicating with NZBHydra:<br><br>" + JSON.stringify(rejection);
                 }
                 GeneralModalService.open(message);
 
