@@ -139,7 +139,7 @@ General, Ideas
 - !! fallback to title/query if no results were found when searching with an id
 - !! add a "category type" to categories, e.g. comic, anime, audiobook, etc. When a result is found and identified as such (by whatever means) then we use that category's settings (filter, restrictions, etc). it should also override the used newznab category when searching with that category from gui
 - !! ignoring warnings when saving config doesn't work
-- when migrating we need to handle missing category mappings. perhaps add every indexer disabled and let the user do that? or try to check every indexer and disable the failed ones
+- !! when migrating we need to handle missing category mappings. perhaps add every indexer disabled and let the user do that? or try to check every indexer and disable the failed ones
 - !! actually set and use category subtypes, add selection box for it
 - !! magazine category, subtype, etc
 - replace NZB link text with icon

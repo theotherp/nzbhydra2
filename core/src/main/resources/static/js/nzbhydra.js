@@ -2283,12 +2283,12 @@ function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationSe
         $uibModalInstance.dismiss();
     };
 
-    $scope.startMigration = function() {
+    $scope.startMigration = function () {
         $uibModalInstance.dismiss();
         MigrationService.migrate();
     };
 
-    $scope.goToConfig = function() {
+    $scope.goToConfig = function () {
         $uibModalInstance.dismiss();
         $state.go("root.config.main");
     }
@@ -4209,7 +4209,6 @@ function MigrationService($uibModal) {
 
         });
     }
-
 
 
 }
