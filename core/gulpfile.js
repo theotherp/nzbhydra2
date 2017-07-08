@@ -14,9 +14,9 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var git = require('gulp-git');
 var runSequence = require('run-sequence');
-var print = require('gulp-print');
 var rename = require("gulp-rename");
 var clean = require('gulp-clean');
+var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
 
 
@@ -26,6 +26,7 @@ gulp.task('vendor-scripts', function () {
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.js'))
+        .pipe(uglify())
         .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(dest));
 });
@@ -39,6 +40,7 @@ gulp.task('vendor-css', function () {
     )
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.css'))
+        .pipe(cleancss())
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
