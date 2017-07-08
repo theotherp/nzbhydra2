@@ -247,7 +247,8 @@ main:
   backupEverySunday: true
   dereferer: "http://www.dereferer.org/?$s"
   externalUrl: null
-  firstStart: false
+  firstStart: true
+  firstStartedAt: null
   host: "0.0.0.0"
   logging:
     consolelevel: "INFO"
@@ -280,6 +281,7 @@ main:
   useCsrf: true
   useLocalUrlForApiAccess: true
   verifySsl: true
+  welcomeShown: false
 searching:
   alwaysShowDuplicates: false
   applyRestrictions: "NONE"

@@ -37,6 +37,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -143,7 +144,17 @@ public class NzbHydra {
 
     @EventListener
     protected void startupDone(ApplicationReadyEvent event) {
-        //TODO: Possible do all the initializing now / listening to this event where we can be sure that all beans have been constructed
+        if (configProvider.getBaseConfig().getMain().isFirstStart()) {
+            logger.info("First start of NZBHydra detected");
+            configProvider.getBaseConfig().getMain().setFirstStart(false);
+            configProvider.getBaseConfig().getMain().setFirstStartedAt(Instant.now().getEpochSecond());
+            try {
+                configProvider.getBaseConfig().save();
+            } catch (IOException e) {
+                logger.error("Unable to save config", e);
+            }
+        }
+
         if (configProvider.getBaseConfig().getMain().isStartupBrowser()) { //TODO Overwritable per command line
             if (wasRestarted) {
                 logger.info("Not opening browser after restart");

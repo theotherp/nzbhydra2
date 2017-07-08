@@ -64,7 +64,6 @@ public class NewsProvider {
         SemanticVersion to = new SemanticVersion(updateManager.getCurrentVersionString());
 
         List<NewsEntry> news = getNews();
-        logger.debug("Getting all news for {} to {}", from, to);
         return news.stream().filter(x -> !(from != null && from.isSameOrNewer(x.getShowForVersion()) || x.getShowForVersion().isUpdateFor(to))).collect(Collectors.toList());
 
     }
@@ -72,7 +71,7 @@ public class NewsProvider {
 
     protected String getNewsFromGithub() throws IOException {
         Request request = new Request.Builder().url(newsUrl).build();
-
+        logger.debug("Getting news from GitHub");
         try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
             return response.body().string();
         }

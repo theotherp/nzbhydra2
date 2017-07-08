@@ -40,24 +40,3 @@
     </div>
 </div>
 
-
-<script type="text/ng-template" id="migrationModal.html">
-    <div class="modal-header">
-        <h3 class="modal-title">Migration from NZBHydra 1</h3>
-    </div>
-    <div class="modal-body" style="text-align: left">
-        You are about to migrate from an installation of NZBHydra 1. This will overwrite your existing settings and database but a backup will be made before.<br>
-        The migration can take a couple of minutes for huge databases.<br>
-        <br>
-        The old instance of NZBHydra 1 needs to be running and must be at least version 0.2.219. Please enter its base URL below.
-        If it's basic auth protected please enter the URL like this: http://user:pass@127.0.0.1:5075. Migration from a form auth protected instance is not supported.
-
-        <input type="text" data-ng-model="baseUrl" class="form-control input-lg" placeholder="http://127.0.01:5075" style="margin-top: 10px"/>
-
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-success" type="button" ng-click="yes()">Start migration</button>
-        <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
-    </div>
-
-</script>

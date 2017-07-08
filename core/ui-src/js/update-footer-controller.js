@@ -40,7 +40,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
     };
 
     if (ConfigService.getSafe().showNews) {
-        return $http.get("internalapi/news/forcurrentversion").success(function (data) {
+        $http.get("internalapi/news/forcurrentversion").success(function (data) {
             if (data && data.length > 0) {
                 $uibModal.open({
                     templateUrl: 'static/html/news-modal.html',
@@ -57,18 +57,45 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
         });
     }
 
+    $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
+        if (!wasWelcomeShown) {
+            $http.put("internalapi/welcomeshown");
+            $uibModal.open({
+                templateUrl: 'static/html/welcome-modal.html',
+                controller: WelcomeModalInstanceCtrl,
+                size: "md"
+            });
+        }
+    });
+
 
 }
 
 angular
     .module('nzbhydraApp')
     .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
-
 function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
-
     $scope.news = news;
-
     $scope.close = function () {
         $uibModalInstance.dismiss();
     };
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('WelcomeModalInstanceCtrl', WelcomeModalInstanceCtrl);
+function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationService) {
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+
+    $scope.startMigration = function () {
+        $uibModalInstance.dismiss();
+        MigrationService.migrate();
+    };
+
+    $scope.goToConfig = function () {
+        $uibModalInstance.dismiss();
+        $state.go("root.config.main");
+    }
 }

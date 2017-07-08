@@ -28,6 +28,7 @@ public class MainConfig extends ValidatingConfig {
     private String externalUrl = null;
     private String host;
     private boolean firstStart;
+    private Long firstStartedAt;
     private LoggingConfig logging = new LoggingConfig();
     private int port;
     @JsonFormat(shape = Shape.STRING)
@@ -52,6 +53,7 @@ public class MainConfig extends ValidatingConfig {
     private boolean useCsrf;
     private boolean useLocalUrlForApiAccess;
     private boolean verifySsl;
+    private boolean welcomeShown;
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);

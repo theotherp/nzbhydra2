@@ -44,7 +44,7 @@ NZB handling
 Indexer support
 - binsearch
 - !! nzbindex
-- anizb (including migration)
+- anizb (including migration), only support anime
 - !! nzbclub is gone!!
 - !! checking caps
 - !! checking auth / connection: done
@@ -145,6 +145,9 @@ General, Ideas
 - replace NZB link text with icon
 - !! (by using web security login page) reduce bootstrapped data so only data actually required for the login is contained before user is authenticated. or scramble it
 - !! migrate proxies
+- check and complete online help
+- check logging (sensible output, relevant infos contained, etc)
+- account for search type / category (anime, etc) when picking indexers so that anizb is only used for anime searches
 
 currently not (yet) supported:
 - multiple query generations per search

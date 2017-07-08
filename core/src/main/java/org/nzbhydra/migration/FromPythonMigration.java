@@ -2,11 +2,16 @@ package org.nzbhydra.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import okhttp3.Route;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.SemanticVersion;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,32 +77,45 @@ public class FromPythonMigration {
             return MigrationResult.requirementsNotMet("Unexpected error while migrating: " + e.getMessage());
         }
 
-        List<String> configMigrationMessages;
+        List<String> migrationMessages = new ArrayList<>();
+
         try {
-            configMigrationMessages = configMigration.migrate(migrationData.get("config")).getMessages();
+            migrationMessages = sqliteMigration.migrate(migrationData.get("databaseFile"), migrationMessages);
+        } catch (Exception e) {
+            logger.error("Error while migrating database", e);
+            return MigrationResult.databaseMigrationFailed("Error while migrating database: " + e.getMessage(), migrationMessages);
+        }
+
+        try {
+            migrationMessages = configMigration.migrate(migrationData.get("config")).getMessages();
         } catch (Exception e) {
             logger.error("Unrecoverable error while migrating config", e);
             return MigrationResult.configMigrationFailed("Unrecoverable error while migrating config: " + e.getMessage());
         }
 
-        try {
-            sqliteMigration.migrate(migrationData.get("databaseFile"));
-        } catch (Exception e) {
-            logger.error("Error while migrating database", e);
-            return MigrationResult.databaseMigrationFailed("Error while migrating database: " + e.getMessage(), configMigrationMessages);
-        }
         logger.info("Migration completed successfully");
-        return MigrationResult.migrationSuccessful(configMigrationMessages);
+        return MigrationResult.migrationSuccessful(migrationMessages);
     }
 
     protected OkHttpResponse callHydraUrl(String nzbhydra1BaseUrl, String internalApiPath) {
         try {
-            UriComponentsBuilder migrationBuilder = UriComponentsBuilder.fromHttpUrl(nzbhydra1BaseUrl);
-            migrationBuilder.pathSegment("internalapi", internalApiPath).toUriString();
-            String url = migrationBuilder.toUriString();
+            UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(nzbhydra1BaseUrl);
+            urlBuilder.pathSegment("internalapi", internalApiPath).toUriString();
+            String url = urlBuilder.toUriString();
             logger.info("Connecting to URL {}", url);
             Request request = new Builder().url(url).build();
-            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            OkHttpClient.Builder clientBuilder = requestFactory.getOkHttpClientBuilder(request.url().uri());
+            String userInfo = urlBuilder.build().toUri().getUserInfo();
+            if (!Strings.isNullOrEmpty(userInfo)) {
+                clientBuilder = clientBuilder.authenticator(new Authenticator() {
+                    @Override
+                    public Request authenticate(Route route, Response response) throws IOException {
+                        String[] userAndPass = userInfo.split(":");
+                        return response.request().newBuilder().header("Authorization", Credentials.basic(userAndPass[0], userAndPass[1])).build();
+                    }
+                });
+            }
+            try (Response response = clientBuilder.build().newCall(request).execute()) {
                 return new OkHttpResponse(response.body().string(), response.isSuccessful(), response.message());
             }
         } catch (Exception e) {

@@ -85,7 +85,7 @@ public class FromPythonMigrationTest {
         doReturn(new OkHttpResponse(newVersion, true, "message")).when(testee).callHydraUrl(anyString(), eq("get_versions"));
         doReturn(new OkHttpResponse(configBody, true, "message")).when(testee).callHydraUrl(anyString(), eq("migration"));
         when(configMigration.migrate(anyString())).thenReturn(configMigrationResult);
-        when(sqliteMigration.migrate(any())).thenThrow(new SQLException("sqlMessage"));
+        when(sqliteMigration.migrate(any(), any())).thenThrow(new SQLException("sqlMessage"));
         when(configMigrationResult.getMessages()).thenReturn(Arrays.asList("aWarningMessage"));
 
         MigrationResult result = testee.migrate("xyz");

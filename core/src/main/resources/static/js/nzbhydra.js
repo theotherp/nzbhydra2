@@ -2232,7 +2232,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
     };
 
     if (ConfigService.getSafe().showNews) {
-        return $http.get("internalapi/news/forcurrentversion").success(function (data) {
+        $http.get("internalapi/news/forcurrentversion").success(function (data) {
             if (data && data.length > 0) {
                 $uibModal.open({
                     templateUrl: 'static/html/news-modal.html',
@@ -2249,6 +2249,17 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
         });
     }
 
+    $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
+        if (!wasWelcomeShown) {
+            $http.put("internalapi/welcomeshown");
+            $uibModal.open({
+                templateUrl: 'static/html/welcome-modal.html',
+                controller: WelcomeModalInstanceCtrl,
+                size: "md"
+            });
+        }
+    });
+
 
 }
 UpdateFooterController.$inject = ["$scope", "UpdateService", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
@@ -2256,11 +2267,8 @@ UpdateFooterController.$inject = ["$scope", "UpdateService", "HydraAuthService",
 angular
     .module('nzbhydraApp')
     .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
-
 function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
-
     $scope.news = news;
-
     $scope.close = function () {
         $uibModalInstance.dismiss();
     };
@@ -2269,9 +2277,28 @@ NewsModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "news"];
 
 angular
     .module('nzbhydraApp')
+    .controller('WelcomeModalInstanceCtrl', WelcomeModalInstanceCtrl);
+function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationService) {
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+
+    $scope.startMigration = function() {
+        $uibModalInstance.dismiss();
+        MigrationService.migrate();
+    };
+
+    $scope.goToConfig = function() {
+        $uibModalInstance.dismiss();
+        $state.go("root.config.main");
+    }
+}
+WelcomeModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$state", "MigrationService"];
+angular
+    .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, ModalService, UpdateService, ConfigService, NzbHydraControlService, $uibModal) {
+function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, UpdateService, ConfigService, NzbHydraControlService, $uibModal) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -2304,17 +2331,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
 
 
     $scope.migrate = function () {
-        var modalInstance = $uibModal.open({
-            templateUrl: 'migrationModal.html',
-            controller: 'MigrationModalInstanceCtrl',
-            size: "md"
-        });
-
-        modalInstance.result.then(function () {
-            ConfigService.reloadConfig();
-        }, function () {
-
-        });
+        MigrationService.migrate();
     };
 
 
@@ -2387,85 +2404,7 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
 
 
 }
-SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "ModalService", "UpdateService", "ConfigService", "NzbHydraControlService", "$uibModal"];
-
-angular
-    .module('nzbhydraApp')
-    .controller('MigrationModalInstanceCtrl', MigrationModalInstanceCtrl);
-
-function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, ModalService) {
-
-    $scope.baseUrl = "http://127.0.0.1:5075";
-
-    $scope.yes = function () {
-        blockUI.start("Starting migration. This may take a while...");
-        $http.get("internalapi/migration", {params: {baseurl: $scope.baseUrl}}).then(function (response) {
-                blockUI.stop();
-                var data = response.data;
-                if (!data.requirementsMet) {
-                    ModalService.open("Requirements not met", "An error occurred while preparing the migration:<br>" + data.error, {
-                        yes: {
-                            text: "OK"
-                        }
-                    });
-                } else if (!data.configMigrated) {
-                    $uibModalInstance.dismiss();
-                    ModalService.open("Config migration failed", "An error occurred while migrating the config. Migration failed:<br>" + data.error, {
-                        yes: {
-                            text: "OK"
-                        }
-                    });
-                } else if (!data.databaseMigrated) {
-                    $uibModalInstance.dismiss();
-                    var message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
-                    if (data.messages.length > 0) {
-                        message += "<br><br>The following warnings resulted from the config migration:";
-                        _.forEach(data.messages, function (msg) {
-                            message += "<br>" + msg;
-                        });
-                    }
-                    ModalService.open("Database migration failed", message, {
-                        yes: {
-                            text: "OK"
-                        }
-                    });
-                } else {
-                    $uibModalInstance.dismiss();
-                    var message = "The migration was completed successfully.";
-                    if (data.warningMessages.length > 0) {
-                        message += "<br><br>The following warnings resulted from the config migration:";
-                        _.forEach(data.warningMessages, function (msg) {
-                            message += "<br>" + msg;
-                        });
-                    }
-                    message += "<br><br>NZBHydra needs to restart for the changes to be effective.";
-                    ModalService.open("Migration successful", message, {
-                        yes: {
-                            onYes: function () {
-                                RestartService.countdown();
-                            },
-                            text: "Restart"
-                        },
-                        cancel: {
-                            onCancel: function () {
-
-                            },
-                            text: "Not now"
-                        }
-                    });
-                }
-            }
-        );
-
-    };
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss();
-    };
-
-
-}
-MigrationModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$http", "blockUI", "ModalService"];
+SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "MigrationService", "UpdateService", "ConfigService", "NzbHydraControlService", "$uibModal"];
 angular
     .module('nzbhydraApp')
     .factory('StatsService', StatsService);
@@ -4246,6 +4185,113 @@ function GeneralModalService() {
 
 
 }
+angular
+    .module('nzbhydraApp')
+    .factory('MigrationService', MigrationService);
+
+function MigrationService($uibModal) {
+
+    return {
+        migrate: migrate
+    };
+
+
+    function migrate() {
+        var modalInstance = $uibModal.open({
+            templateUrl: 'static/html/migration-modal.html',
+            controller: 'MigrationModalInstanceCtrl',
+            size: "md"
+        });
+
+        modalInstance.result.then(function () {
+            ConfigService.reloadConfig();
+        }, function () {
+
+        });
+    }
+
+
+
+}
+MigrationService.$inject = ["$uibModal"];
+
+angular
+    .module('nzbhydraApp')
+    .controller('MigrationModalInstanceCtrl', MigrationModalInstanceCtrl);
+
+function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, ModalService) {
+
+    $scope.baseUrl = "http://127.0.0.1:5075";
+
+    $scope.yes = function () {
+        blockUI.start("Starting migration. This may take a while...");
+        $http.get("internalapi/migration", {params: {baseurl: $scope.baseUrl}}).then(function (response) {
+                blockUI.stop();
+                var data = response.data;
+                if (!data.requirementsMet) {
+                    ModalService.open("Requirements not met", "An error occurred while preparing the migration:<br>" + data.error, {
+                        yes: {
+                            text: "OK"
+                        }
+                    });
+                } else if (!data.configMigrated) {
+                    $uibModalInstance.dismiss();
+                    ModalService.open("Config migration failed", "An error occurred while migrating the config. Migration failed:<br>" + data.error, {
+                        yes: {
+                            text: "OK"
+                        }
+                    });
+                } else if (!data.databaseMigrated) {
+                    $uibModalInstance.dismiss();
+                    var message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
+                    if (data.messages.length > 0) {
+                        message += "<br><br>The following warnings resulted from the config migration:";
+                        _.forEach(data.messages, function (msg) {
+                            message += "<br>" + msg;
+                        });
+                    }
+                    ModalService.open("Database migration failed", message, {
+                        yes: {
+                            text: "OK"
+                        }
+                    });
+                } else {
+                    $uibModalInstance.dismiss();
+                    var message = "The migration was completed successfully.";
+                    if (data.warningMessages.length > 0) {
+                        message += "<br><br>The following warnings resulted from the config migration:";
+                        _.forEach(data.warningMessages, function (msg) {
+                            message += "<br>" + msg;
+                        });
+                    }
+                    message += "<br><br>NZBHydra needs to restart for the changes to be effective.";
+                    ModalService.open("Migration successful", message, {
+                        yes: {
+                            onYes: function () {
+                                RestartService.countdown();
+                            },
+                            text: "Restart"
+                        },
+                        cancel: {
+                            onCancel: function () {
+
+                            },
+                            text: "Not now"
+                        }
+                    });
+                }
+            }
+        );
+
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+
+
+}
+MigrationModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$http", "blockUI", "ModalService"];
 angular
     .module('nzbhydraApp')
     .controller('LoginController', LoginController);

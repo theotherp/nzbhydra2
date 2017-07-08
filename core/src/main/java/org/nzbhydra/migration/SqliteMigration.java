@@ -38,7 +38,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +67,7 @@ public class SqliteMigration {
     };
 
     @Transactional
-    public List<String> migrate(String databaseFolder) throws IOException, SQLException {
+    public List<String> migrate(String databaseFolder, List<String> migrationMessages) throws IOException, SQLException {
         try (Connection innerConnection = DriverManager.getConnection("jdbc:sqlite:" + databaseFolder)) {
             connection = innerConnection;
             logger.warn("Deleting all indexers, indexer searches, searches, downloads and API accesses from database");
@@ -85,10 +84,10 @@ public class SqliteMigration {
             } finally {
                 entityManager.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate();
             }
-
             migrate();
+
         }
-        return Collections.emptyList();
+        return migrationMessages;
     }
 
     protected void migrate() throws IOException, SQLException {
