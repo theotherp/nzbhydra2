@@ -21,9 +21,9 @@ public class Category {
     @JsonProperty("ignoreResults")
     public String ignoreResults;
     @JsonProperty("max")
-    public int max;
+    public Integer max;
     @JsonProperty("min")
-    public int min;
+    public Integer min;
     @JsonProperty("newznabCategories")
     public List<Integer> newznabCategories = new ArrayList<>();
     @JsonProperty("requiredRegex")

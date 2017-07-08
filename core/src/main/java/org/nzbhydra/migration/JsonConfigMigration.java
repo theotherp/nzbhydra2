@@ -70,6 +70,15 @@ public class JsonConfigMigration {
     private static final Logger logger = LoggerFactory.getLogger(JsonConfigMigration.class);
     private static final int NZBHYDRA1_SUPPORTED_CONFIG_VERSION = 40;
 
+    private static Map<String, SearchSourceRestriction> searchSourceRestrictionMap = new HashMap<>();
+
+    static {
+        searchSourceRestrictionMap.put("internal", SearchSourceRestriction.INTERNAL);
+        searchSourceRestrictionMap.put("external", SearchSourceRestriction.API);
+        searchSourceRestrictionMap.put("both", SearchSourceRestriction.BOTH);
+        searchSourceRestrictionMap.put("always", SearchSourceRestriction.BOTH);
+    }
+
     @Autowired
     private CategoryProvider categoryProvider;
     @Autowired
@@ -98,7 +107,7 @@ public class JsonConfigMigration {
         }
 
         try {
-            messages.addAll(migrateMain(oldConfig, newConfig));
+            messages.addAll(migrateMain(oldConfig.getMain(), newConfig.getMain()));
         } catch (Exception e) {
             logger.error("Error while migrating main settings", e);
             messages.add("Error while migrating main settings. Please check and set the values manually.");
@@ -110,25 +119,25 @@ public class JsonConfigMigration {
             messages.add("Error while migrating indexer settings. Please check and set the values manually.");
         }
         try {
-            messages.addAll(migrateSearching(oldConfig, newConfig));
+            messages.addAll(migrateSearching(oldConfig, newConfig.getSearching()));
         } catch (Exception e) {
             logger.error("Error while migrating searching settings", e);
             messages.add("Error while migrating searching settings. Please check and set the values manually.");
         }
         try {
-            messages.addAll(migrateAuth(oldConfig, newConfig));
+            messages.addAll(migrateAuth(oldConfig.getAuth(), newConfig.getAuth()));
         } catch (Exception e) {
             logger.error("Error while migrating auth settings", e);
             messages.add("Error while migrating auth settings. Please check and set the values manually.");
         }
         try {
-            messages.addAll(migrateLogging(oldConfig, newConfig));
+            messages.addAll(migrateLogging(oldConfig.getMain().getLogging(), newConfig.getMain().getLogging()));
         } catch (Exception e) {
             logger.error("Error while migrating logging settings", e);
             messages.add("Error while migrating logging settings. Please check and set the values manually.");
         }
         try {
-            messages.addAll(migrateCategories(oldConfig, newConfig));
+            messages.addAll(migrateCategories(oldConfig.getCategories(), newConfig.getCategoriesConfig()));
         } catch (Exception e) {
             logger.error("Error while migrating category settings", e);
             messages.add("Error while migrating category settings. Please check and set the values manually.");
@@ -185,28 +194,13 @@ public class JsonConfigMigration {
         return messages;
     }
 
-    private List<String> migrateCategories(OldConfig oldConfig, BaseConfig newConfig) {
-        CategoriesConfig newCategories = newConfig.getCategoriesConfig();
-        Categories oldCategories = oldConfig.getCategories();
+    protected List<String> migrateCategories(Categories oldCategories, CategoriesConfig newCategories) {
+        //Will only migrate categories that exist under that name in the new config
         newCategories.setEnableCategorySizes(oldCategories.isEnableCategorySizes());
         for (Category newCategory : newCategories.getCategories()) {
-            if (oldCategories.getCategories().containsKey(newCategory.getName().replace(" ", "").toLowerCase())) {
-                org.nzbhydra.migration.configmapping.Category oldCat = oldCategories.getCategories().get(newCategory.getName().replace(" ", "").toLowerCase());
-
-                switch (oldCat.getApplyRestrictions()) {
-                    case "internal":
-                        newCategory.setApplyRestrictionsType(SearchSourceRestriction.INTERNAL);
-                        break;
-                    case "external":
-                        newCategory.setApplyRestrictionsType(SearchSourceRestriction.API);
-                        break;
-                    case "both":
-                        newCategory.setApplyRestrictionsType(SearchSourceRestriction.BOTH);
-                        break;
-                    default:
-                        newCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
-                        break;
-                }
+            org.nzbhydra.migration.configmapping.Category oldCat = oldCategories.getCategories().get(newCategory.getName().replace(" ", "").toLowerCase());
+            if (oldCat != null) {
+                newCategory.setApplyRestrictionsType(searchSourceRestrictionMap.getOrDefault(oldCat.getApplyRestrictions(), SearchSourceRestriction.NONE));
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
                 newCategory.setForbiddenWords(getListFromCommaSeparatedString(oldCat.getForbiddenWords()));
                 newCategory.setMinSizePreset(oldCat.getMin());
@@ -214,28 +208,13 @@ public class JsonConfigMigration {
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
                 newCategory.setRequiredWords(getListFromCommaSeparatedString(oldCat.getRequiredWords()));
-                switch (oldCat.getIgnoreResults()) {
-                    case "internal":
-                        newCategory.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
-                        break;
-                    case "external":
-                        newCategory.setIgnoreResultsFrom(SearchSourceRestriction.API);
-                        break;
-                    case "always":
-                        newCategory.setIgnoreResultsFrom(SearchSourceRestriction.BOTH);
-                        break;
-                    default:
-                        newCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
-                        break;
-                }
+                newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }
         return Collections.emptyList();
     }
 
-    private List<String> migrateLogging(OldConfig oldConfig, BaseConfig newConfig) {
-        LoggingConfig newLogging = newConfig.getMain().getLogging();
-        Logging oldLogging = oldConfig.getMain().getLogging();
+    private List<String> migrateLogging(Logging oldLogging, LoggingConfig newLogging) {
         newLogging.setConsolelevel(oldLogging.getConsolelevel());
         newLogging.setLogfilelevel(oldLogging.getLogfilelevel());
         newLogging.setLogFolder(oldLogging.getLogfilename());
@@ -244,11 +223,9 @@ public class JsonConfigMigration {
         return Collections.emptyList();
     }
 
-    private List<String> migrateAuth(OldConfig oldConfig, BaseConfig newConfig) {
+    private List<String> migrateAuth(Auth oldAuth, AuthConfig newAuth) {
         logger.info("Migrating auth settings");
         List<String> messages = new ArrayList<>();
-        AuthConfig newAuth = newConfig.getAuth();
-        Auth oldAuth = oldConfig.getAuth();
         newAuth.setRestrictAdmin(oldAuth.isRestrictAdmin());
         newAuth.setRestrictSearch(oldAuth.isRestrictSearch());
         newAuth.setRestrictStats(oldAuth.isRestrictStats());
@@ -279,56 +256,55 @@ public class JsonConfigMigration {
         messages.add(message);
     }
 
-    private List<String> migrateSearching(OldConfig oldConfig, BaseConfig newConfig) {
+    private List<String> migrateSearching(OldConfig oldConfig, SearchingConfig newSearching) {
         logger.info("Migrating search settings");
         List<String> messages = new ArrayList<>();
-        SearchingConfig searchingConfig = newConfig.getSearching();
         Searching oldSearching = oldConfig.getSearching();
-        searchingConfig.setAlwaysShowDuplicates(oldSearching.isAlwaysShowDuplicates());
+        newSearching.setAlwaysShowDuplicates(oldSearching.isAlwaysShowDuplicates());
         try {
-            searchingConfig.setApplyRestrictions(SearchSourceRestriction.valueOf(oldSearching.getApplyRestrictions().toUpperCase()));
+            newSearching.setApplyRestrictions(SearchSourceRestriction.valueOf(oldSearching.getApplyRestrictions().toUpperCase()));
         } catch (IllegalArgumentException e) {
-            searchingConfig.setApplyRestrictions(SearchSourceRestriction.BOTH);
+            newSearching.setApplyRestrictions(SearchSourceRestriction.BOTH);
             logAsWarningAndAdd(messages, "Unable to migrate 'Enable for' in searching config. Setting it to 'Both'.");
         }
-        searchingConfig.setDuplicateAgeThreshold(oldSearching.getDuplicateAgeThreshold());
-        searchingConfig.setDuplicateSizeThresholdInPercent(oldSearching.getDuplicateSizeThresholdInPercent());
+        newSearching.setDuplicateAgeThreshold(oldSearching.getDuplicateAgeThreshold());
+        newSearching.setDuplicateSizeThresholdInPercent(oldSearching.getDuplicateSizeThresholdInPercent());
         if (oldSearching.getIdFallbackToTitle().contains("internal") && oldSearching.getIdFallbackToTitle().contains("external")) {
-            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.BOTH);
+            newSearching.setIdFallbackToQueryGeneration(SearchSourceRestriction.BOTH);
         } else if (oldSearching.getIdFallbackToTitle().contains("external")) {
-            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.API);
+            newSearching.setIdFallbackToQueryGeneration(SearchSourceRestriction.API);
         } else if (oldSearching.getIdFallbackToTitle().contains("internal")) {
-            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.INTERNAL);
+            newSearching.setIdFallbackToQueryGeneration(SearchSourceRestriction.INTERNAL);
         } else {
-            searchingConfig.setIdFallbackToQueryGeneration(SearchSourceRestriction.NONE);
+            newSearching.setIdFallbackToQueryGeneration(SearchSourceRestriction.NONE);
         }
         if (oldSearching.getGenerateQueries().size() == 2) {
-            searchingConfig.setGenerateQueries(SearchSourceRestriction.BOTH);
+            newSearching.setGenerateQueries(SearchSourceRestriction.BOTH);
         } else if (oldSearching.getGenerateQueries().contains("internal")) {
-            searchingConfig.setGenerateQueries(SearchSourceRestriction.INTERNAL);
+            newSearching.setGenerateQueries(SearchSourceRestriction.INTERNAL);
         } else if (oldSearching.getGenerateQueries().contains("external")) {
-            searchingConfig.setGenerateQueries(SearchSourceRestriction.API);
+            newSearching.setGenerateQueries(SearchSourceRestriction.API);
         } else {
-            searchingConfig.setGenerateQueries(SearchSourceRestriction.NONE);
+            newSearching.setGenerateQueries(SearchSourceRestriction.NONE);
         }
-        searchingConfig.setIgnorePassworded(oldSearching.isIgnorePassworded());
-        searchingConfig.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
-        searchingConfig.setForbiddenWords(getListFromCommaSeparatedString(oldSearching.getForbiddenWords()));
-        searchingConfig.setMaxAge(oldSearching.getMaxAge());
+        newSearching.setIgnorePassworded(oldSearching.isIgnorePassworded());
+        newSearching.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
+        newSearching.setForbiddenWords(getListFromCommaSeparatedString(oldSearching.getForbiddenWords()));
+        newSearching.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
-            searchingConfig.setNzbAccessType(NzbAccessType.PROXY);
+            newSearching.setNzbAccessType(NzbAccessType.PROXY);
         } else {
-            searchingConfig.setNzbAccessType(NzbAccessType.REDIRECT);
+            newSearching.setNzbAccessType(NzbAccessType.REDIRECT);
         }
-        searchingConfig.setRemoveTrailing(getListFromCommaSeparatedString(oldSearching.getRemoveTrailing()));
-        searchingConfig.setRequiredWords(getListFromCommaSeparatedString(oldSearching.getRequiredWords()));
-        searchingConfig.setTimeout(oldSearching.getTimeout());
-        searchingConfig.setUserAgent(oldSearching.getUserAgent());
-        searchingConfig.setRequiredRegex(oldSearching.getRequiredRegex());
-        searchingConfig.setForbiddenRegex(oldSearching.getForbiddenRegex());
-        searchingConfig.setForbiddenGroups(getListFromCommaSeparatedString(oldSearching.getForbiddenGroups()));
-        searchingConfig.setForbiddenPosters(getListFromCommaSeparatedString(oldSearching.getForbiddenPosters()));
-        searchingConfig.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
+        newSearching.setRemoveTrailing(getListFromCommaSeparatedString(oldSearching.getRemoveTrailing()));
+        newSearching.setRequiredWords(getListFromCommaSeparatedString(oldSearching.getRequiredWords()));
+        newSearching.setTimeout(oldSearching.getTimeout());
+        newSearching.setUserAgent(oldSearching.getUserAgent());
+        newSearching.setRequiredRegex(oldSearching.getRequiredRegex());
+        newSearching.setForbiddenRegex(oldSearching.getForbiddenRegex());
+        newSearching.setForbiddenGroups(getListFromCommaSeparatedString(oldSearching.getForbiddenGroups()));
+        newSearching.setForbiddenPosters(getListFromCommaSeparatedString(oldSearching.getForbiddenPosters()));
+        newSearching.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
         return messages;
     }
 
@@ -336,42 +312,57 @@ public class JsonConfigMigration {
         return Strings.isNullOrEmpty(commaSeparatedString) ? Collections.emptyList() : Arrays.asList(commaSeparatedString.replace(" ", "").split(","));
     }
 
-    private List<String> migrateMain(OldConfig oldConfig, BaseConfig newConfig) {
+    private List<String> migrateMain(Main oldMain, MainConfig newMain) {
         logger.info("Migrating main settings");
         List<String> messages = new ArrayList<>();
-        MainConfig mainConfig = newConfig.getMain();
-        Main oldMain = oldConfig.getMain();
-        mainConfig.setApiKey(oldMain.getApikey());
-        mainConfig.setDereferer(Strings.isNullOrEmpty((oldMain.getApikey())) ? null : (oldMain.getApikey()));
-        mainConfig.setExternalUrl(Strings.isNullOrEmpty(oldMain.getExternalUrl()) ? null : oldMain.getExternalUrl());
-        mainConfig.setHost(oldMain.getHost());
-        mainConfig.setShutdownForRestart(oldMain.isShutdownForRestart());
-        if (!Strings.isNullOrEmpty(oldMain.getHttpProxy()) || Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
-            messages.add("HTTP(S) proxies are currently not supported");
+        newMain.setApiKey(oldMain.getApikey());
+        newMain.setDereferer(Strings.isNullOrEmpty((oldMain.getDereferer())) ? null : (oldMain.getDereferer()));
+        newMain.setExternalUrl(Strings.isNullOrEmpty(oldMain.getExternalUrl()) ? null : oldMain.getExternalUrl());
+        newMain.setHost(oldMain.getHost());
+        newMain.setShutdownForRestart(oldMain.isShutdownForRestart());
+        migrateProxies(messages, newMain, oldMain);
+        newMain.setSsl(oldMain.isSsl());
+        newMain.setSslcert(Strings.isNullOrEmpty((oldMain.getSslcert())) ? null : (oldMain.getSslcert()));
+        newMain.setSslkey(Strings.isNullOrEmpty((oldMain.getSslkey())) ? null : (oldMain.getSslkey()));
+        newMain.setStartupBrowser(oldMain.isStartupBrowser());
+        newMain.setTheme(oldMain.getTheme());
+        if (!Strings.isNullOrEmpty(oldMain.getUrlBase()) || !Strings.isNullOrEmpty(oldMain.getExternalUrl())) {
+            logAsWarningAndAdd(messages, "URL base and/or external URL cannot be migrated. You'll have to set them manually");
         }
-        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || Strings.isNullOrEmpty(oldMain.getHttpProxy()) || Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+        newMain.setUrlBase(Strings.isNullOrEmpty((oldMain.getUrlBase())) ? null : (oldMain.getUrlBase()));
+        newMain.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
+        return messages;
+    }
+
+    protected void migrateProxies(List<String> messages, MainConfig newMain, Main oldMain) {
+        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+            if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) && (!Strings.isNullOrEmpty(oldMain.getHttpProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpsProxy()))) {
+                logAsWarningAndAdd(messages, "Both SOCKS and HTTP(s) proxy are set. Using SOCKS proxy only.");
+            } else if (!Strings.isNullOrEmpty(oldMain.getHttpProxy()) && !Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+                logAsWarningAndAdd(messages, "Both HTTP and HTTPS proxy are set. Using HTTPS proxy for both HTTP and HTTPS");
+            }
             String urlString;
             ProxyType proxyType;
             if (!Strings.isNullOrEmpty(oldMain.getSocksProxy())) {
                 urlString = oldMain.getSocksProxy();
                 proxyType = ProxyType.SOCKS;
-            } else if (Strings.isNullOrEmpty(oldMain.getHttpProxy())) {
-                urlString = oldMain.getHttpProxy();
+            } else if (Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
+                urlString = oldMain.getHttpsProxy();
                 proxyType = ProxyType.HTTP;
             } else {
-                urlString = oldMain.getHttpsProxy();
+                urlString = oldMain.getHttpProxy();
                 proxyType = ProxyType.HTTP;
             }
             try {
                 URL url = new URL(urlString);
-                mainConfig.setProxyHost(url.getHost());
-                mainConfig.setProxyPort(url.getPort());
-                mainConfig.setProxyType(proxyType);
+                newMain.setProxyHost(url.getHost());
+                newMain.setProxyPort(url.getPort());
+                newMain.setProxyType(proxyType);
                 String userInfo = url.getUserInfo();
                 if (userInfo != null) {
                     String[] userAndPass = userInfo.split(":");
-                    mainConfig.setProxyUsername(userAndPass[0]);
-                    mainConfig.setProxyPassword(userAndPass[1]);
+                    newMain.setProxyUsername(userAndPass[0]);
+                    newMain.setProxyPassword(userAndPass[1]);
                 }
             } catch (MalformedURLException e) {
                 logger.error("Unable to parse old proxy URL " + urlString, e);
@@ -379,20 +370,6 @@ public class JsonConfigMigration {
             }
 
         }
-
-
-        if (!Strings.isNullOrEmpty(oldMain.getSocksProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpProxy()) || !Strings.isNullOrEmpty(oldMain.getHttpsProxy())) {
-            logAsWarningAndAdd(messages, "Proxies are not yet supported. Their proxy config was migrated but is currently effective.");
-        }
-        mainConfig.setSsl(oldMain.isSsl());
-        mainConfig.setSslcert(Strings.isNullOrEmpty((oldMain.getSslcert())) ? null : (oldMain.getSslcert()));
-        mainConfig.setSslkey(Strings.isNullOrEmpty((oldMain.getSslkey())) ? null : (oldMain.getSslkey()));
-        mainConfig.setStartupBrowser(oldMain.isStartupBrowser());
-        mainConfig.setTheme(oldMain.getTheme());
-        mainConfig.setUrlBase(Strings.isNullOrEmpty((oldMain.getUrlBase())) ? null : (oldMain.getUrlBase()));
-        mainConfig.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
-        newConfig.setMain(mainConfig);
-        return messages;
     }
 
     private List<String> migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {

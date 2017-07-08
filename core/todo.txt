@@ -144,7 +144,7 @@ General, Ideas
 - !! magazine category, subtype, etc
 - replace NZB link text with icon
 - !! (by using web security login page) reduce bootstrapped data so only data actually required for the login is contained before user is authenticated. or scramble it
-- migrate  proxies
+- !! migrate proxies
 
 currently not (yet) supported:
 - multiple query generations per search
