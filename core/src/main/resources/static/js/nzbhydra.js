@@ -2093,7 +2093,7 @@ function addableNzb() {
                 }
             }, function () {
                 $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                growl.error("An unexpected error occurred while trying to contact NZB Hydra or add the NZB.");
+                growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
             })
         };
 
@@ -3903,7 +3903,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         if (timer === 45) {
             blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
         } else {
-            blockUI.start(message + " Will reload page when NZB Hydra is back.");
+            blockUI.start(message + " Will reload page when NZBHydra is back.");
             $timeout(function () {
                 $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
@@ -3914,7 +3914,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
                     internalCaR(message, timer + 1);
                 });
             }, 1000);
-            blockUI.start(message + " Will reload page when NZB Hydra is back.");
+            blockUI.start(message + " Will reload page when NZBHydra is back.");
         }
     }
 
@@ -3925,7 +3925,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                blockUI.start(message + " Will reload page when NZB Hydra is back.");
+                blockUI.start(message + " Will reload page when NZBHydra is back.");
                 $timeout(function () {
                     internalCaR(message, 0);
                 }, 3000)
@@ -3940,7 +3940,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function countdown2(message) {
         message = angular.isDefined(message) ? message + " " : "";
 
-        blockUI.start(message + " Will reload page when NZB Hydra is back.");
+        blockUI.start(message + " Will reload page when NZBHydra is back.");
         $timeout(function () {
             internalCaR(message, 0);
         }, 3000);
@@ -4585,7 +4585,7 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
                         message += "<br><br>Exception: " + rejection.data.exception;
                     }
                 } else {
-                    message = "An unknown error occurred while communicating with NZB Hydra:<br><br>" + JSON.stringify(rejection);
+                    message = "An unknown error occurred while communicating with NZBHydra:<br><br>" + JSON.stringify(rejection);
                 }
                 GeneralModalService.open(message);
 
@@ -4597,7 +4597,6 @@ nzbhydraapp.factory('RequestsErrorHandler', ["$q", "growl", "blockUI", "GeneralM
         }
     };
 }]);
-
 
 nzbhydraapp.config(['$provide', '$httpProvider', function ($provide, $httpProvider) {
     $httpProvider.interceptors.push('RequestsErrorHandler');
@@ -6473,7 +6472,6 @@ function ConfigFields($injector) {
                             return !_.any(existingIndexers, function (existingEntry) {
                                 return existingEntry.name === preset.name;
                             });
-
                         },
                         fieldsFunction: getIndexerBoxFields,
                         allowDeleteFunction: function (model) {
@@ -6488,7 +6486,6 @@ function ConfigFields($injector) {
                             scope.options.resetModel();
                             scope.options.resetModel();
                         }
-
                     }
                 }
             ],
@@ -6688,6 +6685,10 @@ function getIndexerPresets(configuredIndexers) {
                 host: "https://api.drunkenslug.com"
             },
             {
+                name: "FastNZB",
+                host: "https://fastnzb.com"
+            },
+            {
                 name: "LuluNZB",
                 host: "https://lulunzb.com"
             },
@@ -6794,7 +6795,7 @@ function getIndexerPresets(configuredIndexers) {
         [
             {
                 enabledForSearchSource: "BOTH",
-                categories: ["anime"],
+                categories: ["Anime"],
                 configComplete: true,
                 downloadLimit: null,
                 enabled: false,

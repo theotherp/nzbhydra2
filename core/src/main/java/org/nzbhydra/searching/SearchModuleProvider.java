@@ -5,6 +5,7 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.database.IndexerEntity;
 import org.nzbhydra.database.IndexerRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
+import org.nzbhydra.indexers.Anizb;
 import org.nzbhydra.indexers.Binsearch;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.Newznab;
@@ -30,6 +31,7 @@ public class SearchModuleProvider {
     private static final Map<SearchModuleType, Class<? extends Indexer>> searchModuleClasses = new HashMap<>();
 
     static {
+        searchModuleClasses.put(SearchModuleType.ANIZB, Anizb.class);
         searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
         searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
         searchModuleClasses.put(SearchModuleType.NZBINDEX, NzbIndex.class);

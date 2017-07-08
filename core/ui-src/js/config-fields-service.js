@@ -1020,7 +1020,6 @@ function ConfigFields($injector) {
                             return !_.any(existingIndexers, function (existingEntry) {
                                 return existingEntry.name === preset.name;
                             });
-
                         },
                         fieldsFunction: getIndexerBoxFields,
                         allowDeleteFunction: function (model) {
@@ -1035,7 +1034,6 @@ function ConfigFields($injector) {
                             scope.options.resetModel();
                             scope.options.resetModel();
                         }
-
                     }
                 }
             ],
@@ -1234,6 +1232,10 @@ function getIndexerPresets(configuredIndexers) {
                 host: "https://api.drunkenslug.com"
             },
             {
+                name: "FastNZB",
+                host: "https://fastnzb.com"
+            },
+            {
                 name: "LuluNZB",
                 host: "https://lulunzb.com"
             },
@@ -1340,7 +1342,7 @@ function getIndexerPresets(configuredIndexers) {
         [
             {
                 enabledForSearchSource: "BOTH",
-                categories: ["anime"],
+                categories: ["Anime"],
                 configComplete: true,
                 downloadLimit: null,
                 enabled: false,

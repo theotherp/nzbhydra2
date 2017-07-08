@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>anizb</title>
+        <link>https://anizb.org/</link>
+        <description>highspeed anime indexer</description>
+        <atom:link href="https://anizb.org/" rel="self"/>
+        <docs>http://www.rssboard.org/rss-specification</docs>
+        <generator>python-feedgen</generator>
+        <language>en</language>
+        <lastBuildDate>Sat, 08 Jul 2017 12:02:56 +0000</lastBuildDate>
+        <item>
+            <title>Chickengirl Jazz Knockin' on Heaven's Door (2001) [1080p,BluRay,x264,flac] - THORA</title>
+            <link>https://anizb.org/dl/6102556/</link>
+            <description>Chickengirl_Jazz_Knockin'_on_Heaven's_Door_(2001)_[1080p,BluRay,x264,flac]_-_THORA [1/11] -
+                "Chickengirl_Jazz_Knockin'_on_Heaven's_Door_(2001)_[1080p,BluRay,x264,flac]_-_THORA.md5" yEnc (1/1) 118
+            </description>
+            <guid isPermaLink="false">https://anizb.org/dl/6102556/</guid>
+            <enclosure url="https://anizb.org/dl/6102556/" length="13974740413" type="application/x-nzb"/>
+            <pubDate>Sun, 04 Jun 2017 23:40:02 +0000</pubDate>
+        </item>
+        <item>
+            <title>Chickengirl Jazz Movie H264 DVDRip ger jap dub ger sub</title>
+            <link>https://anizb.org/dl/6003167/</link>
+            <description>[01/28] - "Chickengirl_Jazz_Movie_H264_DVDRip_ger_jap_dub_ger_sub.par2" - 2,18 GB [ TOWN ]-[ www.town.ag ]-[ ANIME ] &lt; www.town.ag &gt; yEnc (1/1)</description>
+            <guid isPermaLink="false">https://anizb.org/dl/6003167/</guid>
+            <enclosure url="https://anizb.org/dl/6003167/" length="2427250837" type="application/x-nzb"/>
+            <pubDate>Tue, 30 May 2017 20:10:32 +0000</pubDate>
+        </item>
+        <item>
+            <title>[OZC]Chickengirl Jazz Blu-ray Box E26 'The Real Folk Blues (Part II)' [720p]</title>
+            <link>https://anizb.org/dl/5413497/</link>
+            <description>[OZC]Chickengirl Jazz Blu-ray Box Complete Series [720p] [1/7] - "[OZC]Chickengirl Jazz Blu-ray Box E26 'The Real Folk Blues (Part II)' [720p].mkv" yEnc (1/896) 642200021
+            </description>
+            <guid isPermaLink="false">https://anizb.org/dl/5413497/</guid>
+            <enclosure url="https://anizb.org/dl/5413497/" length="697324449" type="application/x-nzb"/>
+            <pubDate>Fri, 21 Apr 2017 13:50:21 +0000</pubDate>
+        </item>
+    </channel>
+</rss>

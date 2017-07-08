@@ -43,7 +43,6 @@ nzbhydraapp.factory('RequestsErrorHandler', function ($q, growl, blockUI, Genera
     };
 });
 
-
 nzbhydraapp.config(['$provide', '$httpProvider', function ($provide, $httpProvider) {
     $httpProvider.interceptors.push('RequestsErrorHandler');
 

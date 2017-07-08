@@ -148,6 +148,7 @@ General, Ideas
 - check and complete online help
 - check logging (sensible output, relevant infos contained, etc)
 - account for search type / category (anime, etc) when picking indexers so that anizb is only used for anime searches
+- allow only one category per search type, allow getting category by it
 
 currently not (yet) supported:
 - multiple query generations per search
