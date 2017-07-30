@@ -50,7 +50,7 @@ public class DownloaderProvider implements InitializingBean {
         if (baseConfig.getDownloading().getDownloaders() != null) {
             List<DownloaderConfig> downloaderConfigs = baseConfig.getDownloading().getDownloaders();
             downloadersMap.clear();
-            logger.info("Loading downloads");
+            logger.info("Loading downloaders");
             for (DownloaderConfig downloaderConfig : downloaderConfigs) {
                 logger.info("Initializing downloader {}", downloaderConfig.getName());
                 try {

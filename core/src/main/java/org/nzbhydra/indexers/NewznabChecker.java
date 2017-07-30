@@ -96,8 +96,16 @@ public class NewznabChecker {
         );
 
         boolean allChecked = true;
-        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()); //TODO Perhaps ignore timeout at ths point
-        List<Callable<SingleCheckCapsResponse>> callables = requests.stream().<Callable<SingleCheckCapsResponse>>map(checkCapsRequest -> () -> singleCheckCaps(checkCapsRequest, timeout)).collect(Collectors.toList());
+        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1; //TODO Perhaps ignore timeout at ths point
+        List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
+        for (int i = 0; i < requests.size(); i++) {
+            CheckCapsRequest request = requests.get(i);
+            callables.add(() -> {
+                Thread.sleep(1000); //Give indexer some time to breathe
+                return singleCheckCaps(request, timeout);
+            });
+        }
+
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
         Set<IdType> supportedIds;
         String backend = null;
@@ -143,19 +151,21 @@ public class NewznabChecker {
             logger.error("Error while accessing indexer", e);
         }
 
-        BackendType backendType;
-        try {
-            backendType = BackendType.valueOf(backend.toUpperCase());
-            logger.info("Indexer uses backend type {}", backendType);
-        } catch (IllegalArgumentException | NullPointerException e) {
-            logger.error("Indexer reported unknown backend type {}. Will use newznab for now. Please report this.", backend);
-            backendType = BackendType.NEWZNAB;
+        BackendType backendType = BackendType.NEWZNAB;
+        if (backend == null) {
+            logger.info("Indexer didn't provide a backend type. Will use newznab.");
+        } else {
+            try {
+                backendType = BackendType.valueOf(backend.toUpperCase());
+                logger.info("Indexer uses backend type {}", backendType);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Indexer reported unknown backend type {}. Will use newznab for now. Please report this.", backend);
+            }
         }
         indexerConfig.setBackend(backendType);
         indexerConfig.setConfigComplete(allChecked);
         indexerConfig.setEnabled(allChecked);
 
-        //TODO Only return successfully if everything went ok, no half baked results
         return new CheckCapsRespone(indexerConfig, allChecked);
     }
 
@@ -224,7 +234,7 @@ public class NewznabChecker {
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> x.getTitle().toLowerCase().contains(request.getTitleExpectedToContain().toLowerCase())).count();
         float percentCorrect = (100 * countCorrectResults) / rssRoot.getRssChannel().getItems().size();
-        boolean supported = percentCorrect > 90;
+        boolean supported = percentCorrect >= 90;
         if (supported) {
             logger.info("{}% of results using ID type {} were correct. The indexer probably supports this ID.", percentCorrect, request.getKey());
             return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
