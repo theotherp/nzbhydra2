@@ -20,6 +20,7 @@ public class InternalData {
     private FallbackState fallbackState = FallbackState.NOT_USED;
     private List<String> excludedWords = new ArrayList<>();
     private List<String> requiredWords = new ArrayList<>();
+    private List<Integer> newznabCategories = new ArrayList<>();
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);

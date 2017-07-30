@@ -292,6 +292,9 @@ public class ExternalApi {
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
         searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.ipForExternal.get());
+        if (params.getCat() != null) {
+            searchRequest.getInternalData().setNewznabCategories(params.getCat());
+        }
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());
