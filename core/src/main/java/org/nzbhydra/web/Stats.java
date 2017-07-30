@@ -9,6 +9,8 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.web.mapping.stats.AverageResponseTime;
 import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
 import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
+import org.nzbhydra.web.mapping.stats.DownloadPerAge;
+import org.nzbhydra.web.mapping.stats.DownloadPerAgeStats;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
 import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
@@ -65,13 +67,16 @@ public class Stats {
         statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest));
 
         statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest));
-        statsResponse.setIndexerDownloadShares(getIndexerDownloadShares(statsRequest));
-        statsResponse.setAvgIndexerSearchResultsShares(getIndexerSearchShares(statsRequest));
+        statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest));
+        statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest));
+
+        statsResponse.setDownloadsPerAge(downloadsPerAge());
+        statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats());
 
         return statsResponse;
     }
 
-    private List<IndexerDownloadShare> getIndexerDownloadShares(final StatsRequest statsRequest) {
+    private List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
         if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
@@ -158,7 +163,7 @@ public class Stats {
      * @param statsRequest
      * @return
      */
-    List<IndexerSearchResultsShare> getIndexerSearchShares(final StatsRequest statsRequest) {
+    List<IndexerSearchResultsShare> indexerSearchShares(final StatsRequest statsRequest) {
         List<IndexerSearchResultsShare> indexerSearchResultsShares = new ArrayList<>();
         String countResultsSql = "SELECT\n" +
                 "  INDEXERRESULTSSUM,\n" +
@@ -381,6 +386,38 @@ public class Stats {
         return hourOfDayCounts;
     }
 
+    List<DownloadPerAge> downloadsPerAge() {
+        List<DownloadPerAge> results = new ArrayList<>();
+        for (int i = 1; i <= 35; i++) {
+            String sql = String.format("SELECT COUNT(*)\n" +
+                    "FROM INDEXERNZBDOWNLOAD\n" +
+                    "WHERE AGE >= %d AND AGE < %d", (i - 1) * 100, i * 100);
+            Query query = entityManager.createNativeQuery(sql);
+            int count = ((BigInteger) query.getResultList().get(0)).intValue();
+            results.add(new DownloadPerAge((i - 1) * 100, count));
+        }
+
+        return results;
+    }
+
+    DownloadPerAgeStats downloadsPerAgeStats() {
+        DownloadPerAgeStats result = new DownloadPerAgeStats();
+        String percentage = "SELECT CASE\n" +
+                "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
+                "             FROM INDEXERNZBDOWNLOAD\n" +
+                "             WHERE AGE > %d) > 0\n" +
+                "         THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)\n" +
+                "FROM INDEXERNZBDOWNLOAD i,\n" +
+                "( SELECT COUNT(*) AS COUNT\n" +
+                "FROM INDEXERNZBDOWNLOAD\n" +
+                "WHERE AGE > %d) AS x\n" +
+                "ELSE 0 END";
+        result.setPercentOlder1000(((Double) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
+        result.setPercentOlder2000(((Double) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
+        result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
+        result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
+        return result;
+    }
 
     private String buildWhereFromStatsRequest(boolean useAnd, StatsRequest statsRequest) {
         return (useAnd ? " AND " : " WHERE ") +

@@ -2544,6 +2544,8 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.downloadsPerDayOfWeek = stats.downloadsPerDayOfWeek;
         $scope.searchesPerHourOfDay = stats.searchesPerHourOfDay;
         $scope.searchesPerDayOfWeek = stats.searchesPerDayOfWeek;
+        $scope.downloadsPerAge = stats.downloadsPerAge;
+        $scope.downloadsPerAgeStats = stats.downloadsPerAgeStats;
 
 
         var numIndexers = $scope.avgResponseTimes.length;
@@ -2574,6 +2576,10 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 
         $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
         $scope.searchesPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
+
+        $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
+        $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 90;
+        $scope.downloadsPerAgeChart.options.chart.showValues = false;
 
         $scope.indexerDownloadSharesChart = {
             options: {

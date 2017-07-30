@@ -14,8 +14,8 @@
                 <time-filter column="time" selected="preselectedTimeInterval"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-3">
-            <column-sortable column="indexer.name" style="width: 15%">Indexer
+        <th class="col-md-2">
+            <column-sortable column="indexer.name" style="width: 10%">Indexer
             </column-sortable>
             <column-filter-wrapper>
                 <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true"/>
@@ -29,7 +29,8 @@
             </column-filter-wrapper>
         </th>
         <th class="col-md-1" style="width: 9%">
-            <column-sortable column="result">Result
+            <column-sortable column="result">Result <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                          uib-tooltip="Result of getting the NZB from the indexer and/or communicating with downloader, not actual download result"></span></div>
             </column-sortable>
             <column-filter-wrapper>
                 <checkboxes-filter column="result" entries="successfulForFiltering" preselect="true" show-invert="false"/>
@@ -40,6 +41,12 @@
             </column-sortable>
             <column-filter-wrapper>
                 <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-1" style="width: 5%">
+            <column-sortable column="age">Age</column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="age"/>
             </column-filter-wrapper>
         </th>
         <th class="col-md-2" style="width: 10%">
@@ -63,6 +70,7 @@
 
         </td>
         <td class="narrow-row">{{ nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
+        <td class="narrow-row">{{ nzbDownload.age }}</td>
         <td class="narrow-row">{{ nzbDownload.usernameOrIp }}</td>
     </tr>
     </tbody>

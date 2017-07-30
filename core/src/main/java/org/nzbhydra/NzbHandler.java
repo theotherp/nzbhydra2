@@ -28,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -58,11 +60,12 @@ public class NzbHandler {
             return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid);
         }
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
+        int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));
         logger.info("{} download request for {} from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
-            saveDownloadToDatabase(result, NzbAccessType.REDIRECT, accessSource, IndexerAccessResult.UNKNOWN, usernameOrIp);
+            saveDownloadToDatabase(result, NzbAccessType.REDIRECT, accessSource, IndexerAccessResult.UNKNOWN, usernameOrIp, ageInDays);
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink());
         } else {
             String nzbContent;
@@ -71,7 +74,7 @@ public class NzbHandler {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
-                saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.CONNECTION_ERROR, usernameOrIp, e.getMessage());
+                saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.CONNECTION_ERROR, usernameOrIp, ageInDays, e.getMessage());
                 return NzbDownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName());
             }
 
@@ -79,7 +82,7 @@ public class NzbHandler {
             //TODO CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
-            saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.SUCCESSFUL, usernameOrIp, null);
+            saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.SUCCESSFUL, usernameOrIp, ageInDays, null);
 
             return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent);
         }
@@ -180,12 +183,12 @@ public class NzbHandler {
     }
 
 
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp) {
-        saveDownloadToDatabase(result, accessType, source, accessResult, usernameOrIp, null);
+    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, Integer age) {
+        saveDownloadToDatabase(result, accessType, source, accessResult, usernameOrIp, age, null);
     }
 
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, String error) {
-        NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), accessType, source, accessResult, usernameOrIp, error);
+    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, Integer age, String error) {
+        NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), accessType, source, accessResult, usernameOrIp, age, error);
 
         downloadRepository.save(downloadEntity);
     }

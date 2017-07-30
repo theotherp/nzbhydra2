@@ -39,8 +39,9 @@ public class NzbDownloadEntity {
     @Column(length = 4000)
     private String title;
     private String usernameOrIp;
+    private Integer age;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result, String usernameOrIp, String error) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result, String usernameOrIp, Integer age, String error) {
         this.indexer = indexerEntity;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
@@ -48,16 +49,10 @@ public class NzbDownloadEntity {
         this.result = result;
         this.time = Instant.now();
         this.usernameOrIp = usernameOrIp;
+        this.age = age;
+        this.error = error;
     }
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, IndexerAccessResult result) {
-        this.indexer = indexerEntity;
-        this.title = title;
-        this.nzbAccessType = nzbAccessType;
-        this.accessSource = accessSource;
-        this.result = result;
-        this.time = Instant.now();
-    }
 
     public NzbDownloadEntity() {
         this.time = Instant.now();

@@ -261,8 +261,42 @@
                     <nvd3 options="downloadsPerHourOfDayChart.options" data="downloadsPerHourOfDayChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
-
         </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10">
+            <div style="margin-top:10px" class="caption">NZB downloads per age (in 100 day steps, all downloads)</div>
+            <tab-or-chart display="chart">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td>Average age</td>
+                        <td>{{ downloadsPerAgeStats.averageAge}}</td>
+                    </tr>
+                    <tr>
+                        <td>% older than 1000 days</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder1000}}</td>
+                    </tr>
+                    <tr>
+                        <td>% older than 2000 days</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder2000}}</td>
+                    </tr>
+                    <tr>
+                        <td>% older than 3000 days</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder3000}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="downloadsPerAge">
+                    <nvd3 options="downloadsPerAgeChart.options" data="downloadsPerAgeChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+        <div class="col-md-1"></div>
+
+
     </div>
 
 

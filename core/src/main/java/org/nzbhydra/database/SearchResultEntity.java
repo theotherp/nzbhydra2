@@ -60,6 +60,8 @@ public class SearchResultEntity {
     protected String details;
     @Enumerated(EnumType.STRING)
     protected DownloadType downloadType;
+    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    protected Instant pubDate;
 
     public void setId(long id) {
         this.id = id;
@@ -91,5 +93,9 @@ public class SearchResultEntity {
 
     public void setDownloadType(DownloadType downloadType) {
         this.downloadType = downloadType;
+    }
+
+    public void setPubDate(Instant pubDate) {
+        this.pubDate = pubDate;
     }
 }

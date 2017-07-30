@@ -218,6 +218,7 @@ public abstract class Indexer<T> {
                 searchResultEntity.setIndexerGuid(item.getIndexerGuid());
                 searchResultEntity.setFirstFound(Instant.now());
                 searchResultEntity.setDownloadType(item.getDownloadType());
+                searchResultEntity.setPubDate(item.getPubDate());
                 searchResultEntities.add(searchResultEntity);
             }
             //TODO Unify guid and searchResultId which are the same

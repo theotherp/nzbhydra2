@@ -4,6 +4,8 @@ import lombok.Data;
 import org.nzbhydra.web.mapping.stats.AverageResponseTime;
 import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
 import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
+import org.nzbhydra.web.mapping.stats.DownloadPerAge;
+import org.nzbhydra.web.mapping.stats.DownloadPerAgeStats;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
 import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
@@ -31,5 +33,8 @@ public class StatsResponse {
 
     private List<CountPerDayOfWeek> searchesPerDayOfWeek = new ArrayList<>();
     private List<CountPerHourOfDay> searchesPerHourOfDay = new ArrayList<>();
+
+    private List<DownloadPerAge> downloadsPerAge = new ArrayList<>();
+    private DownloadPerAgeStats downloadsPerAgeStats = new DownloadPerAgeStats();
 
 }

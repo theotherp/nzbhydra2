@@ -23,6 +23,8 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.web.mapping.stats.AverageResponseTime;
 import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
 import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
+import org.nzbhydra.web.mapping.stats.DownloadPerAge;
+import org.nzbhydra.web.mapping.stats.DownloadPerAgeStats;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
 import org.nzbhydra.web.mapping.stats.StatsRequest;
@@ -36,8 +38,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringRunner.class)
@@ -178,6 +182,35 @@ public class StatsComponentTest {
     }
 
     @Test
+    public void shouldCalculateDownloadsAges() throws Exception {
+
+        NzbDownloadEntity download1 = new NzbDownloadEntity();
+        download1.setAge(10);
+        NzbDownloadEntity download2 = new NzbDownloadEntity();
+        download2.setAge(1000);
+        NzbDownloadEntity download3 = new NzbDownloadEntity();
+        download3.setAge(1500);
+        NzbDownloadEntity download4 = new NzbDownloadEntity();
+        download4.setAge(2001);
+        NzbDownloadEntity download5 = new NzbDownloadEntity();
+        download5.setAge(3499);
+        NzbDownloadEntity download6 = new NzbDownloadEntity();
+        download6.setAge(3400);
+
+        downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
+
+        List<DownloadPerAge> downloadPerAges = stats.downloadsPerAge();
+        assertThat(downloadPerAges.get(34).getAge(), is(3400));
+        assertThat(downloadPerAges.get(34).getCount(), is(2));
+
+        DownloadPerAgeStats downloadPerAgeStats = stats.downloadsPerAgeStats();
+        assertThat(downloadPerAgeStats.getAverageAge(), is(1901));
+        assertThat(downloadPerAgeStats.getPercentOlder1000(), is(66));
+        assertThat(downloadPerAgeStats.getPercentOlder2000(), is(50));
+        assertThat(downloadPerAgeStats.getPercentOlder3000(), is(33));
+    }
+
+    @Test
     public void shouldCalculateSearchesPerHourOfDay() throws Exception {
         SearchEntity search12 = new SearchEntity();
         search12.setTime(Instant.ofEpochSecond(1490955803L));
@@ -286,7 +319,7 @@ public class StatsComponentTest {
         }
 
 
-        List<IndexerSearchResultsShare> result = stats.getIndexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
+        List<IndexerSearchResultsShare> result = stats.indexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
         assertEquals(2, result.size());
         assertEquals("indexer1", result.get(0).getIndexerName());
         assertNotNull(result.get(0).getTotalShare());
@@ -296,7 +329,7 @@ public class StatsComponentTest {
         assertEquals(70F, result.get(0).getUniqueShare(), 0F);
 
         //Now don't include disabled indexers
-        result = stats.getIndexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
+        result = stats.indexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), false));
         assertEquals(1, result.size());
         assertEquals("indexer1", result.get(0).getIndexerName());
         assertNotNull(result.get(0).getTotalShare());
