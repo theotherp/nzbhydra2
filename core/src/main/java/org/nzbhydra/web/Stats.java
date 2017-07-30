@@ -76,30 +76,33 @@ public class Stats {
         return statsResponse;
     }
 
-    private List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
+    List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
         if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
         }
 
         List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
-        String sql = "SELECT\n" +
-                "  indexer.name,\n" +
-                "  count(*) AS total,\n" +
-                "  countall.countall\n" +
-                "FROM\n" +
-                "  indexernzbdownload dl,\n" +
-                "  (SELECT count(*) AS countall\n" +
-                "   FROM\n" +
-                "     indexernzbdownload dl\n" +
-                "   WHERE dl.indexer_id IN (:indexerIds)\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "  )\n" +
-                "  countall\n" +
-                "  LEFT OUTER JOIN indexer indexer\n" +
-                "WHERE dl.indexer_id IN (:indexerIds)\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY indexer.id, indexer.NAME, countall";
+        String sql =
+                "SELECT\n" +
+                        "  indexer.name,\n" +
+                        "  count(*) AS total,\n" +
+                        "  countall.countall\n" +
+                        "FROM\n" +
+                        "  indexernzbdownload dl,\n" +
+                        "  (SELECT count(*) AS countall\n" +
+                        "   FROM\n" +
+                        "     indexernzbdownload dl\n" +
+                        "   WHERE dl.indexer_id IN (:indexerIds)\n" +
+                        buildWhereFromStatsRequest(true, statsRequest) +
+                        ")\n" +
+                        "  countall\n" +
+                        "  , INDEXER\n" +
+                        "WHERE dl.indexer_id IN (:indexerIds)\n" +
+                        buildWhereFromStatsRequest(true, statsRequest) +
+                        "      AND dl.INDEXER_ID = indexer.ID\n" +
+                        "GROUP BY\n" +
+                        "  dl.INDEXER_ID";
 
         Query query = entityManager.createNativeQuery(sql);
         query.setParameter("indexerIds", searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));

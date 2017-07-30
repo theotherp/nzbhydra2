@@ -26,6 +26,7 @@ import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
 import org.nzbhydra.web.mapping.stats.DownloadPerAge;
 import org.nzbhydra.web.mapping.stats.DownloadPerAgeStats;
 import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
 import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
 import org.nzbhydra.web.mapping.stats.StatsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,6 +209,29 @@ public class StatsComponentTest {
         assertThat(downloadPerAgeStats.getPercentOlder1000(), is(66));
         assertThat(downloadPerAgeStats.getPercentOlder2000(), is(50));
         assertThat(downloadPerAgeStats.getPercentOlder3000(), is(33));
+    }
+
+    @Test
+    public void shouldCalculateIndexerDownloadShares() throws Exception {
+        NzbDownloadEntity download1 = new NzbDownloadEntity();
+        download1.setIndexer(indexer1);
+        NzbDownloadEntity download2 = new NzbDownloadEntity();
+        download2.setIndexer(indexer1);
+        NzbDownloadEntity download3 = new NzbDownloadEntity();
+        download3.setIndexer(indexer1);
+        NzbDownloadEntity download4 = new NzbDownloadEntity();
+        download4.setIndexer(indexer1);
+        NzbDownloadEntity download5 = new NzbDownloadEntity();
+        download5.setIndexer(indexer2);
+        NzbDownloadEntity download6 = new NzbDownloadEntity();
+        download6.setIndexer(indexer2);
+
+        downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
+
+        List<IndexerDownloadShare> shares = stats.indexerDownloadShares(new StatsRequest(Instant.now().minus(100, ChronoUnit.DAYS), Instant.now().plus(1, ChronoUnit.DAYS), true));
+        assertThat(shares.get(0).getIndexerName(), is("indexer1"));
+        assertThat((int) shares.get(0).getShare(), is(66));
+        assertThat((int) shares.get(1).getShare(), is(33));
     }
 
     @Test
