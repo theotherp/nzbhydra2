@@ -27,7 +27,6 @@ public class OldResultsCleanup {
     @Scheduled(initialDelay = HOUR, fixedRate = HOUR)
     @Transactional
     public void deleteOldResults() {
-        logger.debug("Attempting to delete old search results");
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
         int deletedResults = searchResultRepository.deleteByFirstFoundBefore(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS));
         if (deletedResults > 0) {
