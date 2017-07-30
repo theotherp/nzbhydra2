@@ -10,6 +10,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.database.IndexerApiAccessRepository;
@@ -48,7 +49,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class IndexerPickerTest {
+public class IndexerForSearchSelectorTest {
 
     @Mock
     private IndexerApiAccessRepository indexerApiAccessRepository;
@@ -262,6 +263,27 @@ public class IndexerPickerTest {
         Instant firstInWindow = Instant.now().minus(12, ChronoUnit.HOURS);
         LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
         assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(24, ChronoUnit.HOURS), nextHit);
+    }
+
+    @Test
+    public void shouldOnlyUseTorznabIndexersForTorrentSearches() throws Exception {
+        when(indexerConfigMock.getSearchModuleType()).thenReturn(SearchModuleType.NEWZNAB);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
+        assertFalse("Only torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+
+        when(indexerConfigMock.getSearchModuleType()).thenReturn(SearchModuleType.TORZNAB);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
+        assertTrue("Torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+
+        when(indexerConfigMock.getSearchModuleType()).thenReturn(SearchModuleType.TORZNAB);
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.NZB);
+        assertTrue("Torznab indexers should be selected for internal NZB searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
+
+        when(indexerConfigMock.getSearchModuleType()).thenReturn(SearchModuleType.TORZNAB);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        when(searchRequest.getDownloadType()).thenReturn(DownloadType.NZB);
+        assertFalse("Torznab indexers should not be selected for API NZB searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
     }
 
     @Test

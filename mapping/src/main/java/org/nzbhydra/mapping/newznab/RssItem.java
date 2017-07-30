@@ -46,7 +46,7 @@ public class RssItem {
     private List<NewznabAttribute> newznabAttributes = new ArrayList<>();
 
     @XmlElement(name = "attr", namespace = "http://torznab.com/schemas/2015/feed")
-    private List<TorznabAttribute> torznabAttributes = new ArrayList<>();
+    private List<NewznabAttribute> torznabAttributes = new ArrayList<>();
 
     @XmlElement(name = "enclosure")
     private Enclosure enclosure;

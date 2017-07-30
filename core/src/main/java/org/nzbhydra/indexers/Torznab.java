@@ -2,8 +2,8 @@ package org.nzbhydra.indexers;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.TorznabAttribute;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
@@ -25,7 +25,7 @@ public class Torznab extends Newznab {
         //TODO: Category is in main category tag, not in attributes
 
         searchResultItem.setGrabs(item.getGrabs());
-        for (TorznabAttribute attribute : item.getTorznabAttributes()) {
+        for (NewznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
             if (attribute.getName().equals("grabs")) {
                 searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));

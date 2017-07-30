@@ -21,9 +21,9 @@ import org.nzbhydra.database.IndexerSearchRepository;
 import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.TorznabAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -98,14 +98,14 @@ public class TorznabTest {
     @Test
     public void shouldCreateSearchResultItem() throws Exception {
         RssItem rssItem = buildBasicRssItem();
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("password", "0"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("group", "group"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("poster", "poster"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("size", "456"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("files", "10"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("grabs", "20"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("comments", "30"));
-        rssItem.getTorznabAttributes().add(new TorznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("password", "0"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("group", "group"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("poster", "poster"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("size", "456"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("files", "10"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("grabs", "20"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("comments", "30"));
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink(), is("http://indexer.com/123"));

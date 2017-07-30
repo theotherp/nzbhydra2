@@ -9,7 +9,6 @@ import org.nzbhydra.mapping.newznab.RssChannel;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.TorznabAttribute;
 import org.nzbhydra.mapping.newznab.caps.CapsCategories;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
@@ -153,9 +152,10 @@ public class MockNewznab {
         RssRoot rssRoot = generateResponse(0, 10, "torznab", false);
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());
-            item.getTorznabAttributes().add(new TorznabAttribute("seeders", "123"));
-            item.getTorznabAttributes().add(new TorznabAttribute("peers", "456"));
+            item.getTorznabAttributes().add(new NewznabAttribute("seeders", "123"));
+            item.getTorznabAttributes().add(new NewznabAttribute("peers", "456"));
             item.setCategory("5000");
+            item.setGrabs(null);
         }
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
     }
@@ -231,10 +231,10 @@ public class MockNewznab {
             item.setNewznabAttributes(attributes);
 
             item.setGrabs(i * 2);
-            List<TorznabAttribute> torznabAttributes = new ArrayList<>();
-            torznabAttributes.add(new TorznabAttribute("seeders", String.valueOf(i)));
-            torznabAttributes.add(new TorznabAttribute("peers", String.valueOf(i * 2)));
-            torznabAttributes.add(new TorznabAttribute("size", size));
+            List<NewznabAttribute> torznabAttributes = new ArrayList<>();
+            torznabAttributes.add(new NewznabAttribute("seeders", String.valueOf(i)));
+            torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(i * 2)));
+            torznabAttributes.add(new NewznabAttribute("size", size));
             item.setTorznabAttributes(torznabAttributes);
 
             items.add(item);

@@ -6328,20 +6328,7 @@ function ConfigFields($injector) {
                                     type: 'text',
                                     label: 'Newznab categories',
                                     help: 'Map newznab categories to Hydra categories',
-                                    // placeholder: '1000, 2000'
-                                },
-                                // parsers: [function (value) {
-                                //     if (!value) {
-                                //         return [];
-                                //     }
-                                //     if (_.isArray(value))
-                                //         return value;
-                                //     var arr = [];
-                                //     arr.push.apply(arr, value.split(",").map(Number));
-                                //     return arr;
-                                //
-                                // }]
-
+                                }
                             },
                             {
                                 key: 'ignoreResultsFrom',
@@ -6795,7 +6782,7 @@ function getIndexerPresets(configuredIndexers) {
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
                 searchModuleType: "TORZNAB",
-                enabledForSearchSource: "INTERNAL"
+                enabledForSearchSource: "BOTH"
             }
         ],
         [
@@ -6871,6 +6858,15 @@ function getIndexerPresets(configuredIndexers) {
 
 function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     var fieldset = [];
+    if (model.searchModuleType === "TORZNAB") {
+        fieldset.push({
+            type: 'help',
+            templateOptions: {
+                type: 'help',
+                lines: ["Torznab indexers can only be used for internal searches or dedicated searches using /torznab/api"]
+            }
+        });
+    }
 
     fieldset.push({
         key: 'enabled',
@@ -7097,22 +7093,21 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             }
         }
     );
-    if (model.searchModuleType !== "TORZNAB") {
-        fieldset.push(
-            {
-                key: 'enabledForSearchSource',
-                type: 'horizontalSelect',
-                templateOptions: {
-                    label: 'Enable for...',
-                    options: [
-                        {name: 'Internal searches only', value: 'INTERNAL'},
-                        {name: 'API searches only', value: 'API'},
-                        {name: 'Internal and API searches', value: 'BOTH'}
-                    ]
-                }
+    fieldset.push(
+        {
+            key: 'enabledForSearchSource',
+            type: 'horizontalSelect',
+            templateOptions: {
+                label: 'Enable for...',
+                options: [
+                    {name: 'Internal searches only', value: 'INTERNAL'},
+                    {name: 'API searches only', value: 'API'},
+                    {name: 'Internal and API searches', value: 'BOTH'}
+                ]
             }
-        );
-    }
+        }
+    );
+
     if (model.searchModuleType !== "ANIZB") {
         fieldset.push(
             {

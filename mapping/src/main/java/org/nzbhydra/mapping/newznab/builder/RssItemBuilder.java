@@ -5,7 +5,6 @@ import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.TorznabAttribute;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -24,11 +23,11 @@ public final class RssItemBuilder {
     private Integer grabs = 10;
     private String link = "http://some.link";
     private List<NewznabAttribute> newznabAttributes = new ArrayList<>();
+    private List<NewznabAttribute> torznabAttributes = new ArrayList<>();
     private Instant pubDate = Instant.now().minus(random.nextInt(500), ChronoUnit.DAYS);
     private RssGuid rssGuid = new RssGuid("guid", false);
     private String title = "title-rnd" + random.nextInt();
     private long size = random.nextLong();
-    private List<TorznabAttribute> torznabAttributes = new ArrayList<>();
 
     private RssItemBuilder() {
     }
@@ -95,7 +94,7 @@ public final class RssItemBuilder {
         return this;
     }
 
-    public RssItemBuilder torznabAttributes(List<TorznabAttribute> torznabAttributes) {
+    public RssItemBuilder torznabAttributes(List<NewznabAttribute> torznabAttributes) {
         this.torznabAttributes = torznabAttributes;
         return this;
     }

@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.DownloadType;
 import org.nzbhydra.searching.SearchType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ public class SearchRequest {
     protected String episode;
     protected String author = null;
     protected long searchRequestId;
+    private DownloadType downloadType = DownloadType.NZB;
 
     private InternalData internalData = new InternalData();
 

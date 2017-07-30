@@ -6,11 +6,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.mapping.newznab.Enclosure;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssChannel;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.TorznabAttribute;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -55,7 +55,7 @@ public class TorznabMappingTest {
         Enclosure enclosure = item.getEnclosure();
         assertThat(enclosure.getUrl(), is("http://127.0.0.1:5060/download/111.torrent"));
 
-        List<TorznabAttribute> attributes = item.getTorznabAttributes();
+        List<NewznabAttribute> attributes = item.getTorznabAttributes();
         assertThat(attributes.size(), is(8));
         assertThat(attributes.get(1).getName(), is("seeders"));
         assertThat(attributes.get(1).getValue(), is("11"));

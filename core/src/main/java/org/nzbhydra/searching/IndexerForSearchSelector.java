@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.database.IndexerApiAccessEntity;
 import org.nzbhydra.database.IndexerApiAccessRepository;
@@ -99,13 +100,15 @@ public class IndexerForSearchSelector {
                 if (!checkIndexerStatus(indexer)) {
                     continue;
                 }
+                if (!checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer)) {
+                    continue;
+                }
                 if (!checkDisabledForCategory(indexer)) {
                     continue;
                 }
                 if (!checkLoadLimiting(indexer)) {
                     continue;
                 }
-
                 if (!checkSearchId(indexer)) {
                     continue;
                 }
@@ -261,6 +264,18 @@ public class IndexerForSearchSelector {
             if (wrongSearchSource) {
                 String message = String.format("Not using %s because the search source is %s but the indexer is only enabled for %s searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
                 return handleIndexerNotSelected(indexer, message, "Not enabled for this search context");
+            }
+            return true;
+        }
+
+        protected boolean checkTorznabOnlyUsedForTorrentOrInternalSearches(Indexer indexer) {
+            if (searchRequest.getDownloadType() == DownloadType.TORRENT && indexer.getConfig().getSearchModuleType() != SearchModuleType.TORZNAB) {
+                String message = String.format("Not using %s because a torrent search is requested", indexer.getName());
+                return handleIndexerNotSelected(indexer, message, "No torrent search");
+            }
+            if (searchRequest.getDownloadType() == DownloadType.NZB && indexer.getConfig().getSearchModuleType() == SearchModuleType.TORZNAB && searchRequest.getSource() == SearchSource.API) {
+                String message = String.format("Not using %s because torznab indexers cannot by used by API NZB searches", indexer.getName());
+                return handleIndexerNotSelected(indexer, message, "NZB API search");
             }
             return true;
         }
