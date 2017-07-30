@@ -7,9 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
-import org.nzbhydra.database.MovieInfoRepository;
-import org.nzbhydra.database.TvInfo;
-import org.nzbhydra.database.TvInfoRepository;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 
 import java.util.Arrays;

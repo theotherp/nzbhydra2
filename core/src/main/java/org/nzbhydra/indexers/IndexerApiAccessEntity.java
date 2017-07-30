@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.indexers;
 
 import com.google.common.base.MoreObjects;
 import lombok.Data;

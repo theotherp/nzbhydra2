@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.IndexerCategoryConfig;
-import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;

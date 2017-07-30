@@ -2,10 +2,6 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
-import org.nzbhydra.database.MovieInfo;
-import org.nzbhydra.database.MovieInfoRepository;
-import org.nzbhydra.database.TvInfo;
-import org.nzbhydra.database.TvInfoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

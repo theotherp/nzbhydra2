@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

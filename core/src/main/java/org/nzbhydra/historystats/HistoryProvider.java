@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.historystats;
 
 import org.nzbhydra.web.mapping.FilterDefinition;
 import org.nzbhydra.web.mapping.SortModel;

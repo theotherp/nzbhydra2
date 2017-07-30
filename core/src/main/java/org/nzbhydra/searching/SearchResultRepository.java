@@ -1,6 +1,7 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 
+import org.nzbhydra.indexers.IndexerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 

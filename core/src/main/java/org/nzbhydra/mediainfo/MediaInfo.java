@@ -2,8 +2,6 @@ package org.nzbhydra.mediainfo;
 
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
-import org.nzbhydra.database.MovieInfo;
-import org.nzbhydra.database.TvInfo;
 
 import java.util.Optional;
 

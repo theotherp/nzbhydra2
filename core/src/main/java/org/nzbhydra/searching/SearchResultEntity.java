@@ -1,7 +1,8 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
+import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
 import javax.persistence.Column;

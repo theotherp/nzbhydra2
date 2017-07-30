@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.news;
 
 import lombok.Data;
 

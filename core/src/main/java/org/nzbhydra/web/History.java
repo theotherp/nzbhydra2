@@ -1,9 +1,9 @@
 package org.nzbhydra.web;
 
 import com.google.common.collect.Iterables;
-import org.nzbhydra.database.HistoryProvider;
-import org.nzbhydra.database.NzbDownloadEntity;
-import org.nzbhydra.database.SearchEntity;
+import org.nzbhydra.downloader.NzbDownloadEntity;
+import org.nzbhydra.historystats.HistoryProvider;
+import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.web.mapping.FilterDefinition;
 import org.nzbhydra.web.mapping.FilterModel;
 import org.nzbhydra.web.mapping.SortModel;

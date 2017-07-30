@@ -1,9 +1,8 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
-import org.nzbhydra.searching.SearchResultIdCalculator;
 
 import java.io.Serializable;
 

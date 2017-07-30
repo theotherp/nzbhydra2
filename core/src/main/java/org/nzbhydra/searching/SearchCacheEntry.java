@@ -5,7 +5,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import lombok.Data;
-import org.nzbhydra.database.SearchEntity;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.searchrequests.SearchRequest;

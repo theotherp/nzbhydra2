@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.mediainfo;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

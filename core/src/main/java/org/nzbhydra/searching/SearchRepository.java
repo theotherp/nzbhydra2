@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.nzbhydra.database.ShownNews;
-import org.nzbhydra.database.ShownNewsRepository;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.SemanticVersion;
 import org.nzbhydra.update.UpdateManager;

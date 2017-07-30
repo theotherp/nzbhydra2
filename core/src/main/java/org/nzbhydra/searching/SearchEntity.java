@@ -1,9 +1,8 @@
-package org.nzbhydra.database;
+package org.nzbhydra.searching;
 
 import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import javax.persistence.CascadeType;

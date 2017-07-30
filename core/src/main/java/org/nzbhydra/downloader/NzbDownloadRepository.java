@@ -1,6 +1,7 @@
-package org.nzbhydra.database;
+package org.nzbhydra.downloader;
 
 
+import org.nzbhydra.indexers.IndexerEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

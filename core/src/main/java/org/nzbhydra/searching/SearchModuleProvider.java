@@ -2,12 +2,12 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.database.IndexerEntity;
-import org.nzbhydra.database.IndexerRepository;
-import org.nzbhydra.database.IndexerStatusEntity;
 import org.nzbhydra.indexers.Anizb;
 import org.nzbhydra.indexers.Binsearch;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.indexers.NzbIndex;
 import org.nzbhydra.indexers.Torznab;

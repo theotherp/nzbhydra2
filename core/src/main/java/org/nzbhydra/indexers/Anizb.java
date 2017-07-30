@@ -2,7 +2,6 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
-import org.nzbhydra.database.IndexerApiAccessType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;

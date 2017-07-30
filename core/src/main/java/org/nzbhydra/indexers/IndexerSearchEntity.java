@@ -1,6 +1,7 @@
-package org.nzbhydra.database;
+package org.nzbhydra.indexers;
 
 import lombok.Data;
+import org.nzbhydra.searching.SearchEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

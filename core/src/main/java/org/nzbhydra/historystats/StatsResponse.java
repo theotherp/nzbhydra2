@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.historystats;
 
 import lombok.Data;
 import org.nzbhydra.web.mapping.stats.AverageResponseTime;

@@ -1,7 +1,5 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.database.SearchResultEntity;
-
 import java.nio.charset.Charset;
 
 public class SearchResultIdCalculator {

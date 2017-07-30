@@ -1,7 +1,7 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.database.IndexerStatusEntity;
-import org.nzbhydra.database.IndexerStatusRepository;
+import org.nzbhydra.indexers.IndexerStatusEntity;
+import org.nzbhydra.indexers.IndexerStatusRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

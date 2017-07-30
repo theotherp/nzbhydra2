@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.indexers;
 
 public enum IndexerApiAccessType {
     NFO,

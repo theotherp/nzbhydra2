@@ -1,7 +1,9 @@
-package org.nzbhydra.database;
+package org.nzbhydra.downloader;
 
 import lombok.Data;
 import org.nzbhydra.config.NzbAccessType;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import javax.persistence.Column;

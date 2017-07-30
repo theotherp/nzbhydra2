@@ -1,10 +1,10 @@
 package org.nzbhydra.web;
 
-import org.nzbhydra.database.IndexerAccessResult;
-import org.nzbhydra.database.IndexerEntity;
-import org.nzbhydra.database.IndexerRepository;
-import org.nzbhydra.database.StatsResponse;
+import org.nzbhydra.historystats.StatsResponse;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerAccessResult;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.web.mapping.stats.AverageResponseTime;
 import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;

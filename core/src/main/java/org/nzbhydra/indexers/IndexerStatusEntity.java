@@ -1,4 +1,4 @@
-package org.nzbhydra.database;
+package org.nzbhydra.indexers;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;

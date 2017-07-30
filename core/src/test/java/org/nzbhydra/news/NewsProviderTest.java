@@ -7,8 +7,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.database.ShownNews;
-import org.nzbhydra.database.ShownNewsRepository;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
 import org.nzbhydra.update.SemanticVersion;
 import org.nzbhydra.update.UpdateManager;
