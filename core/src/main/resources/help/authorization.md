@@ -12,3 +12,9 @@ You can decide for every user if he is allowed to:
 * may select which indexers are used for search.
 
 Please note that the last two are purely visual and will not be enforced.
+
+### Notes
+* When opening Hydra to the net for optimum security put it behind an auth secured proxy like nginx or apache. You can still use basic auth here and configure
+the same users as in the proxy.
+* With no users configured auth will be disabled.
+* When you disabled "Restrict searching" the main search functionality will be open to all. In most cases you will need to restrict searching, stats and admin and enable at least one user with all rights.

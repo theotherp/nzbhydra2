@@ -6,9 +6,9 @@ That way the NZB links returned in the search results refer to your global URL a
 
 You can use SSL but I recommend using a reverse proxy with SSL. See [the wiki](https://github.com/theotherp/nzbhydra/wiki/Reverse-proxies-and-URLs). TODO
 
-### Security
-Erase the API key to disable authentication by API key. Some tools might not even support that, so better leave it there, even if you use Hydra only locally.
- 
+### Proxy
+You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.
+
 ### Logging
 The base settings should suffice for most users. If you want you can enable logging of IP adresses for failed logins and NZB downloads. 
  
