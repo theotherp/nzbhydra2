@@ -174,8 +174,13 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
 
-        logger.info("Creating backup before shutting down");
-        backupAndRestore.createBackup();
+
+        try {
+            logger.info("Creating backup before shutting down");
+            backupAndRestore.backup();
+        } catch (Exception e) {
+            throw new UpdateException("Unable to create backup before update", e);
+        }
 
         logger.info("Shutting down to let wrapper execute the update");
         exitWithReturnCode(UPDATE_RETURN_CODE);

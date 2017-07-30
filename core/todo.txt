@@ -153,6 +153,7 @@ General, Ideas
 
 currently not (yet) supported:
 - multiple query generations per search
+- ipv6
 
 disclaimer:
 - nzbindex is accessed using RSS, so 100 results max

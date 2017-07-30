@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,22 +48,7 @@ public class BackupAndRestore {
     @Autowired
     private UpdateManager updateManager;
 
-    private static final long DAY = 1000 * 60 * 60 * 24;
-
-    //TODO Make sure we only make a backup once. Perhaps save in database when the last one was executed. Or check backup.zip files for date
-    //@Scheduled(fixedDelay = DAY)
     @Transactional
-    public void createBackup() {
-        if (LocalDateTime.now().getDayOfWeek() == DayOfWeek.SUNDAY) {
-            try {
-                backup();
-            } catch (Exception e) {
-                logger.error("An error occured while doing a background backup", e);
-            }
-        }
-    }
-
-
     public File backup() throws Exception {
         logger.info("Creating backup");
 
@@ -84,6 +68,7 @@ public class BackupAndRestore {
             Path nf = fs.getPath("nzbhydra.yml");
             try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
                 writer.write(configProvider.getBaseConfig().getAsYamlString());
+                logger.debug("Successfully wrote config to backup ZIP");
             }
         }
 
@@ -118,7 +103,7 @@ public class BackupAndRestore {
         logger.info("Backing up database");
         String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
         entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
-        logger.info("Wrote database backup files to {}", targetFile.getAbsolutePath());
+        logger.debug("Wrote database backup files to {}", targetFile.getAbsolutePath());
     }
 
     public GenericResponse restore(String filename) {
