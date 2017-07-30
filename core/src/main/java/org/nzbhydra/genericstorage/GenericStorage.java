@@ -2,7 +2,7 @@ package org.nzbhydra.genericstorage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +19,11 @@ public class GenericStorage<T extends Serializable> {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     public GenericStorage() {
-        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     public void save(String key, T value) {
-        repository.deleteAll();
+        repository.deleteByKey(key);
         try {
             repository.save(new GenericStorageData(key, objectMapper.writeValueAsString(value)));
         } catch (JsonProcessingException e) {
@@ -32,7 +32,7 @@ public class GenericStorage<T extends Serializable> {
     }
 
     public Optional<T> get(String key, Class<T> clazz) {
-        GenericStorageData first = repository.findFirstByKey(key);
+        GenericStorageData first = repository.findByKey(key);
         if (first == null) {
             return Optional.empty();
         } else {

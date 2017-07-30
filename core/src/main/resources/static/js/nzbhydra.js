@@ -1156,9 +1156,11 @@ function hydraupdates() {
 
         $scope.loadingPromise = UpdateService.getVersions().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.repVersion;
+            $scope.repVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;
+            $scope.latestVersionIgnored = data.data.latestVersionIgnored;
             $scope.changelog = data.data.changelog;
+            console.log($scope);
         });
 
         UpdateService.getVersionHistory().then(function (data) {
@@ -2114,15 +2116,17 @@ function UpdateService($http, growl, blockUI, RestartService) {
     var currentVersion;
     var latestVersion;
     var updateAvailable;
+    var latestVersionIgnored;
     var changelog;
     var versionHistory;
+
 
     return {
         update: update,
         showChanges: showChanges,
         getVersions: getVersions,
-        getChangelog: getChangelog,
-        getVersionHistory: getVersionHistory
+        getVersionHistory: getVersionHistory,
+        ignore: ignore
     };
 
     function getVersions() {
@@ -2131,14 +2135,14 @@ function UpdateService($http, growl, blockUI, RestartService) {
                 currentVersion = data.data.currentVersion;
                 latestVersion = data.data.latestVersion;
                 updateAvailable = data.data.updateAvailable;
+                latestVersionIgnored = data.data.latestVersionIgnored;
                 return data;
             }
         );
     }
 
-    function getChangelog() {
-        return $http.get("internalapi/changesSince").then(function (data) {
-            changelog = data.data;
+    function ignore(version) {
+        return $http.get("internalapi/updates/ignore",{params: {version: version}}).then(function (data) {
             return data;
         });
     }
@@ -2229,6 +2233,10 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
 
     $scope.update = function () {
         UpdateService.update();
+    };
+
+    $scope.ignore = function () {
+        UpdateService.ignore($scope.latestVersion);
     };
 
     $scope.showChangelog = function () {

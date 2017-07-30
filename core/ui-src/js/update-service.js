@@ -7,15 +7,17 @@ function UpdateService($http, growl, blockUI, RestartService) {
     var currentVersion;
     var latestVersion;
     var updateAvailable;
+    var latestVersionIgnored;
     var changelog;
     var versionHistory;
+
 
     return {
         update: update,
         showChanges: showChanges,
         getVersions: getVersions,
-        getChangelog: getChangelog,
-        getVersionHistory: getVersionHistory
+        getVersionHistory: getVersionHistory,
+        ignore: ignore
     };
 
     function getVersions() {
@@ -24,14 +26,14 @@ function UpdateService($http, growl, blockUI, RestartService) {
                 currentVersion = data.data.currentVersion;
                 latestVersion = data.data.latestVersion;
                 updateAvailable = data.data.updateAvailable;
+                latestVersionIgnored = data.data.latestVersionIgnored;
                 return data;
             }
         );
     }
 
-    function getChangelog() {
-        return $http.get("internalapi/changesSince").then(function (data) {
-            changelog = data.data;
+    function ignore(version) {
+        return $http.get("internalapi/updates/ignore", {params: {version: version}}).then(function (data) {
             return data;
         });
     }

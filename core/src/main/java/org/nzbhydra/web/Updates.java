@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,12 +31,13 @@ public class Updates {
         try {
             if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                 //Just for development
-                return new VersionsInfo("", "", false);
+                return new VersionsInfo("", "", false, false);
             }
             String currentVersion = updateManager.getCurrentVersionString();
             String latestVersion = updateManager.getLatestVersionString();
             boolean isUpdateAvailable = updateManager.isUpdateAvailable();
-            return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable);
+            boolean latestVersionIgnored = updateManager.latestVersionIgnored();
+            return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored);
         } catch (UpdateException e) {
             logger.error("An error occured while getting version information", e);
             throw e;
@@ -46,6 +48,12 @@ public class Updates {
     @RequestMapping(value = "/internalapi/updates/changesSince", method = RequestMethod.GET)
     public GenericResponse getChangesSince() throws Exception {
         return new GenericResponse(true, updateManager.getChangesSince());
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/ignore", method = RequestMethod.GET)
+    public void ignore(@RequestParam("version") String version) throws Exception {
+        updateManager.ignore(version);
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -68,6 +76,7 @@ public class Updates {
         private String currentVersion;
         private String latestVersion;
         private boolean updateAvailable;
+        private boolean latestVersionIgnored;
     }
 
 

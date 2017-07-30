@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GenericStorageDataRepository extends JpaRepository<GenericStorageData, Integer> {
 
-    public GenericStorageData findFirstByKey(String key);
+    public GenericStorageData findByKey(String key);
+
+    public void deleteByKey(String key);
 
 }

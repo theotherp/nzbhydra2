@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Joiner;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
@@ -12,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.backup.BackupAndRestore;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
@@ -25,12 +28,10 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class UpdateManager implements InitializingBean {
@@ -40,6 +41,7 @@ public class UpdateManager implements InitializingBean {
     public static final int UPDATE_RETURN_CODE = 11;
     public static final int RESTART_RETURN_CODE = 22;
     public static final int RESTORE_RETURN_CODE = 33;
+    public static final String KEY = "UpdateData";
 
     @Value("${nzbhydra.repositoryBaseUrl}")
     protected String repositoryBaseUrl;
@@ -51,22 +53,56 @@ public class UpdateManager implements InitializingBean {
     protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
     private BackupAndRestore backupAndRestore;
+    @Autowired
+    private GenericStorage<UpdateData> updateDataGenericStorage;
 
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;
 
-    protected Instant lastCheckedForNewVersion = Instant.ofEpochMilli(0L);
-    private SemanticVersion latestVersion;
     private ObjectMapper objectMapper;
-    private Lock lock = new ReentrantLock();
+    protected Supplier<SemanticVersion> latestVersionCache = Suppliers.memoizeWithExpiration(latestVersionSupplier(), 15, TimeUnit.MINUTES);
 
     public UpdateManager() {
         objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
 
-    public boolean isUpdateAvailable() throws UpdateException {
-        return getLatestVersion().isUpdateFor(currentVersion);
+    private SemanticVersion getLatestVersion() throws UpdateException {
+        try {
+            return latestVersionCache.get();
+        } catch (Exception e) {
+            throw new UpdateException("Unable to get latest version", e);
+        }
+    }
+
+    public boolean isUpdateAvailable() {
+        try {
+            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored();
+        } catch (UpdateException e) {
+            logger.error("Error while checking if new version is available", e);
+            return false;
+        }
+    }
+
+    public boolean latestVersionIgnored() throws UpdateException {
+        SemanticVersion latestVersion = getLatestVersion();
+        Optional<UpdateData> updateData = updateDataGenericStorage.get(KEY, UpdateData.class);
+        if (updateData.isPresent() && updateData.get().getIgnoreVersions().contains(latestVersion)) {
+            logger.debug("Version {} is in the list of ignored updates", latestVersion);
+            return true;
+        }
+        return false;
+    }
+
+    protected Supplier<SemanticVersion> latestVersionSupplier() {
+        return () -> {
+            try {
+                Release latestRelease = getLatestRelease();
+                return new SemanticVersion(latestRelease.getTagName());
+            } catch (UpdateException e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 
     public String getLatestVersionString() throws UpdateException {
@@ -95,6 +131,14 @@ public class UpdateManager implements InitializingBean {
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog from GitHub", e);
         }
+    }
+
+    public void ignore(String version) {
+        SemanticVersion semanticVersion = new SemanticVersion(version);
+        UpdateData updateData = updateDataGenericStorage.get(KEY, UpdateData.class).orElse(new UpdateData());
+        updateData.getIgnoreVersions().add(semanticVersion);
+        updateDataGenericStorage.save(KEY, updateData);
+        logger.info("Version {} ignored. Will not show update notices for this version.", semanticVersion);
     }
 
     /**
@@ -186,22 +230,6 @@ public class UpdateManager implements InitializingBean {
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 
-    private SemanticVersion getLatestVersion() throws UpdateException {
-        try {
-            //Lock calls to this method so multiple concurrent calls don't hammer the server
-            lock.lock();
-            if (Instant.now().minus(15, ChronoUnit.MINUTES).isAfter(lastCheckedForNewVersion)) {
-                Release latestRelease = getLatestRelease();
-                latestVersion = new SemanticVersion(latestRelease.getTagName());
-                lastCheckedForNewVersion = Instant.now();
-            }
-            return latestVersion;
-        } catch (RuntimeException e) {
-            throw new UpdateException("Error while checking for latest version", e);
-        } finally {
-            lock.unlock();
-        }
-    }
 
     private Release getLatestRelease() throws UpdateException {
         try {

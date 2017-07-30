@@ -2,6 +2,7 @@ package org.nzbhydra.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.base.Suppliers;
 import okhttp3.OkHttpClient.Builder;
 import org.junit.After;
 import org.junit.Before;
@@ -14,12 +15,12 @@ import org.mockserver.model.Header;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.verify.VerificationTimes;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -36,6 +37,8 @@ public class UpdateManagerTest {
     private ClientAndServer mockServer;
     @Mock
     private HydraOkHttp3ClientHttpRequestFactory requestFactoryMock;
+    @Mock
+    private GenericStorage<UpdateData> updateDataGenericStorageMock;
 
     private static String changelog = "some changes";
 
@@ -102,8 +105,8 @@ public class UpdateManagerTest {
         testee.getLatestVersionString();
         mockServer.verify(latestRequest, VerificationTimes.exactly(1));
 
-        //Should contact repository again if last request was more than 15 minutes ago
-        testee.lastCheckedForNewVersion = Instant.now().minus(20, ChronoUnit.MINUTES);
+        //Should contact repository again if last request was more than 15 minutes ago (cache evicted)
+        testee.latestVersionCache = Suppliers.memoizeWithExpiration(testee.latestVersionSupplier(), 15, TimeUnit.MINUTES);
         testee.getLatestVersionString();
         mockServer.verify(latestRequest, VerificationTimes.exactly(2));
     }

@@ -1,6 +1,7 @@
 package org.nzbhydra.genericstorage;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,7 @@ import javax.persistence.Id;
 
 @Data
 @Entity
+@NoArgsConstructor
 public class GenericStorageData {
 
     @Id
@@ -21,6 +23,4 @@ public class GenericStorageData {
         this.key = key;
         this.data = data;
     }
-
-
 }

@@ -35,6 +35,10 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
         UpdateService.update();
     };
 
+    $scope.ignore = function () {
+        UpdateService.ignore($scope.latestVersion);
+    };
+
     $scope.showChangelog = function () {
         UpdateService.showChanges();
     };
