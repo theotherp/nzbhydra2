@@ -1,11 +1,14 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.logging.LogContentProvider.JsonLogResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class DebugInfos {
@@ -38,6 +43,19 @@ public class DebugInfos {
             logger.error("Error while getting log file content", e);
             return GenericResponse.notOk(e.getMessage());
         }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/downloadlog", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public FileSystemResource downloadLogFile(@RequestParam String logfilename) {
+        File file = new File(new File(NzbHydra.getDataFolder(), "logs"), logfilename);
+        return new FileSystemResource(file);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/logfilenames", method = RequestMethod.GET)
+    public List<String> getLogFilenames() {
+        return logContentProvider.getLogFileNames();
     }
 
     @Secured({"ROLE_ADMIN"})

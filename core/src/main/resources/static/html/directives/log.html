@@ -63,6 +63,20 @@
         </div>
     </uib-tab>
 
+    <uib-tab index="2" heading="Files" ng-click="select(2)">
+        <div class="row">
+            <div class="col-md-6"></div>
+            <div class="col-md-8" style="text-align: left">
+                <ul>
+                    <li ng-repeat="filename in logfilenames">
+                        <a href="internalapi/debuginfos/downloadlog?logfilename={{filename}}" target="_blank">{{filename}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </uib-tab>
+
 </uib-tabset>
 
 

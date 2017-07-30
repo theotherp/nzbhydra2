@@ -254,10 +254,8 @@ main:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
     logfilelevel: "INFO"
-    logFolder: "./logs"
-    logMaxSize: 10
+    logMaxSize: 5
     logIpAddresses: true
-    logMaxDays: 30
     logUsername: false
   port: 5076
   proxyType: NONE

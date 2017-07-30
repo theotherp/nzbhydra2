@@ -2,8 +2,7 @@
     <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
     <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="10"/>
-    <springProperty scope="context" name="logging.logMaxDays" source="main.logging.logging.logMaxDays" defaultValue="30"/>
+    <springProperty scope="context" name="logging.logMaxSize" source="main.logging.logging.logMaxSize" defaultValue="5"/>
     <!--
     consolelevel: "DEBUG"
     keepLogFiles: 25
@@ -51,14 +50,12 @@
             <level>${logging.level.file}</level>
         </filter>
         <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.log.%d</fileNamePattern>
-            <maxHistory>${logging.logMaxDays}</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>100</maxHistory>
+            <maxFileSize>${logging.logMaxSize}MB</maxFileSize>
         </rollingPolicy>
-        <triggeringPolicy
-                class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <MaxFileSize>${logging.logMaxSize}MB</MaxFileSize>
-        </triggeringPolicy>
+
     </appender>
 
     <appender name="STASH" class="ch.qos.logback.core.rolling.RollingFileAppender">

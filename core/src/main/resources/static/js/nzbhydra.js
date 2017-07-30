@@ -1229,9 +1229,13 @@ function hydralog() {
                     $scope.jsonLogLines = angular.fromJson(data.lines);
                     $scope.hasMoreJsonLines = data.hasMore;
                 });
-            } else {
+            } else if ($scope.active === 1) {
                 return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
                     $scope.log = $sce.trustAsHtml(data.message);
+                });
+            } else if ($scope.active === 2) {
+                return $http.get("internalapi/debuginfos/logfilenames").success(function (data) {
+                    $scope.logfilenames = data;
                 });
             }
         }
@@ -5803,19 +5807,6 @@ function ConfigFields($injector) {
                                 listener: restartListener
                             }
                         },
-                        {
-                            key: 'logMaxDays',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Keep log files',
-                                help: 'Number of log files to keep before oldest is deleted'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-
                         {
                             key: 'consolelevel',
                             type: 'horizontalSelect',

@@ -217,8 +217,6 @@ public class JsonConfigMigration {
     private List<String> migrateLogging(Logging oldLogging, LoggingConfig newLogging) {
         newLogging.setConsolelevel(oldLogging.getConsolelevel());
         newLogging.setLogfilelevel(oldLogging.getLogfilelevel());
-        newLogging.setLogFolder(oldLogging.getLogfilename());
-        newLogging.setLogMaxDays(oldLogging.getLogMaxSize());
         newLogging.setLogMaxSize(oldLogging.getKeepLogFiles());
         return Collections.emptyList();
     }

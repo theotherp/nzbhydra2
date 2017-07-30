@@ -9,7 +9,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.nzbhydra.NzbHydra;
+import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -17,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,8 +29,11 @@ import java.util.List;
 @Component
 public class LogContentProvider {
 
+    @Autowired
+    private ConfigProvider configProvider;
+
     public long getLogFileSize() throws IOException {
-        File logfile = getLogfile(false);
+        File logfile = getCurrentLogfile(false);
         if (logfile == null) {
             throw new IOException("Unable to determine log file");
         }
@@ -37,7 +44,7 @@ public class LogContentProvider {
     }
 
     public String getLog() throws IOException {
-        File logfile = getLogfile(false);
+        File logfile = getCurrentLogfile(false);
         if (logfile == null) {
             throw new IOException("Unable to determine log file");
         }
@@ -47,8 +54,13 @@ public class LogContentProvider {
         return new String(Files.readAllBytes(logfile.toPath()));
     }
 
+    public List<String> getLogFileNames() {
+        String[] files = new File(NzbHydra.getDataFolder(), "logs").list((dir, name) -> name.toLowerCase().endsWith("log"));
+        return files == null ? Collections.emptyList() : Arrays.asList(files);
+    }
+
     public JsonLogResponse getLogsAsJsonLines(int offset, int limit) throws IOException {
-        File logfile = getLogfile(true);
+        File logfile = getCurrentLogfile(true);
         if (logfile == null) {
             throw new IOException("Unable to determine log file");
         }
@@ -80,7 +92,7 @@ public class LogContentProvider {
         return new JsonLogResponse(objects, line != null, offset, objects.size());
     }
 
-    private File getLogfile(boolean getJsonFile) {
+    private File getCurrentLogfile(boolean getJsonFile) {
         File clientLogFile;
         FileAppender<?> fileAppender = null;
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();

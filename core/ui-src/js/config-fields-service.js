@@ -346,19 +346,6 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'logMaxDays',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Keep log files',
-                                help: 'Number of log files to keep before oldest is deleted'
-                            },
-                            watcher: {
-                                listener: restartListener
-                            }
-                        },
-
-                        {
                             key: 'consolelevel',
                             type: 'horizontalSelect',
                             templateOptions: {
