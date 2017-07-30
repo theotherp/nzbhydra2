@@ -865,24 +865,24 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'newznabCategories',
-                                type: 'horizontalInput',
+                                type: 'horizontalChips',
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
                                     help: 'Map newznab categories to Hydra categories',
-                                    placeholder: '1000, 2000'
+                                    // placeholder: '1000, 2000'
                                 },
-                                parsers: [function (value) {
-                                    if (!value) {
-                                        return [];
-                                    }
-                                    if (_.isArray(value))
-                                        return value;
-                                    var arr = [];
-                                    arr.push.apply(arr, value.split(",").map(Number));
-                                    return arr;
-
-                                }]
+                                // parsers: [function (value) {
+                                //     if (!value) {
+                                //         return [];
+                                //     }
+                                //     if (_.isArray(value))
+                                //         return value;
+                                //     var arr = [];
+                                //     arr.push.apply(arr, value.split(",").map(Number));
+                                //     return arr;
+                                //
+                                // }]
 
                             },
                             {

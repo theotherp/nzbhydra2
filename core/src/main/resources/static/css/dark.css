@@ -7839,10 +7839,11 @@ chip-tmpl:focus .default-chip {
 }
 .chips {
   display: block;
-  padding: 2px 5px 1px 5px;
+  padding: 2px 5px 1px 12px;
   background: #0f1113;
   height: unset;
   min-height: 34px;
+  text-align: left;
 }
 .chip-control {
   background: #0f1113;
@@ -7868,6 +7869,9 @@ chip-tmpl:focus .default-chip {
 }
 .remove-chip {
   font-size: 10px;
+}
+select.form-control {
+  padding-left: 8px;
 }
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;

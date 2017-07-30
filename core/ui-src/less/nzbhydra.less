@@ -988,10 +988,11 @@ chip-tmpl:focus .default-chip {
 
 .chips {
   display: block;
-  padding: 2px 5px 1px 5px;
+  padding: 2px 5px 1px 12px;
   background: @input-bg;
   height: unset;
   min-height: 34px;
+  text-align: left;
 }
 
 .chip-control {
@@ -1024,4 +1025,8 @@ chip-tmpl:focus .default-chip {
 
 .remove-chip {
   font-size: 10px;
+}
+
+select.form-control {
+  padding-left: 8px; //Content has some paddding, so reduce padding to make actual/visual padding the same as the others
 }
