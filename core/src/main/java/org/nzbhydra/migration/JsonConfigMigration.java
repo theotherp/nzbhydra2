@@ -430,7 +430,8 @@ public class JsonConfigMigration {
                     }
                 }
 
-                newIndexer.setShowOnSearch(oldIndexer.isPreselect());
+                newIndexer.setShowOnSearch(true); //Used to be for womble, we currently don't have indexers which cannot be searched
+                newIndexer.setPreselect(oldIndexer.isPreselect());
                 List<String> enabledForCategories = new ArrayList<>();
                 for (String oldCat : oldIndexer.getCategories()) {
 
