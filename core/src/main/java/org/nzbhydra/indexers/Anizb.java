@@ -72,7 +72,8 @@ public class Anizb extends Indexer<RssRoot> {
     }
 
     private String addRequiredWordsToQuery(SearchRequest searchRequest, String query) {
-        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        List<String> requiredWords;
+        requiredWords = searchRequest.getInternalData().getRequiredWords();
         requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         if (!requiredWords.isEmpty()) {

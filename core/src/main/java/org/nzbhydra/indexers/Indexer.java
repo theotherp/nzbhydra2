@@ -346,10 +346,10 @@ public abstract class Indexer<T> {
         }
 
         if (searchRequest.getTitle().isPresent()) {
-            query = searchRequest.getTitle().get();
+            query = sanitizeTitleForQuery(searchRequest.getTitle().get());
             logger.debug("Search request provided title {}. Using that as query base.", query);
-        } else if (searchRequest.getInternalData().getTitle().isPresent()) {
-            query = searchRequest.getInternalData().getTitle().get(); //TODO Currently never set, when should it?
+        } else if (searchRequest.getInternalData().getTitle().isPresent()) { //TODO Currently never set, when should it?
+            query = searchRequest.getInternalData().getTitle().get();
         } else {
             Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
             try {
@@ -357,7 +357,7 @@ public abstract class Indexer<T> {
                 if (!mediaInfo.getTitle().isPresent()) {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
-                query = mediaInfo.getTitle().get();
+                query = sanitizeTitleForQuery(mediaInfo.getTitle().get());
                 logger.debug("Determined title to be {}. Using that as query base.", query);
             } catch (InfoProviderException e) {
                 throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
@@ -419,6 +419,10 @@ public abstract class Indexer<T> {
             }
         }
         return title;
+    }
+
+    protected String sanitizeTitleForQuery(String query) {
+        return query; //TODO
     }
 
     public Optional<Instant> tryParseDate(String dateString) {

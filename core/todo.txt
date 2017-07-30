@@ -44,7 +44,7 @@ NZB handling
 Indexer support
 - binsearch
 - !! nzbindex
-- anizb (including migration), only support anime
+- !! anizb (including migration), only support anime
 - !! nzbclub is gone!!
 - !! checking caps
 - !! checking auth / connection: done
@@ -149,6 +149,7 @@ General, Ideas
 - check logging (sensible output, relevant infos contained, etc)
 - account for search type / category (anime, etc) when picking indexers so that anizb is only used for anime searches
 - allow only one category per search type, allow getting category by it
+- show seeders/peerssc
 
 currently not (yet) supported:
 - multiple query generations per search
