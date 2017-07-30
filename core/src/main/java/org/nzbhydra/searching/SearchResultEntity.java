@@ -31,7 +31,7 @@ public class SearchResultEntity {
 
     @GenericGenerator(
             name = "search-result-sequence",
-            strategy = "org.nzbhydra.database.SearchResultSequenceGenerator",
+            strategy = "org.nzbhydra.searching.SearchResultSequenceGenerator",
             parameters = @org.hibernate.annotations.Parameter(
                     name = "sequence_name",
                     value = "hibernate_sequence"

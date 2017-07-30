@@ -23,9 +23,9 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 @Component
-public class HistoryProvider {
+public class History {
 
-    private static final Logger logger = LoggerFactory.getLogger(HistoryProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(History.class);
 
     @PersistenceContext
     private EntityManager entityManager;

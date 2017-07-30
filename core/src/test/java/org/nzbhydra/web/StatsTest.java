@@ -11,7 +11,7 @@ public class StatsTest {
     }
 
     @InjectMocks
-    private Stats testee = new Stats();
+    private WebStats testee = new WebStats();
 
 
 }

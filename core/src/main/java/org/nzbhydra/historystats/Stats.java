@@ -1,6 +1,5 @@
-package org.nzbhydra.web;
+package org.nzbhydra.historystats;
 
-import org.nzbhydra.historystats.StatsResponse;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -18,9 +17,6 @@ import org.nzbhydra.web.mapping.stats.StatsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
@@ -47,13 +43,9 @@ public class Stats {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @RequestMapping(value = "/internalapi/stats")
-    @Secured({"ROLE_STATS"})
-    public StatsResponse getAllStats(@RequestBody StatsRequest statsRequest) {
+    public StatsResponse getAllStats(StatsRequest statsRequest) {
 
-        //TODO move to other class
-
-        logger.debug("Request for stats from {} to {}", statsRequest.getAfter(), statsRequest.getBefore());
+        logger.debug("Request for stats between {} and {}", statsRequest.getAfter(), statsRequest.getBefore());
 
         StatsResponse statsResponse = new StatsResponse();
         statsResponse.setAfter(statsRequest.getAfter());

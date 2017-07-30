@@ -18,7 +18,7 @@ import java.util.Map;
 @Ignore //TODO Still needed?
 public class HistoryTest {
     @InjectMocks
-    private History testee = new History();
+    private WebHistory testee = new WebHistory();
 
     @Before
     public void setUp() throws Exception {

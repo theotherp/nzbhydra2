@@ -6,6 +6,7 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 
 import java.io.Serializable;
 
+@SuppressWarnings("unused")
 public class SearchResultSequenceGenerator extends SequenceStyleGenerator {
     @Override
     public Serializable generate(SessionImplementor session, Object object) throws HibernateException {

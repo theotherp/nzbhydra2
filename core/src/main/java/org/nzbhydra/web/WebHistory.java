@@ -2,7 +2,7 @@ package org.nzbhydra.web;
 
 import com.google.common.collect.Iterables;
 import org.nzbhydra.downloader.NzbDownloadEntity;
-import org.nzbhydra.historystats.HistoryProvider;
+import org.nzbhydra.historystats.History;
 import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.web.mapping.FilterDefinition;
 import org.nzbhydra.web.mapping.FilterModel;
@@ -21,18 +21,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class History {
+public class WebHistory {
 
     @Autowired
-    private HistoryProvider historyProvider;
+    private History history;
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page searchHistory(@RequestBody HistoryRequestData requestData) {
-        return historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class);
+        return history.getHistory(requestData, "SEARCH", SearchEntity.class);
     }
 
-    //@Secured({"ROLE_USER"})
+    //@Secured({"ROLE_USER"}) //TODO: Why commented out?
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntity> searchHistoryForSearchPage() {
         //TODO If user is logged in only show his searches
@@ -41,7 +41,7 @@ public class History {
         FilterModel filterModel = new FilterModel();
         filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
         requestData.setFilterModel(filterModel);
-        Page searchHistoryPage = historyProvider.getHistory(requestData, "SEARCH", SearchEntity.class);
+        Page searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
         List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
         List<SearchEntity> filteredSearchEntities = new ArrayList<>();
         if (!allSearchEntities.isEmpty()) {
@@ -61,7 +61,7 @@ public class History {
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page downloadHistory(@RequestBody HistoryRequestData requestData) {
-        return historyProvider.getHistory(requestData, "INDEXERNZBDOWNLOAD left join INDEXER on INDEXERNZBDOWNLOAD.INDEXER_ID = INDEXER.ID", NzbDownloadEntity.class);
+        return history.getHistory(requestData, "INDEXERNZBDOWNLOAD left join INDEXER on INDEXERNZBDOWNLOAD.INDEXER_ID = INDEXER.ID", NzbDownloadEntity.class);
     }
 
 }

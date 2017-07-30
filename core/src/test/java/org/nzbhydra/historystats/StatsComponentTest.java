@@ -1,4 +1,4 @@
-package org.nzbhydra.web;
+package org.nzbhydra.historystats;
 
 import org.junit.Before;
 import org.junit.Test;
