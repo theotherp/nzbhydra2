@@ -305,6 +305,10 @@ public class JsonConfigMigration {
         newSearching.setForbiddenGroups(getListFromCommaSeparatedString(oldSearching.getForbiddenGroups()));
         newSearching.setForbiddenPosters(getListFromCommaSeparatedString(oldSearching.getForbiddenPosters()));
         newSearching.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
+        if (newSearching.getKeepSearchResultsForDays() == 7) {
+            logger.info("Increasing age of results to keep to 14 days");
+            newSearching.setKeepSearchResultsForDays(14);
+        }
         return messages;
     }
 
