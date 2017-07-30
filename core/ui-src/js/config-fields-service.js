@@ -279,7 +279,7 @@ function ConfigFields($injector) {
                             type: 'horizontalApiKeyInput',
                             templateOptions: {
                                 label: 'API key',
-                                help: 'Remove to disable. Alphanumeric only'
+                                help: 'Alphanumeric only'
                             },
                             validators: {
                                 apiKey: regexValidator(/^[a-zA-Z0-9]*$/, "API key must only contain numbers and digits", false)
@@ -1898,7 +1898,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
             }
         },
         {
-            key: 'nzbaccesstype',
+            key: 'nzbAccessType',
             type: 'horizontalSelect',
             templateOptions: {
                 type: 'select',
