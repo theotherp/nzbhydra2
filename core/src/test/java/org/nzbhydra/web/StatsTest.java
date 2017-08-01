@@ -3,6 +3,7 @@ package org.nzbhydra.web;
 import org.junit.Before;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.historystats.StatsWeb;
 
 public class StatsTest {
     @Before
@@ -11,7 +12,7 @@ public class StatsTest {
     }
 
     @InjectMocks
-    private WebStats testee = new WebStats();
+    private StatsWeb testee = new StatsWeb();
 
 
 }

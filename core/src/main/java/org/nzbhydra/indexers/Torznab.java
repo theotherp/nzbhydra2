@@ -30,7 +30,11 @@ public class Torznab extends Newznab {
     protected SearchResultItem createSearchResultItem(RssItem item) {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
-        computeCategory(searchResultItem, Collections.singletonList(Integer.valueOf(item.getCategory())));
+        if (item.getCategory() != null) {
+            computeCategory(searchResultItem, Collections.singletonList(Integer.valueOf(item.getCategory())));
+        } else {
+            searchResultItem.setCategory(categoryProvider.getNotAvailable());
+        }
 
         searchResultItem.setGrabs(item.getGrabs());
         searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());

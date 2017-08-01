@@ -100,13 +100,14 @@ public class TorznabTest {
         rssItem.getTorznabAttributes().add(new NewznabAttribute("grabs", "20"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("comments", "30"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
+        rssItem.setCategory("4000");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getLink(), is("http://indexer.com/123"));
         assertThat(item.getIndexerGuid(), is("http://indexer.com/123"));
         assertThat(item.getSize(), is(456L));
         assertThat(item.getCommentsLink(), is("http://indexer.com/123/details#comments"));
-        assertThat(item.getDetails(), is("http://indexer.com/123/details"));
+        assertThat(item.getDetails(), is("http://indexer.com/123"));
         assertThat(item.isAgePrecise(), is(true));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getDownloadType(), is(DownloadType.TORRENT));

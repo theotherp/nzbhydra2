@@ -4,7 +4,7 @@ import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.UserAuthConfig;
-import org.nzbhydra.web.mapping.BootstrappedData;
+import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +18,8 @@ public class UserInfosProvider {
     @Autowired
     private ConfigProvider configProvider;
 
-    public BootstrappedData getUserInfos(Principal principal) {
-        BootstrappedData bootstrappedData = new BootstrappedData();
+    public BootstrappedDataTO getUserInfos(Principal principal) {
+        BootstrappedDataTO bootstrappedData = new BootstrappedDataTO();
         AuthConfig auth = configProvider.getBaseConfig().getAuth();
 
         boolean authConfigured = auth.getAuthType() != AuthType.NONE && !auth.getUsers().isEmpty();

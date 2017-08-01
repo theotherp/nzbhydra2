@@ -5,10 +5,10 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.searching.CategoryProvider;
@@ -18,6 +18,7 @@ import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.time.Clock;
 import java.time.ZoneId;
@@ -75,10 +76,10 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setCachetime(5);
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher).search(any());
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(1)).search(any());
     }
 
@@ -90,14 +91,14 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setCachetime(5);
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher).search(any());
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(1)).search(any());
 
         testee.clock = Clock.fixed(testee.clock.instant().plus(6, ChronoUnit.MINUTES), ZoneId.of("UTC"));
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(2)).search(any());
     }
 
@@ -109,34 +110,34 @@ public class ExternalApiTest {
         parameters.setT(ActionAttribute.SEARCH);
         parameters.setCachetime(5);
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher).search(any());
 
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(1)).search(any());
 
         parameters.setQ("q2");
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(2)).search(any());
         parameters.setQ("q3");
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(3)).search(any());
         parameters.setQ("q4");
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(4)).search(any());
         parameters.setQ("q5");
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(5)).search(any());
 
         parameters.setQ("q1"); //q1 is still cached
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(5)).search(any());
 
         parameters.setQ("q6"); //now q1 is removed as oldest entry
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(6)).search(any());
         parameters.setQ("q1"); //Not cached anymore, will do another search
-        testee.api(parameters, null);
+        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(7)).search(any());
     }
 

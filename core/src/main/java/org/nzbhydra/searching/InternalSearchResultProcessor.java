@@ -1,11 +1,9 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Multiset;
-import org.nzbhydra.NzbHandler;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.web.mapping.IndexerSearchMetaData;
-import org.nzbhydra.web.mapping.SearchResponse;
-import org.nzbhydra.web.mapping.SearchResult.SearchResultBuilder;
+import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.searching.SearchResultWebTO.SearchResultWebTOBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +34,7 @@ public class InternalSearchResultProcessor {
         searchResponse.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
         searchResponse.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
 
-        List<org.nzbhydra.web.mapping.SearchResult> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
+        List<SearchResultWebTO> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
         searchResponse.setSearchResults(transformedSearchResults);
         searchResponse.setOffset(searchResponse.getOffset());
         searchResponse.setLimit(searchResponse.getLimit());
@@ -64,11 +62,11 @@ public class InternalSearchResultProcessor {
         return indexerSearchMetaDatas;
     }
 
-    private List<org.nzbhydra.web.mapping.SearchResult> transformSearchResults(List<SearchResultItem> searchResultItems) {
-        List<org.nzbhydra.web.mapping.SearchResult> transformedSearchResults = new ArrayList<>();
+    private List<SearchResultWebTO> transformSearchResults(List<SearchResultItem> searchResultItems) {
+        List<SearchResultWebTO> transformedSearchResults = new ArrayList<>();
 
         for (SearchResultItem item : searchResultItems) {
-            SearchResultBuilder builder = org.nzbhydra.web.mapping.SearchResult.builder()
+            SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
                     .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
                     .comments(item.getCommentsCount())
                     .details_link(item.getDetails())
@@ -88,12 +86,12 @@ public class InternalSearchResultProcessor {
 
             transformedSearchResults.add(builder.build());
         }
-        transformedSearchResults.sort(Comparator.comparingLong(org.nzbhydra.web.mapping.SearchResult::getEpoch).reversed());
+        transformedSearchResults.sort(Comparator.comparingLong(SearchResultWebTO::getEpoch).reversed());
         return transformedSearchResults;
     }
 
 
-    private SearchResultBuilder setSearchResultDateRelatedValues(SearchResultBuilder builder, SearchResultItem item) {
+    private SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
         Instant date = item.getUsenetDate().orElse(item.getPubDate());
         long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
         if (ageInDays > 0) {

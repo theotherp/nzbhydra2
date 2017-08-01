@@ -1,14 +1,14 @@
 package org.nzbhydra.historystats;
 
 import lombok.Data;
-import org.nzbhydra.web.mapping.stats.AverageResponseTime;
-import org.nzbhydra.web.mapping.stats.CountPerDayOfWeek;
-import org.nzbhydra.web.mapping.stats.CountPerHourOfDay;
-import org.nzbhydra.web.mapping.stats.DownloadPerAge;
-import org.nzbhydra.web.mapping.stats.DownloadPerAgeStats;
-import org.nzbhydra.web.mapping.stats.IndexerApiAccessStatsEntry;
-import org.nzbhydra.web.mapping.stats.IndexerDownloadShare;
-import org.nzbhydra.web.mapping.stats.IndexerSearchResultsShare;
+import org.nzbhydra.historystats.stats.AverageResponseTime;
+import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
+import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadPerAge;
+import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
+import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
+import org.nzbhydra.historystats.stats.IndexerDownloadShare;
+import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
 
 import java.time.Instant;
 import java.util.ArrayList;

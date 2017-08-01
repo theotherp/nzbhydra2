@@ -80,7 +80,7 @@ public class NewznabCheckerTest {
         capsRoot.setSearching(new CapsSearching());
         CapsLimits capsLimits = new CapsLimits(200, 100);
         capsRoot.setLimits(capsLimits);
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), CapsRoot.class, 1)).thenReturn(capsRoot);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), CapsRoot.class, 2)).thenReturn(capsRoot);
     }
 
 
@@ -89,17 +89,17 @@ public class NewznabCheckerTest {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
         RssRoot thronesResult = builder.getTestResult(1, 100, "Thrones", 0, 100);
         thronesResult.getRssChannel().setGenerator("nzedb");
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 2))
                 .thenReturn(thronesResult);
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
@@ -154,17 +154,17 @@ public class NewznabCheckerTest {
     @Test
     public void shouldCheckCapsWithoutSupport() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
         CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
@@ -175,18 +175,18 @@ public class NewznabCheckerTest {
     @Test
     public void shouldSaySoIfNotAllWereChecked() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), RssRoot.class, 2))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 1))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), RssRoot.class, 2))
                 .thenThrow(new IndexerAccessException("some error"));
 
         CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);

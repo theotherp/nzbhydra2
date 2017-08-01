@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
 import static org.junit.Assert.assertEquals;

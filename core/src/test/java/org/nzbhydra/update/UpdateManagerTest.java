@@ -17,6 +17,7 @@ import org.mockserver.verify.VerificationTimes;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
+import org.nzbhydra.update.UpdateManager.BlockedVersion;
 
 import java.util.Arrays;
 
@@ -32,6 +33,7 @@ public class UpdateManagerTest {
     private HttpRequest latestRequest;
     private HttpRequest releasesRequest;
     private HttpRequest changelogRequest;
+    private HttpRequest blockedVersionsRequest;
     private ClientAndServer mockServer;
     @Mock
     private HydraOkHttp3ClientHttpRequestFactory requestFactoryMock;
@@ -53,6 +55,7 @@ public class UpdateManagerTest {
         testee.currentVersionString = "0.0.1";
         testee.repositoryBaseUrl = "http:/127.0.0.1:7070/repos/theotherp/apitests";
         testee.changelogUrl = "http:/127.0.0.1:7070/changelog.md";
+        testee.blockedVersionsUrl = "http:/127.0.0.1:7070/blockedVersions.json";
         testee.afterPropertiesSet();
 
         Release latestRelease = new Release();
@@ -77,6 +80,10 @@ public class UpdateManagerTest {
         changelogRequest = HttpRequest.request().withPath("/changelog.md");
         mockServer.when(changelogRequest).respond(HttpResponse.response().withBody(changelog).withHeaders(
                 new Header("Content-Type", "application/raw; charset=utf-8")));
+
+        blockedVersionsRequest = HttpRequest.request().withPath("/blockedVersions.json");
+        mockServer.when(blockedVersionsRequest).respond(HttpResponse.response().withBody(new ObjectMapper().writeValueAsString(Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment")))).withHeaders(
+                new Header("Content-Type", "application/json; charset=utf-8")));
 
         when(requestFactoryMock.getOkHttpClientBuilder(any())).thenReturn(new Builder());
     }

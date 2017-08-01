@@ -11,7 +11,6 @@ import org.nzbhydra.migration.FromPythonMigration.MigrationResult;
 import org.nzbhydra.migration.FromPythonMigration.OkHttpResponse;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +18,6 @@ import java.util.Map;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -80,23 +78,6 @@ public class FromPythonMigrationTest {
         assertThat(result.getWarningMessages().size(), is(0));
     }
 
-    @Test
-    public void shouldReturnConfigMigrationMessagesWhenDatabaseFailed() throws Exception {
-        doReturn(new OkHttpResponse(newVersion, true, "message")).when(testee).callHydraUrl(anyString(), eq("get_versions"));
-        doReturn(new OkHttpResponse(configBody, true, "message")).when(testee).callHydraUrl(anyString(), eq("migration"));
-        when(configMigration.migrate(anyString())).thenReturn(configMigrationResult);
-        when(sqliteMigration.migrate(any(), any())).thenThrow(new SQLException("sqlMessage"));
-        when(configMigrationResult.getMessages()).thenReturn(Arrays.asList("aWarningMessage"));
-
-        MigrationResult result = testee.migrate("xyz");
-
-        assertThat(result.isRequirementsMet(), is(true));
-        assertThat(result.isConfigMigrated(), is(true));
-        assertThat(result.isDatabaseMigrated(), is(false));
-        assertThat(result.getError(), is("Error while migrating database: sqlMessage"));
-        assertThat(result.getWarningMessages().size(), is(1));
-        assertThat(result.getWarningMessages().get(0), is("aWarningMessage"));
-    }
 
     @Test
     public void shouldReturnConfigMigrationMessagesWhenDatabaseSuccessful() throws Exception {

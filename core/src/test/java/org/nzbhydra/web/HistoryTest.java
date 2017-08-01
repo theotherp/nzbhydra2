@@ -5,10 +5,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.web.mapping.FilterDefinition;
-import org.nzbhydra.web.mapping.FilterModel;
-import org.nzbhydra.web.mapping.SortModel;
-import org.nzbhydra.web.mapping.stats.HistoryRequestData;
+import org.nzbhydra.historystats.FilterDefinition;
+import org.nzbhydra.historystats.FilterModel;
+import org.nzbhydra.historystats.HistoryWeb;
+import org.nzbhydra.historystats.SortModel;
+import org.nzbhydra.historystats.stats.HistoryRequestData;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -18,7 +19,7 @@ import java.util.Map;
 @Ignore //TODO Still needed?
 public class HistoryTest {
     @InjectMocks
-    private WebHistory testee = new WebHistory();
+    private HistoryWeb testee = new HistoryWeb();
 
     @Before
     public void setUp() throws Exception {

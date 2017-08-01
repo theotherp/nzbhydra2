@@ -204,7 +204,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().getApplyRestrictions(), is(SearchSourceRestriction.BOTH));
         assertThat(result.getMigratedConfig().getSearching().getDuplicateAgeThreshold(), is(2.0F));
         assertThat(result.getMigratedConfig().getSearching().getDuplicateSizeThresholdInPercent(), is(1.0F));
-        assertThat(result.getMigratedConfig().getSearching().getKeepSearchResultsForDays(), is(7));
+        assertThat(result.getMigratedConfig().getSearching().getKeepSearchResultsForDays(), is(14));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenGroups(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenPosters(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenWords(), is(empty()));

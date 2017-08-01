@@ -13,7 +13,7 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.downloader.NzbDownloadRepository;
+import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
