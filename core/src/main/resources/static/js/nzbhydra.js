@@ -1154,7 +1154,7 @@ function hydraupdates() {
 
     function controller($scope, UpdateService, $sce) {
 
-        $scope.loadingPromise = UpdateService.getVersions().then(function (data) {
+        $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
             $scope.repVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;
@@ -1178,7 +1178,6 @@ function hydraupdates() {
         $scope.forceUpdate = function () {
             UpdateService.update()
         };
-
     }
 }
 
@@ -2124,13 +2123,13 @@ function UpdateService($http, growl, blockUI, RestartService) {
     return {
         update: update,
         showChanges: showChanges,
-        getVersions: getVersions,
+        getInfos: getInfos,
         getVersionHistory: getVersionHistory,
         ignore: ignore
     };
 
-    function getVersions() {
-        return $http.get("internalapi/updates/versions").then(
+    function getInfos() {
+        return $http.get("internalapi/updates/infos").then(
             function (data) {
                 currentVersion = data.data.currentVersion;
                 latestVersion = data.data.latestVersion;
@@ -2142,7 +2141,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
     }
 
     function ignore(version) {
-        return $http.get("internalapi/updates/ignore",{params: {version: version}}).then(function (data) {
+        return $http.put("internalapi/updates/ignore", {params: {version: version}}).then(function (data) {
             return data;
         });
     }
@@ -2186,7 +2185,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
 
     function update() {
         blockUI.start("Downloading update. Please stand by...");
-        $http.get("internalapi/updates/installUpdate").then(function (data) {
+        $http.put("internalapi/updates/installUpdate").then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
                 RestartService.restart("Downloaded update. Shutting down Hydra for wrapper to execute update.");
@@ -2222,7 +2221,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
 
     function retrieveUpdateInfos() {
         $scope.checked = true;
-        UpdateService.getVersions().then(function (data) {
+        UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
             $scope.latestVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;

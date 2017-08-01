@@ -62,6 +62,11 @@ public class MockGithub {
         return Resources.toString(Resources.getResource(MockGithub.class, "/static/news.md"), Charsets.UTF_8);
     }
 
+    @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)
+    public String blockedVersions() throws Exception {
+        return "[{\"version\":{\"major\":3,\"minor\":0,\"patch\":0,\"asString\":\"3.0.0\"},\"comment\":\"some comment\"}]";
+    }
+
     @Configuration
     public class JacksonConfiguration {
 

@@ -10,7 +10,7 @@ function hydraupdates() {
 
     function controller($scope, UpdateService, $sce) {
 
-        $scope.loadingPromise = UpdateService.getVersions().then(function (data) {
+        $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
             $scope.repVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;
@@ -34,7 +34,6 @@ function hydraupdates() {
         $scope.forceUpdate = function () {
             UpdateService.update()
         };
-
     }
 }
 

@@ -22,7 +22,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
 
     function retrieveUpdateInfos() {
         $scope.checked = true;
-        UpdateService.getVersions().then(function (data) {
+        UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
             $scope.latestVersion = data.data.latestVersion;
             $scope.updateAvailable = data.data.updateAvailable;

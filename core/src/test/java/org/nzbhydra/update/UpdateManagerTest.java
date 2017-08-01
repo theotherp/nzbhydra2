@@ -2,7 +2,6 @@ package org.nzbhydra.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.google.common.base.Suppliers;
 import okhttp3.OkHttpClient.Builder;
 import org.junit.After;
 import org.junit.Before;
@@ -20,7 +19,6 @@ import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -104,11 +102,6 @@ public class UpdateManagerTest {
         //Should not contact repository again if last request was less than 15 minutes ago
         testee.getLatestVersionString();
         mockServer.verify(latestRequest, VerificationTimes.exactly(1));
-
-        //Should contact repository again if last request was more than 15 minutes ago (cache evicted)
-        testee.latestVersionCache = Suppliers.memoizeWithExpiration(testee.latestVersionSupplier(), 15, TimeUnit.MINUTES);
-        testee.getLatestVersionString();
-        mockServer.verify(latestRequest, VerificationTimes.exactly(2));
     }
 
     @Test

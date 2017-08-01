@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
@@ -49,6 +51,9 @@ public class UpdateManager implements InitializingBean {
     @Value("${nzbhydra.changelogUrl}")
     protected String changelogUrl;
 
+    @Value("${nzbhydra.blockedVersionsUrl}")
+    protected String blockedVersionsUrl;
+
     @Autowired
     protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
@@ -59,8 +64,10 @@ public class UpdateManager implements InitializingBean {
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;
 
+    //TODO Unify calls. Only one entry for update check. That should cache so that not for every call github is called for a new update, for changelog, for blocked versions
+
     private ObjectMapper objectMapper;
-    protected Supplier<SemanticVersion> latestVersionCache = Suppliers.memoizeWithExpiration(latestVersionSupplier(), 15, TimeUnit.MINUTES);
+    protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
 
     public UpdateManager() {
         objectMapper = new ObjectMapper();
@@ -68,16 +75,13 @@ public class UpdateManager implements InitializingBean {
     }
 
     private SemanticVersion getLatestVersion() throws UpdateException {
-        try {
-            return latestVersionCache.get();
-        } catch (Exception e) {
-            throw new UpdateException("Unable to get latest version", e);
-        }
+        Release latestRelease = latestReleaseCache.get();
+        return new SemanticVersion(latestRelease.getTagName());
     }
 
     public boolean isUpdateAvailable() {
         try {
-            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored();
+            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored() && !latestVersionBlocked();
         } catch (UpdateException e) {
             logger.error("Error while checking if new version is available", e);
             return false;
@@ -94,11 +98,19 @@ public class UpdateManager implements InitializingBean {
         return false;
     }
 
-    protected Supplier<SemanticVersion> latestVersionSupplier() {
+    public boolean latestVersionBlocked() throws UpdateException {
+        SemanticVersion latestVersion = getLatestVersion();
+        if (getBlockedVersions().stream().anyMatch(x -> x.getVersion().equals(latestVersion))) {
+            logger.debug("Version {} is in the list of blocked updates", latestVersion);
+            return true;
+        }
+        return false;
+    }
+
+    protected Supplier<Release> getLatestReleaseSupplier() {
         return () -> {
             try {
-                Release latestRelease = getLatestRelease();
-                return new SemanticVersion(latestRelease.getTagName());
+                return getLatestRelease();
             } catch (UpdateException e) {
                 throw new RuntimeException(e);
             }
@@ -189,7 +201,7 @@ public class UpdateManager implements InitializingBean {
 
 
     public void installUpdate() throws UpdateException {
-        Release latestRelease = getLatestRelease();
+        Release latestRelease = latestReleaseCache.get();
         logger.info("Starting update process to {}", latestRelease.getTagName());
         List<Asset> assets = latestRelease.getAssets();
         if (assets.isEmpty()) {
@@ -246,6 +258,20 @@ public class UpdateManager implements InitializingBean {
     }
 
 
+    protected List<BlockedVersion> getBlockedVersions() throws UpdateException {
+        Request request = new Request.Builder().url(blockedVersionsUrl).build();
+        logger.debug("Getting blocked versions from GitHub");
+        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            List<BlockedVersion> blockedVersions = new ObjectMapper().readValue(response.body().string(), new TypeReference<List<BlockedVersion>>() {
+            });
+            return blockedVersions;
+        } catch (IOException e) {
+            logger.error("Unable to read blocked versions", e);
+            throw new UpdateException("Unable to read blocked versions");
+        }
+    }
+
+
     public void exitWithReturnCode(final int returnCode) {
         new Thread(() -> {
             try {
@@ -262,5 +288,12 @@ public class UpdateManager implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         currentVersion = new SemanticVersion(currentVersionString);
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class BlockedVersion {
+        private SemanticVersion version;
+        private String comment;
     }
 }
