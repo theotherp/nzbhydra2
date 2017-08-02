@@ -20,18 +20,18 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
-@DataJpaTest
 public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
@@ -57,6 +57,7 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Test
     public void shouldSearch() throws Exception {
+        //One indexer has two results, the other one. A request is done with a limit of 2. Both indexers return one result. Another request is done with offset 2, the first indexer returns its second result
 
         String expectedContent1a = Resources.toString(Resources.getResource(SearchingIntegrationTest.class, "simplesearchresult1a.xml"), Charsets.UTF_8);
         String expectedContent1b = Resources.toString(Resources.getResource(SearchingIntegrationTest.class, "simplesearchresult1b.xml"), Charsets.UTF_8);
@@ -76,14 +77,15 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 2);
         SearchResult searchResult = searcher.search(searchRequest);
 
-        //assertThat(searchResult.getDuplicateDetectionResult().getDuplicateGroups().size(), is(2));
+        assertThat(searchResult.getSearchResultItems().size(), is(2));
 
         searchRequest.setLimit(100);
         searchRequest.setOffset(2);
 
         searchResult = searcher.search(searchRequest);
 
-        //assertThat(searchResult.getDuplicateDetectionResult().getDuplicateGroups().size(), is(3));
+        assertThat(searchResult.getSearchResultItems().size(), is(1));
+        assertThat(searchResult.getSearchResultItems().get(0).getTitle(), is("itemTitle1b"));
 
     }
 
