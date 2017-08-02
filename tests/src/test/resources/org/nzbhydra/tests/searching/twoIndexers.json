@@ -1,22 +1,25 @@
 {
   "indexers": [
     {
-      "apikey": "apikey1",
+      "apiKey": "apikey1",
       "enabled": true,
       "enabledForSearchSource": "BOTH",
-      "host": "http://localhost:7070",
+      "host": "http://127.0.0.1:7070",
       "name": "hallo1",
       "score": 0,
-      "searchModuleType": "NEWZNAB"
+      "searchModuleType": "NEWZNAB",
+      "configComplete": true
+
     },
     {
-      "apikey": "apikey2",
+      "apiKey": "apikey2",
       "enabled": true,
       "enabledForSearchSource": "BOTH",
-      "host": "http://localhost:7070",
+      "host": "http://127.0.0.1:7070",
       "name": "hallo2",
       "score": 0,
-      "searchModuleType": "NEWZNAB"
+      "searchModuleType": "NEWZNAB",
+      "configComplete": true
     }
   ],
   "main": {

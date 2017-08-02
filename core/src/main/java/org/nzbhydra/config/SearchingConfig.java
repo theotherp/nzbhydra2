@@ -18,9 +18,9 @@ public class SearchingConfig extends ValidatingConfig {
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
     //categorySettings ;
-    private float duplicateAgeThreshold;
-    private float duplicateSizeThresholdInPercent;
-    private boolean enableCategorySizes;
+    private float duplicateAgeThreshold = 2.0F;
+    private float duplicateSizeThresholdInPercent = 1.0F;
+    private boolean enableCategorySizes = true;
     private List<String> forbiddenGroups = new ArrayList<>();
     private List<String> forbiddenPosters = new ArrayList<>();
     private String forbiddenRegex;
@@ -28,9 +28,9 @@ public class SearchingConfig extends ValidatingConfig {
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
-    private boolean ignorePassworded;
-    private boolean ignoreTemporarilyDisabled;
-    private int keepSearchResultsForDays;
+    private boolean ignorePassworded = false;
+    private boolean ignoreTemporarilyDisabled = false;
+    private int keepSearchResultsForDays = 14;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
@@ -38,9 +38,9 @@ public class SearchingConfig extends ValidatingConfig {
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
     private Integer timeout = 30;
-    private String userAgent;
-    private boolean useOriginalCategories;
-    private boolean wrapApiErrors;
+    private String userAgent = "NZBHydra2";
+    private boolean useOriginalCategories = false;
+    private boolean wrapApiErrors = false;
 
     public SearchingConfig() {
         //removeTrailing = new ArrayList<>(Arrays.asList(".mp4", ".mkv", ".subs", ".REPOST", "repost", "~DG~", ".DG", "-DG", "-1", ".1", "(1)", "ReUp", "ReUp2", "-RP", "-AsRequested", "-Obfuscated", "-Scrambled", "-Chamele0n", "-BUYMORE", "-[TRP]", "-DG", ".par2", ".part01", "part01.rar", ".part02.rar", ".jpg", "[rartv]", "[rarbg]", "[eztv]", "English", "Korean", "Spanish", "French", "German", "Italian", "Danish", "Dutch", "Japanese", "Cantonese", "Mandarin", "Russian", "Polish", "Vietnamese", "Swedish", "Norwegian", "Finnish", "Turkish", "Portuguese", "Flemish", "Greek", "Hungarian"));

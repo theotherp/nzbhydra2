@@ -26,7 +26,7 @@ public class TmdbHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
 
-    @Value("${nzbhydra.tmdb.apikey}")
+    @Value("${nzbhydra.tmdb.apikey:}")
     protected String tmdbApiKey;
 
     Tmdb tmdb;

@@ -30,7 +30,6 @@ public class IndexerWebAccess {
         HttpHeaders headers = new HttpHeaders();
         headers.add("User-Agent", configProvider.getBaseConfig().getSearching().getUserAgent());
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-
         Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
         try {
             return future.get(timeout, TimeUnit.SECONDS);

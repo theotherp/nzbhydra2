@@ -23,10 +23,10 @@ public class IndexerConfig extends ValidatingConfig {
     @JsonFormat(shape = Shape.STRING)
     private BackendType backend = BackendType.NEWZNAB;
     private IndexerCategoryConfig categoryMapping = new IndexerCategoryConfig();
-    private boolean configComplete;
+    private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
-    private boolean enabled;
+    private boolean enabled = true;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
@@ -37,10 +37,10 @@ public class IndexerConfig extends ValidatingConfig {
     private String name;
     @SensitiveData
     private String password = null;
-    private boolean preselect;
+    private boolean preselect = true;
     private Integer score = null;
     private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
-    private boolean showOnSearch;
+    private boolean showOnSearch = true;
     @JsonFormat(shape = Shape.STRING)
     private List<IdType> supportedSearchIds = new ArrayList<>();
     private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();

@@ -301,6 +301,6 @@ searching:
   requiredRegex: null
   requiredWords: []
   timeout: 20
-  userAgent: "NZBHydra"
+  userAgent: "NZBHydra2"
   useOriginalCategories: false
   wrapApiErrors: false

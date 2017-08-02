@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Data
@@ -39,7 +40,10 @@ public class DownloadingConfig extends ValidatingConfig {
         List<String> downloaderWarnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(List::stream).collect(Collectors.toList());
         warnings.addAll(downloaderWarnings);
 
-
         return new ConfigValidationResult(errors.isEmpty(), errors, warnings);
+    }
+
+    public Optional<String> getSaveTorrentsTo() {
+        return Optional.ofNullable(saveTorrentsTo);
     }
 }

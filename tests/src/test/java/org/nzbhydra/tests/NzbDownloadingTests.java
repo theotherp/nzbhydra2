@@ -26,6 +26,7 @@ import org.nzbhydra.searching.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.TestPropertySource;
@@ -36,6 +37,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
 
 import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -95,6 +98,8 @@ public class NzbDownloadingTests {
         searchResult.setIndexerGuid("someNzbd");
         searchResult.setLink("http://127.0.0.1:7070/getnzb?id=123");
         searchResult.setTitle("someNzb");
+        searchResult.setPubDate(Instant.now());
+        searchResult.setFirstFound(Instant.now());
         searchResult = searchResultRepository.save(searchResult);
         searchResultId = searchResult.getId();
 
@@ -113,7 +118,7 @@ public class NzbDownloadingTests {
     @Test
     public void shouldRedirectToIndexer() throws Exception {
         baseConfig.getSearching().setNzbAccessType(NzbAccessType.REDIRECT);
-        mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(status().is(307)).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
+        mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(status().is(HttpStatus.FOUND.value())).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
     }
 
     @Test

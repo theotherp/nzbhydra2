@@ -80,7 +80,7 @@ public class IndexerForSearchSelector {
         public IndexerForSearchSelection pickIndexers() {
             List<Indexer> enabledIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
             if (enabledIndexers.isEmpty()) {
-                logger.warn("You have no enabled indexers");
+                logger.warn("You don't have any enabled indexers");
                 return new IndexerForSearchSelection();
             }
 

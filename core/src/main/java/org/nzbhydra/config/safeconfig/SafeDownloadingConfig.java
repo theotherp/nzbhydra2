@@ -14,7 +14,7 @@ public class SafeDownloadingConfig {
     private List<SafeDownloaderConfig> downloaders;
 
     public SafeDownloadingConfig(DownloadingConfig downloadingConfig) {
-        saveTorrentsTo = downloadingConfig.getSaveTorrentsTo();
+        saveTorrentsTo = downloadingConfig.getSaveTorrentsTo().orElse(null);
         downloaders = downloadingConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
     }
 

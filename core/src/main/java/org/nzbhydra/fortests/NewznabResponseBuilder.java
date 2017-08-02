@@ -40,7 +40,7 @@ public class NewznabResponseBuilder {
             RssItem item = new RssItem();
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle(itemTitleBase + i);
-            item.setPubDate(Instant.now().minus(random.nextInt(1000), ChronoUnit.HOURS));
+            item.setPubDate(Instant.now().minus(i * 1000, ChronoUnit.HOURS));
             item.setEnclosure(new Enclosure("enclosureUrl", 5L));
             item.setComments("http://www.comments.com/" + i);
             item.setLink("http://www.link.com/" + i);

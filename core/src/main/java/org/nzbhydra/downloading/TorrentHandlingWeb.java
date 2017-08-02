@@ -66,7 +66,11 @@ public class TorrentHandlingWeb {
         if (!downloadResult.isSuccessful()) {
             return GenericResponse.notOk(downloadResult.getError());
         }
-        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo(), downloadResult.getTitle() + ".torrent");
+        if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
+            logger.error("Torrent black hole folder not set");
+            return GenericResponse.notOk("Torrent black hole folder not set");
+        }
+        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), downloadResult.getTitle() + ".torrent");
         try {
             Files.write(downloadResult.getNzbContent().getBytes(), torrent);
             logger.info("Saved torrent file to {}", torrent.getAbsolutePath());

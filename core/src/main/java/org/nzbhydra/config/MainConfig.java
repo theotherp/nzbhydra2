@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,39 +23,39 @@ public class MainConfig extends ValidatingConfig {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion;
-    private boolean backupEverySunday;
-    private String dereferer;
+    private Integer configVersion = 1;
+    private boolean backupEverySunday = true;
+    private String dereferer = null;
     @SensitiveData
     private String externalUrl = null;
-    private String host;
-    private boolean firstStart;
-    private Long firstStartedAt;
+    private String host = "0.0.0.0";
+    private boolean firstStart = true;
+    private Long firstStartedAt = Instant.now().getEpochSecond();
     private LoggingConfig logging = new LoggingConfig();
-    private int port;
+    private int port = 5076;
     @JsonFormat(shape = Shape.STRING)
-    private ProxyType proxyType;
+    private ProxyType proxyType = ProxyType.NONE;
     private String proxyHost = null;
     private int proxyPort;
-    private boolean proxyIgnoreLocal;
-    private List<String> proxyIgnoreDomains;
+    private boolean proxyIgnoreLocal = true;
+    private List<String> proxyIgnoreDomains = new ArrayList<>();
     private String proxyUsername;
     private String proxyPassword;
     private String repositoryBase;
     private String secret;
-    private boolean showNews;
-    private boolean shutdownForRestart;
-    private boolean ssl;
+    private boolean showNews = true;
+    private boolean shutdownForRestart = false;
+    private boolean ssl = false;
     private String sslcert = null;
     private String sslkey = null;
-    private boolean startupBrowser;
+    private boolean startupBrowser = true;
     protected String theme;
     protected String urlBase = null;
-    private boolean updateCheckEnabled;
-    private boolean useCsrf;
-    private boolean useLocalUrlForApiAccess;
-    private boolean verifySsl;
-    private boolean welcomeShown;
+    private boolean updateCheckEnabled = true;
+    private boolean useCsrf = true;
+    private boolean useLocalUrlForApiAccess = true;
+    private boolean verifySsl = true;
+    private boolean welcomeShown = false;
 
     public Optional<String> getExternalUrl() {
         return Optional.ofNullable(externalUrl);

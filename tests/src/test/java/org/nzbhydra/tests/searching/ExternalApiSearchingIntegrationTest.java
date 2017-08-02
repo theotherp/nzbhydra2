@@ -20,8 +20,8 @@ import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -33,8 +33,6 @@ import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
-@DataJpaTest
-//@TestPropertySource(locations = {"classpath:/org/nzbhydra/tests/searching/externalApiTest.properties}", "classpath:org/nzbhydra/tests/categories.properties"})
 public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
     @Autowired
@@ -59,7 +57,6 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
 
     @Test
     public void shouldSearch() throws Exception {
-
         String expectedContent1a = Resources.toString(Resources.getResource(ExternalApiSearchingIntegrationTest.class, "simplesearchresult1a.xml"), Charsets.UTF_8);
         String expectedContent1b = Resources.toString(Resources.getResource(ExternalApiSearchingIntegrationTest.class, "simplesearchresult1b.xml"), Charsets.UTF_8);
         String expectedContent2 = Resources.toString(Resources.getResource(ExternalApiSearchingIntegrationTest.class, "simplesearchresult2.xml"), Charsets.UTF_8);
@@ -80,21 +77,21 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
         assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
     }
 
     @Test
-    public void test2() throws Exception {
+    public void shouldCallIndexerWithMoreResultsASecondTime() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
 
         String xml1 = builder.getTestResult(1, 2, "indexer1", 0, 3).toXmlString();
@@ -112,21 +109,20 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         ));
 
         NewznabParameters apiCallParameters = new NewznabParameters();
-        apiCallParameters.setApikey("apikey");
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle13"));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("indexer13"));
     }
 
     @Test
@@ -152,14 +148,14 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setOffset(0);
         apiCallParameters.setLimit(100);
         apiCallParameters.setT(ActionAttribute.SEARCH);
-        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(100));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(100);
 
-        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, null).getBody();
+        apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(50));
     }

@@ -39,6 +39,7 @@ import org.nzbhydra.web.UsernameOrIpStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +73,9 @@ public class ExternalApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
+    @Value("${nzbhydra.dev.noApiKey:false}")
+    private boolean noApiKeyNeeded = false;
+
     @Autowired
     protected Searcher searcher;
     @Autowired
@@ -93,8 +97,7 @@ public class ExternalApi {
 
         logger.info("Received external {}API call: {}", (isTorznabCall(request) ? "torznab " : ""), params);
 
-        //TODO Check if this is still needed, perhaps manually checking and returning proper error message page is better
-        if (configProvider.getBaseConfig().getMain().getApiKey().isPresent() && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey().get())) {
+        if (!noApiKeyNeeded && (!configProvider.getBaseConfig().getMain().getApiKey().isPresent() || !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey().get()))) {
             logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }

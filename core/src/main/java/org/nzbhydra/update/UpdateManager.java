@@ -64,8 +64,6 @@ public class UpdateManager implements InitializingBean {
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;
 
-    //TODO Unify calls. Only one entry for update check. That should cache so that not for every call github is called for a new update, for changelog, for blocked versions
-
     private ObjectMapper objectMapper;
     protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
 

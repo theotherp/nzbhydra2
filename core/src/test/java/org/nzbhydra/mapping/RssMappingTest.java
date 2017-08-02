@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -167,7 +168,7 @@ public class RssMappingTest {
         RssItem item = items.get(0);
         assertThat(item.getTitle(), is("The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster"));
         assertThat(item.getRssGuid().getGuid(), is("https://unicasthe.net/torrents.php?action=download&id=799031&authkey=authkey&torrent_pass=torrentPass"));
-        assertThat(item.getLink(), is("http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent"));
+        assertThat(item.getLink(), startsWith("http://127.0.0.1:9117/dl/unicasthenet/jackettApiKey?path=linkstuff&file=The.Challenge.S30.Special.14.Times.Our.Challengers.Found.Their.Shit.1080p.WEB.x264-CookieMonster.torrent"));
         assertThat(item.getCategory(), is("5000"));
         assertThat(item.getEnclosure().getLength(), is(1459519537L));
         assertThat(item.getTorznabAttributes().size(), is(6));
