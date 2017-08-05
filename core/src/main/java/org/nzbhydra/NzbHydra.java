@@ -130,7 +130,7 @@ public class NzbHydra {
             logger.info("Adding windows system tray icon");
             new WindowsTrayIcon();
         } else {
-            logger.debug("Not adding windows system tray icon because OS is ", osName);
+            logger.debug("Not adding windows system tray icon because OS is {}", osName);
         }
 
     }

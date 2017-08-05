@@ -275,6 +275,11 @@ public class UpdateManager implements InitializingBean {
     public void exitWithReturnCode(final int returnCode) {
         new Thread(() -> {
             try {
+                Files.write(new File(NzbHydra.getDataFolder(), "control.id").toPath(), String.valueOf(returnCode).getBytes());
+            } catch (IOException e) {
+                logger.error("Unable to write control code to file. Wrapper might not behave as expected");
+            }
+            try {
                 //Wait just enough for the request to be completed
                 Thread.sleep(300);
                 ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
