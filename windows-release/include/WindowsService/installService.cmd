@@ -14,16 +14,24 @@ if %errorLevel% == 0 (
 echo Installing service
 call "%~dp0nssm.exe" install NzbHydra2 "%%~dp0..\nzbhydra2.exe"
 if %errorlevel% neq 0 goto failure
+
 echo Setting service exe
 call "%~dp0nssm.exe" set NzbHydra2 Application "%~dp0..\nzbhydra2.exe"
 if %errorlevel% neq 0 goto failure
+
 echo Setting service folder
 call "%~dp0nssm.exe" set NzbHydra2 AppDirectory "%~dp0.."
 if %errorlevel% neq 0 goto failure
+
+echo Setting service to shutdown on return code 0 of wrapper
+call "%~dp0nssm.exe" set NzbHydra2 AppExit 0 Exit
+if %errorlevel% neq 0 goto failure
+
 echo Enter your username like this: ".\username" 
 set /p username="Username:"
 set /p password="Enter your windows password:"
 call "%~dp0nssm.exe" set NzbHydra2 ObjectName %username% %password%
+
 echo Service installed successfully. Starting service...
 call "%~dp0nssm.exe" start NzbHydra2
 pause
