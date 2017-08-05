@@ -131,10 +131,14 @@ public class HydraOkHttp3ClientHttpRequestFactory
     @Override
     public void destroy() throws IOException {
         // Clean up the client if we created it in the constructor
-        if (this.client.cache() != null) {
-            this.client.cache().close();
+        try {
+            if (this.client.cache() != null) {
+                this.client.cache().close();
+            }
+            this.client.dispatcher().executorService().shutdown();
+        } catch (NullPointerException e) {
+            //Ignore
         }
-        this.client.dispatcher().executorService().shutdown();
     }
 
 

@@ -15,6 +15,7 @@ import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.github.Asset;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -275,6 +277,8 @@ public class UpdateManager implements InitializingBean {
             try {
                 //Wait just enough for the request to be completed
                 Thread.sleep(300);
+                ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
+                WindowsTrayIcon.remove();
                 System.exit(returnCode);
             } catch (InterruptedException e) {
                 logger.error("Error while waiting to exit", e); //Doesn't ever happen anyway

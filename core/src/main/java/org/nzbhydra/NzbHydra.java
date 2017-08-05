@@ -4,9 +4,9 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.migration.FromPythonMigration;
+import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.slf4j.Logger;
@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.system.ApplicationPidFileWriter;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.guava.GuavaCacheManager;
@@ -33,10 +32,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -56,6 +53,7 @@ public class NzbHydra {
 
     private static ConfigurableApplicationContext applicationContext;
 
+
     @Autowired
     private ConfigProvider configProvider;
     private static String dataFolder = null;
@@ -64,7 +62,7 @@ public class NzbHydra {
     private SearchResultRepository searchResultRepository;
 
     @Autowired
-    private IndexerRepository indexerRepository;
+    private BrowserOpener browserOpener;
 
     @Autowired
     private CategoryProvider categoryProvider;
@@ -113,14 +111,28 @@ public class NzbHydra {
             }
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-            hydraApplication.addListeners(new ApplicationPidFileWriter());
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
             if (!options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
             }
+            hydraApplication.setHeadless(true); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
+
+            addTrayIconIfApplicable();
             applicationContext = hydraApplication.run(args);
         }
+    }
+
+    protected static void addTrayIconIfApplicable() {
+        String osName = System.getProperty("os.name");
+        boolean isOsWindows = osName.toLowerCase().contains("windows");
+        if (isOsWindows) {
+            logger.info("Adding windows system tray icon");
+            new WindowsTrayIcon();
+        } else {
+            logger.debug("Not adding windows system tray icon because OS is ", osName);
+        }
+
     }
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
@@ -160,18 +172,7 @@ public class NzbHydra {
                 logger.info("Not opening browser after restart");
                 return;
             }
-            Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-            URI uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
-            logger.info("Opening {} in browser", uri);
-            if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
-                try {
-                    desktop.browse(uri);
-                } catch (Exception e) {
-                    logger.error("Unable to open browser", e);
-                }
-            } else {
-                logger.error("Unable to open browser");
-            }
+            browserOpener.openBrowser();
         }
     }
 
@@ -208,8 +209,6 @@ public class NzbHydra {
     @RequestMapping("/test")
     @Transactional
     public String test() throws IOException, ExecutionException, InterruptedException {
-
-
         return "Ok";
     }
 
