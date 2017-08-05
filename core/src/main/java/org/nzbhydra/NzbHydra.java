@@ -90,7 +90,7 @@ public class NzbHydra {
         } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            System.out.println(NzbHydra.class.getPackage().getImplementationVersion());
+            System.out.println("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
         } else {
             if (options.has("datafolder")) {
                 dataFolder = (String) options.valueOf("datafolder");
@@ -98,17 +98,13 @@ public class NzbHydra {
                 dataFolder = "./data";
             }
             dataFolder = new File(dataFolder).getCanonicalPath();
-            logger.info("Using data folder {}", dataFolder);
 
             System.setProperty("nzbhydra.dataFolder", dataFolder);
             System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
-            useIfSet(options, "host", "server.address");
-            useIfSet(options, "port", "server.port");
+            useIfSet(options, "host", "main.host");
+            useIfSet(options, "port", "main.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");
 
-            if (anySettingsOverwritten) {
-                logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
-            }
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
@@ -116,9 +112,13 @@ public class NzbHydra {
             if (!options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
             }
-            hydraApplication.setHeadless(true); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
 
             addTrayIconIfApplicable();
+
+            logger.info("Using data folder {}", dataFolder);
+            if (anySettingsOverwritten) {
+                logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
+            }
             applicationContext = hydraApplication.run(args);
         }
     }
