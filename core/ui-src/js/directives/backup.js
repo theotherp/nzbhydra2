@@ -57,7 +57,7 @@ function hydrabackup() {
 
         $scope.restoreFromFile = function (filename) {
             BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.countdown2("Extraction of backup successful. Restarting for wrapper to restore data.");
+                    RestartService.restart("Extraction of backup successful. Restarting for wrapper to restore data.");
                 },
                 function (response) {
                     growl.error(response.data);

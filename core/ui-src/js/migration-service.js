@@ -8,7 +8,6 @@ function MigrationService($uibModal) {
         migrate: migrate
     };
 
-
     function migrate() {
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/migration-modal.html',
@@ -23,7 +22,6 @@ function MigrationService($uibModal) {
         });
     }
 
-
 }
 
 angular
@@ -37,6 +35,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
     $scope.yes = function () {
         blockUI.start("Starting migration. This may take a while...");
         $http.get("internalapi/migration", {params: {baseurl: $scope.baseUrl}}).then(function (response) {
+            var message;
                 blockUI.stop();
                 var data = response.data;
                 if (!data.requirementsMet) {
@@ -54,7 +53,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     });
                 } else if (!data.databaseMigrated) {
                     $uibModalInstance.dismiss();
-                    var message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
+                    message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
                     if (data.messages.length > 0) {
                         message += "<br><br>The following warnings resulted from the config migration:";
                         _.forEach(data.messages, function (msg) {
@@ -68,7 +67,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     });
                 } else {
                     $uibModalInstance.dismiss();
-                    var message = "The migration was completed successfully.";
+                    message = "The migration was completed successfully.";
                     if (data.warningMessages.length > 0) {
                         message += "<br><br>The following warnings resulted from the config migration:";
                         _.forEach(data.warningMessages, function (msg) {
@@ -79,7 +78,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     ModalService.open("Migration successful", message, {
                         yes: {
                             onYes: function () {
-                                RestartService.countdown();
+                                RestartService.startCountdown();
                             },
                             text: "Restart"
                         },

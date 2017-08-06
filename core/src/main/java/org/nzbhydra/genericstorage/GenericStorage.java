@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -22,6 +23,7 @@ public class GenericStorage<T extends Serializable> {
         objectMapper.registerModule(new JavaTimeModule());
     }
 
+    @Transactional
     public void save(String key, T value) {
         repository.deleteByKey(key);
         try {

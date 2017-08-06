@@ -2,53 +2,73 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService) {
+function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService, $uibModal) {
 
     return {
         restart: restart,
-        countdown: countdown,
         startCountdown: startCountdown
     };
 
-    function internalCaR(message, timer) {
-        if (timer === 45) {
-            blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
-        } else {
-            blockUI.start(message + " Will reload page when NZBHydra is back.");
-            $timeout(function () {
-                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
-                    $timeout(function () {
-                        blockUI.start("Reloading page...");
-                        $window.location.reload();
-                    }, 500);
-                }, function () {
-                    internalCaR(message, timer + 1);
-                });
-            }, 1000);
-            blockUI.start(message + " Will reload page when NZBHydra is back.");
-        }
-    }
-
-    function countdown() {
-        internalCaR("", 15);
-    }
 
     function restart(message) {
-        message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                startCountdown(message)
-            },
-            function (x) {
-                console.log(x);
-                growl.info("Unable to send restart command.");
-            }
-        )
+            startCountdown(message);
+        }, function () {
+            growl.info("Unable to send restart command.");
+        })
     }
+
 
     function startCountdown(message) {
         blockUI.start(message + " Will reload page when NZBHydra is back.");
-        $timeout(function () {
-            internalCaR(message, 0);
-        }, 3000)
+        $uibModal.open({
+            templateUrl: 'static/html/restart-modal.html',
+            controller: RestartModalInstanceCtrl,
+            size: "md",
+            backdrop: 'static',
+            keyboard: false,
+            resolve: {
+                message: function () {
+                    return message;
+                }
+            }
+        });
+
     }
+
+
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('RestartModalInstanceCtrl', RestartModalInstanceCtrl);
+
+function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
+
+    $scope.message = message;
+
+    $scope.internalCaR = function (message, timer) {
+        if (timer === 45) {
+            $scope.message = message + "Restarting takes longer than expected. You might want to check the log to see what's going on.";
+        } else {
+            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $timeout(function () {
+                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
+                    $timeout(function () {
+                        $scope.message = "Reloading page...";
+                        $window.location.reload();
+                    }, 500);
+                }, function () {
+                    $scope.internalCaR(message, timer + 1);
+                });
+            }, 1000);
+            $scope.message = message + " Will reload page when NZBHydra is back.";
+        }
+    };
+
+    //Wait three seconds because otherwise the currently running instance will be found
+    $timeout(function () {
+        $scope.internalCaR(message, 0);
+    }, 3000)
+
 }

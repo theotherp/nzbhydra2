@@ -11,6 +11,7 @@ nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
 
     blockUIConfig.autoBlock = false;
+    blockUIConfig.resetOnException = false;
     $urlMatcherFactoryProvider.strictMode(false);
 
     $urlRouterProvider.otherwise("/");
@@ -741,6 +742,7 @@ nzbhydraapp.directive('autoFocus', ["$timeout", function ($timeout) {
     };
 }]);
 
+
 nzbhydraapp.factory('responseObserver', ["$q", "$window", "growl", function responseObserver($q, $window, growl) {
     return {
         'responseError': function (errorResponse) {
@@ -760,6 +762,7 @@ nzbhydraapp.factory('responseObserver', ["$q", "$window", "growl", function resp
 nzbhydraapp.config(["$httpProvider", function ($httpProvider) {
     $httpProvider.interceptors.push('responseObserver');
 }]);
+
 
 
 nzbhydraapp.factory('focus', ["$timeout", "$window", function ($timeout, $window) {
@@ -2028,7 +2031,7 @@ function hydrabackup() {
 
         $scope.restoreFromFile = function (filename) {
             BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.countdown2("Extraction of backup successful. Restarting for wrapper to restore data.");
+                    RestartService.restart("Extraction of backup successful. Restarting for wrapper to restore data.");
                 },
                 function (response) {
                     growl.error(response.data);
@@ -3907,57 +3910,78 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService) {
+function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService, $uibModal) {
 
     return {
         restart: restart,
-        countdown: countdown,
         startCountdown: startCountdown
     };
 
-    function internalCaR(message, timer) {
-        if (timer === 45) {
-            blockUI.start(message + "Restarting takes longer than expected. You might want to check the log to see what's going on.");
-        } else {
-            blockUI.start(message + " Will reload page when NZBHydra is back.");
-            $timeout(function () {
-                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
-                    $timeout(function () {
-                        blockUI.start("Reloading page...");
-                        $window.location.reload();
-                    }, 500);
-                }, function () {
-                    internalCaR(message, timer + 1);
-                });
-            }, 1000);
-            blockUI.start(message + " Will reload page when NZBHydra is back.");
-        }
-    }
-
-    function countdown() {
-        internalCaR("", 15);
-    }
 
     function restart(message) {
-        message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                startCountdown(message)
-            },
-            function (x) {
-                console.log(x);
-                growl.info("Unable to send restart command.");
-            }
-        )
+            startCountdown(message);
+        }, function () {
+            growl.info("Unable to send restart command.");
+        })
     }
+
 
     function startCountdown(message) {
         blockUI.start(message + " Will reload page when NZBHydra is back.");
-        $timeout(function () {
-            internalCaR(message, 0);
-        }, 3000)
+        $uibModal.open({
+            templateUrl: 'static/html/restart-modal.html',
+            controller: RestartModalInstanceCtrl,
+            size: "md",
+            backdrop: 'static',
+            keyboard: false,
+            resolve: {
+                message: function () {
+                    return message;
+                }
+            }
+        });
+
     }
+
+
 }
-RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService"];
+RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService", "$uibModal"];
+
+angular
+    .module('nzbhydraApp')
+    .controller('RestartModalInstanceCtrl', RestartModalInstanceCtrl);
+
+function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
+
+    $scope.message = message;
+
+    $scope.internalCaR = function (message, timer) {
+        if (timer === 45) {
+            $scope.message = message + "Restarting takes longer than expected. You might want to check the log to see what's going on.";
+        } else {
+            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $timeout(function () {
+                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
+                    $timeout(function () {
+                        $scope.message = "Reloading page...";
+                        $window.location.reload();
+                    }, 500);
+                }, function () {
+                    $scope.internalCaR(message, timer + 1);
+                });
+            }, 1000);
+            $scope.message = message + " Will reload page when NZBHydra is back.";
+        }
+    };
+
+    //Wait three seconds because otherwise the currently running instance will be found
+    $timeout(function () {
+        $scope.internalCaR(message, 0);
+    }, 3000)
+
+}
+RestartModalInstanceCtrl.$inject = ["$scope", "$timeout", "$http", "$window", "message"];
 
 angular
     .module('nzbhydraApp')
@@ -4204,7 +4228,6 @@ function MigrationService($uibModal) {
         migrate: migrate
     };
 
-
     function migrate() {
         var modalInstance = $uibModal.open({
             templateUrl: 'static/html/migration-modal.html',
@@ -4215,10 +4238,9 @@ function MigrationService($uibModal) {
         modalInstance.result.then(function () {
             ConfigService.reloadConfig();
         }, function () {
-
+            
         });
     }
-
 
 }
 MigrationService.$inject = ["$uibModal"];
@@ -4234,6 +4256,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
     $scope.yes = function () {
         blockUI.start("Starting migration. This may take a while...");
         $http.get("internalapi/migration", {params: {baseurl: $scope.baseUrl}}).then(function (response) {
+                var message;
                 blockUI.stop();
                 var data = response.data;
                 if (!data.requirementsMet) {
@@ -4251,7 +4274,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     });
                 } else if (!data.databaseMigrated) {
                     $uibModalInstance.dismiss();
-                    var message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
+                    message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
                     if (data.messages.length > 0) {
                         message += "<br><br>The following warnings resulted from the config migration:";
                         _.forEach(data.messages, function (msg) {
@@ -4265,7 +4288,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     });
                 } else {
                     $uibModalInstance.dismiss();
-                    var message = "The migration was completed successfully.";
+                    message = "The migration was completed successfully.";
                     if (data.warningMessages.length > 0) {
                         message += "<br><br>The following warnings resulted from the config migration:";
                         _.forEach(data.warningMessages, function (msg) {
@@ -4276,7 +4299,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
                     ModalService.open("Migration successful", message, {
                         yes: {
                             onYes: function () {
-                                RestartService.countdown();
+                                RestartService.startCountdown();
                             },
                             text: "Restart"
                         },
