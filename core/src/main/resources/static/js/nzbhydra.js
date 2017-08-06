@@ -764,7 +764,6 @@ nzbhydraapp.config(["$httpProvider", function ($httpProvider) {
 }]);
 
 
-
 nzbhydraapp.factory('focus', ["$timeout", "$window", function ($timeout, $window) {
     return function (id) {
         // timeout makes sure that it is invoked after any other event has been triggered.
@@ -4238,7 +4237,7 @@ function MigrationService($uibModal) {
         modalInstance.result.then(function () {
             ConfigService.reloadConfig();
         }, function () {
-            
+
         });
     }
 
@@ -4256,7 +4255,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $http, blockUI, M
     $scope.yes = function () {
         blockUI.start("Starting migration. This may take a while...");
         $http.get("internalapi/migration", {params: {baseurl: $scope.baseUrl}}).then(function (response) {
-                var message;
+            var message;
                 blockUI.stop();
                 var data = response.data;
                 if (!data.requirementsMet) {

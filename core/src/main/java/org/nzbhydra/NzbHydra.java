@@ -101,8 +101,8 @@ public class NzbHydra {
 
             System.setProperty("nzbhydra.dataFolder", dataFolder);
             System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
-            useIfSet(options, "host", "main.host");
-            useIfSet(options, "port", "main.port");
+            useIfSet(options, "host", "server.address");
+            useIfSet(options, "port", "server.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
@@ -140,6 +140,7 @@ public class NzbHydra {
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName, String propertyValue) {
         if (options.has(optionKey)) {
+            logger.debug("Setting property {} to value {}", propertyName, propertyValue);
             System.setProperty(propertyName, propertyValue);
             anySettingsOverwritten = true;
         }
