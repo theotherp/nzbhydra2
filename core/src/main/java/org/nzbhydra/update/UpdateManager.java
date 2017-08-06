@@ -32,6 +32,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -275,7 +276,9 @@ public class UpdateManager implements InitializingBean {
     public void exitWithReturnCode(final int returnCode) {
         new Thread(() -> {
             try {
-                Files.write(new File(NzbHydra.getDataFolder(), "control.id").toPath(), String.valueOf(returnCode).getBytes());
+                Path controlIdFilePath = new File(NzbHydra.getDataFolder(), "control.id").toPath();
+                logger.debug("Writing control ID {} to {}", returnCode, controlIdFilePath);
+                Files.write(controlIdFilePath, String.valueOf(returnCode).getBytes());
             } catch (IOException e) {
                 logger.error("Unable to write control code to file. Wrapper might not behave as expected");
             }

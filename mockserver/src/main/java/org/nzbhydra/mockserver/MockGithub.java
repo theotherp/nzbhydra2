@@ -29,7 +29,7 @@ public class MockGithub {
         releasev2.setBody("Changes in version 2.0.0");
         releasev2.setTagName("v2.0.0");
         Asset asset = new Asset();
-        asset.setBrowserDownloadUrl("http://127.0.0.1:5080/static/NzbHydra-v2.0.0-windows.zip");
+        asset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/NzbHydra-v2.0.0-windows.zip");
         asset.setName("NzbHydra-v2.0.0-windows.zip");
         asset.setSize(163L);
         releasev2.setAssets(Arrays.asList(asset));

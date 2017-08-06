@@ -105,7 +105,6 @@ public class NzbHydra {
             useIfSet(options, "port", "main.port");
             useIfSet(options, "nobrowser", "main.startupBrowser", "false");
 
-
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));

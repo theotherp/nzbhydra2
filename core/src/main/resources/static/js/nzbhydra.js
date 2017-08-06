@@ -2188,7 +2188,7 @@ function UpdateService($http, growl, blockUI, RestartService) {
         $http.put("internalapi/updates/installUpdate").then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                RestartService.restart("Downloaded update. Shutting down Hydra for wrapper to execute update.");
+                RestartService.startCountdown("Downloaded update. Shutting down Hydra for wrapper to execute update.");
             },
             function () {
                 blockUI.reset();
@@ -3912,9 +3912,8 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     return {
         restart: restart,
         countdown: countdown,
-        countdown2: countdown2
+        startCountdown: startCountdown
     };
-
 
     function internalCaR(message, timer) {
         if (timer === 45) {
@@ -3942,10 +3941,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                blockUI.start(message + " Will reload page when NZBHydra is back.");
-                $timeout(function () {
-                    internalCaR(message, 0);
-                }, 3000)
+                startCountdown(message)
             },
             function (x) {
                 console.log(x);
@@ -3954,15 +3950,11 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         )
     }
 
-    function countdown2(message) {
-        message = angular.isDefined(message) ? message + " " : "";
-
+    function startCountdown(message) {
         blockUI.start(message + " Will reload page when NZBHydra is back.");
         $timeout(function () {
             internalCaR(message, 0);
-        }, 3000);
-
-
+        }, 3000)
     }
 }
 RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService"];

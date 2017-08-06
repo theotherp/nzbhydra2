@@ -75,7 +75,7 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public void save(File targetFile) throws IOException {
-        logger.info("Writing config to file {}", targetFile.getCanonicalPath());
+        logger.debug("Writing config to file {}", targetFile.getCanonicalPath());
         objectMapper.writeValue(targetFile, this);
     }
 

@@ -7,9 +7,8 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     return {
         restart: restart,
         countdown: countdown,
-        countdown2: countdown2
+        startCountdown: startCountdown
     };
-
 
     function internalCaR(message, timer) {
         if (timer === 45) {
@@ -37,10 +36,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
     function restart(message) {
         message = angular.isDefined(message) ? message + " " : "";
         NzbHydraControlService.restart().then(function () {
-                blockUI.start(message + " Will reload page when NZBHydra is back.");
-                $timeout(function () {
-                    internalCaR(message, 0);
-                }, 3000)
+                startCountdown(message)
             },
             function (x) {
                 console.log(x);
@@ -49,14 +45,10 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
         )
     }
 
-    function countdown2(message) {
-        message = angular.isDefined(message) ? message + " " : "";
-
+    function startCountdown(message) {
         blockUI.start(message + " Will reload page when NZBHydra is back.");
         $timeout(function () {
             internalCaR(message, 0);
-        }, 3000);
-
-
+        }, 3000)
     }
 }
