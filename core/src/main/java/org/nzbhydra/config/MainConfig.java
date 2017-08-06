@@ -28,10 +28,12 @@ public class MainConfig extends ValidatingConfig {
     private String dereferer = null;
     @SensitiveData
     private String externalUrl = null;
+    @RestartNeeded
     private String host = "0.0.0.0";
     private boolean firstStart = true;
     private Long firstStartedAt = Instant.now().getEpochSecond();
     private LoggingConfig logging = new LoggingConfig();
+    @RestartNeeded
     private int port = 5076;
     @JsonFormat(shape = Shape.STRING)
     private ProxyType proxyType = ProxyType.NONE;
@@ -45,15 +47,21 @@ public class MainConfig extends ValidatingConfig {
     private String secret;
     private boolean showNews = true;
     private boolean shutdownForRestart = false;
+    @RestartNeeded
     private boolean ssl = false;
+    @RestartNeeded
     private String sslcert = null;
+    @RestartNeeded
     private String sslkey = null;
     private boolean startupBrowser = true;
     protected String theme;
+    @RestartNeeded
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
+    @RestartNeeded
     private boolean useCsrf = true;
     private boolean useLocalUrlForApiAccess = true;
+    @RestartNeeded
     private boolean verifySsl = true;
     private boolean welcomeShown = false;
 
@@ -83,8 +91,14 @@ public class MainConfig extends ValidatingConfig {
 
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+        ConfigValidationResult result = new ConfigValidationResult();
+        if (oldConfig.getMain().getPort() != port || (oldConfig.getMain().getUrlBase().isPresent() && !oldConfig.getMain().getUrlBase().get().equals(urlBase)) && !startupBrowser) {
+            result.getWarningMessages().add("Your port and/or URL base has changed. Make sure to load the correct URL after restart");
+        }
 
-        return new ConfigValidationResult();
+        result.setRestartNeeded(isRestartNeeded(oldConfig.getMain()));
+
+        return result;
     }
 }

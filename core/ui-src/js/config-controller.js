@@ -33,10 +33,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     $scope.restartRequired = false;
     $scope.ignoreSaveNeeded = false;
 
-    ConfigFields.setRestartWatcher(function () {
-        $scope.restartRequired = true;
-    });
-
 
     function updateAndAskForRestartIfNecessary() {
         $scope.form.$setPristine();
@@ -49,21 +45,24 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     }
                 },
                 no: {
-                    onNo: function () {
+                    onNo: function ($uibModalInstance) {
                         $scope.restartRequired = false;
+                        $uibModalInstance.dismiss();
+                        $uibModalInstance.dismiss();
                     }
                 }
             });
         }
     }
 
-    function handleConfigSetResponse(response, ignoreWarnings) {
+    function handleConfigSetResponse(response, ignoreWarnings, restartNeeded) {
         if (angular.isUndefined(ignoreWarnings)) {
             ignoreWarnings = localStorageService.get("ignoreWarnings") !== null ? localStorageService.get("ignoreWarnings") : false;
         }
         //Communication with server was successful but there might be validation errors and/or warnings
         var warningMessages = response.data.warningMessages;
         var errorMessages = response.data.errorMessages;
+        $scope.restartRequired = response.data.restartNeeded || restartNeeded;
         var showMessage = errorMessages.length > 0 || (warningMessages.length > 0 && !ignoreWarnings);
 
         function extendMessageWithList(message, messages) {
@@ -103,7 +102,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                             $scope.form.$setPristine();
                             localStorageService.set("ignoreWarnings", true);
                             ConfigService.set($scope.config, true).then(function (response) {
-                                handleConfigSetResponse(response, true);
+                                handleConfigSetResponse(response, true, $scope.restartRequired);
                                 updateAndAskForRestartIfNecessary();
                             }, function (response) {
                                 //Actual error while setting or validating config
@@ -114,7 +113,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     },
                     yes: {
                         onYes: function () {
-                            $scope.form.$setPristine();
+                            handleConfigSetResponse(response, true, $scope.restartRequired);
+                            updateAndAskForRestartIfNecessary();
                         },
                         text: "OK"
                     }

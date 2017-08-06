@@ -102,7 +102,7 @@ function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params,
     $scope.no = function () {
         $uibModalInstance.close();
         if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isDefined($scope.params.no.onNo)) {
-            $scope.params.no.onNo();
+            $scope.params.no.onNo($uibModalInstance);
         }
     };
 

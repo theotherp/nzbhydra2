@@ -51,10 +51,10 @@ public class SearchingConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         List<String> errors = new ArrayList<>();
         checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");
         checkRegex(errors, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
-        return new ConfigValidationResult(errors.isEmpty(), errors, Collections.emptyList());
+        return new ConfigValidationResult(errors.isEmpty(), false, errors, Collections.emptyList());
     }
 };

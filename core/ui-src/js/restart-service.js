@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService, $uibModal) {
+function RestartService(growl, NzbHydraControlService, $uibModal) {
 
     return {
         restart: restart,
@@ -20,7 +20,6 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
 
 
     function startCountdown(message) {
-        blockUI.start(message + " Will reload page when NZBHydra is back.");
         $uibModal.open({
             templateUrl: 'static/html/restart-modal.html',
             controller: RestartModalInstanceCtrl,
@@ -45,13 +44,15 @@ angular
 
 function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
 
-    $scope.message = message;
+    message = (angular.isDefined(message) ? message : "");
+    $scope.message = message + "Will reload page when NZBHydra is back";
+
 
     $scope.internalCaR = function (message, timer) {
         if (timer === 45) {
             $scope.message = message + "Restarting takes longer than expected. You might want to check the log to see what's going on.";
         } else {
-            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $scope.message = message + "Will reload page when NZBHydra is back.";
             $timeout(function () {
                 $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
@@ -62,7 +63,7 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
                     $scope.internalCaR(message, timer + 1);
                 });
             }, 1000);
-            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $scope.message = message + "Will reload page when NZBHydra is back.";
         }
     };
 

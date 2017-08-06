@@ -3917,7 +3917,7 @@ angular
     .module('nzbhydraApp')
     .factory('RestartService', RestartService);
 
-function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraControlService, $uibModal) {
+function RestartService(growl, NzbHydraControlService, $uibModal) {
 
     return {
         restart: restart,
@@ -3935,7 +3935,6 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
 
 
     function startCountdown(message) {
-        blockUI.start(message + " Will reload page when NZBHydra is back.");
         $uibModal.open({
             templateUrl: 'static/html/restart-modal.html',
             controller: RestartModalInstanceCtrl,
@@ -3953,7 +3952,7 @@ function RestartService(blockUI, $timeout, $window, growl, $http, NzbHydraContro
 
 
 }
-RestartService.$inject = ["blockUI", "$timeout", "$window", "growl", "$http", "NzbHydraControlService", "$uibModal"];
+RestartService.$inject = ["growl", "NzbHydraControlService", "$uibModal"];
 
 angular
     .module('nzbhydraApp')
@@ -3961,13 +3960,15 @@ angular
 
 function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
 
-    $scope.message = message;
+    message = (angular.isDefined(message) ? message : "");
+    $scope.message = message + "Will reload page when NZBHydra is back";
+
 
     $scope.internalCaR = function (message, timer) {
         if (timer === 45) {
             $scope.message = message + "Restarting takes longer than expected. You might want to check the log to see what's going on.";
         } else {
-            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $scope.message = message + "Will reload page when NZBHydra is back.";
             $timeout(function () {
                 $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
@@ -3978,7 +3979,7 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
                     $scope.internalCaR(message, timer + 1);
                 });
             }, 1000);
-            $scope.message = message + " Will reload page when NZBHydra is back.";
+            $scope.message = message + "Will reload page when NZBHydra is back.";
         }
     };
 
@@ -4165,7 +4166,7 @@ function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params,
     $scope.no = function () {
         $uibModalInstance.close();
         if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isDefined($scope.params.no.onNo)) {
-            $scope.params.no.onNo();
+            $scope.params.no.onNo($uibModalInstance);
         }
     };
 
@@ -5495,23 +5496,11 @@ angular
 
 function ConfigFields($injector) {
 
-    var restartWatcher;
 
     return {
-        getFields: getFields,
-        setRestartWatcher: setRestartWatcher
+        getFields: getFields
     };
 
-    function setRestartWatcher(restartWatcherFunction) {
-        restartWatcher = restartWatcherFunction;
-    }
-
-
-    function restartListener(field, newValue, oldValue) {
-        if (newValue !== oldValue) {
-            restartWatcher();
-        }
-    }
 
 
     function ipValidator() {
@@ -5561,9 +5550,6 @@ function ConfigFields($injector) {
                             },
                             validators: {
                                 ipAddress: ipValidator()
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5578,9 +5564,6 @@ function ConfigFields($injector) {
                             },
                             validators: {
                                 port: regexValidator(/^\d{1,5}$/, "is no valid port", true)
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5623,9 +5606,6 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Use SSL',
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5637,9 +5617,6 @@ function ConfigFields($injector) {
                                 label: 'SSL certificate file',
                                 required: true,
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5651,9 +5628,6 @@ function ConfigFields($injector) {
                                 label: 'SSL key file',
                                 required: true,
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
 
@@ -5791,9 +5765,6 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Verify SSL certificates',
                                 help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
 
                         }
@@ -5817,9 +5788,6 @@ function ConfigFields($injector) {
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
                                 ]
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5831,9 +5799,6 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'MB'
                                 }
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -5848,9 +5813,6 @@ function ConfigFields($injector) {
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
                                 ]
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -6513,9 +6475,6 @@ function ConfigFields($injector) {
                             {name: 'HTTP Basic auth', value: 'BASIC'},
                             {name: 'Login form', value: 'FORM'}
                         ]
-                    },
-                    watcher: {
-                        listener: restartListener
                     }
                 },
                 {
@@ -7635,10 +7594,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     $scope.restartRequired = false;
     $scope.ignoreSaveNeeded = false;
 
-    ConfigFields.setRestartWatcher(function () {
-        $scope.restartRequired = true;
-    });
-
 
     function updateAndAskForRestartIfNecessary() {
         $scope.form.$setPristine();
@@ -7651,21 +7606,24 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     }
                 },
                 no: {
-                    onNo: function () {
+                    onNo: function ($uibModalInstance) {
                         $scope.restartRequired = false;
+                        $uibModalInstance.dismiss();
+                        $uibModalInstance.dismiss();
                     }
                 }
             });
         }
     }
 
-    function handleConfigSetResponse(response, ignoreWarnings) {
+    function handleConfigSetResponse(response, ignoreWarnings, restartNeeded) {
         if (angular.isUndefined(ignoreWarnings)) {
             ignoreWarnings = localStorageService.get("ignoreWarnings") !== null ? localStorageService.get("ignoreWarnings") : false;
         }
         //Communication with server was successful but there might be validation errors and/or warnings
         var warningMessages = response.data.warningMessages;
         var errorMessages = response.data.errorMessages;
+        $scope.restartRequired = response.data.restartNeeded || restartNeeded;
         var showMessage = errorMessages.length > 0 || (warningMessages.length > 0 && !ignoreWarnings);
 
         function extendMessageWithList(message, messages) {
@@ -7705,7 +7663,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                             $scope.form.$setPristine();
                             localStorageService.set("ignoreWarnings", true);
                             ConfigService.set($scope.config, true).then(function (response) {
-                                handleConfigSetResponse(response, true);
+                                handleConfigSetResponse(response, true, $scope.restartRequired);
                                 updateAndAskForRestartIfNecessary();
                             }, function (response) {
                                 //Actual error while setting or validating config
@@ -7716,7 +7674,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     },
                     yes: {
                         onYes: function () {
-                            $scope.form.$setPristine();
+                            handleConfigSetResponse(response, true, $scope.restartRequired);
+                            updateAndAskForRestartIfNecessary();
                         },
                         text: "OK"
                     }

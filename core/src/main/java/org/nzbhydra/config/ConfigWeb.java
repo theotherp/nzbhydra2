@@ -54,12 +54,10 @@ public class ConfigWeb {
             if (contains) {
                 logger.info(source.toString());
             }
-
         }
 
-
         logger.info("Received new config");
-        ConfigValidationResult result = config.validateConfig();
+        ConfigValidationResult result = config.validateConfig(configProvider.getBaseConfig());
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(config);
             configProvider.getBaseConfig().save();

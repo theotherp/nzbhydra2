@@ -4,23 +4,11 @@ angular
 
 function ConfigFields($injector) {
 
-    var restartWatcher;
 
     return {
-        getFields: getFields,
-        setRestartWatcher: setRestartWatcher
+        getFields: getFields
     };
 
-    function setRestartWatcher(restartWatcherFunction) {
-        restartWatcher = restartWatcherFunction;
-    }
-
-
-    function restartListener(field, newValue, oldValue) {
-        if (newValue !== oldValue) {
-            restartWatcher();
-        }
-    }
 
 
     function ipValidator() {
@@ -70,9 +58,6 @@ function ConfigFields($injector) {
                             },
                             validators: {
                                 ipAddress: ipValidator()
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -87,9 +72,6 @@ function ConfigFields($injector) {
                             },
                             validators: {
                                 port: regexValidator(/^\d{1,5}$/, "is no valid port", true)
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -132,9 +114,6 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Use SSL',
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -146,9 +125,6 @@ function ConfigFields($injector) {
                                 label: 'SSL certificate file',
                                 required: true,
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -160,9 +136,6 @@ function ConfigFields($injector) {
                                 label: 'SSL key file',
                                 required: true,
                                 help: 'Requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
 
@@ -300,9 +273,6 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Verify SSL certificates',
                                 help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart.'
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
 
                         }
@@ -326,9 +296,6 @@ function ConfigFields($injector) {
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
                                 ]
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -340,9 +307,6 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'MB'
                                 }
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -357,9 +321,6 @@ function ConfigFields($injector) {
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
                                 ]
-                            },
-                            watcher: {
-                                listener: restartListener
                             }
                         },
                         {
@@ -1022,9 +983,6 @@ function ConfigFields($injector) {
                             {name: 'HTTP Basic auth', value: 'BASIC'},
                             {name: 'Login form', value: 'FORM'}
                         ]
-                    },
-                    watcher: {
-                        listener: restartListener
                     }
                 },
                 {

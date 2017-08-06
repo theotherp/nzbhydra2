@@ -27,7 +27,7 @@ public class CategoriesConfig extends ValidatingConfig {
     private List<Category> categories = new ArrayList<>();
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         ArrayList<String> errors = new ArrayList<>();
         for (Category category : categories) {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
@@ -42,7 +42,7 @@ public class CategoriesConfig extends ValidatingConfig {
             errors.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
         }
 
-        return new ConfigValidationResult(errors.isEmpty(), errors, Collections.emptyList());
+        return new ConfigValidationResult(errors.isEmpty(), false, errors, Collections.emptyList());
     }
 
 

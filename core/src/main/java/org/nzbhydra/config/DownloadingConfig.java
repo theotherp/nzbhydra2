@@ -18,7 +18,7 @@ public class DownloadingConfig extends ValidatingConfig {
     private String saveTorrentsTo;
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         List<String> errors = new ArrayList<>();
         if (!Strings.isNullOrEmpty(saveTorrentsTo)) {
             File file = new File(saveTorrentsTo); //TODO Make sure to use base path
@@ -32,7 +32,7 @@ public class DownloadingConfig extends ValidatingConfig {
                 }
             }
         }
-        List<ConfigValidationResult> validationResults = downloaders.stream().map(DownloaderConfig::validateConfig).collect(Collectors.toList());
+        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig)).collect(Collectors.toList());
         List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(List::stream).collect(Collectors.toList());
         errors.addAll(downloaderErrors);
 
@@ -40,7 +40,7 @@ public class DownloadingConfig extends ValidatingConfig {
         List<String> downloaderWarnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(List::stream).collect(Collectors.toList());
         warnings.addAll(downloaderWarnings);
 
-        return new ConfigValidationResult(errors.isEmpty(), errors, warnings);
+        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }
 
     public Optional<String> getSaveTorrentsTo() {

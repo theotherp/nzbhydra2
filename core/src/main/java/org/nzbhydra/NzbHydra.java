@@ -173,6 +173,8 @@ public class NzbHydra {
                 return;
             }
             browserOpener.openBrowser();
+        } else {
+            logger.info("You can access NZBHydra 2 in your browser via {}", configProvider.getBaseConfig().getBaseUriBuilder().build().toUri());
         }
     }
 

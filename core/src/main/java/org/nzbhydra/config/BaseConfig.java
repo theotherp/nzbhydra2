@@ -154,28 +154,33 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         ConfigValidationResult configValidationResult = new ConfigValidationResult();
 
-        ConfigValidationResult authValidation = auth.validateConfig();
+        ConfigValidationResult authValidation = auth.validateConfig(oldConfig);
         configValidationResult.getErrorMessages().addAll(authValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(authValidation.getWarningMessages());
+        configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || authValidation.isRestartNeeded());
 
-        ConfigValidationResult categoriesValidation = categoriesConfig.validateConfig();
+        ConfigValidationResult categoriesValidation = categoriesConfig.validateConfig(oldConfig);
         configValidationResult.getErrorMessages().addAll(categoriesValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(categoriesValidation.getWarningMessages());
+        configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || categoriesValidation.isRestartNeeded());
 
-        ConfigValidationResult mainValidation = main.validateConfig();
+        ConfigValidationResult mainValidation = main.validateConfig(oldConfig);
         configValidationResult.getErrorMessages().addAll(mainValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(mainValidation.getWarningMessages());
+        configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || mainValidation.isRestartNeeded());
 
-        ConfigValidationResult searchingValidation = searching.validateConfig();
+        ConfigValidationResult searchingValidation = searching.validateConfig(oldConfig);
         configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
+        configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || searchingValidation.isRestartNeeded());
 
-        ConfigValidationResult downloadingValidation = downloading.validateConfig();
+        ConfigValidationResult downloadingValidation = downloading.validateConfig(oldConfig);
         configValidationResult.getErrorMessages().addAll(downloadingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(downloadingValidation.getWarningMessages());
+        configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || downloadingValidation.isRestartNeeded());
 
         if (!indexers.isEmpty()) {
             if (indexers.stream().noneMatch(IndexerConfig::isEnabled)) {
@@ -196,6 +201,10 @@ public class BaseConfig extends ValidatingConfig {
         }
         if (!configValidationResult.getWarningMessages().isEmpty()) {
             logger.warn("Config validation returned warnings:\n" + Joiner.on("\n").join(configValidationResult.getWarningMessages()));
+        }
+
+        if (configValidationResult.isRestartNeeded()) {
+            logger.warn("Settings were changed that require a restart to become effective");
         }
 
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());

@@ -92,7 +92,7 @@ public class IndexerConfig extends ValidatingConfig {
 
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         return new ConfigValidationResult();
     }
 

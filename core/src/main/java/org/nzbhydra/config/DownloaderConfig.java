@@ -26,7 +26,7 @@ public class DownloaderConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig() {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         return new ConfigValidationResult();
     }
 }
