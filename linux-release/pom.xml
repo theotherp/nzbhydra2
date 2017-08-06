@@ -26,6 +26,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
                 <configuration>
                     <descriptor>bin.xml</descriptor>
                     <finalName>nzbhyra2-windows-${pom.version}</finalName>
