@@ -18,10 +18,15 @@ public class BrowserOpener {
     private ConfigProvider configProvider;
 
     public void openBrowser() {
-        Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        Desktop desktop = null;
+        try {
+            desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        } catch (Exception e) {
+            logger.debug("Unable to get desktop");
+        }
         URI uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
-        logger.info("Opening {} in browser", uri);
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            logger.info("Opening {} in browser", uri);
             try {
                 desktop.browse(uri);
             } catch (Exception e) {
