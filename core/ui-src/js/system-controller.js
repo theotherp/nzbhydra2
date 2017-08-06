@@ -33,7 +33,6 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
 
-
     $scope.migrate = function () {
         MigrationService.migrate();
     };
@@ -95,16 +94,25 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         });
     };
 
-    $scope.executeSql = function () {
-        $http.post('internalapi/debuginfos/executesql', $scope.foo.sql).success(function (data) {
+    $scope.executeSqlQuery = function () {
+        $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).success(function (data) {
             if (data.successful) {
                 $scope.foo.csv = data.message;
             } else {
                 growl.error(data.message);
             }
         });
-    }
+    };
 
+    $scope.executeSqlUpdate = function () {
+        $http.post('internalapi/debuginfos/executesqlupdate', $scope.foo.sql).success(function (data) {
+            if (data.successful) {
+                $scope.foo.csv = data.message + " rows affected";
+            } else {
+                growl.error(data.message);
+            }
+        });
+    };
 
 
 }

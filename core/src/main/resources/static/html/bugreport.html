@@ -46,7 +46,8 @@
             You can use the input box below to execute any SQL query against the database. You will likely never need this but it allows me to ask you to execute a query when I try to solve a bug.
             <br>
             <textarea class="form-control" rows="5" data-ng-model="foo.sql"></textarea>
-            <button class="btn btn-default" ng-click="executeSql()">Execute</button>
+            <button class="btn btn-default" ng-click="executeSqlQuery()">Query</button>
+            <button class="btn btn-default" ng-click="executeSqlUpdate()">Execute</button>
             <textarea class="form-control" rows="10" data-ng-model="foo.csv"></textarea>
         </div>
     </div>

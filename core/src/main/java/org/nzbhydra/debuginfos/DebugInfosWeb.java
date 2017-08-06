@@ -82,10 +82,21 @@ public class DebugInfosWeb {
     }
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/executesql", method = RequestMethod.POST)
-    public GenericResponse executeSql(@RequestBody String sql) throws IOException {
+    @RequestMapping(value = "/internalapi/debuginfos/executesqlquery", method = RequestMethod.POST)
+    public GenericResponse executeSqlQuery(@RequestBody String sql) throws IOException {
         try {
-            return GenericResponse.ok(debugInfos.executeSql(sql));
+            return GenericResponse.ok(debugInfos.executeSqlQuery(sql));
+        } catch (IOException e) {
+            logger.error("Error while executing SQL", e);
+            return GenericResponse.notOk("Error while executing SQL " + e.getMessage());
+        }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/debuginfos/executesqlupdate", method = RequestMethod.POST)
+    public GenericResponse executeSqlUpdate(@RequestBody String sql) throws IOException {
+        try {
+            return GenericResponse.ok(debugInfos.executeSqlUpdate(sql));
         } catch (IOException e) {
             logger.error("Error while executing SQL", e);
             return GenericResponse.notOk("Error while executing SQL " + e.getMessage());

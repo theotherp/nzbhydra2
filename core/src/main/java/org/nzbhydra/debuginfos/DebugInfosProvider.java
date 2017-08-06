@@ -49,12 +49,20 @@ public class DebugInfosProvider {
     }
 
     @Transactional
-    public String executeSql(String sql) throws IOException {
+    public String executeSqlQuery(String sql) throws IOException {
         logger.info("Executing SQL query \"{}\" and returning as CSV");
         File tempFile = File.createTempFile("nzbhydra", "csv");
         String path = tempFile.getAbsolutePath().replace("\\", "/");
         entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql)).executeUpdate();
         return new String(Files.readAllBytes(tempFile.toPath()));
+    }
+
+    @Transactional
+    public String executeSqlUpdate(String sql) throws IOException {
+        logger.info("Executing SQL query \"{}\"");
+
+        int affectedRows = entityManager.createNativeQuery(sql).executeUpdate();
+        return String.valueOf(affectedRows);
     }
 
     private void writeStringToZip(ZipOutputStream zos, String name, byte[] bytes) throws IOException {
