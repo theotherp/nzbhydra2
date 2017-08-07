@@ -78,7 +78,7 @@ public class NzbIndex extends Indexer<RssRoot> {
 
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", 250).queryParam("hidecross", "1");
+        UriComponentsBuilder componentsBuilder = getBaseUri().path("rss").queryParam("more", "1").queryParam("max", 250).queryParam("hidecross", "0");
         if (searchRequest.getMinsize().isPresent()) {
             componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
         } else if (config.getGeneralMinSize().isPresent()) {
