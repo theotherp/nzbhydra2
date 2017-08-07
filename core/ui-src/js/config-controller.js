@@ -62,7 +62,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         //Communication with server was successful but there might be validation errors and/or warnings
         var warningMessages = response.data.warningMessages;
         var errorMessages = response.data.errorMessages;
-        $scope.restartRequired = response.data.restartNeeded || restartNeeded;
+        $scope.restartRequired = response.data.restartNeeded || (angular.isDefined(restartNeeded) ? restartNeeded : false);
         var showMessage = errorMessages.length > 0 || (warningMessages.length > 0 && !ignoreWarnings);
 
         function extendMessageWithList(message, messages) {
@@ -109,7 +109,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                                 growl.error(response.data);
                             });
                         },
-                        text: "OK, never show again"
+                        text: "OK, don't show warnings again"
                     },
                     yes: {
                         onYes: function () {

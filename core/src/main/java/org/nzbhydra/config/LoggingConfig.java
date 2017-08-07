@@ -6,18 +6,24 @@ import lombok.Data;
 @Data
 public class LoggingConfig extends ValidatingConfig {
 
-    @RestartNeeded
+    @RestartRequired
     private String consolelevel;
     private HistoryUserInfoType historyUserInfoType = HistoryUserInfoType.NONE;
     private boolean logIpAddresses;
     private int logMaxSize;
-    @RestartNeeded
+    @RestartRequired
     private String logfilelevel;
     private boolean logUsername;
 
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
-        return new ConfigValidationResult();
+        ConfigValidationResult result = new ConfigValidationResult();
+
+        result.setRestartNeeded(isRestartNeeded(oldConfig.getMain().getLogging()));
+
+        return result;
     }
+
+
 }

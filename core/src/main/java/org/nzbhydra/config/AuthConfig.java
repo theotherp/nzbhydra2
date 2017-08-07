@@ -16,7 +16,7 @@ import java.util.List;
 public class AuthConfig extends ValidatingConfig {
 
     @JsonFormat(shape = Shape.STRING)
-    @RestartNeeded
+    @RestartRequired
     private AuthType authType;
     private boolean rememberUsers = true;
     private boolean restrictAdmin = false;
@@ -45,6 +45,6 @@ public class AuthConfig extends ValidatingConfig {
             warnings.add("You haven't enabled any access restrictions. Auth will not take any effect");
         }
 
-        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
+        return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);
     }
 }

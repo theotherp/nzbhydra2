@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class BaseConfigTest {
@@ -50,6 +51,22 @@ public class BaseConfigTest {
 
         testee.getMain().setUrlBase("/nzbhydra");
         assertEquals("http://127.0.0.1:1234/nzbhydra", testee.getBaseUrl());
+    }
+
+    @Test
+    public void shouldRecognizeRestartRequired() {
+        MainConfig mainConfig1 = new MainConfig();
+        mainConfig1.setPort(123);
+        MainConfig mainConfig2 = new MainConfig();
+        mainConfig2.setPort(234);
+        assertTrue(mainConfig1.isRestartNeeded(mainConfig2));
+
+        mainConfig2.setPort(123);
+        assertFalse(mainConfig1.isRestartNeeded(mainConfig2));
+
+        mainConfig1.setSsl(true);
+        mainConfig2.setSsl(false);
+        assertTrue(mainConfig1.isRestartNeeded(mainConfig2));
     }
 
     @Test

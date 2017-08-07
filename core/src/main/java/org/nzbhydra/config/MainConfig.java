@@ -28,12 +28,12 @@ public class MainConfig extends ValidatingConfig {
     private String dereferer = null;
     @SensitiveData
     private String externalUrl = null;
-    @RestartNeeded
+    @RestartRequired
     private String host = "0.0.0.0";
     private boolean firstStart = true;
     private Long firstStartedAt = Instant.now().getEpochSecond();
     private LoggingConfig logging = new LoggingConfig();
-    @RestartNeeded
+    @RestartRequired
     private int port = 5076;
     @JsonFormat(shape = Shape.STRING)
     private ProxyType proxyType = ProxyType.NONE;
@@ -47,21 +47,21 @@ public class MainConfig extends ValidatingConfig {
     private String secret;
     private boolean showNews = true;
     private boolean shutdownForRestart = false;
-    @RestartNeeded
+    @RestartRequired
     private boolean ssl = false;
-    @RestartNeeded
+    @RestartRequired
     private String sslcert = null;
-    @RestartNeeded
+    @RestartRequired
     private String sslkey = null;
     private boolean startupBrowser = true;
     protected String theme;
-    @RestartNeeded
+    @RestartRequired
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
-    @RestartNeeded
+    @RestartRequired
     private boolean useCsrf = true;
     private boolean useLocalUrlForApiAccess = true;
-    @RestartNeeded
+    @RestartRequired
     private boolean verifySsl = true;
     private boolean welcomeShown = false;
 
@@ -96,8 +96,12 @@ public class MainConfig extends ValidatingConfig {
         if (oldConfig.getMain().getPort() != port || (oldConfig.getMain().getUrlBase().isPresent() && !oldConfig.getMain().getUrlBase().get().equals(urlBase)) && !startupBrowser) {
             result.getWarningMessages().add("Your port and/or URL base has changed. Make sure to load the correct URL after restart");
         }
+        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig);
+        result.getWarningMessages().addAll(loggingResult.getWarningMessages());
+        result.getErrorMessages().addAll(loggingResult.getErrorMessages());
 
-        result.setRestartNeeded(isRestartNeeded(oldConfig.getMain()));
+        result.setRestartNeeded(loggingResult.isRestartNeeded() || isRestartNeeded(oldConfig.getMain()));
+        result.setOk(loggingResult.isOk() && result.isOk());
 
         return result;
     }

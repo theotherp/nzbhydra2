@@ -21,8 +21,8 @@ public abstract class ValidatingConfig {
     private static final Logger logger = LoggerFactory.getLogger(ValidatingConfig.class);
 
     /**
-     * @return a list of error messages or an empty list when everything is fine
      * @param oldConfig old config state (e.g. to compare what has changed)
+     * @return a list of error messages or an empty list when everything is fine
      */
     public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig);
 
@@ -47,10 +47,11 @@ public abstract class ValidatingConfig {
     }
 
     protected boolean isRestartNeeded(Object configToCompare) {
-        for (Field field : MainConfig.class.getDeclaredFields()) {
-            if (field.isAnnotationPresent(RestartNeeded.class)) {
+        for (Field field : configToCompare.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(RestartRequired.class)) {
                 try {
-                    String getterName = "get" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
+                    //PropertyDescriptor doesn't work for some reason, this is just as fine for what we need
+                    String getterName = (field.getType() == Boolean.class || field.getType() == boolean.class ? "is" : "get") + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
                     Method method = configToCompare.getClass().getDeclaredMethod(getterName);
                     Object oldValue = method.invoke(configToCompare);
                     Object newValue = method.invoke(this);
@@ -66,5 +67,6 @@ public abstract class ValidatingConfig {
         }
         return false;
     }
+
 
 }

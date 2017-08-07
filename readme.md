@@ -19,10 +19,17 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 TODO
 
 ##How to run
-Download the latest release (TODO add link) for your platform. Extract it anywhere and start using the appropriate way. After a while your browser should open to http://127.0.0.1:5076
+You need [Java Runtime Environment (>=8)](https://www.java.com/de/download/manual.jsp).<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
+
+Download the latest release of NZBHydra 2 (TODO add link) for your platform. Extract it anywhere and start using the appropriate way. After a while your browser should open to http://127.0.0.1:5076
+
+Alternatively you can use a docker container TODO add links
 
 ## Install as a service
 TODO: Add wiki entries and link here
+
+## Disclaimer
+This is still in early development. Don't run in on the machine where the nuclear launch codes are stored.
 
 ## Development and how you can help
 Generally testing and any bug reports are very welcome.
@@ -32,6 +39,12 @@ I haven't been able to get the wrapper to run in docker. If you have found a way
 If you plan on doing any frontend work (JS, CSS, HTML): Please contact me first and don't just create a PR for changes on the merged CSS / JS files.
 
 Please send merge requests to the develop branch!
+
+## Why Java?
+While I don't think I need to justify myself I expect a lot of negativity because of my decision to go with Java. While it's not as cool as python it allows me to develop the bestion version
+of Hydra. I develop Java by day and I know it best. There's a lot of stuff I wouldn't have been able to do in version 1 - not because it cannot be done with python but because I just don't
+know it less well. Yes, it takes more memory. Yes, it nags you about updates (which you should absolutely do!). Still, I'm convinces v2 of Hydra is a huge improvement over v1. And 90% of
+users won't ever care about what programming language it's written in. 
 
 ## Contact ###
 Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheOtherP

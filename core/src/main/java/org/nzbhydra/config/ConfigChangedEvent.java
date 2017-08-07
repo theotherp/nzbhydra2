@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class ConfigChangedEvent extends ApplicationEvent {
 
+    private BaseConfig oldConfig;
     private BaseConfig newConfig;
 
     /**
@@ -17,8 +18,9 @@ public class ConfigChangedEvent extends ApplicationEvent {
         super(source);
     }
 
-    public ConfigChangedEvent(Object source, BaseConfig newConfig) {
+    public ConfigChangedEvent(Object source, BaseConfig oldConfig, BaseConfig newConfig) {
         super(source);
+        this.oldConfig = oldConfig;
         this.newConfig = newConfig;
     }
 }

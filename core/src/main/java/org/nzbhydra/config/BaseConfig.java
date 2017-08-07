@@ -63,6 +63,13 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     public void replace(BaseConfig newConfig) {
+        BaseConfig oldBaseConfig = null;
+        try {
+            oldBaseConfig = objectMapper.readValue(objectMapper.writeValueAsString(this), BaseConfig.class);
+        } catch (IOException e) {
+            logger.error("Error while creating copy of old config", e);
+        }
+
         main = newConfig.getMain();
         categoriesConfig = newConfig.getCategoriesConfig();
         indexers = newConfig.getIndexers().stream().sorted(Comparator.comparing(IndexerConfig::getName)).collect(Collectors.toList());
@@ -70,7 +77,8 @@ public class BaseConfig extends ValidatingConfig {
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
 
-        ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, this);
+
+        ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
         applicationEventPublisher.publishEvent(configChangedEvent);
     }
 
