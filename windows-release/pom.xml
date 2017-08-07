@@ -29,7 +29,8 @@
                 <version>2.6</version>
                 <configuration>
                     <descriptor>bin.xml</descriptor>
-                    <finalName>nzbhyra2-windows-${project.version}</finalName>
+                    <finalName>nzbhyra2-${project.version}-windows</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
