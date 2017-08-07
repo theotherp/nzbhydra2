@@ -1,0 +1,7 @@
+version: "1"
+nzbhydra2:
+    build: .
+    hostname: nzbhydra2
+    container_name: NZBHydra2
+    ports:
+        - "5076:5076"
