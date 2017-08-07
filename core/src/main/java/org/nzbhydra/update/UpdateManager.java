@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 public class UpdateManager implements InitializingBean {
@@ -204,12 +205,7 @@ public class UpdateManager implements InitializingBean {
     public void installUpdate() throws UpdateException {
         Release latestRelease = latestReleaseCache.get();
         logger.info("Starting update process to {}", latestRelease.getTagName());
-        List<Asset> assets = latestRelease.getAssets();
-        if (assets.isEmpty()) {
-            throw new UpdateException("No assets found for release " + latestRelease.getTagName());
-        }
-        //TODO Find asset for current OS or whatever
-        Asset asset = assets.get(0);
+        Asset asset = getAsset(latestRelease);
         String url = asset.getBrowserDownloadUrl();
         logger.debug("Downloading update from URL {}", url);
         Request request = new Builder().url(url).build();
@@ -241,6 +237,23 @@ public class UpdateManager implements InitializingBean {
 
         logger.info("Shutting down to let wrapper execute the update");
         exitWithReturnCode(UPDATE_RETURN_CODE);
+    }
+
+    protected Asset getAsset(Release latestRelease) throws UpdateException {
+        List<Asset> assets = latestRelease.getAssets();
+        if (assets.isEmpty()) {
+            throw new UpdateException("No assets found for release " + latestRelease.getTagName());
+        }
+        String osName = System.getProperty("os.name");
+        boolean isOsWindows = osName.toLowerCase().contains("windows");
+        String assetToContain = isOsWindows ? "windows" : "linux"; //TODO What about OSX?
+        Optional<Asset> optionalAsset = assets.stream().filter(x -> x.getName().toLowerCase().contains(assetToContain)).findFirst();
+        if (!optionalAsset.isPresent()) {
+            logger.error("Unable to find asset for platform {} in these assets: {}", assetToContain, assets.stream().map(Asset::getName).collect(Collectors.joining(", ")));
+            throw new UpdateException("Unable to find asset for current platform " + assetToContain);
+        }
+
+        return optionalAsset.get();
     }
 
 

@@ -28,11 +28,15 @@ public class MockGithub {
         releasev2 = new Release();
         releasev2.setBody("Changes in version 2.0.0");
         releasev2.setTagName("v2.0.0");
-        Asset asset = new Asset();
-        asset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/NzbHydra-v2.0.0-windows.zip");
-        asset.setName("NzbHydra-v2.0.0-windows.zip");
-        asset.setSize(163L);
-        releasev2.setAssets(Arrays.asList(asset));
+        Asset windowsAsset = new Asset();
+        windowsAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/NzbHydra-v2.0.0-windows.zip");
+        windowsAsset.setName("NzbHydra-v2.0.0-windows.zip");
+        windowsAsset.setSize(163L);
+        Asset linuxAsset = new Asset();
+        linuxAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
+        linuxAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
+        linuxAsset.setSize(163L);
+        releasev2.setAssets(Arrays.asList(windowsAsset, linuxAsset));
 
         Release releasev1current = new Release();
         releasev1current.setBody("Changes in version 10.0");
