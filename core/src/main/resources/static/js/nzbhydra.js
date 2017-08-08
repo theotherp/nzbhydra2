@@ -2207,6 +2207,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
 
     $scope.updateAvailable = false;
     $scope.checked = false;
+    var welcomeIsBeingShown = false;
 
     $scope.mayUpdate = HydraAuthService.getUserInfos().maySeeAdmin;
 
@@ -2244,35 +2245,49 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
         UpdateService.showChanges();
     };
 
-    if (ConfigService.getSafe().showNews) {
-        $http.get("internalapi/news/forcurrentversion").success(function (data) {
-            if (data && data.length > 0) {
-                $uibModal.open({
-                    templateUrl: 'static/html/news-modal.html',
-                    controller: NewsModalInstanceCtrl,
-                    size: "lg",
-                    resolve: {
-                        news: function () {
-                            return data;
+    function checkAndShowNews() {
+        if (ConfigService.getSafe().showNews) {
+            $http.get("internalapi/news/forcurrentversion").success(function (data) {
+                if (data && data.length > 0) {
+                    $uibModal.open({
+                        templateUrl: 'static/html/news-modal.html',
+                        controller: NewsModalInstanceCtrl,
+                        size: "lg",
+                        resolve: {
+                            news: function () {
+                                return data;
+                            }
                         }
-                    }
+                    });
+                    $http.put("internalapi/news/saveshown");
+                }
+            });
+        }
+    }
+
+
+    function checkAndShowWelcome() {
+        $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
+            if (!wasWelcomeShown) {
+                $http.put("internalapi/welcomeshown");
+                var promise = $uibModal.open({
+                    templateUrl: 'static/html/welcome-modal.html',
+                    controller: WelcomeModalInstanceCtrl,
+                    size: "md"
                 });
-                $http.put("internalapi/news/saveshown");
+                promise.opened.then(function () {
+                    welcomeIsBeingShown = true;
+                });
+                promise.closed.then(function () {
+                    welcomeIsBeingShown = false;
+                });
+            } else {
+                checkAndShowNews();
             }
         });
     }
 
-    $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
-        if (!wasWelcomeShown) {
-            $http.put("internalapi/welcomeshown");
-            $uibModal.open({
-                templateUrl: 'static/html/welcome-modal.html',
-                controller: WelcomeModalInstanceCtrl,
-                size: "md"
-            });
-        }
-    });
-
+    checkAndShowWelcome();
 
 }
 UpdateFooterController.$inject = ["$scope", "UpdateService", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
@@ -2280,6 +2295,7 @@ UpdateFooterController.$inject = ["$scope", "UpdateService", "HydraAuthService",
 angular
     .module('nzbhydraApp')
     .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
+
 function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
     $scope.news = news;
     $scope.close = function () {
@@ -2291,6 +2307,7 @@ NewsModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "news"];
 angular
     .module('nzbhydraApp')
     .controller('WelcomeModalInstanceCtrl', WelcomeModalInstanceCtrl);
+
 function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationService) {
     $scope.close = function () {
         $uibModalInstance.dismiss();
