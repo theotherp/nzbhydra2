@@ -16,10 +16,13 @@
             </includes>
         </fileSet>
         <fileSet>
-            <!--Would prefer to use a moduleset here or otherwise reference the -exec.jar but didn't get it to work-->
             <directory>include</directory>
             <outputDirectory>./</outputDirectory>
             <lineEnding>unix</lineEnding>
+        </fileSet>
+        <fileSet>
+            <directory>../misc/docker</directory>
+            <outputDirectory>./docker</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>../</directory>
