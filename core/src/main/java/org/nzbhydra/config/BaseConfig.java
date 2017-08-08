@@ -94,6 +94,7 @@ public class BaseConfig extends ValidatingConfig {
 
     @PostConstruct
     public void init() throws IOException {
+        logger.info("Using data folder {}", NzbHydra.getDataFolder());
         File file = buildConfigFileFile();
         if (!file.exists()) {
             logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());

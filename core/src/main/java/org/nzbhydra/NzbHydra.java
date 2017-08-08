@@ -1,5 +1,6 @@
 package org.nzbhydra;
 
+import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.nzbhydra.config.Category;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -86,13 +89,19 @@ public class NzbHydra {
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
-        OptionSet options = parser.parse(args);
+        OptionSet options = null;
+        try {
+            options = parser.parse(args);
+        } catch (OptionException e) {
+            logger.error("Invalid startup options detected: {}", e.getMessage());
+            System.exit(1);
+        }
         if (System.getProperty("fromWrapper") == null && Arrays.stream(args).noneMatch(x -> x.equals("directstart"))) {
-            System.out.println("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
+            logger.info("NZBHydra 2 must be started using the wrapper for restart and updates to work. If for some reason you need to start it from the JAR directly provide the command line argument \"directstart\"");
         } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            System.out.println("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
+            logger.info("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
         } else {
             if (options.has("datafolder")) {
                 dataFolder = (String) options.valueOf("datafolder");
@@ -114,26 +123,25 @@ public class NzbHydra {
                 hydraApplication.setHeadless(false);
             }
 
-            addTrayIconIfApplicable();
-
-            logger.info("Using data folder {}", dataFolder);
-            if (anySettingsOverwritten) {
-                logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
-            }
             applicationContext = hydraApplication.run(args);
         }
     }
 
-    protected static void addTrayIconIfApplicable() {
+    @PostConstruct
+    private void addTrayIconIfApplicable() {
         String osName = System.getProperty("os.name");
         boolean isOsWindows = osName.toLowerCase().contains("windows");
         if (isOsWindows) {
             logger.info("Adding windows system tray icon");
             new WindowsTrayIcon();
-        } else {
-            logger.debug("Not adding windows system tray icon because OS is {}", osName);
         }
+    }
 
+    @PostConstruct
+    private void warnIfSettingsOverwritten() {
+        if (anySettingsOverwritten) {
+            logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
+        }
     }
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
@@ -177,6 +185,12 @@ public class NzbHydra {
         } else {
             logger.info("You can access NZBHydra 2 in your browser via {}", configProvider.getBaseConfig().getBaseUriBuilder().build().toUri());
         }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        WindowsTrayIcon.remove();
+        logger.info("Shutting down");
     }
 
 
