@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +29,6 @@ public class MainConfig extends ValidatingConfig {
     private String externalUrl = null;
     @RestartRequired
     private String host = "0.0.0.0";
-    private boolean firstStart = true;
-    private Long firstStartedAt = Instant.now().getEpochSecond();
     private LoggingConfig logging = new LoggingConfig();
     @RestartRequired
     private int port = 5076;

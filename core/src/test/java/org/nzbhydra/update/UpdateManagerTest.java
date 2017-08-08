@@ -38,7 +38,7 @@ public class UpdateManagerTest {
     @Mock
     private HydraOkHttp3ClientHttpRequestFactory requestFactoryMock;
     @Mock
-    private GenericStorage<UpdateData> updateDataGenericStorageMock;
+    private GenericStorage updateDataGenericStorageMock;
 
     private static String changelog = "some changes";
 

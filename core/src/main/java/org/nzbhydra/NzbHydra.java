@@ -4,11 +4,11 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.migration.FromPythonMigration;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.SearchResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
 public class NzbHydra {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHydra.class);
+    public static final String BROWSER_DISABLED = "browser.disabled";
 
     public static String[] originalArgs;
 
@@ -58,14 +59,15 @@ public class NzbHydra {
     private ConfigProvider configProvider;
     private static String dataFolder = null;
     private static boolean wasRestarted = false;
-    @Autowired
-    private SearchResultRepository searchResultRepository;
+
 
     @Autowired
     private BrowserOpener browserOpener;
 
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private GenericStorage genericStorage;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -103,13 +105,13 @@ public class NzbHydra {
             System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
-            useIfSet(options, "nobrowser", "main.startupBrowser", "false");
+            useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
             wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
             if (!options.has("quiet") && !options.has("nobrowser")) {
-                hydraApplication.setHeadless(false); //TODO Check, it's better to run headless, perhaps read from args (--quiet or sth)
+                hydraApplication.setHeadless(false);
             }
 
             addTrayIconIfApplicable();
@@ -156,10 +158,9 @@ public class NzbHydra {
 
     @EventListener
     protected void startupDone(ApplicationReadyEvent event) {
-        if (configProvider.getBaseConfig().getMain().isFirstStart()) {
+        if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
             logger.info("First start of NZBHydra detected");
-            configProvider.getBaseConfig().getMain().setFirstStart(false);
-            configProvider.getBaseConfig().getMain().setFirstStartedAt(Instant.now().getEpochSecond());
+            genericStorage.save("FirstStart", LocalDateTime.now());
             try {
                 configProvider.getBaseConfig().save();
             } catch (IOException e) {
@@ -167,7 +168,7 @@ public class NzbHydra {
             }
         }
 
-        if (configProvider.getBaseConfig().getMain().isStartupBrowser()) { //TODO Overwritable per command line
+        if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
             if (wasRestarted) {
                 logger.info("Not opening browser after restart");
                 return;

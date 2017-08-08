@@ -63,7 +63,7 @@ public class UpdateManager implements InitializingBean {
     @Autowired
     private BackupAndRestore backupAndRestore;
     @Autowired
-    private GenericStorage<UpdateData> updateDataGenericStorage;
+    private GenericStorage updateDataGenericStorage;
 
     protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
     protected SemanticVersion currentVersion;

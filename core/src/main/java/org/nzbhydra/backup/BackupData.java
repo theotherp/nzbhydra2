@@ -10,6 +10,10 @@ public class BackupData implements Serializable {
 
     protected LocalDateTime lastBackup;
 
+    public BackupData(LocalDateTime lastBackup) {
+        this.lastBackup = lastBackup;
+    }
+
     public BackupData() {
         this.lastBackup = LocalDateTime.now();
     }

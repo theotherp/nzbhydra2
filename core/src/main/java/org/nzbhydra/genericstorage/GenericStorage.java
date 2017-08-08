@@ -12,7 +12,7 @@ import java.io.Serializable;
 import java.util.Optional;
 
 @Component
-public class GenericStorage<T extends Serializable> {
+public class GenericStorage {
 
     @Autowired
     private GenericStorageDataRepository repository;
@@ -24,7 +24,7 @@ public class GenericStorage<T extends Serializable> {
     }
 
     @Transactional
-    public void save(String key, T value) {
+    public <T extends Serializable> void save(String key, T value) {
         repository.deleteByKey(key);
         try {
             repository.save(new GenericStorageData(key, objectMapper.writeValueAsString(value)));
@@ -33,7 +33,7 @@ public class GenericStorage<T extends Serializable> {
         }
     }
 
-    public Optional<T> get(String key, Class<T> clazz) {
+    public <T> Optional<T> get(String key, Class<T> clazz) {
         GenericStorageData first = repository.findByKey(key);
         if (first == null) {
             return Optional.empty();

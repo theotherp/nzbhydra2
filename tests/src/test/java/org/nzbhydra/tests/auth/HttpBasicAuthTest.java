@@ -50,7 +50,7 @@ public class HttpBasicAuthTest {
 
         baseConfig.getAuth().getUsers().get(0).setMaySeeStats(false);
         baseConfig.getAuth().getUsers().get(0).setMaySeeAdmin(false);
-        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
+        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
 
@@ -72,7 +72,7 @@ public class HttpBasicAuthTest {
         checkMainStatsAndConfig("u", "u", 200, 403, 403);
         baseConfig.getAuth().getUsers().get(0).setMaySeeStats(true);
         baseConfig.getAuth().getUsers().get(0).setMaySeeAdmin(true);
-        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
+        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
         checkMainStatsAndConfig("u", "u", 200, 200, 200);
     }
 

@@ -112,7 +112,7 @@ public class NzbDownloadingTests {
         downloaderConfig.setApiKey("apikey");
         baseConfig.getDownloading().getDownloaders().clear();
         baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
-        downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, baseConfig));
+        downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
     @Test

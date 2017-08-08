@@ -61,7 +61,7 @@ public class DontRestrictStatsAuthTest {
     public void shouldAllowChangingRestrictionsAtRuntime() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(401));
         baseConfig.getAuth().setRestrictAdmin(false);
-        authenticationFilter.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig));
+        authenticationFilter.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
         mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(200));
     }
 
