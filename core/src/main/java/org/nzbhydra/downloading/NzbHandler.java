@@ -7,7 +7,6 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.searching.SearchModuleProvider;
@@ -29,6 +28,7 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -55,7 +55,7 @@ public class NzbHandler {
         if (result == null) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
 
-            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid);
+            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid, null);
         }
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));
@@ -63,8 +63,9 @@ public class NzbHandler {
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
-            saveDownloadToDatabase(result, NzbAccessType.REDIRECT, accessSource, IndexerAccessResult.UNKNOWN, usernameOrIp, ageInDays);
-            return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink());
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, usernameOrIp, ageInDays, null);
+            downloadRepository.save(downloadEntity);
+            return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
         } else {
             String nzbContent;
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -72,17 +73,20 @@ public class NzbHandler {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
-                saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.CONNECTION_ERROR, usernameOrIp, ageInDays, e.getMessage());
-                return NzbDownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName());
+                NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, usernameOrIp, ageInDays, e.getMessage());
+
+                downloadRepository.save(downloadEntity);
+                return NzbDownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), downloadEntity);
             }
 
             long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
             //TODO CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
-            saveDownloadToDatabase(result, NzbAccessType.PROXY, accessSource, IndexerAccessResult.SUCCESSFUL, usernameOrIp, ageInDays, null);
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, usernameOrIp, ageInDays, null);
+            downloadRepository.save(downloadEntity);
 
-            return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent);
+            return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent, downloadEntity);
         }
     }
 
@@ -180,16 +184,58 @@ public class NzbHandler {
         return indexer.getNfo(result.getIndexerGuid());
     }
 
-
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, Integer age) {
-        saveDownloadToDatabase(result, accessType, source, accessResult, usernameOrIp, age, null);
+    public boolean updateStatusByEntity(NzbDownloadEntity entity, NzbDownloadStatus status) {
+        entity.setStatus(status);
+        downloadRepository.save(entity);
+        return true;
     }
 
-    private void saveDownloadToDatabase(SearchResultEntity result, NzbAccessType accessType, SearchSource source, IndexerAccessResult accessResult, String usernameOrIp, Integer age, String error) {
-        NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), accessType, source, accessResult, usernameOrIp, age, error);
-
-        downloadRepository.save(downloadEntity);
+    public boolean updateStatusByExternalId(String externalId, NzbDownloadStatus status) {
+        Collection<NzbDownloadEntity> foundEntities = downloadRepository.findByExternalId(externalId);
+        if (foundEntities.size() == 0) {
+            logger.error("Did not find any download identified by \"{}\"", externalId);
+            return false;
+        }
+        if (foundEntities.size() > 1) {
+            logger.error("Find multiple downloads identified by \"{}\"", externalId);
+            return false;
+        }
+        NzbDownloadEntity entity = foundEntities.iterator().next();
+        entity.setStatus(status);
+        downloadRepository.save(entity);
+        logger.info("Updated download status of NZB \"{}\" to {}", entity.getTitle(), status);
+        return true;
     }
+
+    public boolean updateStatusByNzbTitle(String title, NzbDownloadStatus status) {
+        List<NzbDownloadEntity> foundEntities = downloadRepository.findByTitleOrderByTimeDesc(title);
+        NzbDownloadEntity entity = null;
+        if (foundEntities.size() == 0) {
+            logger.error("Did not find any download for an NZB with the title \"{}\"", title);
+            return false;
+        } else if (foundEntities.size() > 1) {
+            logger.info("Found multiple downloads identified by \"{}\" and will try to find the newest that can be updated by the new status {}", title, status);
+            for (NzbDownloadEntity foundEntity : foundEntities) {
+                if (status.canUpdate(foundEntity.getStatus())) {
+                    entity = foundEntity;
+                    logger.info("Will update status of download initiated at {}", entity.getTime());
+                    break;
+                }
+            }
+            if (entity == null) {
+                logger.error("Found multiple downloads identified by \"{}\" and didn't find one which could be updated by the new status {}", title, status);
+                return false;
+            }
+        } else {
+            entity = foundEntities.iterator().next();
+        }
+        NzbDownloadStatus oldStatus = entity.getStatus();
+        entity.setStatus(status);
+        downloadRepository.save(entity);
+        logger.info("Updated download status of NZB \"{}\" from {} to {}", title, oldStatus, status);
+        return true;
+    }
+
 
     private String downloadNzb(SearchResultEntity result) throws IOException {
         Request request = new Request.Builder().url(result.getLink()).build();
@@ -198,5 +244,6 @@ public class NzbHandler {
             return response.body().string();
         }
     }
+
 
 }

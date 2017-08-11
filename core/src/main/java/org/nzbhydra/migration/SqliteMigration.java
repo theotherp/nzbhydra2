@@ -8,6 +8,7 @@ import org.nzbhydra.config.Category;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.downloading.NzbDownloadRepository;
+import org.nzbhydra.downloading.NzbDownloadStatus;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerApiAccessEntity;
 import org.nzbhydra.indexers.IndexerApiAccessType;
@@ -115,7 +116,7 @@ public class SqliteMigration {
             entity.setUsernameOrIp(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
             entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
-            entity.setResult(oldDownloads.getBoolean("response_successful") ? IndexerAccessResult.SUCCESSFUL : IndexerAccessResult.CONNECTION_ERROR); //Close enough
+            entity.setStatus(oldDownloads.getBoolean("response_successful") ? NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL : NzbDownloadStatus.NZB_DOWNLOAD_ERROR); //Close enough
             downloadEntities.add(entity);
 
         }

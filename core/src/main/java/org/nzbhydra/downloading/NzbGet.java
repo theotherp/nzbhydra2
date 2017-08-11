@@ -63,27 +63,26 @@ public class NzbGet extends Downloader {
     }
 
     @Override
-    public void addLink(String link, String title, String category) throws DownloaderException {
+    public String addLink(String link, String title, String category) throws DownloaderException {
         try {
-            callAppend(link, title, category);
-            logger.info("Successfully added link {} for NZB \"{}\" to NZBGet queue", link, title);
+            return callAppend(link, title, category);
         } catch (Throwable throwable) {
             logger.error("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", link, title, throwable.getMessage());
+            throw new DownloaderException("Error while adding link to NZBGet: " + throwable.getMessage());
         }
     }
 
     @Override
-    public void addNzb(String content, String title, String category) throws DownloaderException {
+    public String addNzb(String content, String title, String category) throws DownloaderException {
         try {
-            callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
-            logger.error("Successfully added link {} for NZB \"{}\" to NZBGet queue", content, title);
+            return callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
         } catch (Throwable throwable) {
             logger.info("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
-            throw new DownloaderException("Error while adding link to NZB: " + throwable.getMessage());
+            throw new DownloaderException("Error while adding NZB to NZBGet: " + throwable.getMessage());
         }
     }
 
-    private void callAppend(String contentOrLink, String title, String category) throws Throwable {
+    private String callAppend(String contentOrLink, String title, String category) throws Throwable {
         String nzbName = title;
         if (!nzbName.toLowerCase().endsWith(".nzb")) {
             nzbName += ".nzb";
@@ -95,7 +94,8 @@ public class NzbGet extends Downloader {
         if (nzbId <= 0) {
             throw new DownloaderException("NZBGet returned error code. Check its logs");
         }
-        logger.info("Successfully added link NZB \"{}\" to NZBGet queue", title);
+        logger.info("Successfully added NZB \"{}\" to NZBGet queue with ID {}", title, nzbId);
+        return String.valueOf(nzbId);
     }
 
 

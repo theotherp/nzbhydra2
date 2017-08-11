@@ -76,6 +76,18 @@ public class NzbHandlingWeb {
         return nzbHandler.getNfo(guid);
     }
 
+    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET)
+    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+        logger.debug("Status update for download of NZB with GUID {} to status {}", externalId, status);
+        return nzbHandler.updateStatusByExternalId(externalId, status);
+    }
+
+    @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET)
+    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+        logger.debug("Status update for download of NZB with title to status {}", title, status);
+        return nzbHandler.updateStatusByNzbTitle(title, status);
+    }
+
 
     /**
      * Provides an external access to NZBs via GUID for users.

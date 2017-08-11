@@ -14,13 +14,15 @@ public class NzbDownloadResult {
     private String title;
     private boolean successful;
     private String error;
+    private NzbDownloadEntity downloadEntity;
 
-    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error) {
+    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error, NzbDownloadEntity downloadEntity) {
         this.nzbContent = nzbContent;
         this.title = title;
         this.url = url;
         this.successful = successful;
         this.error = error;
+        this.downloadEntity = downloadEntity;
     }
 
     public boolean isRedirect() {
@@ -39,16 +41,16 @@ public class NzbDownloadResult {
         return response;
     }
 
-    public static NzbDownloadResult createSuccessfulDownloadResult(String title, String nzbContent) {
-        return new NzbDownloadResult(title, nzbContent, null, true, null);
+    public static NzbDownloadResult createSuccessfulDownloadResult(String title, String nzbContent, NzbDownloadEntity entity) {
+        return new NzbDownloadResult(title, nzbContent, null, true, null, entity);
     }
 
-    public static NzbDownloadResult createSuccessfulRedirectResult(String title, String url) {
-        return new NzbDownloadResult(title, null, url, true, null);
+    public static NzbDownloadResult createSuccessfulRedirectResult(String title, String url, NzbDownloadEntity entity) {
+        return new NzbDownloadResult(title, null, url, true, null, entity);
     }
 
-    public static NzbDownloadResult createErrorResult(String error) {
-        return new NzbDownloadResult(null, null, null, false, error);
+    public static NzbDownloadResult createErrorResult(String error, NzbDownloadEntity entity) {
+        return new NzbDownloadResult(null, null, null, false, error, entity);
     }
 
 

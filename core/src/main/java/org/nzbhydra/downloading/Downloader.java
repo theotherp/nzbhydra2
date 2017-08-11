@@ -38,10 +38,15 @@ public abstract class Downloader {
             for (Long searchResultId : searchResultIds) {
                 if (addingType == NzbAddingType.UPLOAD) {
                     NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get());
-                    addNzb(result.getNzbContent(), result.getTitle(), category);
+                    String externalId = addNzb(result.getNzbContent(), result.getTitle(), category);
+                    result.getDownloadEntity().setExternalId(externalId);
+                    nzbHandler.updateStatusByEntity(result.getDownloadEntity(), NzbDownloadStatus.NZB_ADDED);
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
-                    addLink(nzbHandler.getNzbDownloadLink(searchResultId, true, DownloadType.NZB), searchResultEntity.getTitle(), category);
+                    addLink(nzbHandler.getNzbDownloadLink(searchResultId, false, DownloadType.NZB), searchResultEntity.getTitle(), category);
+                    //TODO: Use the external ID some way, perhaps store it or something
+                    //At this point we don't have a DownloadEntity for which we could set the external status. When a link is added to the download it will download the NZB from us and only then
+                    //will there be an entity. So just adding an link will not be considered a download. The external ID will have to be set using the title (for now)
                 }
 
                 countAddedNzbs++;
@@ -62,8 +67,22 @@ public abstract class Downloader {
 
     public abstract List<String> getCategories();
 
-    public abstract void addLink(String link, String title, String category) throws DownloaderException;
+    /**
+     * @param link     Link to the NZB
+     * @param title    Title to tell the downloader
+     * @param category Category to file under
+     * @return ID returned by the downloader
+     * @throws DownloaderException
+     */
+    public abstract String addLink(String link, String title, String category) throws DownloaderException;
 
-    public abstract void addNzb(String content, String title, String category) throws DownloaderException;
+    /**
+     * @param content  NZB content to upload
+     * @param title    Title to tell the downloader
+     * @param category Category to file under
+     * @return ID returned by the downloader
+     * @throws DownloaderException
+     */
+    public abstract String addNzb(String content, String title, String category) throws DownloaderException;
 
 }

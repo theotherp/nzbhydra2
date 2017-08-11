@@ -38,8 +38,8 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public void addLink(String url, String title, String category) throws DownloaderException {
-        logger.info("Sending link for NZB {} to sabnzbd", title);
+    public String addLink(String url, String title, String category) throws DownloaderException {
+        logger.debug("Sending link for NZB {} to sabnzbd", title);
         if (!title.toLowerCase().endsWith(".nzbd")) {
             title += ".nzb";
         }
@@ -48,13 +48,14 @@ public class Sabnzbd extends Downloader {
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
-        sendAddNzbCommand(urlBuilder, null, HttpMethod.POST);
-        logger.info("Successfully added link {} for NZB \"{}\" to sabnzbd queue", url, title);
+        String nzoId = sendAddNzbCommand(urlBuilder, null, HttpMethod.POST);
+        logger.info("Successfully added link {} for NZB \"{}\" to sabnzbd queue with ID {}", url, title, nzoId);
+        return nzoId;
     }
 
     @Override
-    public void addNzb(String fileContent, String title, String category) throws DownloaderException {
-        logger.info("Uploading NZB {} to sabnzbd", title);
+    public String addNzb(String fileContent, String title, String category) throws DownloaderException {
+        logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
         urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title);
         if (!Strings.isNullOrEmpty(category)) {
@@ -62,11 +63,12 @@ public class Sabnzbd extends Downloader {
         }
         MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
         postData.add("name", fileContent);
-        sendAddNzbCommand(urlBuilder, new HttpEntity<>(postData), HttpMethod.POST);
-        logger.info("Successfully added NZB \"{}\" to sabnzbd queue", title);
+        String nzoId = sendAddNzbCommand(urlBuilder, new HttpEntity<>(postData), HttpMethod.POST);
+        logger.info("Successfully added NZB \"{}\" to sabnzbd queue with ID {}", title, nzoId);
+        return nzoId;
     }
 
-    private void sendAddNzbCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
+    private String sendAddNzbCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {
             ResponseEntity<AddNzbResponse> response = restTemplate.exchange(urlBuilder.build().toUri(), httpMethod, httpEntity, AddNzbResponse.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
@@ -75,6 +77,10 @@ public class Sabnzbd extends Downloader {
             if (!response.getBody().isStatus()) {
                 throw new DownloaderException("Downloader says NZB was not added successfully.");
             }
+            if (response.getBody().getNzoIds().isEmpty()) {
+                throw new DownloaderException("Sabnzbd says NZB was added successfully but didn't return an NZO ID");
+            }
+            return response.getBody().getNzoIds().get(0);
         } catch (RestClientException e) {
             throw new DownloaderUnreachableException("Error while adding NZB(s)", e);
         }

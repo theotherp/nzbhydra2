@@ -3587,6 +3587,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $inter
 
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
+    $scope.query = "";
     $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
         return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResultsFrom === "BOTH");
     });

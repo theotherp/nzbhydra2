@@ -109,6 +109,12 @@ public class NzbHydra {
                 dataFolder = "./data";
             }
             dataFolder = new File(dataFolder).getCanonicalPath();
+            //Check if we can write in the data folder. If not we can just quit now
+            if (!new File(dataFolder).canWrite()) {
+                logger.error("Unable to read or write data folder {}", dataFolder);
+                System.exit(1);
+            }
+
 
             System.setProperty("nzbhydra.dataFolder", dataFolder);
             System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
@@ -143,6 +149,7 @@ public class NzbHydra {
             logger.warn("Overwritten settings will be displayed with their original value in the config section of the GUI");
         }
     }
+
 
     private static void useIfSet(OptionSet options, String optionKey, String propertyName) {
         useIfSet(options, optionKey, propertyName, (String) options.valueOf(optionKey));
