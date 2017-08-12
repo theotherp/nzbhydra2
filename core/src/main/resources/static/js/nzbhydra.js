@@ -5335,7 +5335,7 @@ angular
     .controller('DownloadHistoryController', DownloadHistoryController);
 
 
-function DownloadHistoryController($scope, StatsService, downloads, ConfigService, $timeout) {
+function DownloadHistoryController($scope, StatsService, downloads, ConfigService, $timeout, $sce) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
@@ -5388,14 +5388,37 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.update();
     });
 
-    $scope.accessResult = function (result) {
-        if (result === 'UNKNOWN') {
-            return 'glyphicon-question-sign';
-        } else if (result === 'SUCCESSFUL') {
-            return 'glyphicon-ok';
-        } else {
-            return 'glyphicon-remove';
+    $scope.getStatusIcon = function (result) {
+        var spans;
+        if (result === "NONE" || result === "REQUESTED") {
+            spans = '<span class="glyphicon glyphicon-question-sign"></span>'
         }
+        if (result === "INTERNAL_ERROR") {
+            spans = '<span class="glyphicon glyphicon-remove"></span>'
+        }
+        if (result === "INTERNAL_ERROR") {
+            spans = '<span class="glyphicon glyphicon-remove"></span>'
+        }
+        if (result === 'NZB_DOWNLOAD_SUCCESSFUL') {
+            spans = '<span class="glyphicon glyphicon-ok"></span>';
+        }
+        if (result === 'NZB_DOWNLOAD_ERROR') {
+            spans = '<span class="glyphicon glyphicon-remove"></span>';
+        }
+        if (result === 'NZB_ADDED') {
+            spans = '<span class="glyphicon glyphicon-ok" style="margin-right: 3px"></span><span class="glyphicon glyphicon-question-sign"></span>';
+        }
+        if (result === 'NZB_NOT_ADDED' || result === 'NZB_ADD_ERROR' || result === 'NZB_ADD_REJECTED') {
+            spans = '<span class="glyphicon glyphicon-ok" style="margin-right: 3px"></span><span class="glyphicon glyphicon-remove"></span>';
+        }
+        if (result === 'CONTENT_DOWNLOAD_SUCCESSFUL') {
+            spans = '<span class="glyphicon glyphicon-ok" style="margin-right: 3px"><span class="glyphicon glyphicon-ok"></span><span class="glyphicon glyphicon-ok"></span>';
+        }
+        if (result === 'CONTENT_DOWNLOAD_ERROR' || result === 'CONTENT_DOWNLOAD_WARNING') {
+            spans = '<span class="glyphicon glyphicon-ok" style="margin-right: 3px"><span class="glyphicon glyphicon-ok"></span><span class="glyphicon glyphicon-remove"></span>';
+        }
+        return $sce.trustAsHtml('<span tooltip-placement="auto top" uib-tooltip="' + result + '">' + spans + '</span>');
+
     };
 
 
@@ -5409,7 +5432,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     })
 
 }
-DownloadHistoryController.$inject = ["$scope", "StatsService", "downloads", "ConfigService", "$timeout"];
+DownloadHistoryController.$inject = ["$scope", "StatsService", "downloads", "ConfigService", "$timeout", "$sce"];
 
 angular
     .module('nzbhydraApp')

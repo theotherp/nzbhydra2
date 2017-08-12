@@ -8,7 +8,7 @@
     <thead>
     <tr>
         <th class="col-md-2">
-            <column-sortable column="time" style="width: 10%">Time
+            <column-sortable column="time" start-mode="2" style="width: 10%">Time
             </column-sortable>
             <column-filter-wrapper>
                 <time-filter column="time" selected="preselectedTimeInterval"/>
@@ -36,14 +36,14 @@
                 <checkboxes-filter column="result" entries="successfulForFiltering" preselect="true" show-invert="false"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-1" style="width: 8%">
+        <th class="col-md-1" style="width: 7%">
             <column-sortable column="access_source">Source
             </column-sortable>
             <column-filter-wrapper>
                 <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-1" style="width: 5%">
+        <th class="col-md-1" style="width: 6%">
             <column-sortable column="age">Age</column-sortable>
             <column-filter-wrapper>
                 <freetext-filter column="age"/>
@@ -65,9 +65,8 @@
             <addable-nzbs search-result-id="nzbDownload.searchResultId" ng-style="{'visibility':!nzbDownload.searchResultId ? 'hidden' : 'initial'}"></addable-nzbs>
             <a target="_blank" href="{{ nzbDownload.detailsLink | dereferer }}" ng-if="nzbDownload.detailsLink">{{ nzbDownload.title }}</a><span ng-if="!nzbDownload.detailsLink">{{ nzbDownload.title }}</span>
         </td>
-        <td class="narrow-row"><span class="glyphicon" ng-class="accessResult(nzbDownload.result)"></span>
-            <!--ng-class="{'glyphicon-ok': nzbDownload.indexerApiAccess.result == 'SUCCESSFUL', 'glyphicon-remove': nzbDownload.ndexerApiAccess.result == false, 'glyphicon-question-sign': nzbDownload.ndexerApiAccess.result == 'UNKNOWN'}"-->
-
+        <td class="narrow-row">
+            <span ng-bind-html="getStatusIcon(nzbDownload.status)" uib-tooltip="{{nzbDownload.status}}"></span>
         </td>
         <td class="narrow-row">{{ nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
         <td class="narrow-row">{{ nzbDownload.age }}</td>
