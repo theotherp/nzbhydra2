@@ -4,6 +4,7 @@ import lombok.Data;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
 import org.nzbhydra.historystats.stats.DownloadPerAge;
 import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
 import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
@@ -38,5 +39,10 @@ public class StatsResponse {
     private List<DownloadPerAge> downloadsPerAge = new ArrayList<>();
     private DownloadPerAgeStats downloadsPerAgeStats = new DownloadPerAgeStats();
     private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer = new ArrayList<>();
+    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp = new ArrayList<>();
+    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp = new ArrayList<>();
+
+    private int numberOfConfiguredIndexers;
+    private int numberOfEnabledIndexers;
 
 }

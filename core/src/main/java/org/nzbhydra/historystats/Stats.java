@@ -3,6 +3,7 @@ package org.nzbhydra.historystats;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
+import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
 import org.nzbhydra.historystats.stats.DownloadPerAge;
 import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
 import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
@@ -66,8 +67,13 @@ public class Stats {
 
         statsResponse.setDownloadsPerAge(downloadsPerAge());
         statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats());
+        statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD"));
+        statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH"));
 
         statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest));
+
+        statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
+        statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
 
         return statsResponse;
     }
@@ -408,7 +414,36 @@ public class Stats {
             Double percentSuccessful = (Double) o2[1];
             result.add(new SuccessfulDownloadsPerIndexer(indexerName, percentSuccessful));
         }
-        result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage));
+        result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage).reversed());
+        return result;
+    }
+
+    List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
+        String sql = "" +
+                "SELECT\n" +
+                "  USERNAME_OR_IP,\n" +
+                "  count(*)                                                    AS peruser,\n" +
+                "  (SELECT count(*)\n" +
+                "   FROM " + tablename + "\n" +
+                "   WHERE USERNAME_OR_IP IS NOT NULL AND USERNAME_OR_IP != ''" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                ") AS countall\n" +
+                "FROM " + tablename + "\n" +
+                " WHERE USERNAME_OR_IP IS NOT NULL AND USERNAME_OR_IP != ''\n" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "GROUP BY USERNAME_OR_IP";
+        Query query = entityManager.createNativeQuery(sql);
+        List<Object> resultList = query.getResultList();
+        List<DownloadOrSearchSharePerUserOrIp> result = new ArrayList<>();
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            String usernameOrIp = (String) o2[0];
+            int countAll = ((BigInteger) o2[2]).intValue();
+            int countForUser = ((BigInteger) o2[1]).intValue();
+            float percentSuccessful = 100F / (((BigInteger) o2[2]).floatValue() / ((BigInteger) o2[1]).floatValue());
+            result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
+        }
+        result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
         return result;
     }
 

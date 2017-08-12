@@ -117,8 +117,8 @@
                 <tr ng-repeat="avgIndexerAccessSuccess in indexerApiAccessStats">
                     <td>{{ avgIndexerAccessSuccess.indexerName }}</td>
                     <td>{{ avgIndexerAccessSuccess.averageAccessesPerDay }}</td>
-                    <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 0}}</td>
-                    <td>{{ avgIndexerAccessSuccess.percentConnectionError | number: 0 }}</td>
+                    <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 1}}</td>
+                    <td>{{ avgIndexerAccessSuccess.percentConnectionError | number: 1 }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -168,15 +168,15 @@
                     </tr>
                     <tr>
                         <td>% older than 1000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder1000}}</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder1000 | number : 1}}</td>
                     </tr>
                     <tr>
                         <td>% older than 2000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder2000}}</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder2000 | number : 1}}</td>
                     </tr>
                     <tr>
                         <td>% older than 3000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder3000}}</td>
+                        <td>{{ downloadsPerAgeStats.percentOlder3000 | number : 1}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -195,12 +195,12 @@
                 <table class="table">
                     <thead>
                     <th>Indexer</th>
-                    <th><% of downloads successful/th>
+                    <th>% of downloads successful</th>
                     </thead>
                     <tbody>
                     <tr ng-repeat="stat in successfulDownloadsPerIndexer">
                         <td>{{ stat.indexerName}}</td>
-                        <td>{{ stat.percentage}}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -212,6 +212,62 @@
 
         </div>
     </div>
+
+
+    <div class="row">
+        <div class="col-md-10">
+            <div style="margin-top:10px" class="caption">Searches per username / IP</div>
+            <tab-or-chart display="chart">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>User or IP</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in searchSharesPerUserOrIp">
+                        <td>{{ stat.userOrIp }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="searchSharesPerUserOrIpChart">
+                    <nvd3 options="searchSharesPerUserOrIpChart.options" data="searchSharesPerUserOrIpChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <div style="margin-top:10px" class="caption">Downloads per username / IP</div>
+            <tab-or-chart display="chart">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>User or IP</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in downloadSharesPerUserOrIp">
+                        <td>{{ stat.userOrIp }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="downloadSharesPerUserOrIpChart">
+                    <nvd3 options="downloadSharesPerUserOrIpChart.options" data="downloadSharesPerUserOrIpChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+    </div>
+
 
     <div class="row">
         <div class="col-md-10">

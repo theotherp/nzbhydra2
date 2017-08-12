@@ -93,6 +93,10 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.downloadsPerAge = stats.downloadsPerAge;
         $scope.downloadsPerAgeStats = stats.downloadsPerAgeStats;
         $scope.successfulDownloadsPerIndexer = stats.successfulDownloadsPerIndexer;
+        $scope.searchSharesPerUserOrIp = stats.searchSharesPerUserOrIp;
+        $scope.downloadSharesPerUserOrIp = stats.downloadSharesPerUserOrIp;
+        $scope.numberOfConfiguredIndexers = stats.numberOfConfiguredIndexers;
+        $scope.numberOfEnabledIndexers = stats.numberOfEnabledIndexers;
 
 
         var numIndexers = $scope.avgResponseTimes.length;
@@ -170,8 +174,47 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             },
             data: $scope.indexerDownloadShares
         };
+        $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.numberOfConfiguredIndexers : $scope.numberOfEnabledIndexers) * 40, 350), 900);
 
-        $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(numIndexers * 40, 350), 900);
+        function getSearchOrDownloadsPerUserOrIpPieChart(data) {
+            return {
+                options: {
+                    chart: {
+                        type: 'pieChart',
+                        height: 500,
+                        x: function (d) {
+                            return d.userOrIp;
+                        },
+                        y: function (d) {
+                            return d.percentage;
+                        },
+                        showLabels: true,
+                        duration: 500,
+                        labelThreshold: 0.01,
+                        labelSunbeamLayout: true,
+                        tooltip: {
+                            valueFormatter: function (d, i) {
+                                return $filter('number')(d, 2) + "%";
+                            }
+                        },
+                        legend: {
+                            margin: {
+                                top: 5,
+                                right: 35,
+                                bottom: 5,
+                                left: 0
+                            }
+                        }
+                    }
+                },
+                data: data
+            };
+        }
+
+        $scope.downloadSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.downloadSharesPerUserOrIp);
+        $scope.downloadSharesPerUserOrIpChart.options.chart.height = 300;
+        $scope.searchSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.searchSharesPerUserOrIp);
+        $scope.searchSharesPerUserOrIpChart.options.chart.height = 300;
     };
 
 
