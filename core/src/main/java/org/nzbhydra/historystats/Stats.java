@@ -9,6 +9,7 @@ import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.historystats.stats.IndexerDownloadShare;
 import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
 import org.nzbhydra.historystats.stats.StatsRequest;
+import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -26,6 +27,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,8 @@ public class Stats {
 
         statsResponse.setDownloadsPerAge(downloadsPerAge());
         statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats());
+
+        statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest));
 
         return statsResponse;
     }
@@ -381,6 +385,31 @@ public class Stats {
         return hourOfDayCounts;
     }
 
+    List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer(final StatsRequest statsRequest) {
+        String sql = "SELECT  INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
+                "from\n" +
+                "  (select indexer_id as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD  WHERE INDEXER_ID IN (:indexerIds) AND status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "GROUP BY INDEXER_ID),\n" +
+                "  (select indexer_id as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD WHERE INDEXER_ID IN (:indexerIds) AND  status ='CONTENT_DOWNLOAD_SUCCESSFUL' " +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "GROUP BY INDEXER_ID) " +
+                ",INDEXER where id_1 = id_2 and id_1 = INDEXER.ID";
+        Query query = entityManager.createNativeQuery(sql);
+        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
+        query.setParameter("indexerIds", indexerIdsToInclude);
+        List<Object> resultList = query.getResultList();
+        List<SuccessfulDownloadsPerIndexer> result = new ArrayList<>();
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            String indexerName = (String) o2[0];
+            Double percentSuccessful = (Double) o2[1];
+            result.add(new SuccessfulDownloadsPerIndexer(indexerName, percentSuccessful));
+        }
+        result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage));
+        return result;
+    }
+
     List<DownloadPerAge> downloadsPerAge() {
         List<DownloadPerAge> results = new ArrayList<>();
         for (int i = 1; i <= 35; i++) {
@@ -413,6 +442,7 @@ public class Stats {
         result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
         return result;
     }
+
 
     private String buildWhereFromStatsRequest(boolean useAnd, StatsRequest statsRequest) {
         return (useAnd ? " AND " : " WHERE ") +

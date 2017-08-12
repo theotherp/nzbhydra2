@@ -92,6 +92,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.searchesPerDayOfWeek = stats.searchesPerDayOfWeek;
         $scope.downloadsPerAge = stats.downloadsPerAge;
         $scope.downloadsPerAgeStats = stats.downloadsPerAgeStats;
+        $scope.successfulDownloadsPerIndexer = stats.successfulDownloadsPerIndexer;
 
 
         var numIndexers = $scope.avgResponseTimes.length;
@@ -126,6 +127,16 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
         $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 90;
         $scope.downloadsPerAgeChart.options.chart.showValues = false;
+
+        $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
+        $scope.successfulDownloadsPerIndexerChart.options.chart.xAxis.rotateLabels = 90;
+        $scope.successfulDownloadsPerIndexerChart.options.chart.yAxis.tickFormat = function (d) {
+            return $filter('number')(d, 0);
+        };
+        $scope.successfulDownloadsPerIndexerChart.options.chart.valueFormat = function (d) {
+            return $filter('number')(d, 0);
+        };
+        $scope.successfulDownloadsPerIndexerChart.options.chart.showValues = true;
 
         $scope.indexerDownloadSharesChart = {
             options: {

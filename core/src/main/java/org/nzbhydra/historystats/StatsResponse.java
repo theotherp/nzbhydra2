@@ -9,6 +9,7 @@ import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
 import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.historystats.stats.IndexerDownloadShare;
 import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
+import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -36,5 +37,6 @@ public class StatsResponse {
 
     private List<DownloadPerAge> downloadsPerAge = new ArrayList<>();
     private DownloadPerAgeStats downloadsPerAgeStats = new DownloadPerAgeStats();
+    private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer = new ArrayList<>();
 
 }
