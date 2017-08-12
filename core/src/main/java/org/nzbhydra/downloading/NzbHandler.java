@@ -185,9 +185,20 @@ public class NzbHandler {
     }
 
     public boolean updateStatusByEntity(NzbDownloadEntity entity, NzbDownloadStatus status) {
+        NzbDownloadStatus oldStatus = entity.getStatus();
         entity.setStatus(status);
         downloadRepository.save(entity);
+        logger.info("Updated download status of NZB \"{}\" from {} to {}", entity.getTitle(), oldStatus, status);
         return true;
+    }
+
+    public boolean updateStatusByExternalIdOrTitle(String externalId, String title, NzbDownloadStatus status) {
+        Collection<NzbDownloadEntity> foundEntities = downloadRepository.findByExternalId(externalId);
+        if (foundEntities.isEmpty()) {
+            return updateStatusByNzbTitle(title, status);
+        } else {
+            return updateStatusByExternalId(externalId, status);
+        }
     }
 
     public boolean updateStatusByExternalId(String externalId, NzbDownloadStatus status) {
@@ -211,7 +222,7 @@ public class NzbHandler {
         List<NzbDownloadEntity> foundEntities = downloadRepository.findByTitleOrderByTimeDesc(title);
         NzbDownloadEntity entity = null;
         if (foundEntities.size() == 0) {
-            logger.error("Did not find any download for an NZB with the title \"{}\"", title);
+            logger.debug("Did not find any download for an NZB with the title \"{}\". Skipping this", title);
             return false;
         } else if (foundEntities.size() > 1) {
             logger.info("Found multiple downloads identified by \"{}\" and will try to find the newest that can be updated by the new status {}", title, status);

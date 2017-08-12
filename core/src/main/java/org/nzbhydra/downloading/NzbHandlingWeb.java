@@ -88,6 +88,12 @@ public class NzbHandlingWeb {
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
+    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET)
+    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+        logger.debug("Status update for download of NZB with title to status {}", title, status);
+        return nzbHandler.updateStatusByExternalIdOrTitle(externalId, title, status);
+    }
+
 
     /**
      * Provides an external access to NZBs via GUID for users.
