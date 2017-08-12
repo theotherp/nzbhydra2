@@ -9,6 +9,8 @@ import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UsernameOrIpStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,8 @@ import java.util.Set;
 
 @Component
 public abstract class Downloader {
+
+    private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
     @Autowired
     private NzbHandler nzbHandler;
@@ -54,6 +58,7 @@ public abstract class Downloader {
 
         } catch (DownloaderException e) {
             String message = "Error while adding NZB(s) to downloader: " + e.getMessage();
+            logger.error(message);
             if (countAddedNzbs > 0) {
                 message += ".\n" + countAddedNzbs + " were added successfully";
             }

@@ -12,5 +12,6 @@ public class AddNzbResponse {
     private boolean status;
     @JsonProperty("nzo_ids")
     private List<String> nzoIds = new ArrayList<>();
+    private String error;
 
 }
