@@ -255,19 +255,21 @@ public class Stats {
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
                 "  indexer_id,\n" +
-                "  avg(accesses) AS accessesPerDay \n" +
-                "FROM ( \n" +
-                "  SELECT \n" +
-                "    indexer_id, \n" +
-                "    CAST(count(*) AS FLOAT) AS accesses, \n" +
-                "    DAYOFYEAR(time), \n" +
-                "    year(time) \n" +
-                "  FROM INDEXERAPIACCESS \n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "  GROUP BY INDEXER_ID, year(time), DAYOFYEAR(time) \n" +
-                ") \n" +
-                "WHERE INDEXER_ID IN (:indexerIds) \n" +
-                "GROUP BY INDEXER_ID \n" +
+                "  avg(accesses) AS accessesPerDay\n" +
+                "FROM (\n" +
+                "  SELECT\n" +
+                "    indexer_id,\n" +
+                "    CAST(count(*) AS FLOAT) AS accesses,\n" +
+                "    DAYOFYEAR(time),\n" +
+                "    year(time)\n" +
+                "  FROM INDEXERAPIACCESS,\n" +
+                "    (select indexer_id as id2, min(time) as mintime from INDEXERAPIACCESS GROUP BY INDEXER_ID)\n" +
+                "  WHERE  (TIME > mintime AND INDEXER_ID = id2)\n" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "  GROUP BY INDEXER_ID, year(time), DAYOFYEAR(time)\n" +
+                ")\n" +
+                "WHERE INDEXER_ID IN (:indexerIds)\n" +
+                "GROUP BY INDEXER_ID\n" +
                 "ORDER BY INDEXER_ID NULLS LAST";
 
         Query countQuery = entityManager.createNativeQuery(countByResultSql);
