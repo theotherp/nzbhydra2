@@ -10,4 +10,6 @@ public interface IndexerApiAccessRepository extends JpaRepository<IndexerApiAcce
     IndexerApiAccessEntity findByIndexer(IndexerEntity indexerEntity);
 
     Page<IndexerApiAccessEntity> findByIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
+
+
 }

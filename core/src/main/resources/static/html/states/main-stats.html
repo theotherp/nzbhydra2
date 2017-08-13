@@ -116,9 +116,9 @@
                 <tbody>
                 <tr ng-repeat="avgIndexerAccessSuccess in indexerApiAccessStats">
                     <td>{{ avgIndexerAccessSuccess.indexerName }}</td>
-                    <td>{{ avgIndexerAccessSuccess.averageAccessesPerDay }}</td>
-                    <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 1}}</td>
-                    <td>{{ avgIndexerAccessSuccess.percentConnectionError | number: 1 }}</td>
+                    <td>{{ avgIndexerAccessSuccess.averageAccessesPerDay | number: 0 }}</td>
+                    <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 0}}</td>
+                    <td>{{ avgIndexerAccessSuccess.percentConnectionError | number: 0 }}</td>
                 </tr>
                 </tbody>
             </table>

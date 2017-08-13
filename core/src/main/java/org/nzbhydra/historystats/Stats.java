@@ -22,6 +22,7 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.EntityManager;
@@ -29,12 +30,12 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalDouble;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -54,30 +55,28 @@ public class Stats {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Transactional
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
-
         logger.debug("Request for stats between {} and {}", statsRequest.getAfter(), statsRequest.getBefore());
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         StatsResponse statsResponse = new StatsResponse();
         statsResponse.setAfter(statsRequest.getAfter());
         statsResponse.setBefore(statsRequest.getBefore());
 
-        int numberOfThreads = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
-        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
-        logger.debug("Starting stats calculation with {} threads", numberOfThreads);
+        ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
 
-        executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest)));
+        executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))); //7151ms
+        executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))); //7307ms
+        executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))); //3140ms
 
-        executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest)));
-        executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest)));
+        executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest))); //347ms
+        executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest))); //19ms
 
-        executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest)));
-        executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest)));
+        executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest))); //242ms
+        executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest))); //22ms
 
-        executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest)));
         executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest)));
-
-        executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest)));
 
         executor.submit(() -> statsResponse.setDownloadsPerAge(downloadsPerAge()));
         executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats()));
@@ -92,17 +91,20 @@ public class Stats {
         executor.shutdown();
         boolean wasCompleted = executor.awaitTermination(30, TimeUnit.SECONDS);
         if (!wasCompleted) {
-            throw new RuntimeException("The stats calculation took longer than 30 seconds");
+            executor.shutdownNow();
+            logger.error("Aborted stats generation because it took longer than 30 seconds");
         }
 
         statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
         statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
 
+        logger.info("Stats calculation took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return statsResponse;
     }
 
     List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating indexer download shares");
         if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
@@ -139,7 +141,7 @@ public class Stats {
             long total = ((BigInteger) resultSet[1]).longValue();
             long countAll = ((BigInteger) resultSet[2]).longValue();
             float share = total > 0 ? (100F / ((float) countAll / total)) : 0F;
-            indexerDownloadShares.add(new IndexerDownloadShare(indexerName, share));
+            indexerDownloadShares.add(new IndexerDownloadShare(indexerName, total, share));
         }
         logger.debug("Calculated indexer download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerDownloadShares;
@@ -147,36 +149,28 @@ public class Stats {
 
     List<AverageResponseTime> averageResponseTimes(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating average response times for indexers");
         List<AverageResponseTime> averageResponseTimes = new ArrayList<>();
         String sql = "SELECT\n" +
-                "  i.NAME,\n" +
-                "  avgIndexerResponseTime,\n" +
-                "  responseTimeDelta\n" +
-                "FROM (\n" +
-                "  SELECT\n" +
-                "    INDEXER_ID,\n" +
-                "    avg(RESPONSE_TIME)                                AS avgIndexerResponseTime,\n" +
-                "    (avg(RESPONSE_TIME - overallAverageResponseTime)) AS responseTimeDelta\n" +
-                "  FROM INDEXERAPIACCESS, (SELECT avg(RESPONSE_TIME) AS overallAverageResponseTime\n" +
-                "                          FROM INDEXERAPIACCESS\n" +
-                "                          WHERE INDEXER_ID IN (:indexerIds) AND RESPONSE_TIME IS NOT NULL " +
+                "  NAME,\n" +
+                "  avg(RESPONSE_TIME) AS avg\n" +
+                "FROM INDEXERAPIACCESS\n" +
+                "  LEFT JOIN indexer i ON INDEXERAPIACCESS.INDEXER_ID = i.ID\n" +
+                "WHERE INDEXERAPIACCESS.INDEXER_ID IN (:indexerIds)\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                ") x\n" +
-                "  WHERE response_time IS NOT NULL\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "  GROUP BY INDEXER_ID, overallAverageResponseTime) LEFT JOIN indexer i ON INDEXER_ID = ID\n" +
-                "WHERE INDEXER_ID IN (:indexerIds)\n" +
-                "ORDER BY avgIndexerResponseTime ASC NULLS LAST";
+                "GROUP BY INDEXER_ID\n" +
+                "ORDER BY avg ASC";
 
+        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("indexerIds", searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
+        query.setParameter("indexerIds", indexerIdsToInclude);
         List resultList = query.getResultList();
+        OptionalDouble overallAverage = resultList.stream().mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
             Long averageResponseTime = ((BigInteger) resultSet[1]).longValue();
-            Long delta = ((BigInteger) resultSet[2]).longValue();
-            averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, delta));
+            averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, averageResponseTime - overallAverage.getAsDouble()));
         }
         logger.debug("Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return averageResponseTimes;
@@ -193,8 +187,10 @@ public class Stats {
      * @param statsRequest
      * @return
      */
+    @Transactional
     List<IndexerSearchResultsShare> indexerSearchShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating indexer search shares");
         List<IndexerSearchResultsShare> indexerSearchResultsShares = new ArrayList<>();
         String countResultsSql = "SELECT\n" +
                 "  INDEXERRESULTSSUM,\n" +
@@ -209,7 +205,7 @@ public class Stats {
                 "   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID\n" +
                 "                FROM indexersearch\n" +
                 "                  LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId\n" +
+                "                WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId \n" +
                 "                      AND INDEXERSEARCH.successful AND\n" +
                 "                      INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
                 "                                                         FROM SEARCH\n" +
@@ -220,29 +216,31 @@ public class Stats {
                 "                      )\n" +
                 "   )) FORINDEXER,\n" +
                 "  (SELECT\n" +
-                "     sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
-                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
-                "   FROM INDEXERSEARCH\n" +
-                "   WHERE INDEXERSEARCH.ID IN\n" +
-                "         (SELECT INDEXERSEARCH.ID\n" +
-                "          FROM INDEXERSEARCH\n" +
-                "          WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
-                "                       FROM indexersearch\n" +
-                "                         LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                         LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                       WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId\n" +
-                "                             AND INDEXERSEARCH.successful AND\n" +
-                "                             INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
-                "                                                                FROM SEARCH\n" +
-                "                                                                  LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                                                                WHERE\n" +
-                "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL) \n" +
+                "      sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
+                "      SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
+                "    FROM INDEXERSEARCH\n" +
+                "    WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                             FROM indexersearch\n" +
+                "                                               LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
+                "                                               LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                             WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId \n" +
+                "                                                   AND INDEXERSEARCH.successful AND\n" +
+                "                                                   INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                                                                      FROM SEARCH\n" +
+                "                                                                                        LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                                                                      WHERE\n" +
+                "                                                                                        (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR\n" +
+                "                                                                                         SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "          )) AND INDEXERSEARCH.successful\n" +
-                "         )) FORALL";
+                "                                                   )\n" +
+                "                                                   AND INDEXERSEARCH.successful)" +
+                "  --       AND INDEXERSEARCH.successful\n" + //TODO Should this be enabled?
+                "  ) FORALL";
+
 
         List<Indexer> indexersToInclude = statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers();
         for (Indexer indexer : indexersToInclude) {
+            logger.debug("Calculating search shares for indexer {}", indexer.getName());
             Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerId", indexer.getIndexerEntity().getId());
 
             Object[] resultSet = (Object[]) countQuery.getSingleResult();
@@ -272,68 +270,63 @@ public class Stats {
 
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating indexer API stats");
         List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
-        String countByResultSql = "SELECT \n" +
-                "  INDEXER.ID AS indexerid,\n" +
-                "  x.counter as counter \n" +
-                "FROM INDEXER \n" +
-                "  LEFT JOIN \n" +
-                "  (SELECT \n" +
-                "     INDEXER_ID,\n" +
-                "     count(*) AS counter \n" +
-                "   FROM INDEXERAPIACCESS \n" +
-                "   WHERE INDEXER_ID IN (:indexerIds) AND RESULT IN (:resultTypes) \n " +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "   GROUP BY INDEXER_ID) x ON x.INDEXER_ID = INDEXER.ID ORDER BY INDEXER_ID NULLS LAST";
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
                 "  indexer_id,\n" +
-                "  avg(accesses) AS accessesPerDay\n" +
+                "  avg(count)\n" +
                 "FROM (\n" +
-                "  SELECT\n" +
-                "    indexer_id,\n" +
-                "    CAST(count(*) AS FLOAT) AS accesses,\n" +
-                "    DAYOFYEAR(time),\n" +
-                "    year(time)\n" +
-                "  FROM INDEXERAPIACCESS,\n" +
-                "    (select indexer_id as id2, min(time) as mintime from INDEXERAPIACCESS GROUP BY INDEXER_ID)\n" +
-                "  WHERE  (TIME > mintime AND INDEXER_ID = id2)\n" +
+                "  (SELECT\n" +
+                "     INDEXER_ID,\n" +
+                "     cast(count(INDEXER_ID) AS FLOAT) AS count," +
+                "     cast(time AS DATE)               AS date" +
+                "   FROM INDEXERAPIACCESS\n" +
+                "   WHERE INDEXER_ID in (:indexerIds) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "  GROUP BY INDEXER_ID, year(time), DAYOFYEAR(time)\n" +
-                ")\n" +
-                "WHERE INDEXER_ID IN (:indexerIds)\n" +
-                "GROUP BY INDEXER_ID\n" +
-                "ORDER BY INDEXER_ID NULLS LAST";
+                "   GROUP BY INDEXER_ID,\n" +
+                "     cast(time AS DATE)))\n" +
+                "GROUP BY INDEXER_ID";
 
-        Query countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", indexerIdsToInclude);
-        countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.SUCCESSFUL.name()));
+        Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
+        List results = entityManager.createNativeQuery(averageIndexerAccessesPerDay).setParameter("indexerIds", indexerIdsToInclude).getResultList();
+        for (Object resultObject : results) {
+            Object[] array = (Object[]) resultObject;
+            Integer indexerId = (Integer) array[0];
+            Double avg = (Double) array[1];
+            accessesPerDayCountMap.put(indexerId, avg);
+        }
 
-        Map<Integer, BigInteger> successCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
-                HashMap::putAll);
+        String countByResultSql = "SELECT\n" +
+                "     INDEXER_ID,\n" +
+                "     RESULT,\n" +
+                "     count(result) AS count\n" +
+                "   FROM INDEXERAPIACCESS\n" +
+                "   WHERE INDEXER_ID in (:indexerIds)\n" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "   GROUP BY INDEXER_ID, RESULT\n" +
+                "   ORDER BY INDEXER_ID, RESULT";
 
-
-        countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", indexerIdsToInclude);
-        countQuery.setParameter("resultTypes", Arrays.asList(IndexerAccessResult.CONNECTION_ERROR.name()));
-        Map<Integer, BigInteger> connectionErrorCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
-                HashMap::putAll);
-
-        countQuery = entityManager.createNativeQuery(countByResultSql);
-        countQuery.setParameter("indexerIds", indexerIdsToInclude);
-        countQuery.setParameter("resultTypes", Arrays.stream(IndexerAccessResult.values()).map(Enum::name).collect(Collectors.toList()));
-        Map<Integer, BigInteger> allAccessesCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put((Integer) i[0], (BigInteger) i[1]),
-                HashMap::putAll);
-
-        countQuery = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
-        countQuery.setParameter("indexerIds", indexerIdsToInclude);
-        Map<Integer, Double> accessesPerDayCountMap = ((List<Object[]>) countQuery.getResultList()).stream().collect(HashMap::new,
-                (map, i) -> map.put((Integer) i[0], (Double) i[1]),
-                HashMap::putAll);
-
+        Map<Integer, Integer> successCountMap = new HashMap<>();
+        Map<Integer, Integer> connectionErrorCountMap = new HashMap<>();
+        Map<Integer, Integer> allAccessesCountMap = new HashMap<>();
+        results = entityManager.createNativeQuery(countByResultSql).setParameter("indexerIds", indexerIdsToInclude).getResultList();
+        for (Object resultObject : results) {
+            Object[] array = (Object[]) resultObject;
+            Integer indexerId = (Integer) array[0];
+            String result = (String) array[1];
+            int count = ((BigInteger) array[2]).intValue();
+            if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
+                successCountMap.put(indexerId, count);
+            } else if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
+                connectionErrorCountMap.put(indexerId, count);
+            }
+            if (allAccessesCountMap.containsKey(indexerId)) {
+                allAccessesCountMap.put(indexerId, allAccessesCountMap.get(indexerId) + count);
+            } else {
+                allAccessesCountMap.put(indexerId, count);
+            }
+        }
 
         List<IndexerApiAccessStatsEntry> indexerApiAccessStatsEntries = new ArrayList<>();
         for (Integer id : indexerIdsToInclude) {
@@ -365,6 +358,7 @@ public class Stats {
 
     List<CountPerDayOfWeek> countPerDayOfWeek(final String table, final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating count for hour of day for table {}", table);
         String sql = "SELECT \n" +
                 "  DAYOFWEEK(time) AS dayofweek, \n" +
                 "  count(*)        AS counter \n" +
@@ -452,6 +446,7 @@ public class Stats {
 
     List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculated downloadsOrSearches for table {}", tablename);
         String sql = "" +
                 "SELECT\n" +
                 "  USERNAME_OR_IP,\n" +
@@ -482,14 +477,24 @@ public class Stats {
 
     List<DownloadPerAge> downloadsPerAge() {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating downloads per age");
         List<DownloadPerAge> results = new ArrayList<>();
-        for (int i = 1; i <= 35; i++) {
-            String sql = String.format("SELECT COUNT(*)\n" +
-                    "FROM INDEXERNZBDOWNLOAD\n" +
-                    "WHERE AGE >= %d AND AGE < %d", (i - 1) * 100, i * 100);
-            Query query = entityManager.createNativeQuery(sql);
-            int count = ((BigInteger) query.getResultList().get(0)).intValue();
-            results.add(new DownloadPerAge((i - 1) * 100, count));
+        String sql = "SELECT\n" +
+                "  steps,\n" +
+                "  count(*)\n" +
+                "FROM\n" +
+                "  (SELECT age / 100 AS steps\n" +
+                "   FROM INDEXERNZBDOWNLOAD\n" +
+                "   WHERE age IS NOT NULL)\n" +
+                "GROUP BY steps\n" +
+                "ORDER BY steps ASC";
+        Query query = entityManager.createNativeQuery(sql);
+        List resultList = query.getResultList();
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            int ageStep = (Integer) o2[0];
+            int count = ((BigInteger) o2[1]).intValue();
+            results.add(new DownloadPerAge(ageStep, count));
         }
 
         logger.debug("Calculated downloads per age. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
@@ -498,6 +503,7 @@ public class Stats {
 
     DownloadPerAgeStats downloadsPerAgeStats() {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating downloads per age percentages");
         DownloadPerAgeStats result = new DownloadPerAgeStats();
         String percentage = "SELECT CASE\n" +
                 "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +

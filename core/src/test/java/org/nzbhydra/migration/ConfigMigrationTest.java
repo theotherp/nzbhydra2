@@ -98,7 +98,7 @@ public class ConfigMigrationTest {
     }
 
     @Test
-    public void testMigration() throws Exception {
+    public void testMigration1() throws Exception {
         String json = Resources.toString(Resources.getResource(ConfigMigrationTest.class, "nzbHydra1Config1.cfg"), Charsets.UTF_8);
         ConfigMigrationResult result = testee.migrate(json);
 
@@ -197,7 +197,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getSslkey().get(), is("nzbhydra.key"));
         assertThat(result.getMigratedConfig().getMain().isStartupBrowser(), is(true));
         assertThat(result.getMigratedConfig().getMain().getTheme(), is("grey"));
-        assertThat(result.getMigratedConfig().getMain().getUrlBase().get(), is("urlBase"));
+        assertThat(result.getMigratedConfig().getMain().getUrlBase().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().isUseLocalUrlForApiAccess(), is(true));
 
         assertThat(result.getMigratedConfig().getSearching().isAlwaysShowDuplicates(), is(true));
@@ -245,7 +245,13 @@ public class ConfigMigrationTest {
         }
         assertThat(animeChecked, is(true));
         assertThat(audioChecked, is(true));
+    }
 
+    @Test
+    public void testMigrationWithActualOldSettings() throws Exception {
+        String json = Resources.toString(Resources.getResource(ConfigMigrationTest.class, "nzbHydra1Config2.cfg"), Charsets.UTF_8);
+        ConfigMigrationResult result = testee.migrate(json);
+        //Just to see if it runs
     }
 
 

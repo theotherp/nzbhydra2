@@ -2539,7 +2539,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.statsLoadingPromise = StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
             $scope.setStats(stats);
             //Resize event is needed for the -perUsernameOrIp charts to be properly sized because nvd3 thinks the initial size is 0
-            $timeout(function() {
+            $timeout(function () {
                 $window.dispatchEvent(new Event("resize"));
             }, 500);
         });

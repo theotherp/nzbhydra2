@@ -202,12 +202,12 @@ public class JsonConfigMigration {
             if (oldCat != null) {
                 newCategory.setApplyRestrictionsType(searchSourceRestrictionMap.getOrDefault(oldCat.getApplyRestrictions(), SearchSourceRestriction.NONE));
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(getListFromCommaSeparatedString(oldCat.getForbiddenWords()));
+                newCategory.setForbiddenWords(oldCat.getForbiddenWords());
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(getListFromCommaSeparatedString(oldCat.getRequiredWords()));
+                newCategory.setRequiredWords(oldCat.getRequiredWords());
                 newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }
@@ -331,7 +331,6 @@ public class JsonConfigMigration {
         if (!Strings.isNullOrEmpty(oldMain.getUrlBase()) || !Strings.isNullOrEmpty(oldMain.getExternalUrl())) {
             logAsWarningAndAdd(messages, "URL base and/or external URL cannot be migrated. You'll have to set them manually");
         }
-        newMain.setUrlBase(Strings.isNullOrEmpty((oldMain.getUrlBase())) ? null : (oldMain.getUrlBase()));
         newMain.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
         return messages;
     }

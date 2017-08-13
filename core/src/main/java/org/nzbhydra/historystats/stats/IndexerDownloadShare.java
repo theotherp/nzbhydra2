@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class IndexerDownloadShare {
 
     private String indexerName;
+    private long total;
     private float share;
 }
