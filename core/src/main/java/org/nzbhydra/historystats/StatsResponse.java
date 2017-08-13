@@ -39,8 +39,8 @@ public class StatsResponse {
     private List<DownloadPerAge> downloadsPerAge = new ArrayList<>();
     private DownloadPerAgeStats downloadsPerAgeStats = new DownloadPerAgeStats();
     private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer = new ArrayList<>();
-    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp = new ArrayList<>();
-    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp = new ArrayList<>();
+    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp;
+    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp;
 
     private int numberOfConfiguredIndexers;
     private int numberOfEnabledIndexers;

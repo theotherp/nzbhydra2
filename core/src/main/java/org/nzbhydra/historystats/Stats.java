@@ -1,5 +1,8 @@
 package org.nzbhydra.historystats;
 
+import com.google.common.base.Stopwatch;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.HistoryUserInfoType;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
@@ -32,6 +35,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,13 +46,15 @@ public class Stats {
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
 
     @Autowired
+    private ConfigProvider configProvider;
+    @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
 
-    public StatsResponse getAllStats(StatsRequest statsRequest) {
+    public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
 
         logger.debug("Request for stats between {} and {}", statsRequest.getAfter(), statsRequest.getBefore());
 
@@ -54,23 +62,38 @@ public class Stats {
         statsResponse.setAfter(statsRequest.getAfter());
         statsResponse.setBefore(statsRequest.getBefore());
 
-        statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest));
-        statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest));
-        statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest));
+        int numberOfThreads = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
+        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+        logger.debug("Starting stats calculation with {} threads", numberOfThreads);
 
-        statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest));
-        statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest));
+        executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest)));
 
-        statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest));
-        statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest));
-        statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest));
+        executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest)));
+        executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest)));
 
-        statsResponse.setDownloadsPerAge(downloadsPerAge());
-        statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats());
-        statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD"));
-        statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH"));
+        executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest)));
+        executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest)));
 
-        statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest));
+        executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest)));
+        executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest)));
+
+        executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest)));
+
+        executor.submit(() -> statsResponse.setDownloadsPerAge(downloadsPerAge()));
+        executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats()));
+
+        executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
+
+        if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() != HistoryUserInfoType.NONE) {
+            executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
+            executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
+        }
+
+        executor.shutdown();
+        boolean wasCompleted = executor.awaitTermination(30, TimeUnit.SECONDS);
+        if (!wasCompleted) {
+            throw new RuntimeException("The stats calculation took longer than 30 seconds");
+        }
 
         statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
         statsResponse.setNumberOfEnabledIndexers(searchModuleProvider.getEnabledIndexers().size());
@@ -79,6 +102,7 @@ public class Stats {
     }
 
     List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         if (searchModuleProvider.getEnabledIndexers().size() == 0 && !statsRequest.isIncludeDisabled()) {
             logger.warn("Unable to generate any stats without any enabled indexers");
             return Collections.emptyList();
@@ -117,11 +141,12 @@ public class Stats {
             float share = total > 0 ? (100F / ((float) countAll / total)) : 0F;
             indexerDownloadShares.add(new IndexerDownloadShare(indexerName, share));
         }
-
+        logger.debug("Calculated indexer download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerDownloadShares;
     }
 
     List<AverageResponseTime> averageResponseTimes(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<AverageResponseTime> averageResponseTimes = new ArrayList<>();
         String sql = "SELECT\n" +
                 "  i.NAME,\n" +
@@ -153,7 +178,7 @@ public class Stats {
             Long delta = ((BigInteger) resultSet[2]).longValue();
             averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, delta));
         }
-
+        logger.debug("Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return averageResponseTimes;
     }
 
@@ -169,6 +194,7 @@ public class Stats {
      * @return
      */
     List<IndexerSearchResultsShare> indexerSearchShares(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<IndexerSearchResultsShare> indexerSearchResultsShares = new ArrayList<>();
         String countResultsSql = "SELECT\n" +
                 "  INDEXERRESULTSSUM,\n" +
@@ -239,12 +265,13 @@ public class Stats {
             }
             indexerSearchResultsShares.add(new IndexerSearchResultsShare(indexer.getName(), allShare, uniqueShare));
         }
-
+        logger.debug("Calculated indexer search shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerSearchResultsShares;
     }
 
 
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
         String countByResultSql = "SELECT \n" +
                 "  INDEXER.ID AS indexerid,\n" +
@@ -332,11 +359,12 @@ public class Stats {
 
             indexerApiAccessStatsEntries.add(entry);
         }
-
+        logger.debug("Calculated indexer API stats. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerApiAccessStatsEntries;
     }
 
     List<CountPerDayOfWeek> countPerDayOfWeek(final String table, final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "SELECT \n" +
                 "  DAYOFWEEK(time) AS dayofweek, \n" +
                 "  count(*)        AS counter \n" +
@@ -364,12 +392,13 @@ public class Stats {
             int indexInList = (index + 5) % 7;
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
-
+        logger.debug("Calculated count of day for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return dayOfWeekCounts;
     }
 
 
     List<CountPerHourOfDay> countPerHourOfDay(final String table, final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "SELECT \n" +
                 "  HOUR(time) AS hourofday, \n" +
                 "  count(*)        AS counter \n" +
@@ -390,10 +419,12 @@ public class Stats {
             hourOfDayCounts.get(index).setCount(counter.intValue());
         }
 
+        logger.debug("Calculated count for hour of day for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return hourOfDayCounts;
     }
 
     List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "SELECT  INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
                 "from\n" +
                 "  (select indexer_id as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD  WHERE INDEXER_ID IN (:indexerIds) AND status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
@@ -415,10 +446,12 @@ public class Stats {
             result.add(new SuccessfulDownloadsPerIndexer(indexerName, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage).reversed());
+        logger.debug("Calculated successful download percentages for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
     List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "" +
                 "SELECT\n" +
                 "  USERNAME_OR_IP,\n" +
@@ -438,16 +471,17 @@ public class Stats {
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             String usernameOrIp = (String) o2[0];
-            int countAll = ((BigInteger) o2[2]).intValue();
             int countForUser = ((BigInteger) o2[1]).intValue();
             float percentSuccessful = 100F / (((BigInteger) o2[2]).floatValue() / ((BigInteger) o2[1]).floatValue());
             result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
+        logger.debug("Calculated downloadsOrSearches for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
     List<DownloadPerAge> downloadsPerAge() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         List<DownloadPerAge> results = new ArrayList<>();
         for (int i = 1; i <= 35; i++) {
             String sql = String.format("SELECT COUNT(*)\n" +
@@ -458,10 +492,12 @@ public class Stats {
             results.add(new DownloadPerAge((i - 1) * 100, count));
         }
 
+        logger.debug("Calculated downloads per age. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return results;
     }
 
     DownloadPerAgeStats downloadsPerAgeStats() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         DownloadPerAgeStats result = new DownloadPerAgeStats();
         String percentage = "SELECT CASE\n" +
                 "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
@@ -477,6 +513,7 @@ public class Stats {
         result.setPercentOlder2000(((Double) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
         result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
         result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
+        logger.debug("Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 

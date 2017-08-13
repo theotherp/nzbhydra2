@@ -17,7 +17,11 @@ public class StatsWeb {
     @Secured({"ROLE_STATS"})
     public StatsResponse getAllStats(@RequestBody StatsRequest statsRequest) {
 
-        return stats.getAllStats(statsRequest);
+        try {
+            return stats.getAllStats(statsRequest);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("The stats calculation took longer than 30 seconds and was aborted");
+        }
     }
 
 }

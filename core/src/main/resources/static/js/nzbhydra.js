@@ -2494,7 +2494,7 @@ angular
     .module('nzbhydraApp')
     .controller('StatsController', StatsController);
 
-function StatsController($scope, $filter, StatsService, blockUI, localStorageService) {
+function StatsController($scope, $filter, StatsService, blockUI, localStorageService, $timeout, $window) {
 
     $scope.dateOptions = {
         dateDisabled: false,
@@ -2534,13 +2534,19 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 
     function updateStats() {
         blockUI.start("Updating stats...");
-        var after = $scope.afterDate != null ? $scope.afterDate : null;
-        var before = $scope.beforeDate != null ? $scope.beforeDate : null;
+        var after = $scope.afterDate !== null ? $scope.afterDate : null;
+        var before = $scope.beforeDate !== null ? $scope.beforeDate : null;
         $scope.statsLoadingPromise = StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
             $scope.setStats(stats);
+            //Resize event is needed for the -perUsernameOrIp charts to be properly sized because nvd3 thinks the initial size is 0
+            $timeout(function() {
+                $window.dispatchEvent(new Event("resize"));
+            }, 500);
         });
 
         blockUI.reset();
+
+
     }
 
     $scope.$watch('beforeDate', function () {
@@ -2703,10 +2709,12 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        $scope.downloadSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.downloadSharesPerUserOrIp);
-        $scope.downloadSharesPerUserOrIpChart.options.chart.height = 300;
-        $scope.searchSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.searchSharesPerUserOrIp);
-        $scope.searchSharesPerUserOrIpChart.options.chart.height = 300;
+        if ($scope.downloadSharesPerUserOrIp !== null) {
+            $scope.downloadSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.downloadSharesPerUserOrIp);
+            $scope.downloadSharesPerUserOrIpChart.options.chart.height = 300;
+            $scope.searchSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.searchSharesPerUserOrIp);
+            $scope.searchSharesPerUserOrIpChart.options.chart.height = 300;
+        }
     };
 
 
@@ -2841,7 +2849,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 
 
 }
-StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService"];
+StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService", "$timeout", "$window"];
 
 //
 angular
