@@ -256,8 +256,9 @@ public class ConfigMigrationTest {
 
     @Test
     public void testMigrationWithActualOldSettings() throws Exception {
+
         String json = Resources.toString(Resources.getResource(ConfigMigrationTest.class, "nzbHydra1Config2.cfg"), Charsets.UTF_8);
-        ConfigMigrationResult result = testee.migrate(json);
+        testee.migrate(json);
         //Just to see if it runs
     }
 

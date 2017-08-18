@@ -4,6 +4,7 @@ package org.nzbhydra.migration.configmapping;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 
 import java.util.List;
@@ -44,13 +45,16 @@ public class Searching {
     @JsonProperty("duplicateSizeThresholdInPercent")
     public int duplicateSizeThresholdInPercent;
     @JsonProperty("forbiddenGroups")
-    public String forbiddenGroups;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> forbiddenGroups;
     @JsonProperty("forbiddenPosters")
-    public String forbiddenPosters;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> forbiddenPosters;
     @JsonProperty("forbiddenRegex")
     public String forbiddenRegex;
     @JsonProperty("forbiddenWords")
-    public String forbiddenWords;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> forbiddenWords;
     @JsonProperty("generate_queries")
     public List<String> generateQueries = null;
     @JsonProperty("htmlParser")
@@ -68,11 +72,13 @@ public class Searching {
     @JsonProperty("nzbAccessType")
     public String nzbAccessType;
     @JsonProperty("removeTrailing")
-    public String removeTrailing;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> removeTrailing;
     @JsonProperty("requiredRegex")
     public String requiredRegex;
     @JsonProperty("requiredWords")
-    public String requiredWords;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> requiredWords;
     @JsonProperty("timeout")
     public int timeout;
     @JsonProperty("userAgent")

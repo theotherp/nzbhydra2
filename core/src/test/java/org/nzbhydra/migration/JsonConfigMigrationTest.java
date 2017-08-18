@@ -12,6 +12,7 @@ import org.nzbhydra.migration.configmapping.Main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,11 +57,11 @@ public class JsonConfigMigrationTest {
         Category oldCat = new Category();
         oldCat.setApplyRestrictions("internal");
         oldCat.setForbiddenRegex("someForbiddenRegex");
-        oldCat.setForbiddenWords("some, forbidden, words");
+        oldCat.setForbiddenWords(Arrays.asList("some, forbidden, words"));
         oldCat.setMin(100);
         oldCat.setMax(1000);
         oldCat.setRequiredRegex("someRequiredRegex");
-        oldCat.setRequiredWords("some, required, words");
+        oldCat.setRequiredWords(Arrays.asList("some, required, words"));
         oldCat.setIgnoreResults("external");
         oldCat.setNewznabCategories(Arrays.asList(1000, 2000));
         categoryMap.put("category", oldCat);
@@ -98,7 +99,7 @@ public class JsonConfigMigrationTest {
         oldCat.setMin(null);
         oldCat.setMax(null);
         oldCat.setRequiredRegex(null);
-        oldCat.setRequiredWords("");
+        oldCat.setRequiredWords(Collections.emptyList());
         oldCat.setForbiddenRegex(null);
         oldCat.setForbiddenWords(null);
         testee.migrateCategories(oldCategories, newCategories);

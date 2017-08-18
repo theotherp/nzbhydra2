@@ -3,6 +3,7 @@ package org.nzbhydra.migration.configmapping;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -17,7 +18,8 @@ public class Category {
     @JsonProperty("forbiddenRegex")
     public String forbiddenRegex;
     @JsonProperty("forbiddenWords")
-    public String forbiddenWords;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> forbiddenWords;
     @JsonProperty("ignoreResults")
     public String ignoreResults;
     @JsonProperty("max")
@@ -29,6 +31,7 @@ public class Category {
     @JsonProperty("requiredRegex")
     public String requiredRegex;
     @JsonProperty("requiredWords")
-    public String requiredWords;
+    @JsonDeserialize(using = ListOrStringToStringDeserializer.class)
+    public List<String> requiredWords;
 
 }

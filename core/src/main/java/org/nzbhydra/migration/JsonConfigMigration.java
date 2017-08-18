@@ -207,12 +207,12 @@ public class JsonConfigMigration {
             if (oldCat != null) {
                 newCategory.setApplyRestrictionsType(searchSourceRestrictionMap.getOrDefault(oldCat.getApplyRestrictions(), SearchSourceRestriction.NONE));
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(getListFromCommaSeparatedString(oldCat.getForbiddenWords()));
+                newCategory.setForbiddenWords(oldCat.getForbiddenWords());
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(getListFromCommaSeparatedString(oldCat.getRequiredWords()));
+                newCategory.setRequiredWords(oldCat.getRequiredWords());
                 newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }
@@ -292,21 +292,21 @@ public class JsonConfigMigration {
         }
         newSearching.setIgnorePassworded(oldSearching.isIgnorePassworded());
         newSearching.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
-        newSearching.setForbiddenWords(getListFromCommaSeparatedString(oldSearching.getForbiddenWords()));
+        newSearching.setForbiddenWords(oldSearching.getForbiddenWords());
         newSearching.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
             newSearching.setNzbAccessType(NzbAccessType.PROXY);
         } else {
             newSearching.setNzbAccessType(NzbAccessType.REDIRECT);
         }
-        newSearching.setRemoveTrailing(getListFromCommaSeparatedString(oldSearching.getRemoveTrailing()));
-        newSearching.setRequiredWords(getListFromCommaSeparatedString(oldSearching.getRequiredWords()));
+        newSearching.setRemoveTrailing(oldSearching.getRemoveTrailing());
+        newSearching.setRequiredWords(oldSearching.getRequiredWords());
         newSearching.setTimeout(oldSearching.getTimeout());
         newSearching.setUserAgent(oldSearching.getUserAgent());
         newSearching.setRequiredRegex(oldSearching.getRequiredRegex());
         newSearching.setForbiddenRegex(oldSearching.getForbiddenRegex());
-        newSearching.setForbiddenGroups(getListFromCommaSeparatedString(oldSearching.getForbiddenGroups()));
-        newSearching.setForbiddenPosters(getListFromCommaSeparatedString(oldSearching.getForbiddenPosters()));
+        newSearching.setForbiddenGroups(oldSearching.getForbiddenGroups());
+        newSearching.setForbiddenPosters(oldSearching.getForbiddenPosters());
         newSearching.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
         if (newSearching.getKeepSearchResultsForDays() == 7) {
             logger.info("Increasing age of results to keep to 14 days");
