@@ -123,7 +123,11 @@ public class SqliteMigration {
             entity.setUsernameOrIp(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
             entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
+
             entity.setStatus(oldDownloads.getBoolean("response_successful") ? NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL : NzbDownloadStatus.NZB_DOWNLOAD_ERROR); //Close enough
+            if (oldDownloads.wasNull()) {
+                entity.setStatus(NzbDownloadStatus.NONE);
+            }
             downloadEntities.add(entity);
 
         }
