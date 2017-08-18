@@ -20,6 +20,10 @@ public class DownloaderConfig extends ValidatingConfig {
     private DownloaderType downloaderType;
     @SensitiveData
     private String url;
+    @SensitiveData
+    private String username;
+    @SensitiveData
+    private String password;
 
     public DownloaderType getDownloaderType() {
         return downloaderType;

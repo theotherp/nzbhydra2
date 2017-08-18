@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -136,10 +137,18 @@ public class BaseConfig extends ValidatingConfig {
 
     @JsonIgnore
     public UriComponentsBuilder getBaseUriBuilder() {
+        String host = main.getHost();
+        if (!Strings.isNullOrEmpty(System.getProperty("server.address"))) {
+            host = System.getProperty("server.address");
+        }
+        int port = main.getPort();
+        if (!Strings.isNullOrEmpty(System.getProperty("server.port"))) {
+            port = Integer.valueOf(System.getProperty("server.port"));
+        }
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                .host(main.getHost().equals("0.0.0.0") ? "127.0.0.1" : main.getHost())
+                .host(host.equals("0.0.0.0") ? "127.0.0.1" : host)
                 .scheme(main.isSsl() ? "https" : "http")
-                .port(main.getPort());
+                .port(port);
         if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
             builder.path(main.getUrlBase().get());
         }

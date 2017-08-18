@@ -88,7 +88,7 @@ public class JsonConfigMigration {
     @Autowired
     private NewznabChecker newznabChecker;
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    protected ApplicationEventPublisher eventPublisher;
 
     public ConfigMigrationResult migrate(String oldConfigJson) throws IOException {
         logger.info("Migrating config from NZBHydra 1");
@@ -169,9 +169,8 @@ public class JsonConfigMigration {
             if (oldDownloader.getType().equals("nzbget")) {
                 newDownloader.setDownloaderType(DownloaderType.NZBGET);
                 String url = (oldDownloader.isSsl() ? "https://" : "http://");
-                if (!Strings.isNullOrEmpty(oldDownloader.getUsername()) && !Strings.isNullOrEmpty(oldDownloader.getPassword())) {
-                    url += oldDownloader.getUsername() + ":" + oldDownloader.getPassword() + "@";
-                }
+                newDownloader.setUsername(oldDownloader.getUsername());
+                newDownloader.setPassword(oldDownloader.getPassword());
                 url += oldDownloader.getHost() + ":" + oldDownloader.getPort();
                 newDownloader.setUrl(url);
             } else {
@@ -208,12 +207,12 @@ public class JsonConfigMigration {
             if (oldCat != null) {
                 newCategory.setApplyRestrictionsType(searchSourceRestrictionMap.getOrDefault(oldCat.getApplyRestrictions(), SearchSourceRestriction.NONE));
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(oldCat.getForbiddenWords());
+                newCategory.setForbiddenWords(getListFromCommaSeparatedString(oldCat.getForbiddenWords()));
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(oldCat.getRequiredWords());
+                newCategory.setRequiredWords(getListFromCommaSeparatedString(oldCat.getRequiredWords()));
                 newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }

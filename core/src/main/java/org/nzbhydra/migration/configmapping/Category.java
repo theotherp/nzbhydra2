@@ -17,7 +17,7 @@ public class Category {
     @JsonProperty("forbiddenRegex")
     public String forbiddenRegex;
     @JsonProperty("forbiddenWords")
-    public List<String> forbiddenWords;
+    public String forbiddenWords;
     @JsonProperty("ignoreResults")
     public String ignoreResults;
     @JsonProperty("max")
@@ -29,6 +29,6 @@ public class Category {
     @JsonProperty("requiredRegex")
     public String requiredRegex;
     @JsonProperty("requiredWords")
-    public List<String> requiredWords;
+    public String requiredWords;
 
 }

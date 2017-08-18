@@ -1,5 +1,6 @@
 package org.nzbhydra.downloading;
 
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
@@ -12,8 +13,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -30,7 +33,11 @@ public class NzbGet extends Downloader {
         try {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl());
             builder.path("jsonrpc");
-            client = new JsonRpcHttpClient(builder.build().toUri().toURL());
+            Map<String, String> headers = new HashMap<>();
+            if (!Strings.isNullOrEmpty(downloaderConfig.getUsername()) && !Strings.isNullOrEmpty(downloaderConfig.getPassword())) {
+                headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername() + ":" + downloaderConfig.getPassword()).getBytes()));
+            }
+            client = new JsonRpcHttpClient(builder.build().toUri().toURL(), headers);
         } catch (MalformedURLException e) {
             throw new RuntimeException("Unable to create URL from configuration: " + e.getMessage());
         }
@@ -39,7 +46,7 @@ public class NzbGet extends Downloader {
     @Override
     public GenericResponse checkConnection() {
         try {
-            boolean successful = client.invoke("writelog", new Object[]{"INFO", "NZBHydra connected to test connection"}, Boolean.class);
+            boolean successful = client.invoke("writelog", new Object[]{"INFO", "NZBHydra 2 connected to test connection"}, Boolean.class);
             logger.info("Connection check to NZBGet using URL {} successful", downloaderConfig.getUrl());
             return new GenericResponse(successful, null);
         } catch (Throwable e) {

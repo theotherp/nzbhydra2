@@ -66,7 +66,6 @@ public class NzbHydra {
 
     @Autowired
     private BrowserOpener browserOpener;
-
     @Autowired
     private CategoryProvider categoryProvider;
     @Autowired
@@ -131,6 +130,7 @@ public class NzbHydra {
             }
 
             applicationContext = hydraApplication.run(args);
+
         }
     }
 

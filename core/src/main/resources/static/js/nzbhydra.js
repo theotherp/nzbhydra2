@@ -7466,6 +7466,37 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                 }
             }
         })
+    } else if (model.downloaderType === "NZBGET") {
+        fieldset.push({
+            key: 'username',
+            type: 'horizontalInput',
+            templateOptions: {
+                type: 'text',
+                label: 'Username'
+            },
+            watcher: {
+                listener: function (field, newValue, oldValue, scope) {
+                    if (newValue !== oldValue) {
+                        scope.$parent.needsConnectionTest = true;
+                    }
+                }
+            }
+        });
+        fieldset.push({
+            key: 'password',
+            type: 'horizontalInput',
+            templateOptions: {
+                type: 'text',
+                label: 'Password'
+            },
+            watcher: {
+                listener: function (field, newValue, oldValue, scope) {
+                    if (newValue !== oldValue) {
+                        scope.$parent.needsConnectionTest = true;
+                    }
+                }
+            }
+        })
     }
 
     fieldset = _.union(fieldset, [

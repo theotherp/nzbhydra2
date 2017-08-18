@@ -21,7 +21,7 @@
         <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
     </a>
     <span ng-if="::showDetailsDl">
-        <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link}}" target="_blank" class="no-underline"
+        <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link | dereferer}}" target="_blank" class="no-underline"
            uib-tooltip="Comments"
            tooltip-placement="top"
            tooltip-trigger="mouseenter">

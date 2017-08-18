@@ -32,6 +32,7 @@ import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
 import org.nzbhydra.searching.CategoryProvider;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Arrays;
 
@@ -62,6 +63,8 @@ public class ConfigMigrationTest {
     private CategoriesConfig categoriesConfigMock;
     @Mock
     private NewznabChecker newznabCheckerMock;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisherMock;
     @Captor
     private ArgumentCaptor<IndexerConfig> indexerConfigsCaptor;
 
@@ -125,7 +128,9 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDownloaderType(), is(DownloaderType.NZBGET));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDownloadType(), is(DownloadType.NZB));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getIconCssClass(), is("someClass"));
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUrl(), is("http://nzbget:nzbget@127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUrl(), is("http://127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUsername(), is("nzbget"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getPassword(), is("nzbget"));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).isEnabled(), is(true));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAccessType(), is(NzbAccessType.PROXY));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAddingType(), is(NzbAddingType.SEND_LINK));
@@ -138,7 +143,9 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAccessType(), is(NzbAccessType.REDIRECT));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAddingType(), is(NzbAddingType.UPLOAD));
 
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUrl(), is("https://nzbgetx:tegbzn6789x@127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUrl(), is("https://127.0.0.1:6789"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUsername(), is("nzbgetx"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getPassword(), is("tegbzn6789x"));
 
         assertThat(result.getMigratedConfig().getIndexers().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getName(), is("Binsearch"));
