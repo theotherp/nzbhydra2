@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import okhttp3.Authenticator;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
@@ -12,7 +13,6 @@ import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
 import okhttp3.Route;
-import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.SemanticVersion;
 import org.slf4j.Logger;
@@ -22,8 +22,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,21 +39,28 @@ public class FromPythonMigration {
     @Autowired
     private SqliteMigration sqliteMigration;
     @Autowired
-    private BackupAndRestore backupAndRestore;
-    @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     protected TypeReference<Map<String, String>> mapTypeReference = new TypeReference<Map<String, String>>() {
     };
+    @Transactional
+    public MigrationResult migrateFromFiles(String settingsFile, String databaseFile) {
+        Map<String, String> migrationData = new HashMap<>();
+        migrationData.put("databaseFile", databaseFile);
+        migrationData.put("config", settingsFile);
+        MigrationResult migrationResult = new MigrationResult();
+        migrationResult.setConfigMigrated(false);
+        migrationResult.setDatabaseMigrated(false);
+        if (!new File(databaseFile).exists()) {
+            return MigrationResult.requirementsNotMet("Database file does not exist");
+        } else if (!new File(settingsFile).exists()) {
+            return MigrationResult.requirementsNotMet("Config file does not exist");
+        }
+        return startMigration(migrationData);
+    }
 
     @Transactional
-    public MigrationResult migrate(String nzbhydra1BaseUrl) {
-        logger.info("Received migration reuest");
-        try {
-            backupAndRestore.backup();
-        } catch (Exception e) {
-            logger.error("Error while creating backup before migrating from NZBHydra 1", e);
-            return MigrationResult.requirementsNotMet("Unable to create backup before migration: " + e.getMessage());
-        }
+    public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl) {
+        logger.info("Received migration request");
 
         OkHttpResponse versionsResponse = callHydraUrl(nzbhydra1BaseUrl, "get_versions");
         if (!versionsResponse.isSuccessful()) {
@@ -77,6 +86,10 @@ public class FromPythonMigration {
             return MigrationResult.requirementsNotMet("Unexpected error while migrating: " + e.getMessage());
         }
 
+        return startMigration(migrationData);
+    }
+
+    protected MigrationResult startMigration(Map<String, String> migrationData) {
         List<String> migrationMessages = new ArrayList<>();
 
         try {
@@ -121,6 +134,12 @@ public class FromPythonMigration {
         } catch (Exception e) {
             return new OkHttpResponse("", false, e.getMessage());
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class MigrationMessageEvent {
+        private String message;
     }
 
     @Data

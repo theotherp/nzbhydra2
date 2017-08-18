@@ -1,6 +1,17 @@
 <div style="text-align: left; margin: auto; width: 800px">
 
-    <button class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>
+    <!-- Split button -->
+    <div class="btn-group" uib-dropdown>
+        <button id="split-button" type="button" class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>
+        <button type="button" class="btn btn-primary" uib-dropdown-toggle>
+            <span class="caret"></span>
+            <span class="sr-only">Split button!</span>
+        </button>
+        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="split-button">
+            <li role="menuitem"><a href="#" ng-click="createBackupFile()">Just create backup</a></li>
+        </ul>
+    </div>
+    <!--<button class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>-->
 
     <br>
     <br>

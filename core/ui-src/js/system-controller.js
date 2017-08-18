@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, UpdateService, ConfigService, NzbHydraControlService, $uibModal) {
+function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {

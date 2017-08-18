@@ -32,6 +32,7 @@ import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.migration.FromPythonMigration.MigrationMessageEvent;
 import org.nzbhydra.migration.configmapping.Auth;
 import org.nzbhydra.migration.configmapping.Categories;
 import org.nzbhydra.migration.configmapping.Downloader;
@@ -45,6 +46,7 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -85,9 +87,12 @@ public class JsonConfigMigration {
     private ConfigProvider configProvider;
     @Autowired
     private NewznabChecker newznabChecker;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public ConfigMigrationResult migrate(String oldConfigJson) throws IOException {
         logger.info("Migrating config from NZBHydra 1");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating config"));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -151,6 +156,7 @@ public class JsonConfigMigration {
 
         configProvider.getBaseConfig().replace(newConfig);
         configProvider.getBaseConfig().save();
+        eventPublisher.publishEvent(new MigrationMessageEvent("Completed migrating config with " + messages.size() + " messages"));
         return new ConfigMigrationResult(newConfig, messages);
     }
 

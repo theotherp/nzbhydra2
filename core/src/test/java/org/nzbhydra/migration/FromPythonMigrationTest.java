@@ -56,7 +56,7 @@ public class FromPythonMigrationTest {
     public void shouldCatchUnsuccessfulConnection() throws Exception {
         doReturn(new OkHttpResponse("", false, "message")).when(testee).callHydraUrl(anyString(), anyString());
 
-        MigrationResult result = testee.migrate("xyz");
+        MigrationResult result = testee.migrateFromUrl("xyz");
 
         assertThat(result.isRequirementsMet(), is(false));
         assertThat(result.getError(), is("Unable to connect to NZBHydra 1: message"));
@@ -69,7 +69,7 @@ public class FromPythonMigrationTest {
     public void shouldCatchWrongVersion() throws Exception {
         doReturn(new OkHttpResponse(oldVersion, true, "message")).when(testee).callHydraUrl(anyString(), eq("get_versions"));
 
-        MigrationResult result = testee.migrate("xyz");
+        MigrationResult result = testee.migrateFromUrl("xyz");
 
         assertThat(result.isRequirementsMet(), is(false));
         assertThat(result.getError(), is("Unable to migrate from NZBHydra 1 version 0.2.100. Must be at least 0.2.220"));
@@ -86,7 +86,7 @@ public class FromPythonMigrationTest {
         when(configMigration.migrate(anyString())).thenReturn(configMigrationResult);
         when(configMigrationResult.getMessages()).thenReturn(Arrays.asList("aWarningMessage"));
 
-        MigrationResult result = testee.migrate("xyz");
+        MigrationResult result = testee.migrateFromUrl("xyz");
 
         assertThat(result.isRequirementsMet(), is(true));
         assertThat(result.isConfigMigrated(), is(true));

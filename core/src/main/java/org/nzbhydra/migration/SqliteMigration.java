@@ -18,6 +18,7 @@ import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.logging.ProgressLogger;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.migration.FromPythonMigration.MigrationMessageEvent;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IdentifierKeyValuePair;
 import org.nzbhydra.searching.SearchEntity;
@@ -27,6 +28,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +64,8 @@ public class SqliteMigration {
     private CategoryProvider categoryProvider;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     protected ObjectMapper objectMapper = new ObjectMapper();
     protected TypeReference<List<Map<String, Object>>> listOfMapsTypeReference = new TypeReference<List<Map<String, Object>>>() {
@@ -93,6 +97,7 @@ public class SqliteMigration {
 
     protected void migrate() throws IOException, SQLException {
         logger.info("Starting database migration");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Starting database migration"));
         Map<Integer, IndexerEntity> oldIdToIndexersMap = migrateIndexers();
         Map<Integer, SearchEntity> oldIdToSearchesMap = migrateSearches();
         migrateIndexerApiAccesses(oldIdToIndexersMap);
@@ -104,7 +109,9 @@ public class SqliteMigration {
 
     private void migrateDownloads(Map<Integer, IndexerEntity> oldIdToIndexersMap) throws SQLException {
         Statement statement = connection.createStatement();
-        logger.info("Migrating {} downloads from old database", getCount(statement, "INDEXERNZBDOWNLOAD"));
+        int countDownloads = getCount(statement, "INDEXERNZBDOWNLOAD");
+        logger.info("Migrating {} downloads from old database", countDownloads);
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countDownloads + " NZB download entries"));
         ResultSet oldDownloads = statement.executeQuery("SELECT * FROM indexernzbdownload LEFT JOIN indexerapiaccess ON indexernzbdownload.apiAccess_id = indexerapiaccess.id");
         List<NzbDownloadEntity> downloadEntities = new ArrayList<>();
         while (oldDownloads.next()) {
@@ -122,6 +129,7 @@ public class SqliteMigration {
         }
         downloadRepository.save(downloadEntities);
         logger.info("Successfully migrated downloads from old database");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated NZB download entries"));
     }
 
     private int getCount(Statement statement, final String table) throws SQLException {
@@ -134,6 +142,7 @@ public class SqliteMigration {
         Statement statement = connection.createStatement();
         int countIndexerApiAccesses = getCount(statement, "INDEXERAPIACCESS");
         logger.info("Migrating {} indexer API accesses from old database", countIndexerApiAccesses);
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countIndexerApiAccesses + " indexer API access entries"));
         ResultSet oldIndexerApiAccesses = statement.executeQuery("SELECT * FROM INDEXERAPIACCESS");
         int countMigrated = 1;
         IndexerApiAccessEntity entity;
@@ -164,13 +173,15 @@ public class SqliteMigration {
         statement.close();
         entityManager.flush();
         entityManager.clear();
+        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated indexer API accesses from old database"));
         logger.info("Successfully migrated indexer API accesses from old database");
-
     }
 
     private Map<Integer, IndexerEntity> migrateIndexers() throws SQLException {
         Statement statement = connection.createStatement();
-        logger.info("Migrating {} indexers from old database", getCount(statement, "INDEXER"));
+        int countIndexers = getCount(statement, "INDEXER");
+        logger.info("Migrating {} indexers from old database", countIndexers);
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countIndexers + " indexer entries"));
         ResultSet indexersResultSet = statement.executeQuery("SELECT * FROM indexer");
         Map<Integer, IndexerEntity> oldIdToIndexersMap = new HashMap<>();
         while (indexersResultSet.next()) {
@@ -182,6 +193,7 @@ public class SqliteMigration {
             oldIdToIndexersMap.put(indexersResultSet.getInt("id"), entity);
         }
         logger.info("Successfully migrated indexers from old database");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated indexers from old database"));
         return oldIdToIndexersMap;
     }
 
@@ -190,6 +202,7 @@ public class SqliteMigration {
         int countIndexerSearches = getCount(statement, "INDEXERSEARCH");
         int countMigrated = 1;
         logger.info("Migrating {} indexer searches from old database", countIndexerSearches);
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countIndexerSearches + " indexer search entries"));
         ResultSet oldIndexerSearch = statement.executeQuery("SELECT * FROM INDEXERSEARCH");
         IndexerSearchEntity newEntity;
         ProgressLogger progressLogger = new ProgressLogger(logger, 5, TimeUnit.SECONDS);
@@ -217,6 +230,7 @@ public class SqliteMigration {
         progressLogger.stop();
 
         logger.info("Successfully migrated indexer searches from old database");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated indexer searches from old database"));
     }
 
     protected Map<Integer, SearchEntity> migrateSearches() throws SQLException {
@@ -236,6 +250,7 @@ public class SqliteMigration {
         Statement statement = connection.createStatement();
         int searches = getCount(statement, "search");
         logger.info("Migrating {} searches from old database", searches);
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + searches + " search entries"));
         ResultSet oldSearches = statement.executeQuery("SELECT * FROM search");
         while (oldSearches.next()) {
             SearchEntity entity = new SearchEntity();
@@ -262,6 +277,7 @@ public class SqliteMigration {
         logger.info("Saving search entities to database");
         searchRepository.save(oldIdToNewEntity.values());
         logger.info("Successfully migrated searches from old database");
+        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated searches from old database"));
         return oldIdToNewEntity;
     }
 

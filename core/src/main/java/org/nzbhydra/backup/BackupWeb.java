@@ -31,16 +31,29 @@ public class BackupWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/backup/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @Transactional
-    public Object backup() throws Exception {
-        logger.info("Creating backup");
+    public Object backupAndDownload() throws Exception {
         try {
             File backupFile = backup.backup();
+
             logger.debug("Sending contents of file {}", backupFile.getAbsolutePath());
             return ResponseEntity
                     .ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + backupFile.getName())
                     .contentLength(backupFile.length())
                     .body(new FileSystemResource(backupFile));
+        } catch (Exception e) {
+            logger.error("Error while creating backup", e);
+            return GenericResponse.notOk(e.getMessage());
+        }
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/backup/backuponly", method = RequestMethod.GET)
+    @Transactional
+    public GenericResponse backupOnly() throws Exception {
+        try {
+            backup.backup();
+            return GenericResponse.ok();
         } catch (Exception e) {
             logger.error("Error while creating backup", e);
             return GenericResponse.notOk(e.getMessage());

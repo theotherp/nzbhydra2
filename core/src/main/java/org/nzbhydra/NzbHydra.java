@@ -108,9 +108,10 @@ public class NzbHydra {
             } else {
                 dataFolder = "./data";
             }
-            dataFolder = new File(dataFolder).getCanonicalPath();
+            File dataFolderFile = new File(dataFolder);
+            dataFolder = dataFolderFile.getCanonicalPath();
             //Check if we can write in the data folder. If not we can just quit now
-            if (!new File(dataFolder).canWrite()) {
+            if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
                 logger.error("Unable to read or write data folder {}", dataFolder);
                 System.exit(1);
             }
@@ -219,7 +220,7 @@ public class NzbHydra {
 
     @RequestMapping(value = "/migrate")
     public String delete() throws Exception {
-        migration.migrate("http://127.0.0.1:5075/");
+        migration.migrateFromUrl("http://127.0.0.1:5075/");
 
         return "Ok";
     }
