@@ -3,12 +3,15 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Joiner;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @ConfigurationProperties
@@ -44,6 +47,18 @@ public class AuthConfig extends ValidatingConfig {
         } else if (authType != AuthType.NONE && !restrictSearch && !restrictAdmin) {
             warnings.add("You haven't enabled any access restrictions. Auth will not take any effect");
         }
+        Set<String> usernames = new HashSet<>();
+        List<String> duplicateUsernames = new ArrayList<>();
+        for (UserAuthConfig user : users) {
+            if (usernames.contains(user.getUsername())) {
+                duplicateUsernames.add(user.getUsername());
+            }
+            usernames.add(user.getUsername());
+        }
+        if (!duplicateUsernames.isEmpty()) {
+            errors.add("The following user names are not unique: " + Joiner.on(", ").join(duplicateUsernames));
+        }
+
 
         return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);
     }

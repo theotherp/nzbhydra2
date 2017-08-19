@@ -240,6 +240,8 @@ public class JsonConfigMigration {
             newAuth.setAuthType(AuthType.NONE);
         }
         newAuth.setRememberUsers(oldAuth.isRestrictAdmin());
+        newAuth.getUsers().clear();
+        List<UserAuthConfig> newUserConfigs = new ArrayList<>();
         for (User user : oldAuth.getUsers()) {
             UserAuthConfig newUserConfig = new UserAuthConfig();
             newUserConfig.setMaySeeAdmin(user.isMaySeeAdmin());
@@ -248,8 +250,9 @@ public class JsonConfigMigration {
             newUserConfig.setShowIndexerSelection(user.isShowIndexerSelection());
             newUserConfig.setUsername(user.getUsername());
             newUserConfig.setPassword(user.getPassword());
-            newAuth.getUsers().add(newUserConfig);
+            newUserConfigs.add(newUserConfig);
         }
+        newAuth.setUsers(newUserConfigs);
         return messages;
     }
 
