@@ -319,8 +319,8 @@ angular
                 $scope._showBox = _showBox;
                 $scope.showBox = showBox;
                 $scope.isInitial = false;
-
                 $scope.presets = $scope.options.data.presets($scope.model);
+                $scope.doBlockDisplay = false;
 
 
                 function _showBox(model, parentModel, isInitial, callback) {
@@ -328,6 +328,8 @@ angular
                         templateUrl: 'configBox.html',
                         controller: 'ConfigBoxInstanceController',
                         size: 'lg',
+                        backdrop: 'static',
+                        keyboard: false,
                         resolve: {
                             model: function () {
                                 return model;
@@ -400,11 +402,18 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.allowDelete = data.allowDeleteFunction(model);
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
+    $scope.doBlockDisplay = false;
+    $scope.blockMessage = "";
+
+    $scope.blockDisplay = function (value, message) {
+        $scope.doBlockDisplay = value;
+        $scope.blockMessage = message;
+    };
 
     $scope.obSubmit = function () {
 
         if ($scope.form.$valid) {
-            var a = data.checkBeforeClose($scope, model).then(function (data) {
+            var a = data.checkBeforeClose($scope, model, $scope.blockDisplay).then(function (data) {
                 if (angular.isDefined(data)) {
                     $scope.model = data;
                 }
@@ -420,8 +429,8 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
         }
     };
 
-    $scope.reset = function () {
-        $scope.reset();
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
     };
 
     $scope.deleteEntry = function () {

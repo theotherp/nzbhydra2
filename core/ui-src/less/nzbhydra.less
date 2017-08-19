@@ -1030,3 +1030,34 @@ chip-tmpl:focus .default-chip {
 select.form-control {
   padding-left: 8px; //Content has some paddding, so reduce padding to make actual/visual padding the same as the others
 }
+
+.config-box-overlay {
+  //position: fixed;
+  //display: none;
+  //width: 100%;
+  //height: 100%;
+  //top: 0;
+  //left: 0;
+  //right: 0;
+  //bottom: 0;
+  //background-color: rgba(0,0,0,0.5);
+  //z-index: 100;
+  //cursor: pointer;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  color: red;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-size: 40px;
+  z-index: 10;
+}
+
+.in-config-box-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
