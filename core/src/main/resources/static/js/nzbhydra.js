@@ -7791,6 +7791,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 },
                 no: {
                     onNo: function ($uibModalInstance) {
+                        //Needs to be clicked twice for some reason
                         $scope.restartRequired = false;
                         $uibModalInstance.dismiss();
                         $uibModalInstance.dismiss();

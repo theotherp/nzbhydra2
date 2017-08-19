@@ -121,7 +121,13 @@
 
 <div class="row" ng-if="::indexersearches.length == 0" style="margin-top: 50px">
     <div class="well">
-        <h2>No indexers were selected for this search</h2>
+        <h2>No indexers were picked for this search</h2>
+        <div style="width: 520px; margin: auto;text-align: left;">
+            Reasons:
+            <ul style="padding-left: 15px">
+                <li ng-repeat="tuple in ::notPickedIndexersWithReason">{{tuple.indexer}}: {{tuple.reason}}</li>
+            </ul>
+        </div>
     </div>
 </div>
 <div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults === 0" style="margin-top: 50px">
