@@ -1,8 +1,6 @@
 package org.nzbhydra.historystats;
 
 import org.nzbhydra.historystats.stats.HistoryRequestData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -23,8 +21,6 @@ import java.util.stream.Collectors;
 @Component
 public class History {
 
-    private static final Logger logger = LoggerFactory.getLogger(History.class);
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -39,8 +35,8 @@ public class History {
             Object filterType = columnAndFilterDefinition.getValue().getFilterType();
             String columnName = columnAndFilterDefinition.getKey();
             if (filterType.equals("freetext")) {
-                wheres.add(String.format("%s LIKE :%s", columnName, columnName));
-                parameters.put(columnName, "%" + filterValue + "%");
+                wheres.add(String.format("LOWER(%s) LIKE :%s", columnName, columnName));
+                parameters.put(columnName, "%" + filterValue.toString().toLowerCase() + "%");
             } else if (filterType.equals("checkboxes")) {
                 //TODO isBoolean?
                 wheres.add(String.format("%s IN :%s", columnName, columnName));

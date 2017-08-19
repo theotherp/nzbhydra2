@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.slf4j.Logger;
@@ -94,7 +95,7 @@ public class MainConfig extends ValidatingConfig {
             result.getWarningMessages().add("Your port and/or URL base has changed. Make sure to load the correct URL after restart");
         }
 
-        if (urlBase != null && (!urlBase.startsWith("/") || urlBase.endsWith("/"))) {
+        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/"))) {
             if (!urlBase.startsWith("/")) {
                 urlBase = "/" + urlBase;
             }
