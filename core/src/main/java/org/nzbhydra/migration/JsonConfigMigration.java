@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +91,7 @@ public class JsonConfigMigration {
 
     public ConfigMigrationResult migrate(String oldConfigJson) throws IOException {
         logger.info("Migrating config from NZBHydra 1");
-        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating config"));
+        eventPublisher.publishEvent(new MigrationMessageEvent("Migrating config and checking indexers"));
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -315,10 +314,6 @@ public class JsonConfigMigration {
         return messages;
     }
 
-    private List<String> getListFromCommaSeparatedString(String commaSeparatedString) {
-        return Strings.isNullOrEmpty(commaSeparatedString) ? Collections.emptyList() : Arrays.asList(commaSeparatedString.replace(" ", "").split(","));
-    }
-
     private List<String> migrateMain(Main oldMain, MainConfig newMain) {
         logger.info("Migrating main settings");
         List<String> messages = new ArrayList<>();
@@ -335,6 +330,8 @@ public class JsonConfigMigration {
         newMain.setTheme(oldMain.getTheme());
         if (!Strings.isNullOrEmpty(oldMain.getUrlBase()) || !Strings.isNullOrEmpty(oldMain.getExternalUrl())) {
             logAsWarningAndAdd(messages, "URL base and/or external URL cannot be migrated. You'll have to set them manually");
+            newMain.setUrlBase(null);
+            newMain.setExternalUrl(null);
         }
         newMain.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
         return messages;

@@ -4,17 +4,22 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -80,10 +85,17 @@ public class UpdatesWeb {
         return new GenericResponse(true, null);
     }
 
+    @ExceptionHandler(value = {UpdateException.class})
+    protected ResponseEntity<ExceptionInfo> handleUpdateException(UpdateException ex, HttpServletRequest request) {
+        String error = "An error occurred while updating or getting update infos: " + ex.getMessage();
+        logger.error(error);
+        return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, request.getRequestURI()), HttpStatus.valueOf(500));
+    }
+
 
     @Data
     @AllArgsConstructor
-    public class VersionsInfo {
+    public static class VersionsInfo {
         private String currentVersion;
         private String latestVersion;
         private boolean updateAvailable;

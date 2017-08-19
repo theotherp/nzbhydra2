@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,12 @@ public class FromPythonMigration {
     public MigrationResult migrateFromFiles(String settingsFile, String databaseFile) {
         Map<String, String> migrationData = new HashMap<>();
         migrationData.put("databaseFile", databaseFile);
-        migrationData.put("config", settingsFile);
+        try {
+            migrationData.put("config", new String(Files.readAllBytes(new File(settingsFile).toPath())));
+        } catch (IOException e) {
+            logger.error("Error while reading old settings file", e);
+            return MigrationResult.requirementsNotMet("Error while reading old settings file: " + e);
+        }
         MigrationResult migrationResult = new MigrationResult();
         migrationResult.setConfigMigrated(false);
         migrationResult.setDatabaseMigrated(false);

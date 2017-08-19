@@ -2,13 +2,12 @@ angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
-function UpdateService($http, growl, blockUI, RestartService) {
+function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler) {
 
     var currentVersion;
     var latestVersion;
     var updateAvailable;
     var latestVersionIgnored;
-    var changelog;
     var versionHistory;
 
 
@@ -21,15 +20,17 @@ function UpdateService($http, growl, blockUI, RestartService) {
     };
 
     function getInfos() {
-        return $http.get("internalapi/updates/infos").then(
-            function (data) {
-                currentVersion = data.data.currentVersion;
-                latestVersion = data.data.latestVersion;
-                updateAvailable = data.data.updateAvailable;
-                latestVersionIgnored = data.data.latestVersionIgnored;
-                return data;
-            }
-        );
+        RequestsErrorHandler.specificallyHandled(function () {
+            return $http.get("internalapi/updates/infos").then(
+                function (data) {
+                    currentVersion = data.data.currentVersion;
+                    latestVersion = data.data.latestVersion;
+                    updateAvailable = data.data.updateAvailable;
+                    latestVersionIgnored = data.data.latestVersionIgnored;
+                    return data;
+                }
+            );
+        });
     }
 
     function ignore(version) {

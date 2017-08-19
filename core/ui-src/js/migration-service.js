@@ -68,6 +68,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                 blockUI.stop();
                 var data = response.data;
                 if (!data.requirementsMet) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $scope.foo.isMigrating = false;
                     ModalService.open("Requirements not met", "An error occurred while preparing the migration:<br>" + data.error, {
                         yes: {
@@ -75,6 +76,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else if (!data.configMigrated) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     ModalService.open("Config migration failed", "An error occurred while migrating the config. Migration failed:<br>" + data.error, {
@@ -83,6 +85,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else if (!data.databaseMigrated) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
@@ -99,6 +102,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     message = "The migration was completed successfully.";

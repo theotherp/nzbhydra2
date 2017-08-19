@@ -82,9 +82,6 @@ function ConfigFields($injector) {
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
                                 help: 'Set when using an external proxy'
-                            },
-                            validators: {
-                                urlBase: regexValidator(/^\/?(\/\w+)*$/, "Base URL needs to start with a slash and must not end with one")
                             }
                         },
                         {

@@ -2117,13 +2117,12 @@ angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
-function UpdateService($http, growl, blockUI, RestartService) {
+function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler) {
 
     var currentVersion;
     var latestVersion;
     var updateAvailable;
     var latestVersionIgnored;
-    var changelog;
     var versionHistory;
 
 
@@ -2136,15 +2135,17 @@ function UpdateService($http, growl, blockUI, RestartService) {
     };
 
     function getInfos() {
-        return $http.get("internalapi/updates/infos").then(
-            function (data) {
-                currentVersion = data.data.currentVersion;
-                latestVersion = data.data.latestVersion;
-                updateAvailable = data.data.updateAvailable;
-                latestVersionIgnored = data.data.latestVersionIgnored;
-                return data;
-            }
-        );
+        RequestsErrorHandler.specificallyHandled(function () {
+            return $http.get("internalapi/updates/infos").then(
+                function (data) {
+                    currentVersion = data.data.currentVersion;
+                    latestVersion = data.data.latestVersion;
+                    updateAvailable = data.data.updateAvailable;
+                    latestVersionIgnored = data.data.latestVersionIgnored;
+                    return data;
+                }
+            );
+        });
     }
 
     function ignore(version) {
@@ -2203,12 +2204,12 @@ function UpdateService($http, growl, blockUI, RestartService) {
             });
     }
 }
-UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService"];
+UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler"];
 angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
 
-function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, $uibModal, ConfigService) {
+function UpdateFooterController($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
 
     $scope.updateAvailable = false;
     $scope.checked = false;
@@ -2251,23 +2252,25 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
     };
 
     function checkAndShowNews() {
-        if (ConfigService.getSafe().showNews) {
-            $http.get("internalapi/news/forcurrentversion").success(function (data) {
-                if (data && data.length > 0) {
-                    $uibModal.open({
-                        templateUrl: 'static/html/news-modal.html',
-                        controller: NewsModalInstanceCtrl,
-                        size: "lg",
-                        resolve: {
-                            news: function () {
-                                return data;
+        RequestsErrorHandler.specificallyHandled(function () {
+            if (ConfigService.getSafe().showNews) {
+                $http.get("internalapi/news/forcurrentversion").then(function (data) {
+                    if (data && data.length > 0) {
+                        $uibModal.open({
+                            templateUrl: 'static/html/news-modal.html',
+                            controller: NewsModalInstanceCtrl,
+                            size: "lg",
+                            resolve: {
+                                news: function () {
+                                    return data;
+                                }
                             }
-                        }
-                    });
-                    $http.put("internalapi/news/saveshown");
-                }
-            });
-        }
+                        });
+                        $http.put("internalapi/news/saveshown");
+                    }
+                });
+            }
+        });
     }
 
 
@@ -2295,7 +2298,7 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
     checkAndShowWelcome();
 
 }
-UpdateFooterController.$inject = ["$scope", "UpdateService", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
+UpdateFooterController.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
 
 angular
     .module('nzbhydraApp')
@@ -4382,6 +4385,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                 blockUI.stop();
                 var data = response.data;
                 if (!data.requirementsMet) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $scope.foo.isMigrating = false;
                     ModalService.open("Requirements not met", "An error occurred while preparing the migration:<br>" + data.error, {
                         yes: {
@@ -4389,6 +4393,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else if (!data.configMigrated) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     ModalService.open("Config migration failed", "An error occurred while migrating the config. Migration failed:<br>" + data.error, {
@@ -4397,6 +4402,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else if (!data.databaseMigrated) {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     message = "An error occurred while migrating the database.<br>" + data.error + "<br>. The config was migrated successfully though.";
@@ -4413,6 +4419,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 } else {
+                    $interval.cancel(updateMigrationMessagesInterval);
                     $uibModalInstance.dismiss();
                     $scope.foo.isMigrating = false;
                     message = "The migration was completed successfully.";
@@ -5723,9 +5730,6 @@ function ConfigFields($injector) {
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
                                 help: 'Set when using an external proxy'
-                            },
-                            validators: {
-                                urlBase: regexValidator(/^\/?(\/\w+)*$/, "Base URL needs to start with a slash and must not end with one")
                             }
                         },
                         {

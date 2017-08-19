@@ -1,8 +1,6 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.HistoryUserInfoType;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
@@ -47,8 +45,6 @@ public class Stats {
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
 
     @Autowired
-    private ConfigProvider configProvider;
-    @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
     private IndexerRepository indexerRepository;
@@ -83,16 +79,20 @@ public class Stats {
 
         executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
 
-        if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() != HistoryUserInfoType.NONE) {
+
+        BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
+        if (countDownloadsWithData.intValue() > 0)
             executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
+        BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("select count(*) from SEARCH t where t.USERNAME_OR_IP is not null").getSingleResult();
+        if (countSearchesWithData.intValue() > 0) {
             executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
         }
 
         executor.shutdown();
-        boolean wasCompleted = executor.awaitTermination(30, TimeUnit.SECONDS);
+        boolean wasCompleted = executor.awaitTermination(60, TimeUnit.SECONDS);
         if (!wasCompleted) {
             executor.shutdownNow();
-            logger.error("Aborted stats generation because it took longer than 30 seconds");
+            logger.error("Aborted stats generation because it took longer than 60 seconds");
         }
 
         statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());

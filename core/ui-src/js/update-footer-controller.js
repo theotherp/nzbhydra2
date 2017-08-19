@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
 
-function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, $uibModal, ConfigService) {
+function UpdateFooterController($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
 
     $scope.updateAvailable = false;
     $scope.checked = false;
@@ -45,23 +45,25 @@ function UpdateFooterController($scope, UpdateService, HydraAuthService, $http, 
     };
 
     function checkAndShowNews() {
-        if (ConfigService.getSafe().showNews) {
-            $http.get("internalapi/news/forcurrentversion").success(function (data) {
-                if (data && data.length > 0) {
-                    $uibModal.open({
-                        templateUrl: 'static/html/news-modal.html',
-                        controller: NewsModalInstanceCtrl,
-                        size: "lg",
-                        resolve: {
-                            news: function () {
-                                return data;
+        RequestsErrorHandler.specificallyHandled(function () {
+            if (ConfigService.getSafe().showNews) {
+                $http.get("internalapi/news/forcurrentversion").then(function (data) {
+                    if (data && data.length > 0) {
+                        $uibModal.open({
+                            templateUrl: 'static/html/news-modal.html',
+                            controller: NewsModalInstanceCtrl,
+                            size: "lg",
+                            resolve: {
+                                news: function () {
+                                    return data;
+                                }
                             }
-                        }
-                    });
-                    $http.put("internalapi/news/saveshown");
-                }
-            });
-        }
+                        });
+                        $http.put("internalapi/news/saveshown");
+                    }
+                });
+            }
+        });
     }
 
 

@@ -93,6 +93,17 @@ public class MainConfig extends ValidatingConfig {
         if (oldConfig.getMain().getPort() != port || (oldConfig.getMain().getUrlBase().isPresent() && !oldConfig.getMain().getUrlBase().get().equals(urlBase)) && !startupBrowser) {
             result.getWarningMessages().add("Your port and/or URL base has changed. Make sure to load the correct URL after restart");
         }
+
+        if (urlBase != null && (!urlBase.startsWith("/") || urlBase.endsWith("/"))) {
+            if (!urlBase.startsWith("/")) {
+                urlBase = "/" + urlBase;
+            }
+            if (urlBase.endsWith("/")) {
+                urlBase = urlBase.substring(0, urlBase.length() - 1);
+            }
+            result.getWarningMessages().add("Changed URL base to " + urlBase);
+        }
+
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig);
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
         result.getErrorMessages().addAll(loggingResult.getErrorMessages());

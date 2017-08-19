@@ -2,7 +2,7 @@ NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a numbe
 
 It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Alpha. 
 
-##Major features
+## Major features
 * Searches Anizb, BinSearch, NzbIndex and any newznab compatible indexers. Merges all results, filters them by a number of configurable restrictions, recognizes duplicates and returns them all in one place
 * Add results to nzbget or sabnzbd
 * Support for all relevant media IDs (IMDB, TMDB, TVDB, TVRage, TVMaze) and conversion between them
@@ -15,8 +15,19 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
   * As separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
 * Extensive configurability  
 
-##Screenshots
+## Screenshots
 TODO
+
+### Major improvements over NZBHydra v1
+* Improved performance especially when using many indexers and/or doing multiple searches concurrently (TODO numbers)
+* Display of search progress with update messages and option to cancel searching
+* RSS support which will cache the results for a given time
+* Proper filtering of displayed results on the search results page
+* Extended statistics, e.g. share of downloads / searches per user, age distribution of downloaded NZBs and download failures per indexer
+* Downloader scripts to inform Hydra about the actual download result of an NZB
+* Improved config validation
+* Many more QoL improvements, background checks, log outputs, etc.
+
 
 ##How to run
 You need [Java Runtime Environment (>=8)](https://www.java.com/de/download/manual.jsp).<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>

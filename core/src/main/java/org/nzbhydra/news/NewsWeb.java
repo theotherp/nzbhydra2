@@ -2,6 +2,7 @@ package org.nzbhydra.news;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.auth.UserInfosProvider;
@@ -10,10 +11,14 @@ import org.nzbhydra.web.BootstrappedDataTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -59,6 +64,13 @@ public class NewsWeb {
     public GenericResponse saveShown() throws IOException {
         newsProvider.saveShownForCurrentVersion();
         return GenericResponse.ok();
+    }
+
+    @ExceptionHandler(value = {IOException.class})
+    protected ResponseEntity<ExceptionInfo> handleNewsException(IOException ex, WebRequest request) {
+        String error = "An error occurred while getting news: " + ex.getMessage();
+        logger.error(error);
+        return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, request.getContextPath()), HttpStatus.valueOf(500));
     }
 
 
