@@ -188,10 +188,10 @@ function ConfigFields($injector) {
                                 },
                                 {
                                     key: 'proxyPassword',
-                                    type: 'horizontalInput',
+                                    type: 'passwordSwitch',
                                     hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
-                                        type: 'password',
+                                        type: 'text',
                                         label: 'Proxy password'
                                     }
                                 },
@@ -1078,7 +1078,7 @@ function ConfigFields($injector) {
                             },
                             {
                                 key: 'password',
-                                type: 'horizontalInput',
+                                type: 'passwordSwitch',
                                 templateOptions: {
                                     type: 'password',
                                     label: 'Password',
@@ -1536,7 +1536,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
         fieldset.push(
             {
                 key: 'password',
-                type: 'horizontalInput',
+                type: 'passwordSwitch',
                 hideExpression: '!model.username',
                 templateOptions: {
                     type: 'text',
@@ -1791,7 +1791,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
             templateOptions: {
                 type: 'text',
                 label: 'URL',
-                help: 'URL with scheme, full path and username and password if needed',
+                help: 'URL with scheme and full path',
                 required: true
             },
             watcher: {
@@ -1839,7 +1839,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
         });
         fieldset.push({
             key: 'password',
-            type: 'horizontalInput',
+            type: 'passwordSwitch',
             templateOptions: {
                 type: 'text',
                 label: 'Password'
