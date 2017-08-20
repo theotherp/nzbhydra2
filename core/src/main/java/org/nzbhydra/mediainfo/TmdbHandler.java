@@ -7,12 +7,11 @@ import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
 import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 import retrofit2.Response;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,16 +24,8 @@ import java.util.stream.Collectors;
 public class TmdbHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
-
-    @Value("${nzbhydra.tmdb.apikey:}")
-    protected String tmdbApiKey;
-
-    Tmdb tmdb;
-
-    @PostConstruct
-    private void setApiKey() {
-        tmdb = new Tmdb(tmdbApiKey);
-    }
+    @Autowired
+    protected Tmdb tmdb;
 
 
     public TmdbSearchResult getInfos(String value, InfoProvider.IdType idType) throws InfoProviderException {

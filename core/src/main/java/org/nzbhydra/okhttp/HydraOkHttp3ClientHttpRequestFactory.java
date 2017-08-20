@@ -182,7 +182,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
 
         if (main.getProxyType() == ProxyType.SOCKS) {
-            builder = builder.socketFactory(new SF(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword()));
+            return builder.socketFactory(new SF(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword()));
         } else if (main.getProxyType() == ProxyType.HTTP) {
             builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort()))).proxyAuthenticator((Route route, Response response) -> {
                 if (response.request().header("Proxy-Authorization") != null) {
