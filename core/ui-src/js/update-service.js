@@ -20,7 +20,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     };
 
     function getInfos() {
-        RequestsErrorHandler.specificallyHandled(function () {
+        return RequestsErrorHandler.specificallyHandled(function () {
             return $http.get("internalapi/updates/infos").then(
                 function (data) {
                     currentVersion = data.data.currentVersion;

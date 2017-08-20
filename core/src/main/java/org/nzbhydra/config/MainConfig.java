@@ -91,8 +91,9 @@ public class MainConfig extends ValidatingConfig {
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
-        if (oldConfig.getMain().getPort() != port || (oldConfig.getMain().getUrlBase().isPresent() && !oldConfig.getMain().getUrlBase().get().equals(urlBase)) && !startupBrowser) {
-            result.getWarningMessages().add("Your port and/or URL base has changed. Make sure to load the correct URL after restart");
+        MainConfig oldMain = oldConfig.getMain();
+        if (oldMain.getPort() != port || (oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase) || oldMain.isSsl() != isSsl()) && !startupBrowser) {
+            result.getWarningMessages().add("You've maded changes that affect Hydra's URL and require a restart. Hydra will try to reload to the new URL when it's back.");
         }
 
         if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/"))) {
@@ -109,7 +110,7 @@ public class MainConfig extends ValidatingConfig {
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
         result.getErrorMessages().addAll(loggingResult.getErrorMessages());
 
-        result.setRestartNeeded(loggingResult.isRestartNeeded() || isRestartNeeded(oldConfig.getMain()));
+        result.setRestartNeeded(loggingResult.isRestartNeeded() || isRestartNeeded(oldMain));
         result.setOk(loggingResult.isOk() && result.isOk());
 
         return result;

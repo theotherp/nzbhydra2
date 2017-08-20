@@ -11,15 +11,15 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
 
 
     function restart(message) {
-        NzbHydraControlService.restart().then(function () {
-            startCountdown(message);
+        NzbHydraControlService.restart().then(function (data) {
+            startCountdown(message, data.data.message);
         }, function () {
             growl.info("Unable to send restart command.");
         })
     }
 
 
-    function startCountdown(message) {
+    function startCountdown(message, baseUrl) {
         $uibModal.open({
             templateUrl: 'static/html/restart-modal.html',
             controller: RestartModalInstanceCtrl,
@@ -29,6 +29,9 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
             resolve: {
                 message: function () {
                     return message;
+                },
+                baseUrl: function () {
+                    return baseUrl;
                 }
             }
         });
@@ -42,11 +45,12 @@ angular
     .module('nzbhydraApp')
     .controller('RestartModalInstanceCtrl', RestartModalInstanceCtrl);
 
-function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
+function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, baseUrl) {
 
     message = (angular.isDefined(message) ? message : "");
     $scope.message = message + "Will reload page when NZBHydra is back";
-
+    $scope.baseUrl = baseUrl;
+    $scope.pingUrl = angular.isDefined(baseUrl) ? (baseUrl + "/internalapi/control/ping") : "internalapi/control/ping";
 
     $scope.internalCaR = function (message, timer) {
         if (timer === 45) {
@@ -54,10 +58,10 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message) {
         } else {
             $scope.message = message + "Will reload page when NZBHydra is back.";
             $timeout(function () {
-                $http.get("internalapi/control/ping", {ignoreLoadingBar: true}).then(function () {
+                $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
                         $scope.message = "Reloading page...";
-                        $window.location.reload();
+                        $window.location.href = $scope.baseUrl;
                     }, 500);
                 }, function () {
                     $scope.internalCaR(message, timer + 1);
