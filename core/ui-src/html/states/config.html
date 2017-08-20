@@ -161,20 +161,9 @@
         </formly-form>
     </div>
     <div class="modal-footer">
-
-
         <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial && allowDelete">Delete</button>
-        <button class="btn btn-info" ng-click="cancel()">Cancel</button>
         <button class="btn btn-warning" ng-click="reset()">Reset</button>
         <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()"><span class="spinner"><i class="icon-spin icon-refresh"></i></span>Submit</button>
-    </div>
-
-    <div class="config-box-overlay" ng-show="doBlockDisplay">
-        <div class="block-ui-message-container">
-            <div class="block-ui-message">
-                {{blockMessage}}
-            </div>
-        </div>
     </div>
 </script>
 

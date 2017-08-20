@@ -320,16 +320,12 @@ angular
                 $scope.showBox = showBox;
                 $scope.isInitial = false;
                 $scope.presets = $scope.options.data.presets($scope.model);
-                $scope.doBlockDisplay = false;
-
 
                 function _showBox(model, parentModel, isInitial, callback) {
                     var modalInstance = $uibModal.open({
                         templateUrl: 'configBox.html',
                         controller: 'ConfigBoxInstanceController',
                         size: 'lg',
-                        backdrop: 'static',
-                        keyboard: false,
                         resolve: {
                             model: function () {
                                 return model;
@@ -402,18 +398,11 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.allowDelete = data.allowDeleteFunction(model);
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
-    $scope.doBlockDisplay = false;
-    $scope.blockMessage = "";
-
-    $scope.blockDisplay = function (value, message) {
-        $scope.doBlockDisplay = value;
-        $scope.blockMessage = message;
-    };
 
     $scope.obSubmit = function () {
 
         if ($scope.form.$valid) {
-            var a = data.checkBeforeClose($scope, model, $scope.blockDisplay).then(function (data) {
+            var a = data.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
                     $scope.model = data;
                 }

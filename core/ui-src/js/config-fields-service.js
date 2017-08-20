@@ -894,9 +894,9 @@ function ConfigFields($injector) {
                                 allowDeleteFunction: function () {
                                     return true;
                                 },
-                                checkBeforeClose: function (scope, model, blockDisplay) {
+                                checkBeforeClose: function (scope, model) {
                                     var DownloaderCheckBeforeCloseService = $injector.get("DownloaderCheckBeforeCloseService");
-                                    return DownloaderCheckBeforeCloseService.check(scope, model, blockDisplay);
+                                    return DownloaderCheckBeforeCloseService.check(scope, model);
                                 },
                                 resetFunction: function (scope) {
                                     scope.options.resetModel();
@@ -957,9 +957,9 @@ function ConfigFields($injector) {
                         allowDeleteFunction: function (model) {
                             return true;
                         },
-                        checkBeforeClose: function (scope, model, blockDisplay) {
+                        checkBeforeClose: function (scope, model) {
                             var IndexerCheckBeforeCloseService = $injector.get("IndexerCheckBeforeCloseService");
-                            return IndexerCheckBeforeCloseService.check(scope, model, blockDisplay);
+                            return IndexerCheckBeforeCloseService.check(scope, model);
                         },
                         resetFunction: function (scope) {
                             //Then reset the model twice (for some reason when we do it once the search types / ids fields are empty, resetting again fixes that... (wtf))
@@ -1339,7 +1339,7 @@ function getIndexerPresets(configuredIndexers) {
     return presets;
 }
 
-function getIndexerBoxFields(model, parentModel, isInitial, injector, blockDisplay) {
+function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     var fieldset = [];
     if (model.searchModuleType === "TORZNAB") {
         fieldset.push({
@@ -1970,38 +1970,38 @@ angular
     .module('nzbhydraApp')
     .factory('IndexerCheckBeforeCloseService', IndexerCheckBeforeCloseService);
 
-function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, growl) {
+function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, growl, blockUI) {
 
     return {
         check: checkBeforeClose
     };
 
-    function checkBeforeClose(scope, model, blockDisplay) {
+    function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
         if (!scope.isInitial && !scope.needsConnectionTest) {
-            checkCapsWhenClosing(scope, model, blockDisplay).then(function () {
+            checkCapsWhenClosing(scope, model).then(function () {
                 deferred.resolve(model);
             }, function () {
                 deferred.reject();
             });
         } else {
-            blockDisplay(true, "Testing connection...");
+            blockUI.start("Testing connection...");
             scope.spinnerActive = true;
             var url = "internalapi/indexer/checkConnection";
             ConfigBoxService.checkConnection(url, model).then(function () {
                     growl.info("Connection to the indexer tested successfully");
-                    checkCapsWhenClosing(scope, model, blockDisplay).then(function (data) {
-                        blockDisplay(false);
+                    checkCapsWhenClosing(scope, model).then(function (data) {
+                        blockUI.reset();
                         scope.spinnerActive = false;
                         deferred.resolve(data);
                     }, function () {
-                        blockDisplay(false);
+                        blockUI.reset();
                         scope.spinnerActive = false;
                         deferred.reject();
                     });
                 },
                 function (data) {
-                    blockDisplay(false);
+                    blockUI.reset();
                     handleConnectionCheckFail(ModalService, data, model, "indexer", deferred);
                 });
         }
@@ -2010,15 +2010,15 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
     }
 
     //Called when the indexer dialog is closed
-    function checkCapsWhenClosing(scope, model, blockDisplay) {
+    function checkCapsWhenClosing(scope, model) {
         var deferred = $q.defer();
         var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
 
-            blockDisplay(true, "New indexer found. Testing its capabilities. This may take a bit...");
+            blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
             ConfigBoxService.checkCaps(url, model).then(
                 function (data) {
-                    blockDisplay(false);
+                    blockUI.reset();
                     scope.spinnerActive = false;
                     if (data.allChecked) {
                         growl.info("Successfully tested capabilites of indexer");
@@ -2030,7 +2030,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
                     deferred.resolve(data.indexerConfig);
                 },
                 function () {
-                    blockDisplay(false);
+                    blockUI.reset();
                     scope.spinnerActive = false;
                     model.configComplete = false;
                     model.enabled = false;
@@ -2061,27 +2061,27 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         check: checkBeforeClose
     };
 
-    function checkBeforeClose(scope, model, blockDisplay) {
+    function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
         if (!scope.isInitial && !scope.needsConnectionTest) {
             deferred.resolve();
         } else {
             scope.spinnerActive = true;
-            blockDisplay(true, "Testing connection...");
+            blockUI.start("Testing connection...");
             var url = "internalapi/downloader/checkConnection";
             ConfigBoxService.checkConnection(url, JSON.stringify(model)).then(function () {
-                    blockDisplay(false);
+                    blockUI.reset();
                     scope.spinnerActive = false;
                     growl.info("Connection to the downloader tested successfully");
                     deferred.resolve();
                 },
                 function (data) {
-                    blockDisplay(false);
+                    blockUI.reset();
                     scope.spinnerActive = false;
                     handleConnectionCheckFail(ModalService, data, model, "downloader", deferred);
                 }).finally(function () {
                 scope.spinnerActive = false;
-                blockDisplay(false);
+                blockUI.reset();
             });
         }
         return deferred.promise;
