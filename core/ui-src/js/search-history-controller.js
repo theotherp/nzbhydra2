@@ -141,7 +141,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             });
             if (angular.isDefined(pair)) {
                 key = "TVRage ID";
-                href = "internalapi/redirect_rid?rid=" + pair.identifierValue; //TODO
+                href = "internalapi/redirect_rid?rid=" + pair.identifierValue;
                 value = pair.identifierValue;
             }
 

@@ -130,7 +130,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     function submit() {
         if ($scope.form.$valid) {
-            ConfigService.set($scope.config, true).then(function (response) { //TODO Read from local storage
+            ConfigService.set($scope.config, true).then(function (response) {
                 handleConfigSetResponse(response);
             }, function (response) {
                 //Actual error while setting or validating config

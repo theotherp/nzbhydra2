@@ -47,7 +47,7 @@ public class IndexerConfig extends ValidatingConfig {
     private Integer timeout = null;
     @SensitiveData
     private String username = null;
-    private String userAgent = null; //TODO
+    private String userAgent = null;
 
     public Optional<Integer> getHitLimit() {
         return Optional.ofNullable(hitLimit);

@@ -342,7 +342,7 @@ public abstract class Indexer<T> {
         if (searchRequest.getTitle().isPresent()) {
             query = sanitizeTitleForQuery(searchRequest.getTitle().get());
             logger.debug("Search request provided title {}. Using that as query base.", query);
-        } else if (searchRequest.getInternalData().getTitle().isPresent()) { //TODO Currently never set, when should it?
+        } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get();
         } else {
             Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();

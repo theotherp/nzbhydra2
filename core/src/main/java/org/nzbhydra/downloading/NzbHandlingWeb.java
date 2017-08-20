@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,18 +77,21 @@ public class NzbHandlingWeb {
         return nzbHandler.getNfo(guid);
     }
 
+    @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET)
     public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with GUID {} to status {}", externalId, status);
         return nzbHandler.updateStatusByExternalId(externalId, status);
     }
 
+    @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET)
     public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
+    @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET)
     public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);

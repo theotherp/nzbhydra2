@@ -442,7 +442,6 @@ public class Newznab extends Indexer<Xml> {
             Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
             IndexerCategoryConfig mapping = config.getCategoryMapping();
             Category category = idToCategory.computeIfAbsent(mostSpecific, x -> {
-                //TODO This could be prettier
                 Optional<Category> categoryOptional = Optional.empty();
                 if (mapping.getAnime().isPresent() && Objects.equals(mapping.getAnime().get(), mostSpecific)) {
                     categoryOptional = categoryProvider.fromSubtype(Subtype.ANIME);

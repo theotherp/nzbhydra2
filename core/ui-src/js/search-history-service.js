@@ -53,7 +53,6 @@ function SearchHistoryService($filter, $http) {
     }
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
-        //TODO
         var result = [];
         //ID key: ID value
         //season

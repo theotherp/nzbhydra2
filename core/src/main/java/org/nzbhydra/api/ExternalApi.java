@@ -161,7 +161,7 @@ public class ExternalApi {
         CapsServer capsServer = new CapsServer();
         capsServer.setEmail("theotherp@gmx.de");
         capsServer.setTitle("NZBHydra 2");
-        capsServer.setUrl("TODO"); //TODO
+        capsServer.setUrl("https://github.com/theotherp/nzbhydra2"); //TODO
         capsRoot.setServer(capsServer);
 
         CapsSearching capsSearching = new CapsSearching();

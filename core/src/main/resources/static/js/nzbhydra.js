@@ -3363,7 +3363,6 @@ function SearchHistoryService($filter, $http) {
     }
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
-        //TODO
         var result = [];
         //ID key: ID value
         //season
@@ -3608,7 +3607,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             });
             if (angular.isDefined(pair)) {
                 key = "TVRage ID";
-                href = "internalapi/redirect_rid?rid=" + pair.identifierValue; //TODO
+                href = "internalapi/redirect_rid?rid=" + pair.identifierValue;
                 value = pair.identifierValue;
             }
 
@@ -4091,8 +4090,7 @@ function NzbHydraControlService($http) {
 
     return {
         restart: restart,
-        shutdown: shutdown,
-        deleteLogAndDb: deleteLogAndDb
+        shutdown: shutdown
     };
 
     function restart() {
@@ -4103,10 +4101,6 @@ function NzbHydraControlService($http) {
         return $http.get("internalapi/control/shutdown");
     }
 
-    function deleteLogAndDb() {
-        //TODO
-        return $http.get("internalapi/control/deleteloganddb");
-    }
 }
 NzbHydraControlService.$inject = ["$http"];
 
@@ -7889,7 +7883,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
     function submit() {
         if ($scope.form.$valid) {
-            ConfigService.set($scope.config, true).then(function (response) { //TODO Read from local storage
+            ConfigService.set($scope.config, true).then(function (response) {
                 handleConfigSetResponse(response);
             }, function (response) {
                 //Actual error while setting or validating config
