@@ -57,11 +57,11 @@ public class JsonConfigMigrationTest {
         Category oldCat = new Category();
         oldCat.setApplyRestrictions("internal");
         oldCat.setForbiddenRegex("someForbiddenRegex");
-        oldCat.setForbiddenWords(Arrays.asList("some, forbidden, words"));
+        oldCat.setForbiddenWords(Arrays.asList("some", "forbidden", "words"));
         oldCat.setMin(100);
         oldCat.setMax(1000);
         oldCat.setRequiredRegex("someRequiredRegex");
-        oldCat.setRequiredWords(Arrays.asList("some, required, words"));
+        oldCat.setRequiredWords(Arrays.asList("some", "required", "words"));
         oldCat.setIgnoreResults("external");
         oldCat.setNewznabCategories(Arrays.asList(1000, 2000));
         categoryMap.put("category", oldCat);

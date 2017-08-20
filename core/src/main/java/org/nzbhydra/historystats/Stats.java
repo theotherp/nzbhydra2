@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.OptionalDouble;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -234,7 +235,7 @@ public class Stats {
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "                                                   )\n" +
                 "                                                   AND INDEXERSEARCH.successful)" +
-                "  --       AND INDEXERSEARCH.successful\n" + //TODO Should this be enabled?
+                "         AND INDEXERSEARCH.successful\n" +
                 "  ) FORALL";
 
 
@@ -478,7 +479,6 @@ public class Stats {
     List<DownloadPerAge> downloadsPerAge() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age");
-        List<DownloadPerAge> results = new ArrayList<>();
         String sql = "SELECT\n" +
                 "  steps,\n" +
                 "  count(*)\n" +
@@ -490,12 +490,23 @@ public class Stats {
                 "ORDER BY steps ASC";
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
+        List<DownloadPerAge> results = new ArrayList<>();
+        Map<Integer, Integer> agesAndCountsMap = new HashMap<>();
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             int ageStep = (Integer) o2[0];
             int count = ((BigInteger) o2[1]).intValue();
-            results.add(new DownloadPerAge(ageStep, count));
+            agesAndCountsMap.put(ageStep, count);
         }
+        for (int i = 0; i <= 34; i += 1) {
+            if (!agesAndCountsMap.containsKey(i)) {
+                agesAndCountsMap.put(i, 0);
+            }
+        }
+        for (Entry<Integer, Integer> entry : agesAndCountsMap.entrySet()) {
+            results.add(new DownloadPerAge(entry.getKey() * 100, entry.getValue()));
+        }
+        results.sort(Comparator.comparingInt(DownloadPerAge::getAge));
 
         logger.debug("Calculated downloads per age. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return results;

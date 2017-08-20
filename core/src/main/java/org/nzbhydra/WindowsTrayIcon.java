@@ -23,10 +23,10 @@ public class WindowsTrayIcon extends TrayIcon {
 
     public WindowsTrayIcon() {
         super(new ImageIcon(WindowsTrayIcon.class.getResource(IMAGE_PATH), TOOLTIP).getImage(), TOOLTIP);
-        popup = new PopupMenu();
-        tray = SystemTray.getSystemTray();
-        instance = this;
         try {
+            popup = new PopupMenu();
+            tray = SystemTray.getSystemTray();
+            instance = this;
             setup();
         } catch (AWTException e) {
             logger.error("Unable to create tray icon", e);

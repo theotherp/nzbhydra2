@@ -247,8 +247,6 @@ main:
   backupEverySunday: true
   dereferer: "http://www.dereferer.org/?$s"
   externalUrl: null
-  firstStart: true
-  firstStartedAt: null
   host: "0.0.0.0"
   logging:
     consolelevel: "INFO"

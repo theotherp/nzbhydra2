@@ -35,6 +35,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -140,7 +141,11 @@ public class NzbHydra {
         boolean isOsWindows = osName.toLowerCase().contains("windows");
         if (isOsWindows) {
             logger.info("Adding windows system tray icon");
-            new WindowsTrayIcon();
+            try {
+                new WindowsTrayIcon();
+            } catch (HeadlessException e) {
+                logger.error("Can't add a windows tray icon because running headless");
+            }
         }
     }
 

@@ -190,7 +190,7 @@ public class ConfigMigrationTest {
 
         //TODO Test that optionals return notPresent with "" in old config
         assertThat(result.getMigratedConfig().getMain().getApiKey().get(), is("apikey"));
-        assertThat(result.getMigratedConfig().getMain().getExternalUrl().get(), is("externalUrl"));
+        assertThat("External URL should not be migrated because the old one wouldn't match", result.getMigratedConfig().getMain().getExternalUrl().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
         assertThat(result.getMigratedConfig().getMain().getProxyType(), is(ProxyType.SOCKS));
         assertThat(result.getMigratedConfig().getMain().getProxyHost(), is("proxydomain.com"));

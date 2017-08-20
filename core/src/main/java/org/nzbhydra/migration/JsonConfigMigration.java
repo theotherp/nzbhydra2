@@ -206,12 +206,12 @@ public class JsonConfigMigration {
             if (oldCat != null) {
                 newCategory.setApplyRestrictionsType(searchSourceRestrictionMap.getOrDefault(oldCat.getApplyRestrictions(), SearchSourceRestriction.NONE));
                 newCategory.setForbiddenRegex(oldCat.getForbiddenRegex());
-                newCategory.setForbiddenWords(oldCat.getForbiddenWords());
+                newCategory.setForbiddenWords(oldCat.getForbiddenWords() == null ? new ArrayList<>() : oldCat.getForbiddenWords());
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
-                newCategory.setNewznabCategories(oldCat.getNewznabCategories());
+                newCategory.setNewznabCategories(oldCat.getNewznabCategories() == null ? new ArrayList<>() : oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(oldCat.getRequiredWords());
+                newCategory.setRequiredWords(oldCat.getRequiredWords() == null ? new ArrayList<>() : oldCat.getRequiredWords());
                 newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }
@@ -322,7 +322,6 @@ public class JsonConfigMigration {
         List<String> messages = new ArrayList<>();
         newMain.setApiKey(oldMain.getApikey());
         newMain.setDereferer(Strings.isNullOrEmpty((oldMain.getDereferer())) ? null : (oldMain.getDereferer()));
-        newMain.setExternalUrl(Strings.isNullOrEmpty(oldMain.getExternalUrl()) ? null : oldMain.getExternalUrl());
         newMain.setHost(oldMain.getHost());
         newMain.setShutdownForRestart(oldMain.isShutdownForRestart());
         migrateProxies(messages, newMain, oldMain);
