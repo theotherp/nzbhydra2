@@ -152,6 +152,9 @@ public class BaseConfig extends ValidatingConfig {
         if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
             builder.path(main.getUrlBase().get());
         }
+        if (builder.build().getHost().equals("::")) {
+            builder = builder.host("[::1]");
+        }
         return builder;
     }
 
