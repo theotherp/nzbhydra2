@@ -10,6 +10,7 @@ import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -60,7 +60,7 @@ public class NewznabChecker {
         try {
             URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
             xmlResponse = indexerWebAccess.get(uri, Xml.class, indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()));
-            logger.info("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
+            logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
                 return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
@@ -111,7 +111,7 @@ public class NewznabChecker {
         String backend = null;
         try {
             logger.info("Will check capabilities of indexer {} using {} concurrent connections", indexerConfig.getName(), MAX_CONNECTIONS);
-            ExecutorService executor = Executors.newFixedThreadPool(MAX_CONNECTIONS);
+            ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(MAX_CONNECTIONS);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
@@ -128,15 +128,15 @@ public class NewznabChecker {
                     }
                     allChecked = false;
                 } catch (TimeoutException e) {
-                    logger.error("Indexer failed to answer in {} seconds", timeout);
+                    logger.error("Indexer {] failed to answer in {} seconds", indexerConfig.getName(), timeout);
                     allChecked = false;
                 }
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(x -> Newznab.paramValueToIdMap.get(x.getKey())).collect(Collectors.toSet());
             if (supportedIds.isEmpty()) {
-                logger.info("The indexer does not support searching by any IDs");
+                logger.info("Indexer {} does not support searching by any IDs", indexerConfig.getName());
             } else {
-                logger.info("The indexer supports searching using the following IDs: " + supportedIds.stream().map(Enum::name).collect(Collectors.joining(", ")));
+                logger.info("Indexer {} supports searching using the following IDs: {}", indexerConfig.getName(), supportedIds.stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
             indexerConfig.setSupportedSearchIds(new ArrayList<>(supportedIds));
 
@@ -147,19 +147,25 @@ public class NewznabChecker {
 
         try {
             indexerConfig.setCategoryMapping(setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, timeout));
+            if (indexerConfig.getSupportedSearchTypes().isEmpty()) {
+                logger.info("Indexer {} does not support any special search types", indexerConfig.getName());
+            } else {
+                logger.info("Indexer {} supports the following search types: {}", indexerConfig.getName(), indexerConfig.getSupportedSearchTypes().stream().map(Enum::name).collect(Collectors.joining(", ")));
+            }
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
         }
 
+
         BackendType backendType = BackendType.NEWZNAB;
         if (backend == null) {
-            logger.info("Indexer didn't provide a backend type. Will use newznab.");
+            logger.info("Indexer {} didn't provide a backend type. Will use newznab.", indexerConfig.getName());
         } else {
             try {
                 backendType = BackendType.valueOf(backend.toUpperCase());
-                logger.info("Indexer uses backend type {}", backendType);
+                logger.info("Indexer {} uses backend type {}", indexerConfig.getName(), backendType);
             } catch (IllegalArgumentException e) {
-                logger.warn("Indexer reported unknown backend type {}. Will use newznab for now. Please report this.", backend);
+                logger.warn("Indexer {} reported unknown backend type {}. Will use newznab for now. Please report this.", indexerConfig.getName(), backend);
             }
         }
         indexerConfig.setBackend(backendType);
@@ -229,17 +235,17 @@ public class NewznabChecker {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         RssRoot rssRoot = indexerWebAccess.get(uri, RssRoot.class, timeout);
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
-            logger.info("Indexer returned no results when searching with ID {}", request.getKey());
+            logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> x.getTitle().toLowerCase().contains(request.getTitleExpectedToContain().toLowerCase())).count();
         float percentCorrect = (100 * countCorrectResults) / rssRoot.getRssChannel().getItems().size();
         boolean supported = percentCorrect >= 90;
         if (supported) {
-            logger.info("{}% of results using ID type {} were correct. The indexer probably supports this ID.", percentCorrect, request.getKey());
+            logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
             return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
         } else {
-            logger.info("{}% of results using ID type {} were correct. The indexer probably doesn't support this ID.", percentCorrect, request.getKey());
+            logger.info("Indexer {} probably doesn't support the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
     }
