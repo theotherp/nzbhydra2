@@ -268,6 +268,36 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-md-10">
+            <div style="margin-top:10px" class="caption">API Searches per user agent</div>
+            <tab-or-chart display="chart">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>User agent</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in userAgentShares">
+                        <td>{{ stat.userAgent }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="userAgentSharesChart">
+                    <nvd3 options="userAgentSharesChart.options" data="userAgentSharesChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+        <div class="col-md-1"></div>
+
+    </div>
+
 
     <div class="row">
         <div class="col-md-10">

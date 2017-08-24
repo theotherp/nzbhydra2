@@ -29,23 +29,26 @@ public class SearchEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
     @Enumerated(EnumType.STRING)
     private SearchSource source;
-
-    private String categoryName;
-    private String query;
+    @Enumerated(EnumType.STRING)
+    private SearchType searchType;
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     private Instant time;
+
     @OneToMany(cascade = CascadeType.ALL)
     @LazyCollection(LazyCollectionOption.FALSE)
     private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
+    private String categoryName;
+    private String query;
     private Integer season;
     private String episode;
-    @Enumerated(EnumType.STRING)
-    private SearchType searchType;
-    private String usernameOrIp;
     private String title;
     private String author;
+
+    private String usernameOrIp;
+    private String userAgent;
 
     public SearchEntity() {
         time = Instant.now();

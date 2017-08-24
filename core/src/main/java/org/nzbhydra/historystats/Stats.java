@@ -12,6 +12,7 @@ import org.nzbhydra.historystats.stats.IndexerDownloadShare;
 import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
 import org.nzbhydra.historystats.stats.StatsRequest;
 import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
+import org.nzbhydra.historystats.stats.UserAgentShare;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -80,11 +81,14 @@ public class Stats {
 
         executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
 
+        executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest)));
+
 
         BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
-        if (countDownloadsWithData.intValue() > 0)
+        if (countDownloadsWithData.intValue() > 0) {
             executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
-        BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("select count(*) from SEARCH t where t.USERNAME_OR_IP is not null").getSingleResult();
+        }
+        BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
         if (countSearchesWithData.intValue() > 0) {
             executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
         }
@@ -447,7 +451,7 @@ public class Stats {
 
     List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculated downloadsOrSearches for table {}", tablename);
+        logger.debug("Calculating downloadsOrSearches for table {}", tablename);
         String sql = "" +
                 "SELECT\n" +
                 "  USERNAME_OR_IP,\n" +
@@ -473,6 +477,36 @@ public class Stats {
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
         logger.debug("Calculated downloadsOrSearches for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return result;
+    }
+
+    List<UserAgentShare> userAgentShares(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating user agent shares");
+        String sql = "SELECT\n" +
+                "  user_agent,\n" +
+                "  count(*)\n" +
+                "FROM SEARCH\n" +
+                "WHERE user_agent IS NOT NULL\n" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "GROUP BY user_agent";
+        Query query = entityManager.createNativeQuery(sql);
+        List<Object> resultList = query.getResultList();
+        List<UserAgentShare> result = new ArrayList<>();
+        int countAll = 0;
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            String userAgent = (String) o2[0];
+            int countForUserAgent = ((BigInteger) o2[1]).intValue();
+            countAll += countForUserAgent;
+            result.add(new UserAgentShare(userAgent, countForUserAgent));
+        }
+        for (UserAgentShare userAgentShare : result) {
+            userAgentShare.setPercentage(100F / ((float) countAll / userAgentShare.getCount()));
+        }
+
+        result.sort(Comparator.comparingDouble(UserAgentShare::getPercentage).reversed());
+        logger.debug("Calculated user agent shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 

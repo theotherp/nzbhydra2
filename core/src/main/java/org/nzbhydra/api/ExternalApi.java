@@ -52,6 +52,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -70,6 +71,7 @@ public class ExternalApi {
 
     private static final int MAX_CACHE_SIZE = 5;
     private static final int MAX_CACHE_AGE_HOURS = 24;
+    private static final List<String> USER_AGENTS = Arrays.asList("Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Mozilla");
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
@@ -199,11 +201,29 @@ public class ExternalApi {
         } else {
             searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.NZB);
         }
+        searchRequest.getInternalData().setUserAgent(getUserAgent(request));
         SearchResult searchResult = searcher.search(searchRequest);
 
         RssRoot transformedResults = transformResults(searchResult, params, searchRequest);
         logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
         return transformedResults;
+    }
+
+    private String getUserAgent(HttpServletRequest request) {
+        String header = request.getHeader("User-Agent");
+        if (header == null) {
+            logger.debug("No user agent provided");
+            return null;
+        }
+        for (String toCompare : USER_AGENTS) {
+            String headerLowercase = header.toLowerCase();
+            if (headerLowercase.contains(toCompare.toLowerCase())) {
+                logger.debug("User agent {} mapped to {}", header, toCompare);
+                return toCompare;
+            }
+        }
+        logger.debug("Unknown user agent {}", header);
+        return "Other";
     }
 
     private boolean isTorznabCall(HttpServletRequest request) {

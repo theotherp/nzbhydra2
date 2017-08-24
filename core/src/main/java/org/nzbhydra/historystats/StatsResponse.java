@@ -11,6 +11,7 @@ import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.historystats.stats.IndexerDownloadShare;
 import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
 import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
+import org.nzbhydra.historystats.stats.UserAgentShare;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,6 +42,8 @@ public class StatsResponse {
     private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer = new ArrayList<>();
     private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp;
     private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp;
+
+    private List<UserAgentShare> userAgentShares = new ArrayList<>();
 
     private int numberOfConfiguredIndexers;
     private int numberOfEnabledIndexers;

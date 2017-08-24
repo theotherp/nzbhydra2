@@ -101,6 +101,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         $scope.successfulDownloadsPerIndexer = stats.successfulDownloadsPerIndexer;
         $scope.searchSharesPerUserOrIp = stats.searchSharesPerUserOrIp;
         $scope.downloadSharesPerUserOrIp = stats.downloadSharesPerUserOrIp;
+        $scope.userAgentShares = stats.userAgentShares;
         $scope.numberOfConfiguredIndexers = stats.numberOfConfiguredIndexers;
         $scope.numberOfEnabledIndexers = stats.numberOfEnabledIndexers;
 
@@ -160,8 +161,10 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                         return d.share;
                     },
                     showLabels: true,
+                    donut: true,
+                    donutRatio: 0.35,
                     duration: 500,
-                    labelThreshold: 0.01,
+                    labelThreshold: 0.03,
                     labelSunbeamLayout: true,
                     tooltip: {
                         valueFormatter: function (d, i) {
@@ -182,21 +185,25 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         };
         $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.numberOfConfiguredIndexers : $scope.numberOfEnabledIndexers) * 40, 350), 900);
 
-        function getSearchOrDownloadsPerUserOrIpPieChart(data) {
+        function getSharesPieChart(data, height, xValue, yValue) {
             return {
                 options: {
                     chart: {
                         type: 'pieChart',
-                        height: 500,
+                        height: height,
                         x: function (d) {
-                            return d.userOrIp;
+                            return d[xValue];
                         },
                         y: function (d) {
-                            return d.percentage;
+                            return d[yValue];
                         },
                         showLabels: true,
+                        donut: true,
+                        donutRatio: 0.35,
                         duration: 500,
-                        labelThreshold: 0.01,
+                        labelThreshold: 0.03,
+                        donutLabelsOutside: true,
+                        //labelType: "percent",
                         labelSunbeamLayout: true,
                         tooltip: {
                             valueFormatter: function (d, i) {
@@ -217,12 +224,12 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        if ($scope.downloadSharesPerUserOrIp !== null) {
-            $scope.downloadSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.downloadSharesPerUserOrIp);
-            $scope.downloadSharesPerUserOrIpChart.options.chart.height = 300;
-            $scope.searchSharesPerUserOrIpChart = getSearchOrDownloadsPerUserOrIpPieChart($scope.searchSharesPerUserOrIp);
-            $scope.searchSharesPerUserOrIpChart.options.chart.height = 300;
+        if ($scope.searchSharesPerUserOrIp !== null) {
+            $scope.downloadSharesPerUserOrIpChart = getSharesPieChart($scope.downloadSharesPerUserOrIp, 300, "userOrIp", "percentage");
+            $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
         }
+
+        $scope.userAgentSharesChart = getSharesPieChart($scope.userAgentShares, 300, "userAgent", "percentage");
     };
 
 

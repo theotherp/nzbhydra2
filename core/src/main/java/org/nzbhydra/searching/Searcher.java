@@ -173,6 +173,7 @@ public class Searcher {
             searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
             searchEntity.setSearchType(searchRequest.getSearchType());
             searchEntity.setUsernameOrIp(searchRequest.getInternalData().getUsernameOrIp());
+            searchEntity.setUserAgent(searchRequest.getInternalData().getUserAgent());
             searchEntity.setTitle(searchRequest.getTitle().orElse(null));
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 
