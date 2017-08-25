@@ -7877,6 +7877,17 @@ select.form-control {
 .input-lg {
   font-size: 16px;
 }
+.stat-box {
+  border-radius: 2px;
+  border: 1px solid #b0b0b0;
+}
+.stat-box .caption {
+  margin-top: 10px;
+  padding-left: 15px;
+}
+.stat-box .caption .bootstrap-switch {
+  margin-right: 20px;
+}
 .nav-tabs > li > a:hover {
   border-color: #eeeeee #eeeeee transparent;
   background-color: transparent;

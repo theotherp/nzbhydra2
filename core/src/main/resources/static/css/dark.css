@@ -7877,6 +7877,17 @@ select.form-control {
 .input-lg {
   font-size: 16px;
 }
+.stat-box {
+  border-radius: 2px;
+  border: 1px solid #1a1f20;
+}
+.stat-box .caption {
+  margin-top: 10px;
+  padding-left: 15px;
+}
+.stat-box .caption .bootstrap-switch {
+  margin-right: 20px;
+}
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;
 }

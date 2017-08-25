@@ -16,4 +16,23 @@ public class StatsRequest {
     private Instant before = Instant.now();
     private boolean includeDisabled;
 
+    private boolean indexerApiAccessStats;
+    private boolean avgIndexerSearchResultsShares;
+    private boolean avgResponseTimes;
+    private boolean indexerDownloadShares;
+    private boolean downloadsPerDayOfWeek;
+    private boolean downloadsPerHourOfDay;
+    private boolean searchesPerDayOfWeek;
+    private boolean searchesPerHourOfDay;
+    private boolean downloadsPerAgeStats;
+    private boolean successfulDownloadsPerIndexer;
+    private boolean downloadSharesPerUserOrIp;
+    private boolean searchSharesPerUserOrIp;
+    private boolean userAgentShares;
+
+    public StatsRequest(Instant before, Instant after, boolean includeDisabled) {
+        this.before = before;
+        this.after = after;
+        this.includeDisabled = includeDisabled;
+    }
 }

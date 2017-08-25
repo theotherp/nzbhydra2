@@ -14,8 +14,26 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
     $scope.afterDate = moment().subtract(30, "days").toDate();
     $scope.beforeDate = moment().add(1, "days").toDate();
     $scope.foo = {
-        includeDisabledIndexersInStats: localStorageService.get("includeDisabledIndexersInStats") !== null ? localStorageService.get("includeDisabledIndexersInStats") : false
+        includeDisabledIndexersInStats: localStorageService.get("includeDisabledIndexersInStats") !== null ? localStorageService.get("includeDisabledIndexersInStats") : false,
+        statsSwichState: localStorageService.get("statsSwitchState") !== null ? localStorageService.get("statsSwitchState") :
+            {
+                indexerApiAccessStats: true,
+                avgIndexerSearchResultsShares: true,
+                avgResponseTimes: true,
+                indexerDownloadShares: true,
+                downloadsPerDayOfWeek: true,
+                downloadsPerHourOfDay: true,
+                searchesPerDayOfWeek: true,
+                searchesPerHourOfDay: true,
+                downloadsPerAgeStats: true,
+                successfulDownloadsPerIndexer: true,
+                downloadSharesPerUserOrIp: true,
+                searchSharesPerUserOrIp: true,
+                userAgentShares: true
+            }
     };
+    $scope.stats = {};
+
     updateStats();
 
 
@@ -40,11 +58,27 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         updateStats();
     };
 
-    function updateStats() {
+    $scope.onStatsSwitchToggle = function (statId) {
+        localStorageService.set("statsSwitchState", $scope.foo.statsSwichState);
+
+        if ($scope.foo.statsSwichState[statId]) { //Stat was enabled, get only data for this stat
+            console.log("Retrieve stats for " + statId);
+            updateStats(statId);
+        }
+
+    };
+
+    function updateStats(statId) {
         blockUI.start("Updating stats...");
         var after = $scope.afterDate !== null ? $scope.afterDate : null;
         var before = $scope.beforeDate !== null ? $scope.beforeDate : null;
-        $scope.statsLoadingPromise = StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats).then(function (stats) {
+        var statsToRetrieve = {};
+        if (angular.isDefined(statId)) {
+            statsToRetrieve[statId] = true;
+        } else {
+            statsToRetrieve = $scope.foo.statsSwichState;
+        }
+        $scope.statsLoadingPromise = StatsService.get(after, before, $scope.foo.includeDisabledIndexersInStats, statsToRetrieve).then(function (stats) {
             $scope.setStats(stats);
             //Resize event is needed for the -perUsernameOrIp charts to be properly sized because nvd3 thinks the initial size is 0
             $timeout(function () {
@@ -87,59 +121,49 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
     $scope.setStats = function (stats) {
         stats = stats.data;
 
-        $scope.nzbDownloads = null;
-        $scope.avgResponseTimes = stats.avgResponseTimes;
-        $scope.avgIndexerSearchResultsShares = stats.avgIndexerSearchResultsShares;
-        $scope.indexerApiAccessStats = stats.indexerApiAccessStats;
-        $scope.indexerDownloadShares = stats.indexerDownloadShares;
-        $scope.downloadsPerHourOfDay = stats.downloadsPerHourOfDay;
-        $scope.downloadsPerDayOfWeek = stats.downloadsPerDayOfWeek;
-        $scope.searchesPerHourOfDay = stats.searchesPerHourOfDay;
-        $scope.searchesPerDayOfWeek = stats.searchesPerDayOfWeek;
-        $scope.downloadsPerAge = stats.downloadsPerAge;
-        $scope.downloadsPerAgeStats = stats.downloadsPerAgeStats;
-        $scope.successfulDownloadsPerIndexer = stats.successfulDownloadsPerIndexer;
-        $scope.searchSharesPerUserOrIp = stats.searchSharesPerUserOrIp;
-        $scope.downloadSharesPerUserOrIp = stats.downloadSharesPerUserOrIp;
-        $scope.userAgentShares = stats.userAgentShares;
-        $scope.numberOfConfiguredIndexers = stats.numberOfConfiguredIndexers;
-        $scope.numberOfEnabledIndexers = stats.numberOfEnabledIndexers;
+        //Only update those stats that were calculated (because this might be an update when one stat has just been enabled)
+        _.forEach(stats, function (value, key) {
+            if (value !== null) {
+                $scope.stats[key] = value;
+            }
+        });
 
 
-        var numIndexers = $scope.avgResponseTimes.length;
+        var numberOfDisplayedIndexers = $scope.foo.includeDisabledIndexersInStats ? stats.numberOfConfiguredIndexers : stats.numberOfEnabledIndexers;
 
-        $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
-        $scope.avgResponseTimesChart.options.chart.margin.left = 100;
-        $scope.avgResponseTimesChart.options.chart.yAxis.rotateLabels = -30;
-        var avgResponseTimesChartHeight = Math.max(numIndexers * 30, 350);
-        $scope.avgResponseTimesChart.options.chart.height = avgResponseTimesChartHeight;
+        if ($scope.stats.avgResponseTimes) {
+            $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.stats.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
+            $scope.avgResponseTimesChart.options.chart.margin.left = 100;
+            $scope.avgResponseTimesChart.options.chart.yAxis.rotateLabels = -30;
+            $scope.avgResponseTimesChart.options.chart.height = Math.max($scope.stats.avgResponseTimes.length * 30, 350);
+        }
 
         $scope.resultsSharesChart = getResultsSharesChart();
 
         var rotation = 30;
-        if (numIndexers > 30) {
+        if (numberOfDisplayedIndexers > 30) {
             rotation = 70;
         }
         $scope.resultsSharesChart.options.chart.xAxis.rotateLabels = rotation;
-        $scope.resultsSharesChart.options.chart.height = avgResponseTimesChartHeight;
+        $scope.resultsSharesChart.options.chart.height = 350;
 
-        $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
+        $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
         $scope.downloadsPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
 
-        $scope.downloadsPerDayOfWeekChart = getChart("discreteBarChart", $scope.downloadsPerDayOfWeek, "day", "count", "Day of week", 'Downloads');
+        $scope.downloadsPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.downloadsPerDayOfWeek, "day", "count", "Day of week", 'Downloads');
         $scope.downloadsPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
 
-        $scope.searchesPerHourOfDayChart = getChart("discreteBarChart", $scope.searchesPerHourOfDay, "hour", "count", "Hour of day", 'Searches');
+        $scope.searchesPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.searchesPerHourOfDay, "hour", "count", "Hour of day", 'Searches');
         $scope.searchesPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
 
-        $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
+        $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
         $scope.searchesPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
 
-        $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
-        $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 90;
+        $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.stats.downloadsPerAgeStats.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
+        $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 45;
         $scope.downloadsPerAgeChart.options.chart.showValues = false;
 
-        $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
+        $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.stats.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
         $scope.successfulDownloadsPerIndexerChart.options.chart.xAxis.rotateLabels = 90;
         $scope.successfulDownloadsPerIndexerChart.options.chart.yAxis.tickFormat = function (d) {
             return $filter('number')(d, 0);
@@ -181,9 +205,9 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                     }
                 }
             },
-            data: $scope.indexerDownloadShares
+            data: $scope.stats.indexerDownloadShares
         };
-        $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.numberOfConfiguredIndexers : $scope.numberOfEnabledIndexers) * 40, 350), 900);
+        $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.stats.numberOfConfiguredIndexers : $scope.stats.numberOfEnabledIndexers) * 40, 350), 900);
 
         function getSharesPieChart(data, height, xValue, yValue) {
             return {
@@ -202,7 +226,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                         donutRatio: 0.35,
                         duration: 500,
                         labelThreshold: 0.03,
-                        donutLabelsOutside: true,
+                        labelsOutside: true,
                         //labelType: "percent",
                         labelSunbeamLayout: true,
                         tooltip: {
@@ -224,12 +248,14 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        if ($scope.searchSharesPerUserOrIp !== null) {
-            $scope.downloadSharesPerUserOrIpChart = getSharesPieChart($scope.downloadSharesPerUserOrIp, 300, "userOrIp", "percentage");
-            $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
+        if ($scope.stats.searchSharesPerUserOrIp !== null) {
+            $scope.downloadSharesPerUserOrIpChart = getSharesPieChart($scope.stats.downloadSharesPerUserOrIp, 300, "userOrIp", "percentage");
+        }
+        if ($scope.stats.searchSharesPerUserOrIpChart !== null) {
+            $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.stats.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
         }
 
-        $scope.userAgentSharesChart = getSharesPieChart($scope.userAgentShares, 300, "userAgent", "percentage");
+        $scope.userAgentSharesChart = getSharesPieChart($scope.stats.userAgentShares, 300, "userAgent", "percentage");
     };
 
 
@@ -322,7 +348,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                     tooltip: {
                         enabled: true,
                         valueFormatter: function (d) {
-                            return d + "%";
+                            return $filter('number')(d, 2) + "%";
                         }
                     },
                     showControls: false,
@@ -339,7 +365,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                         axisLabel: 'Share (%)',
                         axisLabelDistance: -20,
                         tickFormat: function (d) {
-                            return d;
+                            return $filter('number')(d, 0) + "%";
                         }
                     }
                 }
@@ -348,19 +374,19 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             data: [
                 {
                     key: "Results",
-                    values: _.map($scope.avgIndexerSearchResultsShares, function (stats) {
+                    values: _.map($scope.stats.avgIndexerSearchResultsShares, function (stats) {
                         return {series: 0, y: stats.totalShare, x: stats.indexerName}
                     })
                 },
                 {
                     key: "Unique results",
-                    values: _.map($scope.avgIndexerSearchResultsShares, function (stats) {
+                    values: _.map($scope.stats.avgIndexerSearchResultsShares, function (stats) {
                         return {series: 1, y: stats.uniqueShare, x: stats.indexerName}
                     })
                 }
             ]
         };
     }
-
-
 }
+
+

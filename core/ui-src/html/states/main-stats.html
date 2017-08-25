@@ -34,12 +34,19 @@
     </div>
 </div>
 
+
 <div cg-busy="{promise:statsLoadingPromise,message:'Loading stats', delay:100}">
     <div class="row">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Avg. response times <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                                                                   uib-tooltip="Response time is the time an API request takes, from start to completion of the web call"></span></div>
-            <tab-or-chart display="chart">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgResponseTimes" switch-size="mini" ng-change="onStatsSwitchToggle('avgResponseTimes')">
+                </span>
+
+
+                Avg. response times <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                          uib-tooltip="Response time is the time an API request takes, from start to completion of the web call"></span></div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgResponseTimes">
                 <table class="table">
                     <thead>
                     <tr>
@@ -49,7 +56,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="avgResponseTime in avgResponseTimes">
+                    <tr ng-repeat="avgResponseTime in stats.avgResponseTimes">
                         <td>{{ avgResponseTime.indexer }}</td>
                         <td>{{ avgResponseTime.avgResponseTime }}</td>
                         <td>{{ avgResponseTime.delta }}</td>
@@ -61,17 +68,20 @@
                     <nvd3 options="avgResponseTimesChart.options" data="avgResponseTimesChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
-
         </div>
-        <div class="col-md-1"></div>
 
-        <div class="col-md-10">
-            <div style="margin-top:9px" class="caption">Average results <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                                                              uib-tooltip="How many results the indexer on average contributed to specific searches (i.e. update queries e.g. for the latest releases in a specific category are ignored)"></span>
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgIndexerSearchResultsShares" switch-size="mini" ng-change="onStatsSwitchToggle('avgIndexerSearchResultsShares')">
+                </span>
+                Average results <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                      uib-tooltip="How many results the indexer on average contributed to specific searches (i.e. update queries e.g. for the latest releases in a specific category are ignored)"></span>
                 and average unique results <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top-right"
                                                  uib-tooltip-html="'How many of the results the indexer contributed to searches were unique (only returned by this indexer). <br>Results from raw search engines are excluded because they would be misleading.'"></span>
             </div>
-            <tab-or-chart display="chart">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgIndexerSearchResultsShares">
                 <table class="table">
                     <thead>
                     <tr>
@@ -82,15 +92,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="avgIndexerSearchResultsShare in avgIndexerSearchResultsShares">
+                    <tr ng-repeat="avgIndexerSearchResultsShare in stats.avgIndexerSearchResultsShares">
                         <td>{{ avgIndexerSearchResultsShare.indexerName }}</td>
                         <td>{{ avgIndexerSearchResultsShare.avgResultsShare }}</td>
                         <td>{{ avgIndexerSearchResultsShare.avgUniqueResults }}</td>
-
                     </tr>
                     </tbody>
                 </table>
-
                 <chart>
                     <nvd3 options="resultsSharesChart.options" data="resultsSharesChart.data"></nvd3>
                 </chart>
@@ -100,11 +108,16 @@
     </div>
 
     <div class="row" style="margin-bottom: 50px">
-        <div class="col-md-10">
-            <table class="table" style="margin-top: 9px">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.indexerApiAccessStats" switch-size="mini" ng-change="onStatsSwitchToggle('indexerApiAccessStats')">
+                </span>
                 <caption>Indexer API accesses <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
                                                     uib-tooltip="An API access is considered failed only when the indexer could not be reached, not if auth was unsuccessful or Hydra had an unexpected error. The average calculation only spans the time since the first search with the indexer."></span>
                 </caption>
+            </div>
+            <table class="table" style="margin-top: 9px" ng-show="foo.statsSwichState.indexerApiAccessStats">
                 <thead>
                 <tr>
                     <th>Indexer</th>
@@ -114,7 +127,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="avgIndexerAccessSuccess in indexerApiAccessStats">
+                <tr ng-repeat="avgIndexerAccessSuccess in stats.indexerApiAccessStats">
                     <td>{{ avgIndexerAccessSuccess.indexerName }}</td>
                     <td>{{ avgIndexerAccessSuccess.averageAccessesPerDay | number: 0 }}</td>
                     <td>{{ avgIndexerAccessSuccess.percentSuccessful | number: 0}}</td>
@@ -123,60 +136,69 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-1"></div>
-
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">NZB downloads per indexer <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
-                                                                                         uib-tooltip="Only downloads by enabled indexers are taken into account and displayed"></span></caption>
-                <tab-or-chart display="chart">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Indexer</th>
-                            <th>Total</th>
-                            <th>% of all enabled</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="indexerDownloads in indexerDownloadShares">
-                            <td>{{ indexerDownloads.indexerName }}</td>
-                            <td>{{ indexerDownloads.total | number: 0}}</td>
-                            <td>{{ indexerDownloads.share | number: 0 }}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-
-                    <chart>
-                        <nvd3 options="indexerDownloadSharesChart.options" data="indexerDownloadSharesChart.data"></nvd3>
-                    </chart>
-                </tab-or-chart>
 
 
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.indexerDownloadShares" switch-size="mini" ng-change="onStatsSwitchToggle('indexerDownloadShares')">
+                </span>
+                NZB downloads per indexer <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
+                                                uib-tooltip="Only downloads by enabled indexers are taken into account and displayed"></span></caption>
             </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.indexerDownloadShares">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>Indexer</th>
+                        <th>Total</th>
+                        <th>% of all enabled</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="indexerDownloads in stats.indexerDownloadShares">
+                        <td>{{ indexerDownloads.indexerName }}</td>
+                        <td>{{ indexerDownloads.total | number: 0}}</td>
+                        <td>{{ indexerDownloads.share | number: 0 }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart>
+                    <nvd3 options="indexerDownloadSharesChart.options" data="indexerDownloadSharesChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+
+
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">NZB downloads per age (in 100 day steps, all downloads)</div>
-            <tab-or-chart display="chart">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadsPerAgeStats" switch-size="mini" ng-change="onStatsSwitchToggle('downloadsPerAgeStats')">
+                </span>
+                NZB downloads per age (in 100 day steps, all downloads)
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadsPerAgeStats">
                 <table class="table">
                     <tbody>
                     <tr>
                         <td>Average age</td>
-                        <td>{{ downloadsPerAgeStats.averageAge}}</td>
+                        <td>{{ stats.downloadsPerAgeStats.averageAge}}</td>
                     </tr>
                     <tr>
                         <td>% older than 1000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder1000 | number : 1}}</td>
+                        <td>{{ stats.downloadsPerAgeStats.percentOlder1000 | number : 1}}</td>
                     </tr>
                     <tr>
                         <td>% older than 2000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder2000 | number : 1}}</td>
+                        <td>{{ stats.downloadsPerAgeStats.percentOlder2000 | number : 1}}</td>
                     </tr>
                     <tr>
                         <td>% older than 3000 days</td>
-                        <td>{{ downloadsPerAgeStats.percentOlder3000 | number : 1}}</td>
+                        <td>{{ stats.downloadsPerAgeStats.percentOlder3000 | number : 1}}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -186,19 +208,23 @@
                 </chart>
             </tab-or-chart>
         </div>
-        <div class="col-md-1"></div>
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Successful downloads per indexer <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
-                                                                                                uib-tooltip="Only works if user scripts report the actual download result of a NZB's content"></span>
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.successfulDownloadsPerIndexer" switch-size="mini" ng-change="onStatsSwitchToggle('successfulDownloadsPerIndexer')">
+                    </span>
+                Successful downloads per indexer <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
+                                                       uib-tooltip="Only works if user scripts report the actual download result of a NZB's content"></span>
             </div>
-            <tab-or-chart display="chart">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.successfulDownloadsPerIndexer">
                 <table class="table">
                     <thead>
                     <th>Indexer</th>
                     <th>% of downloads successful</th>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in successfulDownloadsPerIndexer">
+                    <tr ng-repeat="stat in stats.successfulDownloadsPerIndexer">
                         <td>{{ stat.indexerName}}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                     </tr>
@@ -214,10 +240,16 @@
     </div>
 
 
-    <div class="row" ng-show="searchSharesPerUserOrIp">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Searches per username / IP</div>
-            <tab-or-chart display="chart">
+    <div class="row">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchSharesPerUserOrIp" switch-size="mini" ng-change="onStatsSwitchToggle('searchSharesPerUserOrIp')">
+                    </span>
+
+                Searches per username / IP
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchSharesPerUserOrIp">
                 <table class="table">
                     <thead>
                     <tr>
@@ -227,7 +259,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in searchSharesPerUserOrIp">
+                    <tr ng-repeat="stat in stats.searchSharesPerUserOrIp">
                         <td>{{ stat.userOrIp }}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                         <td>{{ stat.count }}</td>
@@ -240,10 +272,15 @@
                 </chart>
             </tab-or-chart>
         </div>
-        <div class="col-md-1"></div>
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Downloads per username / IP</div>
-            <tab-or-chart display="chart">
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadSharesPerUserOrIp" switch-size="mini" ng-change="onStatsSwitchToggle('downloadSharesPerUserOrIp')">
+                </span>
+                Downloads per username / IP
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadSharesPerUserOrIp">
                 <table class="table">
                     <thead>
                     <tr>
@@ -269,9 +306,14 @@
     </div>
 
     <div class="row">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">API Searches per user agent</div>
-            <tab-or-chart display="chart">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.userAgentShares" switch-size="mini" ng-change="onStatsSwitchToggle('userAgentShares')">
+                </span>
+                API Searches per user agent
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.userAgentShares">
                 <table class="table">
                     <thead>
                     <tr>
@@ -281,7 +323,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in userAgentShares">
+                    <tr ng-repeat="stat in stats.userAgentShares">
                         <td>{{ stat.userAgent }}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                         <td>{{ stat.count }}</td>
@@ -294,15 +336,20 @@
                 </chart>
             </tab-or-chart>
         </div>
-        <div class="col-md-1"></div>
+
 
     </div>
 
 
     <div class="row">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Searches per day of week</div>
-            <tab-or-chart display="chart">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchesPerDayOfWeek" switch-size="mini" ng-change="onStatsSwitchToggle('searchesPerDayOfWeek')">
+                </span>
+                Searches per day of week
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchesPerDayOfWeek">
                 <table class="table">
                     <thead>
                     <tr>
@@ -311,7 +358,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in searchesPerDayOfWeek">
+                    <tr ng-repeat="stat in stats.searchesPerDayOfWeek">
                         <td>{{ stat.day }}</td>
                         <td>{{ stat.count }}</td>
                     </tr>
@@ -323,11 +370,16 @@
                 </chart>
             </tab-or-chart>
         </div>
-        <div class="col-md-1"></div>
 
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">Searches per hour of day</div>
-            <tab-or-chart display="chart">
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchesPerHourOfDay" switch-size="mini" ng-change="onStatsSwitchToggle('searchesPerHourOfDay')">
+                </span>
+                Searches per hour of day
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchesPerHourOfDay">
                 <table>
                     <table class="table">
                         <thead>
@@ -337,7 +389,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="stat in searchesPerHourOfDay">
+                        <tr ng-repeat="stat in stats.searchesPerHourOfDay">
                             <td>{{ stat.hour }}</td>
                             <td>{{ stat.count }}</td>
                         </tr>
@@ -355,9 +407,14 @@
 
 
     <div class="row">
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">NZB downloads per day of week</div>
-            <tab-or-chart display="chart">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadsPerDayOfWeek" switch-size="mini" ng-change="onStatsSwitchToggle('downloadsPerDayOfWeek')">
+                </span>
+                NZB downloads per day of week
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadsPerDayOfWeek">
                 <table class="table">
                     <thead>
                     <tr>
@@ -366,7 +423,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in downloadsPerDayOfWeek">
+                    <tr ng-repeat="stat in stats.downloadsPerDayOfWeek">
                         <td>{{ stat.day }}</td>
                         <td>{{ stat.count }}</td>
                     </tr>
@@ -378,11 +435,16 @@
                 </chart>
             </tab-or-chart>
         </div>
-        <div class="col-md-1"></div>
 
-        <div class="col-md-10">
-            <div style="margin-top:10px" class="caption">NZB downloads per hour of day</div>
-            <tab-or-chart display="chart">
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadsPerHourOfDay" switch-size="mini" ng-change="onStatsSwitchToggle('downloadsPerHourOfDay')">
+                </span>
+                NZB downloads per hour of day
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadsPerHourOfDay">
                 <table>
                     <table class="table">
                         <thead>
@@ -392,7 +454,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="stat in downloadsPerHourOfDay">
+                        <tr ng-repeat="stat in stats.downloadsPerHourOfDay">
                             <td>{{ stat.hour }}</td>
                             <td>{{ stat.count }}</td>
                         </tr>

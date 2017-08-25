@@ -64,33 +64,59 @@ public class Stats {
 
         ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
 
-        executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))); //7151ms
-        executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))); //7307ms
-        executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))); //3140ms
-
-        executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest))); //347ms
-        executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest))); //19ms
-
-        executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest))); //242ms
-        executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest))); //22ms
-
-        executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest)));
-
-        executor.submit(() -> statsResponse.setDownloadsPerAge(downloadsPerAge()));
-        executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats()));
-
-        executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
-
-        executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest)));
-
-
-        BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
-        if (countDownloadsWithData.intValue() > 0) {
-            executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
+        if (statsRequest.isAvgResponseTimes()) {
+            executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))); //7151ms
         }
-        BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
-        if (countSearchesWithData.intValue() > 0) {
-            executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
+        if (statsRequest.isIndexerApiAccessStats()) {
+            executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))); //7307ms
+        }
+        if (statsRequest.isAvgIndexerSearchResultsShares()) {
+            executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))); //3140ms
+        }
+
+        if (statsRequest.isSearchesPerDayOfWeek()) {
+            executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest))); //347ms
+        }
+        if (statsRequest.isDownloadsPerDayOfWeek()) {
+            executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest))); //19ms
+        }
+
+        if (statsRequest.isSearchesPerHourOfDay()) {
+            executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest))); //242ms
+        }
+        if (statsRequest.isDownloadsPerHourOfDay()) {
+            executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest))); //22ms
+        }
+
+        if (statsRequest.isIndexerDownloadShares()) {
+            executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest)));
+        }
+
+
+        if (statsRequest.isDownloadsPerAgeStats()) {
+            executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats()));
+        }
+
+        if (statsRequest.isSuccessfulDownloadsPerIndexer()) {
+            executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
+        }
+
+        if (statsRequest.isUserAgentShares()) {
+            executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest)));
+        }
+
+
+        if (statsRequest.isDownloadSharesPerUserOrIp()) {
+            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData.intValue() > 0) {
+                executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
+            }
+        }
+        if (statsRequest.isSearchSharesPerUserOrIp()) {
+            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
+            if (countSearchesWithData.intValue() > 0) {
+                executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
+            }
         }
 
         executor.shutdown();
@@ -363,7 +389,7 @@ public class Stats {
 
     List<CountPerDayOfWeek> countPerDayOfWeek(final String table, final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculating count for hour of day for table {}", table);
+        logger.debug("Calculating count for day of week for table {}", table);
         String sql = "SELECT \n" +
                 "  DAYOFWEEK(time) AS dayofweek, \n" +
                 "  count(*)        AS counter \n" +
@@ -391,13 +417,14 @@ public class Stats {
             int indexInList = (index + 5) % 7;
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
-        logger.debug("Calculated count of day for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug("Calculated count for day of week for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return dayOfWeekCounts;
     }
 
 
     List<CountPerHourOfDay> countPerHourOfDay(final String table, final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculing count for hour of day for table {}", table);
         String sql = "SELECT \n" +
                 "  HOUR(time) AS hourofday, \n" +
                 "  count(*)        AS counter \n" +
@@ -451,7 +478,7 @@ public class Stats {
 
     List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculating downloadsOrSearches for table {}", tablename);
+        logger.debug("Calculating download or search shares for table {}", tablename);
         String sql = "" +
                 "SELECT\n" +
                 "  USERNAME_OR_IP,\n" +
@@ -476,7 +503,7 @@ public class Stats {
             result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
-        logger.debug("Calculated downloadsOrSearches for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug("Calculated download or search shares for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -565,6 +592,8 @@ public class Stats {
         result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
         result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
         logger.debug("Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+        result.setDownloadsPerAge(downloadsPerAge());
         return result;
     }
 

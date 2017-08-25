@@ -5,7 +5,6 @@ import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
 import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
-import org.nzbhydra.historystats.stats.DownloadPerAge;
 import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
 import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
 import org.nzbhydra.historystats.stats.IndexerDownloadShare;
@@ -14,7 +13,6 @@ import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
 import org.nzbhydra.historystats.stats.UserAgentShare;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,25 +23,24 @@ public class StatsResponse {
 
     private List<IndexerApiAccessStatsEntry> indexerApiAccessStats;
 
-    private List<IndexerSearchResultsShare> avgIndexerSearchResultsShares = new ArrayList<>();
+    private List<IndexerSearchResultsShare> avgIndexerSearchResultsShares;
 
-    private List<AverageResponseTime> avgResponseTimes = new ArrayList<>();
+    private List<AverageResponseTime> avgResponseTimes;
 
-    private List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
+    private List<IndexerDownloadShare> indexerDownloadShares;
 
-    private List<CountPerDayOfWeek> downloadsPerDayOfWeek = new ArrayList<>();
-    private List<CountPerHourOfDay> downloadsPerHourOfDay = new ArrayList<>();
+    private List<CountPerDayOfWeek> downloadsPerDayOfWeek;
+    private List<CountPerHourOfDay> downloadsPerHourOfDay;
 
-    private List<CountPerDayOfWeek> searchesPerDayOfWeek = new ArrayList<>();
-    private List<CountPerHourOfDay> searchesPerHourOfDay = new ArrayList<>();
+    private List<CountPerDayOfWeek> searchesPerDayOfWeek;
+    private List<CountPerHourOfDay> searchesPerHourOfDay;
 
-    private List<DownloadPerAge> downloadsPerAge = new ArrayList<>();
-    private DownloadPerAgeStats downloadsPerAgeStats = new DownloadPerAgeStats();
-    private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer = new ArrayList<>();
+    private DownloadPerAgeStats downloadsPerAgeStats;
+    private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer;
     private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp;
     private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp;
 
-    private List<UserAgentShare> userAgentShares = new ArrayList<>();
+    private List<UserAgentShare> userAgentShares;
 
     private int numberOfConfiguredIndexers;
     private int numberOfEnabledIndexers;
