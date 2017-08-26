@@ -33,8 +33,12 @@ public class CategoriesConfig extends ValidatingConfig {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
                 errors.add("Category " + category.getName() + " does not have any newznab categories configured");
             }
-            checkRegex(errors, category.getRequiredRegex(), "Category " + category.getName() + " uses an invalid required regex");
-            checkRegex(errors, category.getForbiddenRegex(), "Category " + category.getName() + " uses an invalid forbidden regex");
+            if (category.getRequiredRegex().isPresent()) {
+                checkRegex(errors, category.getRequiredRegex().get(), "Category " + category.getName() + " uses an invalid required regex");
+            }
+            if (category.getForbiddenRegex().isPresent()) {
+                checkRegex(errors, category.getForbiddenRegex().get(), "Category " + category.getName() + " uses an invalid forbidden regex");
+            }
         }
         List<Integer> allNewznabCategories = categories.stream().flatMap(x -> x.getNewznabCategories().stream()).collect(Collectors.toList());
         List<Integer> duplicateNewznabCategories = allNewznabCategories.stream().filter(x -> Collections.frequency(allNewznabCategories, 1) > 1).collect(Collectors.toList());

@@ -167,9 +167,7 @@ public class NzbHandler {
             }
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));
-            if (main.getApiKey().isPresent()) {
-                builder.queryParam("apikey", main.getApiKey().get());
-            }
+            builder.queryParam("apikey", main.getApiKey());
         }
         return builder.toUriString();
     }

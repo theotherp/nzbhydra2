@@ -99,7 +99,7 @@ public class ExternalApi {
 
         logger.info("Received external {}API call: {}", (isTorznabCall(request) ? "torznab " : ""), params);
 
-        if (!noApiKeyNeeded && (!configProvider.getBaseConfig().getMain().getApiKey().isPresent() || !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey().get()))) {
+        if (!noApiKeyNeeded && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }

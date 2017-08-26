@@ -264,7 +264,6 @@ main:
   proxyUsername: null
   proxyPassword: null
   repositoryBase: "https://github.com/theotherp"
-  secret: "TODO generate"
   showNews: true
   shutdownForRestart: false
   ssl: false

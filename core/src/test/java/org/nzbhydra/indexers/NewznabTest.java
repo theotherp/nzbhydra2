@@ -383,23 +383,6 @@ public class NewznabTest {
     }
 
     @Test
-    public void shouldNotUseMoreThan12WordsForNzbGeek() throws Exception {
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
-
-        testee.config.setHost("http://www.nzbgeek.com");
-        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"));
-        UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
-
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=1 2 3 4 5 6 7 8 9 10 11 12").build(), actual);
-
-        searchRequest.setQuery("a b c d");
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("x", "y", "z"));
-        assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.nzbgeek.com/api?apikey&t=search&q=a b c d 1 2 3 4 5 6 7 8").build(), testee.buildSearchUrl(searchRequest, null, null).build());
-    }
-
-    @Test
     public void shouldCreateSearchResultItem() throws Exception {
         RssItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "0"));

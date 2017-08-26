@@ -37,7 +37,7 @@ public class DogNzb extends Newznab {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
-            return (config.getSearchModuleType() == SearchModuleType.NEWZNAB && config.getHost().toLowerCase().contains("dognzb"));
+            return config != null && config.getSearchModuleType() == SearchModuleType.NEWZNAB && config.getHost().toLowerCase().contains("dognzb");
         }
 
         @Override

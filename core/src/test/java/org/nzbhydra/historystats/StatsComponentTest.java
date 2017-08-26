@@ -84,10 +84,12 @@ public class StatsComponentTest {
         indexerConfig1.setName("indexer1");
         indexerConfig1.setSearchModuleType(SearchModuleType.NEWZNAB);
         indexerConfig1.setEnabled(true);
+        indexerConfig1.setHost("somehost");
         indexerConfig2 = new IndexerConfig();
         indexerConfig2.setName("indexer2");
         indexerConfig2.setSearchModuleType(SearchModuleType.NEWZNAB);
         indexerConfig2.setEnabled(false);
+        indexerConfig2.setHost("somehost");
         searchModuleConfigProvider.setIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
         searchModuleProvider.loadIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
         indexer1 = indexerRepository.findByName("indexer1");
@@ -137,7 +139,8 @@ public class StatsComponentTest {
         searchRepository.save(Arrays.asList(searchFriday, searchThursday1, searchThursday2, searchSunday));
 
 
-        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("SEARCH", new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS), true));
+        StatsRequest statsRequest = new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS), true);
+        List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("SEARCH", statsRequest);
         assertEquals(7, result.size());
 
         assertEquals("Thu", result.get(3).getDay());
@@ -343,7 +346,9 @@ public class StatsComponentTest {
         }
 
 
-        List<IndexerSearchResultsShare> result = stats.indexerSearchShares(new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true));
+        StatsRequest statsRequest = new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true);
+        statsRequest.setAvgIndexerSearchResultsShares(true);
+        List<IndexerSearchResultsShare> result = stats.indexerSearchShares(statsRequest);
         assertEquals(2, result.size());
         assertEquals("indexer1", result.get(0).getIndexerName());
         assertNotNull(result.get(0).getTotalShare());

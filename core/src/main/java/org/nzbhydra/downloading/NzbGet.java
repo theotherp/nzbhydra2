@@ -1,6 +1,5 @@
 package org.nzbhydra.downloading;
 
-import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
@@ -34,8 +33,8 @@ public class NzbGet extends Downloader {
             UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl());
             builder.path("jsonrpc");
             Map<String, String> headers = new HashMap<>();
-            if (!Strings.isNullOrEmpty(downloaderConfig.getUsername()) && !Strings.isNullOrEmpty(downloaderConfig.getPassword())) {
-                headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername() + ":" + downloaderConfig.getPassword()).getBytes()));
+            if (downloaderConfig.getUsername().isPresent() && downloaderConfig.getPassword().isPresent()) {
+                headers.put("Authorization", "Basic " + BaseEncoding.base64().encode((downloaderConfig.getUsername().get() + ":" + downloaderConfig.getPassword().get()).getBytes()));
             }
             client = new JsonRpcHttpClient(builder.build().toUri().toURL(), headers);
         } catch (MalformedURLException e) {

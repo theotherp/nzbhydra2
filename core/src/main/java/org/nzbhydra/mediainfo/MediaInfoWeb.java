@@ -1,5 +1,6 @@
 package org.nzbhydra.mediainfo;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -74,8 +76,9 @@ public class MediaInfoWeb {
             MediaInfo mediaInfo = infoProvider.convert(tvRageId, IdType.TVRAGE);
             if (mediaInfo != null && mediaInfo.getTvMazeId().isPresent()) {
                 url = "https://www.tvmaze.com/shows/" + mediaInfo.getTvMazeId().get();
-                if (configProvider.getBaseConfig().getMain().getDereferer().isPresent()) {
-                    url = configProvider.getBaseConfig().getMain().getDereferer().get().replace("$s", url);
+                Optional<String> derefererOptional = configProvider.getBaseConfig().getMain().getDereferer();
+                if (derefererOptional.isPresent() && !Strings.isNullOrEmpty(derefererOptional.get())) {
+                    url = derefererOptional.get().replace("$s", url);
                 }
             }
         } catch (InfoProviderException e) {

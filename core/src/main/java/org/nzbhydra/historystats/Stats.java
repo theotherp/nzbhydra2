@@ -424,7 +424,7 @@ public class Stats {
 
     List<CountPerHourOfDay> countPerHourOfDay(final String table, final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculing count for hour of day for table {}", table);
+        logger.debug("Calculating count for hour of day for table {}", table);
         String sql = "SELECT \n" +
                 "  HOUR(time) AS hourofday, \n" +
                 "  count(*)        AS counter \n" +

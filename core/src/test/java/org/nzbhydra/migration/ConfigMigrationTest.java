@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -129,8 +128,8 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getDownloadType(), is(DownloadType.NZB));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getIconCssClass(), is("someClass"));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUrl(), is("http://127.0.0.1:6789"));
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUsername(), is("nzbget"));
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getPassword(), is("nzbget"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getUsername().get(), is("nzbget"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getPassword().get(), is("nzbget"));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).isEnabled(), is(true));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAccessType(), is(NzbAccessType.PROXY));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getNzbAddingType(), is(NzbAddingType.SEND_LINK));
@@ -144,8 +143,8 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAddingType(), is(NzbAddingType.UPLOAD));
 
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUrl(), is("https://127.0.0.1:6789"));
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUsername(), is("nzbgetx"));
-        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getPassword(), is("tegbzn6789x"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUsername().get(), is("nzbgetx"));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getPassword().get(), is("tegbzn6789x"));
 
         assertThat(result.getMigratedConfig().getIndexers().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getName(), is("Binsearch"));
@@ -189,7 +188,7 @@ public class ConfigMigrationTest {
         assertThat(indexerConfigsCaptor.getValue().getName(), is("Drunken Slug"));
 
         //TODO Test that optionals return notPresent with "" in old config
-        assertThat(result.getMigratedConfig().getMain().getApiKey().get(), is("apikey"));
+        assertThat(result.getMigratedConfig().getMain().getApiKey(), is("apikey"));
         assertThat("External URL should not be migrated because the old one wouldn't match", result.getMigratedConfig().getMain().getExternalUrl().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
         assertThat(result.getMigratedConfig().getMain().getProxyType(), is(ProxyType.SOCKS));
@@ -200,8 +199,8 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getPort(), is(5076));
         assertThat(result.getMigratedConfig().getMain().isShutdownForRestart(), is(true));
         assertThat(result.getMigratedConfig().getMain().isSsl(), is(true));
-        assertThat(result.getMigratedConfig().getMain().getSslcert().get(), is("nzbhydra.crt"));
-        assertThat(result.getMigratedConfig().getMain().getSslkey().get(), is("nzbhydra.key"));
+        assertThat(result.getMigratedConfig().getMain().getSslcert(), is("nzbhydra.crt"));
+        assertThat(result.getMigratedConfig().getMain().getSslkey(), is("nzbhydra.key"));
         assertThat(result.getMigratedConfig().getMain().isStartupBrowser(), is(true));
         assertThat(result.getMigratedConfig().getMain().getTheme(), is("grey"));
         assertThat(result.getMigratedConfig().getMain().getUrlBase().isPresent(), is(false));
@@ -215,7 +214,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().getForbiddenGroups(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenPosters(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getForbiddenWords(), is(empty()));
-        assertThat(result.getMigratedConfig().getSearching().getForbiddenRegex(), is(nullValue()));
+        assertThat(result.getMigratedConfig().getSearching().getForbiddenRegex().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getSearching().getGenerateQueries(), is(SearchSourceRestriction.NONE));
         assertThat(result.getMigratedConfig().getSearching().getIdFallbackToQueryGeneration(), is(SearchSourceRestriction.INTERNAL));
         assertThat(result.getMigratedConfig().getSearching().isIgnorePassworded(), is(true));
@@ -223,10 +222,10 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().getMaxAge().get(), is(2000));
         assertThat(result.getMigratedConfig().getSearching().getNzbAccessType(), is(NzbAccessType.REDIRECT));
         assertThat(result.getMigratedConfig().getSearching().getRemoveTrailing(), hasItems("Spanish", "-German", ".rar"));
-        assertThat(result.getMigratedConfig().getSearching().getRequiredRegex(), is(nullValue()));
+        assertThat(result.getMigratedConfig().getSearching().getRequiredRegex().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getSearching().getRequiredWords(), is(empty()));
         assertThat(result.getMigratedConfig().getSearching().getTimeout(), is(20));
-        assertThat(result.getMigratedConfig().getSearching().getUserAgent(), is("Chrome"));
+        assertThat(result.getMigratedConfig().getSearching().getUserAgent().get(), is("Chrome"));
 
         assertThat(result.getMigratedConfig().getCategoriesConfig().isEnableCategorySizes(), is(true));
         boolean animeChecked = false;
@@ -235,9 +234,9 @@ public class ConfigMigrationTest {
             if (category.getName().equals("Anime")) {
                 animeChecked = true;
                 assertThat(category.getApplyRestrictionsType(), is(SearchSourceRestriction.INTERNAL));
-                assertThat(category.getForbiddenRegex(), is("forbiddenRegex"));
+                assertThat(category.getForbiddenRegex().get(), is("forbiddenRegex"));
                 assertThat(category.getForbiddenWords(), contains("forbidden", "words"));
-                assertThat(category.getRequiredRegex(), is("requiredRegex"));
+                assertThat(category.getRequiredRegex().get(), is("requiredRegex"));
                 assertThat(category.getRequiredWords(), contains("required", "words"));
                 assertThat(category.getMinSizePreset(), is(11));
                 assertThat(category.getMaxSizePreset(), is(12));

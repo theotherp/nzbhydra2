@@ -5944,7 +5944,8 @@ function ConfigFields($injector) {
                             type: 'horizontalApiKeyInput',
                             templateOptions: {
                                 label: 'API key',
-                                help: 'Alphanumeric only'
+                                help: 'Alphanumeric only',
+                                required: true
                             },
                             validators: {
                                 apiKey: regexValidator(/^[a-zA-Z0-9]*$/, "API key must only contain numbers and digits", false)
@@ -5956,7 +5957,6 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                required: true,
                                 help: 'Redirect external links to hide your instance. Insert $s for target URL.'
                             }
                         },

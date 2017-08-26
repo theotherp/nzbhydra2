@@ -81,7 +81,7 @@ public class ResultAcceptor {
             //Globally configured
             boolean applyWordAndRegexRestrictions = baseConfig.getSearching().getApplyRestrictions() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), baseConfig.getSearching().getApplyRestrictions().name());
             if (applyWordAndRegexRestrictions) {
-                if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex(), baseConfig.getSearching().getForbiddenRegex())) {
+                if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
                 if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item)) {
@@ -95,7 +95,7 @@ public class ResultAcceptor {
             //Per category
             applyWordAndRegexRestrictions = item.getCategory().getApplyRestrictionsType() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getApplyRestrictionsType().name());
             if (applyWordAndRegexRestrictions) {
-                if (!checkRegexes(item, reasonsForRejection, searchRequest.getCategory().getRequiredRegex(), searchRequest.getCategory().getForbiddenRegex())) {
+                if (!checkRegexes(item, reasonsForRejection, searchRequest.getCategory().getRequiredRegex().orElse(null), searchRequest.getCategory().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
                 if (!checkRequiredWords(reasonsForRejection, searchRequest.getCategory().getRequiredWords(), item)) {

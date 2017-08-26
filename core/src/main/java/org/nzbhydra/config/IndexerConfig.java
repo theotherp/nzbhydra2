@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
@@ -71,7 +72,7 @@ public class IndexerConfig extends ValidatingConfig {
     }
 
     public Optional<String> getPassword() {
-        return Optional.ofNullable(password);
+        return Optional.ofNullable(Strings.emptyToNull(password));
     }
 
     public Optional<Integer> getScore() {
@@ -83,11 +84,11 @@ public class IndexerConfig extends ValidatingConfig {
     }
 
     public Optional<String> getUsername() {
-        return Optional.ofNullable(username);
+        return Optional.ofNullable(Strings.emptyToNull(username));
     }
 
     public Optional<String> getUserAgent() {
-        return Optional.ofNullable(userAgent);
+        return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
     @Override

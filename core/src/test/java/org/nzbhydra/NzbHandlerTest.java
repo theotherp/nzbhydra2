@@ -45,19 +45,19 @@ public class NzbHandlerTest {
 
     @Test
     public void shouldBuildCorrectNzbLink() {
-        baseConfig.getMain().setApiKey(null);
+        baseConfig.getMain().setApiKey("apikey");
         baseConfig.getMain().setSsl(false);
         baseConfig.getMain().setHost("0.0.0.0");
         baseConfig.getMain().setPort(1234);
 
         baseConfig.getMain().setExternalUrl("http://www.domain.com");
         baseConfig.getMain().setUseLocalUrlForApiAccess(false);
-        assertEquals("http://www.domain.com/getnzb/api/123", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
+        assertEquals("http://www.domain.com/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
         baseConfig.getMain().setUseLocalUrlForApiAccess(true);
-        assertEquals("http://127.0.0.1:1234/getnzb/api/123", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
+        assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
-        baseConfig.getMain().setApiKey("apikey");
+
         assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
         assertEquals("http://127.0.0.1:1234/getnzb/user/123", testee.getNzbDownloadLink(123L, true, DownloadType.NZB));

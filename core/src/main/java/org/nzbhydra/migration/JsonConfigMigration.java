@@ -97,8 +97,6 @@ public class JsonConfigMigration {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
 
-        //Empty strings should be considered null
-        oldConfigJson = oldConfigJson.replace("\"\"", "null");
         OldConfig oldConfig = mapper.readValue(oldConfigJson, OldConfig.class);
 
         BaseConfig newConfig = configProvider.getBaseConfig();

@@ -1,8 +1,11 @@
 package org.nzbhydra.config;
 
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.Optional;
 
 @Data
 @ConfigurationProperties(prefix = "downloaders")
@@ -27,6 +30,14 @@ public class DownloaderConfig extends ValidatingConfig {
 
     public DownloaderType getDownloaderType() {
         return downloaderType;
+    }
+
+    public Optional<String> getUsername() {
+        return Optional.ofNullable(Strings.emptyToNull(username));
+    }
+
+    public Optional<String> getPassword() {
+        return Optional.ofNullable(Strings.emptyToNull(password));
     }
 
     @Override

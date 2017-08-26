@@ -30,9 +30,10 @@ public class StatsRequest {
     private boolean searchSharesPerUserOrIp;
     private boolean userAgentShares;
 
-    public StatsRequest(Instant before, Instant after, boolean includeDisabled) {
+    public StatsRequest(Instant after, Instant before, boolean includeDisabled) {
         this.before = before;
         this.after = after;
         this.includeDisabled = includeDisabled;
     }
+
 }

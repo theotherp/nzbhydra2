@@ -1,5 +1,6 @@
 package org.nzbhydra.config;
 
+import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.searching.SearchType;
@@ -8,6 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 @ConfigurationProperties(prefix = "categories")
@@ -51,6 +53,14 @@ public class Category {
 
     public Category(String name) {
         this.name = name;
+    }
+
+    public Optional<String> getForbiddenRegex() {
+        return Optional.ofNullable(Strings.emptyToNull(forbiddenRegex));
+    }
+
+    public Optional<String> getRequiredRegex() {
+        return Optional.ofNullable(Strings.emptyToNull(requiredRegex));
     }
 
     public boolean deepEquals(Category other) {

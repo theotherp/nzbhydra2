@@ -78,9 +78,9 @@ public class JsonConfigMigrationTest {
         assertThat(category.getNewznabCategories(), equalTo(Arrays.asList(1000, 2000)));
         assertThat(category.getApplyRestrictionsType(), is(SearchSourceRestriction.INTERNAL));
         assertThat(category.getIgnoreResultsFrom(), is(SearchSourceRestriction.API));
-        assertThat(category.getForbiddenRegex(), is("someForbiddenRegex"));
+        assertThat(category.getForbiddenRegex().get(), is("someForbiddenRegex"));
         assertThat(category.getForbiddenWords(), equalTo(Arrays.asList("some", "forbidden", "words")));
-        assertThat(category.getRequiredRegex(), is("someRequiredRegex"));
+        assertThat(category.getRequiredRegex().get(), is("someRequiredRegex"));
         assertThat(category.getRequiredWords(), equalTo(Arrays.asList("some", "required", "words")));
         assertThat(category.getMinSizePreset(), is(100));
         assertThat(category.getMaxSizePreset(), is(1000));
@@ -104,9 +104,9 @@ public class JsonConfigMigrationTest {
         oldCat.setForbiddenWords(null);
         testee.migrateCategories(oldCategories, newCategories);
         category = newCategories.getCategories().get(0);
-        assertThat(category.getForbiddenRegex(), is(nullValue()));
+        assertThat(category.getForbiddenRegex().isPresent(), is(false));
         assertThat(category.getForbiddenWords(), hasSize(0));
-        assertThat(category.getRequiredRegex(), is(nullValue()));
+        assertThat(category.getRequiredRegex().isPresent(), is(false));
         assertThat(category.getRequiredWords(), hasSize(0));
         assertThat(category.getMinSizePreset(), is(nullValue()));
         assertThat(category.getMaxSizePreset(), is(nullValue()));

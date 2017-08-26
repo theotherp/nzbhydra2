@@ -101,7 +101,6 @@ public class BaseConfig extends ValidatingConfig {
             logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());
             Random random = new Random();
             main.setApiKey(new BigInteger(130, random).toString(32));
-            main.setSecret(new BigInteger(130, random).toString(32));
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         save();

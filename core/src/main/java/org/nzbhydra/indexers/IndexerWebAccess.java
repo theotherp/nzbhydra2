@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.io.BaseEncoding;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -27,12 +28,17 @@ public class IndexerWebAccess {
     private ConfigProvider configProvider;
 
 
-    protected <T> T get(URI uri, Class<T> responseType, IndexerConfig config) throws IndexerAccessException {
-        int timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        String userAgent = config.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent());
+    protected <T> T get(URI uri, Class<T> responseType, IndexerConfig indexerConfig) throws IndexerAccessException {
+        int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+        String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("User-Agent", userAgent);
+
+        if (indexerConfig.getUsername().isPresent() && indexerConfig.getPassword().isPresent()) {
+            headers.add("Authorization", "Basic " + BaseEncoding.base64().encode((indexerConfig.getUsername().get() + ":" + indexerConfig.getPassword().get()).getBytes()));
+        }
+
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
         try {

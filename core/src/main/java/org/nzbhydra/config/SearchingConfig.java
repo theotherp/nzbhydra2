@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.google.common.base.Strings;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -48,6 +49,18 @@ public class SearchingConfig extends ValidatingConfig {
 
     public Optional<Integer> getMaxAge() {
         return Optional.ofNullable(maxAge);
+    }
+
+    public Optional<String> getForbiddenRegex() {
+        return Optional.ofNullable(Strings.emptyToNull(forbiddenRegex));
+    }
+
+    public Optional<String> getRequiredRegex() {
+        return Optional.ofNullable(Strings.emptyToNull(requiredRegex));
+    }
+
+    public Optional<String> getUserAgent() {
+        return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
     @Override

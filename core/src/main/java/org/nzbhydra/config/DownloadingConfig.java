@@ -1,6 +1,6 @@
 package org.nzbhydra.config;
 
-import joptsimple.internal.Strings;
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -44,6 +44,7 @@ public class DownloadingConfig extends ValidatingConfig {
     }
 
     public Optional<String> getSaveTorrentsTo() {
-        return Optional.ofNullable(saveTorrentsTo);
+        return Optional.ofNullable(Strings.emptyToNull(saveTorrentsTo));
     }
+
 }

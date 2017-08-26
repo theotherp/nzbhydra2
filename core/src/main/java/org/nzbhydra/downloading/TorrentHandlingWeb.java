@@ -89,12 +89,10 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/gettorrent/api/{guid}", produces = "application/x-bittorrent")
     public ResponseEntity<String> downloadTorrentWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey, HttpServletRequest request) throws WrongApiKeyException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        if (baseConfig.getMain().getApiKey().isPresent() && !"".equals(baseConfig.getMain().getApiKey().get())) {
-            if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey().get())) {
+        if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) {
                 logger.error("Received torrent API download call with wrong API key");
                 throw new WrongApiKeyException("Wrong api key");
             }
-        }
 
         return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
     }

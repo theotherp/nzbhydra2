@@ -42,7 +42,6 @@ public class MainConfig extends ValidatingConfig {
     private String proxyUsername;
     private String proxyPassword;
     private String repositoryBase;
-    private String secret;
     private boolean showNews = true;
     private boolean shutdownForRestart = false;
     @RestartRequired
@@ -64,27 +63,15 @@ public class MainConfig extends ValidatingConfig {
     private boolean welcomeShown = false;
 
     public Optional<String> getExternalUrl() {
-        return Optional.ofNullable(externalUrl);
-    }
-
-    public Optional<String> getApiKey() {
-        return Optional.ofNullable(apiKey);
-    }
-
-    public Optional<String> getSslcert() {
-        return Optional.ofNullable(sslcert);
-    }
-
-    public Optional<String> getSslkey() {
-        return Optional.ofNullable(sslkey);
+        return Optional.ofNullable(Strings.emptyToNull(externalUrl));
     }
 
     public Optional<String> getUrlBase() {
-        return Optional.ofNullable(urlBase);
+        return Optional.ofNullable(Strings.emptyToNull(urlBase));
     }
 
     public Optional<String> getDereferer() {
-        return Optional.ofNullable(dereferer);
+        return Optional.ofNullable(dereferer); //This must be returned as empty string so that the config can overwrite it
     }
 
     @Override
