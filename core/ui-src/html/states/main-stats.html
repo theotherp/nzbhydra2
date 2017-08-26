@@ -311,7 +311,8 @@
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
                     <input bs-switch type="checkbox" ng-model="foo.statsSwichState.userAgentShares" switch-size="mini" ng-change="onStatsSwitchToggle('userAgentShares')">
                 </span>
-                API Searches per user agent
+                API Searches per user agent <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                  uib-tooltip="Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'"></span>
             </div>
             <tab-or-chart display="chart" ng-show="foo.statsSwichState.userAgentShares">
                 <table class="table">

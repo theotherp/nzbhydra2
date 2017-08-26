@@ -2564,7 +2564,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         localStorageService.set("statsSwitchState", $scope.foo.statsSwichState);
 
         if ($scope.foo.statsSwichState[statId]) { //Stat was enabled, get only data for this stat
-            console.log("Retrieve stats for " + statId);
             updateStats(statId);
         }
 
@@ -2589,8 +2588,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         });
 
         blockUI.reset();
-
-
     }
 
     $scope.$watch('beforeDate', function () {
@@ -2631,7 +2628,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         });
 
 
-        var numberOfDisplayedIndexers = $scope.foo.includeDisabledIndexersInStats ? stats.numberOfConfiguredIndexers : stats.numberOfEnabledIndexers;
 
         if ($scope.stats.avgResponseTimes) {
             $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.stats.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
@@ -2640,76 +2636,94 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.avgResponseTimesChart.options.chart.height = Math.max($scope.stats.avgResponseTimes.length * 30, 350);
         }
 
-        $scope.resultsSharesChart = getResultsSharesChart();
+        if ($scope.stats.avgIndexerSearchResultsShares) {
+            $scope.resultsSharesChart = getResultsSharesChart();
 
-        var rotation = 30;
-        if (numberOfDisplayedIndexers > 30) {
-            rotation = 70;
+            var rotation = 30;
+            var numberOfDisplayedIndexers = $scope.foo.includeDisabledIndexersInStats ? stats.numberOfConfiguredIndexers : stats.numberOfEnabledIndexers;
+            if (numberOfDisplayedIndexers > 30) {
+                rotation = 70;
+            }
+            $scope.resultsSharesChart.options.chart.xAxis.rotateLabels = rotation;
+            $scope.resultsSharesChart.options.chart.height = 350;
         }
-        $scope.resultsSharesChart.options.chart.xAxis.rotateLabels = rotation;
-        $scope.resultsSharesChart.options.chart.height = 350;
 
-        $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
-        $scope.downloadsPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
 
-        $scope.downloadsPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.downloadsPerDayOfWeek, "day", "count", "Day of week", 'Downloads');
-        $scope.downloadsPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
+        if ($scope.stats.downloadsPerHourOfDay) {
+            $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
+            $scope.downloadsPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
+        }
 
-        $scope.searchesPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.searchesPerHourOfDay, "hour", "count", "Hour of day", 'Searches');
-        $scope.searchesPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
+        if($scope.stats.downloadsPerDayOfWeek){
+            $scope.downloadsPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.downloadsPerDayOfWeek, "day", "count", "Day of week", 'Downloads');
+            $scope.downloadsPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
+        }
 
-        $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
-        $scope.searchesPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
+        if($scope.stats.searchesPerHourOfDay){
+            $scope.searchesPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.searchesPerHourOfDay, "hour", "count", "Hour of day", 'Searches');
+            $scope.searchesPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
+        }
 
-        $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.stats.downloadsPerAgeStats.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
-        $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 45;
-        $scope.downloadsPerAgeChart.options.chart.showValues = false;
+        if($scope.stats.searchesPerDayOfWeek){
+            $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
+            $scope.searchesPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
+        }
 
-        $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.stats.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
-        $scope.successfulDownloadsPerIndexerChart.options.chart.xAxis.rotateLabels = 90;
-        $scope.successfulDownloadsPerIndexerChart.options.chart.yAxis.tickFormat = function (d) {
-            return $filter('number')(d, 0);
-        };
-        $scope.successfulDownloadsPerIndexerChart.options.chart.valueFormat = function (d) {
-            return $filter('number')(d, 0);
-        };
-        $scope.successfulDownloadsPerIndexerChart.options.chart.showValues = true;
+        if($scope.stats.downloadsPerAgeStats){
+            $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.stats.downloadsPerAgeStats.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
+            $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 45;
+            $scope.downloadsPerAgeChart.options.chart.showValues = false;
+        }
 
-        $scope.indexerDownloadSharesChart = {
-            options: {
-                chart: {
-                    type: 'pieChart',
-                    height: 500,
-                    x: function (d) {
-                        return d.indexerName;
-                    },
-                    y: function (d) {
-                        return d.share;
-                    },
-                    showLabels: true,
-                    donut: true,
-                    donutRatio: 0.35,
-                    duration: 500,
-                    labelThreshold: 0.03,
-                    labelSunbeamLayout: true,
-                    tooltip: {
-                        valueFormatter: function (d, i) {
-                            return $filter('number')(d, 2) + "%";
-                        }
-                    },
-                    legend: {
-                        margin: {
-                            top: 5,
-                            right: 35,
-                            bottom: 5,
-                            left: 0
+        if ($scope.stats.successfulDownloadsPerIndexer) {
+            $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.stats.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
+            $scope.successfulDownloadsPerIndexerChart.options.chart.xAxis.rotateLabels = 90;
+            $scope.successfulDownloadsPerIndexerChart.options.chart.yAxis.tickFormat = function (d) {
+                return $filter('number')(d, 0);
+            };
+            $scope.successfulDownloadsPerIndexerChart.options.chart.valueFormat = function (d) {
+                return $filter('number')(d, 0);
+            };
+            $scope.successfulDownloadsPerIndexerChart.options.chart.showValues = true;
+        }
+
+        if ($scope.stats.indexerDownloadShares) {
+            $scope.indexerDownloadSharesChart = {
+                options: {
+                    chart: {
+                        type: 'pieChart',
+                        height: 500,
+                        x: function (d) {
+                            return d.indexerName;
+                        },
+                        y: function (d) {
+                            return d.share;
+                        },
+                        showLabels: true,
+                        donut: true,
+                        donutRatio: 0.35,
+                        duration: 500,
+                        labelThreshold: 0.03,
+                        labelSunbeamLayout: true,
+                        tooltip: {
+                            valueFormatter: function (d, i) {
+                                return $filter('number')(d, 2) + "%";
+                            }
+                        },
+                        legend: {
+                            margin: {
+                                top: 5,
+                                right: 35,
+                                bottom: 5,
+                                left: 0
+                            }
                         }
                     }
-                }
-            },
-            data: $scope.stats.indexerDownloadShares
-        };
-        $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.stats.numberOfConfiguredIndexers : $scope.stats.numberOfEnabledIndexers) * 40, 350), 900);
+                },
+                data: $scope.stats.indexerDownloadShares
+            };
+            $scope.indexerDownloadSharesChart.options.chart.height = Math.min(Math.max(($scope.foo.includeDisabledIndexersInStats ? $scope.stats.numberOfConfiguredIndexers : $scope.stats.numberOfEnabledIndexers) * 40, 350), 900);
+        }
 
         function getSharesPieChart(data, height, xValue, yValue) {
             return {
@@ -2757,7 +2771,11 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.stats.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
         }
 
-        $scope.userAgentSharesChart = getSharesPieChart($scope.stats.userAgentShares, 300, "userAgent", "percentage");
+        if ($scope.stats.userAgentShares) {
+            $scope.userAgentSharesChart = getSharesPieChart($scope.stats.userAgentShares, 300, "userAgent", "percentage");
+            $scope.userAgentSharesChart.options.chart.legend.margin.bottom = 25;
+        }
+
     };
 
 
