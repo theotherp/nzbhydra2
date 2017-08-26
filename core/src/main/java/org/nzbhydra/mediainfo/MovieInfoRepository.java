@@ -10,4 +10,6 @@ public interface MovieInfoRepository extends JpaRepository<MovieInfo, Integer> {
     MovieInfo findByTmdbId(String tmdbId);
 
     MovieInfo findByTitle(String title);
+
+    MovieInfo findByImdbIdOrTmdbId(String imdbId, String tmdbId);
 }

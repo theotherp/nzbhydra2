@@ -32,6 +32,14 @@ public class MovieInfo {
         this.posterUrl = posterUrl;
     }
 
+    public MovieInfo(MediaInfo mediaInfo) {
+        this.imdbId = mediaInfo.getImdbId().orElse(null);
+        this.tmdbId = mediaInfo.getTmdbId().orElse(null);
+        this.title = mediaInfo.getTitle().orElse(null);
+        this.year = mediaInfo.getYear().orElse(null);
+        this.posterUrl = mediaInfo.getPosterUrl().orElse(null);
+    }
+
     public MovieInfo() {
     }
 }

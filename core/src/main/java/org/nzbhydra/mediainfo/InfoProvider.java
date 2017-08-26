@@ -131,15 +131,30 @@ public class InfoProvider {
     public List<MediaInfo> search(String title, IdType titleType) throws InfoProviderException {
         try {
             List<MediaInfo> infos;
+            //Always do a search and don't rely on the database, otherwise results might be outdated
             if (titleType == TVTITLE) {
                 List<TvMazeSearchResult> results = tvMazeHandler.search(title);
                 infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
+                for (MediaInfo mediaInfo : infos) {
+                    TvInfo tvInfo = new TvInfo(mediaInfo);
+                    if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(tvInfo.getTvrageId(), tvInfo.getTvmazeId(), tvInfo.getTvdbId()) == null) {
+                        tvInfoRepository.save(tvInfo);
+                    }
+                }
             } else if (titleType == MOVIETITLE) {
                 List<TmdbSearchResult> results = tmdbHandler.search(title, null);
                 infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
+                for (MediaInfo mediaInfo : infos) {
+                    MovieInfo movieInfo = new MovieInfo(mediaInfo);
+                    if (movieInfoRepository.findByImdbIdOrTmdbId(movieInfo.getImdbId(), movieInfo.getTmdbId()) == null) {
+                        movieInfoRepository.save(movieInfo);
+                    }
+                }
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
             }
+
+
             return infos;
         } catch (Exception e) {
             logger.error("Error while searching for " + titleType + " " + title, e);

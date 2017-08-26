@@ -1,21 +1,23 @@
-package org.nzbhydra.web;
+package org.nzbhydra.mediainfo;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.mediainfo.InfoProviderException;
-import org.nzbhydra.mediainfo.MediaInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -23,13 +25,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
-public class AutocompleteWeb {
+public class MediaInfoWeb {
 
-    private static final Logger logger = LoggerFactory.getLogger(AutocompleteWeb.class);
+    private static final Logger logger = LoggerFactory.getLogger(MediaInfoWeb.class);
 
 
     @Autowired
     private InfoProvider infoProvider;
+    @Autowired
+    private ConfigProvider configProvider;
+
 
     private LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
             .maximumSize(100)
@@ -58,6 +63,31 @@ public class AutocompleteWeb {
     @RequestMapping(value = "/internalapi/autocomplete/{type}/{input}", produces = "application/json")
     public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @PathVariable("input") String input) throws ExecutionException {
         return autocompleteCache.get(new CacheKey(type, input)); //TODO Handle provider not finding anything more graceful (don't log exception with stacktrace etc)
+    }
+
+
+    @RequestMapping(value = "/internalapi/redirectRid/{rid}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
+    public void redirectTvRageId(@PathVariable("rid") String tvRageId, HttpServletResponse response) throws IOException {
+
+        String url = null;
+        try {
+            MediaInfo mediaInfo = infoProvider.convert(tvRageId, IdType.TVRAGE);
+            if (mediaInfo != null && mediaInfo.getTvMazeId().isPresent()) {
+                url = "https://www.tvmaze.com/shows/" + mediaInfo.getTvMazeId().get();
+                if (configProvider.getBaseConfig().getMain().getDereferer().isPresent()) {
+                    url = configProvider.getBaseConfig().getMain().getDereferer().get().replace("$s", url);
+                }
+            }
+        } catch (InfoProviderException e) {
+            //Was already handled, will return error
+        }
+        if (url != null) {
+            logger.info("Redirecting to URL {}", url);
+            response.sendRedirect(url);
+        } else {
+            response.sendError(400, "Unable to find TVRage entry for ID " + tvRageId);
+        }
+
     }
 
     @Data

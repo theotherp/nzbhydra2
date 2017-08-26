@@ -108,13 +108,14 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         if (request.identifiers.length > 0) {
             var href;
             var key;
-            var value
+            var value;
             var pair = _.find(request.identifiers, function (pair) {
                 return pair.identifierKey === "TMDB"
             });
             if (angular.isDefined(pair)) {
                 key = "TMDB ID";
                 href = "https://www.themoviedb.org/movie/" + pair.identifierValue;
+                href = $filter("dereferer")(href);
                 value = pair.identifierValue;
             }
 
@@ -124,6 +125,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             if (angular.isDefined(pair)) {
                 key = "IMDB ID";
                 href = "https://www.imdb.com/title/tt" + pair.identifierValue;
+                href = $filter("dereferer")(href);
                 value = pair.identifierValue;
             }
 
@@ -133,6 +135,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             if (angular.isDefined(pair)) {
                 key = "TVDB ID";
                 href = "https://thetvdb.com/?tab=series&id=" + pair.identifierValue;
+                href = $filter("dereferer")(href);
                 value = pair.identifierValue;
             }
 
@@ -141,11 +144,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             });
             if (angular.isDefined(pair)) {
                 key = "TVRage ID";
-                href = "internalapi/redirect_rid?rid=" + pair.identifierValue;
+                href = "internalapi/redirectRid/" + pair.identifierValue;
                 value = pair.identifierValue;
             }
 
-            href = $filter("dereferer")(href);
             result.push(key + ": " + '<a target="_blank" href="' + href + '">' + value + "</a>");
         }
         if (request.season) {
