@@ -1,7 +1,9 @@
 <form class="form-inline" style="margin-bottom: 30px;">
-    <button ng-click="onClick(indexer, model)" class="btn btn-secondary indexer-button indexer-input btn-default" ng-class="{'config-incomplete': !indexer.configComplete, 'not-all-checked': (indexer.configComplete && !indexer.allCapsChecked)}"
+    <button ng-click="onClick(indexer, model)" class="btn btn-secondary indexer-button indexer-input btn-default"
+            ng-class="{'config-incomplete': !indexer.configComplete, 'not-all-checked': (indexer.configComplete && !indexer.allCapsChecked)}"
 
-    >{{ indexer.name }}</button>
+    >{{ indexer.name }}
+    </button>
     <input bs-switch type="checkbox" ng-model="indexer.enabled"/>
     <div class="form-group" style="margin-left: 10px">
         <div class="input-group">
