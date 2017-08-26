@@ -141,7 +141,7 @@ angular
             //BUtton
             name: 'checkCaps',
             templateUrl: 'button-check-caps.html',
-            controller: function ($scope, ConfigBoxService, ModalService) {
+            controller: function ($scope, ConfigBoxService, ModalService, growl) {
                 $scope.message = "";
                 $scope.uniqueId = hashCode($scope.model.name) + hashCode($scope.model.host);
 
@@ -151,14 +151,25 @@ angular
                 function showSuccess() {
                     angular.element(testButton).removeClass("btn-default");
                     angular.element(testButton).removeClass("btn-danger");
+                    angular.element(testButton).removeClass("btn-warning");
                     angular.element(testButton).addClass("btn-success");
                 }
 
                 function showError() {
                     angular.element(testButton).removeClass("btn-default");
+                    angular.element(testButton).removeClass("btn-warning");
                     angular.element(testButton).removeClass("btn-success");
                     angular.element(testButton).addClass("btn-danger");
                 }
+
+                function showWarning() {
+                    angular.element(testButton).removeClass("btn-default");
+                    angular.element(testButton).removeClass("btn-danger");
+                    angular.element(testButton).removeClass("btn-success");
+                    angular.element(testButton).addClass("btn-warning");
+                }
+
+
 
                 //When button is clicked
                 $scope.checkCaps = function () {
@@ -170,16 +181,26 @@ angular
                         $scope.model.supportedSearchTypes = data.indexerConfig.supportedSearchTypes;
                         $scope.model.categoryMapping = data.indexerConfig.categoryMapping;
                         $scope.model.configComplete = data.indexerConfig.configComplete;
+                        $scope.model.allCapsChecked = data.indexerConfig.allCapsChecked;
                         $scope.model.enabled = data.indexerConfig.enabled;
                         if (data.indexerConfig.supportedSearchIds.length > 0) {
                             var message = "Supports " + data.indexerConfig.supportedSearchIds;
                             angular.element(testMessage).text(message);
                         }
-                        showSuccess();
+                        if (data.indexerConfig.allCapsChecked && data.indexerConfig.configComplete) {
+                            showSuccess()
+                            growl.info("Successfully tested capabilites of indexer");
+                        } else if (!data.indexerConfig.allCapsChecked && data.indexerConfig.configComplete) {
+                            showWarning();
+                            ModalService.open("Incomplete caps check", "The capabilities of the indexer could not be checked completely. You may use it but it's recommended to repeat the check at another time.<br>Until then some search types or IDs may not be usable.", {}, "md", "left");
+                        } else if (!data.configComplete) {
+                            showError();
+                            ModalService.open("Error testing capabilities", "An error occurred while contacting the indexer. It will not be usable until the caps check has been executed. You can trigger it manually from the indexer config box", {}, "md", "left");
+                        }
                     }, function (message) {
                         angular.element(testMessage).text(message);
                         showError();
-                        ModalService.open("Error testing capabilities", 'The capabilities of the indexer could not be checked. You can set the IDs manually. Refer to the <a href="https://github.com/theotherp/nzbhydra/wiki/Supported-Search-Types-And-Indexer-Hosts" target="_blank">Wiki</a> for the IDs supported by some indexers.<br><br>You may repeat the check at any time to try again.');
+                        ModalService.open("Error testing capabilities", "An error occurred while contacting the indexer. It will not be usable until the caps check has been executed. You can trigger it manually from the indexer config box", {}, "md", "left");
                     }).finally(function () {
                         angular.element(testButton).removeClass("glyphicon-refresh-animate");
                     });
