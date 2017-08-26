@@ -96,7 +96,7 @@ public class NewznabChecker {
         );
 
         boolean allChecked = true;
-        boolean necessaryConfigComplete = true;
+        boolean configComplete = true;
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1; //TODO Perhaps ignore timeout at ths point
         List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
@@ -155,6 +155,7 @@ public class NewznabChecker {
             }
         } catch (IndexerAccessException e) {
             logger.error("Error while accessing indexer", e);
+            configComplete = false;
         }
 
 
@@ -170,10 +171,11 @@ public class NewznabChecker {
             }
         }
         indexerConfig.setBackend(backendType);
-        indexerConfig.setConfigComplete(necessaryConfigComplete);
-        indexerConfig.setEnabled(allChecked);
+        indexerConfig.setConfigComplete(configComplete);
+        indexerConfig.setAllCapsChecked(allChecked);
+        indexerConfig.setEnabled(configComplete);
 
-        return new CheckCapsRespone(indexerConfig, allChecked, necessaryConfigComplete);
+        return new CheckCapsRespone(indexerConfig, allChecked, configComplete);
     }
 
     protected IndexerCategoryConfig setSupportedSearchTypesAndIndexerCategoryMapping(IndexerConfig indexerConfig, int timeout) throws IndexerAccessException {

@@ -120,7 +120,7 @@ public class NewznabCheckerTest {
 
         assertEquals(BackendType.NZEDB, checkCapsRespone.getIndexerConfig().getBackend());
 
-        assertTrue(checkCapsRespone.isAllChecked());
+        assertTrue(checkCapsRespone.isAllCapsChecked());
 
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
     }
@@ -191,7 +191,7 @@ public class NewznabCheckerTest {
 
         CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
-        assertFalse(checkCapsRespone.isAllChecked());
+        assertFalse(checkCapsRespone.isAllCapsChecked());
         verify(indexerWebAccess, times(7)).get(any(), any(), anyInt());
     }
 

@@ -10,7 +10,6 @@ function ConfigFields($injector) {
     };
 
 
-
     function ipValidator() {
         return {
             expression: function ($viewValue, $modelValue) {
@@ -914,6 +913,7 @@ function ConfigFields($injector) {
                     type: "arrayConfig",
                     data: {
                         defaultModel: {
+                            allCapsChecked: false,
                             apiKey: null,
                             backend: 'NEWZNAB',
                             configComplete: false,
@@ -1259,6 +1259,7 @@ function getIndexerPresets(configuredIndexers) {
         ],
         [
             {
+                allCapsChecked: true,
                 configComplete: true,
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
@@ -1270,6 +1271,7 @@ function getIndexerPresets(configuredIndexers) {
         ],
         [
             {
+                allCapsChecked: true,
                 enabledForSearchSource: "BOTH",
                 categories: ["Anime"],
                 configComplete: true,
@@ -1291,6 +1293,7 @@ function getIndexerPresets(configuredIndexers) {
                 username: null
             },
             {
+                allCapsChecked: true,
                 enabledForSearchSource: "INTERNAL",
                 categories: [],
                 configComplete: true,
@@ -1312,6 +1315,7 @@ function getIndexerPresets(configuredIndexers) {
                 username: null
             },
             {
+                allCapsChecked: true,
                 enabledForSearchSource: "INTERNAL",
                 categories: [],
                 configComplete: true,
@@ -1347,6 +1351,25 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
             templateOptions: {
                 type: 'help',
                 lines: ["Torznab indexers can only be used for internal searches or dedicated searches using /torznab/api"]
+            }
+        });
+    } else if (model.searchModuleType === "NEWZNAB" && !isInitial) {
+        var message;
+        var cssClass;
+        if (!model.configComplete) {
+            message = "The config of this indexer is incomplete. Please click the button at the bottom to check its capabilities and complete its configuration.";
+            cssClass = "alert alert-danger";
+        } else {
+            message = "The capabilities of this indexer were not checked completely. Some actually supported search types or IDs may not be usable.";
+            cssClass = "alert alert-warning";
+        }
+        fieldset.push({
+            type: 'help',
+            hideExpression: 'model.allCapsChecked && model.configComplete',
+            templateOptions: {
+                type: 'help',
+                lines: [message],
+                class: cssClass
             }
         });
     }
@@ -2020,23 +2043,22 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
                 function (data) {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    if (data.allChecked) {
+                    if (data.allCapsChecked && data.configComplete) {
                         growl.info("Successfully tested capabilites of indexer");
-                        data.indexerConfig.enabled = true;
-                    } else {
-                        ModalService.open("Incomplete caps check", "The capabilities of the indexer could not be checked completely. You will need to try again now or later. The indexer will not be usable until the check was completed.");
-                        data.indexerConfig.enabled = false;
+                    } else if (!data.allCapsChecked && data.configComplete) {
+                        ModalService.open("Incomplete caps check", "The capabilities of the indexer could not be checked completely. You may use it but it's recommended to repeat the check at another time.<br>Until then some search types or IDs may not be usable.", {}, "md", "left");
+                    } else if (!data.configComplete) {
+                        ModalService.open("Error testing capabilities", "An error occurred while contacting the indexer. It will not be usable until the caps check has been executed. You can trigger it manually from the indexer config box", {}, "md", "left");
                     }
+
                     deferred.resolve(data.indexerConfig);
                 },
                 function () {
                     blockUI.reset();
                     scope.spinnerActive = false;
-                    model.configComplete = false;
-                    model.enabled = false;
                     model.supportedSearchIds = undefined;
                     model.supportedSearchTypes = undefined;
-                    ModalService.open("Error testing capabilities", "The capabilities of the indexer could not be checked. The indexer won't be used for ID based searches (IMDB, TVDB, etc.). You may repeat the check manually at any time.");
+                    ModalService.open("Error testing capabilities", "An error occurred while contacting the indexer. It will not be usable until the caps check has been executed. You can trigger it manually using the button below.", {}, "md", "left");
                     deferred.resolve();
                 }).finally(
                 function () {

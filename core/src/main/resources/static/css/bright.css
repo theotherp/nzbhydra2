@@ -7635,7 +7635,18 @@ input:focus + .input-group-addon {
   color: #ff4136;
 }
 .indexer-button {
-  min-width: 150px;
+  margin-right: 10px;
+  width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.indexer-button.config-incomplete {
+  background-color: #ff4136;
+  border-color: #ff4136;
+}
+.indexer-button.not-all-checked {
+  background-color: #ff851b;
+  border-color: #ff851b;
 }
 .spinner {
   display: inline-block;

@@ -95,7 +95,7 @@ public class ConfigMigrationTest {
         when(newznabCheckerMock.checkCaps(any())).thenAnswer(new Answer<CheckCapsRespone>() {
             @Override
             public CheckCapsRespone answer(InvocationOnMock invocation) throws Throwable {
-                return new CheckCapsRespone(invocation.getArgument(0), true);
+                return new CheckCapsRespone(invocation.getArgument(0), true, true);
             }
         });
     }

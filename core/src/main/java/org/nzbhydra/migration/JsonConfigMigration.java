@@ -494,6 +494,7 @@ public class JsonConfigMigration {
                     logger.info("Adding {} disabled for now because the config is incomplete", newIndexer.getName());
                 } else {
                     newIndexer.setConfigComplete(true);
+                    newIndexer.setAllCapsChecked(true);
                 }
 
                 indexerConfigs.add(newIndexer);
@@ -520,7 +521,7 @@ public class JsonConfigMigration {
                     try {
                         CheckCapsRespone checkCapsRespone = future.get();
                         IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
-                        if (checkCapsRespone.isAllChecked()) {
+                        if (checkCapsRespone.isAllCapsChecked()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
                             indexerConfig.setEnabled(true);
                             indexerConfig.setConfigComplete(true);

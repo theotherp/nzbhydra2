@@ -74,6 +74,7 @@ public class MockNewznab {
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
 
         if (params.getT() == ActionAttribute.CAPS) {
+            //throw new RuntimeException("test");
             return getCaps();
         }
 

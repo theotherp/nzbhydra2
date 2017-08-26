@@ -18,6 +18,7 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig extends ValidatingConfig {
 
+    private boolean allCapsChecked;
     @SensitiveData
     private String apiKey;
     @JsonFormat(shape = Shape.STRING)
