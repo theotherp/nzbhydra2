@@ -7,8 +7,8 @@
     <meta name="referrer" content="no-referrer"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link href="static/css/alllibs.css" rel="stylesheet"/>
-    <!--<link href="css/{{ theme }}" rel="stylesheet">-->
-    <link href="static/css/grey.css" rel="stylesheet"/>
+    <link th:href="${session.cssUrl}" rel="stylesheet">
+    <!--<link href="static/css/grey.css" rel="stylesheet"/>-->
     <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico"/>
     <meta charset="utf-8"/>
 

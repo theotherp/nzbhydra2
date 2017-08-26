@@ -2654,22 +2654,22 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.downloadsPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
         }
 
-        if($scope.stats.downloadsPerDayOfWeek){
+        if ($scope.stats.downloadsPerDayOfWeek) {
             $scope.downloadsPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.downloadsPerDayOfWeek, "day", "count", "Day of week", 'Downloads');
             $scope.downloadsPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
         }
 
-        if($scope.stats.searchesPerHourOfDay){
+        if ($scope.stats.searchesPerHourOfDay) {
             $scope.searchesPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.searchesPerHourOfDay, "hour", "count", "Hour of day", 'Searches');
             $scope.searchesPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
         }
 
-        if($scope.stats.searchesPerDayOfWeek){
+        if ($scope.stats.searchesPerDayOfWeek) {
             $scope.searchesPerDayOfWeekChart = getChart("discreteBarChart", $scope.stats.searchesPerDayOfWeek, "day", "count", "Day of week", 'Searches');
             $scope.searchesPerDayOfWeekChart.options.chart.xAxis.rotateLabels = 0;
         }
 
-        if($scope.stats.downloadsPerAgeStats){
+        if ($scope.stats.downloadsPerAgeStats) {
             $scope.downloadsPerAgeChart = getChart("discreteBarChart", $scope.stats.downloadsPerAgeStats.downloadsPerAge, "age", "count", "Downloads per age", 'Downloads');
             $scope.downloadsPerAgeChart.options.chart.xAxis.rotateLabels = 45;
             $scope.downloadsPerAgeChart.options.chart.showValues = false;
@@ -5963,7 +5963,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'select',
                                 label: 'Theme',
-                                help: 'Reload page after saving',
+                                help: 'Reload page after restart',
                                 options: [
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},

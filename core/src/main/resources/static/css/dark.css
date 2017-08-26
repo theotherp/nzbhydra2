@@ -1075,7 +1075,7 @@ body {
   font-family: "Roboto", "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.42857143;
-  color: #f0f0f0;
+  color: #9c9c9c;
   background-color: #000000;
 }
 input,
@@ -2864,7 +2864,7 @@ legend {
   margin-bottom: 20px;
   font-size: 21px;
   line-height: inherit;
-  color: #f0f0f0;
+  color: #9c9c9c;
   border: 0;
   border-bottom: 1px solid #1a1f20;
 }
@@ -2908,7 +2908,7 @@ output {
   padding-top: 7px;
   font-size: 14px;
   line-height: 1.42857143;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .form-control {
   display: block;
@@ -2917,7 +2917,7 @@ output {
   padding: 6px 12px;
   font-size: 14px;
   line-height: 1.42857143;
-  color: #f0f0f0;
+  color: #9c9c9c;
   background-color: #0f1113;
   background-image: none;
   border: 1px solid #cccccc;
@@ -3266,7 +3266,7 @@ select[multiple].form-group-lg .form-control {
   display: block;
   margin-top: 5px;
   margin-bottom: 10px;
-  color: #ffffff;
+  color: #dcdcdc;
 }
 @media (min-width: 768px) {
   .form-inline .form-group {
@@ -3829,7 +3829,7 @@ tbody.collapse.in {
   clear: both;
   font-weight: normal;
   line-height: 1.42857143;
-  color: #f0f0f0;
+  color: #9c9c9c;
   white-space: nowrap;
 }
 .dropdown-menu > li > a:hover,
@@ -4168,7 +4168,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   font-size: 14px;
   font-weight: normal;
   line-height: 1;
-  color: #f0f0f0;
+  color: #9c9c9c;
   text-align: center;
   background-color: #0f1112;
   border: 1px solid #cccccc;
@@ -4761,7 +4761,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-color: #171717;
 }
 .navbar-default .navbar-brand {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .navbar-default .navbar-brand:hover,
 .navbar-default .navbar-brand:focus {
@@ -4769,10 +4769,10 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   background-color: none;
 }
 .navbar-default .navbar-text {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .navbar-default .navbar-nav > li > a {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
@@ -4799,7 +4799,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   background-color: #141414;
 }
 .navbar-default .navbar-toggle .icon-bar {
-  background-color: #f0f0f0;
+  background-color: #9c9c9c;
 }
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
@@ -4813,7 +4813,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 @media (max-width: 767px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
-    color: #f0f0f0;
+    color: #9c9c9c;
   }
   .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
   .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
@@ -4834,13 +4834,13 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   }
 }
 .navbar-default .navbar-link {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .navbar-default .navbar-link:hover {
   color: #ffffff;
 }
 .navbar-default .btn-link {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .navbar-default .btn-link:hover,
 .navbar-default .btn-link:focus {
@@ -5279,7 +5279,7 @@ a.thumbnail.active {
 }
 .thumbnail .caption {
   padding: 9px;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .alert {
   padding: 15px;
@@ -5508,7 +5508,7 @@ a.thumbnail.active {
   border-bottom-left-radius: 4px;
 }
 a.list-group-item {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 a.list-group-item .list-group-item-heading {
   color: #ffffff;
@@ -5516,7 +5516,7 @@ a.list-group-item .list-group-item-heading {
 a.list-group-item:hover,
 a.list-group-item:focus {
   text-decoration: none;
-  color: #f0f0f0;
+  color: #9c9c9c;
   background-color: #1a1a1a;
 }
 .list-group-item.disabled,
@@ -5891,7 +5891,7 @@ a.list-group-item-danger.active:focus {
   border-color: rgba(0, 0, 0, 0.6);
 }
 .panel-default > .panel-heading {
-  color: #f0f0f0;
+  color: #9c9c9c;
   background-color: #1a1a1a;
   border-color: rgba(0, 0, 0, 0.6);
 }
@@ -5900,7 +5900,7 @@ a.list-group-item-danger.active:focus {
 }
 .panel-default > .panel-heading .badge {
   color: #1a1a1a;
-  background-color: #f0f0f0;
+  background-color: #9c9c9c;
 }
 .panel-default > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: rgba(0, 0, 0, 0.6);
@@ -7195,7 +7195,7 @@ a.expand-collapse:focus {
 }
 .by-id-checkbox {
   font-size: 14px;
-  color: #f0f0f0;
+  color: #9c9c9c;
   background-color: #0f1113;
   background-image: none;
   border: 1px solid #cccccc;
@@ -7421,15 +7421,15 @@ a.disabled:hover {
 }
 .ui-select-bootstrap .ui-select-choices-row > a {
   background-color: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .ui-select-match > .btn {
   background-color: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .dropdown-menu {
   background-color: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary {
   background-color: #62c462;
@@ -7575,7 +7575,7 @@ a.disabled:hover {
   background-color: transparent;
   border-width: 0;
   text-align: left;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 input[type='number'] {
   -moz-appearance: textfield;
@@ -7718,7 +7718,7 @@ input:focus + .input-group-addon {
   border-color: red;
 }
 .indexer-statuses-accordion {
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .tooltip-inner {
   max-width: 350px;
@@ -7731,10 +7731,10 @@ input:focus + .input-group-addon {
   text-align: left;
 }
 .nv-axis text {
-  fill: #f0f0f0;
+  fill: #9c9c9c;
 }
 .nv-bar text {
-  fill: #f0f0f0 !important;
+  fill: #9c9c9c !important;
 }
 .nvd3 .nv-discretebar .nv-groups rect {
   fill: #175987 !important;
@@ -7757,14 +7757,14 @@ g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(2) 
   stroke: #1e76b3 !important;
 }
 .nv-legend-text {
-  fill: #f0f0f0;
+  fill: #9c9c9c;
 }
 g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   transform: rotate(-31deg);
 }
 .nvtooltip {
   background-color: #080808;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .tick line {
   opacity: 0 !important;
@@ -7835,7 +7835,7 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   border: 1px solid #cccccc;
   border-radius: 5px;
   background: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
   padding: 0 2px 0 2px;
 }
 .chip-tmpl:focus {
@@ -7844,7 +7844,7 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 chip-tmpl:focus .default-chip {
   border: 2px solid #9e9e9e;
   background: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
 }
 .chip-failed .default-chip {
   color: #ee5f5b;
@@ -7859,7 +7859,7 @@ chip-tmpl:focus .default-chip {
 }
 .chip-control {
   background: #0f1113;
-  color: #f0f0f0;
+  color: #9c9c9c;
   margin-top: 5px;
 }
 .chips > div {

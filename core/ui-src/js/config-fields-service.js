@@ -228,7 +228,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'select',
                                 label: 'Theme',
-                                help: 'Reload page after saving',
+                                help: 'Reload page after restart',
                                 options: [
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},
