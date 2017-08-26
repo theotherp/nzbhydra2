@@ -7,6 +7,8 @@ import lombok.Setter;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.IndexerCategoryConfig;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -34,6 +36,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -113,13 +116,7 @@ public class Newznab extends Indexer<Xml> {
         query = generateQueryIfApplicable(searchRequest, query);
         query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
 
-        if (config.getHost().toLowerCase().contains("nzbgeek")) {
-            //With nzbgeek not more than 12 words at all are allowed
-            String[] split = query.split(" ");
-            if (query.split(" ").length > 12) {
-                query = Joiner.on(" ").join(Arrays.copyOfRange(split, 0, 12));
-            }
-        }
+        query = cleanupQuery(query);
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
 
         if (limit != null) {
@@ -129,6 +126,11 @@ public class Newznab extends Indexer<Xml> {
             componentsBuilder.queryParam("offset", offset);
         }
         return componentsBuilder;
+    }
+
+    //May be overwritten by specific indexer implementations
+    protected String cleanupQuery(String query) {
+        return query;
     }
 
     protected void addFurtherParametersToUri(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) {
@@ -466,6 +468,21 @@ public class Newznab extends Indexer<Xml> {
 
     protected Logger getLogger() {
         return logger;
+    }
+
+    @Component
+    @Order(500)
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+
+        @Override
+        public boolean handlesIndexerConfig(IndexerConfig config) {
+            return config.getSearchModuleType() == SearchModuleType.NEWZNAB;
+        }
+
+        @Override
+        public Class<? extends Indexer> getIndexerClass() {
+            return Newznab.class;
+        }
     }
 
 

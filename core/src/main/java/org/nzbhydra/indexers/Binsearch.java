@@ -6,6 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
@@ -17,6 +19,8 @@ import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
@@ -33,6 +37,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Component
 public class Binsearch extends Indexer<String> {
 
     private static final Logger logger = LoggerFactory.getLogger(Binsearch.class);
@@ -238,5 +243,20 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected Logger getLogger() {
         return logger;
+    }
+
+    @Component
+    @Order(2000)
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+
+        @Override
+        public boolean handlesIndexerConfig(IndexerConfig config) {
+            return config.getSearchModuleType() == SearchModuleType.BINSEARCH;
+        }
+
+        @Override
+        public Class<? extends Indexer> getIndexerClass() {
+            return Binsearch.class;
+        }
     }
 }

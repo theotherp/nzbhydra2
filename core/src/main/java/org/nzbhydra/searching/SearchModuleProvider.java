@@ -1,16 +1,11 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.indexers.Anizb;
-import org.nzbhydra.indexers.Binsearch;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerHandlingStrategy;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerStatusEntity;
-import org.nzbhydra.indexers.Newznab;
-import org.nzbhydra.indexers.NzbIndex;
-import org.nzbhydra.indexers.Torznab;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -28,26 +24,16 @@ public class SearchModuleProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(SearchModuleProvider.class);
 
-    private static final Map<SearchModuleType, Class<? extends Indexer>> searchModuleClasses = new HashMap<>();
-
-    static {
-        searchModuleClasses.put(SearchModuleType.ANIZB, Anizb.class);
-        searchModuleClasses.put(SearchModuleType.NEWZNAB, Newznab.class);
-        searchModuleClasses.put(SearchModuleType.TORZNAB, Torznab.class);
-        searchModuleClasses.put(SearchModuleType.NZBINDEX, NzbIndex.class);
-        searchModuleClasses.put(SearchModuleType.BINSEARCH, Binsearch.class);
-    }
-
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
     private IndexerRepository indexerRepository;
 
-    @Autowired
-    private SearchModuleConfigProvider searchModuleConfigProvider;
-
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
+
+    @Autowired
+    private List<IndexerHandlingStrategy> indexerHandlingStrategies;
 
 
     public List<Indexer> getIndexers() {
@@ -79,7 +65,13 @@ public class SearchModuleProvider {
         searchModuleInstances.clear();
         for (IndexerConfig config : indexers) {
             try {
-                Indexer searchModule = beanFactory.createBean(SearchModuleProvider.searchModuleClasses.get(config.getSearchModuleType()));
+                Optional<IndexerHandlingStrategy> optionalStrategy = indexerHandlingStrategies.stream().filter(x -> x.handlesIndexerConfig(config)).findFirst();
+                if (!optionalStrategy.isPresent()) {
+                    logger.error("Unable to find implementation for indexer type {} and host {}", config.getSearchModuleType(), config.getHost());
+                    continue;
+                }
+
+                Indexer searchModule = beanFactory.createBean(optionalStrategy.get().getIndexerClass());
                 logger.info("Initializing indexer {}", config.getName());
 
                 IndexerEntity indexerEntity = indexerRepository.findByName(config.getName());

@@ -6,6 +6,7 @@ import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.RssChannel;
+import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -115,6 +116,11 @@ public class MockNewznab {
         }
 
         if (params.getTmdbid() != null) {
+            if (params.getApikey().equals("tmdberror")) {
+                RssError rssError = new RssError("123", "description");
+                return new ResponseEntity<Object>(rssError, HttpStatus.OK);
+            }
+
             RssRoot rssRoot = generateResponse(0, 10, "avengers", "duplicates".equals(params.getQ()));
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

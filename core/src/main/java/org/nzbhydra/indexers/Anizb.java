@@ -2,6 +2,8 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
@@ -15,12 +17,15 @@ import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class Anizb extends Indexer<RssRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(Anizb.class);
@@ -96,5 +101,20 @@ public class Anizb extends Indexer<RssRoot> {
     @Override
     protected Logger getLogger() {
         return logger;
+    }
+
+    @Component
+    @Order(2000)
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+
+        @Override
+        public boolean handlesIndexerConfig(IndexerConfig config) {
+            return config.getSearchModuleType() == SearchModuleType.ANIZB;
+        }
+
+        @Override
+        public Class<? extends Indexer> getIndexerClass() {
+            return Anizb.class;
+        }
     }
 }

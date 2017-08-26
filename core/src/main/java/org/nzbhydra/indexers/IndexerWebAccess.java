@@ -33,12 +33,13 @@ public class IndexerWebAccess {
         Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
         try {
             return future.get(timeout, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unexpected error while accessing indexer", e);
         } catch (ExecutionException e) {
             throw new IndexerUnreachableException("Error while communicating with Indexer. Server returned: " + e.getMessage(), e.getCause());
+
         } catch (TimeoutException e) {
             throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
+        } catch (Exception e) {
+            throw new RuntimeException("Unexpected error while accessing indexer", e);
         }
     }
 

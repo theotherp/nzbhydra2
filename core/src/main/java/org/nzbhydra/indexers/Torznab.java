@@ -2,6 +2,8 @@ package org.nzbhydra.indexers;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssChannel;
 import org.nzbhydra.mapping.newznab.RssItem;
@@ -16,6 +18,7 @@ import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -65,6 +68,21 @@ public class Torznab extends Newznab {
 
     protected Logger getLogger() {
         return logger;
+    }
+
+    @Component
+    @Order(2000)
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+
+        @Override
+        public boolean handlesIndexerConfig(IndexerConfig config) {
+            return config.getSearchModuleType() == SearchModuleType.TORZNAB;
+        }
+
+        @Override
+        public Class<? extends Indexer> getIndexerClass() {
+            return Torznab.class;
+        }
     }
 
 

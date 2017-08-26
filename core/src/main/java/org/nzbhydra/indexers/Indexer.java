@@ -88,6 +88,7 @@ public abstract class Indexer<T> {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;

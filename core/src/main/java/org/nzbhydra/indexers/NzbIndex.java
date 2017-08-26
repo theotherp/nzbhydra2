@@ -2,6 +2,8 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
+import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.RssItem;
@@ -15,6 +17,7 @@ import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -162,6 +165,21 @@ public class NzbIndex extends Indexer<RssRoot> {
 
     protected UriComponentsBuilder getBaseUri() {
         return UriComponentsBuilder.fromHttpUrl(config.getHost());
+    }
+
+    @Component
+    @Order(2000)
+    public static class NewznabHandlingStrategy implements IndexerHandlingStrategy {
+
+        @Override
+        public boolean handlesIndexerConfig(IndexerConfig config) {
+            return config.getSearchModuleType() == SearchModuleType.NZBINDEX;
+        }
+
+        @Override
+        public Class<? extends Indexer> getIndexerClass() {
+            return NzbIndex.class;
+        }
     }
 
 

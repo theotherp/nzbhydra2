@@ -85,11 +85,9 @@ public class IndexerConfig extends ValidatingConfig {
         return Optional.ofNullable(username);
     }
 
-
     public Optional<String> getUserAgent() {
         return Optional.ofNullable(userAgent);
     }
-
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {

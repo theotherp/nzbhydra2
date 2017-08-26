@@ -9,4 +9,5 @@ import org.nzbhydra.config.IndexerConfig;
 public class CheckCapsRespone {
     private IndexerConfig indexerConfig;
     private boolean allChecked;
+    private boolean necessaryConfigComplete;
 }

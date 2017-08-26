@@ -96,6 +96,7 @@ public class NewznabChecker {
         );
 
         boolean allChecked = true;
+        boolean necessaryConfigComplete = true;
         Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1; //TODO Perhaps ignore timeout at ths point
         List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
@@ -169,10 +170,10 @@ public class NewznabChecker {
             }
         }
         indexerConfig.setBackend(backendType);
-        indexerConfig.setConfigComplete(allChecked);
+        indexerConfig.setConfigComplete(necessaryConfigComplete);
         indexerConfig.setEnabled(allChecked);
 
-        return new CheckCapsRespone(indexerConfig, allChecked);
+        return new CheckCapsRespone(indexerConfig, allChecked, necessaryConfigComplete);
     }
 
     protected IndexerCategoryConfig setSupportedSearchTypesAndIndexerCategoryMapping(IndexerConfig indexerConfig, int timeout) throws IndexerAccessException {
@@ -233,7 +234,16 @@ public class NewznabChecker {
 
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, int timeout) throws IndexerAccessException {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
-        RssRoot rssRoot = indexerWebAccess.get(uri, RssRoot.class, timeout);
+        logger.debug("Calling URL {}", uri);
+        Xml response = indexerWebAccess.get(uri, Xml.class, timeout);
+
+        if (response instanceof RssError) {
+            String errorDescription = ((RssError) response).getDescription();
+            logger.debug("RSS error from indexer {}: {}", request.indexerConfig.getName(), errorDescription);
+            throw new IndexerAccessException("RSS error from indexer: " + errorDescription);
+        }
+        RssRoot rssRoot = (RssRoot) response;
+
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
