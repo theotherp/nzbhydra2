@@ -96,6 +96,9 @@ public class JsonConfigMigration {
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+
+        //Empty strings should be considered null
+        oldConfigJson = oldConfigJson.replace("\"\"", "null");
         OldConfig oldConfig = mapper.readValue(oldConfigJson, OldConfig.class);
 
         BaseConfig newConfig = configProvider.getBaseConfig();
@@ -494,7 +497,6 @@ public class JsonConfigMigration {
                     logger.info("Adding {} disabled for now because the config is incomplete", newIndexer.getName());
                 } else {
                     newIndexer.setConfigComplete(true);
-                    newIndexer.setAllCapsChecked(true);
                 }
 
                 indexerConfigs.add(newIndexer);

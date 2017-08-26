@@ -311,10 +311,9 @@ public abstract class Indexer<T> {
      */
     protected <T> T getAndStoreResultToDatabase(URI uri, Class<T> responseType, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Integer timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         T result;
         try {
-            result = indexerWebAccess.get(uri, responseType, timeout);
+            result = indexerWebAccess.get(uri, responseType, config);
         } catch (IndexerAccessException e) {
             throw e;
         }

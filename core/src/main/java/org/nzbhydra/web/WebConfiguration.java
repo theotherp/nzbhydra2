@@ -1,5 +1,14 @@
 package org.nzbhydra.web;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Strings;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.HistoryUserInfoType;
@@ -24,6 +33,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.Marshaller;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +43,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -125,8 +137,33 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             if (converter instanceof MappingJackson2HttpMessageConverter) {
                 MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
                 jacksonConverter.setPrettyPrint(true);
+                jacksonConverter.setObjectMapper(objectMapper);
             }
         }
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule moduleEmptyStringAsNull = new SimpleModule();
+        moduleEmptyStringAsNull.addDeserializer(String.class, new StdDeserializer<String>(String.class) {
+            @Override
+            public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+                String result = StringDeserializer.instance.deserialize(p, ctxt);
+                if (Strings.isNullOrEmpty(result)) {
+                    return null;
+                }
+                return result;
+            }
+        });
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        mapper.registerModule(moduleEmptyStringAsNull);
+        mapper.registerModule(new Jdk8Module());
+        mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
+        mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        mapper.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
+        return mapper;
     }
 
 

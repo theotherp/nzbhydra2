@@ -1,5 +1,6 @@
 package org.nzbhydra.mockserver;
 
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
@@ -71,7 +72,8 @@ public class MockNewznab {
     }
 
     @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
-    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+    public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
+        logger.info(request.getHeader("user-agent"));
 
         if (params.getT() == ActionAttribute.CAPS) {
             //throw new RuntimeException("test");

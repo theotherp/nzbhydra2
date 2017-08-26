@@ -59,7 +59,7 @@ public class NewznabChecker {
         Xml xmlResponse;
         try {
             URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
-            xmlResponse = indexerWebAccess.get(uri, Xml.class, indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()));
+            xmlResponse = indexerWebAccess.get(uri, Xml.class, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
@@ -97,13 +97,13 @@ public class NewznabChecker {
 
         boolean allChecked = true;
         boolean configComplete = true;
-        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1; //TODO Perhaps ignore timeout at ths point
+        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1;
         List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
             CheckCapsRequest request = requests.get(i);
             callables.add(() -> {
                 Thread.sleep(1000); //Give indexer some time to breathe
-                return singleCheckCaps(request, timeout);
+                return singleCheckCaps(request, indexerConfig);
             });
         }
 
@@ -188,7 +188,7 @@ public class NewznabChecker {
             supportedSearchTypes.add(ActionAttribute.MOVIE);
         }
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
-        CapsRoot capsRoot = indexerWebAccess.get(uri, CapsRoot.class, timeout);
+        CapsRoot capsRoot = indexerWebAccess.get(uri, CapsRoot.class, indexerConfig);
         if (capsRoot.getSearching().getAudioSearch() != null) {
             supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
@@ -234,10 +234,10 @@ public class NewznabChecker {
         return categories;
     }
 
-    private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, int timeout) throws IndexerAccessException {
+    private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, IndexerConfig indexerConfig) throws IndexerAccessException {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         logger.debug("Calling URL {}", uri);
-        Xml response = indexerWebAccess.get(uri, Xml.class, timeout);
+        Xml response = indexerWebAccess.get(uri, Xml.class, indexerConfig);
 
         if (response instanceof RssError) {
             String errorDescription = ((RssError) response).getDescription();

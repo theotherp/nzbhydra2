@@ -69,7 +69,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -169,7 +168,7 @@ public class NewznabTest {
     @Test
     public void shouldReturnCorrectSearchResults() throws Exception {
         RssRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
-        when(indexerWebAccessMock.get(any(), any(), anyInt())).thenReturn(root);
+        when(indexerWebAccessMock.get(any(), any(), eq(testee.config))).thenReturn(root);
 
         IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
 
@@ -189,7 +188,7 @@ public class NewznabTest {
                 RssItemBuilder.builder("title5").build()
         );
         RssRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
-        when(indexerWebAccessMock.get(any(), any(), anyInt())).thenReturn(root);
+        when(indexerWebAccessMock.get(any(), any(), eq(testee.config))).thenReturn(root);
 
         //Two items will be rejected
         when(resultAcceptorMock.acceptResults(any(), any(), any())).thenAnswer(new Answer<AcceptorResult>() {

@@ -87,7 +87,6 @@ public class MainConfig extends ValidatingConfig {
         return Optional.ofNullable(dereferer);
     }
 
-
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
@@ -96,12 +95,15 @@ public class MainConfig extends ValidatingConfig {
             result.getWarningMessages().add("You've maded changes that affect Hydra's URL and require a restart. Hydra will try to reload to the new URL when it's back.");
         }
 
-        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/"))) {
+        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
             if (!urlBase.startsWith("/")) {
                 urlBase = "/" + urlBase;
             }
             if (urlBase.endsWith("/")) {
                 urlBase = urlBase.substring(0, urlBase.length() - 1);
+            }
+            if ("/".equals(urlBase) || "".equals(urlBase)) {
+                urlBase = null;
             }
             result.getWarningMessages().add("Changed URL base to " + urlBase);
         }

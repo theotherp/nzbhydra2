@@ -5776,7 +5776,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Set when using an external proxy'
+                                help: 'Adapt when using an external proxy'
                             }
                         },
                         {
@@ -5956,7 +5956,8 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Delete to disable.'
+                                required: true,
+                                help: 'Redirect external links to hide your instance. Insert $s for target URL.'
                             }
                         },
                         {

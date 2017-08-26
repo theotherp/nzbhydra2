@@ -273,7 +273,7 @@ main:
   startupBrowser: true
   theme: "grey"
   updateCheckEnabled: true
-  urlBase: "/"
+  urlBase: null
   useCsrf: true
   useLocalUrlForApiAccess: true
   verifySsl: true

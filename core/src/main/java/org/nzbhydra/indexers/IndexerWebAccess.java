@@ -1,6 +1,7 @@
 package org.nzbhydra.indexers;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +27,18 @@ public class IndexerWebAccess {
     private ConfigProvider configProvider;
 
 
-    protected <T> T get(URI uri, Class<T> responseType, int timeout) throws IndexerAccessException {
+    protected <T> T get(URI uri, Class<T> responseType, IndexerConfig config) throws IndexerAccessException {
+        int timeout = config.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+        String userAgent = config.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent());
+
         HttpHeaders headers = new HttpHeaders();
-        headers.add("User-Agent", configProvider.getBaseConfig().getSearching().getUserAgent());
+        headers.add("User-Agent", userAgent);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
         try {
             return future.get(timeout, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
             throw new IndexerUnreachableException("Error while communicating with Indexer. Server returned: " + e.getMessage(), e.getCause());
-
         } catch (TimeoutException e) {
             throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {
