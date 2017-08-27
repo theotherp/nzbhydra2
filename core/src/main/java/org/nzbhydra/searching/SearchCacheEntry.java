@@ -42,9 +42,7 @@ public class SearchCacheEntry {
     }
 
     public int getNumberOfTotalAvailableResults() {
-        if (numberOfAvailableResults == null) {
             numberOfAvailableResults = indexerSearchResultsByIndexer.values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum();
-        }
         return numberOfAvailableResults;
     }
 

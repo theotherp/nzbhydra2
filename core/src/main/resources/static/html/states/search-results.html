@@ -152,19 +152,18 @@
               tooltip-class="rejected-tooltip"
               tooltip-placement="top"
               tooltip-trigger="click"
-        >Loaded {{ numberOfLoadedResults }} of {{ numberOfAvailableResults }} results (
+        >Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (
             rejected {{ numberOfRejectedResults }}
             )</span>
 
         <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
-            <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="numberOfLoadedResults + numberOfRejectedResults >= numberOfAvailableResults"
+            <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="!loadMoreEnabled"
                     uib-tooltip="Click to load more results from the indexers"
                     tooltip-placement="top"
                     tooltip-trigger="mouseenter"
             >Load more
             </button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                    ng-disabled="numberOfLoadedResults + numberOfRejectedResults >= numberOfAvailableResults">
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!loadMoreEnabled">
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>
             </button>

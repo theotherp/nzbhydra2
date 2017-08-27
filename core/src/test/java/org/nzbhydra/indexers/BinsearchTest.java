@@ -75,6 +75,13 @@ public class BinsearchTest {
     }
 
     @Test
+    public void shouldParseOtherResultsCorrectly() throws Exception {
+        String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_randm.html"), Charsets.UTF_8);
+        List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html);
+        assertThat(searchResultItems.size(), is(43));
+    }
+
+    @Test
     public void shouldRecognizeIfSingleResultPage() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 100);
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_singlepage.html"), Charsets.UTF_8);

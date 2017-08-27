@@ -11,7 +11,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-
+@Component
 public class DogNzb extends Newznab {
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
@@ -20,10 +20,18 @@ public class DogNzb extends Newznab {
         //DogNZB does not return a reliable total number. It's always 100 if there are more results, less if it's the last page
         indexerSearchResult.setTotalResultsKnown(false);
         if (newznabResponse != null) {
-            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() < 100);
+            if (newznabResponse.getTotal() == 100) {
+                indexerSearchResult.setHasMoreResults(true);
+                indexerSearchResult.setTotalResults(100);
+            } else {
+                indexerSearchResult.setTotalResultsKnown(true);
+                indexerSearchResult.setHasMoreResults(false);
+                indexerSearchResult.setTotalResults(searchRequest.getOffset().orElse(0) + newznabResponse.getTotal());
+            }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
             indexerSearchResult.setLimit(100);
         } else {
+            indexerSearchResult.setTotalResults(0);
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setOffset(0);
             indexerSearchResult.setLimit(0);

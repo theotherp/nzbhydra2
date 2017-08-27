@@ -48,7 +48,6 @@ public class Binsearch extends Indexer<String> {
     private static final Pattern NFO_INFO_PATTERN = Pattern.compile("\\d nfo file", Pattern.CASE_INSENSITIVE);
     private static final Pattern SIZE_PATTERN = Pattern.compile("size: (?<size>[0-9]+(\\.[0-9]+)?).(?<unit>(GB|MB|KB|B))", Pattern.CASE_INSENSITIVE);
     private static final Pattern PUBDATE_PATTERN = Pattern.compile("(\\d{1,2}\\-\\w{3}\\-\\d{4})", Pattern.CASE_INSENSITIVE);
-    private static final Pattern RECORDS_NUMBER_PATTERN = Pattern.compile(" (\\d+)\\+? records", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC"));
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -62,18 +61,15 @@ public class Binsearch extends Indexer<String> {
         Elements pageLinks = navigationTable.select("a");
         boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
         boolean totalKnown = false;
-        int total = 100;
-        if (pageLinks.isEmpty()) { //Parsed page contains all the available results
-            Matcher recordsMatcher = RECORDS_NUMBER_PATTERN.matcher(navigationTable.text());
-            if (recordsMatcher.find()) {
-                total = Integer.valueOf(recordsMatcher.group(1));
-                totalKnown = true;
-            }
+        indexerSearchResult.setOffset(searchRequest.getOffset().orElse(0));
+        int total = searchRequest.getOffset().orElse(0) + 100; //Must be at least as many as already loaded
+        if (!hasMore) { //Parsed page contains all the available results
+            total = searchRequest.getOffset().orElse(0) + indexerSearchResult.getSearchResultItems().size();
+            totalKnown = true;
         }
         indexerSearchResult.setHasMoreResults(hasMore);
         indexerSearchResult.setTotalResults(total);
         indexerSearchResult.setLimit(100);
-        indexerSearchResult.setOffset(searchRequest.getOffset().orElse(0));
         indexerSearchResult.setTotalResultsKnown(totalKnown);
     }
 

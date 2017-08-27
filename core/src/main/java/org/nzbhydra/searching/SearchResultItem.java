@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.indexers.Indexer;
@@ -90,6 +91,27 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
             return 0;
         }
         return o.getPubDate().compareTo(pubDate);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        SearchResultItem that = (SearchResultItem) o;
+        return Objects.equal(indexerGuid, that.indexerGuid) &&
+                Objects.equal(title, that.title);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), indexerGuid, title);
     }
 
     @Override

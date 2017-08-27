@@ -30,6 +30,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         return value.searchResultId;
     });
 
+    //For shift clicking results
     $scope.lastClicked = null;
     $scope.lastClickedValue = null;
 
@@ -54,6 +55,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
     };
+    $scope.loadMoreEnabled = false;
+    $scope.totalAvailableUnknown = false;
 
 
     $scope.indexersForFiltering = [];
@@ -285,6 +288,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
         $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
+
+        $scope.loadMoreEnabled = ($scope.numberOfLoadedResults + $scope.numberOfRejectedResults < $scope.numberOfAvailableResults) || _.any(data.indexerSearchMetaDatas, function (x) {
+            return x.hasMoreResults;
+        });
+        $scope.totalAvailableUnknown = _.any(data.indexerSearchMetaDatas, function (x) {
+            return !x.totalResultsKnown;
+        });
 
         if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
                 return !x.wasSuccessful;

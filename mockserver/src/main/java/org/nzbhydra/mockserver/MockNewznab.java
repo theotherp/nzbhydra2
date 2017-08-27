@@ -147,11 +147,13 @@ public class MockNewznab {
         }
 
 
+
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            RssRoot rssRoot = generateResponse(0, endIndex, params.getApikey(), "duplicates".equals(params.getQ()));
-            responsesPerApikey.put(endIndex, rssRoot);
+            RssRoot rssRoot = generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), params.getApikey(), "duplicates".equals(params.getQ()));
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
+
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
     }

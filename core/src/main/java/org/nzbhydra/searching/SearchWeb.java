@@ -69,13 +69,13 @@ public class SearchWeb {
         logger.info("New search request: " + searchRequest);
 
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
-        SearchResponse response1 = searchResultProcessor.createSearchResponse(searchResult);
+        SearchResponse response = searchResultProcessor.createSearchResponse(searchResult);
 
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
-        SearchResponse searchResponse = response1;
+        SearchResponse searchResponse = response;
         if ("fortesting".equals(parameters.getQuery())) {
-            response = searchResponse;
+            this.response = searchResponse;
         }
 
         searchStates.remove(searchRequest.getSearchRequestId());
@@ -133,7 +133,9 @@ public class SearchWeb {
         if (searchStates.containsKey(event.getSearchRequest().getSearchRequestId())) {
             lock.lock();
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
-            searchState.getMessages().add(event.getMessage());
+            if (!searchState.getMessages().contains(event.getMessage())) {
+                searchState.getMessages().add(event.getMessage());
+            }
             lock.unlock();
         }
     }

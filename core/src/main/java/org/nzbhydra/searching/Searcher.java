@@ -79,7 +79,7 @@ public class Searcher {
 
 
             //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates over multiple searches
-            searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toList());
+            searchResultItems = searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().flatMap(Collection::stream).filter(IndexerSearchResult::isWasSuccessful).flatMap(x -> x.getSearchResultItems().stream()).distinct().collect(Collectors.toList());
             DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(searchResultItems);
 
             //Save to database
@@ -114,7 +114,7 @@ public class Searcher {
 
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
-        int limit = searchRequest.getLimit().orElse(100); //TODO configurable#
+        int limit = searchRequest.getLimit().orElse(100); //TODO configurable
         if (offset >= searchResultItems.size()) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
             searchResult.setSearchResultItems(Collections.emptyList());

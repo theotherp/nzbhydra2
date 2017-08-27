@@ -407,8 +407,8 @@ public abstract class Indexer<T> {
         title = title.trim();
         for (String word : configProvider.getBaseConfig().getSearching().getRemoveTrailing()) {
             if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
-                title = title.substring(0, title.length() - word.length()).trim();
                 debug("Removing trailing {} from title {}", word, title);
+                title = title.substring(0, title.length() - word.length()).trim();
                 return title;
             }
         }
