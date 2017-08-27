@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.AsyncClientHttpRequest;
@@ -67,6 +68,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Primary
 public class HydraOkHttp3ClientHttpRequestFactory
         implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory, DisposableBean {
 
@@ -167,7 +169,8 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
     public Builder getOkHttpClientBuilder(URI requestUri) {
         //Disable "unrecognized_name" SSL exception. See https://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since-upgrade-to-java-1-7-0
-        System.setProperty("jsse.enableSNIExtension", "false");
+        //On the other hand it causes incompability with at least binsearch
+        //System.setProperty("jsse.enableSNIExtension", "false");
 
         Builder builder = getBaseBuilder();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {

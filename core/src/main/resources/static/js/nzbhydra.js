@@ -3293,10 +3293,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfLoadedResults = allSearchResults.length;
         $scope.indexersearches = data.indexerSearchMetaDatas;
 
-        $scope.loadMoreEnabled = ($scope.numberOfLoadedResults + $scope.numberOfRejectedResults < $scope.numberOfAvailableResults) ||_.any(data.indexerSearchMetaDatas, function(x) {
-           return x.hasMoreResults;
+        $scope.loadMoreEnabled = ($scope.numberOfLoadedResults + $scope.numberOfRejectedResults < $scope.numberOfAvailableResults) || _.any(data.indexerSearchMetaDatas, function (x) {
+            return x.hasMoreResults;
         });
-        $scope.totalAvailableUnknown = _.any(data.indexerSearchMetaDatas, function(x) {
+        $scope.totalAvailableUnknown = _.any(data.indexerSearchMetaDatas, function (x) {
             return !x.totalResultsKnown;
         });
 
