@@ -71,7 +71,7 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
-    private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)");
+    private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
 
     static {
@@ -356,6 +356,8 @@ public class Newznab extends Indexer<Xml> {
             Matcher matcher = GUID_PATTERN.matcher(item.getRssGuid().getGuid());
             if (matcher.matches()) {
                 searchResultItem.setIndexerGuid(matcher.group(2));
+            } else {
+                searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
             }
         } else {
             searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
