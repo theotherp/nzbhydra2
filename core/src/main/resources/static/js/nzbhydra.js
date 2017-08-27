@@ -3702,7 +3702,7 @@ angular
     .module('nzbhydraApp')
     .controller('SearchController', SearchController);
 
-function SearchController($scope, $http, $stateParams, $state, $uibModal, $interval, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, $element, SearchHistoryService) {
+function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeout, $sce, growl, SearchService, focus, ConfigService, HydraAuthService, CategoriesService, $element, SearchHistoryService) {
 
     function getNumberOrUndefined(number) {
         if (_.isUndefined(number) || _.isNaN(number) || number === "") {
@@ -4019,7 +4019,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $inter
 
 
 }
-SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$uibModal", "$interval", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "$element", "SearchHistoryService"];
+SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$uibModal", "$timeout", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "$element", "SearchHistoryService"];
 
 angular
     .module('nzbhydraApp')
@@ -7124,6 +7124,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     fieldset.push({
         key: 'enabled',
         type: 'horizontalSwitch',
+        hideExpression: '!model.configComplete',
         templateOptions: {
             type: 'switch',
             label: 'Enabled'

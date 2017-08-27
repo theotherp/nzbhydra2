@@ -121,13 +121,13 @@ public class ResultAcceptor {
     protected boolean checkForNeededAttributesSuccessfullyMapped(Multiset<String> reasonsForRejection, SearchResultItem item) {
         boolean accepted = true;
         if (item.getTitle() == null) {
-            logger.debug("Title could no found or parsed");
+            logger.debug("Title could not be found or parsed");
             accepted = false;
         } else if (item.getIndexerGuid() == null) {
-            logger.debug("GUID could no found or parsed");
+            logger.debug("GUID could not be found or parsed");
             accepted = false;
         } else if (item.getLink() == null) {
-            logger.debug("Link could no found or parsed");
+            logger.debug("Link could not be found or parsed");
             accepted = false;
         } else if ((item.getPubDate() == null && !item.getUsenetDate().isPresent())) {
             logger.debug("Neither pubdate nor usenet date could be found or parsed");

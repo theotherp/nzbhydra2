@@ -115,7 +115,7 @@ public class Searcher {
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
         int limit = searchRequest.getLimit().orElse(100); //TODO configurable
-        if (offset >= searchResultItems.size()) {
+        if (offset > 0 && offset >= searchResultItems.size()) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
             searchResult.setSearchResultItems(Collections.emptyList());
             return;

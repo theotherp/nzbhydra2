@@ -1378,6 +1378,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     fieldset.push({
         key: 'enabled',
         type: 'horizontalSwitch',
+        hideExpression: '!model.configComplete',
         templateOptions: {
             type: 'switch',
             label: 'Enabled'
