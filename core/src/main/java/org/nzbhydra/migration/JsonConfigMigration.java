@@ -465,7 +465,6 @@ public class JsonConfigMigration {
                 }
                 newIndexer.setSupportedSearchIds(supportedIdTypes);
 
-
                 if (oldIndexer.getSearchTypes() != null && !oldIndexer.getSearchTypes().isEmpty()) {
                     newIndexer.setSupportedSearchTypes(new ArrayList<>());
                     for (String s : oldIndexer.getSearchTypes()) {
@@ -521,12 +520,15 @@ public class JsonConfigMigration {
                     try {
                         CheckCapsRespone checkCapsRespone = future.get();
                         IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
-                        if (checkCapsRespone.isAllCapsChecked()) {
+                        if (checkCapsRespone.isConfigComplete()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
                             indexerConfig.setEnabled(true);
-                            indexerConfig.setConfigComplete(true);
+                            indexerConfig.setAllCapsChecked(true);
                             indexerConfig = checkCapsRespone.getIndexerConfig();
                             enabledNewznabIndexers.set(enabledNewznabIndexers.indexOf(indexerConfig), indexerConfig);
+                            if (!checkCapsRespone.isAllCapsChecked()) {
+                                logAsWarningAndAdd(messages, "The caps check for " + indexerConfig.getName() + " was not completed. You should trigger it manually from the config at a later point.");
+                            }
                         } else {
                             logAsWarningAndAdd(messages, "Caps check for " + indexerConfig.getName() + " failed. You'll need to repeat it manually from the config section before you can use the indexer");
                         }

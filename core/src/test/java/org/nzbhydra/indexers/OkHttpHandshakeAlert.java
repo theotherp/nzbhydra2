@@ -9,6 +9,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -24,6 +26,7 @@ public class OkHttpHandshakeAlert {
     @Test
     public void causesSslException() throws Exception {
         Builder builder = getUnsafeOkHttpClientBuilder(new Builder());
+
         builder.build().newCall(new Request.Builder().url(HOST_DOES_NOT_WORK_WITH_SNI).build()).execute();
     }
 
@@ -56,33 +59,47 @@ public class OkHttpHandshakeAlert {
 
     private Builder getUnsafeOkHttpClientBuilder(Builder builder) throws Exception {
         // Create a trust manager that does not validate certificate chains
-        final TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    @Override
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain,
-                                                   String authType) throws CertificateException {
-                    }
+        final TrustManager[] trustAllCerts = getTrustManagers();
+        final SSLSocketFactory sslSocketFactory = getSslSocketFactory(trustAllCerts);
 
-                    @Override
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain,
-                                                   String authType) throws CertificateException {
-                    }
-
-                    @Override
-                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                        return new X509Certificate[0];
-                    }
-                }
-        };
-
-        // Install the all-trusting trust manager
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        // Create an ssl socket factory with our all-trusting manager
-        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
         return builder
                 .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
                 .hostnameVerifier((hostname, session) -> true);
     }
+
+    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
+        // Install the all-trusting trust manager
+        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+        // Create an ssl socket factory with our all-trusting manager
+        return sslContext.getSocketFactory();
+    }
+
+    private TrustManager[] getTrustManagers() {
+        return new TrustManager[]{
+                getX509TrustManager()
+        };
+    }
+
+    private X509TrustManager getX509TrustManager() {
+        return new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
+    }
+
+
 }
