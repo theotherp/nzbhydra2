@@ -80,6 +80,8 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle(), is("itemTitle2"));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
@@ -87,7 +89,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiSearchResult = (RssRoot) externalApi.api(apiCallParameters, new MockHttpServletRequest("GET", "http://127.0.0.1")).getBody();
 
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
+        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
     }
 
     @Test

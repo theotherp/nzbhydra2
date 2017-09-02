@@ -170,7 +170,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
     public Builder getOkHttpClientBuilder(URI requestUri) {
         //Disable "unrecognized_name" SSL exception. See https://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since-upgrade-to-java-1-7-0
         //On the other hand it causes incompability with at least binsearch
-        //System.setProperty("jsse.enableSNIExtension", "false");
 
         Builder builder = getBaseBuilder();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
@@ -272,6 +271,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
                         }
                     }
             };
+
 
             // Install the all-trusting trust manager
             final SSLContext sslContext = SSLContext.getInstance("SSL");

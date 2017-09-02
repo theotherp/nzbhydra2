@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
 
+@Component
 public class NzbGeek extends Newznab {
 
     @Override

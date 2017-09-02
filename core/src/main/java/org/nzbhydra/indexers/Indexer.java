@@ -313,13 +313,17 @@ public abstract class Indexer<T> {
         Stopwatch stopwatch = Stopwatch.createStarted();
         T result;
         try {
-            result = indexerWebAccess.get(uri, responseType, config);
+            result = callInderWebAccess(uri, responseType);
         } catch (IndexerAccessException e) {
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
         handleSuccess(apiAccessType, responseTime);
         return result;
+    }
+
+    <T> T callInderWebAccess(URI uri, Class<T> responseType) throws IndexerAccessException {
+        return indexerWebAccess.get(uri, responseType, config);
     }
 
     protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {

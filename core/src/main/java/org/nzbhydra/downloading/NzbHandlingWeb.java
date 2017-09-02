@@ -11,6 +11,7 @@ import org.nzbhydra.web.UsernameOrIpStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -33,10 +34,14 @@ public class NzbHandlingWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHandlingWeb.class);
 
+    @Value("${nzbhydra.dev.noApiKey:false}")
+    private boolean noApiKeyNeeded = false;
+
     @Autowired
     private NzbHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
+
 
     /**
      * Provides an internal access to NZBs via GUID
@@ -118,7 +123,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
     public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey, HttpServletRequest request) throws WrongApiKeyException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) {
+        if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }

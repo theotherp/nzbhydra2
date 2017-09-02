@@ -73,6 +73,7 @@ public class Binsearch extends Indexer<String> {
         indexerSearchResult.setTotalResultsKnown(totalKnown);
     }
 
+
     @SuppressWarnings("ConstantConditions")
     @Override
     protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse) throws IndexerParsingException {
