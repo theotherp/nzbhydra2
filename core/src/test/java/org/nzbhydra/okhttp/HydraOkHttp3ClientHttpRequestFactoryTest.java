@@ -9,7 +9,7 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ProxyType;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory.SF;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory.SockProxySocketFactory;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -65,7 +65,7 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     public void shouldNotUseProxyIfNotConfigured() throws URISyntaxException {
         baseConfig.getMain().setProxyType(ProxyType.NONE);
         OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
-        assertThat(client.socketFactory() instanceof SF, is(false));
+        assertThat(client.socketFactory() instanceof SockProxySocketFactory, is(false));
         assertThat(client.proxy(), is(nullValue()));
     }
 
@@ -83,16 +83,16 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         baseConfig.getMain().setProxyType(ProxyType.SOCKS);
         baseConfig.getMain().setProxyHost("proxyhost");
         OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
-        assertThat(client.socketFactory() instanceof SF, is(true));
-        assertThat(((SF) client.socketFactory()).host, is("proxyhost"));
-        assertThat(((SF) client.socketFactory()).username, is(nullValue()));
-        assertThat(((SF) client.socketFactory()).password, is(nullValue()));
+        assertThat(client.socketFactory() instanceof SockProxySocketFactory, is(true));
+        assertThat(((SockProxySocketFactory) client.socketFactory()).host, is("proxyhost"));
+        assertThat(((SockProxySocketFactory) client.socketFactory()).username, is(nullValue()));
+        assertThat(((SockProxySocketFactory) client.socketFactory()).password, is(nullValue()));
 
         baseConfig.getMain().setProxyUsername("user");
         baseConfig.getMain().setProxyPassword("pass");
         client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
-        assertThat(((SF) client.socketFactory()).username, is("user"));
-        assertThat(((SF) client.socketFactory()).password, is("pass"));
+        assertThat(((SockProxySocketFactory) client.socketFactory()).username, is("user"));
+        assertThat(((SockProxySocketFactory) client.socketFactory()).password, is("pass"));
     }
 
 

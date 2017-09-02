@@ -6016,7 +6016,15 @@ function ConfigFields($injector) {
                                 label: 'Verify SSL certificates',
                                 help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart.'
                             }
-
+                        },
+                        {
+                            key: 'sniDisabledFor',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Disable SNI',
+                                help: "Add a host if you get an 'unrecognized_name' error"
+                            }
                         }
                     ]
                 },

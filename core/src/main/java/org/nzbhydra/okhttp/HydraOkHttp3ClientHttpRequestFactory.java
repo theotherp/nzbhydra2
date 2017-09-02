@@ -28,6 +28,7 @@ import okhttp3.Route;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.ProxyType;
+import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -49,8 +50,10 @@ import javax.net.SocketFactory;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -61,8 +64,13 @@ import java.net.Proxy.Type;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -121,7 +129,9 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
+
         return new OkHttp3ClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
+
     }
 
     @Override
@@ -174,6 +184,15 @@ public class HydraOkHttp3ClientHttpRequestFactory
         Builder builder = getBaseBuilder();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
             builder = getUnsafeOkHttpClientBuilder(builder);
+        } else {
+            try {
+                SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
+                        getDefaultX509TrustManager()
+                });
+                builder = builder.sslSocketFactory(new SniWhitelistingSocketFactory(sslSocketFactory), getDefaultX509TrustManager());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                throw new RuntimeException("Unable to create SSLSocketFactory", e);
+            }
         }
 
         MainConfig main = configProvider.getBaseConfig().getMain();
@@ -186,8 +205,11 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return builder;
         }
 
+
         if (main.getProxyType() == ProxyType.SOCKS) {
-            return builder.socketFactory(new SF(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword()));
+            //TODO: Test/combine SNI and sock
+            SockProxySocketFactory sockProxySocketFactory = new SockProxySocketFactory(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword());
+            return builder.socketFactory(sockProxySocketFactory);
         } else if (main.getProxyType() == ProxyType.HTTP) {
             builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort()))).proxyAuthenticator((Route route, Response response) -> {
                 if (response.request().header("Proxy-Authorization") != null) {
@@ -254,30 +276,10 @@ public class HydraOkHttp3ClientHttpRequestFactory
         try {
             // Create a trust manager that does not validate certificate chains
             final TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        @Override
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain,
-                                                       String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain,
-                                                       String authType) throws CertificateException {
-                        }
-
-                        @Override
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new X509Certificate[0];
-                        }
-                    }
+                    getAllTrustingX509TrustManager()
             };
 
-
-            // Install the all-trusting trust manager
-            final SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            // Create an ssl socket factory with our all-trusting manager
-            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            final SSLSocketFactory sslSocketFactory = new SniWhitelistingSocketFactory(getSslSocketFactory(trustAllCerts));
 
             return builder
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
@@ -293,14 +295,72 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
     }
 
-    protected class SF extends SocketFactory {
+    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
+        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+        return sslContext.getSocketFactory();
+    }
+
+    private X509TrustManager getDefaultX509TrustManager() {
+        try {
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory.init((KeyStore) null);
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                throw new IllegalStateException("Unexpected default trust managers:"
+                        + Arrays.toString(trustManagers));
+            }
+            return (X509TrustManager) trustManagers[0];
+        } catch (GeneralSecurityException e) {
+            throw new AssertionError(); // The system has no TLS. Just give up.
+        }
+    }
+
+    private X509TrustManager getAllTrustingX509TrustManager() {
+        return new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
+    }
+
+
+    protected class SniWhitelistingSocketFactory extends DelegatingSSLSocketFactory {
+
+        public SniWhitelistingSocketFactory(SSLSocketFactory delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public SSLSocket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException {
+            String finalHost = host;
+            if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> x != null && x.toLowerCase().equals(finalHost.toLowerCase()))) {
+                host = null;
+            }
+            return super.createSocket(socket, host, port, autoClose);
+        }
+    }
+
+    protected class SockProxySocketFactory extends SocketFactory {
 
         protected String host;
         protected int port;
         protected String username;
         protected String password;
 
-        public SF(String host, int port, String username, String password) {
+        public SockProxySocketFactory(String host, int port, String username, String password) {
             this.host = host;
             this.port = port;
             this.username = username;

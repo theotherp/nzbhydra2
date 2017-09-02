@@ -266,6 +266,7 @@ main:
   repositoryBase: "https://github.com/theotherp"
   showNews: true
   shutdownForRestart: false
+  sniDisabledFor: ["nzbgeek.info"]
   ssl: false
   sslcert: null
   sslkey: null

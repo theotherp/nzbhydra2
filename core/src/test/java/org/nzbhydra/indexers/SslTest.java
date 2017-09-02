@@ -1,6 +1,5 @@
 package org.nzbhydra.indexers;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
@@ -16,10 +15,9 @@ import java.net.URI;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @DataJpaTest
-@Ignore //Until issue is resolved. See https://github.com/square/okhttp/issues/3573
 public class SslTest {
 
-    //JUst test that some sites can be visited that used to cause troubles
+    //Just test that some sites can be visited that used to cause troubles because of SNI
 
     @Autowired
     IndexerWebAccess webAccess;
@@ -37,9 +35,11 @@ public class SslTest {
         IndexerConfig config = new IndexerConfig();
         config.setTimeout(99999);
         binsearch.initialize(config, new IndexerEntity());
+        //Would not work with SNI disabled
         binsearch.callInderWebAccess(URI.create("https://binsearch.info"), String.class);
 
         nzbGeek.initialize(config, new IndexerEntity());
+        //Would not work with SNI enabled
         nzbGeek.callInderWebAccess(URI.create("https://nzbgeek.info/"), String.class);
 
     }

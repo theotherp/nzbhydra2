@@ -44,6 +44,7 @@ public class MainConfig extends ValidatingConfig {
     private String repositoryBase;
     private boolean showNews = true;
     private boolean shutdownForRestart = false;
+    private List<String> sniDisabledFor = new ArrayList<>();
     @RestartRequired
     private boolean ssl = false;
     @RestartRequired
