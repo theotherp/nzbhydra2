@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.Iterables;
+import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.indexers.Indexer;
@@ -13,6 +14,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -45,6 +47,8 @@ public class Searcher {
     private SearchRepository searchRepository;
     @Autowired
     protected IndexerForSearchSelector indexerPicker;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
 
     /**
@@ -58,6 +62,7 @@ public class Searcher {
             .build();
 
     public SearchResult search(SearchRequest searchRequest) {
+        eventPublisher.publishEvent(new SearchEvent(searchRequest));
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
         SearchResult searchResult = new SearchResult();
@@ -268,6 +273,15 @@ public class Searcher {
             limit = indexerToSearch.getLimit();
         }
         return () -> entry.getKey().search(searchRequest, offset, limit);
+    }
+
+    @Getter
+    public static class SearchEvent {
+        private SearchRequest searchRequest;
+
+        public SearchEvent(SearchRequest searchRequest) {
+            this.searchRequest = searchRequest;
+        }
     }
 
 

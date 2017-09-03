@@ -1,6 +1,7 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
+import lombok.Getter;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.nzbhydra.config.ConfigProvider;
@@ -17,6 +18,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -49,6 +51,8 @@ public class NzbHandler {
     private SearchModuleProvider searchModuleProvider;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory clientHttpRequestFactory;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
@@ -65,6 +69,7 @@ public class NzbHandler {
             logger.debug("Redirecting to " + result.getLink());
             NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, usernameOrIp, ageInDays, null);
             downloadRepository.save(downloadEntity);
+            eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
         } else {
             String nzbContent;
@@ -76,6 +81,7 @@ public class NzbHandler {
                 NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, usernameOrIp, ageInDays, e.getMessage());
 
                 downloadRepository.save(downloadEntity);
+                eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
                 return NzbDownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), downloadEntity);
             }
 
@@ -85,6 +91,7 @@ public class NzbHandler {
 
             NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, usernameOrIp, ageInDays, null);
             downloadRepository.save(downloadEntity);
+            eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
 
             return NzbDownloadResult.createSuccessfulDownloadResult(result.getTitle(), nzbContent, downloadEntity);
         }
@@ -251,6 +258,15 @@ public class NzbHandler {
 
         try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
             return response.body().string();
+        }
+    }
+
+    @Getter
+    public static class NzbDownloadEvent {
+        private NzbDownloadEntity downloadEntity;
+
+        public NzbDownloadEvent(NzbDownloadEntity downloadEntity) {
+            this.downloadEntity = downloadEntity;
         }
     }
 
