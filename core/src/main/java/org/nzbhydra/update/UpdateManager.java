@@ -261,6 +261,7 @@ public class UpdateManager implements InitializingBean {
 
     private Release getLatestRelease() throws UpdateException {
         try {
+            //TODO support prereleases
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
             Request request = new Builder().url(url).build();

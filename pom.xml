@@ -7,7 +7,7 @@
     <groupId>org.nzbhydra</groupId>
     <artifactId>parentpom</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>Usenet meta search</name>
 
     <modules>
@@ -19,6 +19,20 @@
         <module>windows-release</module>
         <module>linux-release</module>
     </modules>
+
+    <properties>
+        <spring.boot.version>1.5.6.RELEASE</spring.boot.version>
+        <spring.oxm.version>4.3.10.RELEASE</spring.oxm.version>
+        <spring.test.version>4.3.10.RELEASE</spring.test.version>
+        <spring.security.test.version>4.2.3.RELEASE</spring.security.test.version>
+        <jackson.version>2.8.9</jackson.version>
+        <lombok.version>1.16.18</lombok.version>
+        <logback.version>1.2.3</logback.version>
+        <guava.version>23.0</guava.version>
+        <junit.version>4.12</junit.version>
+        <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <build>
         <pluginManagement>
@@ -33,7 +47,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
     </build>
 
     <dependencies>
