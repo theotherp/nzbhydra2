@@ -94,6 +94,9 @@ public class ConfigMigrationTest {
         when(newznabCheckerMock.checkCaps(any())).thenAnswer(new Answer<CheckCapsRespone>() {
             @Override
             public CheckCapsRespone answer(InvocationOnMock invocation) throws Throwable {
+                IndexerConfig config = invocation.getArgument(0);
+                config.setConfigComplete(true);
+                config.setAllCapsChecked(true);
                 return new CheckCapsRespone(invocation.getArgument(0), true, true);
             }
         });
@@ -238,8 +241,8 @@ public class ConfigMigrationTest {
                 assertThat(category.getForbiddenWords(), contains("forbidden", "words"));
                 assertThat(category.getRequiredRegex().get(), is("requiredRegex"));
                 assertThat(category.getRequiredWords(), contains("required", "words"));
-                assertThat(category.getMinSizePreset(), is(11));
-                assertThat(category.getMaxSizePreset(), is(12));
+                assertThat(category.getMinSizePreset().get(), is(11));
+                assertThat(category.getMaxSizePreset().get(), is(12));
                 assertThat(category.getNewznabCategories(), contains(5071));
             }
             if (category.getName().equals("Audio")) {

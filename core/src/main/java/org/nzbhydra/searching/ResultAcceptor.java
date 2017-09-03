@@ -12,6 +12,7 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -99,13 +100,13 @@ public class ResultAcceptor {
             //Per category
             applyWordAndRegexRestrictions = item.getCategory().getApplyRestrictionsType() == SearchSourceRestriction.BOTH || Objects.equals(searchRequest.getSource().name(), item.getCategory().getApplyRestrictionsType().name());
             if (applyWordAndRegexRestrictions) {
-                if (!checkRegexes(item, reasonsForRejection, searchRequest.getCategory().getRequiredRegex().orElse(null), searchRequest.getCategory().getForbiddenRegex().orElse(null))) {
+                if (!checkRegexes(item, reasonsForRejection, baseConfig.getSearching().getRequiredRegex().orElse(null), baseConfig.getSearching().getForbiddenRegex().orElse(null))) {
                     continue;
                 }
-                if (!checkRequiredWords(reasonsForRejection, searchRequest.getCategory().getRequiredWords(), item)) {
+                if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item)) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getCategory().getForbiddenWords(), item)) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item)) {
                     continue;
                 }
             }
@@ -155,13 +156,28 @@ public class ResultAcceptor {
     }
 
     protected boolean checkForSize(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (searchRequest.getMinsize().isPresent() && item.getSize() / (1024 * 1024) < searchRequest.getMinsize().get()) {
-            logger.debug(MARKER, "{} is smaller than {}", item.getTitle(), searchRequest.getMinsize().get());
+        boolean isApiAndLimitsShouldApply = item.getCategory().isApplySizeLimitsToApi() && searchRequest.getSource() == SearchSource.API;
+        Integer minSize = searchRequest
+                .getMinsize()
+                .orElse(
+                        isApiAndLimitsShouldApply && item.getCategory().getMinSizePreset().isPresent()
+                                ? item.getCategory().getMinSizePreset().orElse(null)
+                                : null
+                );
+        if (minSize != null && item.getSize() / (1024 * 1024) < minSize) {
+            logger.debug(MARKER, "{} is smaller than {}", item.getTitle(), minSize);
             reasonsForRejection.add("Wrong size");
             return false;
         }
-        if (searchRequest.getMaxsize().isPresent() && item.getSize() / (1024 * 1024) > searchRequest.getMaxsize().get()) {
-            logger.debug(MARKER, "{} is bigger than {}", item.getTitle(), searchRequest.getMaxsize().get());
+        Integer maxSize = searchRequest
+                .getMaxsize()
+                .orElse(
+                        isApiAndLimitsShouldApply && item.getCategory().getMaxSizePreset().isPresent()
+                                ? item.getCategory().getMaxSizePreset().orElse(null)
+                                : null
+                );
+        if (maxSize != null && item.getSize() / (1024 * 1024) > maxSize) {
+            logger.debug(MARKER, "{} is bigger than {}", item.getTitle(), maxSize);
             reasonsForRejection.add("Wrong size");
             return false;
         }

@@ -7899,6 +7899,9 @@ select.form-control {
 .stat-box .caption .bootstrap-switch {
   margin-right: 20px;
 }
+.formly-field-duoSetting > div {
+  margin-bottom: 0;
+}
 .nav-tabs > li > a:hover {
   border-color: #eeeeee #eeeeee transparent;
   background-color: transparent;

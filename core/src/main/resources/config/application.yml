@@ -18,6 +18,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 3000
           minSizePreset: 50
+          applySizeLimitsToApi: false
           newznabCategories:
           - 5070
           requiredRegex:
@@ -31,6 +32,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 2000
           minSizePreset: 1
+          applySizeLimitsToApi: false
           newznabCategories:
           - 3000
           requiredRegex:
@@ -45,6 +47,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 1000
           minSizePreset: 50
+          applySizeLimitsToApi: false
           newznabCategories:
           - 3030
           requiredRegex:
@@ -59,6 +62,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 250
           minSizePreset: 1
+          applySizeLimitsToApi: false
           newznabCategories:
           - 7030
           requiredRegex:
@@ -73,6 +77,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 40000
           minSizePreset: 100
+          applySizeLimitsToApi: false
           newznabCategories:
           - 1000
           requiredRegex:
@@ -87,6 +92,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 100
           minSizePreset:
+          applySizeLimitsToApi: false
           newznabCategories:
           - 7020
           - 8010
@@ -102,6 +108,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 2000
           minSizePreset: 10
+          applySizeLimitsToApi: false
           newznabCategories:
           - 3040
           requiredRegex:
@@ -116,6 +123,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 20000
           minSizePreset: 500
+          applySizeLimitsToApi: false
           newznabCategories:
           - 2000
           requiredRegex:
@@ -130,6 +138,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 20000
           minSizePreset: 3000
+          applySizeLimitsToApi: false
           newznabCategories:
           - 2040
           - 2050
@@ -147,6 +156,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 3000
           minSizePreset: 500
+          applySizeLimitsToApi: false
           newznabCategories:
           - 2030
           requiredRegex:
@@ -160,6 +170,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 500
           minSizePreset: 1
+          applySizeLimitsToApi: false
           newznabCategories:
           - 3000
           requiredRegex:
@@ -174,6 +185,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 50000
           minSizePreset: 100
+          applySizeLimitsToApi: false
           newznabCategories:
           - 4000
           requiredRegex:
@@ -188,6 +200,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 5000
           minSizePreset: 50
+          applySizeLimitsToApi: false
           newznabCategories:
           - 5000
           requiredRegex:
@@ -202,6 +215,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 4500
           minSizePreset: 300
+          applySizeLimitsToApi: false
           newznabCategories:
           - 5040
           requiredRegex:
@@ -216,6 +230,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 1000
           minSizePreset: 50
+          applySizeLimitsToApi: false
           newznabCategories:
           - 5030
           requiredRegex:
@@ -230,6 +245,7 @@ categoriesConfig:
           ignoreResultsFrom: NONE
           maxSizePreset: 10000
           minSizePreset: 100
+          applySizeLimitsToApi: false
           newznabCategories:
           - 6000
           requiredRegex:

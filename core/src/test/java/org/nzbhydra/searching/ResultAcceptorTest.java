@@ -94,6 +94,7 @@ public class ResultAcceptorTest {
         internalData.getForbiddenWords().add("abc.def");
         item.setTitle("abc.def ghi");
         assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
+
         item.setTitle("abcdef ghi");
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("abc def ghi");
@@ -150,6 +151,7 @@ public class ResultAcceptorTest {
         when(searchRequest.getMinsize()).thenReturn(Optional.of(10));
         when(searchRequest.getMaxsize()).thenReturn(Optional.of(100));
         SearchResultItem item = new SearchResultItem();
+        item.setCategory(category);
 
         item.setSize(50 * 1024 * 1024L);
         assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
@@ -159,6 +161,25 @@ public class ResultAcceptorTest {
 
         item.setSize(105 * 1024 * 1024L);
         assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+
+        //Apply limits for API searches
+        when(searchRequest.getMinsize()).thenReturn(Optional.empty());
+        when(searchRequest.getMaxsize()).thenReturn(Optional.empty());
+
+        category.setMaxSizePreset(1);
+        category.setApplySizeLimitsToApi(true);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+
+        category.setMinSizePreset(null);
+        category.setMinSizePreset(200);
+        category.setApplySizeLimitsToApi(true);
+        when(searchRequest.getSource()).thenReturn(SearchSource.API);
+        assertFalse(testee.checkForSize(searchRequest, HashMultiset.create(), item));
+        when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
+        assertTrue(testee.checkForSize(searchRequest, HashMultiset.create(), item));
     }
 
     @Test

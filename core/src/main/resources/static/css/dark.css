@@ -7899,6 +7899,9 @@ select.form-control {
 .stat-box .caption .bootstrap-switch {
   margin-right: 20px;
 }
+.formly-field-duoSetting > div {
+  margin-bottom: 0;
+}
 .nv-pieLabels > .nv-label > text {
   fill: #e6e6e6 !important;
 }

@@ -15,12 +15,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class JsonConfigMigrationTest {
@@ -82,8 +82,8 @@ public class JsonConfigMigrationTest {
         assertThat(category.getForbiddenWords(), equalTo(Arrays.asList("some", "forbidden", "words")));
         assertThat(category.getRequiredRegex().get(), is("someRequiredRegex"));
         assertThat(category.getRequiredWords(), equalTo(Arrays.asList("some", "required", "words")));
-        assertThat(category.getMinSizePreset(), is(100));
-        assertThat(category.getMaxSizePreset(), is(1000));
+        assertThat(category.getMinSizePreset().get(), is(100));
+        assertThat(category.getMaxSizePreset().get(), is(1000));
 
 
         oldCat.setApplyRestrictions("both");
@@ -108,8 +108,8 @@ public class JsonConfigMigrationTest {
         assertThat(category.getForbiddenWords(), hasSize(0));
         assertThat(category.getRequiredRegex().isPresent(), is(false));
         assertThat(category.getRequiredWords(), hasSize(0));
-        assertThat(category.getMinSizePreset(), is(nullValue()));
-        assertThat(category.getMaxSizePreset(), is(nullValue()));
+        assertThat(category.getMinSizePreset(), is(Optional.empty()));
+        assertThat(category.getMaxSizePreset(), is(Optional.empty()));
     }
 
 

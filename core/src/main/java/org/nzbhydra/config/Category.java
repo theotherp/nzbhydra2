@@ -47,6 +47,7 @@ public class Category {
 
     protected Integer maxSizePreset;
     protected Integer minSizePreset;
+    protected boolean applySizeLimitsToApi;
 
     private boolean preselect;
     private Subtype subtype = Subtype.NONE;
@@ -61,6 +62,14 @@ public class Category {
 
     public Optional<String> getRequiredRegex() {
         return Optional.ofNullable(Strings.emptyToNull(requiredRegex));
+    }
+
+    public Optional<Integer> getMaxSizePreset() {
+        return Optional.ofNullable(maxSizePreset);
+    }
+
+    public Optional<Integer> getMinSizePreset() {
+        return Optional.ofNullable(minSizePreset);
     }
 
     public boolean deepEquals(Category other) {

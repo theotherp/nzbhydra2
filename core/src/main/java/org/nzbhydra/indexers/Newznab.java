@@ -314,7 +314,7 @@ public class Newznab extends Indexer<Xml> {
             throw new IndexerAuthException(String.format("Indexer refused authentication. Error code: %s. Description: %s", response.getCode(), response.getDescription()));
         }
         if (Stream.of("200", "201", "202", "203").anyMatch(x -> x.equals(response.getCode()))) {
-            throw new IndexerProgramErrorException(String.format("Indexer returned error code %s when URL %s was called", response.getCode(), url));
+            throw new IndexerProgramErrorException(String.format("Indexer returned error code %s and description '%s' when URL %s was called", response.getCode(), response.getDescription(), url));
         }
         throw new IndexerErrorCodeException(response);
     }

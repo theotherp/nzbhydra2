@@ -799,7 +799,7 @@ function ConfigFields($injector) {
                                 wrapper: 'settingWrapper',
                                 templateOptions: {
                                     label: 'Size preset',
-                                    help: "Will set these values on the search page. Does not affect API searches"
+                                    help: "Will set these values on the search page"
                                 },
                                 fieldGroup: [
                                     {
@@ -820,6 +820,15 @@ function ConfigFields($injector) {
                                         type: 'duoSetting', templateOptions: {addonRight: {text: 'MB'}}
                                     }
                                 ]
+                            },
+                            {
+                                key: 'applySizeLimitsToApi',
+                                type: 'horizontalSwitch',
+                                templateOptions: {
+                                    type: 'switch',
+                                    label: 'Limit API results size',
+                                    help: "Enable to apply the size preset to API results from this category"
+                                }
                             },
                             {
                                 key: 'preselect',

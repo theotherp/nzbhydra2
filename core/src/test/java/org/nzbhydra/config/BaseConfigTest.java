@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -128,8 +129,20 @@ public class BaseConfigTest {
 
 
     private void compareLists(List left, List right) {
-        if (right == null || left.contains(".mp4")) { //Don't compare the list for trailing stuff to be removed, it's just too much stuff in there
+        if (right == null || left.contains(".mp4") || left.contains("nzbgeek.info")) { //Don't compare the list for trailing stuff to be removed, it's just too much stuff in there
             return;
+        }
+        if (left.size() != right.size()) {
+            List newLeft = new ArrayList(left);
+            newLeft.removeAll(right);
+            if (!newLeft.isEmpty()) {
+                fail("Different lists. Found in left but not right: " + newLeft);
+            }
+            List newRight = new ArrayList(right);
+            newRight.removeAll(left);
+            if (!newRight.isEmpty()) {
+                fail("Different lists. Found in right but not left: " + newRight);
+            }
         }
         assertEquals("Both should contain the same amount of config entries", left.size(), right.size());
         if (COMPARE_CONFIG_VALUES) {

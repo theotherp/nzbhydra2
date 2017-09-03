@@ -21,8 +21,8 @@ public class SafeCategory {
         this.searchType = category.getSearchType().name();
         this.ignoreResultsFrom = category.getIgnoreResultsFrom().name();
         this.preselect = category.isPreselect();
-        this.minSizePreset = category.getMinSizePreset();
-        this.maxSizePreset = category.getMaxSizePreset();
+        this.minSizePreset = category.getMinSizePreset().orElse(null);
+        this.maxSizePreset = category.getMaxSizePreset().orElse(null);
     }
 
 }

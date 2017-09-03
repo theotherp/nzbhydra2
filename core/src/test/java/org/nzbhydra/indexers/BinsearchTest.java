@@ -23,6 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -78,16 +79,21 @@ public class BinsearchTest {
     public void shouldParseOtherResultsCorrectly() throws Exception {
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_randm.html"), Charsets.UTF_8);
         List<SearchResultItem> searchResultItems = testee.getSearchResultItems(html);
-        assertThat(searchResultItems.size(), is(43));
+        assertThat(searchResultItems.size(), is(41));
     }
 
     @Test
     public void shouldRecognizeIfSingleResultPage() throws Exception {
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 100);
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch_singlepage.html"), Charsets.UTF_8);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
+        List<SearchResultItem> items = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            items.add(new SearchResultItem());
+        }
+        indexerSearchResult.setSearchResultItems(items);
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest);
-        assertThat(indexerSearchResult.getOffset(), is(100));
+        assertThat(indexerSearchResult.getOffset(), is(0));
         assertThat(indexerSearchResult.getLimit(), is(100));
         assertThat(indexerSearchResult.getTotalResults(), is(24));
         assertThat(indexerSearchResult.isTotalResultsKnown(), is(true));

@@ -523,7 +523,6 @@ public class JsonConfigMigration {
                         if (checkCapsRespone.isConfigComplete()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
                             indexerConfig.setEnabled(true);
-                            indexerConfig.setAllCapsChecked(true);
                             indexerConfig = checkCapsRespone.getIndexerConfig();
                             enabledNewznabIndexers.set(enabledNewznabIndexers.indexOf(indexerConfig), indexerConfig);
                             if (!checkCapsRespone.isAllCapsChecked()) {
