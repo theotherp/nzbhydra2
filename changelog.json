@@ -1,0 +1,11 @@
+[
+  {
+    "version": "v1.0.0",
+    "changes": [
+      {
+        "type": "note",
+        "text": "First version"
+      }
+    ]
+  }
+]

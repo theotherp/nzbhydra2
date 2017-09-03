@@ -23,6 +23,7 @@ import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -83,6 +84,8 @@ public class SearcherUnitTest {
     private IndexerForSearchSelection pickingResultMock;
     @Mock
     private IndexerSearchEntity indexerSearchEntityMock;
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisherMock;
     private Random random = new Random();
 
 

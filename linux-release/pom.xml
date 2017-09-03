@@ -31,6 +31,7 @@
                     <descriptor>bin.xml</descriptor>
                     <finalName>nzbhyra2-${pom.version}-linux</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
+                    <formats>tgz</formats>
                 </configuration>
                 <executions>
                     <execution>

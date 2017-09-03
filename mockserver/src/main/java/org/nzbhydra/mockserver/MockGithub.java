@@ -8,9 +8,12 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,14 +24,16 @@ import java.util.List;
 @RestController
 public class MockGithub {
 
+    private static final Logger logger = LoggerFactory.getLogger(MockGithub.class);
+
     private Release releasev2;
     private List<Release> releases;
+    private Asset windowsAsset = new Asset();
 
     public MockGithub() {
         releasev2 = new Release();
         releasev2.setBody("Changes in version 2.0.0");
         releasev2.setTagName("v2.0.0");
-        Asset windowsAsset = new Asset();
         windowsAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setSize(163L);
@@ -54,6 +59,19 @@ public class MockGithub {
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases", method = RequestMethod.GET)
     public List<Release> releases() throws Exception {
         return releases;
+    }
+
+    @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases", method = RequestMethod.POST)
+    public Release postRelease(@RequestBody String body) throws Exception {
+        releasev2.setUploadUrl("http://127.0.0.1:5080/upload");
+        logger.info(body);
+        return releasev2;
+    }
+
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public Asset uploadSeet(@RequestBody byte[] body) throws Exception {
+        logger.info("Upload of {} bytes successful", body.length);
+        return windowsAsset;
     }
 
     @RequestMapping(value = "/changelog.md", method = RequestMethod.GET, produces = org.springframework.http.MediaType.TEXT_HTML_VALUE)

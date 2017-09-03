@@ -31,8 +31,7 @@ public class WebHooks {
     private String downloadHook;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @EventListener
     public void onSearchEvent(SearchEvent searchEvent) throws IOException {

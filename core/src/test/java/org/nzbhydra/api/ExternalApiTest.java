@@ -104,11 +104,7 @@ public class ExternalApiTest {
 
     @Test
     public void shouldCacheRemoveEntriesWhenLimitReached() throws Exception {
-        NewznabParameters parameters = new NewznabParameters();
-        parameters.setQ("q1");
-        parameters.setApikey("apikey");
-        parameters.setT(ActionAttribute.SEARCH);
-        parameters.setCachetime(5);
+        NewznabParameters parameters = getNewznabParameters("q1");
 
         testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher).search(any());
@@ -117,28 +113,37 @@ public class ExternalApiTest {
         verify(searcher, times(1)).search(any());
 
         parameters.setQ("q2");
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        testee.api(getNewznabParameters("q2"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(2)).search(any());
         parameters.setQ("q3");
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        testee.api(getNewznabParameters("q3"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(3)).search(any());
         parameters.setQ("q4");
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        testee.api(getNewznabParameters("q4"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(4)).search(any());
         parameters.setQ("q5");
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        testee.api(getNewznabParameters("q5"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(5)).search(any());
 
-        parameters.setQ("q1"); //q1 is still cached
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        //q1 is still cached
+        testee.api(getNewznabParameters("q1"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(5)).search(any());
 
-        parameters.setQ("q6"); //now q1 is removed as oldest entry
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        //now q1 is removed as oldest entry
+        testee.api(getNewznabParameters("q6"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(6)).search(any());
-        parameters.setQ("q1"); //Not cached anymore, will do another search
-        testee.api(parameters, new MockHttpServletRequest("GET", "http://127.0.0.1"));
+        //Not cached anymore, will do another search
+        testee.api(getNewznabParameters("q1"), new MockHttpServletRequest("GET", "http://127.0.0.1"));
         verify(searcher, times(7)).search(any());
+    }
+
+    protected NewznabParameters getNewznabParameters(String q1) {
+        NewznabParameters parameters = new NewznabParameters();
+        parameters.setQ(q1);
+        parameters.setApikey("apikey");
+        parameters.setT(ActionAttribute.SEARCH);
+        parameters.setCachetime(5);
+        return parameters;
     }
 
 }

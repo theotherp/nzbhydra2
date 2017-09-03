@@ -4,8 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import net.jodah.expiringmap.ExpirationPolicy;
-import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.NzbDownloadResult;
@@ -58,8 +56,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,7 +69,7 @@ import java.util.stream.Stream;
 @RestController
 public class ExternalApi {
 
-    private static final int MAX_CACHE_SIZE = 10;
+    private static final int MAX_CACHE_SIZE = 5;
     private static final int MAX_CACHE_AGE_HOURS = 24;
     private static final List<String> USER_AGENTS = Arrays.asList("Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Mozilla");
 
@@ -89,11 +91,7 @@ public class ExternalApi {
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 
-    private ExpiringMap<Integer, CacheEntryValue> cache = ExpiringMap.builder()
-            .expiration(MAX_CACHE_AGE_HOURS, TimeUnit.HOURS)
-            .expirationPolicy(ExpirationPolicy.ACCESSED)
-            .maxSize(MAX_CACHE_SIZE)
-            .build();
+    private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
 
     @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, produces = MediaType.APPLICATION_RSS_XML_VALUE)
@@ -128,6 +126,9 @@ public class ExternalApi {
 
 
     protected ResponseEntity<?> handleCachingSearch(NewznabParameters params, HttpServletRequest request) {
+        //Remove old entries
+        cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
+
         CacheEntryValue cacheEntryValue;
         if (cache.containsKey(params.cacheKey())) {
             cacheEntryValue = cache.get(params.cacheKey());
@@ -138,6 +139,13 @@ public class ExternalApi {
             } else {
                 logger.info("Updating search because cache time is exceeded");
             }
+        }
+        //Remove oldest entry when max size is reached
+        if (cache.size() == MAX_CACHE_SIZE) {
+            Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().sorted(Comparator.comparing(o -> o.getValue().getLastUpdate())).findFirst();
+            //Should always be the case anyway
+            logger.info("Removing oldest entry from cache because its limit of {} is reached", MAX_CACHE_SIZE);
+            keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
         }
 
         RssRoot searchResult = search(params, request);
@@ -331,10 +339,32 @@ public class ExternalApi {
 
     @Data
     @AllArgsConstructor
-    private class CacheEntryValue {
-        private NewznabParameters params;
-        private Instant lastUpdate;
-        private RssRoot searchResult;
+    private static class CacheEntryValue {
+        private final NewznabParameters params;
+        private final Instant lastUpdate;
+        private final RssRoot searchResult;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+            CacheEntryValue that = (CacheEntryValue) o;
+            return com.google.common.base.Objects.equal(params, that.params) &&
+                    com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
+                    com.google.common.base.Objects.equal(searchResult, that.searchResult);
+        }
+
+        @Override
+        public int hashCode() {
+            return com.google.common.base.Objects.hashCode(super.hashCode(), params, lastUpdate, searchResult);
+        }
     }
 
 }

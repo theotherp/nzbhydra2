@@ -25,7 +25,6 @@ public class DownloadingConfigTest {
         assertThat(result.getErrorMessages().size(), is(1));
         assertThat(result.getErrorMessages().get(0), containsString("not absolute"));
 
-
         File file = new File("afile.txt");
         file.deleteOnExit();
         PrintWriter out = new PrintWriter("afile.txt");
@@ -39,6 +38,7 @@ public class DownloadingConfigTest {
         baseConfig.getDownloading().setSaveTorrentsTo(folder.getAbsolutePath());
         result = testee.validateConfig(baseConfig);
         assertThat(result.getErrorMessages().size(), is(0));
+        file.delete();
 
     }
 
