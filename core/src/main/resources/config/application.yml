@@ -255,6 +255,7 @@ main:
     logMaxSize: 5
     logIpAddresses: true
     logUsername: false
+    markersToLog: []
   port: 5076
   proxyType: NONE
   proxyHost: null

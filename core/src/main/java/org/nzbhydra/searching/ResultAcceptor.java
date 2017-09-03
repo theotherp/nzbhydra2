@@ -10,9 +10,12 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +34,7 @@ public class ResultAcceptor {
     private static final Logger logger = LoggerFactory.getLogger(ResultAcceptor.class);
 
     private static final Pattern TITLE_PATTERN = Pattern.compile("(\\w[\\w']*\\w|\\w)");
+    private Marker MARKER = MarkerFactory.getMarker(LoggingMarkers.RESULT_ACCEPTOR.name());
 
     private Map<String, List<String>> titleWordCache = new HashMap<>();
 
@@ -69,7 +73,7 @@ public class ResultAcceptor {
             //TODO Ignore results from categories set for indexer
 
             //Forbidden words from query
-            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getExcludedWords(), item)) {
+            if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item)) {
                 continue;
             }
 
@@ -87,7 +91,7 @@ public class ResultAcceptor {
                 if (!checkRequiredWords(reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item)) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getRequiredWords(), item)) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, baseConfig.getSearching().getForbiddenWords(), item)) {
                     continue;
                 }
             }
@@ -101,7 +105,7 @@ public class ResultAcceptor {
                 if (!checkRequiredWords(reasonsForRejection, searchRequest.getCategory().getRequiredWords(), item)) {
                     continue;
                 }
-                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getCategory().getRequiredWords(), item)) {
+                if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getCategory().getForbiddenWords(), item)) {
                     continue;
                 }
             }
@@ -143,7 +147,7 @@ public class ResultAcceptor {
 
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
-            logger.debug("{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
+            logger.debug(MARKER, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }
@@ -152,12 +156,12 @@ public class ResultAcceptor {
 
     protected boolean checkForSize(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (searchRequest.getMinsize().isPresent() && item.getSize() / (1024 * 1024) < searchRequest.getMinsize().get()) {
-            logger.debug("{} is smaller than {}", item.getTitle(), searchRequest.getMinsize().get());
+            logger.debug(MARKER, "{} is smaller than {}", item.getTitle(), searchRequest.getMinsize().get());
             reasonsForRejection.add("Wrong size");
             return false;
         }
         if (searchRequest.getMaxsize().isPresent() && item.getSize() / (1024 * 1024) > searchRequest.getMaxsize().get()) {
-            logger.debug("{} is bigger than {}", item.getTitle(), searchRequest.getMaxsize().get());
+            logger.debug(MARKER, "{} is bigger than {}", item.getTitle(), searchRequest.getMaxsize().get());
             reasonsForRejection.add("Wrong size");
             return false;
         }
@@ -166,12 +170,12 @@ public class ResultAcceptor {
 
     protected boolean checkForAge(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (searchRequest.getMinage().isPresent() && item.getAgeInDays() < searchRequest.getMinage().get()) {
-            logger.debug("{} is younger than {} days", item.getTitle(), searchRequest.getMinage().get());
+            logger.debug(MARKER, "{} is younger than {} days", item.getTitle(), searchRequest.getMinage().get());
             reasonsForRejection.add("Wrong age");
             return false;
         }
         if (searchRequest.getMaxage().isPresent() && item.getAgeInDays() > searchRequest.getMaxage().get()) {
-            logger.debug("{} is older than {} days", item.getTitle(), searchRequest.getMaxage().get());
+            logger.debug(MARKER, "{} is older than {} days", item.getTitle(), searchRequest.getMaxage().get());
             reasonsForRejection.add("Wrong age");
             return false;
         }
@@ -181,7 +185,7 @@ public class ResultAcceptor {
     protected boolean checkForForbiddenGroup(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getGroup().isPresent()) {
             if (configProvider.getBaseConfig().getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().isPresent() && item.getGroup().get().contains(x))) {
-                logger.debug("Found forbidden group {}", item.getGroup().get());
+                logger.debug(MARKER, "Found forbidden group {}", item.getGroup().get());
                 reasonsForRejection.add("In forbidden group");
                 return false;
             }
@@ -192,7 +196,7 @@ public class ResultAcceptor {
     protected boolean checkForForbiddenPoster(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getPoster().isPresent()) {
             if (configProvider.getBaseConfig().getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().isPresent() && item.getPoster().get().contains(x))) {
-                logger.debug("Found forbidden poster {}", item.getPoster().get());
+                logger.debug(MARKER, "Found forbidden poster {}", item.getPoster().get());
                 reasonsForRejection.add("In forbidden poster");
                 return false;
             }
@@ -202,12 +206,12 @@ public class ResultAcceptor {
 
     protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex) {
         if (!Strings.isNullOrEmpty(requiredRegex) && !Pattern.compile(requiredRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug("Did not find required regex in {}", item.getTitle());
+            logger.debug(MARKER, "Did not find required regex in {}", item.getTitle());
             reasonsForRejection.add("Required regex doesn't match");
             return false;
         }
         if (!Strings.isNullOrEmpty(forbiddenRegex) && Pattern.compile(forbiddenRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug("Found forbidden regex in {}", item.getTitle());
+            logger.debug(MARKER, "Found forbidden regex in {}", item.getTitle());
             reasonsForRejection.add("Forbidden regex matches");
             return false;
         }
@@ -230,7 +234,7 @@ public class ResultAcceptor {
                     }
                 }
             }
-            logger.debug("Did not found any of the required words in the title {}", item.getTitle());
+            logger.debug(MARKER, "Did not found any of the required words in the title {}", item.getTitle());
             reasonsForRejection.add("No required word found");
             return false;
         }
@@ -249,19 +253,19 @@ public class ResultAcceptor {
 
     }
 
-    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> excludedWords, SearchResultItem item) {
-        for (String forbiddenWord : excludedWords) {
+    protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item) {
+        for (String forbiddenWord : forbiddenWords) {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
-                    logger.debug("Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
+                    logger.debug(MARKER, "Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
                     return false;
                 }
             } else {
                 List<String> titleWords = getTitleWords(item);
                 Optional<String> found = titleWords.stream().filter(x -> x.equals(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
-                    logger.debug("Found forbidden word in title word {}", found.get());
+                    logger.debug(MARKER, "Found forbidden word in title word {}", found.get());
                     reasonsForRejection.add("Forbidden word");
                     return false;
                 }

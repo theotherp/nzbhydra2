@@ -110,7 +110,7 @@ public class SearchRequest {
     }
 
 
-    public SearchRequest extractExcludedWordsFromQuery() {
+    public SearchRequest extractForbiddenWords() {
         if (Strings.isNullOrEmpty(query)) {
             return this;
         }
@@ -120,7 +120,7 @@ public class SearchRequest {
             exclusions.add(matcher.group("term"));
         }
         query = matcher.replaceAll("");
-        internalData.getExcludedWords().addAll(exclusions);
+        internalData.getForbiddenWords().addAll(exclusions);
         if (!exclusions.isEmpty()) {
             logger.debug("Extracted excluded words \"{}\" from query, leaving \"{}\" as qeuery", Joiner.on(", ").join(exclusions), query);
         }

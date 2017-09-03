@@ -11,6 +11,7 @@ import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
@@ -32,6 +33,8 @@ import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -411,7 +414,7 @@ public abstract class Indexer<T> {
         title = title.trim();
         for (String word : configProvider.getBaseConfig().getSearching().getRemoveTrailing()) {
             if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
-                debug("Removing trailing {} from title {}", word, title);
+                debug(MarkerFactory.getMarker(LoggingMarkers.TRAILING.name()), "Removing trailing {} from title {}", word, title);
                 title = title.substring(0, title.length() - word.length()).trim();
                 return title;
             }
@@ -467,6 +470,10 @@ public abstract class Indexer<T> {
 
     protected void debug(String msg, Object... arguments) {
         getLogger().debug(getName() + ": " + msg, arguments);
+    }
+
+    protected void debug(Marker marker, String msg, Object... arguments) {
+        getLogger().debug(marker, getName() + ": " + msg, arguments);
     }
 
     protected abstract Logger getLogger();

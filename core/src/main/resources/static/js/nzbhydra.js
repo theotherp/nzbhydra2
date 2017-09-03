@@ -6023,7 +6023,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SNI',
-                                help: "Add a host if you get an 'unrecognized_name' error"
+                                help: "Add a host if you get an 'unrecognized_name' error. Apply words with return key."
                             }
                         }
                     ]
@@ -6101,6 +6101,20 @@ function ConfigFields($injector) {
                                     {name: 'None', value: 'NONE'}
                                 ],
                                 help: 'Will be stored and displayed in the search/download history for internal searches. If selected IP addresses will be saved for all API searches.'
+                            }
+                        },
+                        {
+                            key: 'markersToLog',
+                            type: 'horizontalMultiselect',
+                            templateOptions: {
+                                label: 'Log markers',
+                                help: 'Select certain sections for more output on debug level',
+                                options: [
+                                    {label: 'Removed trailing words', id: 'TRAILING'},
+                                    {label: 'Rejected results', id: 'RESULT_ACCEPTOR'}
+                                ],
+                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
+                                placeholder: 'None'
                             }
                         }
                     ]
@@ -6234,7 +6248,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden words',
-                                help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before"
+                                help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before. Apply words with return key."
                             }
                         },
                         {
@@ -6252,7 +6266,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required words',
-                                help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before"
+                                help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before. Apply words with return key."
                             }
                         },
                         {
@@ -6271,7 +6285,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden groups',
-                                help: 'Posts from any groups containing any of these words will be ignored'
+                                help: 'Posts from any groups containing any of these words will be ignored. Apply words with return key.'
                             }
                         },
                         {
@@ -6280,7 +6294,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden posters',
-                                help: 'Posts from any posters containing any of these words will be ignored'
+                                help: 'Posts from any posters containing any of these words will be ignored. Apply words with return key.'
                             }
                         },
                         {
@@ -6289,7 +6303,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'number',
                                 label: 'Maximum results age',
-                                help: 'Results older than this are ignored. Can be overwritten per search',
+                                help: 'Results older than this are ignored. Can be overwritten per search. Apply words with return key.',
                                 addonRight: {
                                     text: 'days'
                                 }
@@ -6352,7 +6366,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Remove trailing...',
-                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces'
+                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Apply words with return key.'
                             }
                         },
                         {
@@ -6482,7 +6496,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required words',
-                                    help: "Title is converted to lowercase before"
+                                    help: "Title is converted to lowercase before. Apply words with return key."
                                 }
                             },
                             {
@@ -6500,7 +6514,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden words',
-                                    help: "Title is converted to lowercase before"
+                                    help: "Title is converted to lowercase before. Apply words with return key."
                                 }
                             },
                             {
@@ -6567,7 +6581,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
-                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally'
+                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key.'
                                 }
                             },
                             {

@@ -114,7 +114,7 @@ public class Newznab extends Indexer<Xml> {
 
         componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
         query = generateQueryIfApplicable(searchRequest, query);
-        query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
+        query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
 
         query = cleanupQuery(query);
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
@@ -199,7 +199,7 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {
+    private String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
         List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
         requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
@@ -207,14 +207,14 @@ public class Newznab extends Indexer<Xml> {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
-        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
-        excludedWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
-        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
-        if (!excludedWords.isEmpty()) {
+        List<String> forbiddenWords = searchRequest.getInternalData().getForbiddenWords();
+        forbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
+        forbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        if (!forbiddenWords.isEmpty()) {
             if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
-                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(excludedWords);
+                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(forbiddenWords);
             } else {
-                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(excludedWords);
+                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(forbiddenWords);
             }
         }
         return query;

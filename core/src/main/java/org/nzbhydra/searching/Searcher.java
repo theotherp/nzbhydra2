@@ -178,7 +178,7 @@ public class Searcher {
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 
             //Extend search request
-            searchRequest.extractExcludedWordsFromQuery();
+            searchRequest.extractForbiddenWords();
 
             searchRepository.save(searchEntity);
 

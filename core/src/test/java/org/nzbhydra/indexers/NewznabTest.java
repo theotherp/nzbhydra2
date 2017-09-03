@@ -338,16 +338,16 @@ public class NewznabTest {
     @Test
     public void shouldAddExcludedAndRequiredWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=--a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         searchRequest.getInternalData().setRequiredWords(Lists.newArrayList("x", "y", "z"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=x y z --a --b --c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
@@ -362,23 +362,23 @@ public class NewznabTest {
     public void shouldUseDifferentExclusionFormatForNzedbAndOmgWtf() throws Exception {
         testee.config.setBackend(BackendType.NZEDB);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://127.0.0.1:1234/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         testee.config.setBackend(BackendType.NEWZNAB);
         testee.config.setHost("http://www.OMGwtfnzbs.com");
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=!a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
         searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.setQuery("aquery");
-        searchRequest.getInternalData().setExcludedWords(Lists.newArrayList("a", "b", "c"));
+        searchRequest.getInternalData().setForbiddenWords(Lists.newArrayList("a", "b", "c"));
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.OMGwtfnzbs.com/api?apikey&t=search&q=aquery !a,!b,!c").build(), testee.buildSearchUrl(searchRequest, null, null).build());
     }
 

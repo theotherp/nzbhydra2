@@ -20,10 +20,10 @@ public class SearchRequestTest {
     @Test
     public void shouldFindAndRemoveExclusions() {
         testee.setQuery("one two --three --four");
-        testee = testee.extractExcludedWordsFromQuery();
-        assertEquals(2, testee.getInternalData().getExcludedWords().size());
+        testee = testee.extractForbiddenWords();
+        assertEquals(2, testee.getInternalData().getForbiddenWords().size());
         assertEquals("one two", testee.getQuery().get());
-        assertTrue(testee.getInternalData().getExcludedWords().contains("three"));
+        assertTrue(testee.getInternalData().getForbiddenWords().contains("three"));
     }
 
 

@@ -90,24 +90,24 @@ public class ResultAcceptorTest {
 
     @Test
     public void shouldCheckForForbiddenWords() throws Exception {
-        internalData.getExcludedWords().clear();
-        internalData.getExcludedWords().add("abc.def");
+        internalData.getForbiddenWords().clear();
+        internalData.getForbiddenWords().add("abc.def");
         item.setTitle("abc.def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("abcdef ghi");
-        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("abc def ghi");
-        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
 
 
-        internalData.getExcludedWords().clear();
-        internalData.getExcludedWords().add("abc");
+        internalData.getForbiddenWords().clear();
+        internalData.getForbiddenWords().add("abc");
         item.setTitle("abc def ghi");
-        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("abcdef ghi");
-        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("def ghi");
-        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getExcludedWords(), item));
+        assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
     }
 
     @Test

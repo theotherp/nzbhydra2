@@ -104,14 +104,14 @@ public class NzbIndex extends Indexer<RssRoot> {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
 
-        query = addRequiredAndExcludedWordsToQuery(searchRequest, query);
+        query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
 
         componentsBuilder.queryParam("q", query);
 
         return componentsBuilder;
     }
 
-    private String addRequiredAndExcludedWordsToQuery(SearchRequest searchRequest, String query) {
+    private String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
         List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
         requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
@@ -119,11 +119,11 @@ public class NzbIndex extends Indexer<RssRoot> {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
-        List<String> excludedWords = searchRequest.getInternalData().getExcludedWords();
-        excludedWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
-        excludedWords.addAll(searchRequest.getCategory().getForbiddenWords());
-        if (!excludedWords.isEmpty()) {
-            query += (query.isEmpty() ? "" : " ") + "-" + Joiner.on(" -").join(excludedWords);
+        List<String> forbiddenWords = searchRequest.getInternalData().getForbiddenWords();
+        forbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
+        forbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        if (!forbiddenWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + "-" + Joiner.on(" -").join(forbiddenWords);
 
         }
         return query;
