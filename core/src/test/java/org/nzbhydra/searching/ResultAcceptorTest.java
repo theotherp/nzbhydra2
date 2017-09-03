@@ -12,6 +12,9 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.Newznab;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -238,6 +241,25 @@ public class ResultAcceptorTest {
         assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
         assertTrue(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+    }
+
+    @Test
+    public void shouldCheckForCategoryDisabledForIndexer() {
+        Indexer indexer = new Newznab();
+        indexer.initialize(indexerConfig, new IndexerEntity());
+        item.setIndexer(indexer);
+
+        //All categories enabled
+        when(indexerConfig.getEnabledCategories()).thenReturn(Collections.emptyList());
+        assertTrue(testee.checkForCategoryDisabledForIndexer(searchRequest, HashMultiset.create(), item));
+
+        //Used category enabled
+        when(indexerConfig.getEnabledCategories()).thenReturn(Arrays.asList(category.getName()));
+        assertTrue(testee.checkForCategoryDisabledForIndexer(searchRequest, HashMultiset.create(), item));
+
+        //Only other category enabled
+        when(indexerConfig.getEnabledCategories()).thenReturn(Arrays.asList("Other"));
+        assertFalse(testee.checkForCategoryDisabledForIndexer(searchRequest, HashMultiset.create(), item));
     }
 
     @Test

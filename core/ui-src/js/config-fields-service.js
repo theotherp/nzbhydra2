@@ -1657,7 +1657,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 type: 'horizontalMultiselect',
                 templateOptions: {
                     label: 'Enable for...',
-                    help: 'You can decide that this indexer should only be used for certain categories',
+                    help: 'Only use indexer for these and also reject results from others',
                     options: [
                         {
                             id: "Movies",

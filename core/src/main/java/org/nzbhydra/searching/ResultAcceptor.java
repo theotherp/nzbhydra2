@@ -70,6 +70,10 @@ public class ResultAcceptor {
             if (!checkForCategory(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
+            if (!checkForCategoryDisabledForIndexer(searchRequest, reasonsForRejection, item)) {
+                continue;
+            }
+
 
             //TODO Ignore results from categories set for indexer
 
@@ -149,6 +153,16 @@ public class ResultAcceptor {
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
             logger.debug(MARKER, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
+            reasonsForRejection.add("In forbidden category");
+            return false;
+        }
+        return true;
+    }
+
+    protected boolean checkForCategoryDisabledForIndexer(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
+        List<String> enabledCategories = item.getIndexer().getConfig().getEnabledCategories();
+        if (!enabledCategories.isEmpty() && !enabledCategories.contains(item.getCategory().getName())) {
+            logger.debug(MARKER, "{} is in category disabled for indexer", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }
