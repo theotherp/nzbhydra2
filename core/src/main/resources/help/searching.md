@@ -16,7 +16,7 @@ which must or must not be matched for a search result to be matched. You can als
 
 One forbidden word in a result title dismisses the result. If none of the required words is found anywhere in a result title it's also dismissed. 
 You can define forbidden and required words for categories in the next tab.
-Usually required or forbidden words are applied on a word base, so they must word a complete word in a title. Only if they contain a 
+Usually required or forbidden words are applied on a word base, so they must form a complete word in a title. Only if they contain a 
 dash or a dot they may appear anywhere in the title. Example: "ea" matches "something.from.ea" but not "release.from.other". "web-dl" 
 matches "title.web-dl" and "someweb-dl".
 

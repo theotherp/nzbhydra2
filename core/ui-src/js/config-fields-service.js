@@ -694,7 +694,10 @@ function ConfigFields($injector) {
                     type: 'help',
                     templateOptions: {
                         type: 'help',
-                        lines: ["The category configuration is not validated in any way. You can seriously fuck up Hydra's results and overall behavior so take care."],
+                        lines: [
+                            "The category configuration is not validated in any way. You can seriously fuck up Hydra's results and overall behavior so take care.",
+                            "Restrictions will taken from a result's category, not the search request category which may not always be the same."
+                        ],
                         marginTop: '50px'
                     }
                 },
