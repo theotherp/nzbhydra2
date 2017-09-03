@@ -1,4 +1,4 @@
-package org.nzbhydra.update;
+package org.nzbhydra.mapping;
 
 import java.io.Serializable;
 import java.util.ArrayList;

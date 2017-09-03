@@ -1148,13 +1148,13 @@ angular
     .directive('hydraupdates', hydraupdates);
 
 function hydraupdates() {
-    controller.$inject = ["$scope", "UpdateService", "$sce"];
+    controller.$inject = ["$scope", "UpdateService"];
     return {
         templateUrl: 'static/html/directives/updates.html',
         controller: controller
     };
 
-    function controller($scope, UpdateService, $sce) {
+    function controller($scope, UpdateService) {
 
         $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
@@ -1166,7 +1166,7 @@ function hydraupdates() {
         });
 
         UpdateService.getVersionHistory().then(function (data) {
-            $scope.versionHistory = $sce.trustAsHtml(data.data.versionHistory);
+            $scope.versionHistory = data.data;
         });
 
         $scope.update = function () {
@@ -2167,16 +2167,14 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             var $uibModal = myInjector.get("$uibModal");
             var params = {
                 size: "lg",
-                templateUrl: "static/html/changelog.html",
+                templateUrl: "static/html/changelog-modal.html",
                 resolve: {
-                    changelog: function () {
-                        return response.data.message;
+                    versionHistory: function () {
+                        return response.data;
                     }
                 },
-                controller: function ($scope, $sce, $uibModalInstance, changelog) {
-                    //I fucking hate that untrusted HTML shit
-                    changelog = $sce.trustAsHtml(changelog);
-                    $scope.changelog = changelog;
+                controller: function ($scope, $sce, $uibModalInstance, versionHistory) {
+                    $scope.versionHistory = versionHistory;
 
                     $scope.ok = function () {
                         $uibModalInstance.dismiss();

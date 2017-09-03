@@ -1,6 +1,7 @@
 package org.nzbhydra.update;
 
 import lombok.Data;
+import org.nzbhydra.mapping.SemanticVersion;
 
 import java.io.Serializable;
 import java.util.ArrayList;

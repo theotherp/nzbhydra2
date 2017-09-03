@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import org.nzbhydra.mapping.changelog.ChangelogChangeEntry;
+import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
 import org.slf4j.Logger;
@@ -74,9 +76,13 @@ public class MockGithub {
         return windowsAsset;
     }
 
-    @RequestMapping(value = "/changelog.md", method = RequestMethod.GET, produces = org.springframework.http.MediaType.TEXT_HTML_VALUE)
-    public String changelog() throws Exception {
-        return "changelog";
+    @RequestMapping(value = "/changelog", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> changelog() throws Exception {
+        return Arrays.asList(
+                new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+                new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+                new ChangelogVersionEntry("0.1.0", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+        );
     }
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/news.md", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)

@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
@@ -15,6 +16,7 @@ import java.net.URI;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @DataJpaTest
+@Ignore //Only run when needed, we don't want any access to internet from build
 public class SslTest {
 
     //Just test that some sites can be visited that used to cause troubles because of SNI

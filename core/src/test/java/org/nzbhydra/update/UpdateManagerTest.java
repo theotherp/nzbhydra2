@@ -2,43 +2,39 @@ package org.nzbhydra.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import okhttp3.OkHttpClient.Builder;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
-import org.mockserver.model.HttpRequest;
-import org.mockserver.model.HttpResponse;
-import org.mockserver.verify.VerificationTimes;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.mapping.SemanticVersion;
+import org.nzbhydra.mapping.changelog.ChangelogChangeEntry;
+import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
+@SuppressWarnings("unchecked")
 public class UpdateManagerTest {
 
-    private HttpRequest latestRequest;
-    private HttpRequest releasesRequest;
-    private HttpRequest changelogRequest;
-    private HttpRequest blockedVersionsRequest;
-    private ClientAndServer mockServer;
-    @Mock
-    private HydraOkHttp3ClientHttpRequestFactory requestFactoryMock;
     @Mock
     private GenericStorage updateDataGenericStorageMock;
+    @Mock
+    private RestTemplate restTemplateMock;
 
     private static String changelog = "some changes";
 
@@ -51,10 +47,9 @@ public class UpdateManagerTest {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
-        mockServer = startClientAndServer(7070);
-        testee.currentVersionString = "0.0.1";
+        testee.currentVersionString = "1.0.0";
         testee.repositoryBaseUrl = "http:/127.0.0.1:7070/repos/theotherp/apitests";
-        testee.changelogUrl = "http:/127.0.0.1:7070/changelog.md";
+        testee.changelogUrl = "http:/127.0.0.1:7070/changelog";
         testee.blockedVersionsUrl = "http:/127.0.0.1:7070/blockedVersions.json";
         testee.afterPropertiesSet();
 
@@ -68,29 +63,30 @@ public class UpdateManagerTest {
                 "* a\n" +
                 "* b");
 
-        latestRequest = HttpRequest.request().withPath("/repos/theotherp/apitests/releases/latest");
-        mockServer.when(latestRequest).respond(HttpResponse.response().withBody(objectMapper.writeValueAsString(latestRelease)).withHeaders(
-                new Header("Content-Type", "application/json; charset=utf-8")));
+        when(restTemplateMock.getForEntity(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases/latest"), any())).thenReturn(
+                new ResponseEntity<>(latestRelease, HttpStatus.OK)
+        );
 
-        releasesRequest = HttpRequest.request().withPath("/repos/theotherp/apitests/releases");
         //Return in wrong order to test sorting of releases by version
-        mockServer.when(releasesRequest).respond(HttpResponse.response().withBody(objectMapper.writeValueAsString(Arrays.asList(previousRelease, latestRelease))).withHeaders(
-                new Header("Content-Type", "application/json; charset=utf-8")));
+        when(restTemplateMock.getForEntity(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any())).thenReturn(
+                new ResponseEntity<>(
+                        Arrays.asList(previousRelease, latestRelease), HttpStatus.OK)
+        );
 
-        changelogRequest = HttpRequest.request().withPath("/changelog.md");
-        mockServer.when(changelogRequest).respond(HttpResponse.response().withBody(changelog).withHeaders(
-                new Header("Content-Type", "application/raw; charset=utf-8")));
+        when(restTemplateMock.exchange(eq("http:/127.0.0.1:7070/changelog"), any(), any(), any(ParameterizedTypeReference.class))).thenReturn(
+                new ResponseEntity<>(
+                        Arrays.asList(
+                                new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
+                                new ChangelogVersionEntry("2.0.0", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+                                new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+                        ), HttpStatus.OK)
+        );
 
-        blockedVersionsRequest = HttpRequest.request().withPath("/blockedVersions.json");
-        mockServer.when(blockedVersionsRequest).respond(HttpResponse.response().withBody(new ObjectMapper().writeValueAsString(Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment")))).withHeaders(
-                new Header("Content-Type", "application/json; charset=utf-8")));
-
-        when(requestFactoryMock.getOkHttpClientBuilder(any())).thenReturn(new Builder());
-    }
-
-    @After
-    public void tearDown() {
-        mockServer.stop();
+        when(restTemplateMock.exchange(eq("http:/127.0.0.1:7070/blockedVersions.json"), any(), any(), any(ParameterizedTypeReference.class))).thenReturn(
+                new ResponseEntity<>(
+                        Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment")),
+                        HttpStatus.OK)
+        );
     }
 
 
@@ -108,27 +104,25 @@ public class UpdateManagerTest {
 
         //Should not contact repository again if last request was less than 15 minutes ago
         testee.getLatestVersionString();
-        mockServer.verify(latestRequest, VerificationTimes.exactly(1));
     }
 
     @Test
     public void shouldGetChangesSince() throws Exception {
-        String changesSince = testee.getChangesSince();
-        String expectedChangesSince = "<h2>v2.0.0</h2>\n" +
-                "<p>Some new stuff</p>\n" +
-                "<hr />\n" +
-                "<h2>v1.0.0</h2>\n" +
-                "<p>A list:</p>\n" +
-                "<ul>\n" +
-                "<li>a</li>\n" +
-                "<li>b</li>\n" +
-                "</ul>\n";
-        assertEquals(expectedChangesSince, changesSince);
+        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
+
+        assertEquals(2, changesSince.size());
+        assertEquals("3.0.0", changesSince.get(0).getVersion());
+        assertEquals("2.0.0", changesSince.get(1).getVersion());
     }
 
     @Test
-    public void shouldGetChangelog() throws Exception {
-        assertEquals(changelog, testee.getFullChangelog());
+    public void shouldGetAllChanges() throws Exception {
+        List<ChangelogVersionEntry> changesSince = testee.getAllChanges();
+
+        assertEquals(3, changesSince.size());
+        assertEquals("3.0.0", changesSince.get(0).getVersion());
+        assertEquals("2.0.0", changesSince.get(1).getVersion());
+        assertEquals("0.0.1", changesSince.get(2).getVersion());
     }
 
 

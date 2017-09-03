@@ -8,7 +8,7 @@ function hydraupdates() {
         controller: controller
     };
 
-    function controller($scope, UpdateService, $sce) {
+    function controller($scope, UpdateService) {
 
         $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
             $scope.currentVersion = data.data.currentVersion;
@@ -20,7 +20,7 @@ function hydraupdates() {
         });
 
         UpdateService.getVersionHistory().then(function (data) {
-            $scope.versionHistory = $sce.trustAsHtml(data.data.versionHistory);
+            $scope.versionHistory = data.data;
         });
 
         $scope.update = function () {

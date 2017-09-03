@@ -1,39 +1,42 @@
 package org.nzbhydra.update;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
-import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
-import org.nzbhydra.Markdown;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.mapping.SemanticVersion;
+import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,11 +63,11 @@ public class UpdateManager implements InitializingBean {
     protected String blockedVersionsUrl;
 
     @Autowired
-    protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
-    @Autowired
     private BackupAndRestore backupAndRestore;
     @Autowired
     private GenericStorage updateDataGenericStorage;
+    @Autowired
+    protected RestTemplate restTemplate;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -129,25 +132,6 @@ public class UpdateManager implements InitializingBean {
         return currentVersionString;
     }
 
-    /**
-     * Returns the full content of the changelog.md formatted as HTML
-     *
-     * @return HTML formatted changelog
-     * @throws UpdateException Unable to reach GitHub or parse data
-     */
-    public String getFullChangelog() throws UpdateException {
-        Request request = new Builder().url(changelogUrl).build();
-        try {
-            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-                if (!response.isSuccessful()) {
-                    throw new UpdateException("Error while getting changelog from GitHub: " + response.message());
-                }
-                return response.body().string();
-            }
-        } catch (IOException e) {
-            throw new UpdateException("Error while getting changelog from GitHub", e);
-        }
-    }
 
     public void ignore(String version) {
         SemanticVersion semanticVersion = new SemanticVersion(version);
@@ -157,50 +141,29 @@ public class UpdateManager implements InitializingBean {
         logger.info("Version {} ignored. Will not show update notices for this version.", semanticVersion);
     }
 
-    /**
-     * Returns all changes from releases after the current one as formatted HTML
-     *
-     * @return HTML with the markdown from the release bodies rendered and separated with <hr>
-     * @throws UpdateException Unable to reach github or parse the output
-     */
-    public String getChangesSince() throws UpdateException {
-        try {
-            String url = repositoryBaseUrl + "/releases";
-            logger.debug("Loading changes since current version {} from GitHub using URL", currentVersion, url);
-            String responseBody = executeRequest(url);
 
-            List<Release> releases = objectMapper.readValue(responseBody, new TypeReference<List<Release>>() {
-            });
-            releases.sort((o1, o2) -> {
-                try {
-                    //Newest version first
-                    return new SemanticVersion(o2.getTagName()).compareTo(new SemanticVersion(o1.getTagName()));
-                } catch (RuntimeException e) {
-                    logger.error("Error comparing versions {} and {}", o1, o2);
-                    return 0;
-                }
-            });
-            List<String> collectedVersionChanges = new ArrayList<>();
-            for (Release release : releases) {
-                if (new SemanticVersion(release.getTagName()).equals(currentVersion)) {
-                    break;
-                }
-                collectedVersionChanges.add("## " + release.getTagName() + "\r\n" + release.getBody());
+    public List<ChangelogVersionEntry> getChangesSinceCurrentVersion() throws UpdateException {
+        List<ChangelogVersionEntry> allChanges = getAllChanges();
+        List<ChangelogVersionEntry> collectedVersionChanges = new ArrayList<>();
+        for (ChangelogVersionEntry changelogVersionEntry : allChanges) {
+            SemanticVersion version = new SemanticVersion(changelogVersionEntry.getVersion());
+            if (currentVersion.isSameOrNewer(version)) {
+                break;
             }
-            String allChanges = Joiner.on("\r\n***\r\n").join(collectedVersionChanges);
-
-            String html = Markdown.renderMarkdownAsHtml(allChanges);
-            return html;
-        } catch (IOException | RuntimeException e) {
-            throw new UpdateException("Error while getting changelog", e);
+            collectedVersionChanges.add(changelogVersionEntry);
         }
+        return collectedVersionChanges;
     }
 
-    protected String executeRequest(String url) throws IOException {
-        Request request = new Builder().url(url).build();
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-            return response.body().string();
+    public List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
+        ResponseEntity<List<ChangelogVersionEntry>> responseEntity = restTemplate.exchange(changelogUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<ChangelogVersionEntry>>() {
+        });
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new UpdateException("Error while getting changelog: " + responseEntity.getStatusCode());
         }
+        Collections.sort(responseEntity.getBody());
+        Collections.reverse(responseEntity.getBody());
+        return responseEntity.getBody();
     }
 
 
@@ -210,10 +173,10 @@ public class UpdateManager implements InitializingBean {
         Asset asset = getAsset(latestRelease);
         String url = asset.getBrowserDownloadUrl();
         logger.debug("Downloading update from URL {}", url);
-        Request request = new Builder().url(url).build();
 
         File updateZip;
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+        try {
+            ResponseEntity<Resource> exchange = restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
 
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
@@ -224,11 +187,10 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
-            Files.copy(response.body().byteStream(), updateZip.toPath());
-        } catch (IOException e) {
+            Files.copy(exchange.getBody().getInputStream(), updateZip.toPath());
+        } catch (RestClientException | IOException e) {
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
-
 
         try {
             logger.info("Creating backup before shutting down");
@@ -258,31 +220,26 @@ public class UpdateManager implements InitializingBean {
         return optionalAsset.get();
     }
 
-
     private Release getLatestRelease() throws UpdateException {
         try {
             //TODO support prereleases
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
-            Request request = new Builder().url(url).build();
-            try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-                String responseBody = response.body().string();
-                return objectMapper.readValue(responseBody, Release.class);
-            }
-        } catch (IOException e) {
+            return restTemplate.getForEntity(url, Release.class).getBody();
+
+        } catch (RestClientException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }
     }
 
 
     protected List<BlockedVersion> getBlockedVersions() throws UpdateException {
-        Request request = new Request.Builder().url(blockedVersionsUrl).build();
         logger.debug("Getting blocked versions from GitHub");
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-            List<BlockedVersion> blockedVersions = new ObjectMapper().readValue(response.body().string(), new TypeReference<List<BlockedVersion>>() {
+        try {
+            ResponseEntity<List<BlockedVersion>> responseEntity = restTemplate.exchange(blockedVersionsUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<BlockedVersion>>() {
             });
-            return blockedVersions;
-        } catch (IOException e) {
+            return responseEntity.getBody();
+        } catch (RestClientException e) {
             logger.error("Unable to read blocked versions", e);
             throw new UpdateException("Unable to read blocked versions");
         }

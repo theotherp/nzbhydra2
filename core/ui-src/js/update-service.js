@@ -52,16 +52,14 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             var $uibModal = myInjector.get("$uibModal");
             var params = {
                 size: "lg",
-                templateUrl: "static/html/changelog.html",
+                templateUrl: "static/html/changelog-modal.html",
                 resolve: {
-                    changelog: function () {
-                        return response.data.message;
+                    versionHistory: function () {
+                        return response.data;
                     }
                 },
-                controller: function ($scope, $sce, $uibModalInstance, changelog) {
-                    //I fucking hate that untrusted HTML shit
-                    changelog = $sce.trustAsHtml(changelog);
-                    $scope.changelog = changelog;
+                controller: function ($scope, $sce, $uibModalInstance, versionHistory) {
+                    $scope.versionHistory = versionHistory;
 
                     $scope.ok = function () {
                         $uibModalInstance.dismiss();

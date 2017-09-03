@@ -7,8 +7,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
-import org.nzbhydra.update.SemanticVersion;
 import org.nzbhydra.update.UpdateManager;
 
 import java.text.ParseException;

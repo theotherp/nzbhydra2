@@ -7,6 +7,7 @@ import lombok.Data;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -62,8 +64,14 @@ public class UpdatesWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/changesSince", method = RequestMethod.GET)
-    public GenericResponse getChangesSince() throws Exception {
-        return new GenericResponse(true, updateManager.getChangesSince());
+    public List<ChangelogVersionEntry> getChangesSince() throws Exception {
+        return updateManager.getChangesSinceCurrentVersion();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> getVersionHistory() throws Exception {
+        return updateManager.getAllChanges();
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -72,11 +80,6 @@ public class UpdatesWeb {
         updateManager.ignore(version);
     }
 
-    @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
-    public GenericResponse getVersionHistory() throws Exception {
-        return new GenericResponse(true, updateManager.getFullChangelog());
-    }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.PUT)

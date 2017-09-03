@@ -58,7 +58,13 @@ def get_md_from_entry(entry, with_headline=True):
         type = change["type"]
         if change["type"] == "note":
             type = "Note"
-            entry_content += type + ": " + change["text"] + "\n"
+        entry_content += type + ": " + change["text"] + "\n"
+        if change["type"] == "feature":
+            type = "Feature"
+        entry_content += type + ": " + change["text"] + "\n"
+        if change["type"] == "fix":
+            type = "Fix"
+        entry_content += type + ": " + change["text"] + "\n"
     return entry_content
 
 
