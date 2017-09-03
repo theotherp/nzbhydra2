@@ -75,14 +75,11 @@ public class ResultAcceptor {
             }
 
 
-            //TODO Ignore results from categories set for indexer
-
             //Forbidden words from query
             if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item)) {
                 continue;
             }
 
-            //TODO Check when and if this is actually filled
             if (!checkRequiredWords(reasonsForRejection, searchRequest.getInternalData().getRequiredWords(), item)) {
                 continue;
             }

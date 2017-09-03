@@ -24,7 +24,7 @@ public class NzbGet extends Downloader {
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
 
-    //TODO Handle username / password and failed auth, return codes
+    //LATER Handle username / password and failed auth, return codes
 
     @Override
     public void intialize(DownloaderConfig downloaderConfig) {

@@ -20,7 +20,7 @@ public class NewznabParameters {
     private String rid;
     private String tvdbid;
     private String tvmazeId;
-    private String traktId; //TODO implement?
+    private String traktId; //LATER implement?
     private String imdbid;
     private String tmdbid;
     private Integer season;

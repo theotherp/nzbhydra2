@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -65,7 +66,8 @@ public class UpdateManager implements InitializingBean {
     @Autowired
     private GenericStorage updateDataGenericStorage;
 
-    protected String currentVersionString = "0.0.1"; //TODO FIll with version from pom.properties, see http://stackoverflow.com/questions/3886753/access-maven-project-version-in-spring-config-files
+    @Value("${build.version:0.0.1}")
+    protected String currentVersionString;
     protected SemanticVersion currentVersion;
 
     private ObjectMapper objectMapper;
@@ -246,7 +248,7 @@ public class UpdateManager implements InitializingBean {
         }
         String osName = System.getProperty("os.name");
         boolean isOsWindows = osName.toLowerCase().contains("windows");
-        String assetToContain = isOsWindows ? "windows" : "linux"; //TODO What about OSX?
+        String assetToContain = isOsWindows ? "windows" : "linux"; //LATER What about OSX?
         Optional<Asset> optionalAsset = assets.stream().filter(x -> x.getName().toLowerCase().contains(assetToContain)).findFirst();
         if (!optionalAsset.isPresent()) {
             logger.error("Unable to find asset for platform {} in these assets: {}", assetToContain, assets.stream().map(Asset::getName).collect(Collectors.joining(", ")));
@@ -310,6 +312,10 @@ public class UpdateManager implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        if (Objects.equals(currentVersionString, "@project.version@")) {
+            currentVersionString = "1.0.0";
+            logger.warn("Version string not found. Using 1.0.0");
+        }
         currentVersion = new SemanticVersion(currentVersionString);
     }
 

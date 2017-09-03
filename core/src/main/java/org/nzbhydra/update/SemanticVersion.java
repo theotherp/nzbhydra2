@@ -1,63 +1,38 @@
 package org.nzbhydra.update;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
-//Taken from http://blog.onyxbits.de/a-fast-java-parser-for-semantic-versioning-with-correct-precedence-ordering-380/
+//Taken from http://blog.onyxbits.de/a-fast-java-parser-for-semantic-versioning-with-correct-precedence-ordering-380/ and adapted
 
 public final class SemanticVersion implements Comparable<SemanticVersion>, Serializable {
 
-    /**
-     * Major version number
-     */
+
     public int major;
-
-    /**
-     * Minor version number
-     */
     public int minor;
-
-    /**
-     * Patch level
-     */
     public int patch;
+    public String qualifier;
 
 
     public SemanticVersion() {
     }
 
-    /**
-     * Construct a fully featured version object with all bells and whistles.
-     *  @param major      major version number (must not be negative)
-     * @param minor      minor version number (must not be negative)
-     * @param patch      patch level (must not be negative).
-     */
     public SemanticVersion(int major, int minor, int patch) {
+        this(major, minor, patch, null);
+    }
+
+    public SemanticVersion(int major, int minor, int patch, String qualifier) {
         if (major < 0 || minor < 0 || patch < 0) {
             throw new IllegalArgumentException("Versionnumbers must be positive!");
         }
 
-        Pattern p = Pattern.compile("[0-9A-Za-z-]+");
-
-
         this.major = major;
         this.minor = minor;
         this.patch = patch;
+        this.qualifier = qualifier;
     }
 
-    /**
-     * Convenience constructor for creating a Version object from the
-     * "Implementation-Version:" property of the Manifest file.
-     *
-     * @param clazz a class in the JAR file (or that otherwise has its
-     *              implementationVersion attribute set).
-     * @throws ParseException if the versionstring does not conform to the semver specs.
-     */
-    public SemanticVersion(Class<?> clazz) throws ParseException {
-        this(clazz.getPackage().getImplementationVersion());
-    }
 
     /**
      * Construct a version object by parsing a string.
@@ -102,6 +77,10 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
         ret.append(minor);
         ret.append('.');
         ret.append(patch);
+        if (qualifier != null) {
+            ret.append('-');
+            ret.append(qualifier);
+        }
 
         return ret.toString();
     }
@@ -120,7 +99,7 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
             return false;
         }
         SemanticVersion ov = (SemanticVersion) other;
-        if (ov.major != major || ov.minor != minor || ov.patch != patch) {
+        if (ov.major != major || ov.minor != minor || ov.patch != patch || !Objects.equals(ov.qualifier, qualifier)) {
             return false;
         }
 
@@ -134,6 +113,14 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
             result = minor - v.minor;
             if (result == 0) { // Same minor
                 result = patch - v.patch;
+            }
+            if (result == 0) {
+                if (this.qualifier == null && v.qualifier != null) {
+                    return 1;
+                }
+                if (v.qualifier == null && this.qualifier != null) {
+                    return -1;
+                }
             }
         }
         return result;
@@ -281,6 +268,9 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
         major = vParts[0];
         minor = vParts[1];
         patch = vParts[2];
+        if (version.contains("-")) {
+            qualifier = version.substring(version.indexOf("-") + 1);
+        }
     }
 
 

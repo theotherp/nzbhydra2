@@ -61,7 +61,7 @@ public class Searcher {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
         SearchResult searchResult = new SearchResult();
-        int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //TODO default for limit
+        int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //LATER default for limit
         searchResult.setPickingResult(searchCacheEntry.getPickingResult());
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
@@ -114,7 +114,7 @@ public class Searcher {
 
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
-        int limit = searchRequest.getLimit().orElse(100); //TODO configurable
+        int limit = searchRequest.getLimit().orElse(100); //LATER configurable
         if (offset > 0 && offset >= searchResultItems.size()) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
             searchResult.setSearchResultItems(Collections.emptyList());
@@ -261,7 +261,7 @@ public class Searcher {
         int limit;
         if (entry.getValue().isEmpty()) {
             offset = 0;
-            limit = 100; //TODO Set either global default or get from indexerName or implement possibility to keep this unset and let indexer implementation decide
+            limit = 100; //LATER Set either global default or get from indexerName or implement possibility to keep this unset and let indexer implementation decide
         } else {
             IndexerSearchResult indexerToSearch = Iterables.getLast(entry.getValue());
             offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();

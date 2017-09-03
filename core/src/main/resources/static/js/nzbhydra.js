@@ -3855,7 +3855,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             function () {
                 modalInstance.close();
             });
-        //TODO close modal in case of error
     };
 
     $scope.openModal = function openModal(searchRequestId) {

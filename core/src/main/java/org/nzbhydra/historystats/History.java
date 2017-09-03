@@ -24,7 +24,7 @@ public class History {
     @PersistenceContext
     private EntityManager entityManager;
 
-    public Page getHistory(HistoryRequestData requestData, String tableName, Class resultClass) {
+    public <T> Page<T> getHistory(HistoryRequestData requestData, String tableName, Class<T> resultClass) {
         Map<String, Object> parameters = new HashMap<>();
 
         List<String> wheres = new ArrayList<>();
@@ -37,6 +37,9 @@ public class History {
             if (filterType.equals("freetext")) {
                 wheres.add(String.format("LOWER(%s) LIKE :%s", columnName, columnName));
                 parameters.put(columnName, "%" + filterValue.toString().toLowerCase() + "%");
+            } else if (filterType.equals("text")) {
+                wheres.add(String.format("LOWER(%s) = :%s", columnName, columnName));
+                parameters.put(columnName, filterValue.toString().toLowerCase());
             } else if (filterType.equals("checkboxes")) {
                 //TODO isBoolean?
                 wheres.add(String.format("%s IN :%s", columnName, columnName));

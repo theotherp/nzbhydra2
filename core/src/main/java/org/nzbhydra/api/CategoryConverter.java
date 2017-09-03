@@ -24,7 +24,6 @@ public class CategoryConverter implements AttributeConverter<Category, String> {
 
     @Override
     public String convertToDatabaseColumn(Category category) {
-        //TODO handle this properly
         if (category == null) {
             return null;
         }

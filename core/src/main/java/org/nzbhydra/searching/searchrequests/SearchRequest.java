@@ -35,7 +35,7 @@ public class SearchRequest {
     protected Set<String> indexers = null;
     protected SearchSource source;
     protected SearchType searchType = SearchType.SEARCH;
-    protected Category category = new Category(); //TODO Replace with "all"
+    protected Category category = new Category();
     protected Integer offset = 0;
     protected Integer limit = 100;
     protected Integer minsize = null;
@@ -58,7 +58,7 @@ public class SearchRequest {
         this.source = source;
         this.searchType = searchType;
         this.offset = offset == null ? 0 : offset;
-        this.limit = limit == null ? 100 : limit; //TODO Set to 100 or, better, make configurable for internal/external searches
+        this.limit = limit == null ? 100 : limit; //LATER Set to 100 or, better, make configurable for internal/external searches
     }
 
     public Optional<Set<String>> getIndexers() {

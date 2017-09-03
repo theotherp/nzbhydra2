@@ -45,7 +45,7 @@ public class InternalSearchResultProcessor {
         List<IndexerSearchMetaData> indexerSearchMetaDatas = new ArrayList<>();
         for (IndexerSearchResult indexerSearchResult : searchResult.getIndexerSearchResults()) {
             IndexerSearchMetaData indexerSearchMetaData = new IndexerSearchMetaData();
-            indexerSearchMetaData.setDidSearch(true); //TODO
+            indexerSearchMetaData.setDidSearch(true); //LATER
             indexerSearchMetaData.setErrorMessage(indexerSearchResult.getErrorMessage());
             indexerSearchMetaData.setHasMoreResults(indexerSearchResult.isHasMoreResults());
             indexerSearchMetaData.setIndexerName(indexerSearchResult.getIndexer().getName());

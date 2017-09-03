@@ -30,7 +30,7 @@ public class CapsServer {
     private String url;
 
     @XmlAttribute
-    private String image; //TODO favicon
+    private String image; //LATER favicon
 
 
 }

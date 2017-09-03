@@ -46,7 +46,6 @@ public class SearchWeb {
     @Autowired
     private InternalSearchResultProcessor searchResultProcessor;
 
-    private SearchResponse response = null;
     private Lock lock = new ReentrantLock();
 
     private Map<Long, SearchState> searchStates = ExpiringMap.builder()
@@ -59,10 +58,7 @@ public class SearchWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody SearchRequestParameters parameters, HttpServletRequest request) {
-        //TODO remove dev stuff
-        if ("fortesting".equals(parameters.getQuery()) && response != null) {
-            return response;
-        }
+
         SearchRequest searchRequest = createSearchRequest(parameters);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -74,9 +70,6 @@ public class SearchWeb {
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         SearchResponse searchResponse = response;
-        if ("fortesting".equals(parameters.getQuery())) {
-            this.response = searchResponse;
-        }
 
         searchStates.remove(searchRequest.getSearchRequestId());
 

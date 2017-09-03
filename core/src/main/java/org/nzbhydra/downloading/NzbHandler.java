@@ -80,7 +80,7 @@ public class NzbHandler {
             }
 
             long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
-            //TODO CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
+            //LATER CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
             NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, usernameOrIp, ageInDays, null);

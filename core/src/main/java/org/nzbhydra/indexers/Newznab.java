@@ -367,7 +367,7 @@ public class Newznab extends Indexer<Xml> {
             searchResultItem.setDetails(item.getComments().replace("#comments", ""));
         }
 
-        //TODO If details link still not set build it using the GUID which is sure to be not a link at this point. Perhaps this isn't necessary because all indexers should have a comments link
+        //LATER If details link still not set build it using the GUID which is sure to be not a link at this point. Perhaps this isn't necessary because all indexers should have a comments link
 
         searchResultItem.setFirstFound(Instant.now());
         searchResultItem.setIndexer(this);

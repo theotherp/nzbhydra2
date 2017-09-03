@@ -1,5 +1,6 @@
 package org.nzbhydra.historystats;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.historystats.stats.HistoryRequestData;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,20 +26,22 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page searchHistory(@RequestBody HistoryRequestData requestData) {
+    public Page<SearchEntity> searchHistory(@RequestBody HistoryRequestData requestData) {
         return history.getHistory(requestData, "SEARCH", SearchEntity.class);
     }
 
-    //@Secured({"ROLE_USER"}) //TODO: Why commented out?
+    @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<SearchEntity> searchHistoryForSearchPage() {
-        //TODO If user is logged in only show his searches
+    public List<SearchEntity> searchHistoryForSearchPage(HttpServletRequest request) {
         HistoryRequestData requestData = new HistoryRequestData();
         requestData.setSortModel(new SortModel("time", 2));
         FilterModel filterModel = new FilterModel();
         filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
+        if (!Strings.isNullOrEmpty(request.getRemoteUser())) {
+            filterModel.put("username_or_ip", new FilterDefinition(request.getRemoteUser(), "text", false));
+        }
         requestData.setFilterModel(filterModel);
-        Page searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
+        Page<SearchEntity> searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
         List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
         List<SearchEntity> filteredSearchEntities = new ArrayList<>();
         if (!allSearchEntities.isEmpty()) {
@@ -56,7 +60,7 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page downloadHistory(@RequestBody HistoryRequestData requestData) {
+    public Page<NzbDownloadEntity> downloadHistory(@RequestBody HistoryRequestData requestData) {
         return history.getHistory(requestData, "INDEXERNZBDOWNLOAD left join INDEXER on INDEXERNZBDOWNLOAD.INDEXER_ID = INDEXER.ID", NzbDownloadEntity.class);
     }
 

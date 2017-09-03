@@ -4,9 +4,11 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ public class DuplicateDetector {
 
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDetector.class);
 
+    @Autowired
+    private ConfigProvider configProvider;
 
     public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -97,16 +101,16 @@ public class DuplicateDetector {
         boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
         boolean samePoster = posterKnown && Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
-        float duplicateAgeThreshold = 0.1f; //TODO Get from config
-        float duplicateSizeThreshold = 0.1f; //TODO Get from config
+        float duplicateAgeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateAgeThreshold();
+        float duplicateSizeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateSizeThresholdInPercent();
 
         if ((groupKnown && !sameGroup) || (posterKnown && !samePoster)) {
             return false;
         }
 
         if ((sameGroup && !posterKnown) || (samePoster && !groupKnown)) {
-            duplicateAgeThreshold *= 2; //TODO Get from config
-            duplicateSizeThreshold *= 2; //TODO Get from config
+            duplicateAgeThreshold *= 2;
+            duplicateSizeThreshold *= 2;
         }
 
         return testForDuplicateAge(result1, result2, duplicateAgeThreshold) && testForDuplicateSize(result1, result2, duplicateSizeThreshold);

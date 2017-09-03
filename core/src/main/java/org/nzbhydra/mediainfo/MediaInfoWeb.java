@@ -64,7 +64,12 @@ public class MediaInfoWeb {
 
     @RequestMapping(value = "/internalapi/autocomplete/{type}/{input}", produces = "application/json")
     public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @PathVariable("input") String input) throws ExecutionException {
-        return autocompleteCache.get(new CacheKey(type, input)); //TODO Handle provider not finding anything more graceful (don't log exception with stacktrace etc)
+        try {
+            return autocompleteCache.get(new CacheKey(type, input));
+        } catch (ExecutionException e) {
+            logger.warn("Error while trying to find autocomplete data for input {}: {}", input, e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
 

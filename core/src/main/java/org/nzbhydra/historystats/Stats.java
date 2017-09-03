@@ -1,6 +1,7 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
@@ -29,6 +30,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -270,6 +272,8 @@ public class Stats {
 
 
         List<Indexer> indexersToInclude = statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers();
+        List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
+        indexersToInclude = indexersToInclude.stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList());
         for (Indexer indexer : indexersToInclude) {
             logger.debug("Calculating search shares for indexer {}", indexer.getName());
             Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerId", indexer.getIndexerEntity().getId());
@@ -288,7 +292,7 @@ public class Stats {
             if (resultSet[2] != null && resultSet[3] != null) {
                 BigInteger indexerUniqueResultsSum = (BigInteger) resultSet[2];
                 BigInteger allUniqueResultsSum = (BigInteger) resultSet[3];
-                if (allUniqueResultsSum.intValue() > 0) {//TODO exclude raw engines
+                if (allUniqueResultsSum.intValue() > 0) {
                     uniqueShare = 100 / (allUniqueResultsSum.floatValue() / indexerUniqueResultsSum.floatValue());
                 }
             }

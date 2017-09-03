@@ -95,7 +95,6 @@ public abstract class Indexer<T> {
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
-        //TODO Set user agent, use proxy, etc
 
     }
 
@@ -125,14 +124,14 @@ public abstract class Indexer<T> {
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName()));
         } catch (IndexerAccessException e) {
-            handleIndexerAccessException(e, IndexerApiAccessType.SEARCH); //TODO do I actually need the url?
+            handleIndexerAccessException(e, IndexerApiAccessType.SEARCH);
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName()));
         } catch (Exception e) {
             logger.error("Unexpected error while searching", e);
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
             try {
-                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //TODO depending on type of error, perhaps not at all because it might be a bug
+                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
             } catch (Exception e1) {
                 logger.error("Error while handling indexer failure. API access was not saved to database", e1);
             }
@@ -218,7 +217,7 @@ public abstract class Indexer<T> {
                 searchResultEntity.setPubDate(item.getPubDate());
                 searchResultEntities.add(searchResultEntity);
             }
-            //TODO Unify guid and searchResultId which are the same
+            //LATER Unify guid and searchResultId which are the same
             long guid = SearchResultIdCalculator.calculateSearchResultId(item);
             item.setGuid(guid);
             item.setSearchResultId(guid);
@@ -295,7 +294,7 @@ public abstract class Indexer<T> {
     /**
      * Implementations should call {link #getAndStoreResultToDatabase(java.net.URI, java.lang.Class, org.nzbhydra.database.IndexerApiAccessType)} with the class of the response
      *
-     * @param uri Called URI
+     * @param uri           Called URI
      * @param apiAccessType Access type
      * @return The response from the indexer
      * @throws IndexerAccessException
@@ -305,10 +304,10 @@ public abstract class Indexer<T> {
     /**
      * Makes a call to the URI, saves the access result to the database and returns the web call response
      *
-     * @param uri URI to call
-     * @param responseType The type to expect from the response (e.g. RssRoot.class or String.class)
+     * @param uri           URI to call
+     * @param responseType  The type to expect from the response (e.g. RssRoot.class or String.class)
      * @param apiAccessType The API access type, needed for the database entry
-     * @param <T> Type to expect from the call
+     * @param <T>           Type to expect from the call
      * @return The web response
      * @throws IndexerAccessException
      */
@@ -423,17 +422,17 @@ public abstract class Indexer<T> {
     }
 
     protected String sanitizeTitleForQuery(String query) {
-        return query; //TODO
+        return query; //LATER
     }
 
     public Optional<Instant> tryParseDate(String dateString) {
-        try {
-            for (DateTimeFormatter formatter : DATE_FORMATs) {
+        for (DateTimeFormatter formatter : DATE_FORMATs) {
+            try {
                 Instant instant = Instant.from(formatter.parse(dateString));
                 return Optional.of(instant);
+            } catch (DateTimeParseException e) {
+                logger.debug("Unable to parse date string " + dateString);
             }
-        } catch (DateTimeParseException e) {
-            logger.debug("Unable to parse date string " + dateString);
         }
         return Optional.empty();
     }

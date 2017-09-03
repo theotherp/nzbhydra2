@@ -48,7 +48,7 @@ public abstract class Downloader {
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
                     addLink(nzbHandler.getNzbDownloadLink(searchResultId, false, DownloadType.NZB), searchResultEntity.getTitle(), category);
-                    //TODO: Use the external ID some way, perhaps store it or something
+                    //LATER: Use the external ID some way, perhaps store it or something
                     //At this point we don't have a DownloadEntity for which we could set the external status. When a link is added to the download it will download the NZB from us and only then
                     //will there be an entity. So just adding an link will not be considered a download. The external ID will have to be set using the title (for now)
                 }

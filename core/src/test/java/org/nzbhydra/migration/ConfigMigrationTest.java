@@ -190,7 +190,6 @@ public class ConfigMigrationTest {
         verify(newznabCheckerMock, times(1)).checkCaps(indexerConfigsCaptor.capture());
         assertThat(indexerConfigsCaptor.getValue().getName(), is("Drunken Slug"));
 
-        //TODO Test that optionals return notPresent with "" in old config
         assertThat(result.getMigratedConfig().getMain().getApiKey(), is("apikey"));
         assertThat("External URL should not be migrated because the old one wouldn't match", result.getMigratedConfig().getMain().getExternalUrl().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
