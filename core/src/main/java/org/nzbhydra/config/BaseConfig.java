@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -85,7 +86,12 @@ public class BaseConfig extends ValidatingConfig {
 
     public void save(File targetFile) throws IOException {
         logger.debug("Writing config to file {}", targetFile.getCanonicalPath());
-        objectMapper.writeValue(targetFile, this);
+        try {
+            String asString = objectMapper.writeValueAsString(this);
+            Files.write(targetFile.toPath(), asString.getBytes());
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error while saving config data. Fatal error");
+        }
     }
 
     public void save() throws IOException {
