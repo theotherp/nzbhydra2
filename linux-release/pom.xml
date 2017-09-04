@@ -29,7 +29,7 @@
                 <version>2.6</version>
                 <configuration>
                     <descriptor>bin.xml</descriptor>
-                    <finalName>nzbhyra2-${pom.version}-linux</finalName>
+                    <finalName>nzbhyra2-${project.version}-linux</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <formats>tgz</formats>
                 </configuration>

@@ -11,11 +11,11 @@
     <name>Usenet meta search</name>
 
     <modules>
-        <module>core</module>
         <module>mapping</module>
+        <module>sockslib</module>
+        <module>core</module>
         <module>mockserver</module>
         <module>tests</module>
-        <module>sockslib</module>
         <module>windows-release</module>
         <module>linux-release</module>
     </modules>

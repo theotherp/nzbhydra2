@@ -7,29 +7,27 @@
 # toggle draft status of release
 # update poms to next version
 # commit changes (with new version in poms)
+import argparse
 import json
 import os
 import requests
 import subprocess
 import sys
-from git import Repo
 
-current_version = "1.0.0-SNAPSHOT"
-release_version = current_version.replace("-SNAPSHOT", "")
-new_version = "1.0.1-SNAPSHOT"
-# base_folder = r"C:\Users\strat\IdeaProjects\NzbHydra2"
-mvn_bin = r"C:\Program Files\JetBrains\IntelliJ IDEA 2017.1.3\plugins\maven\lib\maven3\bin\mvn.cmd"
-java_home = r"c:\Program Files\Java\jdk1.8.0_131"
-changelog_json = r"C:\Users\strat\IdeaProjects\NzbHydra2\changelog.json"
-changelog_md = r"c:\temp\nzbhydra2-build-test\changelog.md"
-# base_url = "https://api.github.com"
-base_url = "http://127.0.0.1:5080"
-windows_asset_folder = r"c:\temp\nzbhydra2-build-test\windows-release\target"
-linux_asset_folder = r"c:\temp\nzbhydra2-build-test\linux-release\target"
-
-base_folder = r"c:\temp\nzbhydra2-build-test"
-
-repo = Repo(base_folder)
+# current_version = "1.0.0-SNAPSHOT"
+# release_version = current_version.replace("-SNAPSHOT", "")
+# new_version = "1.0.1-SNAPSHOT"
+# # base_folder = r"C:\Users\strat\IdeaProjects\NzbHydra2"
+# mvn_bin = r"C:\Program Files\JetBrains\IntelliJ IDEA 2017.1.3\plugins\maven\lib\maven3\bin\mvn.cmd"
+# java_home = r"c:\Program Files\Java\jdk1.8.0_131"
+# changelog_json = r"C:\Users\strat\IdeaProjects\NzbHydra2\changelog.json"
+# changelog_md = r"c:\temp\nzbhydra2-build-test\changelog.md"
+# # base_url = "https://api.github.com"
+# base_url = "http://127.0.0.1:5080"
+# windows_asset_folder = r"c:\temp\nzbhydra2-build-test\windows-release\target"
+# linux_asset_folder = r"c:\temp\nzbhydra2-build-test\linux-release\target"
+# base_folder = r"c:\temp\nzbhydra2-build-test"
+from pygit2 import init_repository
 
 
 class AbortBuildException(Exception):
@@ -37,8 +35,7 @@ class AbortBuildException(Exception):
         self.message = value
 
 
-def generate_changelog():
-    print("Generating changelog")
+def generate_changelog(changelog_json, changelog_md):
     with open(changelog_json, "r") as f:
         changelog = json.load(f)
     content = ""
@@ -68,7 +65,7 @@ def get_md_from_entry(entry, with_headline=True):
     return entry_content
 
 
-def update_poms(search, replace):
+def update_poms(search, replace, base_folder):
     print("Will update POMs from version " + search + " to " + replace)
     for dname, dirs, files in os.walk(base_folder):
         for fname in files:
@@ -85,40 +82,28 @@ def update_poms(search, replace):
                     f.write(s)
 
 
-def run_tests():
-    print("Running maven tests")
-    process = subprocess.Popen([mvn_bin, "test"], shell=True, stdout=subprocess.PIPE, cwd=base_folder, env={"JAVA_HOME": java_home})
-    for line in iter(process.stdout.readline, ''):
-        sys.stdout.write(line)
-    if process.returncode is not None and process.returncode != 0:
-        raise AbortBuildException("Maven tests failed")
-
-
-def run_install():
-    print("Running maven install")
-    process = subprocess.Popen([mvn_bin, "clean", "install", "-DskipTests=false", ">", "mvn.log"], shell=True, stdout=subprocess.PIPE, cwd=base_folder, env={"JAVA_HOME": java_home})
-    process.wait()
-
-    if process.returncode is not None and process.returncode != 0:
-        raise AbortBuildException("Maven install failed")
-
-
-def commit_state():
-    print("Committing current state")
-    index = repo.index
-    index.add("*")
-    if len(index.diff()) > 0:
-        index.commit('Update to version ' + release_version + '')
+def commit_state(basefolder, release_version, message=None):
+    stats = init_repository(basefolder).diff().stats
+    if stats.files_changed > 0:
+        if message is None:
+            message = 'Prepare release of v' + release_version
+        process = subprocess.Popen(["git", "commit", "-am", message], cwd=basefolder, shell=True, stdout=subprocess.PIPE)
+        print(process.communicate()[0])
+        if process.returncode is not None and process.returncode != 0:
+            sys.exit(1)
     else:
-        print("Nothing to commit")
+        print("No changes")
 
 
-def push():
+def push(basefolder):
     print("Pushing to origin")
-    repo.remote("origin").push()
+    process = subprocess.Popen(["git", "push"], cwd=basefolder, shell=True, stdout=subprocess.PIPE)
+    print(process.communicate()[0])
+    if process.returncode is not None and process.returncode != 0:
+        sys.exit(1)
 
 
-def create_release():
+def create_release(release_version, changelog_json, base_url):
     version = release_version
     if not release_version.startswith("v"):
         version = "v" + release_version
@@ -135,7 +120,8 @@ def create_release():
     return r.json()
 
 
-def set_release_public(release):
+def set_release_public(release, base_url):
+    print("Setting release public")
     token = os.environ.get("TOKEN")
     release["draft"] = True
     r = requests.post(base_url + "/repos/theotherp/nzbhydra2/releases?access_token=" + token, data=json.dumps(release))
@@ -143,7 +129,7 @@ def set_release_public(release):
     return r.json()
 
 
-def upload_assets(release):
+def upload_assets(release, windows_asset_folder, linux_asset_folder):
     upload_url = release["upload_url"].replace("{?name,label}", "")
 
     content_type = "application/zip"
@@ -172,19 +158,34 @@ def upload_assets(release):
 
 if __name__ == '__main__':
 
-    search = current_version
-    replace = release_version
-    try:
-        generate_changelog()
-        update_poms(search, replace)
-        run_install()
-        commit_state()
-        # push()
-        release = create_release()
-        upload_assets(release)
-        set_release_public(release)
+    parser = argparse.ArgumentParser(description='NZBHydra2 build scripts')
+    parser.add_argument('--action', action='store')
+    parser.add_argument('--basefolder', action='store')
+    parser.add_argument('--baseurl', action='store')
+    parser.add_argument('--currentversion', action='store')
+    parser.add_argument('--releaseversion', action='store')
+    parser.add_argument('--newversion', action='store')
+    parser.add_argument('--changelogjson', action='store')
+    parser.add_argument('--changelogmd', action='store')
+    parser.add_argument('--windowsassetfolder', action='store')
+    parser.add_argument('--linuxassetfolder', action='store')
 
+    args, unknown = parser.parse_known_args()
+
+    try:
+        if args.action == "genchangelog":
+            generate_changelog(args.changelogjson, args.changelogmd)
+        if args.action == "updatepoms":
+            update_poms(args.currentversion, args.releaseversion, args.basefolder)
+        if args.action == "commitrelease":
+            commit_state(args.basefolder, args.releaseversion)
+        if args.action == "push":
+            push(args.basefolder)
+        if args.action == "release":
+            release = create_release(args.releaseversion, args.changelogjson, args.baseurl)
+            upload_assets(release, args.windowsassetfolder, args.linuxassetfolder)
+            set_release_public(release, args.baseurl)
     except (AbortBuildException, ValueError) as e:
         print(e.message)
         print("Build aborted")
-        repo.index.reset()
+        sys.exit(1)

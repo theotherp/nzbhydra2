@@ -1,5 +1,6 @@
 package org.nzbhydra;
 
+import com.google.common.base.Strings;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -174,7 +175,7 @@ public class NzbHydra {
     }
 
     public static String getDataFolder() {
-        return dataFolder;
+        return Strings.isNullOrEmpty(dataFolder) ? "data" : dataFolder;
     }
 
     @EventListener

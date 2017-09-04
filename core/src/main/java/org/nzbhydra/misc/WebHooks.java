@@ -25,9 +25,9 @@ public class WebHooks {
 
     private static final Logger logger = LoggerFactory.getLogger(WebHooks.class);
 
-    @Value("${nzbhydra.hooks.search}")
+    @Value("${nzbhydra.hooks.search:}")
     private String searchHook;
-    @Value("${nzbhydra.hooks.download}")
+    @Value("${nzbhydra.hooks.download:}")
     private String downloadHook;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;

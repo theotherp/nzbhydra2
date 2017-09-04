@@ -2,12 +2,14 @@ package org.nzbhydra.mediainfo;
 
 import com.uwetrottmann.tmdb2.Tmdb;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+@Ignore //Needs internet access
 public class TmdbHandlerTest {
 
     TmdbHandler testee = new TmdbHandler();

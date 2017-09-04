@@ -5212,8 +5212,8 @@ angular
                     });
                 };
 
-
                 function addNew() {
+                    $scope.form.$setDirty(true);
                     $scope.model[$scope.options.key] = $scope.model[$scope.options.key] || [];
                     var repeatsection = $scope.model[$scope.options.key];
                     var newsection = angular.copy($scope.options.templateOptions.defaultModel);
@@ -5222,6 +5222,7 @@ angular
 
                 function remove($index) {
                     $scope.model[$scope.options.key].splice($index, 1);
+                    $scope.form.$setDirty(true);
                 }
             }
         });
