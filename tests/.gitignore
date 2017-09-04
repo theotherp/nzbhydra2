@@ -24,3 +24,5 @@ nbdist/
 .nb-gradle/
 *.db.*
 *.log
+nzbhydra.yml
+logs/
