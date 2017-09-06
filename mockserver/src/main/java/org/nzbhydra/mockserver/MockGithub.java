@@ -35,6 +35,7 @@ public class MockGithub {
     public MockGithub() {
         releasev2 = new Release();
         releasev2.setBody("Changes in version 2.0.0");
+        releasev2.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
         releasev2.setTagName("v2.0.0");
         windowsAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
@@ -66,6 +67,13 @@ public class MockGithub {
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases", method = RequestMethod.POST)
     public Release postRelease(@RequestBody String body) throws Exception {
         releasev2.setUploadUrl("http://127.0.0.1:5080/upload");
+        logger.info(body);
+        return releasev2;
+    }
+
+    @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases/1", method = RequestMethod.PATCH)
+    public Release patchRelease(@RequestBody String body) throws Exception {
+        releasev2.setDraft(false);
         logger.info(body);
         return releasev2;
     }

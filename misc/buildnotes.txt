@@ -1,0 +1,4 @@
+run:
+
+mvn release:prepare
+mvn github-release:release
