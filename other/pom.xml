@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>parentpom</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>other</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>mockserver</module>
+        <module>sockslib</module>
+        <module>github-release-plugin</module>
+    </modules>
+
+</project>

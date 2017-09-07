@@ -4,15 +4,21 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.nzbhydra</groupId>
-    <artifactId>parentpom</artifactId>
+    <parent>
+        <groupId>org.nzbhydra</groupId>
+        <artifactId>parentpom</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>main</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>nzbhydra2</name>
 
     <modules>
-        <module>main</module>
-        <module>other</module>
+        <module>core</module>
+        <module>mapping</module>
+        <module>releases</module>
+        <module>tests</module>
     </modules>
 
     <properties>
@@ -47,6 +53,30 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.nzbhydra</groupId>
+                <artifactId>github-release-plugin</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+                <configuration>
+                    <changelogEntry>changelog</changelogEntry>
+                    <commitish>1.0.0</commitish>
+                    <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <githubToken>token</githubToken><!--Read from file outside scm or from environment variable-->
+                    <linuxAsset>releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
+                    <windowsAsset>releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
+                    <tagName>1.0.0</tagName>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencies>
