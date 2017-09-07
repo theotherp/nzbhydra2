@@ -70,7 +70,7 @@
                     <changelogEntry>changelog</changelogEntry>
                     <commitish>1.0.0</commitish>
                     <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
-                    <githubToken>token</githubToken><!--Read from file outside scm or from environment variable-->
+                    <githubToken>${githubToken}</githubToken>
                     <linuxAsset>releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
                     <tagName>1.0.0</tagName>

@@ -1,6 +1,7 @@
 package org.nzbhydra.github.mavenreleaseplugin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -19,6 +20,7 @@ import org.nzbhydra.github.mavenreleaseplugin.ReleaseMojo.CountingFileRequestBod
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,8 +35,11 @@ public class ReleaseMojo extends AbstractMojo {
 
     private OkHttpClient client;
 
-    @Parameter(property = "githubToken", required = true)
-    private String githubToken;
+    @Parameter(property = "githubToken", required = false)
+    protected String githubToken;
+
+    @Parameter(property = "githubTokenFile", required = false)
+    protected File githubTokenFile;
 
     @Parameter(property = "githubReleasesUrl", required = true)
     protected String githubReleasesUrl;
@@ -62,6 +67,17 @@ public class ReleaseMojo extends AbstractMojo {
         objectMapper = new ObjectMapper();
 
         getLog().info("Will release version " + tagName + " to GitHub");
+
+        if (Strings.isNullOrEmpty(githubToken) && (githubTokenFile == null || !githubTokenFile.exists())) {
+            throw new MojoExecutionException("GitHub Token not set and token.txt doesn't exist");
+        }
+        if (githubTokenFile != null && githubTokenFile.exists()) {
+            try {
+                githubToken = new String(Files.readAllBytes(githubTokenFile.toPath()));
+            } catch (IOException e) {
+                throw new MojoExecutionException("Unable to read token.txt", e);
+            }
+        }
 
         if (!windowsAsset.exists()) {
             throw new MojoExecutionException("Windows asset file does not exist: " + windowsAsset.getAbsolutePath());

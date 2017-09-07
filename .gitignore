@@ -3,6 +3,7 @@ target/
 .idea/*
 *.iws
 *.ipr
+*.iml
 /bower_components
 /node_modules
 /nzbhydra.db.*
