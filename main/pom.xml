@@ -4,12 +4,8 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.nzbhydra</groupId>
-        <artifactId>parentpom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
 
+    <groupId>org.nzbhydra</groupId>
     <artifactId>main</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
@@ -33,7 +29,11 @@
         <junit.version>4.12</junit.version>
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+
 
     <scm>
         <connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>
@@ -60,20 +60,21 @@
                 <version>2.5.3</version>
                 <configuration>
                     <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.nzbhydra</groupId>
                 <artifactId>github-release-plugin</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0</version>
                 <configuration>
                     <changelogEntry>changelog</changelogEntry>
-                    <commitish>1.0.0</commitish>
+                    <commitish>master</commitish>
                     <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
-                    <githubToken>${githubToken}</githubToken>
-                    <linuxAsset>releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
-                    <windowsAsset>releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
-                    <tagName>1.0.0</tagName>
+                    <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
+                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
+                    <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
+                    <tagName>v@{project.version}</tagName>
                 </configuration>
             </plugin>
         </plugins>

@@ -69,7 +69,7 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Will release version " + tagName + " to GitHub");
 
         if (Strings.isNullOrEmpty(githubToken) && (githubTokenFile == null || !githubTokenFile.exists())) {
-            throw new MojoExecutionException("GitHub Token not set and token.txt doesn't exist");
+            throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
         }
         if (githubTokenFile != null && githubTokenFile.exists()) {
             try {

@@ -10,6 +10,7 @@
 
 
     <artifactId>github-release-plugin</artifactId>
+    <version>1.0.0</version>
     <packaging>maven-plugin</packaging>
     <name>github-release-plugin</name>
 

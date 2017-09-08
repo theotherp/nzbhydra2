@@ -11,4 +11,7 @@ target/
 /logs
 /config
 /database/
+release.properties
+*.releaseBackup
 token.txt
+misc/*.cmd

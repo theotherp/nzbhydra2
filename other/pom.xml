@@ -4,13 +4,9 @@
                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.nzbhydra</groupId>
-        <artifactId>parentpom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
-
+    <groupId>org.nzbhydra</groupId>
     <artifactId>other</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -18,5 +14,25 @@
         <module>sockslib</module>
         <module>github-release-plugin</module>
     </modules>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

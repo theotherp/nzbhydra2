@@ -20,7 +20,7 @@
                     <tagName>tagName</tagName>
                     <githubReleasesUrl>releasesUrl</githubReleasesUrl>
                     <changelogEntry>changelog</changelogEntry>
-                    <githubTokenFile>src/test/resources/org/nzbhydra/github/mavenreleaseplugin/tokenFile.txt</githubTokenFile>
+                    <githubTokenFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/tokenFile.txt</githubTokenFile>
                 </configuration>
             </plugin>
         </plugins>

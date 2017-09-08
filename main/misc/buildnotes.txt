@@ -1,4 +1,4 @@
 run:
 
-mvn release:prepare
-mvn github-release:release
+mvn release:prepare -Dresume=false
+mvn release:perform -Dgoals="clean install github-release:release" -Darguments="-DskipTests"
