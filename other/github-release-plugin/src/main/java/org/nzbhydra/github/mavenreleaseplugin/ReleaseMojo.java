@@ -62,6 +62,7 @@ public class ReleaseMojo extends AbstractMojo {
     private ObjectMapper objectMapper;
 
 
+    @Override
     public void execute() throws MojoExecutionException {
         client = new OkHttpClient();
         objectMapper = new ObjectMapper();

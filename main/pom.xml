@@ -74,6 +74,8 @@
                     <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
+                    <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
+                    <changelogMdFile>${basedir}/../changelog.md</changelogMdFile>
                     <tagName>v@{project.version}</tagName>
                 </configuration>
             </plugin>

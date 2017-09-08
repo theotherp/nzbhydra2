@@ -1,4 +1,4 @@
 run:
-
+mvn github-release:generate-changelog
 mvn release:prepare -Dresume=false
 mvn release:perform -Dgoals="clean install github-release:release" -Darguments="-DskipTests"
