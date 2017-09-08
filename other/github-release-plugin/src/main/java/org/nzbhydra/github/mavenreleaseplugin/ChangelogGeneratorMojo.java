@@ -52,11 +52,7 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         Collections.reverse(entries);
         List<String> lines = new ArrayList<>();
         for (ChangelogVersionEntry entry : entries) {
-            lines.add("###" + entry.getVersion());
-            for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
-                lines.add(StringUtils.capitalise(changeEntry.getType()) + ": " + changeEntry.getText());
-            }
-            lines.add("");
+            lines.addAll(getMarkdownLinesFromEntry(entry));
         }
         try {
             Files.write(changelogMdFile.toPath(), Joiner.on("\n").join(lines).getBytes());
@@ -65,6 +61,16 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         }
 
 
+    }
+
+    static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) {
+        List<String> lines = new ArrayList<>();
+        lines.add("###" + entry.getVersion());
+        for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
+            lines.add(StringUtils.capitalise(changeEntry.getType()) + ": " + changeEntry.getText());
+        }
+        lines.add("");
+        return lines;
     }
 
 

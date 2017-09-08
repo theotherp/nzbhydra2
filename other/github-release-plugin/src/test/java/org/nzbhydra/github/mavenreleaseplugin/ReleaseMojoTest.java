@@ -122,12 +122,13 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
-        assertEquals("tagName", bodyJson.getTagName());
+        assertEquals("v1.0.0", bodyJson.getTagName());
         assertFalse(bodyJson.isPrerelease());
         assertEquals("commitish", bodyJson.getTargetCommitish());
         assertTrue(bodyJson.isDraft());
-        assertEquals("tagName", bodyJson.getTagName());
-        assertEquals("changelog", bodyJson.getBody());
+        assertEquals("v1.0.0", bodyJson.getName());
+        assertEquals("###v1.0.0\n" +
+                "Note: First major release\n", bodyJson.getBody());
     }
 
 

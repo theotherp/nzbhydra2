@@ -263,7 +263,7 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
         metaParts = new ArrayList<String>(5);
         input = version.replace("v", "").toCharArray();
         if (!stateMajor()) { // Start recursive descend
-            throw new RuntimeException("Error whith version number");
+            throw new RuntimeException("Error whith version number " + version);
         }
         major = vParts[0];
         minor = vParts[1];

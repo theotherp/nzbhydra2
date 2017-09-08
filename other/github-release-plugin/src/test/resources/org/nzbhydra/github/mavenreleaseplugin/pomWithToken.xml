@@ -17,11 +17,10 @@
                     <windowsAsset>a</windowsAsset>
                     <linuxAsset>b</linuxAsset>
                     <commitish>commitish</commitish>
-                    <tagName>tagName</tagName>
+                    <tagName>v1.0.0</tagName>
                     <githubReleasesUrl>releasesUrl</githubReleasesUrl>
-                    <changelogEntry>changelog</changelogEntry>
                     <githubToken>token</githubToken>
-
+                    <changelogJsonFile>${basedir}/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json</changelogJsonFile>
                 </configuration>
             </plugin>
         </plugins>

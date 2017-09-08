@@ -1,6 +1,8 @@
 package org.nzbhydra.github.mavenreleaseplugin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import okhttp3.Call;
 import okhttp3.MediaType;
@@ -21,7 +23,9 @@ import org.nzbhydra.github.mavenreleaseplugin.ReleaseMojo.CountingFileRequestBod
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -44,9 +48,6 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "githubReleasesUrl", required = true)
     protected String githubReleasesUrl;
 
-    @Parameter(property = "changelogEntry", required = true)
-    private String changelogEntry;
-
     @Parameter(property = "tagName", required = true)
     private String tagName;
 
@@ -59,6 +60,9 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "linuxAsset", required = true)
     protected File linuxAsset;
 
+    @Parameter(property = "changelogJsonFile", required = true)
+    protected File changelogJsonFile;
+
     private ObjectMapper objectMapper;
 
 
@@ -69,8 +73,12 @@ public class ReleaseMojo extends AbstractMojo {
 
         getLog().info("Will release version " + tagName + " to GitHub");
 
-        if (Strings.isNullOrEmpty(githubToken) && (githubTokenFile == null || !githubTokenFile.exists())) {
-            throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
+        if (Strings.isNullOrEmpty(githubToken)) {
+            if (githubTokenFile == null) {
+                throw new MojoExecutionException("GitHub Token and GitHub token file not set");
+            } else if (!githubTokenFile.exists()) {
+                throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
+            }
         }
         if (githubTokenFile != null && githubTokenFile.exists()) {
             try {
@@ -90,15 +98,19 @@ public class ReleaseMojo extends AbstractMojo {
         }
         getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());
 
+        if (!changelogJsonFile.exists()) {
+            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
+        }
+        getLog().info("Will use changelog entry from " + changelogJsonFile.getAbsolutePath());
+
         try {
             org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest = new org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest();
             releaseRequest.setTagName(tagName);
-            releaseRequest.setBody(changelogEntry);
             releaseRequest.setName(tagName);
             releaseRequest.setDraft(true);
             releaseRequest.setPrerelease(false);
             releaseRequest.setTargetCommitish(commitish);
-
+            setChangelogBody(releaseRequest);
 
             org.nzbhydra.github.mavenreleaseplugin.Release releaseResponseObject = createRelease(releaseRequest);
             uploadAssets(releaseResponseObject);
@@ -111,6 +123,23 @@ public class ReleaseMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Error releasing", e);
         }
+    }
+
+    protected void setChangelogBody(ReleaseRequest releaseRequest) throws MojoExecutionException {
+        List<ChangelogVersionEntry> entries;
+        try {
+            entries = objectMapper.readValue(Files.readAllBytes(changelogJsonFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
+            });
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to read JSON file", e);
+        }
+        Collections.sort(entries);
+        Collections.reverse(entries);
+        ChangelogVersionEntry latestEntry = entries.get(0);
+        if (!new SemanticVersion(latestEntry.getVersion()).equals(new SemanticVersion(tagName))) {
+            throw new MojoExecutionException("Latest changelog entry version " + latestEntry.getVersion() + " does not match tag name " + tagName);
+        }
+        releaseRequest.setBody(Joiner.on("\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
     }
 
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {

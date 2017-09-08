@@ -68,7 +68,6 @@
                 <artifactId>github-release-plugin</artifactId>
                 <version>1.0.0</version>
                 <configuration>
-                    <changelogEntry>changelog</changelogEntry>
                     <commitish>master</commitish>
                     <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
