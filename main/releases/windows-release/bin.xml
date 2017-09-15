@@ -18,7 +18,8 @@
         <fileSet>
             <directory>include</directory>
             <outputDirectory>./</outputDirectory>
-            <lineEnding>crlf</lineEnding>
+            <lineEnding>keep</lineEnding>
+            <filtering>false</filtering>
         </fileSet>
         <fileSet>
             <directory>../../../</directory>

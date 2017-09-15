@@ -43,6 +43,8 @@ After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container TODO add links
 
+If you get SSL errors when contacting indexers make please update your java runtime.
+
 ### Install as a service
 Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-service-and-Linux-start-scripts)
 

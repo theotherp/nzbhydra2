@@ -2,13 +2,16 @@ package org.nzbhydra.migration;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.migration.configmapping.Categories;
 import org.nzbhydra.migration.configmapping.Category;
+import org.nzbhydra.migration.configmapping.Indexer;
 import org.nzbhydra.migration.configmapping.Main;
+import org.nzbhydra.migration.configmapping.OldConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +113,34 @@ public class JsonConfigMigrationTest {
         assertThat(category.getRequiredWords(), hasSize(0));
         assertThat(category.getMinSizePreset(), is(Optional.empty()));
         assertThat(category.getMaxSizePreset(), is(Optional.empty()));
+    }
+
+    @Test
+    public void shouldNotMakeNonNewznabIndexersYellow() {
+        Indexer binsearch = new Indexer();
+        binsearch.setType("BINSEARCH");
+        binsearch.setEnabled(true);
+        Indexer nzbindex = new Indexer();
+        nzbindex.setType("NZBINDEX");
+        nzbindex.setEnabled(true);
+        Indexer anizb = new Indexer();
+        anizb.setType("ANIZB");
+        anizb.setEnabled(true);
+        OldConfig oldConfig = new OldConfig();
+        oldConfig.setIndexers(Arrays.asList(binsearch, nzbindex, anizb));
+
+        BaseConfig newConfig = new BaseConfig();
+        testee.migrateIndexers(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().size(), is(3));
+
+        assertThat(newConfig.getIndexers().get(0).isConfigComplete(), is(true));
+        assertThat(newConfig.getIndexers().get(0).isAllCapsChecked(), is(true));
+        assertThat(newConfig.getIndexers().get(1).isConfigComplete(), is(true));
+        assertThat(newConfig.getIndexers().get(1).isAllCapsChecked(), is(true));
+        assertThat(newConfig.getIndexers().get(2).isConfigComplete(), is(true));
+        assertThat(newConfig.getIndexers().get(2).isAllCapsChecked(), is(true));
+
     }
 
 

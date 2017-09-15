@@ -9,7 +9,7 @@
     <fileSets>
         <fileSet>
             <!--Would prefer to use a moduleset here or otherwise reference the -exec.jar but didn't get it to work-->
-            <directory>../core/target</directory>
+            <directory>../../core/target</directory>
             <outputDirectory>./lib/</outputDirectory>
             <includes>
                 <include>*exec.jar</include>
@@ -18,17 +18,15 @@
         <fileSet>
             <directory>include</directory>
             <outputDirectory>./</outputDirectory>
-            <lineEnding>unix</lineEnding>
+            <lineEnding>keep</lineEnding>
+            <filtering>false</filtering>
         </fileSet>
         <fileSet>
-            <directory>../misc/docker</directory>
-            <outputDirectory>./docker</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>../</directory>
+            <directory>../../../</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
                 <include>readme.md</include>
+                <include>changelog.md</include>
                 <include>LICENSE</include>
             </includes>
             <lineEnding>unix</lineEnding>

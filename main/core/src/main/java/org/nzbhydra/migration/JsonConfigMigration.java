@@ -376,7 +376,7 @@ public class JsonConfigMigration {
         }
     }
 
-    private List<String> migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {
+    protected List<String> migrateIndexers(OldConfig oldConfig, BaseConfig newConfig) {
         logger.info("Migrating indexers");
         List<String> messages = new ArrayList<>();
         Map<String, Boolean> originalEnabledState = new HashMap<>();
@@ -501,6 +501,12 @@ public class JsonConfigMigration {
             }
         }
         checkCapsForEnabledNewznabIndexers(messages, originalEnabledState, indexerConfigs);
+        //Non-newznab indexers are always config-complete
+        List<IndexerConfig> nonNewznabIndexers = indexerConfigs.stream().filter(x -> (x.getSearchModuleType() == SearchModuleType.ANIZB || x.getSearchModuleType() == SearchModuleType.BINSEARCH || x.getSearchModuleType() == SearchModuleType.NZBINDEX)).collect(Collectors.toList());
+        nonNewznabIndexers.forEach(x -> {
+            x.setConfigComplete(true);
+            x.setAllCapsChecked(true);
+        });
 
         newConfig.setIndexers(indexerConfigs);
         return messages;
