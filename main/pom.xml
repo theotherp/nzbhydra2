@@ -36,8 +36,10 @@
 
 
     <scm>
-        <connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>
-        <developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>
+        <!--<connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>-->
+        <!--<developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>-->
+        <connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>
+        <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
     </scm>
 
     <build>
@@ -69,7 +71,8 @@
                 <version>1.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <!--<githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
+                    <githubReleasesUrl>https://github.com/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>

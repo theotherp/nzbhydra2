@@ -4,16 +4,7 @@
     "changes": [
       {
         "type": "note",
-        "text": "First version"
-      }
-    ]
-  },
-  {
-    "version": "v2.0.0",
-    "changes": [
-      {
-        "type": "note",
-        "text": "First version"
+        "text": "Initial release"
       }
     ]
   }
