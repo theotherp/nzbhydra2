@@ -80,6 +80,8 @@ public abstract class Indexer<T> {
     @Autowired
     protected IndexerApiAccessRepository indexerApiAccessRepository;
     @Autowired
+    protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
+    @Autowired
     protected IndexerWebAccess indexerWebAccess;
     @Autowired
     protected ResultAcceptor resultAcceptor;
@@ -240,6 +242,8 @@ public abstract class Indexer<T> {
         apiAccess.setResult(IndexerAccessResult.SUCCESSFUL);
         apiAccess.setTime(Instant.now());
         indexerApiAccessRepository.save(apiAccess);
+
+        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, true));
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
@@ -266,6 +270,8 @@ public abstract class Indexer<T> {
         apiAccess.setResult(accessResult);
         apiAccess.setTime(Instant.now());
         indexerApiAccessRepository.save(apiAccess);
+
+        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, false));
     }
 
     protected void handleIndexerAccessException(IndexerAccessException e, IndexerApiAccessType accessType) {

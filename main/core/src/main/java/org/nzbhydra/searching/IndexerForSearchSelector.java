@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
@@ -13,9 +14,9 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessEntity;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerStatusEntity;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -27,6 +28,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -38,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -57,6 +63,8 @@ public class IndexerForSearchSelector {
     private ConfigProvider configProvider;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     private Random random = new Random();
 
@@ -87,7 +95,9 @@ public class IndexerForSearchSelector {
             List<Indexer> selectedIndexers = new ArrayList<>();
             logger.debug("Picking indexers out of " + enabledIndexers.size());
 
+            Stopwatch stopwatch = Stopwatch.createStarted();
             for (Indexer indexer : enabledIndexers) {
+
                 if (!checkIndexerConfigComplete(indexer)) {
                     continue;
                 }
@@ -118,6 +128,7 @@ public class IndexerForSearchSelector {
 
                 selectedIndexers.add(indexer);
             }
+            logger.debug(LoggingMarkers.PERFORMANCE, "Selection of indexers took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             if (selectedIndexers.isEmpty()) {
                 logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled. You can enable query generation to work around this.");
             } else {
@@ -149,13 +160,6 @@ public class IndexerForSearchSelector {
                 }
             }
             return true;
-        }
-
-        private boolean handleIndexerNotSelected(Indexer indexer, String message, String reason) {
-            logger.info(message);
-            notSelectedIndersWithReason.put(indexer, reason);
-            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, message));
-            return false;
         }
 
         protected boolean checkLoadLimiting(Indexer indexer) {
@@ -209,6 +213,7 @@ public class IndexerForSearchSelector {
         }
 
         protected boolean checkIndexerHitLimit(Indexer indexer) {
+            Stopwatch stopwatch = Stopwatch.createStarted();
             IndexerConfig indexerConfig = indexer.getConfig();
             if (!indexerConfig.getHitLimit().isPresent() && !indexerConfig.getDownloadLimit().isPresent()) {
                 return true;
@@ -223,11 +228,20 @@ public class IndexerForSearchSelector {
                 comparisonTime = LocalDateTime.now().minus(1, ChronoUnit.DAYS);
             }
             if (indexerConfig.getHitLimit().isPresent()) {
-                Page<IndexerApiAccessEntity> page = indexerApiAccessRepository.findByIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getHitLimit().get()));
-                if (page.getContent().size() == indexerConfig.getHitLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
-                    LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
+                Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) ORDER BY TIME DESC LIMIT (:hitLimit)");
+                query.setParameter("indexerId", indexer.getIndexerEntity().getId());
+                query.setParameter("hitLimit", indexerConfig.getHitLimit().get());
+                List resultList = query.getResultList();
+
+                int resultCount = resultList.size();
+                Timestamp earliestAccessObject = (Timestamp) Iterables.getLast(resultList);
+                Instant earliestAccess = earliestAccessObject.toInstant();
+
+                if (resultCount == indexerConfig.getHitLimit().get() && earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                    LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
 
                     String message = String.format("Not using %s because all %d allowed API hits were already made. The next API hit should be possible at %s", indexerConfig.getName(), indexerConfig.getHitLimit().get(), nextPossibleHit);
+                    logger.debug(LoggingMarkers.PERFORMANCE, "Detection of API limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                     return handleIndexerNotSelected(indexer, message, "API hit limit reached");
                 }
             }
@@ -237,11 +251,13 @@ public class IndexerForSearchSelector {
                     LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
 
                     String message = String.format("Not using %s because all %d allowed download were already made. The next download should be possible at %s", indexerConfig.getName(), indexerConfig.getDownloadLimit().get(), nextPossibleHit);
+                    logger.debug(LoggingMarkers.PERFORMANCE, "Detection of download limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
                     return handleIndexerNotSelected(indexer, message, "Download limit reached");
                 }
             }
 
-            return true;
+            logger.debug(LoggingMarkers.PERFORMANCE, "Detection if hit limits were reached for indexer {} took {}ms", indexer.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            return true; //TODO revert to true
         }
 
         LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {
@@ -279,6 +295,15 @@ public class IndexerForSearchSelector {
             }
             return true;
         }
+
+        private boolean handleIndexerNotSelected(Indexer indexer, String message, String reason) {
+            logger.info(message);
+            notSelectedIndersWithReason.put(indexer, reason);
+            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, message));
+            return false;
+        }
+
+
     }
 
 

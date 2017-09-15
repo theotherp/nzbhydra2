@@ -29,7 +29,7 @@ public class OldResultsCleanup {
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
         int deletedResults = searchResultRepository.deleteByFirstFoundBefore(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS));
         if (deletedResults > 0) {
-            logger.info("Deleted {} search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);
+            logger.debug("Deleted {} search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);
         }
     }
 

@@ -3,6 +3,8 @@ package org.nzbhydra;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.flywaydb.core.Flyway;
+import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -71,7 +73,6 @@ public class NzbHydra {
     private CategoryProvider categoryProvider;
     @Autowired
     private GenericStorage genericStorage;
-
     @Autowired
     private RestTemplate restTemplate;
 
@@ -86,6 +87,7 @@ public class NzbHydra {
         parser.accepts("host", "Run on this host").withRequiredArg();
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withRequiredArg();
+        parser.accepts("repairdb", "Repair database. Add database file path as argument").withRequiredArg();
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
@@ -102,6 +104,25 @@ public class NzbHydra {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
             logger.info("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
+        } else if (options.has("repairdb")) {
+            String databaseFilePath = (String) options.valueOf("repairdb");
+            if (!databaseFilePath.contains("mv.db")) {
+                databaseFilePath = databaseFilePath + ".mv.db";
+            }
+            File file = new File(databaseFilePath);
+            if (!file.exists()) {
+                logger.error("File {} doesn't exist", file.getAbsolutePath());
+            }
+            databaseFilePath = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - 6);
+            Flyway flyway = new Flyway();
+            flyway.setLocations("classpath:migration");
+            Class.forName("org.h2.Driver");
+            JdbcDataSource dataSource = new JdbcDataSource();
+            dataSource.setURL("jdbc:h2:file:" + databaseFilePath);
+            dataSource.setUser("sa");
+
+            flyway.setDataSource(dataSource);
+            flyway.repair();
         } else {
             if (options.has("datafolder")) {
                 dataFolder = (String) options.valueOf("datafolder");
