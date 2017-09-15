@@ -10,23 +10,16 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.internal.Util;
-import okio.BufferedSink;
-import okio.Okio;
-import okio.Source;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.nzbhydra.github.mavenreleaseplugin.ReleaseMojo.CountingFileRequestBody.ProgressListener;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @SuppressWarnings("unchecked")
@@ -49,10 +42,10 @@ public class ReleaseMojo extends AbstractMojo {
     protected String githubReleasesUrl;
 
     @Parameter(property = "tagName", required = true)
-    private String tagName;
+    protected String tagName;
 
     @Parameter(property = "commitish", required = true)
-    private String commitish;
+    protected String commitish;
 
     @Parameter(property = "windowsAsset", required = true)
     protected File windowsAsset;
@@ -114,9 +107,6 @@ public class ReleaseMojo extends AbstractMojo {
 
             org.nzbhydra.github.mavenreleaseplugin.Release releaseResponseObject = createRelease(releaseRequest);
             uploadAssets(releaseResponseObject);
-            if (releaseResponseObject.getAssets().size() != 2) {
-                throw new MojoExecutionException("Expected new release to have 2 assets but it has " + releaseResponseObject.getAssets().size());
-            }
 
             setReleaseEffective(releaseRequest, releaseResponseObject);
 
@@ -145,7 +135,8 @@ public class ReleaseMojo extends AbstractMojo {
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
         getLog().info("Creating release in draft mode using base URL " + githubReleasesUrl);
         String url = githubReleasesUrl + "?access_token=" + githubToken;
-        Call call = client.newCall(new Builder().url(url).post(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
+        String requestBody = objectMapper.writeValueAsString(releaseRequest);
+        Call call = client.newCall(new Builder().url(url).post(RequestBody.create(MediaType.parse("application/json"), requestBody)).build());
         Response response = call.execute();
         if (!response.isSuccessful() || response.body() == null) {
             throw new MojoExecutionException("When trying to create release with URL " + url + " Github returned code " + response.code() + " and message: " + response.message());
@@ -166,12 +157,11 @@ public class ReleaseMojo extends AbstractMojo {
         uploadUrl = uploadUrl.replace("{?name,label}", "");
 
         String name = windowsAsset.getName();
-        getLog().info("Uploading windows asset");
+        getLog().info("Uploading windows asset to " + uploadUrl);
 
-        Response response = client.newCall(new Builder().url(uploadUrl + "?name=" + name)
+        Response response = client.newCall(new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
                 .post(
-                        new CountingFileRequestBody(windowsAsset, "application/zip", getProgressListener()
-                        ))
+                        RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
                 .build()).execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
@@ -179,12 +169,11 @@ public class ReleaseMojo extends AbstractMojo {
 
         getLog().info("Successfully uploaded windows asset");
 
-        getLog().info("Uploading linux asset");
+        getLog().info("Uploading linux asset to " + uploadUrl);
         name = linuxAsset.getName();
-        response = client.newCall(new Builder().url(uploadUrl + "?name=" + name)
+        response = client.newCall(new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
                 .post(
-                        new CountingFileRequestBody(linuxAsset, "application/gzip", getProgressListener()
-                        ))
+                        RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
                 .build()).execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
@@ -192,25 +181,12 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Successfully uploaded linux asset");
     }
 
-    private ProgressListener getProgressListener() {
-        return new ProgressListener() {
-            public Set<Integer> loggedPercentages = new HashSet<>();
-
-            @Override
-            public void transferred(long num) {
-                Integer percent = (int) ((num / (float) windowsAsset.length()) * 100);
-                if (percent % 10 == 0 && percent > 0 && !loggedPercentages.contains(percent)) {
-                    getLog().info("Uploaded " + percent + "%");
-                    loggedPercentages.add(percent);
-                }
-            }
-        };
-    }
 
     private void setReleaseEffective(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest, org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
         getLog().info("Setting release effective");
         releaseRequest.setDraft(false);
-        Call call = client.newCall(new Builder().url(release.getUrl()).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
+        String url = release.getUrl() + "?access_token=" + githubToken;
+        Call call = client.newCall(new Builder().url(url).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
         Response response = call.execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to set release effective Github returned code " + response.code() + " and message: " + response.message());
@@ -226,55 +202,6 @@ public class ReleaseMojo extends AbstractMojo {
             }
         } catch (Exception e) {
             throw new MojoExecutionException("Unable to parse GitHub's release edit response: " + body, e);
-        }
-
-    }
-
-    public static class CountingFileRequestBody extends RequestBody {
-
-        private static final int SEGMENT_SIZE = 2048; // okio.Segment.SIZE
-
-        private final File file;
-        private final ProgressListener listener;
-        private final String contentType;
-
-        public CountingFileRequestBody(File file, String contentType, ProgressListener listener) {
-            this.file = file;
-            this.contentType = contentType;
-            this.listener = listener;
-        }
-
-        @Override
-        public long contentLength() {
-            return file.length();
-        }
-
-        @Override
-        public MediaType contentType() {
-            return MediaType.parse(contentType);
-        }
-
-        @Override
-        public void writeTo(BufferedSink sink) throws IOException {
-            Source source = null;
-            try {
-                source = Okio.source(file);
-                long total = 0;
-                long read;
-
-                while ((read = source.read(sink.buffer(), SEGMENT_SIZE)) != -1) {
-                    total += read;
-                    sink.flush();
-                    this.listener.transferred(total);
-
-                }
-            } finally {
-                Util.closeQuietly(source);
-            }
-        }
-
-        public interface ProgressListener {
-            void transferred(long num);
         }
 
     }

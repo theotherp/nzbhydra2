@@ -36,6 +36,25 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         verifyExecution(server);
     }
 
+
+    public void dontTestActual() throws Exception {
+        //Here the magic happens
+        File pom = getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
+        assertTrue(pom.exists());
+        ReleaseMojo releaseMojo = new ReleaseMojo();
+        releaseMojo = (ReleaseMojo) configureMojo(releaseMojo, extractPluginConfiguration("github-release-plugin", pom
+        ));
+        releaseMojo.githubReleasesUrl = "https://api.github.com/repos/theotherp/nzbhydra2/releases";
+        releaseMojo.githubTokenFile = new File("c:\\Users\\strat\\IdeaProjects\\NzbHydra2\\main\\token.txt");
+        releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
+        releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
+        releaseMojo.changelogJsonFile = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog-001.json");
+        releaseMojo.tagName = "v0.0.1";
+        releaseMojo.commitish = "master";
+
+        releaseMojo.execute();
+    }
+
     public void testExecuteWithMissingChangelogEntry() throws Exception {
         File pom = getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithChangelogWrongLatestEntry.xml");
         assertTrue(pom.exists());
@@ -95,13 +114,13 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
         //Uploading the assets
         RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().endsWith("releases/1/assets?name=windowsAsset.txt"));
+        assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
         RecordedRequest linuxAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(linuxAssetUploadRequest.getPath(), linuxAssetUploadRequest.getPath().endsWith("releases/1/assets?name=linuxAsset.txt"));
+        assertTrue(linuxAssetUploadRequest.getPath(), linuxAssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAsset.txt"));
 
         //Setting it effective
         RecordedRequest setEffectiveRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(setEffectiveRequest.getPath(), setEffectiveRequest.getPath().endsWith("releases/1"));
+        assertTrue(setEffectiveRequest.getPath(), setEffectiveRequest.getPath().contains("releases/1"));
         String body = new String(setEffectiveRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
         assertFalse(bodyJson.isDraft());
@@ -144,7 +163,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         assertEquals("commitish", bodyJson.getTargetCommitish());
         assertTrue(bodyJson.isDraft());
         assertEquals("v1.0.0", bodyJson.getName());
-        assertEquals("###v1.0.0\n" +
+        assertEquals("### v1.0.0\n" +
                 "Note: First major release\n", bodyJson.getBody());
     }
 
