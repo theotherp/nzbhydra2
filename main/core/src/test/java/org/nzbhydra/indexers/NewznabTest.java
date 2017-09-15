@@ -97,6 +97,8 @@ public class NewznabTest {
     @Mock
     private IndexerSearchRepository indexerSearchRepositoryMock;
     @Mock
+    private IndexerApiAccessEntityShortRepository shortRepositoryMock;
+    @Mock
     private SearchResultRepository searchResultRepositoryMock;
     @Mock
     private IndexerRepository indexerRepositoryMock;

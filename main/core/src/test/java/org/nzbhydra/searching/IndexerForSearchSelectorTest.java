@@ -26,6 +26,9 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -45,6 +48,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,6 +83,10 @@ public class IndexerForSearchSelectorTest {
     private ApplicationEventPublisher eventPublisher;
     @Mock
     private Category category;
+    @Mock
+    private EntityManager entityManagerMock;
+    @Mock
+    private Query queryMock;
 
     private Map<Indexer, String> count;
 
@@ -99,6 +107,7 @@ public class IndexerForSearchSelectorTest {
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         when(category.getName()).thenReturn("category");
         testee = outerClass.getInnerInstanceInstance(searchRequest);
+        when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
     }
 
     @Test
@@ -242,10 +251,19 @@ public class IndexerForSearchSelectorTest {
     @Test
     public void shouldIgnoreHitLimitIfNotYetReached() {
         when(indexerConfigMock.getHitLimit()).thenReturn(Optional.of(10));
-        when(indexerApiAccessRepository.findByIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        when(queryMock.getResultList()).thenReturn(Collections.emptyList());
         boolean result = testee.checkIndexerHitLimit(indexer);
         assertTrue(result);
-        verify(indexerApiAccessRepository).findByIndexerOrderByTimeDesc(any(), any());
+        verify(entityManagerMock).createNativeQuery(anyString());
+    }
+
+    @Test
+    public void shouldFollowApiHitLimit() {
+        when(indexerConfigMock.getHitLimit()).thenReturn(Optional.of(1));
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(Instant.now().minus(10, ChronoUnit.MILLIS))));
+        boolean result = testee.checkIndexerHitLimit(indexer);
+        assertFalse(result);
+        verify(entityManagerMock).createNativeQuery(anyString());
     }
 
     @Test

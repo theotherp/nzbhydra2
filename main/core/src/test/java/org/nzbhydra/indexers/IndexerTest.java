@@ -78,6 +78,8 @@ public class IndexerTest {
     @Mock
     private IndexerApiAccessRepository indexerApiAccessRepositoryMock;
     @Mock
+    private IndexerApiAccessEntityShortRepository shortRepositoryMock;
+    @Mock
     private SearchResultRepository searchResultRepositoryMock;
     @Captor
     private ArgumentCaptor<List<SearchResultEntity>> searchResultEntitiesCaptor;

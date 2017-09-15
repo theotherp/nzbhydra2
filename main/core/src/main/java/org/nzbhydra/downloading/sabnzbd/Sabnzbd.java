@@ -68,7 +68,7 @@ public class Sabnzbd extends Downloader {
 
     private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {
-            ResponseEntity<AddNzbResponse> response = restTemplate.exchange(urlBuilder.build().toUri(), httpMethod, httpEntity, AddNzbResponse.class);
+            ResponseEntity<AddNzbResponse> response = restTemplate.exchange(urlBuilder.build().encode().toUri(), httpMethod, httpEntity, AddNzbResponse.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.getStatusCode());
             }
@@ -100,7 +100,7 @@ public class Sabnzbd extends Downloader {
                 .url(urlBuilder.toUriString())
                 .post(formBody)
                 .build();
-        OkHttpClient client = requestFactory.getOkHttpClientBuilder(urlBuilder.build().toUri()).build();
+        OkHttpClient client = requestFactory.getOkHttpClientBuilder(urlBuilder.build().encode().toUri()).build();
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             if (!response.isSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.code());

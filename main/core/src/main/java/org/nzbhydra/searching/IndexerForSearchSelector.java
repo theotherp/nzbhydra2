@@ -233,16 +233,15 @@ public class IndexerForSearchSelector {
                 query.setParameter("hitLimit", indexerConfig.getHitLimit().get());
                 List resultList = query.getResultList();
 
-                int resultCount = resultList.size();
-                Timestamp earliestAccessObject = (Timestamp) Iterables.getLast(resultList);
-                Instant earliestAccess = earliestAccessObject.toInstant();
+                if (resultList.size() == indexerConfig.getHitLimit().get()) { //Found as many as we want, so now we must check if they're all in the time window
+                    Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
+                    if (earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                        LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
 
-                if (resultCount == indexerConfig.getHitLimit().get() && earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
-                    LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
-
-                    String message = String.format("Not using %s because all %d allowed API hits were already made. The next API hit should be possible at %s", indexerConfig.getName(), indexerConfig.getHitLimit().get(), nextPossibleHit);
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Detection of API limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    return handleIndexerNotSelected(indexer, message, "API hit limit reached");
+                        String message = String.format("Not using %s because all %d allowed API hits were already made. The next API hit should be possible at %s", indexerConfig.getName(), indexerConfig.getHitLimit().get(), nextPossibleHit);
+                        logger.debug(LoggingMarkers.PERFORMANCE, "Detection of API limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                        return handleIndexerNotSelected(indexer, message, "API hit limit reached");
+                    }
                 }
             }
             if (indexerConfig.getDownloadLimit().isPresent()) {
