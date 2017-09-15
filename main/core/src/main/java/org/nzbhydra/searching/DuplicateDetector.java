@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +87,7 @@ public class DuplicateDetector {
 //            uniqueResultsPerIndexer.put(result.getIndexer(), count);
 //        }
 
-        logger.info("Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
+        logger.debug(LoggingMarkers.PERFORMANCE, "Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer);
     }

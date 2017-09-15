@@ -8,6 +8,7 @@ import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.NzbDownloadResult;
 import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.Enclosure;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
@@ -249,11 +250,11 @@ public class ExternalApi {
 
 
     protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params, SearchRequest searchRequest) {
-        logger.debug("Transforming searchResults");
+        Stopwatch stopwatch = Stopwatch.createStarted();
 
         int total = searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults() - searchResult.getNumberOfRemovedDuplicates();
         RssRoot rssRoot = getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
-        logger.debug("Finished transforming");
+        logger.debug(LoggingMarkers.PERFORMANCE, "Transforming results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return rssRoot;
     }
 

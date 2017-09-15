@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
@@ -7,6 +8,7 @@ import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -62,6 +64,7 @@ public class Searcher {
             .build();
 
     public SearchResult search(SearchRequest searchRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         eventPublisher.publishEvent(new SearchEvent(searchRequest));
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
@@ -114,6 +117,7 @@ public class Searcher {
 
         spliceSearchResultItemsAccordingToOffsetAndLimit(searchRequest, searchResult, searchResultItems);
 
+        logger.debug(LoggingMarkers.PERFORMANCE, "Internal search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResult;
     }
 
@@ -149,6 +153,8 @@ public class Searcher {
     }
 
     private void createOrUpdateIndexerSearchEntity(SearchCacheEntry searchCacheEntry, Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults, DuplicateDetectionResult duplicateDetectionResult) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        int countEntities = 0;
         for (IndexerSearchResult indexerSearchResult : indexersToSearchAndTheirResults.values().stream().flatMap(List::stream).collect(Collectors.toList())) {
             IndexerSearchEntity entity = indexerSearchRepository.findByIndexerEntityAndSearchEntity(indexerSearchResult.getIndexer().getIndexerEntity(), searchCacheEntry.getSearchEntity());
             if (entity == null) {
@@ -161,7 +167,9 @@ public class Searcher {
             entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size()); //TODO perhaps add?
             entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer())); //TODO perhaps add?
             indexerSearchRepository.save(entity);
+            countEntities++;
         }
+        logger.debug(LoggingMarkers.PERFORMANCE, "Saving {} indexer search entities took {}ms", countEntities, stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     protected SearchCacheEntry getSearchCacheEntry(SearchRequest searchRequest) {

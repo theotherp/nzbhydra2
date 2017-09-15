@@ -34,7 +34,6 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
@@ -338,7 +337,7 @@ public abstract class Indexer<T> {
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
         boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource()) || searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
         if (!(queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType))) {
-            logger.debug("Query generation not needed, possible or configured");
+            debug("Query generation not needed, possible or configured");
             return query;
         }
         if (searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED) {
@@ -347,7 +346,7 @@ public abstract class Indexer<T> {
 
         if (searchRequest.getTitle().isPresent()) {
             query = sanitizeTitleForQuery(searchRequest.getTitle().get());
-            logger.debug("Search request provided title {}. Using that as query base.", query);
+            debug("Search request provided title {}. Using that as query base.", query);
         } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get();
         } else {
@@ -358,7 +357,7 @@ public abstract class Indexer<T> {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
                 query = sanitizeTitleForQuery(mediaInfo.getTitle().get());
-                logger.debug("Determined title to be {}. Using that as query base.", query);
+                debug("Determined title to be {}. Using that as query base.", query);
             } catch (InfoProviderException e) {
                 throw new IndexerSearchAbortedException("Error while getting infos to generate queries");
             }
@@ -366,17 +365,17 @@ public abstract class Indexer<T> {
 
         if (searchRequest.getSeason().isPresent()) {
             if (searchRequest.getEpisode().isPresent()) {
-                logger.debug("Using season {} and episode {} for query generation", searchRequest.getSeason().get(), searchRequest.getEpisode().get());
+                debug("Using season {} and episode {} for query generation", searchRequest.getSeason().get(), searchRequest.getEpisode().get());
                 try {
                     int episodeInt = Integer.parseInt(searchRequest.getEpisode().get());
                     query += String.format(" s%02des%02d", searchRequest.getSeason().get(), episodeInt);
                 } catch (NumberFormatException e) {
                     String extendWith = String.format(" s%02d", searchRequest.getSeason().get()) + searchRequest.getEpisode().get();
                     query += extendWith;
-                    logger.debug("{} doesn't seem to be an integer, extending query with '{}'", searchRequest.getEpisode().get(), extendWith);
+                    debug("{} doesn't seem to be an integer, extending query with '{}'", searchRequest.getEpisode().get(), extendWith);
                 }
             } else {
-                logger.debug("Using season {} for query generation", searchRequest.getSeason().get());
+                debug("Using season {} for query generation", searchRequest.getSeason().get());
                 query += String.format(" s%02d", searchRequest.getSeason().get());
             }
         }
@@ -384,11 +383,11 @@ public abstract class Indexer<T> {
         if (searchRequest.getSearchType() == SearchType.BOOK && !config.getSupportedSearchTypes().contains(ActionAttribute.BOOK)) {
             if (searchRequest.getAuthor().isPresent()) {
                 query += " " + searchRequest.getAuthor().get();
-                logger.debug("Using author {} in query", searchRequest.getAuthor().get());
+                debug("Using author {} in query", searchRequest.getAuthor().get());
             }
         }
 
-        info("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
+        debug("Indexer does not support any of the supplied IDs or the requested search type. The following query was generated: " + query);
 
         return query;
     }
@@ -413,7 +412,7 @@ public abstract class Indexer<T> {
         title = title.trim();
         for (String word : configProvider.getBaseConfig().getSearching().getRemoveTrailing()) {
             if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
-                debug(MarkerFactory.getMarker(LoggingMarkers.TRAILING.name()), "Removing trailing {} from title {}", word, title);
+                debug(LoggingMarkers.TRAILING, "Removing trailing {} from title {}", word, title);
                 title = title.substring(0, title.length() - word.length()).trim();
                 return title;
             }

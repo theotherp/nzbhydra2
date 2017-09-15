@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -14,8 +15,8 @@ import java.util.List;
 //@Builder
 public class SearchResult {
 
-    private List<SearchResultItem> searchResultItems;
-    private List<IndexerSearchResult> indexerSearchResults;
+    private List<SearchResultItem> searchResultItems = new ArrayList<>();
+    private List<IndexerSearchResult> indexerSearchResults = new ArrayList<>();
     private int offset;
     private int limit;
     private Multiset<String> reasonsForRejection = HashMultiset.create();

@@ -2,6 +2,8 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -57,11 +59,18 @@ public class BaseConfig extends ValidatingConfig {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
-    private static ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    @JsonIgnore
+    private final DefaultPrettyPrinter defaultPrettyPrinter;
+    private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+
 
 
     public BaseConfig() {
         objectMapper.registerModule(new Jdk8Module());
+        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+        defaultPrettyPrinter = new DefaultPrettyPrinter();
+        defaultPrettyPrinter.indentObjectsWith(indenter);
+        defaultPrettyPrinter.indentArraysWith(indenter);
     }
 
     public void replace(BaseConfig newConfig) {
@@ -87,7 +96,7 @@ public class BaseConfig extends ValidatingConfig {
     public void save(File targetFile) throws IOException {
         logger.debug("Writing config to file {}", targetFile.getCanonicalPath());
         try {
-            String asString = objectMapper.writeValueAsString(this);
+            String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
             Files.write(targetFile.toPath(), asString.getBytes());
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error while saving config data. Fatal error");

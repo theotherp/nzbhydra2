@@ -1,8 +1,13 @@
 package org.nzbhydra.logging;
 
-public enum LoggingMarkers {
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
-    TRAILING,
-    RESULT_ACCEPTOR
+public class LoggingMarkers {
+
+    public static final Marker TRAILING = MarkerFactory.getMarker("TRAILING");
+    public static final Marker RESULT_ACCEPTOR = MarkerFactory.getMarker("RESULT_ACCEPTOR");
+    public static final Marker PERFORMANCE = MarkerFactory.getMarker("PERFORMANCE");
+
 
 }

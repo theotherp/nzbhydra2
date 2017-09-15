@@ -15,8 +15,6 @@ import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,7 +33,6 @@ public class ResultAcceptor {
     private static final Logger logger = LoggerFactory.getLogger(ResultAcceptor.class);
 
     private static final Pattern TITLE_PATTERN = Pattern.compile("(\\w[\\w']*\\w|\\w)");
-    private Marker MARKER = MarkerFactory.getMarker(LoggingMarkers.RESULT_ACCEPTOR.name());
 
     private Map<String, List<String>> titleWordCache = new HashMap<>();
 
@@ -149,7 +146,7 @@ public class ResultAcceptor {
 
     protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
-            logger.debug(MARKER, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }
@@ -159,7 +156,7 @@ public class ResultAcceptor {
     protected boolean checkForCategoryDisabledForIndexer(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         List<String> enabledCategories = item.getIndexer().getConfig().getEnabledCategories();
         if (!enabledCategories.isEmpty() && !enabledCategories.contains(item.getCategory().getName())) {
-            logger.debug(MARKER, "{} is in category disabled for indexer", item.getTitle(), searchRequest.getCategory().getName());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in category disabled for indexer", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
         }
@@ -176,7 +173,7 @@ public class ResultAcceptor {
                                 : null
                 );
         if (minSize != null && item.getSize() / (1024 * 1024) < minSize) {
-            logger.debug(MARKER, "{} is smaller than {}", item.getTitle(), minSize);
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is smaller than {}", item.getTitle(), minSize);
             reasonsForRejection.add("Wrong size");
             return false;
         }
@@ -188,7 +185,7 @@ public class ResultAcceptor {
                                 : null
                 );
         if (maxSize != null && item.getSize() / (1024 * 1024) > maxSize) {
-            logger.debug(MARKER, "{} is bigger than {}", item.getTitle(), maxSize);
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is bigger than {}", item.getTitle(), maxSize);
             reasonsForRejection.add("Wrong size");
             return false;
         }
@@ -197,12 +194,12 @@ public class ResultAcceptor {
 
     protected boolean checkForAge(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (searchRequest.getMinage().isPresent() && item.getAgeInDays() < searchRequest.getMinage().get()) {
-            logger.debug(MARKER, "{} is younger than {} days", item.getTitle(), searchRequest.getMinage().get());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is younger than {} days", item.getTitle(), searchRequest.getMinage().get());
             reasonsForRejection.add("Wrong age");
             return false;
         }
         if (searchRequest.getMaxage().isPresent() && item.getAgeInDays() > searchRequest.getMaxage().get()) {
-            logger.debug(MARKER, "{} is older than {} days", item.getTitle(), searchRequest.getMaxage().get());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is older than {} days", item.getTitle(), searchRequest.getMaxage().get());
             reasonsForRejection.add("Wrong age");
             return false;
         }
@@ -212,7 +209,7 @@ public class ResultAcceptor {
     protected boolean checkForForbiddenGroup(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getGroup().isPresent()) {
             if (configProvider.getBaseConfig().getSearching().getForbiddenGroups().stream().anyMatch(x -> item.getGroup().isPresent() && item.getGroup().get().contains(x))) {
-                logger.debug(MARKER, "Found forbidden group {}", item.getGroup().get());
+                logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden group {}", item.getGroup().get());
                 reasonsForRejection.add("In forbidden group");
                 return false;
             }
@@ -223,7 +220,7 @@ public class ResultAcceptor {
     protected boolean checkForForbiddenPoster(Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getPoster().isPresent()) {
             if (configProvider.getBaseConfig().getSearching().getForbiddenPosters().stream().anyMatch(x -> item.getPoster().isPresent() && item.getPoster().get().contains(x))) {
-                logger.debug(MARKER, "Found forbidden poster {}", item.getPoster().get());
+                logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden poster {}", item.getPoster().get());
                 reasonsForRejection.add("In forbidden poster");
                 return false;
             }
@@ -233,12 +230,12 @@ public class ResultAcceptor {
 
     protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex) {
         if (!Strings.isNullOrEmpty(requiredRegex) && !Pattern.compile(requiredRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug(MARKER, "Did not find required regex in {}", item.getTitle());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required regex in {}", item.getTitle());
             reasonsForRejection.add("Required regex doesn't match");
             return false;
         }
         if (!Strings.isNullOrEmpty(forbiddenRegex) && Pattern.compile(forbiddenRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug(MARKER, "Found forbidden regex in {}", item.getTitle());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden regex in {}", item.getTitle());
             reasonsForRejection.add("Forbidden regex matches");
             return false;
         }
@@ -261,7 +258,7 @@ public class ResultAcceptor {
                     }
                 }
             }
-            logger.debug(MARKER, "Did not found any of the required words in the title {}", item.getTitle());
+            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found any of the required words in the title {}", item.getTitle());
             reasonsForRejection.add("No required word found");
             return false;
         }
@@ -285,14 +282,14 @@ public class ResultAcceptor {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
-                    logger.debug(MARKER, "Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
                     return false;
                 }
             } else {
                 List<String> titleWords = getTitleWords(item);
                 Optional<String> found = titleWords.stream().filter(x -> x.equals(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
-                    logger.debug(MARKER, "Found forbidden word in title word {}", found.get());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word in title word {}", found.get());
                     reasonsForRejection.add("Forbidden word");
                     return false;
                 }

@@ -76,7 +76,7 @@ public class InfoProvider {
 
     @Cacheable(cacheNames = "infos", sync = true)
     public MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
-        logger.info("Conversion of {} {} requested", fromType, value);
+        logger.debug("Conversion of {} ID {} requested", fromType, value);
         try {
             MediaInfo info;
             if (fromType == TMDB || fromType == IMDB || fromType == MOVIETITLE) {
@@ -118,7 +118,7 @@ public class InfoProvider {
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
             }
-            logger.info("Conversion successful: " + info);
+            logger.debug("Conversion successful: " + info);
             return info;
         } catch (Exception e) {
             logger.error("Error while converting " + fromType + " " + value, e);
@@ -144,12 +144,7 @@ public class InfoProvider {
             } else if (titleType == MOVIETITLE) {
                 List<TmdbSearchResult> results = tmdbHandler.search(title, null);
                 infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
-                for (MediaInfo mediaInfo : infos) {
-                    MovieInfo movieInfo = new MovieInfo(mediaInfo);
-                    if (movieInfoRepository.findByImdbIdOrTmdbId(movieInfo.getImdbId(), movieInfo.getTmdbId()) == null) {
-                        movieInfoRepository.save(movieInfo);
-                    }
-                }
+                //Do not save these infos to database because TMDB only returns basic info. IMDB ID might be missing and when the repository is queried for conversion it returns an empty IMDB ID
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
             }

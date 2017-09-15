@@ -19,7 +19,6 @@
             <directory>include</directory>
             <outputDirectory>./</outputDirectory>
             <lineEnding>keep</lineEnding>
-            <filtering>false</filtering>
         </fileSet>
         <fileSet>
             <directory>../../../</directory>

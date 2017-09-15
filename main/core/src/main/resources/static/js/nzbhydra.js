@@ -6118,7 +6118,8 @@ function ConfigFields($injector) {
                                 help: 'Select certain sections for more output on debug level',
                                 options: [
                                     {label: 'Removed trailing words', id: 'TRAILING'},
-                                    {label: 'Rejected results', id: 'RESULT_ACCEPTOR'}
+                                    {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
+                                    {label: 'Performance', id: 'PERFORMANCE'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 placeholder: 'None'

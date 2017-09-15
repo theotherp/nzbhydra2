@@ -1,9 +1,13 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchResultWebTO.SearchResultWebTOBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +17,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
 public class InternalSearchResultProcessor {
+
+    private static final Logger logger = LoggerFactory.getLogger(InternalSearchResultProcessor.class);
 
     @Autowired
     private NzbHandler nzbHandler;
@@ -24,6 +31,7 @@ public class InternalSearchResultProcessor {
     private ConfigProvider configProvider;
 
     public SearchResponse createSearchResponse(org.nzbhydra.searching.SearchResult searchResult) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         SearchResponse searchResponse = new SearchResponse();
 
         searchResponse.setNumberOfAvailableResults(searchResult.getNumberOfTotalAvailableResults());
@@ -38,6 +46,8 @@ public class InternalSearchResultProcessor {
         searchResponse.setSearchResults(transformedSearchResults);
         searchResponse.setOffset(searchResponse.getOffset());
         searchResponse.setLimit(searchResponse.getLimit());
+
+        logger.debug(LoggingMarkers.PERFORMANCE, "Creating web response for search results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
     }
 
