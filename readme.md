@@ -10,6 +10,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * Compatible with Sonarr, Radarr, nzbget, sabnzbd, NZB 360, CouchPotato, Mylar, LL, Sickbeard, Jackett/Cardigann, Watcher, etc.
 * Search and download history and extensive stats, e.g. indexer response times, download shares, NZB age, etc.
 * Authentication and multi-user support
+* RSS support with configurable cache times
 * Torrent support:
   * For GUI searches, allowing you to download torrents to a blackhole folder
   * As separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
@@ -30,15 +31,20 @@ TODO
 * Many more QoL improvements, background checks, log outputs, etc.
 
 
-##How to run
-You need [Java Runtime Environment (>=8)](https://www.java.com/de/download/manual.jsp).<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
+## How to run
+You need [Java Runtime Environment (>=8)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
 
-Download the latest release of NZBHydra 2 (TODO add link) for your platform. Extract it anywhere and start using the appropriate way. After a while your browser should open to http://127.0.0.1:5076
+Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
+* On windows you can either start "NZBHydra2.exe" which will add a tray icon or "NZBHydra2 Console.exe" which will open a console window.
+* On linux start "nzbhydra2"
+* On Mac: No idea, I don't have one. If you have found out please tell me.
+
+After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container TODO add links
 
-## Install as a service
-TODO: Add wiki entries and link here
+### Install as a service
+Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-service-and-Linux-start-scripts)
 
 ## Disclaimer
 This is still in early development. Don't run in on the machine where the nuclear launch codes are stored.
@@ -53,10 +59,10 @@ If you plan on doing any frontend work (JS, CSS, HTML): Please contact me first 
 Please send merge requests to the develop branch!
 
 ## Why Java?
-While I don't think I need to justify myself I expect a lot of negativity because of my decision to go with Java. While it's not as cool as python it allows me to develop the bestion version
+Although I don't think I need to justify myself I expect a lot of negativity because of my decision to go with Java. While it's not as cool as python it allows me to develop the best version
 of Hydra. I develop Java by day and I know it best. There's a lot of stuff I wouldn't have been able to do in version 1 - not because it cannot be done with python but because I just don't
-know it less well. Yes, it takes more memory. Yes, it nags you about updates (which you should absolutely do!). Still, I'm convinces v2 of Hydra is a huge improvement over v1. And 90% of
-users won't ever care about what programming language it's written in. 
+know it as well. Yes, it takes more memory. Yes, it nags you about updates (which you should absolutely do!). Still, I'm convinced v2 of Hydra is a huge improvement over v1 and reason enough to use Java.  
+And 90% of users won't ever care about what programming language it's written in. You can still use v1 but it won't be updated or supported.
 
 ## Contact ###
 Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheOtherP

@@ -3,6 +3,7 @@ package org.nzbhydra.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import lombok.AllArgsConstructor;
@@ -172,6 +173,7 @@ public class UpdateManager implements InitializingBean {
         logger.info("Starting update process to {}", latestRelease.getTagName());
         Asset asset = getAsset(latestRelease);
         String url = asset.getBrowserDownloadUrl();
+        url = addTokenUrlIfNecessary(url);
         logger.debug("Downloading update from URL {}", url);
 
         File updateZip;
@@ -203,6 +205,14 @@ public class UpdateManager implements InitializingBean {
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 
+    protected String addTokenUrlIfNecessary(String url) {
+        String token = System.getProperty("nzbhydra.githubtoken");
+        if (!Strings.isNullOrEmpty(token)) {
+            url += "?access_token=" + token;
+        }
+        return url;
+    }
+
     protected Asset getAsset(Release latestRelease) throws UpdateException {
         List<Asset> assets = latestRelease.getAssets();
         if (assets.isEmpty()) {
@@ -225,8 +235,8 @@ public class UpdateManager implements InitializingBean {
             //LATER support prereleases
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
+            url = addTokenUrlIfNecessary(url);
             return restTemplate.getForEntity(url, Release.class).getBody();
-
         } catch (RestClientException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }
