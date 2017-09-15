@@ -6,6 +6,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import lombok.Data;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
@@ -21,6 +23,7 @@ public class SearchCacheEntry {
     private Instant lastAccessed;
     private SearchRequest searchRequest;
     private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultsByIndexer = new HashMap<>();
+    private Map<IndexerEntity, IndexerSearchEntity> indexerSearchEntitiesByIndexer = new HashMap<>();
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
     private IndexerForSearchSelection pickingResult;
     private SearchEntity searchEntity;

@@ -112,9 +112,9 @@ public class ResultAcceptor {
             acceptedResults.add(item);
         }
         if (acceptedResults.size() < items.size()) {
-            logger.info("Rejected {} out of {} search results from indexer {}", items.size() - acceptedResults.size(), items.size(), indexerConfig.getName());
+            logger.debug("Rejected {} out of {} search results from indexer {}", items.size() - acceptedResults.size(), items.size(), indexerConfig.getName());
             for (Entry<String> entry : reasonsForRejection.entrySet()) {
-                logger.info("Rejected {} search results for the following reason: {}", entry.getCount(), entry.getElement());
+                logger.info("Rejected {} search results from {} for the following reason: {}", entry.getCount(), indexerConfig.getName(), entry.getElement());
             }
         }
 

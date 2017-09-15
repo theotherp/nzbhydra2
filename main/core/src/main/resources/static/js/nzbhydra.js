@@ -4049,6 +4049,10 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
                 $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
                 $scope.indexersSelected = data.data.indexersSelected;
                 $scope.indexersFinished = data.data.indexersFinished;
+                $scope.progressMax = data.data.indexersSelected;
+                if ($scope.progressMax > data.data.indexersSelected) {
+                    $scope.progressMax = ">=" + data.data.indexersSelected;
+                }
             },
             function () {
                 $interval.cancel(updateSearchMessagesInterval);
@@ -5411,6 +5415,9 @@ function ConfigBoxService($http, $q) {
 
 }
 ConfigBoxService.$inject = ["$http", "$q"];
+
+
+
 
 
 var filters = angular.module('filters', []);
@@ -8171,6 +8178,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         })
 }
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl"];
+
 
 
 angular

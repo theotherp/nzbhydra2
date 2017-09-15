@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.Data;
@@ -45,5 +46,24 @@ public class IndexerSearchResult {
         this.errorMessage = errorMessage;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        IndexerSearchResult that = (IndexerSearchResult) o;
+        return Objects.equal(indexer, that.indexer) &&
+                Objects.equal(time, that.time);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(super.hashCode(), indexer, time);
+    }
 }

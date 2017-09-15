@@ -337,6 +337,10 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
                 $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
                 $scope.indexersSelected = data.data.indexersSelected;
                 $scope.indexersFinished = data.data.indexersFinished;
+                $scope.progressMax = data.data.indexersSelected;
+                if ($scope.progressMax > data.data.indexersSelected) {
+                    $scope.progressMax = ">=" + data.data.indexersSelected;
+                }
             },
             function () {
                 $interval.cancel(updateSearchMessagesInterval);

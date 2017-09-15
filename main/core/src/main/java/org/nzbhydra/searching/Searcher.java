@@ -156,7 +156,7 @@ public class Searcher {
         Stopwatch stopwatch = Stopwatch.createStarted();
         int countEntities = 0;
         for (IndexerSearchResult indexerSearchResult : indexersToSearchAndTheirResults.values().stream().flatMap(List::stream).collect(Collectors.toList())) {
-            IndexerSearchEntity entity = indexerSearchRepository.findByIndexerEntityAndSearchEntity(indexerSearchResult.getIndexer().getIndexerEntity(), searchCacheEntry.getSearchEntity());
+            IndexerSearchEntity entity = searchCacheEntry.getIndexerSearchEntitiesByIndexer().get(indexerSearchResult.getIndexer().getIndexerEntity());
             if (entity == null) {
                 entity = new IndexerSearchEntity();
                 entity.setIndexerEntity(indexerSearchResult.getIndexer().getIndexerEntity());
@@ -164,9 +164,10 @@ public class Searcher {
                 entity.setResultsCount(indexerSearchResult.getTotalResults());
                 entity.setSuccessful(indexerSearchResult.isWasSuccessful());
             }
-            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size()); //TODO perhaps add?
-            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer())); //TODO perhaps add?
-            indexerSearchRepository.save(entity);
+            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
+            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer()));
+            entity = indexerSearchRepository.save(entity);
+            searchCacheEntry.getIndexerSearchEntitiesByIndexer().put(indexerSearchResult.getIndexer().getIndexerEntity(), entity);
             countEntities++;
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Saving {} indexer search entities took {}ms", countEntities, stopwatch.elapsed(TimeUnit.MILLISECONDS));
