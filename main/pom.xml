@@ -1,13 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.nzbhydra</groupId>
     <artifactId>main</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <modules>
         <module>core</module>
@@ -39,7 +36,8 @@
         <!--<developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>-->
         <connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>
         <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
-    </scm>
+      <tag>v0.0.1</tag>
+  </scm>
 
     <build>
         <pluginManagement>
