@@ -333,8 +333,6 @@ public class JsonConfigMigration {
         newMain.setTheme(oldMain.getTheme());
         if (!Strings.isNullOrEmpty(oldMain.getUrlBase()) || !Strings.isNullOrEmpty(oldMain.getExternalUrl())) {
             logAsWarningAndAdd(messages, "URL base and/or external URL cannot be migrated. You'll have to set them manually");
-            newMain.setUrlBase(null);
-            newMain.setExternalUrl(null);
         }
         newMain.setUseLocalUrlForApiAccess(oldMain.isUseLocalUrlForApiAccess());
         return messages;

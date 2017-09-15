@@ -13,7 +13,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * RSS support with configurable cache times
 * Torrent support:
   * For GUI searches, allowing you to download torrents to a blackhole folder
-  * As separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
+  * A separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
 * Extensive configurability  
 
 ## Screenshots
@@ -32,7 +32,7 @@ TODO
 
 
 ## How to run
-You need [Java Runtime Environment (>=8)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
+You need [Java Runtime Environment (>=8u101)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
 
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
 * On windows you can either start "NZBHydra2.exe" which will add a tray icon or "NZBHydra2 Console.exe" which will open a console window.

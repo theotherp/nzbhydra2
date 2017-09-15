@@ -44,7 +44,7 @@ public class IndexerWebAccess {
         try {
             return future.get(timeout, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
-            throw new IndexerUnreachableException("Error while communicating with Indexer. Server returned: " + e.getMessage(), e.getCause());
+            throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
         } catch (TimeoutException e) {
             throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {

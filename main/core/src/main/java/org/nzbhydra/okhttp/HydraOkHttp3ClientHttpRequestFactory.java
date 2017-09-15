@@ -74,6 +74,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Primary
@@ -81,6 +83,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
         implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
+    private static Pattern HOST_PATTERN = Pattern.compile("(\\w+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
 
     private OkHttpClient client;
     @Autowired
@@ -178,9 +181,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     public Builder getOkHttpClientBuilder(URI requestUri) {
-        //Disable "unrecognized_name" SSL exception. See https://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since-upgrade-to-java-1-7-0
-        //On the other hand it causes incompability with at least binsearch
-
         Builder builder = getBaseBuilder();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
             builder = getUnsafeOkHttpClientBuilder(builder);
@@ -344,12 +344,29 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
 
         @Override
-        public SSLSocket createSocket(Socket socket, String host, int port, boolean autoClose) throws IOException {
-            String finalHost = host;
-            if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> x != null && x.toLowerCase().equals(finalHost.toLowerCase()))) {
-                host = null;
+        public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
+            String newHost = host;
+
+            if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
+                newHost = null;
             }
-            return super.createSocket(socket, host, port, autoClose);
+            return super.createSocket(socket, newHost, port, autoClose);
+        }
+
+        protected boolean isSameHost(final String a, final String b) {
+            if (a == null || b == null) {
+                return false;
+            }
+            Matcher aMatcher = HOST_PATTERN.matcher(a);
+            Matcher bMatcher = HOST_PATTERN.matcher(b);
+            if (!aMatcher.matches()) {
+                logger.warn("Unable to parse host {}", a);
+            }
+            if (!bMatcher.matches()) {
+                logger.warn("Unable to parse host {}", b);
+            }
+
+            return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());
         }
     }
 

@@ -12,8 +12,8 @@
     <modules>
         <module>core</module>
         <module>mapping</module>
-        <module>releases</module>
         <module>tests</module>
+        <module>releases</module>
     </modules>
 
     <properties>
