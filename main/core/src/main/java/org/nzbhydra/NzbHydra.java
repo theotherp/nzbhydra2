@@ -84,9 +84,10 @@ public class NzbHydra {
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
-        parser.accepts("host", "Run on this host").withRequiredArg();
+        parser.accepts("host", "Run on this host").withOptionalArg();
         parser.accepts("nobrowser", "Don't open browser to Hydra");
-        parser.accepts("port", "Run on this port (default: 5076)").withRequiredArg();
+        parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
+        parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
         parser.accepts("repairdb", "Repair database. Add database file path as argument").withRequiredArg();
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
@@ -106,23 +107,7 @@ public class NzbHydra {
             logger.info("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
         } else if (options.has("repairdb")) {
             String databaseFilePath = (String) options.valueOf("repairdb");
-            if (!databaseFilePath.contains("mv.db")) {
-                databaseFilePath = databaseFilePath + ".mv.db";
-            }
-            File file = new File(databaseFilePath);
-            if (!file.exists()) {
-                logger.error("File {} doesn't exist", file.getAbsolutePath());
-            }
-            databaseFilePath = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - 6);
-            Flyway flyway = new Flyway();
-            flyway.setLocations("classpath:migration");
-            Class.forName("org.h2.Driver");
-            JdbcDataSource dataSource = new JdbcDataSource();
-            dataSource.setURL("jdbc:h2:file:" + databaseFilePath);
-            dataSource.setUser("sa");
-
-            flyway.setDataSource(dataSource);
-            flyway.repair();
+            repairDb(databaseFilePath);
         } else {
             if (options.has("datafolder")) {
                 dataFolder = (String) options.valueOf("datafolder");
@@ -142,6 +127,7 @@ public class NzbHydra {
             System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
+            useIfSet(options, "baseurl", "server.contextPath");
             useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
@@ -154,6 +140,26 @@ public class NzbHydra {
             applicationContext = hydraApplication.run(args);
 
         }
+    }
+
+    protected static void repairDb(String databaseFilePath) throws ClassNotFoundException {
+        if (!databaseFilePath.contains("mv.db")) {
+            databaseFilePath = databaseFilePath + ".mv.db";
+        }
+        File file = new File(databaseFilePath);
+        if (!file.exists()) {
+            logger.error("File {} doesn't exist", file.getAbsolutePath());
+        }
+        databaseFilePath = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - 6);
+        Flyway flyway = new Flyway();
+        flyway.setLocations("classpath:migration");
+        Class.forName("org.h2.Driver");
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:file:" + databaseFilePath);
+        dataSource.setUser("sa");
+
+        flyway.setDataSource(dataSource);
+        flyway.repair();
     }
 
     @PostConstruct

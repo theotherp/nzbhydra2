@@ -1,0 +1,14 @@
+/dist
+/build
+/flask_session
+/.idea
+*.db*
+*.cfg*
+*.bak
+*.log*
+**/*.pyc
+
+
+**/.cache
+nzbhydra.pid
+*.spec

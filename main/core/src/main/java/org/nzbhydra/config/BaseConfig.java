@@ -163,8 +163,14 @@ public class BaseConfig extends ValidatingConfig {
                 .host(host.equals("0.0.0.0") ? "127.0.0.1" : host)
                 .scheme(main.isSsl() ? "https" : "http")
                 .port(port);
-        if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
-            builder.path(main.getUrlBase().get());
+        String baseUrl = null;
+        if (!Strings.isNullOrEmpty(System.getProperty("server.contextPath"))) {
+            baseUrl = System.getProperty("server.contextPath");
+        } else if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
+            baseUrl = main.getUrlBase().get();
+        }
+        if (baseUrl != null) {
+            builder.path(baseUrl);
         }
         if (builder.build().getHost().equals("::")) {
             builder = builder.host("[::1]");

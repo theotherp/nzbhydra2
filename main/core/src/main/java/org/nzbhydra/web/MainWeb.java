@@ -77,7 +77,11 @@ public class MainWeb {
         BootstrappedDataTO bootstrappedData = userInfos.getUserInfos(principal);
         bootstrappedData.setSafeConfig(getSafeConfig());
 
-        session.setAttribute("baseUrl", (configProvider.getBaseConfig().getMain().getUrlBase().orElse("/") + "/").replace("//", "/"));
+        String urlBase = configProvider.getBaseConfig().getBaseUriBuilder().build().getPath();
+        if (urlBase == null) {
+            urlBase = "";
+        }
+        session.setAttribute("baseUrl", (urlBase + "/").replace("//", "/"));
         session.setAttribute("bootstrap", bootstrappedData);
         session.setAttribute("cssUrl", "static/css/" + configProvider.getBaseConfig().getMain().getTheme() + ".css");
     }
