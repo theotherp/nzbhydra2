@@ -1,7 +1,7 @@
 package org.nzbhydra.news;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
+import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager;
 
 import java.text.ParseException;
@@ -19,8 +20,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 public class NewsProviderTest {
@@ -29,6 +29,8 @@ public class NewsProviderTest {
     private UpdateManager updateManagerMock;
     @Mock
     private ShownNewsRepository shownNewsRepositoryMock;
+    @Mock
+    private WebAccess webAccessMock;
 
     @InjectMocks
     private NewsProvider testee = new NewsProvider();
@@ -36,8 +38,7 @@ public class NewsProviderTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        testee = spy(testee);
-        doReturn(getNewsJson()).when(testee).getNewsFromGithub();
+        when(webAccessMock.callUrl(any(), any(TypeReference.class))).thenReturn(getNewsJson());
         testee.lastCheckedForNews = Instant.ofEpochMilli(0);
     }
 
@@ -76,14 +77,13 @@ public class NewsProviderTest {
         assertThat(entries.size(), is(0));
     }
 
-    protected String getNewsJson() throws ParseException, JsonProcessingException {
+    protected List<NewsEntry> getNewsJson() throws ParseException, JsonProcessingException {
         NewsEntry entry1 = new NewsEntry(new SemanticVersion("1.0.0"), "news1.0.0");
         NewsEntry entry2 = new NewsEntry(new SemanticVersion("2.0.0"), "news2.0.0");
         NewsEntry entry3 = new NewsEntry(new SemanticVersion("3.0.0"), "news3.0.0");
         List<NewsEntry> entries = Arrays.asList(entry2, entry1, entry3);
 
-        String newsJson = new ObjectMapper().writeValueAsString(entries);
-        return newsJson;
+        return entries;
     }
 
 

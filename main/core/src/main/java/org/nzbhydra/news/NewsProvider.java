@@ -1,13 +1,10 @@
 package org.nzbhydra.news;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.nzbhydra.mapping.SemanticVersion;
-import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
+import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +29,7 @@ public class NewsProvider {
     @Autowired
     private UpdateManager updateManager;
     @Autowired
-    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    protected WebAccess webAccess;
 
     @Value("${nzbhydra.newsUrl}")
     protected String newsUrl;
@@ -41,8 +38,8 @@ public class NewsProvider {
 
     public List<NewsEntry> getNews() throws IOException {
         if (Instant.now().minus(2, ChronoUnit.HOURS).isAfter(lastCheckedForNews)) {
-            String body = getNewsFromGithub();
-            newsEntries = new ObjectMapper().readValue(body, new TypeReference<List<NewsEntry>>() {
+
+            newsEntries = webAccess.callUrl(newsUrl, new TypeReference<List<NewsEntry>>() {
             });
             newsEntries.sort(Comparator.comparing(NewsEntry::getShowForVersion).reversed());
             lastCheckedForNews = Instant.now();
@@ -64,15 +61,6 @@ public class NewsProvider {
         List<NewsEntry> news = getNews();
         return news.stream().filter(x -> !(from != null && from.isSameOrNewer(x.getShowForVersion()) || x.getShowForVersion().isUpdateFor(to))).collect(Collectors.toList());
 
-    }
-
-
-    protected String getNewsFromGithub() throws IOException {
-        Request request = new Request.Builder().url(newsUrl).build();
-        logger.debug("Getting news from GitHub");
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-            return response.body().string();
-        }
     }
 
 

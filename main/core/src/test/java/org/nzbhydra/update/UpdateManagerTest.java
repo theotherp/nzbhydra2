@@ -1,5 +1,6 @@
 package org.nzbhydra.update;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.junit.Before;
@@ -12,8 +13,8 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogChangeEntry;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
+import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -35,6 +36,8 @@ public class UpdateManagerTest {
     private GenericStorage updateDataGenericStorageMock;
     @Mock
     private RestTemplate restTemplateMock;
+    @Mock
+    private WebAccess webAccessMock;
 
     private static String changelog = "some changes";
 
@@ -73,19 +76,17 @@ public class UpdateManagerTest {
                         Arrays.asList(previousRelease, latestRelease), HttpStatus.OK)
         );
 
-        when(restTemplateMock.exchange(eq("http:/127.0.0.1:7070/changelog"), any(), any(), any(ParameterizedTypeReference.class))).thenReturn(
-                new ResponseEntity<>(
-                        Arrays.asList(
-                                new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
-                                new ChangelogVersionEntry("2.0.0", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
-                                new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
-                        ), HttpStatus.OK)
-        );
 
-        when(restTemplateMock.exchange(eq("http:/127.0.0.1:7070/blockedVersions.json"), any(), any(), any(ParameterizedTypeReference.class))).thenReturn(
-                new ResponseEntity<>(
-                        Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment")),
-                        HttpStatus.OK)
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"), any(TypeReference.class))).thenReturn(
+                Arrays.asList(
+                        new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
+                        new ChangelogVersionEntry("2.0.0", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+                        new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+
+                ));
+
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"), any(TypeReference.class))).thenReturn(
+                Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment"))
         );
     }
 

@@ -1,6 +1,7 @@
 package org.nzbhydra.update;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.google.common.base.Strings;
@@ -17,16 +18,15 @@ import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Asset;
 import org.nzbhydra.mapping.github.Release;
+import org.nzbhydra.okhttp.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -69,6 +69,8 @@ public class UpdateManager implements InitializingBean {
     private GenericStorage updateDataGenericStorage;
     @Autowired
     protected RestTemplate restTemplate;
+    @Autowired
+    protected WebAccess webAccess;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -157,14 +159,17 @@ public class UpdateManager implements InitializingBean {
     }
 
     public List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
-        ResponseEntity<List<ChangelogVersionEntry>> responseEntity = restTemplate.exchange(changelogUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<ChangelogVersionEntry>>() {
-        });
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new UpdateException("Error while getting changelog: " + responseEntity.getStatusCode());
+        List<ChangelogVersionEntry> changelogVersionEntries;
+        try {
+            changelogVersionEntries = webAccess.callUrl(changelogUrl, new TypeReference<List<ChangelogVersionEntry>>() {
+            });
+        } catch (IOException e) {
+            throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
-        Collections.sort(responseEntity.getBody());
-        Collections.reverse(responseEntity.getBody());
-        return responseEntity.getBody();
+
+        Collections.sort(changelogVersionEntries);
+        Collections.reverse(changelogVersionEntries);
+        return changelogVersionEntries;
     }
 
 
@@ -245,14 +250,14 @@ public class UpdateManager implements InitializingBean {
 
     protected List<BlockedVersion> getBlockedVersions() throws UpdateException {
         logger.debug("Getting blocked versions from GitHub");
+        List<BlockedVersion> blockedVersions;
         try {
-            ResponseEntity<List<BlockedVersion>> responseEntity = restTemplate.exchange(blockedVersionsUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<BlockedVersion>>() {
+            blockedVersions = webAccess.callUrl(blockedVersionsUrl, new TypeReference<List<BlockedVersion>>() {
             });
-            return responseEntity.getBody();
-        } catch (RestClientException e) {
-            logger.error("Unable to read blocked versions", e);
-            throw new UpdateException("Unable to read blocked versions");
+        } catch (IOException e) {
+            throw new UpdateException("Error while getting blocked versions: " + e.getMessage());
         }
+        return blockedVersions;
     }
 
 

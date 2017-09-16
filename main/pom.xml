@@ -68,9 +68,9 @@
                 <version>1.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
-                    <!--<githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
-                    <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
+                    <!--<githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
+                    <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <githubTokenFile>${basedir}/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
                     <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
