@@ -1,10 +1,6 @@
 [
   {
-    "showForVersion": "0.0.99",
-    "newsAsMarkdown": "<p>news0.0.99</p>\n"
-  },
-  {
     "showForVersion": "0.0.1",
-    "newsAsMarkdown": "<p>news0.0.0</p>\n"
+    "newsAsMarkdown": "<p>No news yet</p>"
   }
 ]

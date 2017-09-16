@@ -200,14 +200,18 @@ public class Newznab extends Indexer<Xml> {
     }
 
     private String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
-        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        if (Strings.isNullOrEmpty(query)) {
+            //Indexers do not allow having a query that only contains forbidden words
+            return query;
+        }
+        List<String> requiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
         requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         if (!requiredWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
-        List<String> forbiddenWords = searchRequest.getInternalData().getForbiddenWords();
+        List<String> forbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
         forbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         forbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
         if (!forbiddenWords.isEmpty()) {

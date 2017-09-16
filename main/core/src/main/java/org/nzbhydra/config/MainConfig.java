@@ -62,6 +62,7 @@ public class MainConfig extends ValidatingConfig {
     @RestartRequired
     private boolean verifySsl = true;
     private boolean welcomeShown = false;
+    @RestartRequired
     private int xmx;
 
     public Optional<String> getExternalUrl() {

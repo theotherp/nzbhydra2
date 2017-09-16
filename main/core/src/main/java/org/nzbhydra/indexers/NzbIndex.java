@@ -112,14 +112,14 @@ public class NzbIndex extends Indexer<RssRoot> {
     }
 
     private String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
-        List<String> requiredWords = searchRequest.getInternalData().getRequiredWords();
+        List<String> requiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
         requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         if (!requiredWords.isEmpty()) {
             query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
         }
 
-        List<String> forbiddenWords = searchRequest.getInternalData().getForbiddenWords();
+        List<String> forbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
         forbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         forbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
         if (!forbiddenWords.isEmpty()) {

@@ -80,6 +80,7 @@
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.thymeleaf" level="WARN"/>
     <logger name="org.eclipse" level="WARN"/>
+    <logger name="okhttp3.OkHttpClient" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
