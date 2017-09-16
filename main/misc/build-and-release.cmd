@@ -58,7 +58,7 @@ call mvn github-release:release
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Setting new snapshot version
-call mvn versions:set DnewVersion=%1-SNAPSHOT
+call mvn versions:set -DnewVersion=%1-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" goto error
 
 goto eof
