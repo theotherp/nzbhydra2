@@ -2,13 +2,13 @@
 from __future__ import print_function
 
 import argparse
-import atexit
 import logging
 import os
 import platform
 import shutil
 import subprocess
 import sys
+import yaml
 import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
@@ -19,7 +19,7 @@ args = []
 unknownArgs = []
 terminatedByWrapper = False
 
-LOGGER_DEFAULT_FORMAT = u'%(asctime)s %(levelname)s - %(message)s'
+LOGGER_DEFAULT_FORMAT = u'%(asctime)s  %(levelname)s - %(message)s'
 LOGGER_DEFAULT_LEVEL = 'INFO'
 logger = logging.getLogger('root')
 console_logger = logging.StreamHandler(sys.stdout)
@@ -257,7 +257,15 @@ def startup():
         if args.baseurl and "--baseurl" not in arguments:
             arguments.append("--baseurl")
             arguments.append(args.baseurl)
-    arguments = [args.java, "-Xmx" + args.xmx, "-Xss256k", "-DfromWrapper", "-jar", escape_parameter(isWindows, jarFile)] + arguments
+    with open(os.path.join(args.datafolder, "nzbhydra.yml"), "r") as f:
+        y = yaml.load(f)
+        xmx = y["main"]["xmx"]
+    if args.xmx:
+        xmx = args.xmx
+    java_arguments = ["-Xmx" + str(xmx) + "M", "-Xss256k", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
+    if not args.nocolors and not isWindows:
+        java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
+    arguments = [args.java]+ java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
@@ -267,9 +275,9 @@ def startup():
         si = None
     # todo check shell=True/False for linux and windows
     # shell=true: pass string, shell=false: pass arguments
-    process = subprocess.Popen(arguments, shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si)
+    process = subprocess.Popen(arguments, shell=False, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si, env=os.environ.copy())
 
-    atexit.register(killProcess)
+    #atexit.register(killProcess)
     while True:
         # Handle error first in case startup of main process returned only an error (on stderror)
         nextline = process.stdout.readline()
@@ -295,10 +303,11 @@ if __name__ == '__main__':
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
     parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
     parser.add_argument('--nopidfile', action='store_true', help='Disable writing of PID file. Only relevant with daemon argument', default=False)
+    parser.add_argument('--nocolors', action='store_true', help='Disable color coded console output (disabled on Windows by default)', default=False)
 
     # Pass to main process
     parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc', default=os.path.join(getBasePath(), "data"))
-    parser.add_argument('--xmx', action='store', help='Java Xmx setting (e.g. 128M)', default="128M")
+    parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 128)', default=None)
     parser.add_argument('--quiet', action='store_true', help='Set to disable all console output', default=False)
     parser.add_argument('--host', action='store', help='Set the host')
     parser.add_argument('--port', action='store', help='Set the port')

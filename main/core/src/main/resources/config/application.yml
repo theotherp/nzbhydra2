@@ -295,6 +295,7 @@ main:
   useLocalUrlForApiAccess: true
   verifySsl: true
   welcomeShown: false
+  xmx: 128
 searching:
   alwaysShowDuplicates: false
   applyRestrictions: "NONE"

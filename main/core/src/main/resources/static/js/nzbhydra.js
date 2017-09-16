@@ -6162,6 +6162,18 @@ function ConfigFields($injector) {
                                 label: 'Show news',
                                 help: "Hydra will occasionally show news when opened. You can always find them in the system section"
                             }
+                        },
+                        {
+                            key: 'xmx',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'JVM memory',
+                                addonRight: {
+                                    text: 'MB'
+                                },
+                                help: '128M should suffice except when working with big databases'
+                            }
                         }
                     ]
 

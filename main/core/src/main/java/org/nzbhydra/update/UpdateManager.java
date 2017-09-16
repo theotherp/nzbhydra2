@@ -25,9 +25,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -183,7 +180,6 @@ public class UpdateManager implements InitializingBean {
 
         File updateZip;
         try {
-            ResponseEntity<Resource> exchange = restTemplate.exchange(url, HttpMethod.GET, null, Resource.class);
 
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
@@ -194,8 +190,9 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
-            Files.copy(exchange.getBody().getInputStream(), updateZip.toPath());
+            webAccess.downloadToFile(url, updateZip);
         } catch (RestClientException | IOException e) {
+            logger.error("Error while download or saving ZIP", e);
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
 
@@ -213,7 +210,16 @@ public class UpdateManager implements InitializingBean {
     protected String addTokenUrlIfNecessary(String url) {
         String token = System.getProperty("nzbhydra.githubtoken");
         if (!Strings.isNullOrEmpty(token)) {
+            logger.debug("Using GitHub token from property");
             url += "?access_token=" + token;
+        } else if (new File(NzbHydra.getDataFolder(), "token.txt").exists()) {
+            try {
+                logger.debug("Using GitHub token from file");
+                token = new String(Files.readAllBytes(new File(NzbHydra.getDataFolder(), "token.txt").toPath()));
+                url += "?access_token=" + token;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return url;
     }

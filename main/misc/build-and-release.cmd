@@ -65,6 +65,10 @@ echo Setting new snapshot version
 call mvn versions:set -DnewVersion=%1-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" goto error
 
+echo Making snapshot version effective
+call mvn versions:commit
+if not "%ERRORLEVEL%" == "0" goto error
+
 goto eof
 :error
 echo Error, aborted
