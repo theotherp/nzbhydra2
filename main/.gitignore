@@ -14,4 +14,5 @@ target/
 release.properties
 *.releaseBackup
 token.txt
-misc/*.cmd
+misc/copypoms.cmd
+misc/init.cmd

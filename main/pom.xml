@@ -68,8 +68,8 @@
                 <version>1.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <!--<githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
-                    <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <!--<githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
                     <githubTokenFile>c:/Users/strat/IdeaProjects/NzbHydra2/main/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
@@ -77,6 +77,11 @@
                     <changelogMdFile>${basedir}/../changelog.md</changelogMdFile>
                     <tagName>v${project.version}</tagName>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.4</version>
             </plugin>
         </plugins>
     </build>
