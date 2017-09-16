@@ -230,7 +230,11 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        WindowsTrayIcon.remove();
+        try {
+            WindowsTrayIcon.remove();
+        } catch (Exception e) {
+            //An exception might be thrown while shutting down, ignore this
+        }
         logger.info("Shutting down");
     }
 

@@ -341,9 +341,9 @@ public abstract class Indexer<T> {
         boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
         boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource()) || searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
-        if (!(queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType))) {
-            debug("Query generation not needed, possible or configured");
+        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+        boolean fallbackRequested = searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
+        if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {
             return query;
         }
         if (searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED) {
@@ -369,12 +369,12 @@ public abstract class Indexer<T> {
             }
         }
 
-        if (searchRequest.getSeason().isPresent()) {
+        if (searchRequest.getSeason().isPresent() && !fallbackRequested) { //Don't add season/episode string for fallback queries. Indexers usually still return correct results
             if (searchRequest.getEpisode().isPresent()) {
                 debug("Using season {} and episode {} for query generation", searchRequest.getSeason().get(), searchRequest.getEpisode().get());
                 try {
                     int episodeInt = Integer.parseInt(searchRequest.getEpisode().get());
-                    query += String.format(" s%02des%02d", searchRequest.getSeason().get(), episodeInt);
+                    query += String.format(" s%02de%02d", searchRequest.getSeason().get(), episodeInt);
                 } catch (NumberFormatException e) {
                     String extendWith = String.format(" s%02d", searchRequest.getSeason().get()) + searchRequest.getEpisode().get();
                     query += extendWith;

@@ -94,7 +94,7 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
-        if (params.getQ() != null && params.getQ().equals("noresults")) {
+        if ((params.getQ() != null && params.getQ().equals("noresults")) || (params.getTvdbid() != null && params.getTvdbid().equals("329089"))) {
             RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, params.getApikey(), false);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

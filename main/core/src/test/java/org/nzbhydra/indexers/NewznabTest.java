@@ -50,6 +50,7 @@ import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.oxm.Unmarshaller;
@@ -263,6 +264,30 @@ public class NewznabTest {
         searchRequest.setTitle("anotherTitle");
         UriComponents actual = testee.buildSearchUrl(searchRequest, null, null).build();
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?apikey&t=search&q=anotherTitle").build(), actual);
+    }
+
+    @Test
+    public void shouldGenerateQueryIfFallbackRequested() throws Exception {
+        testee.config = new IndexerConfig();
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
+        testee.config.setHost("http://www.indexer.com");
+        testee.config.setSupportedSearchIds(Arrays.asList(IdType.TVDB));
+        testee.config.setSupportedSearchTypes(Arrays.asList(ActionAttribute.TVSEARCH, ActionAttribute.SEARCH));
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.TVSEARCH, 0, 100);
+        searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+        searchRequest.getIdentifiers().put(IdType.TVDB, "tvdbId");
+        when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
+        MediaInfo mediaInfo = new MediaInfo();
+        mediaInfo.setTitle("someShow");
+        when(infoProviderMock.convert("tvdbId", IdType.TVDB)).thenReturn(mediaInfo);
+
+        assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
+
+        //Don't add season/episode for fallback queries
+        searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
+        searchRequest.setSeason(1);
+        searchRequest.setEpisode("1");
+        assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
     }
 
     @Test
