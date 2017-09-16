@@ -34,7 +34,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     }
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore", {params: {version: version}}).then(function (data) {
+        return $http.put("internalapi/updates/ignore?version=" + version).then(function (data) {
             return data;
         });
     }

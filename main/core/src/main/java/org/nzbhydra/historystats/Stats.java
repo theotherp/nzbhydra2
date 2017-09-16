@@ -353,7 +353,7 @@ public class Stats {
             int count = ((BigInteger) array[2]).intValue();
             if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
                 successCountMap.put(indexerId, count);
-            } else if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
+            } else if (result.equals(IndexerAccessResult.CONNECTION_ERROR.name())) {
                 connectionErrorCountMap.put(indexerId, count);
             }
             if (allAccessesCountMap.containsKey(indexerId)) {

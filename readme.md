@@ -14,10 +14,9 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * Torrent support:
   * For GUI searches, allowing you to download torrents to a blackhole folder
   * A separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
-* Extensive configurability  
+* Extensive configurability
 
-## Screenshots
-TODO
+[Screenshots](https://imgur.com/a/ePxwj)  
 
 ### Major improvements over NZBHydra v1
 * Improved performance especially when using many indexers and/or doing multiple searches concurrently. Up to six times faster search times (ignoring indexer response times):
@@ -48,7 +47,7 @@ If you get SSL errors when contacting indexers make please update your java runt
 #### A note on memory
 The memory usage mainly depends on the database size which depends on the amount of indexers you use, how long you've been running NZBHydra and how many queries are done. 
 "Normal" sized installations with five indexers should run great with the default memory settings. With a big history and a dozen or more indexers you may need to increase
-the memory usage (via e.g. `--xmx 256M`), especially for calculating stats. 
+the memory usage (see main config), especially for calculating stats. 
 
 ### Install as a service
 Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-service-and-Linux-start-scripts)
