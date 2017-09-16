@@ -56,13 +56,12 @@ public class ReleaseMojo extends AbstractMojo {
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
 
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Override
     public void execute() throws MojoExecutionException {
         client = new OkHttpClient();
-        objectMapper = new ObjectMapper();
 
         getLog().info("Will release version " + tagName + " to GitHub");
 
@@ -116,6 +115,11 @@ public class ReleaseMojo extends AbstractMojo {
     }
 
     protected void setChangelogBody(ReleaseRequest releaseRequest) throws MojoExecutionException {
+        ChangelogVersionEntry latestEntry = getChangelogVersionEntry();
+        releaseRequest.setBody(Joiner.on("\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
+    }
+
+    protected ChangelogVersionEntry getChangelogVersionEntry() throws MojoExecutionException {
         List<ChangelogVersionEntry> entries;
         try {
             entries = objectMapper.readValue(Files.readAllBytes(changelogJsonFile.toPath()), new TypeReference<List<ChangelogVersionEntry>>() {
@@ -129,7 +133,7 @@ public class ReleaseMojo extends AbstractMojo {
         if (!new SemanticVersion(latestEntry.getVersion()).equals(new SemanticVersion(tagName))) {
             throw new MojoExecutionException("Latest changelog entry version " + latestEntry.getVersion() + " does not match tag name " + tagName);
         }
-        releaseRequest.setBody(Joiner.on("\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
+        return latestEntry;
     }
 
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
