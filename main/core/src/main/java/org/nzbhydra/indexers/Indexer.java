@@ -205,7 +205,6 @@ public abstract class Indexer<T> {
         ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
         Stopwatch stopwatch = Stopwatch.createStarted();
         Set<String> alreadySavedIndexerGuids = searchResultRepository.findByIndexerAndIndexerGuidIn(indexer, searchResultItems.stream().map(SearchResultItem::getIndexerGuid).collect(Collectors.toList())).stream().map(SearchResultEntity::getIndexerGuid).collect(Collectors.toSet());
-        getLogger().debug(LoggingMarkers.PERFORMANCE, "Finding {} search results IN took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         for (SearchResultItem item : searchResultItems) {
             if (!alreadySavedIndexerGuids.contains(item.getIndexerGuid())) {
                 SearchResultEntity searchResultEntity = new SearchResultEntity();

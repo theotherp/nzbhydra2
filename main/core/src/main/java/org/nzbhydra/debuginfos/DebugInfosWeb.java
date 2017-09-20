@@ -32,16 +32,16 @@ public class DebugInfosWeb {
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/logfilecontent", method = RequestMethod.GET)
-    public GenericResponse logfileContent() {
+    @RequestMapping(value = "/internalapi/debuginfos/logfilecontent", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> logfileContent() {
         try {
             if (logContentProvider.getLogFileSize() > 5 * 1024 * 1024) {
-                return GenericResponse.notOk("Log file too big");
+                return ResponseEntity.status(500).body("Log file too big");
             }
-            return GenericResponse.ok(logContentProvider.getLog());
+            return ResponseEntity.ok(logContentProvider.getLog());
         } catch (IOException e) {
             logger.error("Error while getting log file content", e);
-            return GenericResponse.notOk(e.getMessage());
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 

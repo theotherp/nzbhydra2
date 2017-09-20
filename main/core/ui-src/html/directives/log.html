@@ -14,9 +14,9 @@
                 <thead class="search-results-header">
                 <tr>
                     <th style="width: 11%">Time (newest first)</th>
-                    <th>Level</th>
-                    <th>Logger</th>
-                    <th>Message</th>
+                    <th style="width: 3%">Level</th>
+                    <th style="width: 15%">Logger</th>
+                    <th style="width: 71%; overflow: hidden">Message</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -31,7 +31,10 @@
                     </td>
                     <td>{{line.logger_name | formatClassname}}</td>
                     <td>
+                        <div style="width: 945px; overflow: hidden; text-overflow: ellipsis"> <!--Hacky but works :-(-->
                         {{::line.message}}
+
+                        </div>
                     </td>
                 </tr>
                 </tbody>

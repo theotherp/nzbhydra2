@@ -8,7 +8,7 @@ function hydralog() {
         controller: controller
     };
 
-    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService) {
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
         $scope.tailInterval = null;
         $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
         $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
@@ -25,7 +25,9 @@ function hydralog() {
                 });
             } else if ($scope.active === 1) {
                 return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
-                    $scope.log = $sce.trustAsHtml(data.message);
+                    $scope.log = $sce.trustAsHtml(data);
+                }, function(data) {
+                    growl.error(data)
                 });
             } else if ($scope.active === 2) {
                 return $http.get("internalapi/debuginfos/logfilenames").success(function (data) {
@@ -35,7 +37,6 @@ function hydralog() {
         }
 
         $scope.logPromise = getLog();
-
 
         $scope.select = function (index) {
             $scope.active = index;

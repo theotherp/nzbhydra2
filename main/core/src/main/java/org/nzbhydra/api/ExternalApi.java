@@ -303,6 +303,7 @@ public class ExternalApi {
     private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromNewznabCategories(params.getCat(), CategoriesConfig.allCategory), random.nextInt(1000000), params.getOffset(), params.getLimit());
+        logger.info("Executing new search");
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());
         searchRequest.setOffset(params.getOffset());
