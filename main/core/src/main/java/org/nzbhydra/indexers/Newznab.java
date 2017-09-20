@@ -49,6 +49,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,31 +230,27 @@ public class Newznab extends Indexer<Xml> {
             Map<IdType, String> params = new HashMap<>();
             boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().contains(x));
             if (!indexerSupportsAnyOfTheProvidedIds) {
-                boolean canConvertAnyId = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().stream().anyMatch(y -> infoProvider.canConvert(x, y)));
+                boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {
-                    for (Map.Entry<IdType, String> providedId : searchRequest.getIdentifiers().entrySet()) {
-                        if (!params.containsKey(providedId.getKey())) {
-                            try {
-                                MediaInfo info = infoProvider.convert(providedId.getValue(), providedId.getKey());
-                                if (info.getImdbId().isPresent()) {
-                                    params.put(IdType.IMDB, info.getImdbId().get());
-                                }
-                                if (info.getTmdbId().isPresent()) {
-                                    params.put(IdType.TMDB, info.getTmdbId().get());
-                                }
-                                if (info.getTvRageId().isPresent()) {
-                                    params.put(IdType.TVRAGE, info.getTvRageId().get());
-                                }
-                                if (info.getTvMazeId().isPresent()) {
-                                    params.put(IdType.TVMAZE, info.getTvMazeId().get());
-                                }
-                                if (info.getTvDbId().isPresent()) {
-                                    params.put(IdType.TVDB, info.getTvDbId().get());
-                                }
-                            } catch (InfoProviderException e) {
-                                error("Error while converting search ID", e);
-                            }
+                    try {
+                        MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
+                        if (info.getImdbId().isPresent()) {
+                            params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
                         }
+                        if (info.getTmdbId().isPresent()) {
+                            params.put(IdType.TMDB, info.getTmdbId().get());
+                        }
+                        if (info.getTvRageId().isPresent()) {
+                            params.put(IdType.TVRAGE, info.getTvRageId().get());
+                        }
+                        if (info.getTvMazeId().isPresent()) {
+                            params.put(IdType.TVMAZE, info.getTvMazeId().get());
+                        }
+                        if (info.getTvDbId().isPresent()) {
+                            params.put(IdType.TVDB, info.getTvDbId().get());
+                        }
+                    } catch (InfoProviderException e) {
+                        error("Error while converting search ID", e);
                     }
                 }
             }

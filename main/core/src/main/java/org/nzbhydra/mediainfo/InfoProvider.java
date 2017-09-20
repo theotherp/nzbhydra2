@@ -47,9 +47,9 @@ public class InfoProvider {
         canConvertMap.put(TRAKT, Sets.newHashSet(TRAKT)); //Currently no conversion supported
         canConvertMap.put(TVTITLE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
 
-        canConvertMap.put(TMDB, Sets.newHashSet(TMDB, IMDB, MOVIETITLE));
-        canConvertMap.put(IMDB, Sets.newHashSet(TMDB, IMDB, MOVIETITLE));
-        canConvertMap.put(MOVIETITLE, Sets.newHashSet(TMDB, IMDB, MOVIETITLE));
+        canConvertMap.put(TMDB, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
+        canConvertMap.put(IMDB, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
+        canConvertMap.put(MOVIETITLE, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
 
     }
 
@@ -71,6 +71,25 @@ public class InfoProvider {
 
     public boolean canConvertAny(Set<IdType> from, Set<IdType> to) {
         return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
+    }
+
+    public MediaInfo convert(Map<IdType, String> identifiers) throws InfoProviderException {
+        if (identifiers.containsKey(IMDB)) {
+            return convert(identifiers.get(IMDB), IMDB);
+        }
+        if (identifiers.containsKey(TMDB)) {
+            return convert(identifiers.get(TMDB), TMDB);
+        }
+        if (identifiers.containsKey(TVDB)) {
+            return convert(identifiers.get(TVDB), TVDB);
+        }
+        if (identifiers.containsKey(TVRAGE)) {
+            return convert(identifiers.get(TVRAGE), TVRAGE);
+        }
+        if (identifiers.containsKey(TVMAZE)) {
+            return convert(identifiers.get(TVMAZE), TVMAZE);
+        }
+        throw new InfoProviderException("Unable to find any convertable IDs");
     }
 
 

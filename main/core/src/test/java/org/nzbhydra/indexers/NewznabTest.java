@@ -70,6 +70,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -143,8 +145,9 @@ public class NewznabTest {
         info.setTvrageId("tvrageId");
         info.setTvdbId("tvdbId");
         when(infoProviderMock.convert("imdbId", IdType.IMDB)).thenReturn(info);
-        when(infoProviderMock.convert("tvmazeId", IdType.TVMAZE)).thenReturn(info);
 
+        when(infoProviderMock.convert(anyMap())).thenReturn(info);
+        when(infoProviderMock.convert("tvmazeId", IdType.TVMAZE)).thenReturn(info);
         when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
@@ -214,7 +217,9 @@ public class NewznabTest {
 
     @Test
     public void shouldGetIdsIfNoneOfTheProvidedAreSupported() throws Exception {
+        when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvmazeId");
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
@@ -226,7 +231,7 @@ public class NewznabTest {
         assertTrue(params.containsKey("tmdbid"));
         assertTrue(params.containsKey("rid"));
         assertTrue(params.containsKey("tvmazeid"));
-        verify(infoProviderMock, times(1)).convert(anyString(), any(IdType.class));
+        verify(infoProviderMock, times(1)).convert(anyMap());
     }
 
     @Test
@@ -241,6 +246,22 @@ public class NewznabTest {
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
         assertEquals(1, params.size());
+        verify(infoProviderMock, never()).convert(anyString(), any(IdType.class));
+    }
+
+    @Test
+    public void shouldRemoveTrailingTtFromImdbId() throws Exception {
+        testee.config = new IndexerConfig();
+        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.IMDB));
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.getIdentifiers().put(IdType.IMDB, "12345");
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
+        builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
+        MultiValueMap<String, String> params = builder.build().getQueryParams();
+        assertTrue(params.containsKey("imdbid"));
+        assertEquals(1, params.size());
+        assertEquals("12345", params.get("imdbid").get(0));
         verify(infoProviderMock, never()).convert(anyString(), any(IdType.class));
     }
 
@@ -346,6 +367,7 @@ public class NewznabTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         testee.config.getSupportedSearchIds().add(IdType.TMDB);
+        when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
 
         testee.extendQueryUrlWithSearchIds(searchRequest, uriComponentsBuilderMock);
 
