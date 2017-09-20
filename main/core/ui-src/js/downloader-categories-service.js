@@ -21,18 +21,16 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function getCategories(downloader) {
         function loadAll() {
-            if (angular.isDefined(categories) && angular.isDefined(categories.downloader)) {
+            if (angular.isDefined(categories) && angular.isDefined(categories[downloader])) {
                 var deferred = $q.defer();
-                deferred.resolve(categories.downloader);
+                deferred.resolve(categories[downloader]);
                 return deferred.promise;
             }
 
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
-
-
-                    var categories = {downloader: categoriesResponse.data.categories};
-                    return categoriesResponse.data.categories;
+                    categories[downloader] = categoriesResponse.data;
+                    return categoriesResponse.data;
 
                 }, function (error) {
                     throw error;
@@ -48,7 +46,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
 
     function openCategorySelection(downloader) {
-        $uibModal.open({
+        var instance = $uibModal.open({
             templateUrl: 'static/html/directives/addable-nzb-modal.html',
             controller: 'DownloaderCategorySelectionController',
             size: "sm",
@@ -58,6 +56,11 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
                 }
             }
         });
+
+        instance.result.then(function() {}, function() {
+            deferred.reject("dismissed");
+            }
+        );
         deferred = $q.defer();
         return deferred.promise;
     }

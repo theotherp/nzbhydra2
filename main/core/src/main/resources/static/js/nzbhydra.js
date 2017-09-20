@@ -2105,13 +2105,18 @@ function addableNzb() {
         }
 
         $scope.add = function () {
+            var originalClass = $scope.cssClass;
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
-                if (response.data.successful) {
-                    $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                if (response !== "dismissed") {
+                    if (response.data.successful) {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                    } else {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                        growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                    }
                 } else {
-                    $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                    growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                    $scope.cssClass = originalClass;
                 }
             }, function () {
                 $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
@@ -4211,9 +4216,9 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
         if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
-                return sendNzbAddCommand(downloader, searchresultids, category)
-            }, function (error) {
-                throw error;
+                return sendNzbAddCommand(downloader, searchresultids, category);
+            }, function (result) {
+                return result;
             });
         } else {
             return sendNzbAddCommand(downloader, searchresultids, category)
@@ -5494,18 +5499,16 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function getCategories(downloader) {
         function loadAll() {
-            if (angular.isDefined(categories) && angular.isDefined(categories.downloader)) {
+            if (angular.isDefined(categories) && angular.isDefined(categories[downloader])) {
                 var deferred = $q.defer();
-                deferred.resolve(categories.downloader);
+                deferred.resolve(categories[downloader]);
                 return deferred.promise;
             }
 
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
-
-
-                    var categories = {downloader: categoriesResponse.data.categories};
-                    return categoriesResponse.data.categories;
+                    categories[downloader] = categoriesResponse.data;
+                    return categoriesResponse.data;
 
                 }, function (error) {
                     throw error;
@@ -5521,7 +5524,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
 
     function openCategorySelection(downloader) {
-        $uibModal.open({
+        var instance = $uibModal.open({
             templateUrl: 'static/html/directives/addable-nzb-modal.html',
             controller: 'DownloaderCategorySelectionController',
             size: "sm",
@@ -5531,6 +5534,11 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
                 }
             }
         });
+
+        instance.result.then(function() {}, function() {
+            deferred.reject("dismissed");
+            }
+        );
         deferred = $q.defer();
         return deferred.promise;
     }

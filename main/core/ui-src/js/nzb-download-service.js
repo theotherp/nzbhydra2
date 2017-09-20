@@ -25,9 +25,9 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
         if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
-                return sendNzbAddCommand(downloader, searchresultids, category)
-            }, function (error) {
-                throw error;
+                return sendNzbAddCommand(downloader, searchresultids, category);
+            }, function (result) {
+                return result;
             });
         } else {
             return sendNzbAddCommand(downloader, searchresultids, category)

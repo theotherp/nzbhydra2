@@ -1,6 +1,7 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -189,7 +190,8 @@ public class IndexerTest {
         SearchResultItem item = new SearchResultItem();
         item.setIndexerGuid("guid");
         item.setIndexer(indexerMock);
-        when(searchResultRepositoryMock.findByIndexerAndIndexerGuid(indexerEntityMock, "guid")).thenReturn(searchResultEntityMock);
+        when(searchResultEntityMock.getIndexerGuid()).thenReturn("guid");
+        when(searchResultRepositoryMock.findByIndexerAndIndexerGuidIn(eq(indexerEntityMock), any())).thenReturn(Sets.newHashSet(searchResultEntityMock));
 
         testee.persistSearchResults(Collections.singletonList(item));
 

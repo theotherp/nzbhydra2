@@ -20,13 +20,18 @@ function addableNzb() {
         }
 
         $scope.add = function () {
+            var originalClass = $scope.cssClass;
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
-                if (response.data.successful) {
-                    $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                if (response !== "dismissed") {
+                    if (response.data.successful) {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                    } else {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                        growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                    }
                 } else {
-                    $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                    growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                    $scope.cssClass = originalClass;
                 }
             }, function () {
                 $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
