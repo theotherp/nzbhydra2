@@ -18,6 +18,7 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +39,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.OptionalDouble;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -66,66 +70,78 @@ public class Stats {
 
         ExecutorService executor = Executors.newFixedThreadPool(1); //Multithreading doesn't improve performance but it allows us to stop calculation when the time is over
 
+        List<Future> futures = new ArrayList<>();
+
         if (statsRequest.isAvgResponseTimes()) {
-            executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))); //7151ms
+            futures.add(executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))));
         }
         if (statsRequest.isIndexerApiAccessStats()) {
-            executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))); //7307ms
+            futures.add(executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))));
         }
         if (statsRequest.isAvgIndexerSearchResultsShares()) {
-            executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))); //3140ms
+            futures.add(executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))));
         }
 
         if (statsRequest.isSearchesPerDayOfWeek()) {
-            executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest))); //347ms
+            futures.add(executor.submit(() -> statsResponse.setSearchesPerDayOfWeek(countPerDayOfWeek("SEARCH", statsRequest))));
         }
         if (statsRequest.isDownloadsPerDayOfWeek()) {
-            executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest))); //19ms
+            futures.add(executor.submit(() -> statsResponse.setDownloadsPerDayOfWeek(countPerDayOfWeek("INDEXERNZBDOWNLOAD", statsRequest))));
         }
 
         if (statsRequest.isSearchesPerHourOfDay()) {
-            executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest))); //242ms
+            futures.add(executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest)))); 
         }
         if (statsRequest.isDownloadsPerHourOfDay()) {
-            executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest))); //22ms
+            futures.add(executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest)))); 
         }
 
         if (statsRequest.isIndexerDownloadShares()) {
-            executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest)));
+            futures.add(executor.submit(() -> statsResponse.setIndexerDownloadShares(indexerDownloadShares(statsRequest))));
         }
 
 
         if (statsRequest.isDownloadsPerAgeStats()) {
-            executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats()));
+            futures.add(executor.submit(() -> statsResponse.setDownloadsPerAgeStats(downloadsPerAgeStats())));
         }
 
         if (statsRequest.isSuccessfulDownloadsPerIndexer()) {
-            executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest)));
+            futures.add(executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest))));
         }
 
         if (statsRequest.isUserAgentShares()) {
-            executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest)));
+            futures.add(executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest))));
         }
 
 
         if (statsRequest.isDownloadSharesPerUserOrIp()) {
             BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
             if (countDownloadsWithData.intValue() > 0) {
-                executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD")));
+                futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD"))));
             }
         }
         if (statsRequest.isSearchSharesPerUserOrIp()) {
             BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
             if (countSearchesWithData.intValue() > 0) {
-                executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH")));
+                futures.add(executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH"))));
             }
         }
+
 
         executor.shutdown();
         boolean wasCompleted = executor.awaitTermination(60, TimeUnit.SECONDS);
         if (!wasCompleted) {
             executor.shutdownNow();
             logger.error("Aborted stats generation because it took longer than 60 seconds");
+        } else {
+            for (Future future : futures) {
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    logger.error("Error during calculation of stats", e.getCause());
+                }
+            }
+
         }
 
         statsResponse.setNumberOfConfiguredIndexers(searchModuleProvider.getIndexers().size());
@@ -154,29 +170,30 @@ public class Stats {
                         "  (SELECT count(*) AS countall\n" +
                         "   FROM\n" +
                         "     indexernzbdownload dl\n" +
-                        "   WHERE dl.indexer_id IN (:indexerIds)\n" +
-                        buildWhereFromStatsRequest(true, statsRequest) +
+                        buildWhereFromStatsRequest(false, statsRequest) +
                         ")\n" +
                         "  countall\n" +
                         "  , INDEXER\n" +
-                        "WHERE dl.indexer_id IN (:indexerIds)\n" +
-                        buildWhereFromStatsRequest(true, statsRequest) +
+                        buildWhereFromStatsRequest(false, statsRequest) +
                         "      AND dl.INDEXER_ID = indexer.ID\n" +
                         "GROUP BY\n" +
                         "  dl.INDEXER_ID";
 
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("indexerIds", searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).collect(Collectors.toList()));
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
+            if (!indexerNamesToInclude.contains(indexerName)) {
+                continue;
+            }
             long total = ((BigInteger) resultSet[1]).longValue();
             long countAll = ((BigInteger) resultSet[2]).longValue();
             float share = total > 0 ? (100F / ((float) countAll / total)) : 0F;
             indexerDownloadShares.add(new IndexerDownloadShare(indexerName, total, share));
         }
-        logger.debug("Calculated indexer download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerDownloadShares;
     }
 
@@ -189,23 +206,24 @@ public class Stats {
                 "  avg(RESPONSE_TIME) AS avg\n" +
                 "FROM INDEXERAPIACCESS\n" +
                 "  LEFT JOIN indexer i ON INDEXERAPIACCESS.INDEXER_ID = i.ID\n" +
-                "WHERE INDEXERAPIACCESS.INDEXER_ID IN (:indexerIds)\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
+                buildWhereFromStatsRequest(false, statsRequest) +
                 "GROUP BY INDEXER_ID\n" +
                 "ORDER BY avg ASC";
 
-        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         Query query = entityManager.createNativeQuery(sql);
-        query.setParameter("indexerIds", indexerIdsToInclude);
         List resultList = query.getResultList();
         OptionalDouble overallAverage = resultList.stream().mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
+            if (!indexerNamesToInclude.contains(indexerName)) {
+                continue;
+            }
             Long averageResponseTime = ((BigInteger) resultSet[1]).longValue();
             averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, averageResponseTime - overallAverage.getAsDouble()));
         }
-        logger.debug("Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return averageResponseTimes;
     }
 
@@ -298,7 +316,7 @@ public class Stats {
             }
             indexerSearchResultsShares.add(new IndexerSearchResultsShare(indexer.getName(), allShare, uniqueShare));
         }
-        logger.debug("Calculated indexer search shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer search shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerSearchResultsShares;
     }
 
@@ -306,7 +324,7 @@ public class Stats {
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer API stats");
-        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
+        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toSet());
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
                 "  indexer_id,\n" +
@@ -314,41 +332,51 @@ public class Stats {
                 "FROM (\n" +
                 "  (SELECT\n" +
                 "     INDEXER_ID,\n" +
-                "     cast(count(INDEXER_ID) AS FLOAT) AS count," +
-                "     cast(time AS DATE)               AS date" +
+                "     cast(count(INDEXER_ID) AS FLOAT) AS count" +
                 "   FROM INDEXERAPIACCESS\n" +
-                "   WHERE INDEXER_ID in (:indexerIds) \n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
+                buildWhereFromStatsRequest(false, statsRequest) +
                 "   GROUP BY INDEXER_ID,\n" +
-                "     cast(time AS DATE)))\n" +
+                "     truncate(time)))\n" +
                 "GROUP BY INDEXER_ID";
 
         Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
-        List results = entityManager.createNativeQuery(averageIndexerAccessesPerDay).setParameter("indexerIds", indexerIdsToInclude).getResultList();
+        Query query = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
+        //query = query.setParameter("indexerIds", indexerIdsToInclude);
+        List results = query.getResultList();
         for (Object resultObject : results) {
             Object[] array = (Object[]) resultObject;
             Integer indexerId = (Integer) array[0];
+            if (!indexerIdsToInclude.contains(indexerId)) {
+                continue;
+            }
             Double avg = (Double) array[1];
             accessesPerDayCountMap.put(indexerId, avg);
         }
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculating accesses per day took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        stopwatch.start();
 
         String countByResultSql = "SELECT\n" +
                 "     INDEXER_ID,\n" +
                 "     RESULT,\n" +
                 "     count(result) AS count\n" +
                 "   FROM INDEXERAPIACCESS\n" +
-                "   WHERE INDEXER_ID in (:indexerIds)\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
+                buildWhereFromStatsRequest(false, statsRequest) +
                 "   GROUP BY INDEXER_ID, RESULT\n" +
                 "   ORDER BY INDEXER_ID, RESULT";
 
         Map<Integer, Integer> successCountMap = new HashMap<>();
         Map<Integer, Integer> connectionErrorCountMap = new HashMap<>();
         Map<Integer, Integer> allAccessesCountMap = new HashMap<>();
-        results = entityManager.createNativeQuery(countByResultSql).setParameter("indexerIds", indexerIdsToInclude).getResultList();
+        query = entityManager.createNativeQuery(countByResultSql);
+        //query = query.setParameter("indexerIds", indexerIdsToInclude);
+        results = query.getResultList();
         for (Object resultObject : results) {
             Object[] array = (Object[]) resultObject;
             Integer indexerId = (Integer) array[0];
+            if (!indexerIdsToInclude.contains(indexerId)) {
+                continue;
+            }
             String result = (String) array[1];
             int count = ((BigInteger) array[2]).intValue();
             if (result.equals(IndexerAccessResult.SUCCESSFUL.name())) {
@@ -387,7 +415,7 @@ public class Stats {
 
             indexerApiAccessStatsEntries.add(entry);
         }
-        logger.debug("Calculated indexer API stats. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculating success/failure stats took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerApiAccessStatsEntries;
     }
 
@@ -421,7 +449,7 @@ public class Stats {
             int indexInList = (index + 5) % 7;
             dayOfWeekCounts.get(indexInList).setCount(counter.intValue());
         }
-        logger.debug("Calculated count for day of week for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated count for day of week for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return dayOfWeekCounts;
     }
 
@@ -449,7 +477,7 @@ public class Stats {
             hourOfDayCounts.get(index).setCount(counter.intValue());
         }
 
-        logger.debug("Calculated count for hour of day for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated count for hour of day for table {}. Took {}ms", table, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return hourOfDayCounts;
     }
 
@@ -457,26 +485,33 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "SELECT  INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
                 "from\n" +
-                "  (select indexer_id as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD  WHERE INDEXER_ID IN (:indexerIds) AND status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
+                "  (select indexer_id as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD  WHERE " +
+                //"INDEXER_ID IN (:indexerIds) AND " +
+                "status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "GROUP BY INDEXER_ID),\n" +
-                "  (select indexer_id as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD WHERE INDEXER_ID IN (:indexerIds) AND  status ='CONTENT_DOWNLOAD_SUCCESSFUL' " +
+                "  (select indexer_id as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD WHERE " +
+                //"INDEXER_ID IN (:indexerIds) AND  " +
+                "status ='CONTENT_DOWNLOAD_SUCCESSFUL' " +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "GROUP BY INDEXER_ID) " +
                 ",INDEXER where id_1 = id_2 and id_1 = INDEXER.ID";
         Query query = entityManager.createNativeQuery(sql);
-        List<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toList());
-        query.setParameter("indexerIds", indexerIdsToInclude);
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
+        //query.setParameter("indexerIds", indexerIdsToInclude);
         List<Object> resultList = query.getResultList();
         List<SuccessfulDownloadsPerIndexer> result = new ArrayList<>();
         for (Object o : resultList) {
             Object[] o2 = (Object[]) o;
             String indexerName = (String) o2[0];
+            if (!indexerNamesToInclude.contains(indexerName)) {
+                continue;
+            }
             Double percentSuccessful = (Double) o2[1];
             result.add(new SuccessfulDownloadsPerIndexer(indexerName, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage).reversed());
-        logger.debug("Calculated successful download percentages for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated successful download percentages for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -507,7 +542,7 @@ public class Stats {
             result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
-        logger.debug("Calculated download or search shares for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated download or search shares for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -537,7 +572,7 @@ public class Stats {
         }
 
         result.sort(Comparator.comparingDouble(UserAgentShare::getPercentage).reversed());
-        logger.debug("Calculated user agent shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated user agent shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -573,7 +608,7 @@ public class Stats {
         }
         results.sort(Comparator.comparingInt(DownloadPerAge::getAge));
 
-        logger.debug("Calculated downloads per age. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated downloads per age. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return results;
     }
 
@@ -595,7 +630,7 @@ public class Stats {
         result.setPercentOlder2000(((Double) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
         result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
         result.setAverageAge((Integer) entityManager.createNativeQuery("SELECT AVG(AGE) FROM INDEXERNZBDOWNLOAD").getResultList().get(0));
-        logger.debug("Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated downloads per age percentages . Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         result.setDownloadsPerAge(downloadsPerAge());
         return result;
@@ -603,6 +638,9 @@ public class Stats {
 
 
     private String buildWhereFromStatsRequest(boolean useAnd, StatsRequest statsRequest) {
+        if (statsRequest.getAfter() == null && statsRequest.getBefore() == null) {
+            return " ";
+        }
         return (useAnd ? " AND " : " WHERE ") +
                 (statsRequest.getAfter() != null ? " TIME > DATEADD('SECOND', " + statsRequest.getAfter().getEpochSecond() + ", DATE '1970-01-01') " : "") +
                 ((statsRequest.getBefore() != null && statsRequest.getAfter() != null) ? " AND " : " ") +

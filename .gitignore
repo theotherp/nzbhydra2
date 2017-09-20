@@ -4,6 +4,7 @@ target/
 *.iws
 *.ipr
 *.iml
+*.db
 /bower_components
 /node_modules
 /nzbhydra.db.*
