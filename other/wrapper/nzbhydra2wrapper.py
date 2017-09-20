@@ -234,7 +234,7 @@ def startup():
     jarFile = os.path.join(libFolder, jarFiles[0])
 
     if args.repairdb:
-        arguments = ["--repairdb"]
+        arguments = ["--repairdb", args.repairdb]
     elif args.version:
         arguments = ["--version"]
     else:
@@ -314,7 +314,7 @@ if __name__ == '__main__':
     parser.add_argument('--baseurl', action='store', help='Set the base URL (e.g. /nzbhydra)')
     parser.add_argument('--nobrowser', action='store_true', help='Set to disable all console output', default=False)
     # Main process actions
-    parser.add_argument('--repairdb', action='store_true', help='Attempt to repair the database. Provide path to database file as parameter')
+    parser.add_argument('--repairdb', action='store', help='Attempt to repair the database. Provide path to database file as parameter')
     parser.add_argument('--version', action='store_true', help='Print version')
 
     # Internal logic
