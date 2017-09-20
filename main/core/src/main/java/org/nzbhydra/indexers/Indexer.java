@@ -51,7 +51,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Component
 public abstract class Indexer<T> {
@@ -200,12 +202,13 @@ public abstract class Indexer<T> {
 
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
-        Stopwatch stopwatch = Stopwatch.createStarted();
         ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Set<String> alreadySavedIndexerGuids = searchResultRepository.findByIndexerAndIndexerGuidIn(indexer, searchResultItems.stream().map(SearchResultItem::getIndexerGuid).collect(Collectors.toList())).stream().map(SearchResultEntity::getIndexerGuid).collect(Collectors.toSet());
+        getLogger().debug(LoggingMarkers.PERFORMANCE, "Finding {} search results IN took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         for (SearchResultItem item : searchResultItems) {
-            SearchResultEntity searchResultEntity = searchResultRepository.findByIndexerAndIndexerGuid(indexer, item.getIndexerGuid());
-            if (searchResultEntity == null) {
-                searchResultEntity = new SearchResultEntity();
+            if (!alreadySavedIndexerGuids.contains(item.getIndexerGuid())) {
+                SearchResultEntity searchResultEntity = new SearchResultEntity();
 
                 //Set all entity relevant data
                 searchResultEntity.setIndexer(indexer);
@@ -225,7 +228,7 @@ public abstract class Indexer<T> {
         }
         searchResultRepository.save(searchResultEntities);
 
-        getLogger().debug("Persisting {} search search results took {}ms", searchResultEntities.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        getLogger().debug(LoggingMarkers.PERFORMANCE, "Handling of {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;
     }
 
