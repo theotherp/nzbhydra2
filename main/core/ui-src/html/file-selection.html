@@ -1,0 +1,28 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{::showType}} selection</h3>
+</div>
+<div class="modal-header">
+    {{data.fullPath}}
+</div>
+<div class="modal-body" style="text-align: left">
+    <span ng-show="data.hasParent">
+        <a href="#" ng-click="goUp()">...</a>
+    </span>
+    <div ng-repeat="folder in data.folders">
+        <span class="glyphicon glyphicon-folder-open" style="margin-right: 8px"></span>
+        <a href="#" ng-click="select(folder, 'folder')">{{::folder.name}}</a>
+    </div>
+    <div ng-repeat="file in data.files">
+        <span class="glyphicon glyphicon-file" style="margin-right: 8px"></span>
+        <a href="#" ng-click="select(file, 'file')">{{::file.name}}</a>
+    </div>
+</div>
+<div class="modal-footer row" ng-show="type === 'folder'">
+    <span class="col-md-15" style="text-align: left">
+    </span>
+    <span class="col-md-5">
+        <button class="btn btn-default" ng-click="submit()">
+            Select
+        </button>
+    </span>
+</div>

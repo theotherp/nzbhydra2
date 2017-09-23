@@ -5044,6 +5044,25 @@ angular
         });
 
         formlyConfigProvider.setType({
+            name: 'fileInput',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<input type="text" class="form-control" ng-model="model[options.key]"/>',
+                '<span class="input-group-btn input-group-btn2">',
+                '<button class="btn btn-default" type="button" ng-click="open()">...</button>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope, FileSelectionService) {
+                $scope.open = function () {
+                    FileSelectionService.open($scope.model[$scope.options.key], $scope.to.type).then(function(selection) {
+                        $scope.model[$scope.options.key] = selection;
+                    });
+                }
+            }
+        });
+
+        formlyConfigProvider.setType({
             name: 'testConnection',
             templateUrl: 'button-test-connection.html'
         });
@@ -5443,6 +5462,81 @@ filters.filter('unsafe',
 );
 
 
+angular
+    .module('nzbhydraApp')
+    .factory('FileSelectionService', FileSelectionService);
+
+function FileSelectionService($http, $q, $uibModal) {
+
+    var categories = {};
+    var selectedCategory = {};
+
+    var service = {
+        open: open
+    };
+
+    var deferred;
+
+    return service;
+
+
+    function open(fullPath, type) {
+        var instance = $uibModal.open({
+            templateUrl: 'static/html/file-selection.html',
+            controller: 'FileSelectionModalController',
+            size: "md",
+            resolve: {
+                data: function () {
+                    return $http.post("internalapi/config/folderlisting", {fullPath: angular.isDefined(fullPath) ? fullPath : null, goUp: false, type: type});
+                },
+                type: function () {
+                    return type;
+                }
+            }
+        });
+
+        instance.result.then(function (selection) {
+                console.log(selection);
+                deferred.resolve(selection);
+            }, function () {
+                deferred.reject("dismissed");
+            }
+        );
+        deferred = $q.defer();
+        return deferred.promise;
+    }
+
+}
+FileSelectionService.$inject = ["$http", "$q", "$uibModal"];
+
+angular
+    .module('nzbhydraApp').controller('FileSelectionModalController', ["$scope", "$http", "$uibModalInstance", "FileSelectionService", "data", "type", function ($scope, $http, $uibModalInstance, FileSelectionService, data, type) {
+
+    $scope.type = type;
+    $scope.showType = type === "file" ? "File" : "Folder";
+    $scope.data = data.data;
+
+    $scope.select = function (fileOrFolder, selectType) {
+        if (selectType === "file" && type === "file") {
+            $uibModalInstance.close(fileOrFolder.fullPath);
+        } else if (selectType === "folder") {
+            $http.post("internalapi/config/folderlisting", {fullPath: fileOrFolder.fullPath, type: type, goUp: false}).then(function (data) {
+                $scope.data = data.data;
+            })
+        }
+    };
+
+    $scope.goUp = function () {
+        $http.post("internalapi/config/folderlisting", {fullPath: $scope.data.fullPath, type: type, goUp: true}).then(function (data) {
+            $scope.data = data.data;
+        })
+    };
+
+    $scope.submit = function () {
+        $uibModalInstance.close($scope.data.fullPath);
+    }
+
+}]);
 angular
     .module('nzbhydraApp')
     .factory('FileDownloadService', FileDownloadService);
@@ -5883,11 +5977,11 @@ function ConfigFields($injector) {
                         {
                             key: 'sslcert',
                             hideExpression: '!model.ssl',
-                            type: 'horizontalInput',
+                            type: 'fileInput',
                             templateOptions: {
-                                type: 'text',
                                 label: 'SSL certificate file',
                                 required: true,
+                                type: "file",
                                 help: 'Requires restart.'
                             }
                         },
@@ -6675,11 +6769,11 @@ function ConfigFields($injector) {
                     fieldGroup: [
                         {
                             key: 'saveTorrentsTo',
-                            type: 'horizontalInput',
-
+                            type: 'fileInput',
                             templateOptions: {
                                 label: 'Torrent black hole',
-                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.'
+                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
+                                type: "folder"
                             }
                         }
                     ]

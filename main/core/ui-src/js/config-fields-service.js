@@ -115,11 +115,11 @@ function ConfigFields($injector) {
                         {
                             key: 'sslcert',
                             hideExpression: '!model.ssl',
-                            type: 'horizontalInput',
+                            type: 'fileInput',
                             templateOptions: {
-                                type: 'text',
                                 label: 'SSL certificate file',
                                 required: true,
+                                type: "file",
                                 help: 'Requires restart.'
                             }
                         },
@@ -907,11 +907,11 @@ function ConfigFields($injector) {
                     fieldGroup: [
                         {
                             key: 'saveTorrentsTo',
-                            type: 'horizontalInput',
-
+                            type: 'fileInput',
                             templateOptions: {
                                 label: 'Torrent black hole',
-                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.'
+                                help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
+                                type: "folder"
                             }
                         }
                     ]

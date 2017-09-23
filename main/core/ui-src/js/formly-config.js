@@ -127,6 +127,25 @@ angular
         });
 
         formlyConfigProvider.setType({
+            name: 'fileInput',
+            extends: 'horizontalInput',
+            template: [
+                '<div class="input-group">',
+                '<input type="text" class="form-control" ng-model="model[options.key]"/>',
+                '<span class="input-group-btn input-group-btn2">',
+                '<button class="btn btn-default" type="button" ng-click="open()">...</button>',
+                '</div>'
+            ].join(' '),
+            controller: function ($scope, FileSelectionService) {
+                $scope.open = function () {
+                    FileSelectionService.open($scope.model[$scope.options.key], $scope.to.type).then(function(selection) {
+                        $scope.model[$scope.options.key] = selection;
+                    });
+                }
+            }
+        });
+
+        formlyConfigProvider.setType({
             name: 'testConnection',
             templateUrl: 'button-test-connection.html'
         });
