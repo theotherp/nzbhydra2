@@ -7607,6 +7607,9 @@ pre {
 .help-block {
   text-align: left;
 }
+.help-block a {
+  text-decoration: underline;
+}
 input:focus + .input-group-addon {
   border-color: #66afe9;
   outline: 0;

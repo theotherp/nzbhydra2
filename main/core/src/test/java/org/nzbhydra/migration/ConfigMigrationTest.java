@@ -200,9 +200,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getProxyPort(), is(1080));
         assertThat(result.getMigratedConfig().getMain().getPort(), is(5076));
         assertThat(result.getMigratedConfig().getMain().isShutdownForRestart(), is(true));
-        assertThat(result.getMigratedConfig().getMain().isSsl(), is(true));
-        assertThat(result.getMigratedConfig().getMain().getSslcert(), is("nzbhydra.crt"));
-        assertThat(result.getMigratedConfig().getMain().getSslkey(), is("nzbhydra.key"));
+        assertThat(result.getMigratedConfig().getMain().isSsl(), is(false));
         assertThat(result.getMigratedConfig().getMain().isStartupBrowser(), is(true));
         assertThat(result.getMigratedConfig().getMain().getTheme(), is("grey"));
         assertThat(result.getMigratedConfig().getMain().getUrlBase().isPresent(), is(false));

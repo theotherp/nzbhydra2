@@ -674,11 +674,6 @@ nzbhydraapp.run(function ($rootScope) {
         });
 });
 
-
-nzbhydraapp.filter('unsafe', function ($sce) {
-    return $sce.trustAsHtml;
-});
-
 nzbhydraapp.filter('dereferer', function (ConfigService) {
     return function (url) {
         if (ConfigService.getSafe().dereferer) {

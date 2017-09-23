@@ -326,9 +326,9 @@ public class JsonConfigMigration {
         newMain.setHost(oldMain.getHost());
         newMain.setShutdownForRestart(oldMain.isShutdownForRestart());
         migrateProxies(messages, newMain, oldMain);
-        newMain.setSsl(oldMain.isSsl());
-        newMain.setSslcert(Strings.isNullOrEmpty((oldMain.getSslcert())) ? null : (oldMain.getSslcert()));
-        newMain.setSslkey(Strings.isNullOrEmpty((oldMain.getSslkey())) ? null : (oldMain.getSslkey()));
+        if (oldMain.isSsl()) {
+            logAsWarningAndAdd(messages, "SSL migration needs manual adjustment. Please refer to the wiki");
+        }
         newMain.setStartupBrowser(oldMain.isStartupBrowser());
         newMain.setTheme(oldMain.getTheme());
         if (!Strings.isNullOrEmpty(oldMain.getUrlBase()) || !Strings.isNullOrEmpty(oldMain.getExternalUrl())) {

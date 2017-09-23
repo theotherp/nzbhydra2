@@ -48,9 +48,10 @@ public class MainConfig extends ValidatingConfig {
     @RestartRequired
     private boolean ssl = false;
     @RestartRequired
-    private String sslcert = null;
+    private String sslKeyStore = null;
+    @SensitiveData
     @RestartRequired
-    private String sslkey = null;
+    private String sslKeyStorePassword = null;
     private boolean startupBrowser = true;
     protected String theme;
     @RestartRequired

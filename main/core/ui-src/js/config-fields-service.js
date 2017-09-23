@@ -80,7 +80,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using an external proxy'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>'
                             }
                         },
                         {
@@ -113,23 +113,23 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'sslcert',
+                            key: 'sslKeyStore',
                             hideExpression: '!model.ssl',
                             type: 'fileInput',
                             templateOptions: {
-                                label: 'SSL certificate file',
+                                label: 'SSL keystore file',
                                 required: true,
                                 type: "file",
-                                help: 'Requires restart.'
+                                help: 'Requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL" target="_blank">wiki</a>'
                             }
                         },
                         {
-                            key: 'sslkey',
+                            key: 'sslKeyStorePassword',
                             hideExpression: '!model.ssl',
                             type: 'horizontalInput',
                             templateOptions: {
-                                type: 'text',
-                                label: 'SSL key file',
+                                type: 'password',
+                                label: 'SSL keystore password',
                                 required: true,
                                 help: 'Requires restart.'
                             }
@@ -269,7 +269,7 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Verify SSL certificates',
-                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart.'
+                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
                             }
                         },
                         {
@@ -278,7 +278,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SNI',
-                                help: "Add a host if you get an 'unrecognized_name' error. Apply words with return key."
+                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
                             }
                         }
                     ]
@@ -413,7 +413,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'MB'
                                 },
-                                help: '128M should suffice except when working with big databases'
+                                help: '128M should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
                             }
                         }
                     ]

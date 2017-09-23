@@ -4,7 +4,8 @@ If you use Hydra behind a reverse proxy you might want to set the URL base to a 
 If you accesses Hydra with tools running outside your network (for example from your phone) set the external URL so that it matches the full Hydra URL. 
 That way the NZB links returned in the search results refer to your global URL and not your local address.
 
-You can use SSL but I recommend using a reverse proxy with SSL. See [the wiki](https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies).
+You can use SSL but I recommend using a reverse proxy with SSL. See the wiki for notes regarding [reverse proxies](https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies)
+and [SSL](https://github.com/theotherp/nzbhydra2/wiki/SSL).
 
 ### Proxy
 You can select to use either a SOCKS or an HTTPS proxy. All outside connections will be done via the configured proxy.

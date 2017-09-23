@@ -285,8 +285,8 @@ main:
   shutdownForRestart: false
   sniDisabledFor: ["nzbgeek.info"]
   ssl: false
-  sslcert: null
-  sslkey: null
+  sslKeyStore: null
+  sslKeyStorePassword: null
   startupBrowser: true
   theme: "grey"
   updateCheckEnabled: true

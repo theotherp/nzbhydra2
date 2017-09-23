@@ -28,7 +28,6 @@ import static org.junit.Assert.assertThat;
 
 public class JsonConfigMigrationTest {
 
-
     @InjectMocks
     private JsonConfigMigration testee = new JsonConfigMigration();
 

@@ -6,11 +6,11 @@ filters.filter('bytes', function () {
     }
 });
 
-filters.filter('unsafe',
-    function ($sce) {
-        return function (value, type) {
-            return $sce.trustAs(type || 'html', text);
+filters
+    .filter('unsafe', ['$sce', function($sce){
+        return function(text) {
+            console.log(text);
+            return $sce.trustAsHtml(text);
         };
-    }
-);
+    }]);
 
