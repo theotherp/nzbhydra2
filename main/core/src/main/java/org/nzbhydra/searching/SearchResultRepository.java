@@ -12,7 +12,10 @@ import java.util.Set;
 public interface SearchResultRepository extends JpaRepository<SearchResultEntity, Long> {
 
     SearchResultEntity findByIndexerAndIndexerGuid(IndexerEntity indexer, String indexerGuid);
+
     Set<SearchResultEntity> findByIndexerAndIndexerGuidIn(IndexerEntity indexer, List<String> indexerGuid);
+
+    Set<SearchResultEntity> findAllByIdIn(List<Long> id);
 
     @Modifying
     int deleteByFirstFoundBefore(Instant foundBefore);

@@ -25,6 +25,7 @@ categoriesConfig:
           requiredWords:
           preselect: true
           searchType: SEARCH
+          subtype: ANIME
         - name: Audio
           applyRestrictionsType: BOTH
           forbiddenRegex:
@@ -83,7 +84,7 @@ categoriesConfig:
           requiredRegex:
           requiredWords:
           preselect: true
-          searchType: BOOK
+          searchType: SEARCH
           subtype: NONE
         - name: Ebook
           applyRestrictionsType: BOTH
@@ -99,7 +100,7 @@ categoriesConfig:
           requiredRegex:
           requiredWords:
           preselect: true
-          searchType: SEARCH
+          searchType: BOOK
           subtype: EBOOK
         - name: FLAC
           applyRestrictionsType: BOTH

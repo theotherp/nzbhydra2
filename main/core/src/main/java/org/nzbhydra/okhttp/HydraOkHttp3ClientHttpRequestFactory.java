@@ -18,6 +18,7 @@ package org.nzbhydra.okhttp;
 
 import com.google.common.net.InetAddresses;
 import joptsimple.internal.Strings;
+import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -88,6 +89,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
     private OkHttpClient client;
     @Autowired
     private ConfigProvider configProvider;
+    private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
 
 
     /**
@@ -226,7 +228,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     protected Builder getBaseBuilder() {
-        return new OkHttpClient().newBuilder();
+        return new OkHttpClient().newBuilder().connectionPool(connectionPool);
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {

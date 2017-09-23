@@ -20,19 +20,22 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 
 ### Major improvements over NZBHydra v1
 * Improved performance especially when using many indexers and/or doing multiple searches concurrently. Up to six times faster search times (ignoring indexer response times):
-  * I wrote a benchmark. 5*3 concurrent searches took v1 71 seconds while v2 only took 11 seconds. 5 subsequent searches took 24 versus 6 seconds.
+  * I wrote a benchmark. 5*3 concurrent searches took v1 50 seconds while v2 only took 4 seconds. 5 subsequent single searches took 15 versus 2 seconds.
   * Stats calculation is slower, but you don't do that so often 
 * Display of search progress with update messages and option to cancel searching
 * RSS support which will cache the results for a given time
 * Proper filtering of displayed results on the search results page
 * Extended statistics, e.g. share of downloads / searches per user, age distribution of downloaded NZBs and download failures per indexer
 * Downloader scripts to inform Hydra about the actual download result of an NZB
+* Extended configurability of categories and improved mapping of categories between Hydra and indexers
 * Improved config validation
+* Save torrents in a black hole folder; tornab API endpoint
 * Many more QoL improvements, background checks, log outputs, etc.
 
 
 ## How to run
-You need [Java Runtime Environment (>=8u101)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup>
+You need [Java Runtime Environment (>=8u101)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup> 
+
 
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
 * On windows you can either start "NZBHydra2.exe" which will add a tray icon or "NZBHydra2 Console.exe" which will open a console window.
@@ -41,7 +44,9 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 
 After a while your browser should open to http://127.0.0.1:5076
 
-Alternatively you can use a docker container TODO add links
+Alternatively you can use a docker container. There's currently no proper container in the registry. Check https://github.com/theotherp/nzbhydra2/tree/master/main/misc/docker for hints.
+
+The java executable is expected to be in the PATH. If it's not and you can't/won't put it there you need to provide the full path via <tt>--java</tt> paramater
 
 If you get SSL errors when contacting indexers make please update your java runtime.
 

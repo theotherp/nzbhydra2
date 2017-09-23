@@ -256,7 +256,7 @@ public class IndexerForSearchSelector {
             }
 
             logger.debug(LoggingMarkers.PERFORMANCE, "Detection if hit limits were reached for indexer {} took {}ms", indexer.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            return true; //TODO revert to true
+            return true;
         }
 
         LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {

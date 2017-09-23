@@ -33,7 +33,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
 
     $scope.baseUrl = "http://127.0.0.1:5075";
 
-    $scope.foo = {isMigrating: false};
+    $scope.foo = {isMigrating: false, baseUrl: $scope.baseUrl};
 
     $scope.yes = function () {
         var params;

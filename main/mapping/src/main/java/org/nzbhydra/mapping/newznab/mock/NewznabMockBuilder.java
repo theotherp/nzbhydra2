@@ -79,14 +79,15 @@ public class NewznabMockBuilder {
             item.setPubDate(pubDate);
             item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
-            item.setLink("http://127.0.0.1:5080/details/" + i);
+            String guid = "http://127.0.0.1:5080/details/" + request.getTitleBase() + "/" + i;
+            item.setLink(guid);
             item.setCategory("TV > HD");
-            item.setRssGuid(new RssGuid("http://127.0.0.1:5080/details/" + i, true));
+            item.setRssGuid(new RssGuid(guid, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
             attributes.add(new NewznabAttribute("size", size));
-            attributes.add(new NewznabAttribute("guid", "attributeGuid" + i));
+            attributes.add(new NewznabAttribute("guid", guid));
 
             attributes.add(new NewznabAttribute("poster", poster));
             attributes.add(new NewznabAttribute("group", group));

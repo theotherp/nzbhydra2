@@ -239,8 +239,8 @@ public class Searcher {
         } catch (InterruptedException e) {
             logger.error("Unexpected error while searching", e);
         }
+        executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
         indexerSearchResults = handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
-
         return indexerSearchResults;
     }
 

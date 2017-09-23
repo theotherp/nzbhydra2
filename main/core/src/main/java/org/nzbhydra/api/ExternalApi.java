@@ -95,7 +95,7 @@ public class ExternalApi {
     private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
 
-    @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, produces = MediaType.APPLICATION_RSS_XML_VALUE)
+    @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, produces = MediaType.APPLICATION_RSS_XML_VALUE, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
         logger.info("Received external {}API call: {}", (isTorznabCall(request) ? "torznab " : ""), params);
 
@@ -158,7 +158,7 @@ public class ExternalApi {
     protected ResponseEntity<?> getCaps() {
         CapsRoot capsRoot = new CapsRoot();
         capsRoot.setRetention(new CapsRetention(3000));
-        capsRoot.setLimits(new CapsLimits(100, 100)); //TODO link to global setting when implemented
+        capsRoot.setLimits(new CapsLimits(100, 100)); //later link to global setting when implemented
 
         CapsServer capsServer = new CapsServer();
         capsServer.setEmail("theotherp@gmx.de");
@@ -323,8 +323,8 @@ public class ExternalApi {
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
             searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());
         }
-        if (!Strings.isNullOrEmpty(params.getTvmazeId())) {
-            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeId());
+        if (!Strings.isNullOrEmpty(params.getTvmazeid())) {
+            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeid());
         }
         if (!Strings.isNullOrEmpty(params.getRid())) {
             searchRequest.getIdentifiers().put(IdType.TVRAGE, params.getRid());

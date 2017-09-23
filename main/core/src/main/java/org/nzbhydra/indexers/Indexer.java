@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -201,16 +202,18 @@ public abstract class Indexer<T> {
     public abstract NfoResult getNfo(String guid);
 
     @Transactional
-    protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
+    protected synchronized List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
         ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
         Stopwatch stopwatch = Stopwatch.createStarted();
         Set<String> alreadySavedIndexerGuids = searchResultRepository.findByIndexerAndIndexerGuidIn(indexer, searchResultItems.stream().map(SearchResultItem::getIndexerGuid).collect(Collectors.toList())).stream().map(SearchResultEntity::getIndexerGuid).collect(Collectors.toSet());
         for (SearchResultItem item : searchResultItems) {
+            long guid = SearchResultIdCalculator.calculateSearchResultId(item);
             if (!alreadySavedIndexerGuids.contains(item.getIndexerGuid())) {
                 SearchResultEntity searchResultEntity = new SearchResultEntity();
 
                 //Set all entity relevant data
                 searchResultEntity.setIndexer(indexer);
+                searchResultEntity.setId(guid);
                 searchResultEntity.setTitle(item.getTitle());
                 searchResultEntity.setLink(item.getLink());
                 searchResultEntity.setDetails(item.getDetails());
@@ -221,11 +224,18 @@ public abstract class Indexer<T> {
                 searchResultEntities.add(searchResultEntity);
             }
             //LATER Unify guid and searchResultId which are the same
-            long guid = SearchResultIdCalculator.calculateSearchResultId(item);
             item.setGuid(guid);
             item.setSearchResultId(guid);
         }
-        searchResultRepository.save(searchResultEntities);
+        try {
+            searchResultRepository.save(searchResultEntities);
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("An error occurred while trying to save search results to database. This usually happens with multiple concurrent searches returning the same results. Will try to save once again");
+            //Sleep.sleep(new Random().nextInt(500));
+            Set<SearchResultEntity> existingEntities = searchResultRepository.findAllByIdIn(searchResultEntities.stream().map(SearchResultEntity::getId).collect(Collectors.toList()));
+            searchResultEntities.removeAll(existingEntities);
+            searchResultRepository.save(searchResultEntities);
+        }
 
         getLogger().debug(LoggingMarkers.PERFORMANCE, "Handling of {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;

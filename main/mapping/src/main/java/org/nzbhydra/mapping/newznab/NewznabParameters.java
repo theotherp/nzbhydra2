@@ -19,7 +19,7 @@ public class NewznabParameters {
 
     private String rid;
     private String tvdbid;
-    private String tvmazeId;
+    private String tvmazeid;
     private String traktId; //LATER implement?
     private String imdbid;
     private String tmdbid;
@@ -54,12 +54,12 @@ public class NewznabParameters {
                 .add("t", t)
                 .add("q", q)
                 .add("cat", cat)
-                .add("imdbid", imdbid)
-                .add("tmdbid", tmdbid)
-                .add("rid", rid)
-                .add("tvdbid", tvdbid)
-                .add("taktId", traktId)
-                .add("tvmazeId", tvmazeId)
+                .add("imdbId", imdbid)
+                .add("tmdbId", tmdbid)
+                .add("tvRageId", rid)
+                .add("tvdbId", tvdbid)
+                .add("traktId", traktId)
+                .add("tvmazeId", tvmazeid)
                 .add("season", season)
                 .add("ep", ep)
                 .add("author", author)
@@ -98,7 +98,7 @@ public class NewznabParameters {
                 Objects.equal(cat, that.cat) &&
                 Objects.equal(rid, that.rid) &&
                 Objects.equal(tvdbid, that.tvdbid) &&
-                Objects.equal(tvmazeId, that.tvmazeId) &&
+                Objects.equal(tvmazeid, that.tvmazeid) &&
                 Objects.equal(traktId, that.traktId) &&
                 Objects.equal(imdbid, that.imdbid) &&
                 Objects.equal(tmdbid, that.tmdbid) &&
@@ -121,7 +121,7 @@ public class NewznabParameters {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(apikey, t, q, cat, rid, tvdbid, tvmazeId, traktId, imdbid, tmdbid, season, ep, author, title, offset, limit, minage, maxage, minsize, maxsize, id, raw, o, cachetime, genre, attrs, extended);
+        return Objects.hashCode(apikey, t, q, cat, rid, tvdbid, tvmazeid, traktId, imdbid, tmdbid, season, ep, author, title, offset, limit, minage, maxage, minsize, maxsize, id, raw, o, cachetime, genre, attrs, extended);
     }
 
     public int cacheKey() {

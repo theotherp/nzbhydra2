@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -98,5 +99,26 @@ public class SearchResultEntity {
 
     public void setPubDate(Instant pubDate) {
         this.pubDate = pubDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        SearchResultEntity that = (SearchResultEntity) o;
+        if (this.id != 0 || that.id != 0) {
+            return this.id == that.id;
+        }
+        return Objects.equal(indexer, that.indexer) &&
+                Objects.equal(indexerGuid, that.indexerGuid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
