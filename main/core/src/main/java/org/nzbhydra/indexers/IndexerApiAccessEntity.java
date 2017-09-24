@@ -44,7 +44,7 @@ public class IndexerApiAccessEntity {
     private Long responseTime;
     @Column(length = 4000)
     private String error;
-    //TODO username / user ?
+    //later username / user ?
 
 
     public IndexerApiAccessEntity(IndexerEntity indexerEntity) {

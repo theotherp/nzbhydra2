@@ -162,16 +162,4 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         assertThat(apiSearchResult.getRssChannel().getItems().size(), is(50));
     }
 
-    //TODO
-    public void shouldHandleErrorCodes() throws Exception {
-
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey"))).respond(HttpResponse.response().withBody("<error code=\"100\" description=\"a description\">").withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        NewznabParameters apiCallParameters = new NewznabParameters();
-        apiCallParameters.setT(ActionAttribute.SEARCH);
-        apiCallParameters.setApikey("apikey");
-
-    }
-
 }

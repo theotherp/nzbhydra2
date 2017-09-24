@@ -175,7 +175,7 @@ public class ExternalApi {
         capsRoot.setSearching(capsSearching);
 
         capsRoot.setCategories(null);
-        //TODO categories, actually needed for anything?
+        //Later categories, actually needed for anything?
 
         return new ResponseEntity<>(capsRoot, HttpStatus.OK);
     }

@@ -50,7 +50,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addCorsMappings(CorsRegistry registry) {
         //registry.addMapping("/**").allowedOrigins("http://127.0.0.1:5076", "https://127.0.0.1:9091");
-        //TODO: Check when actually calling from other host
+        //Later: Check when actually calling from other host, seems to work on server
     }
 
     @Bean

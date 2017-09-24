@@ -209,7 +209,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
 
         if (main.getProxyType() == ProxyType.SOCKS) {
-            //TODO: Test/combine SNI and sock
             SockProxySocketFactory sockProxySocketFactory = new SockProxySocketFactory(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword());
             return builder.socketFactory(sockProxySocketFactory);
         } else if (main.getProxyType() == ProxyType.HTTP) {

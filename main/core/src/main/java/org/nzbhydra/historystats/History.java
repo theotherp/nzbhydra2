@@ -41,7 +41,6 @@ public class History {
                 wheres.add(String.format("LOWER(%s) = :%s", columnName, columnName));
                 parameters.put(columnName, filterValue.toString().toLowerCase());
             } else if (filterType.equals("checkboxes")) {
-                //TODO isBoolean?
                 wheres.add(String.format("%s IN :%s", columnName, columnName));
                 parameters.put(columnName, filterValue);
             } else if (filterType.equals("boolean") && !"all".equals(filterValue)) {

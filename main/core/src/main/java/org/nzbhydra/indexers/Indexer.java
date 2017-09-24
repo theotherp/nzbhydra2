@@ -202,10 +202,9 @@ public abstract class Indexer<T> {
 
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
-        Stopwatch stopwatch;
+        Stopwatch stopwatch = Stopwatch.createStarted();
         synchronized (indexer) { //Locking per indexer prevents multiple threads trying to save the save "new" results to the database
             ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
-            stopwatch = Stopwatch.createStarted();
             Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
             for (SearchResultItem item : searchResultItems) {
                 long guid = SearchResultIdCalculator.calculateSearchResultId(item);
