@@ -2050,7 +2050,7 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
 
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
-        if (!scope.isInitial && !scope.needsConnectionTest) {
+        if (!scope.isInitial && (!scope.needsConnectionTest || scope.form.capsChecked)) {
             checkCapsWhenClosing(scope, model).then(function () {
                 deferred.resolve(model);
             }, function () {

@@ -206,11 +206,13 @@ angular
                             angular.element(testMessage).text(message);
                         }
                         if (data.indexerConfig.allCapsChecked && data.indexerConfig.configComplete) {
-                            showSuccess()
+                            showSuccess();
                             growl.info("Successfully tested capabilites of indexer");
+                            $scope.form.capsChecked = true;
                         } else if (!data.indexerConfig.allCapsChecked && data.indexerConfig.configComplete) {
                             showWarning();
                             ModalService.open("Incomplete caps check", "The capabilities of the indexer could not be checked completely. You may use it but it's recommended to repeat the check at another time.<br>Until then some search types or IDs may not be usable.", {}, "md", "left");
+                            $scope.form.capsChecked = true;
                         } else if (!data.configComplete) {
                             showError();
                             ModalService.open("Error testing capabilities", "An error occurred while contacting the indexer. It will not be usable until the caps check has been executed. You can trigger it manually from the indexer config box", {}, "md", "left");
@@ -440,7 +442,6 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.needsConnectionTest = false;
 
     $scope.obSubmit = function () {
-
         if ($scope.form.$valid) {
             var a = data.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
