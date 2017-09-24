@@ -76,7 +76,7 @@ public class Searcher {
         List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
         while (indexersToSearchAndTheirResults.size() > 0 && searchResultItems.size() < numberOfWantedResults) {
 
-            logger.debug("Going to call {} indexer because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
+            logger.debug("Going to call {} indexers because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
 
             //Do the actual search
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);

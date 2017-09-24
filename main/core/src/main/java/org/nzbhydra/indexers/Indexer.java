@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -202,38 +201,32 @@ public abstract class Indexer<T> {
     public abstract NfoResult getNfo(String guid);
 
     @Transactional
-    protected synchronized List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
-        ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        Set<String> alreadySavedIndexerGuids = searchResultRepository.findByIndexerAndIndexerGuidIn(indexer, searchResultItems.stream().map(SearchResultItem::getIndexerGuid).collect(Collectors.toList())).stream().map(SearchResultEntity::getIndexerGuid).collect(Collectors.toSet());
-        for (SearchResultItem item : searchResultItems) {
-            long guid = SearchResultIdCalculator.calculateSearchResultId(item);
-            if (!alreadySavedIndexerGuids.contains(item.getIndexerGuid())) {
-                SearchResultEntity searchResultEntity = new SearchResultEntity();
+    protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
+        Stopwatch stopwatch;
+        synchronized (indexer) { //Locking per indexer prevents multiple threads trying to save the save "new" results to the database
+            ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
+            stopwatch = Stopwatch.createStarted();
+            Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
+            for (SearchResultItem item : searchResultItems) {
+                long guid = SearchResultIdCalculator.calculateSearchResultId(item);
+                if (!alreadySavedIds.contains(guid)) {
+                    SearchResultEntity searchResultEntity = new SearchResultEntity();
 
-                //Set all entity relevant data
-                searchResultEntity.setIndexer(indexer);
-                searchResultEntity.setId(guid);
-                searchResultEntity.setTitle(item.getTitle());
-                searchResultEntity.setLink(item.getLink());
-                searchResultEntity.setDetails(item.getDetails());
-                searchResultEntity.setIndexerGuid(item.getIndexerGuid());
-                searchResultEntity.setFirstFound(Instant.now());
-                searchResultEntity.setDownloadType(item.getDownloadType());
-                searchResultEntity.setPubDate(item.getPubDate());
-                searchResultEntities.add(searchResultEntity);
+                    //Set all entity relevant data
+                    searchResultEntity.setIndexer(indexer);
+                    searchResultEntity.setTitle(item.getTitle());
+                    searchResultEntity.setLink(item.getLink());
+                    searchResultEntity.setDetails(item.getDetails());
+                    searchResultEntity.setIndexerGuid(item.getIndexerGuid());
+                    searchResultEntity.setFirstFound(Instant.now());
+                    searchResultEntity.setDownloadType(item.getDownloadType());
+                    searchResultEntity.setPubDate(item.getPubDate());
+                    searchResultEntities.add(searchResultEntity);
+                }
+                //LATER Unify guid and searchResultId which are the same
+                item.setGuid(guid);
+                item.setSearchResultId(guid);
             }
-            //LATER Unify guid and searchResultId which are the same
-            item.setGuid(guid);
-            item.setSearchResultId(guid);
-        }
-        try {
-            searchResultRepository.save(searchResultEntities);
-        } catch (DataIntegrityViolationException e) {
-            logger.warn("An error occurred while trying to save search results to database. This usually happens with multiple concurrent searches returning the same results. Will try to save once again");
-            //Sleep.sleep(new Random().nextInt(500));
-            Set<SearchResultEntity> existingEntities = searchResultRepository.findAllByIdIn(searchResultEntities.stream().map(SearchResultEntity::getId).collect(Collectors.toList()));
-            searchResultEntities.removeAll(existingEntities);
             searchResultRepository.save(searchResultEntities);
         }
 

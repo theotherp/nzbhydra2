@@ -73,8 +73,8 @@ Please send merge requests to the develop branch!
 ## Why Java?
 Although I don't think I need to justify myself I expect a lot of negativity because of my decision to go with Java. While it's not as cool as python it allows me to develop the best version
 of Hydra. I develop Java by day and I know it best. There's a lot of stuff I wouldn't have been able to do in version 1 - not because it cannot be done with python but because I just don't
-know it as well. Yes, it takes more memory. Yes, it nags you about updates (which you should absolutely do!). Still, I'm convinced v2 of Hydra is a huge improvement over v1 and reason enough to use Java.  
-And 90% of users won't ever care about what programming language it's written in. You can still use v1 but it won't be updated or supported.
+know it as well. I'm convinced v2 of Hydra is a huge improvement over v1 and reason enough to use Java.  
+While Hydra 2 does use more memory than Hydra 1 it's still comparable to what Sonarr or Radarr use. It's also way faster than v1.
 
 ## Contact ###
 Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheOtherP
