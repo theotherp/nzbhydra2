@@ -23,6 +23,7 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,6 +59,8 @@ public class Stats {
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Transactional
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
@@ -243,7 +246,18 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer search shares");
         List<IndexerSearchResultsShare> indexerSearchResultsShares = new ArrayList<>();
+
+        Map<Integer, String> indexerIdToName = new HashMap<>();
+        List<Indexer> indexersToInclude = statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers();
+        List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
+        indexersToInclude = indexersToInclude.stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList());
+        for (Indexer indexer : indexersToInclude) {
+            indexerIdToName.put(indexer.getIndexerEntity().getId(), indexer.getName());
+        }
+
+        Set<Integer> indexerIdsToInclude = indexerIdToName.keySet();
         String countResultsSql = "SELECT\n" +
+                "  INDEXER_ENTITY_ID,\n" +
                 "  INDEXERRESULTSSUM,\n" +
                 "  ALLRESULTSSUM,\n" +
                 "  INDEXERUNIQUERESULTSSUM,\n" +
@@ -251,12 +265,13 @@ public class Stats {
                 "FROM\n" +
                 "  (SELECT\n" +
                 "     SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,\n" +
-                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM\n" +
+                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM,\n" +
+                "     INDEXERSEARCH.INDEXER_ENTITY_ID\n" +
                 "   FROM indexersearch\n" +
                 "   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID\n" +
                 "                FROM indexersearch\n" +
                 "                  LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
-                "                WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId \n" +
+                "                WHERE indexersearch.INDEXER_ENTITY_ID IN (:indexerIds) \n" +
                 "                      AND INDEXERSEARCH.successful AND\n" +
                 "                      INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
                 "                                                         FROM SEARCH\n" +
@@ -265,7 +280,9 @@ public class Stats {
                 "                                                           (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL) \n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "                      )\n" +
-                "   )) FORINDEXER,\n" +
+                "   )" +
+                "   GROUP BY INDEXER_ENTITY_ID" +
+                ") FORINDEXER,\n" +
                 "  (SELECT\n" +
                 "      sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
                 "      SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
@@ -274,7 +291,7 @@ public class Stats {
                 "                                             FROM indexersearch\n" +
                 "                                               LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
                 "                                               LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
-                "                                             WHERE indexersearch.INDEXER_ENTITY_ID = :indexerId \n" +
+                "                                             WHERE indexersearch.INDEXER_ENTITY_ID IN (:indexerIds) \n" +
                 "                                                   AND INDEXERSEARCH.successful AND\n" +
                 "                                                   INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
                 "                                                                                      FROM SEARCH\n" +
@@ -289,33 +306,31 @@ public class Stats {
                 "  ) FORALL";
 
 
-        List<Indexer> indexersToInclude = statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers();
-        List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
-        indexersToInclude = indexersToInclude.stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList());
-        for (Indexer indexer : indexersToInclude) {
-            logger.debug("Calculating search shares for indexer {}", indexer.getName());
-            Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerId", indexer.getIndexerEntity().getId());
-
-            Object[] resultSet = (Object[]) countQuery.getSingleResult();
+        Query countQuery = entityManager.createNativeQuery(countResultsSql).setParameter("indexerIds", indexerIdsToInclude);
+        List results = countQuery.getResultList();
+        for (Object resultObject : results) {
+            Object[] resultSet = (Object[]) resultObject;
             Float allShare = null;
-            if (resultSet[0] != null && resultSet[1] != null) {
-                BigInteger indexerResultsSum = (BigInteger) resultSet[0];
-                BigInteger allResultsSum = (BigInteger) resultSet[1];
+            if (resultSet[1] != null && resultSet[2] != null) {
+                BigInteger indexerResultsSum = (BigInteger) resultSet[1];
+                BigInteger allResultsSum = (BigInteger) resultSet[2];
                 if (indexerResultsSum.intValue() > 0) {
                     allShare = 100 / (allResultsSum.floatValue() / indexerResultsSum.floatValue());
                 }
             }
 
             Float uniqueShare = null;
-            if (resultSet[2] != null && resultSet[3] != null) {
-                BigInteger indexerUniqueResultsSum = (BigInteger) resultSet[2];
-                BigInteger allUniqueResultsSum = (BigInteger) resultSet[3];
+            if (resultSet[3] != null && resultSet[4] != null) {
+                BigInteger indexerUniqueResultsSum = (BigInteger) resultSet[3];
+                BigInteger allUniqueResultsSum = (BigInteger) resultSet[4];
                 if (allUniqueResultsSum.intValue() > 0) {
                     uniqueShare = 100 / (allUniqueResultsSum.floatValue() / indexerUniqueResultsSum.floatValue());
                 }
             }
-            indexerSearchResultsShares.add(new IndexerSearchResultsShare(indexer.getName(), allShare, uniqueShare));
+            Integer indexerId = (Integer) resultSet[0];
+            indexerSearchResultsShares.add(new IndexerSearchResultsShare(indexerIdToName.get(indexerId), allShare, uniqueShare));
         }
+
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer search shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerSearchResultsShares;
     }

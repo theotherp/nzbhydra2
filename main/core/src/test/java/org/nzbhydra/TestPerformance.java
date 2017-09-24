@@ -1,5 +1,7 @@
 package org.nzbhydra;
 
+import org.h2.util.Profiler;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,7 +35,7 @@ public class TestPerformance {
     public static void main(String[] args) throws Exception {
         //First query on fresh database takes about 1200ms
         //Size of new database is 160MB, size of database on which query was executed is 179MB
-        testH2();
+        testH23();
 
         //First query on frsh sqlite database usually takes less than 100ms
         //Size of new database is 50MB
@@ -60,6 +62,69 @@ public class TestPerformance {
         statement.close();
         conn.close();
         //System.out.println(prof.getTop(3));
+    }
+
+    private static void testH23() throws Exception {
+        getOrCreateTestH2Database();
+
+        Class.forName("org.h2.Driver");
+        String url = "jdbc:h2:file:C:\\Users\\strat\\IdeaProjects\\NzbHydra2\\main\\core\\data\\database\\nzbhydra;DEFRAG_ALWAYS=TRUE";
+        Connection conn = DriverManager.getConnection(url, "SA", "");
+
+        Statement statement = conn.createStatement();
+
+        Profiler prof = new Profiler();
+        prof.startCollecting();
+        //Warmup
+        statement.executeQuery("SELECT\n" +
+                "  INDEXER_ENTITY_ID,\n" +
+                "  INDEXERRESULTSSUM,\n" +
+                "  ALLRESULTSSUM,\n" +
+                "  INDEXERUNIQUERESULTSSUM,\n" +
+                "  ALLUNIQUERESULTSSUM\n" +
+                "FROM\n" +
+                "  (SELECT\n" +
+                "     SUM(INDEXERSEARCH.RESULTS_COUNT)  AS INDEXERRESULTSSUM,\n" +
+                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS INDEXERUNIQUERESULTSSUM,\n" +
+                "     INDEXERSEARCH.INDEXER_ENTITY_ID\n" +
+                "   FROM indexersearch\n" +
+                "   WHERE indexersearch.ID IN (SELECT INDEXERSEARCH.ID\n" +
+                "                              FROM indexersearch\n" +
+                "                                LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
+                "                              WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)\n" +
+                "                                    AND INDEXERSEARCH.successful AND\n" +
+                "                                    INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                                                       FROM SEARCH\n" +
+                "                                                                         LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                                                       WHERE\n" +
+                "                                                                         (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)\n" +
+                "                                                                         AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                       )\n" +
+                "   )   GROUP BY INDEXER_ENTITY_ID) FORINDEXER,\n" +
+                "  (SELECT\n" +
+                "     sum(INDEXERSEARCH.RESULTS_COUNT)  AS ALLRESULTSSUM,\n" +
+                "     SUM(INDEXERSEARCH.UNIQUE_RESULTS) AS ALLUNIQUERESULTSSUM\n" +
+                "   FROM INDEXERSEARCH\n" +
+                "   WHERE INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                            FROM indexersearch\n" +
+                "                                              LEFT JOIN SEARCH ON INDEXERSEARCH.SEARCH_ENTITY_ID = SEARCH.ID\n" +
+                "                                              LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                            WHERE indexersearch.INDEXER_ENTITY_ID IN (48,70,1013278,60,1013268,1013290,76,1013262,54,1013280,1013266,1013288,1013286,1013284,1013272,52,1013276,82,50,1013282,1013292,62,1013294,1013296,1013274,1013264,78,1013270)\n" +
+                "                                                  AND INDEXERSEARCH.successful AND\n" +
+                "                                                  INDEXERSEARCH.SEARCH_ENTITY_ID IN (SELECT SEARCH.ID\n" +
+                "                                                                                     FROM SEARCH\n" +
+                "                                                                                       LEFT JOIN SEARCH_IDENTIFIERS ON SEARCH.ID = SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID\n" +
+                "                                                                                     WHERE\n" +
+                "                                                                                       (SEARCH.episode IS NOT NULL OR SEARCH.season IS NOT NULL OR SEARCH.query IS NOT NULL OR\n" +
+                "                                                                                        SEARCH_IDENTIFIERS.SEARCH_ENTITY_ID IS NOT NULL OR SEARCH.AUTHOR IS NOT NULL OR SEARCH.TITLE IS NOT NULL)\n" +
+                "                                                                                       AND  TIME > DATEADD('SECOND', 1503650080, DATE '1970-01-01')  AND  TIME < DATEADD('SECOND', 1506328480, DATE '1970-01-01')                                                    )\n" +
+                "                                                  AND INDEXERSEARCH.successful)         AND INDEXERSEARCH.successful\n" +
+                "  ) FORALL");
+
+
+        prof.stopCollecting();
+        statement.close();
+        conn.close();
+        System.out.println(prof.getTop(3));
     }
 
     private static void executeTimedQueryH2(Statement statement) throws SQLException {
