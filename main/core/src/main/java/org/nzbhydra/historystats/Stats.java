@@ -132,10 +132,11 @@ public class Stats {
 
 
         executor.shutdown();
-        boolean wasCompleted = executor.awaitTermination(60, TimeUnit.SECONDS);
+        int timeout = 90;
+        boolean wasCompleted = executor.awaitTermination(timeout, TimeUnit.SECONDS);
         if (!wasCompleted) {
             executor.shutdownNow();
-            logger.error("Aborted stats generation because it took longer than 60 seconds");
+            logger.error("Aborted stats generation because it took longer than {} seconds", timeout);
         } else {
             for (Future future : futures) {
                 try {
@@ -213,9 +214,9 @@ public class Stats {
                 "GROUP BY INDEXER_ID\n" +
                 "ORDER BY avg ASC";
 
-        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         OptionalDouble overallAverage = resultList.stream().mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;

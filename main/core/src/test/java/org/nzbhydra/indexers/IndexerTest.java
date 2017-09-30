@@ -191,7 +191,7 @@ public class IndexerTest {
         item.setIndexerGuid("guid");
         item.setIndexer(indexerMock);
         when(searchResultEntityMock.getIndexerGuid()).thenReturn("guid");
-        when(searchResultRepositoryMock.findByIndexerAndIndexerGuidIn(eq(indexerEntityMock), any())).thenReturn(Sets.newHashSet(searchResultEntityMock));
+        when(searchResultRepositoryMock.findAllIdsByIdIn(anyList())).thenReturn(Sets.newHashSet(-6656469538734781699L));
 
         testee.persistSearchResults(Collections.singletonList(item));
 

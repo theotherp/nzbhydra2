@@ -94,8 +94,8 @@
                     <tbody>
                     <tr ng-repeat="avgIndexerSearchResultsShare in stats.avgIndexerSearchResultsShares">
                         <td>{{ avgIndexerSearchResultsShare.indexerName }}</td>
-                        <td>{{ avgIndexerSearchResultsShare.avgResultsShare }}</td>
-                        <td>{{ avgIndexerSearchResultsShare.avgUniqueResults }}</td>
+                        <td>{{ avgIndexerSearchResultsShare.totalShare | number: 1}}</td>
+                        <td>{{ avgIndexerSearchResultsShare.uniqueShare | number: 1}}</td>
                     </tr>
                     </tbody>
                 </table>
