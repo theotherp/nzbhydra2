@@ -113,7 +113,9 @@ public class InfoProvider {
                     TmdbSearchResult result = tmdbHandler.getInfos(value, fromType);
                     info = new MediaInfo(result);
                     movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                    movieInfoRepository.save(movieInfo);
+                    if (((info.getTmdbId().isPresent() && movieInfoRepository.findByTmdbId(info.getTmdbId().get()) == null) && (info.getImdbId().isPresent() && movieInfoRepository.findByImdbId(info.getImdbId().get()) == null))) {
+                        movieInfoRepository.save(movieInfo);
+                    }
                 }
             } else if (fromType == TVMAZE || fromType == TVDB || fromType == TVRAGE || fromType == TVTITLE) {
                 TvInfo tvInfo;
@@ -132,7 +134,9 @@ public class InfoProvider {
                     TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
                     info = new MediaInfo(result);
                     tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                    tvInfoRepository.save(tvInfo);
+                    if (((info.getTvMazeId().isPresent() && tvInfoRepository.findByTvmazeId(info.getTvMazeId().get()) == null) && (info.getTvDbId().isPresent() && tvInfoRepository.findByTvdbId(info.getTvDbId().get()) == null) && (info.getTvRageId().isPresent() && tvInfoRepository.findByTvrageId(info.getTvRageId().get()) == null))) {
+                        tvInfoRepository.save(tvInfo);
+                    }
                 }
             } else {
                 throw new IllegalArgumentException("Wrong IdType");
