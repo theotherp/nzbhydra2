@@ -62,6 +62,8 @@
     "wiredep-cli": "^0.1.0"
   },
   "devDependencies": {
+    "add-stream": "^1.0.0",
+    "gulp-angular-templatecache": "^2.0.0",
     "gulp-clean-css": "^3.5.0"
   },
   "scripts": {

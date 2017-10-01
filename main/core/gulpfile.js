@@ -18,6 +18,8 @@ var rename = require("gulp-rename");
 var clean = require('gulp-clean');
 var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
+var angularTemplateCache = require('gulp-angular-templatecache');
+
 
 
 gulp.task('vendor-scripts', function () {
@@ -44,6 +46,14 @@ gulp.task('vendor-css', function () {
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
+});
+
+
+gulp.task('templates', function() {
+    return gulp.src('ui-src/html/**/*.html')
+        .pipe(angularTemplateCache("templates.js", {root: "static/html/"}))
+        .pipe(concat('templates.js'))
+        .pipe(gulp.dest('src/main/resources/static/js'));
 });
 
 gulp.task('scripts', function () {
@@ -139,7 +149,7 @@ gulp.task('copyStaticToClasses', function () {
 });
 
 gulp.task('index', function () {
-    runSequence(['scripts', 'less', 'vendor-scripts', 'vendor-css', 'copy-assets'], [
+    runSequence(['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets'], [
         'copyStaticToClasses',
         'add']);
 });
