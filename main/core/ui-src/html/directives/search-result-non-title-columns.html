@@ -11,7 +11,9 @@
     {{ ::(result.grabs ? result.grabs : '-') }}
 </td>
 <td class="col-md-1 search-results-cell result-age" style="text-align: right">
-    {{ ::result.age }}
+    <span uib-tooltip="{{ ::result.date }}"
+          tooltip-placement="top"
+          tooltip-trigger="mouseenter">{{ ::result.age }}</span>
 </td>
 <td class="col-md-3 search-results-cell result-links">
     <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}" class="no-underline"

@@ -1047,7 +1047,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
             } else {
                 return "No NFO available";
             }
-        }
+        };
     }
 }
 otherColumns.$inject = ["$http", "$templateCache", "$compile", "$window"];
@@ -5476,8 +5476,6 @@ filters
             return $sce.trustAsHtml(text);
         };
     }]);
-
-
 angular
     .module('nzbhydraApp')
     .factory('FileSelectionService', FileSelectionService);

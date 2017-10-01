@@ -13,4 +13,3 @@ filters
             return $sce.trustAsHtml(text);
         };
     }]);
-

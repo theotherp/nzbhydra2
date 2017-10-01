@@ -8,6 +8,7 @@ import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
 import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
@@ -160,9 +161,9 @@ public class NewznabChecker {
 
 
         BackendType backendType = BackendType.NEWZNAB;
-        if (backend == null) {
+        if (backend == null && indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB) {
             logger.info("Indexer {} didn't provide a backend type. Will use newznab.", indexerConfig.getName());
-        } else {
+        } else if (backend != null){
             try {
                 backendType = BackendType.valueOf(backend.toUpperCase());
                 logger.info("Indexer {} uses backend type {}", indexerConfig.getName(), backendType);

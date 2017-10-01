@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -100,6 +103,8 @@ public class InternalSearchResultProcessor {
         return transformedSearchResults;
     }
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+
 
     private SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
         Instant date = item.getUsenetDate().orElse(item.getPubDate());
@@ -112,6 +117,7 @@ public class InternalSearchResultProcessor {
         }
         builder = builder
                 .age_precise(item.isAgePrecise())
+                .date(LocalDateTime.ofInstant(date, ZoneId.of("UTC")).format(DATE_FORMATTER))
                 .epoch(date.getEpochSecond());
         return builder;
     }

@@ -74,7 +74,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
             } else {
                 return "No NFO available";
             }
-        }
+        };
     }
 }
 
