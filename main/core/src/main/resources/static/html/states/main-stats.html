@@ -28,9 +28,12 @@
           </span>
         </p>
     </div>
-    <div class="col-md-5">
+    <div class="col-md-3">
         <label>Show disabled indexers</label>
-        <input bs-switch type="checkbox" ng-model="foo.includeDisabledIndexersInStats" switch-change="toggleIncludeDisabledIndexers()"/>
+        <input bs-switch type="checkbox" ng-model="foo.includeDisabledIndexersInStats" switch-change="toggleIncludeDisabledIndexers()" switch-size="mini"/>
+    </div>
+    <div class="col-md-3">
+        <button type="button" class="btn btn-info" ng-click="refresh()">Refresh</button>
     </div>
 </div>
 
@@ -309,12 +312,12 @@
         <div class="col-md-10 stat-box">
             <div class="caption">
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
-                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.userAgentShares" switch-size="mini" ng-change="onStatsSwitchToggle('userAgentShares')">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.userAgentSearchShares" switch-size="mini" ng-change="onStatsSwitchToggle('userAgentSearchShares')">
                 </span>
                 API Searches per user agent <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
                                                   uib-tooltip="Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'"></span>
             </div>
-            <tab-or-chart display="chart" ng-show="foo.statsSwichState.userAgentShares">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.userAgentSearchShares">
                 <table class="table">
                     <thead>
                     <tr>
@@ -324,7 +327,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in stats.userAgentShares">
+                    <tr ng-repeat="stat in stats.userAgentSearchShares">
                         <td>{{ stat.userAgent }}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                         <td>{{ stat.count }}</td>
@@ -332,8 +335,39 @@
                     </tbody>
                 </table>
 
-                <chart class="userAgentSharesChart">
-                    <nvd3 options="userAgentSharesChart.options" data="userAgentSharesChart.data"></nvd3>
+                <chart class="userAgentSearchSharesChart">
+                    <nvd3 options="userAgentSearchSharesChart.options" data="userAgentSearchSharesChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.userAgentDownloadShares" switch-size="mini" ng-change="onStatsSwitchToggle('userAgentDownloadShares')">
+                </span>
+                API downloads per user agent <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                  uib-tooltip="Some tools don't use specific user agents. They will most likely show up as 'Mozilla' or as 'Other'"></span>
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.userAgentDownloadShares">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>User agent</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in stats.userAgentDownloadShares">
+                        <td>{{ stat.userAgent }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="userAgentDownloadSharesChart">
+                    <nvd3 options="userAgentDownloadSharesChart.options" data="userAgentDownloadSharesChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
         </div>

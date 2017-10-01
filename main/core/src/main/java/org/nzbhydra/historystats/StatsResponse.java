@@ -40,7 +40,8 @@ public class StatsResponse {
     private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp;
     private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp;
 
-    private List<UserAgentShare> userAgentShares;
+    private List<UserAgentShare> userAgentSearchShares;
+    private List<UserAgentShare> userAgentDownloadShares;
 
     private int numberOfConfiguredIndexers;
     private int numberOfEnabledIndexers;

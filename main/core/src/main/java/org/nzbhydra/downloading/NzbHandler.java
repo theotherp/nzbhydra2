@@ -54,7 +54,7 @@ public class NzbHandler {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp) {
+    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource, String usernameOrIp, String userAgent) {
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
@@ -67,7 +67,7 @@ public class NzbHandler {
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
-            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, usernameOrIp, ageInDays, null);
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, usernameOrIp, userAgent, ageInDays, null);
             downloadRepository.save(downloadEntity);
             eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
@@ -78,7 +78,7 @@ public class NzbHandler {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
-                NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, usernameOrIp, ageInDays, e.getMessage());
+                NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, usernameOrIp, userAgent, ageInDays, e.getMessage());
 
                 downloadRepository.save(downloadEntity);
                 eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
@@ -89,7 +89,7 @@ public class NzbHandler {
             //LATER CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
-            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, usernameOrIp, ageInDays, null);
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, usernameOrIp, userAgent, ageInDays, null);
             downloadRepository.save(downloadEntity);
             eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
 
@@ -97,10 +97,10 @@ public class NzbHandler {
         }
     }
 
-    public File getNzbsAsZip(List<Long> guids, String usernameOrIp) throws Exception {
+    public File getNzbsAsZip(List<Long> guids, String usernameOrIp, String userAgent) throws Exception {
         List<File> nzbFiles = new ArrayList<>();
         for (Long guid : guids) {
-            NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, usernameOrIp);
+            NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, usernameOrIp, userAgent);
             if (!result.isSuccessful()) {
                 continue;
             }

@@ -29,7 +29,8 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                 successfulDownloadsPerIndexer: true,
                 downloadSharesPerUserOrIp: true,
                 searchSharesPerUserOrIp: true,
-                userAgentShares: true
+                userAgentSearchShares: true,
+                userAgentDownloadShares: true
             }
     };
     $scope.stats = {};
@@ -55,7 +56,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 
     $scope.toggleIncludeDisabledIndexers = function () {
         localStorageService.set("includeDisabledIndexersInStats", $scope.foo.includeDisabledIndexersInStats);
-        updateStats();
     };
 
     $scope.onStatsSwitchToggle = function (statId) {
@@ -65,6 +65,10 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             updateStats(statId);
         }
 
+    };
+
+    $scope.refresh = function() {
+        updateStats();
     };
 
     function updateStats(statId) {
@@ -92,7 +96,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         if (initializingBefore) {
             initializingBefore = false;
         } else {
-            updateStats();
+            //updateStats();
         }
     });
 
@@ -101,15 +105,16 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         if (initializingAfter) {
             initializingAfter = false;
         } else {
-            updateStats();
+            //updateStats();
         }
     });
 
     $scope.onKeypress = function (keyEvent) {
         if (keyEvent.which === 13) {
-            updateStats();
+            //updateStats();
         }
     };
+
 
     $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
     $scope.format = $scope.formats[0];
@@ -268,13 +273,16 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.stats.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
         }
 
-        if ($scope.stats.userAgentShares) {
-            $scope.userAgentSharesChart = getSharesPieChart($scope.stats.userAgentShares, 300, "userAgent", "percentage");
-            $scope.userAgentSharesChart.options.chart.legend.margin.bottom = 25;
+        if ($scope.stats.userAgentSearchShares) {
+            $scope.userAgentSearchSharesChart = getSharesPieChart($scope.stats.userAgentSearchShares, 300, "userAgent", "percentage");
+            $scope.userAgentSearchSharesChart.options.chart.legend.margin.bottom = 25;
+        }
+        if ($scope.stats.userAgentDownloadShares) {
+            $scope.userAgentDownloadSharesChart = getSharesPieChart($scope.stats.userAgentDownloadShares, 300, "userAgent", "percentage");
+            $scope.userAgentDownloadSharesChart.options.chart.legend.margin.bottom = 25;
         }
 
     };
-
 
     function getChart(chartType, values, xKey, yKey, xAxisLabel, yAxisLabel) {
         return {

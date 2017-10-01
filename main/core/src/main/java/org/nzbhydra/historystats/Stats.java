@@ -93,10 +93,10 @@ public class Stats {
         }
 
         if (statsRequest.isSearchesPerHourOfDay()) {
-            futures.add(executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest)))); 
+            futures.add(executor.submit(() -> statsResponse.setSearchesPerHourOfDay(countPerHourOfDay("SEARCH", statsRequest))));
         }
         if (statsRequest.isDownloadsPerHourOfDay()) {
-            futures.add(executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest)))); 
+            futures.add(executor.submit(() -> statsResponse.setDownloadsPerHourOfDay(countPerHourOfDay("INDEXERNZBDOWNLOAD", statsRequest))));
         }
 
         if (statsRequest.isIndexerDownloadShares()) {
@@ -112,8 +112,12 @@ public class Stats {
             futures.add(executor.submit(() -> statsResponse.setSuccessfulDownloadsPerIndexer(successfulDownloadsPerIndexer(statsRequest))));
         }
 
-        if (statsRequest.isUserAgentShares()) {
-            futures.add(executor.submit(() -> statsResponse.setUserAgentShares(userAgentShares(statsRequest))));
+        if (statsRequest.isUserAgentSearchShares()) {
+            futures.add(executor.submit(() -> statsResponse.setUserAgentSearchShares(userAgentSearchShares(statsRequest))));
+        }
+
+        if (statsRequest.isUserAgentDownloadShares()) {
+            futures.add(executor.submit(() -> statsResponse.setUserAgentDownloadShares(userAgentDownloadShares(statsRequest))));
         }
 
 
@@ -562,9 +566,9 @@ public class Stats {
         return result;
     }
 
-    List<UserAgentShare> userAgentShares(final StatsRequest statsRequest) {
+    List<UserAgentShare> userAgentSearchShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculating user agent shares");
+        logger.debug("Calculating user agent search shares");
         String sql = "SELECT\n" +
                 "  user_agent,\n" +
                 "  count(*)\n" +
@@ -588,7 +592,38 @@ public class Stats {
         }
 
         result.sort(Comparator.comparingDouble(UserAgentShare::getPercentage).reversed());
-        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated user agent shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated user agent search shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return result;
+    }
+
+    List<UserAgentShare> userAgentDownloadShares(final StatsRequest statsRequest) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        logger.debug("Calculating user agent download shares");
+        String sql = "SELECT\n" +
+                "  user_agent,\n" +
+                "  count(*)\n" +
+                "FROM INDEXERNZBDOWNLOAD\n" +
+                "WHERE user_agent IS NOT NULL\n" +
+                "and ACCESS_SOURCE = 'API' \n" +
+                buildWhereFromStatsRequest(true, statsRequest) +
+                "GROUP BY user_agent";
+        Query query = entityManager.createNativeQuery(sql);
+        List<Object> resultList = query.getResultList();
+        List<UserAgentShare> result = new ArrayList<>();
+        int countAll = 0;
+        for (Object o : resultList) {
+            Object[] o2 = (Object[]) o;
+            String userAgent = (String) o2[0];
+            int countForUserAgent = ((BigInteger) o2[1]).intValue();
+            countAll += countForUserAgent;
+            result.add(new UserAgentShare(userAgent, countForUserAgent));
+        }
+        for (UserAgentShare userAgentShare : result) {
+            userAgentShare.setPercentage(100F / ((float) countAll / userAgentShare.getCount()));
+        }
+
+        result.sort(Comparator.comparingDouble(UserAgentShare::getPercentage).reversed());
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated user agent download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 

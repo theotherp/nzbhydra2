@@ -39,6 +39,7 @@ public class NzbDownloadEntity {
     private String error;
     @Column(length = 4000)
     private String title;
+    private String userAgent;
     private String usernameOrIp;
     /**
      * The age of the NZB at the time of downloading.
@@ -47,7 +48,7 @@ public class NzbDownloadEntity {
     @Column(name = "EXTERNAL_ID")
     private String externalId;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, String usernameOrIp, Integer age, String error) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, String usernameOrIp, String userAgent, Integer age, String error) {
         this.indexer = indexerEntity;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
@@ -55,6 +56,7 @@ public class NzbDownloadEntity {
         this.status = status;
         this.time = Instant.now();
         this.usernameOrIp = usernameOrIp;
+        this.userAgent = userAgent;
         this.age = age;
         this.error = error;
     }

@@ -6,6 +6,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UsernameOrIpStorage;
 import org.slf4j.Logger;
@@ -41,6 +42,8 @@ public class NzbHandlingWeb {
     private NzbHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private UserAgentMapper userAgentMapper;
 
 
     /**
@@ -51,7 +54,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
     }
 
     /**
@@ -63,7 +66,7 @@ public class NzbHandlingWeb {
     @Secured({"ROLE_USER"})
     public Object downloadNzbZip(@RequestBody List<Long> guids, HttpServletRequest request) {
         try {
-            File zipFile = nzbHandler.getNzbsAsZip(guids, UsernameOrIpStorage.usernameOrIp.get());
+            File zipFile = nzbHandler.getNzbsAsZip(guids, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request));
             return ResponseEntity
                     .ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
@@ -112,7 +115,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), null).getAsResponseEntity();
     }
 
     /**
@@ -128,7 +131,7 @@ public class NzbHandlingWeb {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
     }
 
 }

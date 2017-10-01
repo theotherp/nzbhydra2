@@ -6,6 +6,7 @@ import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NzbAccessType;
+import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.UsernameOrIpStorage;
 import org.slf4j.Logger;
@@ -30,6 +31,8 @@ public class TorrentHandlingWeb {
     private NzbHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private UserAgentMapper userAgentMapper;
 
     /**
      * Provides an internal access to torrents via GUID
@@ -39,7 +42,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/internalapi/torrent/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadTorrentInternal(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
     }
 
 
@@ -51,7 +54,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
     }
 
     /**
@@ -62,7 +65,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/internalapi/saveTorrent/{guid}")
     @Secured({"ROLE_USER"})
     public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid, HttpServletRequest request) {
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get());
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request));
         if (!downloadResult.isSuccessful()) {
             return GenericResponse.notOk(downloadResult.getError());
         }
@@ -94,7 +97,7 @@ public class TorrentHandlingWeb {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
     }
 
 }

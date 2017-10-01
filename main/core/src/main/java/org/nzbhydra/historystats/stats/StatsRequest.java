@@ -28,7 +28,8 @@ public class StatsRequest {
     private boolean successfulDownloadsPerIndexer;
     private boolean downloadSharesPerUserOrIp;
     private boolean searchSharesPerUserOrIp;
-    private boolean userAgentShares;
+    private boolean userAgentSearchShares;
+    private boolean userAgentDownloadShares;
 
     public StatsRequest(Instant after, Instant before, boolean includeDisabled) {
         this.before = before;

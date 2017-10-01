@@ -27,6 +27,7 @@ import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 import org.nzbhydra.mapping.newznab.caps.CapsServer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -53,7 +54,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -72,7 +72,6 @@ public class ExternalApi {
 
     private static final int MAX_CACHE_SIZE = 5;
     private static final int MAX_CACHE_AGE_HOURS = 24;
-    private static final List<String> USER_AGENTS = Arrays.asList("Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "Mozilla");
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
@@ -89,6 +88,8 @@ public class ExternalApi {
     protected ConfigProvider configProvider;
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private UserAgentMapper userAgentMapper;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 
@@ -113,7 +114,7 @@ public class ExternalApi {
         }
 
         if (params.getT() == ActionAttribute.GET) {
-            return getNzb(params);
+            return getNzb(params, request);
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
@@ -180,12 +181,12 @@ public class ExternalApi {
         return new ResponseEntity<>(capsRoot, HttpStatus.OK);
     }
 
-    protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
+    protected ResponseEntity<?> getNzb(NewznabParameters params, HttpServletRequest request) throws MissingParameterException, UnknownErrorException {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
         }
-
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get());
+        String userAgent = userAgentMapper.getUserAgent(request);
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get(), userAgent);
         if (!downloadResult.isSuccessful()) {
             throw new UnknownErrorException(downloadResult.getError());
         }
@@ -201,29 +202,12 @@ public class ExternalApi {
         } else {
             searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.NZB);
         }
-        searchRequest.getInternalData().setUserAgent(getUserAgent(request));
+        searchRequest.getInternalData().setUserAgent(userAgentMapper.getUserAgent(request));
         SearchResult searchResult = searcher.search(searchRequest);
 
         RssRoot transformedResults = transformResults(searchResult, params, searchRequest);
         logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
         return transformedResults;
-    }
-
-    private String getUserAgent(HttpServletRequest request) {
-        String header = request.getHeader("User-Agent");
-        if (header == null) {
-            logger.debug("No user agent provided");
-            return null;
-        }
-        for (String toCompare : USER_AGENTS) {
-            String headerLowercase = header.toLowerCase();
-            if (headerLowercase.contains(toCompare.toLowerCase())) {
-                logger.debug("User agent {} mapped to {}", header, toCompare);
-                return toCompare;
-            }
-        }
-        logger.debug("Unknown user agent {}", header);
-        return "Other";
     }
 
     private boolean isTorznabCall(HttpServletRequest request) {
