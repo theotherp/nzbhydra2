@@ -103,7 +103,8 @@ public class InternalSearchResultProcessor {
         return transformedSearchResults;
     }
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
 
     private SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
@@ -117,7 +118,7 @@ public class InternalSearchResultProcessor {
         }
         builder = builder
                 .age_precise(item.isAgePrecise())
-                .date(LocalDateTime.ofInstant(date, ZoneId.of("UTC")).format(DATE_FORMATTER))
+                .date(LocalDateTime.ofInstant(date, ZoneId.of("UTC")).format(item.isAgePrecise() ? DATE_TIME_FORMATTER : DATE_FORMATTER))
                 .epoch(date.getEpochSecond());
         return builder;
     }

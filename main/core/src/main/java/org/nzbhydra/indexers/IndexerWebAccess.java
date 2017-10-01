@@ -5,6 +5,8 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,11 +18,14 @@ import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Component
 public class IndexerWebAccess {
+
+    private static final Logger logger = LoggerFactory.getLogger(IndexerWebAccess.class);
 
     @Autowired
     private RestTemplate restTemplate;
@@ -40,7 +45,13 @@ public class IndexerWebAccess {
         }
 
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-        Future<T> future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
+        Future<T> future = null;
+        try {
+            future = Executors.newSingleThreadExecutor().submit(() -> restTemplate.exchange(uri, HttpMethod.GET, requestEntity, responseType).getBody());
+        } catch (RejectedExecutionException e) {
+            logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName());
+            throw new RuntimeException("Unexpected error in hydra code. Sorry...");
+        }
         try {
             return future.get(timeout, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
