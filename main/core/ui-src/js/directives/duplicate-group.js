@@ -53,6 +53,12 @@ function duplicateGroup() {
                 }
             }
         });
+        $scope.$on("deselectAll", function () {
+            $scope.selected = [];
+        });
+        $scope.$on("selectAll", function () {
+            $scope.selected = $scope.duplicates;
+        });
 
         $scope.$on("duplicatesDisplayed", function (event, args) {
             $scope.foo.duplicatesDisplayed = args;
@@ -74,11 +80,10 @@ function duplicateGroup() {
 
                 for (var i = 0; i < $scope.duplicates.length; i++) {
                     if (isBetween(globalDuplicateGroupIndex + i, startIndex, endIndex)) {
-                        if (i == 0 || $scope.duplicatesExpanded) {
+                        if (i === 0 || $scope.duplicatesExpanded) {
                             console.log("Indirectly clicked row with global index " + (globalDuplicateGroupIndex + i) + " setting new checkbox value to " + newValue);
                             var index = _.indexOf($scope.selected, $scope.duplicates[i]);
-                            if (index == -1 && newValue) {
-
+                            if (index === -1 && newValue) {
                                 $scope.selected.push($scope.duplicates[i]);
                             } else if (index > -1 && !newValue) {
                                 $scope.selected.splice(index, 1);

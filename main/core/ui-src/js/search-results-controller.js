@@ -330,6 +330,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.$broadcast("invertSelection");
     };
 
+    $scope.deselectAll = function deselectAll() {
+        $scope.$broadcast("deselectAll");
+    };
+
+    $scope.selectAll = function selectAll() {
+        $scope.$broadcast("selectAll");
+    };
+
     $scope.toggleIndexerStatuses = function () {
         $scope.foo.indexerStatusesExpanded = !$scope.foo.indexerStatusesExpanded;
         localStorageService.set("indexerStatusesExpanded", $scope.foo.indexerStatusesExpanded);
