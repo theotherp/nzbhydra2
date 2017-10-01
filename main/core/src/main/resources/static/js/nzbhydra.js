@@ -1554,7 +1554,14 @@ function downloadNzbsButton() {
                 growl.info("You should select at least one result...");
             } else {
 
-                var values = _.map($scope.searchResults, function (value) {
+                var values = _.map(_.filter($scope.searchResults, function (value) {
+                    if (value.downloadType === "NZB") {
+                        return true;
+                    } else {
+                        console.log("Not sending result with download type " +value.downloadType + " to downloader");
+                        return false;
+                    }
+                }), function (value) {
                     return value.searchResultId;
                 });
 
