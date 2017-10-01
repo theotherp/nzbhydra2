@@ -3,6 +3,9 @@ package org.nzbhydra.mapping.newznab.mock;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Builder
 public class NewznabMockRequest {
@@ -13,6 +16,7 @@ public class NewznabMockRequest {
     private String indexer;
     private int numberOfResults;
     private boolean generateDuplicates;
+    private List<String> titleWords = new ArrayList<>();
 
 
 }

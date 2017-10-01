@@ -65,6 +65,9 @@ public class NewznabMockBuilder {
             String group = "group";
             Instant pubDate = Instant.now().minus(i, ChronoUnit.DAYS); //The higher the index the older they get
             String title = "indexer" + request.getTitleBase() + "-" + i;
+            if (!request.getTitleWords().isEmpty()) {
+                title += " " + request.getTitleWords().get(random.nextInt(request.getTitleWords().size()));
+            }
             if (request.isGenerateDuplicates()) {
                 if (random.nextBoolean()) {
                     size = "1000000";
@@ -113,12 +116,13 @@ public class NewznabMockBuilder {
     }
 
 
-    public static RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates) {
+    public static RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords) {
         return generateResponse(
                 NewznabMockRequest.builder()
                         .numberOfResults(endIndex - startIndex)
                         .titleBase(itemTitleBase)
                         .generateDuplicates(generateDuplicates)
+                        .titleWords(titleWords)
                         .build()
         );
     }

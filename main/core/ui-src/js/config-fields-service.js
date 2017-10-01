@@ -686,6 +686,15 @@ function ConfigFields($injector) {
                                         label: 'Always show duplicates',
                                         help: 'Activate to show duplicates in search results by default'
                                     }
+                                },
+                                {
+                                    key: 'showQuickFilterButtons',
+                                    type: 'horizontalSwitch',
+                                    templateOptions: {
+                                        type: 'switch',
+                                        label: 'Show quick filter',
+                                        help: 'Show quick filter buttons for movie and TV results'
+                                    }
                                 }
                             ]
                         }

@@ -21,6 +21,7 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
@@ -43,7 +44,7 @@ public class ConcurrentSearchesTest extends AbstractConfigReplacingTest {
 
 
         //String body = objectMapper.writeValueAsString(NewznabMockBuilder.generateResponse(0, 100, "test", false));
-        String body = NewznabMockBuilder.generateResponse(0, 100, "test", false).toXmlString();
+        String body = NewznabMockBuilder.generateResponse(0, 100, "test", false, Collections.emptyList()).toXmlString();
         MockResponse releaseMockResponse = new MockResponse()
                 .setResponseCode(200)
                 .setBody(body)

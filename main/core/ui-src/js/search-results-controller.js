@@ -37,6 +37,21 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     var allSearchResults = [];
     var sortModel = {};
     $scope.filterModel = {};
+
+    $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
+    $scope.isShowFilterButtonsMovie = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("movie") > -1;
+    $scope.isShowFilterButtonsTv =  $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
+    $scope.filterButtonsModel = {
+        source: {},
+        quality: {
+        }
+    };
+    $scope.filterButtonsModelMap = {
+      tv: ['hdtv'],
+      camts: ['cam', 'ts'],
+      web: ['webrip', 'web-dl', 'webdl'],
+      dvdbluray: ['dvd', 'bluray', 'blu-ray']
+    };
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
         sortModel = localStorageService.get("sorting");
@@ -90,6 +105,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         return item[0][0].searchResultId;
     }
 
+    $scope.onFilterButtonsModelChange = function() {
+        blockAndUpdate();
+    };
+
+    function blockAndUpdate() {
+        startBlocking("Sorting / filtering...").then(function () {
+            $scope.filteredResults = sortAndFilter(allSearchResults);
+            blockUI.reset();
+            localStorageService.set("sorting", sortModel);
+        });
+    }
+
     //Block the UI and return after timeout. This way we make sure that the blocking is done before angular starts updating the model/view. There's probably a better way to achieve that?
     function startBlocking(message) {
         var deferred = $q.defer();
@@ -98,15 +125,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             deferred.resolve();
         }, 10);
         return deferred.promise;
-    }
-
-
-    function blockAndUpdate() {
-        startBlocking("Sorting / filtering...").then(function () {
-            $scope.filteredResults = sortAndFilter(allSearchResults);
-            blockUI.reset();
-            localStorageService.set("sorting", sortModel);
-        });
     }
 
     $scope.$on("sort", function (event, column, sortMode, reversed) {
@@ -137,7 +155,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
         blockAndUpdate();
     });
-
 
     $scope.resort = function () {
     };
@@ -198,6 +215,34 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                     return false;
                 }
             }
+            if ($scope.filterButtonsModel.source !== null) {
+                var mustContain = [];
+                _.each($scope.filterButtonsModel.source, function(value, key) { //key is something like 'camts', value is true or false
+                   if (value) {
+                       Array.prototype.push.apply(mustContain, $scope.filterButtonsModelMap[key]);
+                   }
+                });
+                if (mustContain.length > 0) {
+                    var containsAtLeastOne = _.any(mustContain, function(word) {
+                        return item.title.toLowerCase().indexOf(word) > -1
+                    });
+                    if (!containsAtLeastOne) {
+                        return false;
+                    }
+                }
+            }
+            if ($scope.filterButtonsModel.quality !== null && !_.isEmpty($scope.filterButtonsModel.quality)) {
+                var containsAtLeastOne = false;
+                var anyRequired = false;
+                _.each($scope.filterButtonsModel.quality, function(value, key) { //key is something like 'q720p', value is true or false
+                    anyRequired = anyRequired || value;
+                    if (value && item.title.toLowerCase().indexOf(key.substring(1)) > -1) {
+                        containsAtLeastOne = true;
+                    }
+                });
+                return !anyRequired || containsAtLeastOne;
+            }
+
             return true;
         }
 
@@ -375,6 +420,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         return function (entry) {
             return entry[1] > 0;
         }
-    }
+    };
+
 }
 

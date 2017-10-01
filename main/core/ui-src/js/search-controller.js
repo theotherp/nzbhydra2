@@ -281,15 +281,21 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     }
 
 
-    $scope.toggleAllIndexers = function () {
-        _.forEach($scope.availableIndexers, function (x) {
-            var index = _.indexOf($scope.selectedIndexers, x.name);
-            if (index === -1) {
-                $scope.selectedIndexers.push(x.name);
-            } else {
-                $scope.selectedIndexers.splice(index, 1);
-            }
-        });
+    $scope.toggleAllIndexers = function (value) {
+        if (value === true) {
+            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
+        } else if (value === false) {
+            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+        } else {
+            _.forEach($scope.availableIndexers, function (x) {
+                var index = _.indexOf($scope.selectedIndexers, x.name);
+                if (index === -1) {
+                    $scope.selectedIndexers.push(x.name);
+                } else {
+                    $scope.selectedIndexers.splice(index, 1);
+                }
+            });
+        }
     };
 
     $scope.formatRequest = function (request) {

@@ -15,6 +15,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
             });
 
         },
+        // templateUrl: 'static/html/directives/search-result-non-title-columns.html',
         controller: controller
     };
 

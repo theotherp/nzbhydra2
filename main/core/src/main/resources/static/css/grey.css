@@ -7706,6 +7706,15 @@ input:focus + .input-group-addon {
 .btn-default:active {
   background-color: #3a3f44;
 }
+.filter-button.btn-default:focus {
+  background-color: #3a3f44 !important;
+  border-color: #3a3f44 !important;
+  color: #ffffff !important;
+}
+.filter-button.btn-default:focus.active {
+  background-color: #232628 !important;
+  color: #ffffff !important;
+}
 .indexer-input:focus {
   outline: 0;
   -webkit-box-shadow: none;

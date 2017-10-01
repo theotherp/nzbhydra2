@@ -107,7 +107,18 @@
 
                     <div class="col-md-10">
                         <div class="input-group" style="padding-top: 10px;">
-                            <button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>
+                             <div class="btn-group">
+                                <button class="btn btn-default" ng-click="toggleAllIndexers('invert')">Invert selection</button>
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="caret"></span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#" ng-click="toggleAllIndexers(true)">Select all</a></li>
+                                    <li><a href="#" ng-click="toggleAllIndexers(false)">Deselect all</a></li>
+                                </ul>
+                            </div>
+                            <!--<button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>-->
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
                                 <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name"> {{ indexer.name }}

@@ -38,6 +38,7 @@ public class SearchingConfig extends ValidatingConfig {
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
+    private boolean showQuickFilterButtons = true;
     private Integer timeout = 30;
     private String userAgent = "NZBHydra2";
     private boolean useOriginalCategories = false;
