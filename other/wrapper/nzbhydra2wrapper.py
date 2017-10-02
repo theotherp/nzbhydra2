@@ -257,9 +257,14 @@ def startup():
         if args.baseurl and "--baseurl" not in arguments:
             arguments.append("--baseurl")
             arguments.append(args.baseurl)
-    with open(os.path.join(args.datafolder, "nzbhydra.yml"), "r") as f:
-        y = yaml.load(f)
-        xmx = y["main"]["xmx"]
+    yamlPath = os.path.join(args.datafolder, "nzbhydra.yml")
+    if os.path.exists(yamlPath):
+        with open(yamlPath, "r") as f:
+            y = yaml.load(f)
+            xmx = y["main"]["xmx"]
+    else:
+        logger.info("No file nzbhydra.yml found. Using 128M XMX")
+        xmx = 128
     if args.xmx:
         xmx = args.xmx
     java_arguments = ["-Xmx" + str(xmx) + "M", "-Xss256k", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
