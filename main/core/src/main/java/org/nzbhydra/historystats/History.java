@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -97,12 +96,11 @@ public class History {
     }
 
     public List<SearchEntity> getHistoryForSearching(String currentUserName) {
-
         Page<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(new PageRequest(0, 100)) : searchRepository.findForUserSearchHistory(currentUserName, new PageRequest(0, 100));
         List<SearchEntity> entities = new ArrayList<>();
         Set<Integer> contained = new HashSet<>();
         for (SearchEntity searchEntity : history.getContent()) {
-            int hash = Objects.hash(searchEntity.getIdentifiers(), searchEntity.getQuery(), searchEntity.getCategoryName(), searchEntity.getSeason(), searchEntity.getEpisode(), searchEntity.getTitle());
+            int hash = searchEntity.getComparingHash();
             if (contained.contains(hash)) {
                 continue;
             }

@@ -62,34 +62,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     });
 
 
-    var keysToParams = {
-        "IMDB": "imdbid",
-        "TMDB": "tmdbid",
-        "TVRAGE": "tvrageid",
-        "TVDB": "tvdbid",
-        "TVMAZE": "tvmazeid"
-    };
-
     $scope.openSearch = function (request) {
-        var stateParams = {};
-        for (var i = 0; i < request.identifiers.length; i++) {
-            if (request.identifiers[i].identifierKey in keysToParams) {
-                var key = keysToParams[request.identifiers[i].identifierKey];
-                stateParams[key] = request.identifiers[i].identifierValue;
-            }
-        }
-        if (request.query) {
-            stateParams.query = request.query;
-        }
-        stateParams.mode = request.searchType.toLowerCase();
-
-        if (request.title) {
-            stateParams.title = request.title;
-        }
-
-        stateParams.category = request.category;
-
-        $state.go("root.search", stateParams, {inherit: false});
+        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
     };
 
     $scope.formatQuery = function (request) {
@@ -158,9 +132,6 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         }
         if (request.author) {
             result.push("Author: " + request.author);
-        }
-        if (request.title) {
-            result.push("Title: " + request.title);
         }
         return $sce.trustAsHtml(result.join(", "));
     };

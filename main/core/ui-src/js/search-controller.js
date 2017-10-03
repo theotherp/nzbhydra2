@@ -203,12 +203,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //State params (query parameters) should all be lowercase
         var stateParams = {};
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbid = $scope.selectedItem.imdbId;
-        stateParams.tmdbid = $scope.selectedItem.tmdbId;
-        stateParams.tvdbid = $scope.selectedItem.tvdbId;
-        stateParams.tvrageid = $scope.selectedItem.tvrageId;
-        stateParams.tvmazeid = $scope.selectedItem.tvmazeId;
-        stateParams.title = $scope.selectedItem.title;
+        stateParams.imdbid = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
+        stateParams.tmdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
+        stateParams.tvdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
+        stateParams.tvrageid = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
+        stateParams.tvmazeid = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
+        stateParams.title = $scope.selectedItem === null ? null : $scope.selectedItem.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;
         stateParams.query = $scope.query;

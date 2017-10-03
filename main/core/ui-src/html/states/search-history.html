@@ -54,10 +54,9 @@
                 <a href="" ng-click="openSearch(request)"
                    uib-tooltip="Repeat this search with all currently enabled indexers." tooltip-placement="top" tooltip-trigger="mouseenter"
                 ><span class="glyphicon glyphicon-search"></span></a>
-                <span ng-class="{'history-title': request.movietitle != null || request.tvtitle != null || (request.query == null && request.identifier_key == null && request.season ==null && request.episode ==null)}">
-                {{ formatQuery(request) }}
-
-            </span>
+                <span ng-class="{'history-title': request.title != null || (request.query == null && request.identifiers.length === 0 && request.season ==null && request.episode ==null)}">
+                    {{ formatQuery(request) }}
+                </span>
             </td>
             <td class="narrow-row">{{ request.categoryName }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>

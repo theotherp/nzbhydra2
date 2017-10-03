@@ -45,6 +45,6 @@ public class IdentifierKeyValuePair {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), identifierKey, identifierValue);
+        return Objects.hash(identifierKey, identifierValue);
     }
 }

@@ -54,13 +54,9 @@ function SearchHistoryService($filter, $http) {
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
         var result = [];
-        //ID key: ID value
-        //season
-        //episode
-        //author
-        //title
+        result.push('<span class="history-title">Category: </span>' + request.categoryName);
         if (includequery && request.query) {
-            result.push("Query: " + request.query);
+            result.push('<span class="history-title">Query: </span>' + request.query);
         }
         if (request.title && includeTitle) {
             result.push('<span class="history-title">Title: </span>' + request.title);
@@ -113,7 +109,7 @@ function SearchHistoryService($filter, $http) {
 
     function getStateParamsForRepeatedSearch(request) {
         var stateParams = {};
-        stateParams.mode = "search"
+        stateParams.mode = "search";
         var availableIdentifiers = _.pluck(request.identifiers, "identifierKey");
         if (availableIdentifiers.indexOf("TMDB") > -1 || availableIdentifiers.indexOf("IMDB") > -1) {
             stateParams.mode = "movie";

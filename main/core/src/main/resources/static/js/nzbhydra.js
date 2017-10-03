@@ -3517,13 +3517,9 @@ function SearchHistoryService($filter, $http) {
 
     function formatRequest(request, includeIdLink, includequery, describeEmptySearch, includeTitle) {
         var result = [];
-        //ID key: ID value
-        //season
-        //episode
-        //author
-        //title
+        result.push('<span class="history-title">Category: </span>' + request.categoryName);
         if (includequery && request.query) {
-            result.push("Query: " + request.query);
+            result.push('<span class="history-title">Query: </span>' + request.query);
         }
         if (request.title && includeTitle) {
             result.push('<span class="history-title">Title: </span>' + request.title);
@@ -3576,7 +3572,7 @@ function SearchHistoryService($filter, $http) {
 
     function getStateParamsForRepeatedSearch(request) {
         var stateParams = {};
-        stateParams.mode = "search"
+        stateParams.mode = "search";
         var availableIdentifiers = _.pluck(request.identifiers, "identifierKey");
         if (availableIdentifiers.indexOf("TMDB") > -1 || availableIdentifiers.indexOf("IMDB") > -1) {
             stateParams.mode = "movie";
@@ -3693,34 +3689,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     });
 
 
-    var keysToParams = {
-        "IMDB": "imdbid",
-        "TMDB": "tmdbid",
-        "TVRAGE": "tvrageid",
-        "TVDB": "tvdbid",
-        "TVMAZE": "tvmazeid"
-    };
-
     $scope.openSearch = function (request) {
-        var stateParams = {};
-        for (var i = 0; i < request.identifiers.length; i++) {
-            if (request.identifiers[i].identifierKey in keysToParams) {
-                var key = keysToParams[request.identifiers[i].identifierKey];
-                stateParams[key] = request.identifiers[i].identifierValue;
-            }
-        }
-        if (request.query) {
-            stateParams.query = request.query;
-        }
-        stateParams.mode = request.searchType.toLowerCase();
-
-        if (request.title) {
-            stateParams.title = request.title;
-        }
-
-        stateParams.category = request.category;
-
-        $state.go("root.search", stateParams, {inherit: false});
+        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
     };
 
     $scope.formatQuery = function (request) {
@@ -3789,9 +3759,6 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         }
         if (request.author) {
             result.push("Author: " + request.author);
-        }
-        if (request.title) {
-            result.push("Title: " + request.title);
         }
         return $sce.trustAsHtml(result.join(", "));
     };
@@ -4005,12 +3972,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //State params (query parameters) should all be lowercase
         var stateParams = {};
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbid = $scope.selectedItem.imdbId;
-        stateParams.tmdbid = $scope.selectedItem.tmdbId;
-        stateParams.tvdbid = $scope.selectedItem.tvdbId;
-        stateParams.tvrageid = $scope.selectedItem.tvrageId;
-        stateParams.tvmazeid = $scope.selectedItem.tvmazeId;
-        stateParams.title = $scope.selectedItem.title;
+        stateParams.imdbid = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
+        stateParams.tmdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
+        stateParams.tvdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
+        stateParams.tvrageid = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
+        stateParams.tvmazeid = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
+        stateParams.title = $scope.selectedItem === null ? null : $scope.selectedItem.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;
         stateParams.query = $scope.query;

@@ -56,7 +56,6 @@ public class SearchEntity {
 
 
     public boolean equalsSearchEntity(SearchEntity that) {
-
         return Objects.equals(categoryName, that.categoryName) &&
                 Objects.equals(query, that.query) &&
                 Objects.equals(identifiers, that.identifiers) &&
@@ -64,6 +63,10 @@ public class SearchEntity {
                 Objects.equals(episode, that.episode) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(author, that.author);
+    }
+    
+    public int getComparingHash() {
+        return Objects.hash(getQuery(), getCategoryName(), getSeason(), getEpisode(), getTitle(), identifiers);
     }
 
 
