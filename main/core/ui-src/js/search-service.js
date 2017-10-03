@@ -18,12 +18,11 @@ function SearchService($http) {
     };
 
 
-    function search(searchRequestId, category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.searchRequestId = searchRequestId;
         searchRequestParameters.query = query;
-        searchRequestParameters.title = title;
         searchRequestParameters.minsize = minsize;
         searchRequestParameters.maxsize = maxsize;
         searchRequestParameters.minage = minage;
@@ -33,14 +32,17 @@ function SearchService($http) {
             searchRequestParameters.indexers = indexers.split("|");
         }
 
-        if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
-            searchRequestParameters.tmdbId = tmdbid;
-            searchRequestParameters.imdbId = imdbId;
-        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
-            searchRequestParameters.tvdbId = tvdbId;
-            searchRequestParameters.tvrageId = rid;
-            searchRequestParameters.season = season;
-            searchRequestParameters.episode = episode;
+        if (metaData) {
+            searchRequestParameters.title = metaData.title;
+            if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
+                searchRequestParameters.tmdbId = metaData.tmdbid;
+                searchRequestParameters.imdbId = metaData.imdbId;
+            } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
+                searchRequestParameters.tvdbId = metaData.tvdbId;
+                searchRequestParameters.tvrageId = metaData.rid;
+                searchRequestParameters.season = season;
+                searchRequestParameters.episode = episode;
+            }
         }
 
         lastExecutedQuery = uri;

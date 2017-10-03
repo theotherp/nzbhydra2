@@ -2961,12 +2961,11 @@ function SearchService($http) {
     };
 
 
-    function search(searchRequestId, category, query, tmdbid, imdbId, title, tvdbId, rid, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+    function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.searchRequestId = searchRequestId;
         searchRequestParameters.query = query;
-        searchRequestParameters.title = title;
         searchRequestParameters.minsize = minsize;
         searchRequestParameters.maxsize = maxsize;
         searchRequestParameters.minage = minage;
@@ -2976,14 +2975,17 @@ function SearchService($http) {
             searchRequestParameters.indexers = indexers.split("|");
         }
 
-        if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
-            searchRequestParameters.tmdbId = tmdbid;
-            searchRequestParameters.imdbId = imdbId;
-        } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
-            searchRequestParameters.tvdbId = tvdbId;
-            searchRequestParameters.tvrageId = rid;
-            searchRequestParameters.season = season;
-            searchRequestParameters.episode = episode;
+        if (metaData) {
+            searchRequestParameters.title = metaData.title;
+            if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
+                searchRequestParameters.tmdbId = metaData.tmdbid;
+                searchRequestParameters.imdbId = metaData.imdbId;
+            } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
+                searchRequestParameters.tvdbId = metaData.tvdbId;
+                searchRequestParameters.tvrageId = metaData.rid;
+                searchRequestParameters.season = season;
+                searchRequestParameters.episode = episode;
+            }
         }
 
         lastExecutedQuery = uri;
@@ -3805,6 +3807,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     var searchRequestId = 0;
     var isSearchCancelled = false;
+    var epochEnter;
 
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
@@ -3858,10 +3861,15 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.autocompleteClass = "autocompletePosterMovies";
 
     $scope.toggleCategory = function (searchCategory) {
+        var oldCategory = $scope.category;
         $scope.category = searchCategory;
 
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
         $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
+
+        if (oldCategory.searchType !== searchCategory.searchType) {
+            $scope.selectedItem = null;
+        }
 
         focus('searchfield');
 
@@ -3919,6 +3927,20 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
+    $scope.onTypeAheadEnter = function () {
+        if (angular.isDefined(epochEnter)) {
+            //Very hacky way of preventing a press of "enter" to select an autocomplete item from triggering a search
+            //This is called *after* selectAutoComplete() is called
+            var epochEnterNow = (new Date).getTime();
+            var diff = epochEnterNow-epochEnter;
+            if (diff > 50) {
+                $scope.initiateSearch();
+            }
+        } else {
+            $scope.initiateSearch();
+        }
+    };
+
     //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
         isSearchCancelled = false;
@@ -3926,7 +3948,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var modalInstance = $scope.openModal(searchRequestId);
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
-        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem.tmdbId, $scope.selectedItem.imdbId, $scope.selectedItem.title, $scope.selectedItem.tvdbId, $scope.selectedItem.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 modalInstance.close();
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
@@ -4012,6 +4034,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
         $scope.query = "";
+        epochEnter = (new Date).getTime();
     };
 
     $scope.initiateSearch = function () {
