@@ -122,8 +122,7 @@ gulp.task('add', function () {
 
 
 gulp.task('reload', function () {
-    return gulp.src('src/main/resources/static/index.html')
-        .pipe(livereload());
+    livereload();
 });
 
 gulp.task('delMainLessCache', function () {
@@ -139,9 +138,10 @@ gulp.task('copyStaticToClasses', function () {
 });
 
 gulp.task('index', function () {
-    runSequence(['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets'], [
-        'copyStaticToClasses',
-        'add']);
+    runSequence(
+        ['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets'],
+        ['copyStaticToClasses', 'add']
+    );
 });
 
 function swallowError(error) {

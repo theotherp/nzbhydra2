@@ -665,6 +665,10 @@ input:focus + .input-group-addon {
   .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}");
 }
 
+.input-group-addon {
+  cursor: default;
+}
+
 #banner {
   background-image: @banner-url;
   background-repeat: no-repeat;
@@ -782,7 +786,7 @@ input:focus + .input-group-addon {
 }
 
 .filter-button.btn-default:focus
-//.filter-button.active
+  //.filter-button.active
 {
   background-color: @btn-default-bg !important;
   border-color: @btn-default-bg !important;

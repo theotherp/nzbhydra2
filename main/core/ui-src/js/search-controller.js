@@ -22,6 +22,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     //Fill the form with the search values we got from the state params (so that their values are the same as in the current url)
     $scope.mode = $stateParams.mode;
     $scope.query = "";
+    $scope.selectedItem = null;
     $scope.categories = _.filter(CategoriesService.getAllCategories(), function (c) {
         return c.mayBeSelected && !(c.ignoreResultsFrom === "INTERNAL" || c.ignoreResultsFrom === "BOTH");
     });
@@ -31,12 +32,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.category = CategoriesService.getDefault();
     }
     $scope.category = (_.isUndefined($stateParams.category) || $stateParams.category === "") ? CategoriesService.getDefault() : CategoriesService.getByName($stateParams.category);
-    $scope.tmdbId = $stateParams.tmdbid;
-    $scope.tvdbId = $stateParams.tvdbid;
-    $scope.imdbId = $stateParams.imdbid;
-    $scope.tvmazeId = $stateParams.tvmazeid;
-    $scope.rid = $stateParams.rid;
-    $scope.title = $stateParams.title;
     $scope.season = $stateParams.season;
     $scope.episode = $stateParams.episode;
     $scope.query = $stateParams.query;
@@ -44,11 +39,18 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.maxsize = getNumberOrUndefined($stateParams.maxsize);
     $scope.minage = getNumberOrUndefined($stateParams.minage);
     $scope.maxage = getNumberOrUndefined($stateParams.maxage);
-    if (!_.isUndefined($scope.title) && _.isUndefined($scope.query)) {
-        //$scope.query = $scope.title;
-    }
-    if (!angular.isUndefined($stateParams.indexers)) {
+    if (angular.isDefined($stateParams.indexers)) {
         $scope.indexers = decodeURIComponent($stateParams.indexers).split("|");
+    }
+    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbid) || angular.isDefined($stateParams.imdbid) || angular.isDefined($stateParams.tvmazeid) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbid))) {
+        $scope.selectedItem = {
+            tmdbId: $stateParams.tmdbid,
+            imdbId: $stateParams.imdbid,
+            tvmazeId: $stateParams.tvmazeid,
+            rid: $stateParams.rid,
+            tvdbId: $stateParams.tvdbid,
+            title: $stateParams.title
+        }
     }
 
     $scope.showIndexers = {};
@@ -60,7 +62,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
 
     $scope.typeAheadWait = 300;
-    $scope.selectedItem = "";
+
     $scope.autocompleteLoading = false;
     $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
     $scope.isById = {value: true}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean
@@ -111,7 +113,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //poster: url of poster to show
 
         //Don't use autocomplete if checkbox is disabled
-        if (!$scope.isById.value) {
+        if (!$scope.isById.value || $scope.selectedItem) {
             return {};
         }
 
@@ -130,13 +132,14 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
+    //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
         isSearchCancelled = false;
         searchRequestId = Math.round(Math.random() * 999999);
         var modalInstance = $scope.openModal(searchRequestId);
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
-        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.tmdbId, $scope.imdbId, $scope.title, $scope.tvdbId, $scope.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
+        SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem.tmdbId, $scope.selectedItem.imdbId, $scope.selectedItem.title, $scope.selectedItem.tvdbId, $scope.selectedItem.rid, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 modalInstance.close();
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
@@ -147,9 +150,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
                     }, {
                         inherit: true
                     });
-                    $scope.tmdbId = undefined;
-                    $scope.imdbId = undefined;
-                    $scope.tvdbId = undefined;
                 }
             },
             function () {
@@ -179,17 +179,16 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         });
     };
 
-
     $scope.goToSearchUrl = function () {
         //State params (query parameters) should all be lowercase
         var stateParams = {};
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbid = $scope.imdbId;
-        stateParams.tmdbid = $scope.tmdbId;
-        stateParams.tvdbid = $scope.tvdbId;
-        stateParams.tvrageid = $scope.tvrageId;
-        stateParams.tvmazeid = $scope.tvmazeId;
-        stateParams.title = $scope.title;
+        stateParams.imdbid = $scope.selectedItem.imdbId;
+        stateParams.tmdbid = $scope.selectedItem.tmdbId;
+        stateParams.tvdbid = $scope.selectedItem.tvdbId;
+        stateParams.tvrageid = $scope.selectedItem.tvrageId;
+        stateParams.tvmazeid = $scope.selectedItem.tvmazeId;
+        stateParams.title = $scope.selectedItem.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;
         stateParams.query = $scope.query;
@@ -206,34 +205,42 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
     };
 
+    $scope.searchBoxTooltip = "Prefix terms with -- to exclude'";
+    $scope.$watchGroup(['isAskById', 'selectedItem'], function () {
+        if (!$scope.isAskById) {
+            $scope.searchBoxTooltip = "Prefix terms with -- to exclude";
+        } else if ($scope.selectedItem === null) {
+            $scope.searchBoxTooltip = "Enter search terms for autocomplete";
+        } else {
+            $scope.searchBoxTooltip = "Enter additional search terms to limit the query";
+        }
+    });
+
+    $scope.clearAutocomplete = function () {
+        $scope.selectedItem = null;
+        $scope.query = ""; //Input is now for autocomplete and not for limiting the results
+        focus('searchfield');
+    };
 
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
-        $scope.title = $item.title;
-        if ($item.tmdbId) {
-            $scope.tmdbId = $item.tmdbId;
-        }
-        if ($item.tvdbId) {
-            $scope.tvdbId = $item.tvdbId;
-        }
-        $scope.query = undefined;
-        $scope.goToSearchUrl();
+        $scope.query = "";
     };
 
-    $scope.startQuerySearch = function () {
-        if (!$scope.query) {
-            growl.error("You didn't enter a query...");
-        } else {
-            //Reset values because they might've been set from the last search
-            $scope.title = undefined;
-            $scope.tmdbId = undefined;
-            $scope.tvdbId = undefined;
-            $scope.season = undefined;
-            $scope.episode = undefined;
+    $scope.initiateSearch = function () {
+        if ($scope.selectedItem) {
+            //Movie or tv show was selected
             $scope.goToSearchUrl();
+        } else {
+            //Simple query search
+            if (!$scope.query) {
+                growl.error("You didn't enter a query...");
+            } else {
+                //Reset values because they might've been set from the last search
+                $scope.goToSearchUrl();
+            }
         }
     };
-
 
     $scope.autocompleteActive = function () {
         return $scope.isAskById;
@@ -247,16 +254,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.availableIndexers[indexer.name].activated = !$scope.availableIndexers[indexer.name].activated;
     };
 
-
     function isIndexerPreselected(indexer) {
         if (angular.isUndefined($scope.indexers)) {
             return indexer.preselect;
         } else {
             return _.contains($scope.indexers, indexer.name);
         }
-
     }
-
 
     function getAvailableIndexers() {
         var alreadySelected = $scope.selectedIndexers;
@@ -279,7 +283,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         });
         return availableIndexersList;
     }
-
 
     $scope.toggleAllIndexers = function (value) {
         if (value === true) {

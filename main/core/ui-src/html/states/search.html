@@ -39,40 +39,42 @@
                               
                             </span>
 
+                            <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
+                                  uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top"
+                                  tooltip-trigger="mouseenter"
+                                  style="border-right-width: 0; width: 40px">
+                                <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
+                            </span>
+
+                            <div class="input-group-addon" style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis" ng-show="selectedItem">
+                                <button style="position: relative; top: -11px; right:-12px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset" ng-click="clearAutocomplete()">
+                                    <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
+                                </button>
+                              {{selectedItem.title}}
+                            </div>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control season-input" placeholder="S" name="season" id="seriesSearchS" style="width:40px; " ng-model="season"
                                      ng-enter="submitSearch(selectedItem)"
                                      uib-tooltip="Enter a season to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
-                          </span>
-
+                            </span>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control episode-input" placeholder="E" name="episode" id="seriesSearchE" style="width:40px;" ng-model="episode"
                                      ng-enter="submitSearch(selectedItem)"
                                      uib-tooltip="Enter an episode to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
-                          </span>
-
-
-                            <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
-                                  uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top"
-                                  tooltip-trigger="mouseenter"
-                                  style="border-right-width: 0; width: 40px">
-                            <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
-                    </span>
-
-
+                            </span>
                             <script type="text/ng-template" id="movieAutocompleteEntry">
                                 <a>{{ match.label }}</a>
                             </script>
                             <input id="searchfield" type="search" ngtype="search" ng-model="query" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait"
                                    uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
                                    ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems"
-                                   typeahead-on-select="selectAutocompleteItem($item)" ng-enter="startQuerySearch()" class="form-control"
+                                   typeahead-on-select="selectAutocompleteItem($item)" ng-enter="initiateSearch()" class="form-control"
                                    focus-on="focus-query-box"
-                                   uib-tooltip="Prefix terms with -- to exclude"
+                                   uib-tooltip="{{searchBoxTooltip}}"
                                    tooltip-placement="top"
                                    tooltip-trigger="mouseenter"
                             >
@@ -84,18 +86,17 @@
                                       tooltip-trigger="mouseenter"
                               >
                                 <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span class="caret"></span>
-                              </button>
-                                <ul class="dropdown-menu" uib-dropdown-menu template-url="static/html/search-searchhistory-dropdown.html" aria-labelledby="button-template-url">
-                                </ul>
-                            </div>
-                        </span>
+                                </button>
+                                    <ul class="dropdown-menu" uib-dropdown-menu template-url="static/html/search-searchhistory-dropdown.html" aria-labelledby="button-template-url">
+                                    </ul>
+                                </div>
+                            </span>
 
                             <span class="input-group-btn input-group-btn2" style="width:51px;">
-                            <button class="btn btn-default" type="button" ng-click="goToSearchUrl()">Go!</button>
-                        </span>
+                                <button class="btn btn-default" type="button" ng-click="initiateSearch()">Go!</button>
+                            </span>
                         </div>
                     </div>
-
                 </div>
             </form>
 
