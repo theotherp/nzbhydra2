@@ -26,7 +26,6 @@ import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVTITLE;
 @Component
 public class InfoProvider {
 
-
     public enum IdType {
         TVDB,
         TVRAGE,
@@ -37,6 +36,9 @@ public class InfoProvider {
         TVTITLE,
         MOVIETITLE
     }
+
+    public static Set<IdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE);
+    public static Set<IdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
 
     private static Map<IdType, Set<IdType>> canConvertMap = new HashMap<>();
 
@@ -150,6 +152,14 @@ public class InfoProvider {
         }
     }
 
+    public TvInfo findTvInfoInDatabase(Map<IdType, String> ids) {
+        return tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"));
+    }
+
+    public MovieInfo findMovieInfoInDatabase(Map<IdType, String> ids) {
+        return movieInfoRepository.findByImdbIdOrTmdbId(ids.getOrDefault(IMDB, "-1"), ids.getOrDefault(TMDB, "-1"));
+    }
+
     @Cacheable(cacheNames = "titles", sync = true)
     public List<MediaInfo> search(String title, IdType titleType) throws InfoProviderException {
         try {
@@ -160,7 +170,7 @@ public class InfoProvider {
                 infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                 for (MediaInfo mediaInfo : infos) {
                     TvInfo tvInfo = new TvInfo(mediaInfo);
-                    if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(tvInfo.getTvrageId(), tvInfo.getTvmazeId(), tvInfo.getTvdbId()) == null) {
+                    if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(nullableId(tvInfo.getTvrageId()), nullableId(tvInfo.getTvmazeId()), nullableId(tvInfo.getTvdbId())) == null) {
                         tvInfoRepository.save(tvInfo);
                     }
                 }
@@ -179,6 +189,10 @@ public class InfoProvider {
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }
+    }
+
+    private String nullableId(String id) {
+        return id == null ? "-1" : id;
     }
 
 

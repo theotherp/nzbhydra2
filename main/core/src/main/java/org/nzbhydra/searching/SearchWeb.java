@@ -115,6 +115,8 @@ public class SearchWeb {
             searchRequest.getIdentifiers().put(IdType.TVMAZE, parameters.getTvmazeId());
         }
 
+        searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
+
         //Initialize messages for this search request
         searchStates.put(searchRequest.getSearchRequestId(), new SearchState());
 
