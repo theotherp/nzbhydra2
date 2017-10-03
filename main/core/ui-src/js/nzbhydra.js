@@ -30,9 +30,6 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                 'header': {
                     templateUrl: 'static/html/states/header.html',
                     controller: 'HeaderController'
-                },
-                'footer': {
-                    templateUrl: 'static/html/states/footer.html'
                 }
             }
         })

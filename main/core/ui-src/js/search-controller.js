@@ -304,7 +304,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.availableIndexers = getAvailableIndexers();
 
-
     function getAndSetSearchRequests() {
         SearchHistoryService.getSearchHistoryForSearching().success(function (data) {
             $scope.searchHistory = data;

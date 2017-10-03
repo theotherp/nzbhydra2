@@ -22,7 +22,7 @@ function duplicateGroup() {
         $scope.titlesExpanded = false;
         $scope.duplicatesExpanded = false;
         $scope.foo = {
-            duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") != null ? localStorageService.get("duplicatesDisplayed") : false
+            duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
         };
         $scope.duplicatesToShow = duplicatesToShow;
 
@@ -54,10 +54,11 @@ function duplicateGroup() {
             }
         });
         $scope.$on("deselectAll", function () {
-            $scope.selected = [];
+            $scope.selected.splice(0, $scope.selected.length);
+
         });
         $scope.$on("selectAll", function () {
-            $scope.selected = $scope.duplicates;
+            $scope.selected.push.apply($scope.selected, $scope.duplicates);
         });
 
         $scope.$on("duplicatesDisplayed", function (event, args) {

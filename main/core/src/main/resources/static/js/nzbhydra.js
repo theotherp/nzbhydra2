@@ -30,9 +30,6 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                 'header': {
                     templateUrl: 'static/html/states/header.html',
                     controller: 'HeaderController'
-                },
-                'footer': {
-                    templateUrl: 'static/html/states/footer.html'
                 }
             }
         })
@@ -1407,7 +1404,7 @@ function duplicateGroup() {
         $scope.titlesExpanded = false;
         $scope.duplicatesExpanded = false;
         $scope.foo = {
-            duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") != null ? localStorageService.get("duplicatesDisplayed") : false
+            duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
         };
         $scope.duplicatesToShow = duplicatesToShow;
 
@@ -1439,10 +1436,11 @@ function duplicateGroup() {
             }
         });
         $scope.$on("deselectAll", function () {
-            $scope.selected = [];
+            $scope.selected.splice(0, $scope.selected.length);
+
         });
         $scope.$on("selectAll", function () {
-            $scope.selected = $scope.duplicates;
+            $scope.selected.push.apply($scope.selected, $scope.duplicates);
         });
 
         $scope.$on("duplicatesDisplayed", function (event, args) {
@@ -3108,7 +3106,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
 
-
     $scope.indexersForFiltering = [];
     _.forEach($scope.indexersearches, function (indexer) {
         $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})
@@ -4093,8 +4090,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     };
 
     $scope.availableIndexers = getAvailableIndexers();
-
-
+    
     function getAndSetSearchRequests() {
         SearchHistoryService.getSearchHistoryForSearching().success(function (data) {
             $scope.searchHistory = data;

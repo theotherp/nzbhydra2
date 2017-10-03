@@ -76,8 +76,13 @@ public class MockNewznab {
             return ResponseEntity.ok(rssRoot);
         }
 
+        String itemTitleBase = params.getApikey();
+        if (params.getQ() != null && params.getQ().contains("groups")) {
+            itemTitleBase = "";
+        }
+
         if (params.getRid() != null && params.getQ() == null) {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, params.getApikey(), false, Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
             logger.info("Returning no results for rid based search without query");
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -97,7 +102,7 @@ public class MockNewznab {
         }
 
         if ((params.getQ() != null && params.getQ().equals("noresults")) || (params.getTvdbid() != null && params.getTvdbid().equals("329089"))) {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, params.getApikey(), false, Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
@@ -105,14 +110,14 @@ public class MockNewznab {
             Thread.sleep(new Random().nextInt(5000));
         }
 
-        if (params.getQ() != null && params.getQ().equals("movies")) {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, params.getApikey(), false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));
+        if (params.getQ() != null && params.getQ().contains("movies")) {
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
         if (params.getTmdbid() != null) {
-            if (params.getApikey().equals("tmdberror")) {
+            if (itemTitleBase.equals("tmdberror")) {
                 RssError rssError = new RssError("123", "description");
                 return new ResponseEntity<Object>(rssError, HttpStatus.OK);
             }
@@ -129,7 +134,7 @@ public class MockNewznab {
         int endIndex;
         int key = 0;
         try {
-            key = Integer.valueOf(params.getApikey());
+            key = Integer.valueOf(itemTitleBase);
         } catch (NumberFormatException e) {
             endIndex = 0;
         }
@@ -143,7 +148,7 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), params.getApikey(), "duplicates".equals(params.getQ()), Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), itemTitleBase, "duplicates".equals(params.getQ()), Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

@@ -73,7 +73,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
 
-
     $scope.indexersForFiltering = [];
     _.forEach($scope.indexersearches, function (indexer) {
         $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})

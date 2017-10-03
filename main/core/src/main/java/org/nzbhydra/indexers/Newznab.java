@@ -157,18 +157,12 @@ public class Newznab extends Indexer<Xml> {
             }
         }
 
-        if (searchRequest.getMinage().isPresent()) {
-            componentsBuilder.queryParam("minage", searchRequest.getMinage().get());
-        }
         if (searchRequest.getMaxage().isPresent()) {
             componentsBuilder.queryParam("maxage", searchRequest.getMaxage().get());
         }
 
         if (searchRequest.getMinsize().isPresent()) {
             componentsBuilder.queryParam("minsize", searchRequest.getMinsize().get());
-        }
-        if (searchRequest.getMaxsize().isPresent()) {
-            componentsBuilder.queryParam("maxsize", searchRequest.getMaxsize().get());
         }
 
         if (configProvider.getBaseConfig().getSearching().isIgnorePassworded()) {
