@@ -2978,11 +2978,12 @@ function SearchService($http) {
         if (metaData) {
             searchRequestParameters.title = metaData.title;
             if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
-                searchRequestParameters.tmdbId = metaData.tmdbid;
+                searchRequestParameters.tmdbId = metaData.tmdbId;
                 searchRequestParameters.imdbId = metaData.imdbId;
             } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
                 searchRequestParameters.tvdbId = metaData.tvdbId;
-                searchRequestParameters.tvrageId = metaData.rid;
+                searchRequestParameters.tvrageid = metaData.rid;
+                searchRequestParameters.tvmazeid = metaData.rid;
                 searchRequestParameters.season = season;
                 searchRequestParameters.episode = episode;
             }
@@ -3526,32 +3527,34 @@ function SearchHistoryService($filter, $http) {
         }
         if (request.title && includeTitle) {
             result.push('<span class="history-title">Title: </span>' + request.title);
-        } else if (request.movietitle && includeTitle) {
-            result.push('<span class="history-title">Title: </span>' + request.movietitle);
-        } else if (request.tvtitle && includeTitle) {
-            result.push('<span class="history-title">Title: </span>' + request.tvtitle);
-        } else if (request.identifier_key) {
+        } //Only include identifiers if title is unknown
+        else if (request.identifiers.length > 0) {
             var href;
             var key;
-            if (request.identifier_key == "imdbId") {
+            var value;
+            var identifiers = _.indexBy(request.identifiers, 'identifierKey');
+            if ("IMDB" in identifiers) {
                 key = "IMDB ID";
-                href = "https://www.imdb.com/title/tt"
-            } else if (request.identifier_key == "tvdbId") {
+                value = identifiers.IMDB.identifierValue;
+                href = "https://www.imdb.com/title/tt" + value;
+            } else if ("TVDB" in identifiers) {
                 key = "TVDB ID";
-                href = "https://thetvdb.com/?tab=series&id="
-            } else if (request.identifier_key == "rid") {
+                value = identifiers.TVDB.identifierValue;
+                href = "https://thetvdb.com/?tab=series&id=" + value;
+            } else if ("TVRAGE" in identifiers) {
                 key = "TVRage ID";
-                href = "internalapi/redirect_rid?rid="
-            } else if (request.identifier_key == "tmdb") {
-                key = "TMDV ID";
-                href = "https://www.themoviedb.org/movie/"
+                value = identifiers.TVRAGE.identifierValue;
+                href = "internalapi/redirect_rid?rid=" + value;
+            } else if ("TMDB" in identifiers) {
+                key = "TMDB ID";
+                value = identifiers.TMDB.identifierValue;
+                href = "https://www.themoviedb.org/movie/" + value;
             }
-            href = href + request.identifier_value;
             href = $filter("dereferer")(href);
             if (includeIdLink) {
-                result.push('<span class="history-title">' + key + ': </span><a target="_blank" href="' + href + '">' + request.identifier_value + "</a>");
+                result.push('<span class="history-title">' + key + ': </span><a target="_blank" href="' + href + '">' + value + "</a>");
             } else {
-                result.push('<span class="history-title">' + key + ": </span>" + request.identifier_value);
+                result.push('<span class="history-title">' + key + ": </span>" + value);
             }
         }
         if (request.season) {
@@ -3563,7 +3566,7 @@ function SearchHistoryService($filter, $http) {
         if (request.author) {
             result.push('<span class="history-title">Author: </span>' + request.author);
         }
-        if (result.length == 0 && describeEmptySearch) {
+        if (result.length === 0 && describeEmptySearch) {
             result = ['<span class="history-title">Empty search</span>'];
         }
 
@@ -3574,41 +3577,51 @@ function SearchHistoryService($filter, $http) {
     function getStateParamsForRepeatedSearch(request) {
         var stateParams = {};
         stateParams.mode = "search"
-        if (request.identifier_key == "imdbId") {
-            stateParams.mode = "movie"
-            stateParams.imdbId = request.identifier_value;
-        } else if (request.identifier_key == "tvdbId" || request.identifier_key == "rid") {
+        var availableIdentifiers = _.pluck(request.identifiers, "identifierKey");
+        if (availableIdentifiers.indexOf("TMDB") > -1 || availableIdentifiers.indexOf("IMDB") > -1) {
+            stateParams.mode = "movie";
+        } else if (availableIdentifiers.indexOf("TVRAGE") > -1 || availableIdentifiers.indexOf("TVMAZE") > -1 || availableIdentifiers.indexOf("TVDB") > -1) {
             stateParams.mode = "tvsearch";
-            if (request.identifier_key == "rid") {
-                stateParams.rid = request.identifier_value;
-            } else {
-                stateParams.tvdbId = request.identifier_value;
-            }
-
-            if (request.season != "") {
-                stateParams.season = request.season;
-            }
-            if (request.episode != "") {
-                stateParams.episode = request.episode;
-            }
         }
-        if (request.query != "") {
+        if (request.season) {
+            stateParams.season = request.season;
+        }
+        if (request.episode) {
+            stateParams.episode = request.episode;
+        }
+
+        _.each(request.identifiers, function(entry) {
+            switch(entry.identifierKey) {
+                case "TMDB":
+                    stateParams.tmdbid = entry.identifierValue;
+                    break;
+                case "IMDB":
+                    stateParams.imdbid = entry.identifierValue;
+                    break;
+                case "TVMAZE":
+                    stateParams.tvmazeid = entry.identifierValue;
+                    break;
+                case "TVRAGE":
+                    stateParams.tvrageid = entry.identifierValue;
+                    break;
+                case "TVDB":
+                    stateParams.tvdbid = entry.identifierValue;
+                    break;
+            }
+        });
+
+
+        if (request.query !== "") {
             stateParams.query = request.query;
         }
 
-
-        if (request.movietitle != null) {
-            stateParams.title = request.movietitle;
-        }
-        if (request.tvtitle != null) {
-            stateParams.title = request.tvtitle;
+        if (request.title) {
+            stateParams.title = request.title;
         }
 
-        if (request.category) {
-            stateParams.category = request.category;
+        if (request.categoryName) {
+            stateParams.category = request.categoryName;
         }
-
-        stateParams.category = request.category;
 
         return stateParams;
     }

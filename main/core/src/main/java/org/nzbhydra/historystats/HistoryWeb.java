@@ -1,7 +1,5 @@
 package org.nzbhydra.historystats;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.historystats.stats.HistoryRequestData;
 import org.nzbhydra.searching.SearchEntity;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -33,28 +30,28 @@ public class HistoryWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntity> searchHistoryForSearchPage(HttpServletRequest request) {
-        HistoryRequestData requestData = new HistoryRequestData();
-        requestData.setSortModel(new SortModel("time", 2));
-        FilterModel filterModel = new FilterModel();
-        filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
-        if (!Strings.isNullOrEmpty(request.getRemoteUser())) {
-            filterModel.put("username_or_ip", new FilterDefinition(request.getRemoteUser(), "text", false));
-        }
-        requestData.setFilterModel(filterModel);
-        Page<SearchEntity> searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
-        List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
-        List<SearchEntity> filteredSearchEntities = new ArrayList<>();
-        if (!allSearchEntities.isEmpty()) {
-            filteredSearchEntities.add(allSearchEntities.get(0));
-        }
-        for (int i = 1; i < allSearchEntities.size() && filteredSearchEntities.size() < 5; i++) {
-            SearchEntity lastAddedSearchEntity = Iterables.getLast(filteredSearchEntities);
-            if (!lastAddedSearchEntity.equalsSearchEntity(allSearchEntities.get(i))) {
-                filteredSearchEntities.add(allSearchEntities.get(i));
-            }
-        }
+//        HistoryRequestData requestData = new HistoryRequestData();
+//        requestData.setSortModel(new SortModel("time", 2));
+//        FilterModel filterModel = new FilterModel();
+//        filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
+//        if (!Strings.isNullOrEmpty(request.getRemoteUser())) {
+//            filterModel.put("username_or_ip", new FilterDefinition(request.getRemoteUser(), "text", false));
+//        }
+//        requestData.setFilterModel(filterModel);
+//        Page<SearchEntity> searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
+//        List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
+//        List<SearchEntity> filteredSearchEntities = new ArrayList<>();
+//        if (!allSearchEntities.isEmpty()) {
+//            filteredSearchEntities.add(allSearchEntities.get(0));
+//        }
+//        for (int i = 1; i < allSearchEntities.size() && filteredSearchEntities.size() < 5; i++) {
+//            SearchEntity lastAddedSearchEntity = Iterables.getLast(filteredSearchEntities);
+//            if (!lastAddedSearchEntity.equalsSearchEntity(allSearchEntities.get(i))) {
+//                filteredSearchEntities.add(allSearchEntities.get(i));
+//            }
+//        }
 
-        return filteredSearchEntities;
+        return history.getHistoryForSearching(request.getRemoteUser());
     }
 
 

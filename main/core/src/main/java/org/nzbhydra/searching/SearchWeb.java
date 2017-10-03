@@ -115,6 +115,13 @@ public class SearchWeb {
             searchRequest.getIdentifiers().put(IdType.TVMAZE, parameters.getTvmazeId());
         }
 
+        if (parameters.getSeason() != null) {
+            searchRequest.setSeason(parameters.getSeason());
+        }
+        if (!Strings.isNullOrEmpty(parameters.getEpisode())) {
+            searchRequest.setEpisode(parameters.getEpisode());
+        }
+
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
 
         //Initialize messages for this search request

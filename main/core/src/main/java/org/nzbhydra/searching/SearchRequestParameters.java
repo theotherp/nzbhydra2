@@ -19,12 +19,16 @@ public class SearchRequestParameters {
     protected Set<String> indexers;
 
     private String title;
+
     private String imdbId;
     private String tmdbId;
 
     private String tvrageId;
     private String tvdbId;
     private String tvmazeId;
+
+    private Integer season;
+    private String episode;
 
     private long searchRequestId; //Sent by the GUI to identify this search when getting updates for it
 

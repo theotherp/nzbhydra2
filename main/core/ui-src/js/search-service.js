@@ -35,11 +35,12 @@ function SearchService($http) {
         if (metaData) {
             searchRequestParameters.title = metaData.title;
             if (category.indexOf("Movies") > -1 || (category.indexOf("20") === 0) || mode === "movie") {
-                searchRequestParameters.tmdbId = metaData.tmdbid;
+                searchRequestParameters.tmdbId = metaData.tmdbId;
                 searchRequestParameters.imdbId = metaData.imdbId;
             } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
                 searchRequestParameters.tvdbId = metaData.tvdbId;
-                searchRequestParameters.tvrageId = metaData.rid;
+                searchRequestParameters.tvrageid = metaData.rid;
+                searchRequestParameters.tvmazeid = metaData.rid;
                 searchRequestParameters.season = season;
                 searchRequestParameters.episode = episode;
             }

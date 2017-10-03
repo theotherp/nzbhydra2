@@ -1,6 +1,9 @@
 package org.nzbhydra.historystats;
 
 import org.nzbhydra.historystats.stats.HistoryRequestData;
+import org.nzbhydra.searching.SearchEntity;
+import org.nzbhydra.searching.SearchRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -13,9 +16,12 @@ import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -23,6 +29,8 @@ public class History {
 
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private SearchRepository searchRepository;
 
     public <T> Page<T> getHistory(HistoryRequestData requestData, String tableName, Class<T> resultClass) {
         Map<String, Object> parameters = new HashMap<>();
@@ -86,5 +94,25 @@ public class History {
 
         BigInteger count = (BigInteger) countQuery.getSingleResult();
         return new PageImpl<>(resultList, pageable, count.longValue());
+    }
+
+    public List<SearchEntity> getHistoryForSearching(String currentUserName) {
+
+        Page<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(new PageRequest(0, 100)) : searchRepository.findForUserSearchHistory(currentUserName, new PageRequest(0, 100));
+        List<SearchEntity> entities = new ArrayList<>();
+        Set<Integer> contained = new HashSet<>();
+        for (SearchEntity searchEntity : history.getContent()) {
+            int hash = Objects.hash(searchEntity.getIdentifiers(), searchEntity.getQuery(), searchEntity.getCategoryName(), searchEntity.getSeason(), searchEntity.getEpisode(), searchEntity.getTitle());
+            if (contained.contains(hash)) {
+                continue;
+            }
+            contained.add(hash);
+            entities.add(searchEntity);
+            if (entities.size() == 15) {
+                break;
+            }
+        }
+
+        return entities;
     }
 }
