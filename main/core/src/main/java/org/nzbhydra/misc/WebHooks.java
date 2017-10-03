@@ -34,12 +34,16 @@ public class WebHooks {
         String searchHook = System.getProperty("nzbhydra.hooks.search");
         if (!Strings.isNullOrEmpty(searchHook)) {
             if (searchEvent.getSearchRequest().getSource() == SearchSource.INTERNAL) {
-                OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(searchHook)).build();
-                String content = objectMapper.writeValueAsString(searchEvent.getSearchRequest());
-                Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
-                response.close();
+                try {
+                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(searchHook)).build();
+                    String content = objectMapper.writeValueAsString(searchEvent.getSearchRequest());
+                    Response response = client.newCall(new Builder().url(searchHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
+                    response.close();
 
-                logger.debug("Called search web hook with response {}", response);
+                    logger.debug("Called search web hook with response {}", response);
+                } catch (IOException e) {
+                    logger.error("Unable to execute webhook to {} on search event", searchHook);
+                }
             }
         }
     }
@@ -49,12 +53,16 @@ public class WebHooks {
         String downloadHook = System.getProperty("nzbhydra.hooks.download");
         if (!Strings.isNullOrEmpty(downloadHook)) {
             if (downloadEvent.getDownloadEntity().getAccessSource() == SearchSource.INTERNAL) {
-                OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(downloadHook)).build();
-                String content = objectMapper.writeValueAsString(downloadEvent.getDownloadEntity());
-                Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
-                response.close();
+                try {
+                    OkHttpClient client = requestFactory.getOkHttpClientBuilder(URI.create(downloadHook)).build();
+                    String content = objectMapper.writeValueAsString(downloadEvent.getDownloadEntity());
+                    Response response = client.newCall(new Builder().url(downloadHook).method("PUT", RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_JSON_VALUE), content)).build()).execute();
+                    response.close();
 
-                logger.debug("Called download web hook with response {}", response);
+                    logger.debug("Called download web hook with response {}", response);
+                } catch (IOException e) {
+                    logger.error("Unable to execute webhook to {} on download event", downloadHook);
+                }
             }
         }
     }

@@ -1,9 +1,6 @@
 var gulp = require('gulp');
 var print = require('gulp-print');
 var wiredep = require('wiredep');
-var inject = require('gulp-inject');
-var copy = require('gulp-copy');
-var flatten = require('gulp-flatten');
 var angularFilesort = require('gulp-angular-filesort');
 var ngAnnotate = require('gulp-ng-annotate');
 var merge = require('merge-stream');
@@ -14,12 +11,9 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var git = require('gulp-git');
 var runSequence = require('run-sequence');
-var rename = require("gulp-rename");
-var clean = require('gulp-clean');
 var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
 var angularTemplateCache = require('gulp-angular-templatecache');
-
 
 
 gulp.task('vendor-scripts', function () {
@@ -38,19 +32,20 @@ gulp.task('vendor-css', function () {
     return merge(gulp.src(wiredep().css)
             .pipe(cached("vendor-css")),
         gulp.src(wiredep().less)
-            .pipe(cached("vendor-less")).pipe(less())
+            .pipe(cached("vendor-less"))
+            .pipe(less())
     )
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.css'))
         .pipe(cleancss())
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
-
 });
 
 
-gulp.task('templates', function() {
+gulp.task('templates', function () {
     return gulp.src('ui-src/html/**/*.html')
+    //.pipe(cached("templates")) //Doesn't work properly, will only contain last updated file
         .pipe(angularTemplateCache("templates.js", {root: "static/html/"}))
         .pipe(concat('templates.js'))
         .pipe(gulp.dest('src/main/resources/static/js'));
@@ -155,7 +150,6 @@ gulp.task('index', function () {
 });
 
 function swallowError(error) {
-
     this.emit('end');
 }
 
