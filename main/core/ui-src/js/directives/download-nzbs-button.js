@@ -33,8 +33,12 @@ function downloadNzbsButton() {
                 });
 
                 NzbDownloadService.download(downloader, values).then(function (response) {
-                    if (angular.isDefined(response.data) &&  response.data.successful) {
-                        growl.info("Successfully added " + response.data.added + " of " + response.data.of + " NZBs");
+                    if (angular.isDefined(response.data)) {
+                        if (response.data.successful) {
+                            growl.info("Successfully added all NZBs");
+                        } else {
+                            growl.error(response.data.message);
+                        }
                     } else {
                         growl.error("Error while adding NZBs");
                     }
