@@ -35,6 +35,11 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
 
     function updateAndAskForRestartIfNecessary() {
+        if (angular.isUndefined($scope.form)) {
+            console.error("Unable to determine if a restart is necessary");
+            return;
+        }
+
         $scope.form.$setPristine();
         DownloaderCategoriesService.invalidate();
         if ($scope.restartRequired) {

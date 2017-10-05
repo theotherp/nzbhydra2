@@ -7512,15 +7512,15 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 templateOptions: {
                     type: 'number',
                     label: 'Hit reset time',
-                    help: 'UTC hour of day at which the API hit counter is reset (0==24). Leave empty for a rolling reset counter'
+                    help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter'
                 },
                 validators: {
                     timeOfDay: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return value >= 0 && value <= 24;
+                            return value >= 0 && value <= 23;
                         },
-                        message: '$viewValue + " is not a valid hour of day (0-24)"'
+                        message: '$viewValue + " is not a valid hour of day (0-23)"'
                     }
 
                 }
@@ -7627,7 +7627,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
         )
     }
 
-    if (model.searchModuleType === 'NEWZNAB') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'supportedSearchIds',
@@ -8082,6 +8082,11 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
 
     function updateAndAskForRestartIfNecessary() {
+        if (angular.isUndefined($scope.form)) {
+            console.error("Unable to determine if a restart is necessary");
+            return;
+        }
+
         $scope.form.$setPristine();
         DownloaderCategoriesService.invalidate();
         if ($scope.restartRequired) {
