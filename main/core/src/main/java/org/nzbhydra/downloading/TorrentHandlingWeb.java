@@ -8,7 +8,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.UsernameOrIpStorage;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 
 @RestController
@@ -41,8 +40,8 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/torrent/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadTorrentInternal(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
+    public ResponseEntity<String> downloadTorrentInternal(@PathVariable("guid") long guid) {
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
 
@@ -53,8 +52,8 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
+    public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid) {
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
     /**
@@ -64,8 +63,8 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/saveTorrent/{guid}")
     @Secured({"ROLE_USER"})
-    public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid, HttpServletRequest request) {
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request));
+    public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid) {
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, SessionStorage.usernameOrIp.get());
         if (!downloadResult.isSuccessful()) {
             return GenericResponse.notOk(downloadResult.getError());
         }
@@ -90,14 +89,14 @@ public class TorrentHandlingWeb {
      * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/gettorrent/api/{guid}", produces = "application/x-bittorrent")
-    public ResponseEntity<String> downloadTorrentWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey, HttpServletRequest request) throws WrongApiKeyException {
+    public ResponseEntity<String> downloadTorrentWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) {
             logger.error("Received torrent API download call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
 }

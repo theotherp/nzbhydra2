@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -31,9 +30,9 @@ public class DownloaderWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public GenericResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest, HttpServletRequest request) {
+    public GenericResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest) {
         org.nzbhydra.downloading.Downloader downloader = downloaderProvider.getDownloaderByName(addNzbsRequest.getDownloaderName());
-        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory(), userAgentMapper.getUserAgent(request));
+        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory(), userAgentMapper.getUserAgent());
     }
 
     @Secured({"ROLE_USER"})

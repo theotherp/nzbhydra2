@@ -8,6 +8,7 @@ import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -90,10 +90,10 @@ public class UpdatesWeb {
     }
 
     @ExceptionHandler(value = {UpdateException.class})
-    protected ResponseEntity<ExceptionInfo> handleUpdateException(UpdateException ex, HttpServletRequest request) {
+    protected ResponseEntity<ExceptionInfo> handleUpdateException(UpdateException ex) {
         String error = "An error occurred while updating or getting update infos: " + ex.getMessage();
         logger.error(error);
-        return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, request.getRequestURI()), HttpStatus.valueOf(500));
+        return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, SessionStorage.requestUrl.get()), HttpStatus.valueOf(500));
     }
 
 

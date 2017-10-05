@@ -82,11 +82,13 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                     MDC.put("USERNAME", request.getRemoteUser());
                 }
                 if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.IP) {
-                    UsernameOrIpStorage.usernameOrIp.set(request.getRemoteAddr());
-                    UsernameOrIpStorage.ipForExternal.set(request.getRemoteAddr());
+                    SessionStorage.usernameOrIp.set(request.getRemoteAddr());
+                    SessionStorage.ipForExternal.set(request.getRemoteAddr());
                 } else if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.USERNAME) {
-                    UsernameOrIpStorage.usernameOrIp.set(request.getRemoteUser());
+                    SessionStorage.usernameOrIp.set(request.getRemoteUser());
                 }
+                SessionStorage.userAgent.set(request.getHeader("User-Agent"));
+                SessionStorage.requestUrl.set(request.getRequestURI());
 
                 return true;
             }

@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.Category;
+import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
@@ -106,6 +107,7 @@ public class IndexerForSearchSelectorTest {
         when(indexerEntity.getStatus()).thenReturn(indexerStatusEntity);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         when(category.getName()).thenReturn("category");
+        when(category.getSubtype()).thenReturn(Subtype.NONE);
         testee = outerClass.getInnerInstanceInstance(searchRequest);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
     }

@@ -37,7 +37,7 @@ import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
-import org.nzbhydra.web.UsernameOrIpStorage;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -97,8 +96,8 @@ public class ExternalApi {
 
 
     @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, produces = MediaType.APPLICATION_RSS_XML_VALUE, consumes = MediaType.ALL_VALUE)
-    public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
-        logger.info("Received external {}API call: {}", (isTorznabCall(request) ? "torznab " : ""), params);
+    public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+        logger.info("Received external {}API call: {}", (isTorznabCall() ? "torznab " : ""), params);
 
         if (!noApiKeyNeeded && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
@@ -107,14 +106,14 @@ public class ExternalApi {
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             if (params.getCachetime() != null) {
-                return handleCachingSearch(params, request);
+                return handleCachingSearch(params);
             }
-            RssRoot searchResult = search(params, request);
+            RssRoot searchResult = search(params);
             return new ResponseEntity<>(searchResult, HttpStatus.OK);
         }
 
         if (params.getT() == ActionAttribute.GET) {
-            return getNzb(params, request);
+            return getNzb(params);
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
@@ -127,7 +126,7 @@ public class ExternalApi {
     }
 
 
-    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params, HttpServletRequest request) {
+    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params) {
         //Remove old entries
         cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
 
@@ -150,7 +149,7 @@ public class ExternalApi {
             keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
         }
 
-        RssRoot searchResult = search(params, request);
+        RssRoot searchResult = search(params);
         logger.info("Putting search result into cache");
         cache.put(params.cacheKey(), new CacheEntryValue(params, clock.instant(), searchResult));
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
@@ -181,12 +180,11 @@ public class ExternalApi {
         return new ResponseEntity<>(capsRoot, HttpStatus.OK);
     }
 
-    protected ResponseEntity<?> getNzb(NewznabParameters params, HttpServletRequest request) throws MissingParameterException, UnknownErrorException {
+    protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
         }
-        String userAgent = userAgentMapper.getUserAgent(request);
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, UsernameOrIpStorage.ipForExternal.get(), userAgent);
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, SessionStorage.ipForExternal.get());
         if (!downloadResult.isSuccessful()) {
             throw new UnknownErrorException(downloadResult.getError());
         }
@@ -194,15 +192,15 @@ public class ExternalApi {
         return downloadResult.getAsResponseEntity();
     }
 
-    protected RssRoot search(NewznabParameters params, HttpServletRequest request) {
+    protected RssRoot search(NewznabParameters params) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = buildBaseSearchRequest(params);
-        if (isTorznabCall(request)) {
+        if (isTorznabCall()) {
             searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.TORRENT);
         } else {
             searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.NZB);
         }
-        searchRequest.getInternalData().setUserAgent(userAgentMapper.getUserAgent(request));
+        searchRequest.getInternalData().setUserAgent(userAgentMapper.getUserAgent());
         SearchResult searchResult = searcher.search(searchRequest);
 
         RssRoot transformedResults = transformResults(searchResult, params, searchRequest);
@@ -210,8 +208,8 @@ public class ExternalApi {
         return transformedResults;
     }
 
-    private boolean isTorznabCall(HttpServletRequest request) {
-        return request.getRequestURL().toString().toLowerCase().contains("torznab");
+    private boolean isTorznabCall() {
+        return SessionStorage.requestUrl.get() != null && SessionStorage.requestUrl.get().toLowerCase().contains("torznab");
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -299,7 +297,7 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.ipForExternal.get());
+        searchRequest.getInternalData().setUsernameOrIp(SessionStorage.ipForExternal.get());
         if (params.getCat() != null) {
             searchRequest.getInternalData().setNewznabCategories(params.getCat());
         }

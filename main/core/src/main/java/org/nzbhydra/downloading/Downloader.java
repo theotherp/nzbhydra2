@@ -8,7 +8,7 @@ import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.UsernameOrIpStorage;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public abstract class Downloader {
         try {
             for (Long searchResultId : searchResultIds) {
                 if (addingType == NzbAddingType.UPLOAD) {
-                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgent);
+                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get());
                     String externalId = addNzb(result.getNzbContent(), result.getTitle(), category);
                     result.getDownloadEntity().setExternalId(externalId);
                     nzbHandler.updateStatusByEntity(result.getDownloadEntity(), NzbDownloadStatus.NZB_ADDED);

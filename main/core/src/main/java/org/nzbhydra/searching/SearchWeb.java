@@ -12,7 +12,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
-import org.nzbhydra.web.UsernameOrIpStorage;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class SearchWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public SearchResponse search(@RequestBody SearchRequestParameters parameters, HttpServletRequest request) {
+    public SearchResponse search(@RequestBody SearchRequestParameters parameters) {
 
         SearchRequest searchRequest = createSearchRequest(parameters);
 
@@ -93,7 +92,7 @@ public class SearchWeb {
         searchRequest.setMaxage(parameters.getMaxage());
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
-        searchRequest.getInternalData().setUsernameOrIp(UsernameOrIpStorage.usernameOrIp.get());
+        searchRequest.getInternalData().setUsernameOrIp(SessionStorage.usernameOrIp.get());
 
         if (!Strings.isNullOrEmpty(parameters.getTitle())) {
             searchRequest.setTitle(parameters.getTitle());

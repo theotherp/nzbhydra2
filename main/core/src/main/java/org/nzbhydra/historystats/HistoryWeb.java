@@ -30,27 +30,6 @@ public class HistoryWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntity> searchHistoryForSearchPage(HttpServletRequest request) {
-//        HistoryRequestData requestData = new HistoryRequestData();
-//        requestData.setSortModel(new SortModel("time", 2));
-//        FilterModel filterModel = new FilterModel();
-//        filterModel.put("source", new FilterDefinition("INTERNAL", "boolean", false));
-//        if (!Strings.isNullOrEmpty(request.getRemoteUser())) {
-//            filterModel.put("username_or_ip", new FilterDefinition(request.getRemoteUser(), "text", false));
-//        }
-//        requestData.setFilterModel(filterModel);
-//        Page<SearchEntity> searchHistoryPage = history.getHistory(requestData, "SEARCH", SearchEntity.class);
-//        List<SearchEntity> allSearchEntities = searchHistoryPage.getContent();
-//        List<SearchEntity> filteredSearchEntities = new ArrayList<>();
-//        if (!allSearchEntities.isEmpty()) {
-//            filteredSearchEntities.add(allSearchEntities.get(0));
-//        }
-//        for (int i = 1; i < allSearchEntities.size() && filteredSearchEntities.size() < 5; i++) {
-//            SearchEntity lastAddedSearchEntity = Iterables.getLast(filteredSearchEntities);
-//            if (!lastAddedSearchEntity.equalsSearchEntity(allSearchEntities.get(i))) {
-//                filteredSearchEntities.add(allSearchEntities.get(i));
-//            }
-//        }
-
         return history.getHistoryForSearching(request.getRemoteUser());
     }
 

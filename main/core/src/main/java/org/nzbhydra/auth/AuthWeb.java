@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.security.Principal;
 
@@ -22,12 +21,12 @@ public class AuthWeb {
 
     @RequestMapping(value = "/internalapi/askadmin", method = RequestMethod.GET)
     @Secured({"ROLE_ADMIN"})
-    public String askForAdmin(HttpSession session, HttpServletRequest request, Principal principal) {
+    public String askForAdmin(HttpSession session, Principal principal) {
         return "index";
     }
 
     @RequestMapping(value = "/internalapi/askpassword", method = RequestMethod.GET)
-    public ResponseEntity<BootstrappedDataTO> askForPassword(HttpSession session, HttpServletRequest request, Principal principal) {
+    public ResponseEntity<BootstrappedDataTO> askForPassword(HttpSession session, Principal principal) {
         if (SecurityContextHolder.getContext().getAuthentication() != null && !"AnonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal())) {
             return ResponseEntity.ok(userInfos.getUserInfos(principal));
         }
@@ -35,7 +34,7 @@ public class AuthWeb {
     }
 
     @RequestMapping(value = "/internalapi/userinfos", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public BootstrappedDataTO userinfos(HttpSession session, HttpServletRequest request, Principal principal) {
+    public BootstrappedDataTO userinfos(HttpSession session, Principal principal) {
         return userInfos.getUserInfos(principal);
     }
 

@@ -8,7 +8,7 @@ import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.UsernameOrIpStorage;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.List;
 
@@ -53,8 +52,8 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
+    public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
     /**
@@ -64,9 +63,9 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzbzip", produces = "application/x-nzb", method = RequestMethod.POST)
     @Secured({"ROLE_USER"})
-    public Object downloadNzbZip(@RequestBody List<Long> guids, HttpServletRequest request) {
+    public Object downloadNzbZip(@RequestBody List<Long> guids) {
         try {
-            File zipFile = nzbHandler.getNzbsAsZip(guids, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request));
+            File zipFile = nzbHandler.getNzbsAsZip(guids, SessionStorage.usernameOrIp.get());
             return ResponseEntity
                     .ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
@@ -81,27 +80,27 @@ public class NzbHandlingWeb {
 
     @RequestMapping(value = "/internalapi/nfo/{guid}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({"ROLE_USER"})
-    public NfoResult getNfo(@PathVariable("guid") long guid, HttpServletRequest request) throws IndexerAccessException {
+    public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
         return nzbHandler.getNfo(guid);
     }
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET)
-    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with GUID {} to status {}", externalId, status);
         return nzbHandler.updateStatusByExternalId(externalId, status);
     }
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET)
-    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET)
-    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, HttpServletRequest request) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByExternalIdOrTitle(externalId, title, status);
     }
@@ -114,8 +113,8 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid, HttpServletRequest request) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), null).getAsResponseEntity();
+    public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid) {
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
     /**
@@ -124,14 +123,14 @@ public class NzbHandlingWeb {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey, HttpServletRequest request) throws WrongApiKeyException {
+    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, UsernameOrIpStorage.usernameOrIp.get(), userAgentMapper.getUserAgent(request)).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
     }
 
 }

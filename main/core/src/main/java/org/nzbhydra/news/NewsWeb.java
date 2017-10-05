@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.security.Principal;
@@ -40,7 +39,7 @@ public class NewsWeb {
 
     @RequestMapping(value = "/internalapi/news", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
-    public List<NewsEntryForWeb> getAllNews(HttpSession session, HttpServletRequest request, Principal principal) throws IOException {
+    public List<NewsEntryForWeb> getAllNews(HttpSession session, Principal principal) throws IOException {
         BootstrappedDataTO userInfos = userInfosProvider.getUserInfos(principal);
         if (userInfos.getMaySeeAdmin()) {
             logger.debug("Getting all news ");
