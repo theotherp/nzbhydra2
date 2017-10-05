@@ -177,8 +177,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 }
             }
 
-            if ("age" in $scope.filterModel) {
-                var filterValue = $scope.filterModel.age.filterValue;
+            if ("epoch" in $scope.filterModel) {
+                var filterValue = $scope.filterModel.epoch.filterValue;
                 var ageDays = moment.utc().diff(moment.unix(item.epoch), "days");
                 if (angular.isDefined(filterValue.min) && ageDays < filterValue.min) {
                     return false;

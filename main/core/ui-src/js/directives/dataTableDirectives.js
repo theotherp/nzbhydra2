@@ -128,7 +128,7 @@ function booleanFilter() {
 
         $scope.apply = function () {
 
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value != $scope.options[0].value)
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value !== $scope.options[0].value)
         }
     }
 }
