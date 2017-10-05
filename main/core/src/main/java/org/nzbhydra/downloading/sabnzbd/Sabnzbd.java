@@ -57,7 +57,7 @@ public class Sabnzbd extends Downloader {
             title += ".nzb";
         }
         UriComponentsBuilder urlBuilder = getBaseUrl();
-        urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title);
+        urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title).queryParam("priority", "-100");
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
@@ -86,11 +86,10 @@ public class Sabnzbd extends Downloader {
 
     @Override
     public String addNzb(String fileContent, String title, String category) throws DownloaderException {
-
         //Using OKHTTP here because RestTemplate wouldn't work
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
-        urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title);
+        urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title).queryParam("priority", "-100");
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }

@@ -75,15 +75,21 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+                String ip = request.getHeader("X-Forwarded-For");
+                if (ip != null) {
+                    ip = ip.split(",")[0];
+                } else {
+                    ip = request.getRemoteAddr();
+                }
                 if (configProvider.getBaseConfig().getMain().getLogging().isLogIpAddresses()) {
-                    MDC.put("IPADDRESS", request.getRemoteAddr());
+                    MDC.put("IPADDRESS", ip);
                 }
                 if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
                     MDC.put("USERNAME", request.getRemoteUser());
                 }
+                SessionStorage.ipForExternal.set(request.getRemoteAddr());
                 if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.IP) {
-                    SessionStorage.usernameOrIp.set(request.getRemoteAddr());
-                    SessionStorage.ipForExternal.set(request.getRemoteAddr());
+                    SessionStorage.usernameOrIp.set(ip);
                 } else if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.USERNAME) {
                     SessionStorage.usernameOrIp.set(request.getRemoteUser());
                 }
