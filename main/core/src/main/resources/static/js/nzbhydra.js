@@ -3367,6 +3367,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.filteredResults = sortAndFilter(allSearchResults);
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
+        $scope.anyResultsRejected = !_.isEmpty(data.rejectedReasonsMap);
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
