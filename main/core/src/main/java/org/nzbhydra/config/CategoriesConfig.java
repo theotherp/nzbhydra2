@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 
 import com.google.common.base.Joiner;
 import lombok.Data;
+import org.nzbhydra.config.Category.Subtype;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,7 @@ public class CategoriesConfig extends ValidatingConfig {
         allCategory.setIgnoreResultsFrom(SearchSourceRestriction.NONE);
         allCategory.setMayBeSelected(true);
         allCategory.setSearchType(SEARCH);
+        allCategory.setSubtype(Subtype.ALL);
     }
 
     private boolean enableCategorySizes = true;

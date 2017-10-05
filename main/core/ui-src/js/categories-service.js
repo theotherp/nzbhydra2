@@ -13,8 +13,8 @@ function CategoriesService(ConfigService) {
 
 
     function getByName(name) {
-        for (var category in ConfigService.getSafe().categoriesConfig.categories) {
-            category = ConfigService.getSafe().categoriesConfig.categories[category];
+        for (var cat in ConfigService.getSafe().categoriesConfig.categories) {
+            var category = ConfigService.getSafe().categoriesConfig.categories[cat];
             if (category.name === name) {
                 return category;
             }

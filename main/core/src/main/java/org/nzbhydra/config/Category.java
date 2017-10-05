@@ -19,6 +19,7 @@ public class Category {
 
     public enum Subtype {
         NONE,
+        ALL,
         ANIME,
         AUDIOBOOK,
         COMIC,

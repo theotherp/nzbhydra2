@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -120,6 +121,14 @@ public class SearchWeb {
         }
         if (!Strings.isNullOrEmpty(parameters.getEpisode())) {
             searchRequest.setEpisode(parameters.getEpisode());
+        }
+
+        if (!searchRequest.getIdentifiers().isEmpty() && searchRequest.getQuery().isPresent()) {
+            //Add additional restrictions to required words
+            logger.debug("Adding additional search terms '{}' to required words", searchRequest.getQuery().get());
+            searchRequest.getInternalData().getRequiredWords().addAll(Splitter.on(" ").splitToList(searchRequest.getQuery().get()));
+            //Remove query, would be ignored by most indexers anyway
+            searchRequest.setQuery(null);
         }
 
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);

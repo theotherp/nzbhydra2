@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
@@ -172,6 +173,9 @@ public class IndexerForSearchSelector {
         }
 
         protected boolean checkDisabledForCategory(Indexer indexer) {
+            if (searchRequest.getCategory().getSubtype().equals(Subtype.ALL)) {
+                return true;
+            }
             boolean indexerDisabledForThisCategory = !indexer.getConfig().getEnabledCategories().isEmpty() && !indexer.getConfig().getEnabledCategories().contains(searchRequest.getCategory().getName());
             if (indexerDisabledForThisCategory) {
                 String message = String.format("Not using %s because it's disabled for category %s", indexer.getName(), searchRequest.getCategory().getName());

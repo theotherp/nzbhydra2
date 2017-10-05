@@ -356,7 +356,7 @@ angular
         formlyConfigProvider.setType({
             name: 'arrayConfig',
             templateUrl: 'arrayConfig.html',
-            controller: function ($scope, $uibModal, growl) {
+            controller: function ($scope, $uibModal, growl, CategoriesService) {
                 $scope.formOptions = {formState: $scope.formState};
                 $scope._showBox = _showBox;
                 $scope.showBox = showBox;
@@ -373,7 +373,7 @@ angular
                                 return model;
                             },
                             fields: function () {
-                                return $scope.options.data.fieldsFunction(model, parentModel, isInitial, angular.injector());
+                                return $scope.options.data.fieldsFunction(model, parentModel, isInitial, angular.injector(), CategoriesService);
                             },
                             isInitial: function () {
                                 return isInitial

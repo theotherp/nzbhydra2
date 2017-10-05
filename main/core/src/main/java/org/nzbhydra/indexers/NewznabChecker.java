@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,7 @@ public class NewznabChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
     public static final int MAX_CONNECTIONS = 2;
+    public static final int ID_THRESHOLD_PERCENT = 85;
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -88,12 +90,12 @@ public class NewznabChecker {
      */
     public CheckCapsRespone checkCaps(IndexerConfig indexerConfig) {
         List<CheckCapsRequest> requests = Arrays.asList(
-                new CheckCapsRequest(indexerConfig, "tvsearch", "tvdbid", "121361", "Thrones"),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "rid", "24493", "Thrones"),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "tvmazeid", "82", "Thrones"),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "traktid", "1390", "Thrones"),
-                new CheckCapsRequest(indexerConfig, "movie", "tmdbid", "1399", "Avengers"),
-                new CheckCapsRequest(indexerConfig, "movie", "imdbid", "0848228", "Avengers")
+                new CheckCapsRequest(indexerConfig, "tvsearch", "tvdbid", "121361", Collections.singletonList("Thrones")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "rid", "24493", Collections.singletonList("Thrones")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "tvmazeid", "82", Collections.singletonList("Thrones")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "traktid", "1390", Collections.singletonList("Thrones")),
+                new CheckCapsRequest(indexerConfig, "movie", "tmdbid", "1399", Arrays.asList("Avengers", "Vengadores")),
+                new CheckCapsRequest(indexerConfig, "movie", "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
         );
 
         boolean allChecked = true;
@@ -163,7 +165,7 @@ public class NewznabChecker {
         BackendType backendType = BackendType.NEWZNAB;
         if (backend == null && indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB) {
             logger.info("Indexer {} didn't provide a backend type. Will use newznab.", indexerConfig.getName());
-        } else if (backend != null){
+        } else if (backend != null) {
             try {
                 backendType = BackendType.valueOf(backend.toUpperCase());
                 logger.info("Indexer {} uses backend type {}", indexerConfig.getName(), backendType);
@@ -226,8 +228,11 @@ public class NewznabChecker {
         List<CapsCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
         List<MainCategory> configMainCategories = new ArrayList<>();
         for (CapsCategory category : capsRoot.getCategories().getCategories()) {
-            categories.addAll(category.getSubCategories());
-            List<SubCategory> configSubcats = category.getSubCategories().stream().map(x -> new SubCategory(x.getId(), x.getName())).collect(Collectors.toList());
+            List<SubCategory> configSubcats = new ArrayList<>();
+            if (category.getSubCategories() != null) {
+                categories.addAll(category.getSubCategories());
+                configSubcats = category.getSubCategories().stream().map(x -> new SubCategory(x.getId(), x.getName())).collect(Collectors.toList());
+            }
             configMainCategories.add(new MainCategory(category.getId(), category.getName(), configSubcats));
         }
         categoryConfig.setCategories(configMainCategories);
@@ -242,6 +247,10 @@ public class NewznabChecker {
 
         if (response instanceof RssError) {
             String errorDescription = ((RssError) response).getDescription();
+            if (errorDescription.toLowerCase().contains("function not available")) {
+                logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getKey());
+                return new SingleCheckCapsResponse(request.getKey(), false, null);
+            }
             logger.debug("RSS error from indexer {}: {}", request.indexerConfig.getName(), errorDescription);
             throw new IndexerAccessException("RSS error from indexer: " + errorDescription);
         }
@@ -251,9 +260,9 @@ public class NewznabChecker {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
-        long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> x.getTitle().toLowerCase().contains(request.getTitleExpectedToContain().toLowerCase())).count();
+        long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> request.getTitleExpectedToContain().stream().anyMatch(y -> x.getTitle().toLowerCase().contains(y.toLowerCase()))).count();
         float percentCorrect = (100 * countCorrectResults) / rssRoot.getRssChannel().getItems().size();
-        boolean supported = percentCorrect >= 90;
+        boolean supported = percentCorrect >= ID_THRESHOLD_PERCENT;
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
             return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
@@ -271,7 +280,7 @@ public class NewznabChecker {
         private String tMode;
         private String key;
         private String value;
-        private String titleExpectedToContain;
+        private List<String> titleExpectedToContain;
     }
 
     @Data

@@ -1568,7 +1568,7 @@ function downloadNzbsButton() {
                 });
 
                 NzbDownloadService.download(downloader, values).then(function (response) {
-                    if (response.data.successful) {
+                    if (angular.isDefined(response.data) &&  response.data.successful) {
                         growl.info("Successfully added " + response.data.added + " of " + response.data.of + " NZBs");
                     } else {
                         growl.error("Error while adding NZBs");
@@ -5354,7 +5354,7 @@ angular
         formlyConfigProvider.setType({
             name: 'arrayConfig',
             templateUrl: 'arrayConfig.html',
-            controller: function ($scope, $uibModal, growl) {
+            controller: function ($scope, $uibModal, growl, CategoriesService) {
                 $scope.formOptions = {formState: $scope.formState};
                 $scope._showBox = _showBox;
                 $scope.showBox = showBox;
@@ -5371,7 +5371,7 @@ angular
                                 return model;
                             },
                             fields: function () {
-                                return $scope.options.data.fieldsFunction(model, parentModel, isInitial, angular.injector());
+                                return $scope.options.data.fieldsFunction(model, parentModel, isInitial, angular.injector(), CategoriesService);
                             },
                             isInitial: function () {
                                 return isInitial
@@ -5945,7 +5945,6 @@ angular
     .factory('ConfigFields', ConfigFields);
 
 function ConfigFields($injector) {
-
 
     return {
         getFields: getFields
@@ -6798,15 +6797,6 @@ function ConfigFields($injector) {
                                 }
                             },
                             {
-                                key: 'preselect',
-                                type: 'horizontalSwitch',
-                                templateOptions: {
-                                    type: 'switch',
-                                    label: 'Preselect',
-                                    help: "Determines if indexer is preselect on search page"
-                                }
-                            },
-                            {
                                 key: 'newznabCategories',
                                 type: 'horizontalChips',
                                 templateOptions: {
@@ -7343,7 +7333,7 @@ function getIndexerPresets(configuredIndexers) {
     return presets;
 }
 
-function getIndexerBoxFields(model, parentModel, isInitial, injector) {
+function getIndexerBoxFields(model, parentModel, isInitial, injector, CategoriesService) {
     var fieldset = [];
     if (model.searchModuleType === "TORZNAB") {
         fieldset.push({
@@ -7616,6 +7606,10 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
     );
 
     if (model.searchModuleType !== "ANIZB") {
+        var cats = CategoriesService.getWithoutAll();
+        var options = _.map(cats, function(x) {
+            return {id: x.name, label: x.name}
+        });
         fieldset.push(
             {
                 key: 'enabledCategories',
@@ -7623,71 +7617,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector) {
                 templateOptions: {
                     label: 'Enable for...',
                     help: 'Only use indexer for these and also reject results from others',
-                    options: [
-                        {
-                            id: "Movies",
-                            label: "Movies"
-                        },
-                        {
-                            id: "Movies HD",
-                            label: "Movies HD"
-                        },
-                        {
-                            id: "Movies SD",
-                            label: "Movies SD"
-                        },
-                        {
-                            id: "TV",
-                            label: "TV"
-                        },
-                        {
-                            id: "TV HD",
-                            label: "TV HD"
-                        },
-                        {
-                            id: "TV SD",
-                            label: "TV SD"
-                        },
-                        {
-                            id: "Anime",
-                            label: "Anime"
-                        },
-                        {
-                            id: "Audio",
-                            label: "Audio"
-                        },
-                        {
-                            id: "Audio FLAC",
-                            label: "Audio FLAC"
-                        },
-                        {
-                            id: "Audio MP3",
-                            label: "Audio MP3"
-                        },
-                        {
-                            id: "Audiobook",
-                            label: "Audiobook"
-                        },
-                        {
-                            id: "Console",
-                            label: "Console"
-                        },
-                        {
-                            id: "PC",
-                            label: "PC"
-                        },
-                        {
-                            id: "XXX",
-                            label: "XXX"
-                        },
-                        {
-                            id: "Ebook",
-                            label: "Ebook"
-                        },
-                        {
-                            id: "Comic",
-                            label: "Comic"
-                        }],
+                    options: options,
                     getPlaceholder: function () {
                         return "All categories";
                     }
@@ -8400,8 +8330,8 @@ function CategoriesService(ConfigService) {
 
 
     function getByName(name) {
-        for (var category in ConfigService.getSafe().categoriesConfig.categories) {
-            category = ConfigService.getSafe().categoriesConfig.categories[category];
+        for (var cat in ConfigService.getSafe().categoriesConfig.categories) {
+            var category = ConfigService.getSafe().categoriesConfig.categories[cat];
             if (category.name === name) {
                 return category;
             }

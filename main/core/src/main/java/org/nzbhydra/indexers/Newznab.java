@@ -109,7 +109,7 @@ public class Newznab extends Indexer<Xml> {
         if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
             searchType = SearchType.SEARCH;
         }
-        componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase());
+        componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase()).queryParam("extended", "1");
 
         String query = "";
 
@@ -199,21 +199,29 @@ public class Newznab extends Indexer<Xml> {
             //Indexers do not allow having a query that only contains forbidden words
             return query;
         }
-        List<String> requiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
-        requiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
-        requiredWords.addAll(searchRequest.getCategory().getRequiredWords());
-        if (!requiredWords.isEmpty()) {
-            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(requiredWords);
+        List<String> allRequiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
+        allRequiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
+        allRequiredWords.addAll(searchRequest.getCategory().getRequiredWords());
+        List<String> allPossibleRequiredWords = allRequiredWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
+        if (allRequiredWords.size() > allPossibleRequiredWords.size()) {
+            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+        }
+        if (!allPossibleRequiredWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(allPossibleRequiredWords);
         }
 
-        List<String> forbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
-        forbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
-        forbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
-        if (!forbiddenWords.isEmpty()) {
+        List<String> allForbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
+        allForbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
+        allForbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
+        List<String> allPossibleForbiddenWords = allForbiddenWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
+        if (allForbiddenWords.size() > allPossibleForbiddenWords.size()) {
+            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+        }
+        if (!allPossibleForbiddenWords.isEmpty()) {
             if (config.getBackend().equals(BackendType.NZEDB) || config.getBackend().equals(BackendType.NNTMUX) || config.getHost().toLowerCase().contains("omgwtf")) {
-                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(forbiddenWords);
+                query += (query.isEmpty() ? "" : " ") + "!" + Joiner.on(",!").join(allPossibleForbiddenWords);
             } else {
-                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(forbiddenWords);
+                query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(allPossibleForbiddenWords);
             }
         }
         return query;
@@ -252,7 +260,7 @@ public class Newznab extends Indexer<Xml> {
 
             for (Map.Entry<IdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
                 //We just add all IDs that we have. Some indexers support more than they say or will find results under one ID but not the other
-                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue());
+                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt",""));
             }
 
         }
