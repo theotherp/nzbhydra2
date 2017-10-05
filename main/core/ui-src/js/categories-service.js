@@ -26,7 +26,8 @@ function CategoriesService(ConfigService) {
     }
 
     function getWithoutAll() {
-        return ConfigService.getSafe().categoriesConfig.categories.splice(1);
+        var cats = ConfigService.getSafe().categoriesConfig.categories;
+        return cats.slice(1, cats.length);
     }
 
     function getDefault() {

@@ -82,11 +82,6 @@ public class DuplicateDetector {
             duplicateGroups.addAll(listOfBuckets);
         }
 
-//        for (SearchResultItem result : duplicateGroups.stream().filter(x -> x.size() == 1).map(x -> x.iterator().next()).collect(Collectors.toList())) {
-//            int count = uniqueResultsPerIndexer.get(result.getIndexer());
-//            uniqueResultsPerIndexer.put(result.getIndexer(), count);
-//        }
-
         logger.debug(LoggingMarkers.PERFORMANCE, "Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
         return new DuplicateDetectionResult(duplicateGroups, countUniqueResultsPerIndexer);
