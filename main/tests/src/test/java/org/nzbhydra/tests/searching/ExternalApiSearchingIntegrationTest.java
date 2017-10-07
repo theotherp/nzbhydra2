@@ -2,33 +2,47 @@ package org.nzbhydra.tests.searching;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockserver.integration.ClientAndProxy;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
-import org.mockserver.model.HttpRequest;
-import org.mockserver.model.HttpResponse;
-import org.mockserver.model.Parameter;
+import org.mockito.MockitoAnnotations;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.api.ExternalApi;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
+import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
+import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaInfo;
+import org.nzbhydra.mediainfo.MovieInfo;
+import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
@@ -36,22 +50,29 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
 
     @Autowired
     private ExternalApi externalApi;
+    @Autowired
+    private SearchModuleProvider searchModuleProvider;
+    @Autowired
+    private ConfigProvider configProvider;
+    @MockBean
+    private InfoProvider infoProvider;
 
-    private ClientAndProxy proxy;
-    private ClientAndServer mockServer;
+    private MockWebServer webServer;
 
     @Before
     public void setUp() throws IOException {
-        mockServer = startClientAndServer(7070);
-        proxy = startClientAndProxy(7072);
+        MockitoAnnotations.initMocks(this);
+        webServer = new MockWebServer();
+        webServer.start(7070);
         replaceConfig(getClass().getResource("twoIndexers.json"));
+        configProvider.getBaseConfig().getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
     }
 
     @After
-    public void stopProxy() {
-        proxy.stop();
-        mockServer.stop();
+    public void tearDown() throws IOException {
+        webServer.close();
     }
+
 
 
     @Test
@@ -60,16 +81,9 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         String expectedContent1b = Resources.toString(Resources.getResource(ExternalApiSearchingIntegrationTest.class, "simplesearchresult1b.xml"), Charsets.UTF_8);
         String expectedContent2 = Resources.toString(Resources.getResource(ExternalApiSearchingIntegrationTest.class, "simplesearchresult2.xml"), Charsets.UTF_8);
 
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(expectedContent1a).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(expectedContent1b).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(expectedContent2).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-
+        webServer.enqueue(new MockResponse().setBody(expectedContent1a).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(expectedContent2).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(expectedContent1b).setHeader("Content-Type", "application/xml; charset=utf-8"));
 
         NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setApikey("apikey");
@@ -77,18 +91,17 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setLimit(2);
         apiCallParameters.setT(ActionAttribute.SEARCH);
         RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
-
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle(), is("itemTitle2"));
+        Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
+        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1a"));
+        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(1).getTitle(), is("itemTitle2"));
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
         apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
+        Assert.assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
+        Assert.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("itemTitle1b"));
     }
 
     @Test
@@ -99,15 +112,9 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         String xml2 = builder.getTestResult(3, 3, "indexer1", 2, 3).toXmlString();
         String xml3 = builder.getTestResult(1, 0, "indexer2", 0, 0).toXmlString();
 
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml1).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml2).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(xml3).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
+        webServer.enqueue(new MockResponse().setBody(xml1).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(xml2).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(xml3).setHeader("Content-Type", "application/xml; charset=utf-8"));
 
         NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setOffset(0);
@@ -115,15 +122,15 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setT(ActionAttribute.SEARCH);
         RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(2));
+        org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(2);
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(2);
 
         apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(1));
-        assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle(), is("indexer13"));
+        org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(1);
+        org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().get(0).getTitle()).isEqualTo("indexer13");
     }
 
     @Test
@@ -134,15 +141,9 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         String xml2 = builder.getTestResult(101, 150, "indexer1", 100, 150).toXmlString();
         String xml3 = builder.getTestResult(1, 0, "indexer2", 0, 0).toXmlString();
 
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml1).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(xml2).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(xml3).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
+        webServer.enqueue(new MockResponse().setBody(xml1).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(xml2).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webServer.enqueue(new MockResponse().setBody(xml3).setHeader("Content-Type", "application/xml; charset=utf-8"));
 
         NewznabParameters apiCallParameters = new NewznabParameters();
         apiCallParameters.setApikey("apikey");
@@ -151,14 +152,66 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setT(ActionAttribute.SEARCH);
         RssRoot apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(100));
+        org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(100);
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(100);
 
         apiSearchResult = (RssRoot) externalApi.api(apiCallParameters).getBody();
 
-        assertThat(apiSearchResult.getRssChannel().getItems().size(), is(50));
+        assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(50);
     }
 
+    @Test
+    public void shouldUseProvidedIdentifiers() throws Exception{
+        prepareIndexerWithOneResponse();
+        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(IdType.IMDB, IdType.TMDB));
+
+        RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
+
+        RssRoot root = (RssRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").imdbid("1234").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+
+        assertThat(request.getPath()).contains("imdbid=1234").contains("tmdbid=abcd");
+        assertThat(root.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(1);
+        assertThat(root.getRssChannel().getItems().size()).isEqualTo(1);
+    }
+
+
+    @Test
+    public void shouldConvertProvidedIdentifier() throws Exception{
+        prepareIndexerWithOneResponse();
+        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(IdType.IMDB));
+        when(infoProvider.convert(anyMap())).thenReturn(new MediaInfo(new MovieInfo("tt1234", null,null, 0, null)));
+        when(infoProvider.canConvertAny(anySet(), anySet())).thenReturn(true);
+
+        RssRoot root = (RssRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+
+        RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
+        assertThat(request.getRequestUrl().queryParameter("imdbid")).isEqualTo("1234");
+        assertThat(root.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(1);
+        assertThat(root.getRssChannel().getItems().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldGenerateQuery() throws Exception{
+        prepareIndexerWithOneResponse();
+        configProvider.getBaseConfig().getSearching().setGenerateQueries(SearchSourceRestriction.API);
+        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Collections.emptyList());
+        when(infoProvider.convert(anyMap())).thenReturn(new MediaInfo(new MovieInfo(null, null,"title", 0, null)));
+        when(infoProvider.convert(any(), any())).thenReturn(new MediaInfo(new MovieInfo(null, null,"title", 0, null)));
+        when(infoProvider.canConvertAny(anySet(), anySet())).thenReturn(false);
+
+        RssRoot root = (RssRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+
+        RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
+        assertThat(request.getRequestUrl().queryParameter("q")).isEqualTo("title");
+        assertThat(root.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(1);
+        assertThat(root.getRssChannel().getItems().size()).isEqualTo(1);
+    }
+
+    protected void prepareIndexerWithOneResponse() throws IOException {
+        replaceConfig(getClass().getResource("oneIndexer.json"));
+        RssRoot response = NewznabMockBuilder.generateResponse(NewznabMockRequest.builder().total(1).offset(0).numberOfResults(1).build());
+        webServer.enqueue(new MockResponse().setBody(response.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
+    }
 }

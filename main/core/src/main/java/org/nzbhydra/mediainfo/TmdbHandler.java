@@ -1,6 +1,5 @@
 package org.nzbhydra.mediainfo;
 
-import com.uwetrottmann.tmdb2.Tmdb;
 import com.uwetrottmann.tmdb2.entities.FindResults;
 import com.uwetrottmann.tmdb2.entities.Movie;
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
@@ -26,7 +25,7 @@ public class TmdbHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
     @Autowired
-    protected Tmdb tmdb;
+    protected CustomTmdb tmdb;
     @Autowired
     private ConfigProvider configProvider;
 
@@ -117,9 +116,9 @@ public class TmdbHandler {
 
     private Movie getMovieByTmdbId(String tmdbId) throws InfoProviderException {
         Movie movie;
-        Call<Movie> english = tmdb.moviesService().summary(Integer.valueOf(tmdbId), configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null);
+        Call<Movie> movieCall = tmdb.moviesService().summary(Integer.valueOf(tmdbId), configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null);
         try {
-            Response<Movie> response = english.execute();
+            Response<Movie> response = movieCall.execute();
             if (!response.isSuccessful()) {
                 throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
             }

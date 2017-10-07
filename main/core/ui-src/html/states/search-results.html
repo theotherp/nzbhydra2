@@ -137,16 +137,16 @@
 </div>
 <div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0" style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
-        <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default">Show duplicates</input>
+        <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default" id="show-duplicates-checkbox">Show duplicates</input>
         <div class="btn-group">
-            <button class="btn btn-default" ng-click="invertSelection()">Invert selection</button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <button class="btn btn-default" ng-click="invertSelection()" id="invert-selection-button">Invert selection</button>
+            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="result-selection-dropdown">
                 <span class="caret"></span>
                 <span class="sr-only">Toggle Dropdown</span>
             </button>
             <ul class="dropdown-menu">
-                <li><a href="#" ng-click="selectAll()">Select all</a></li>
-                <li><a href="#" ng-click="deselectAll()">Deselect all</a></li>
+                <li><a href="#" ng-click="selectAll()"  id="select-all-button">Select all</a></li>
+                <li><a href="#" ng-click="deselectAll()" id="deselect-all-button">Deselect all</a></li>
             </ul>
         </div>
         <download-nzbs-button search-results="selected"></download-nzbs-button>
@@ -228,47 +228,47 @@
 
     <table class="search-results-table table">
         <thead class="search-results-header">
-        <tr class="search-results-row">
+        <tr class="search-results-header-row">
             <th class="col-md-12 cursor-default search-results-cell result-title">
                 <column-sortable column="title" reversed="false" start-mode="1">Title
                 </column-sortable>
                 <column-filter-wrapper>
-                    <freetext-filter column="title"/>
+                    <freetext-filter column="title" id="title-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-indexer" style="vertical-align: top; text-align: right">
                 <column-sortable column="indexer" reversed="false" start-mode="1">Indexer
                 </column-sortable>
                 <column-filter-wrapper>
-                    <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true"/>
+                    <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true" id="indexer-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-category" style="vertical-align: top; text-align: right">
                 <column-sortable column="category" reversed="false" start-mode="1">Category
                 </column-sortable>
                 <column-filter-wrapper>
-                    <checkboxes-filter column="category" entries="categoriesForFiltering" preselect="true" show-invert="true"/>
+                    <checkboxes-filter column="category" entries="categoriesForFiltering" preselect="true" show-invert="true" id="category-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-size" style="vertical-align: top; text-align: right">
                 <column-sortable column="size" reversed="false" start-mode="2">Size
                 </column-sortable>
                 <column-filter-wrapper>
-                    <number-range-filter column="size" addon="MB"/>
+                    <number-range-filter column="size" addon="MB" id="size-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-details" style="vertical-align: top; text-align: right">
                 <column-sortable column="grabs" reversed="false" start-mode="2">Grabs
                 </column-sortable>
                 <column-filter-wrapper>
-                    <number-range-filter column="grabs"/>
+                    <number-range-filter column="grabs" id="grabs-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-age" style="vertical-align: top; text-align: right">
                 <column-sortable column="epoch" reversed="true" start-mode="2">Age
                 </column-sortable>
                 <column-filter-wrapper>
-                    <number-range-filter column="epoch" addon="days"/>
+                    <number-range-filter column="epoch" addon="days" id="age-filter"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-3 search-results-cell result-links" style="vertical-align: top">

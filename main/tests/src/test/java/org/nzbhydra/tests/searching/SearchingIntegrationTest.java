@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +40,10 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
         replaceConfig(getClass().getResource("twoIndexers.json"));
     }
 
+    @After
+    public void tearDown() throws IOException {
+        mockWebServer.close();
+    }
 
 
     @Test

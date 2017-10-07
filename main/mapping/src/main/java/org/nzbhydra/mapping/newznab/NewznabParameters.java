@@ -2,11 +2,18 @@ package org.nzbhydra.mapping.newznab;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class NewznabParameters {
 
     private String apikey;
@@ -44,7 +51,8 @@ public class NewznabParameters {
 
     //Not (yet) supported
     private String genre;
-    private List<String> attrs;
+    @Builder.Default
+    private List<String> attrs = new ArrayList<>();
     private boolean extended;
 
 

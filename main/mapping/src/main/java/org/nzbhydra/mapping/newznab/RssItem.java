@@ -51,4 +51,6 @@ public class RssItem {
     @XmlElement(name = "enclosure")
     private Enclosure enclosure;
 
+
+
 }

@@ -45,17 +45,6 @@ public class NewznabMockBuilder {
     }
 
     public static RssRoot generateResponse(NewznabMockRequest request) {
-
-        RssRoot rssRoot = new RssRoot();
-        rssRoot.setVersion("2.0");
-        RssChannel channel = new RssChannel();
-        channel.setTitle("channelTitle");
-        channel.setDescription("channelDescription");
-        channel.setLanguage("en-gb");
-        channel.setWebMaster("webmaster@master.com");
-        channel.setLink("http://127.0.0.1:5080");
-        channel.setNewznabResponse(new NewznabResponse(request.getOffset(), request.getTotal()));
-
         List<RssItem> items = new ArrayList<>();
         for (int i = request.getOffset()+1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
 
@@ -109,8 +98,22 @@ public class NewznabMockBuilder {
 
             items.add(item);
         }
-        channel.setItems(items);
 
+        RssRoot rssRoot = getRssRoot(items, request.getOffset(), request.getTotal());
+        return rssRoot;
+    }
+
+    public static RssRoot getRssRoot(List<RssItem> items, int offset, int total) {
+        RssRoot rssRoot = new RssRoot();
+        rssRoot.setVersion("2.0");
+        RssChannel channel = new RssChannel();
+        channel.setTitle("channelTitle");
+        channel.setDescription("channelDescription");
+        channel.setLanguage("en-gb");
+        channel.setWebMaster("webmaster@master.com");
+        channel.setLink("http://127.0.0.1:5080");
+        channel.setNewznabResponse(new NewznabResponse(offset, total));
+        channel.setItems(items);
         rssRoot.setRssChannel(channel);
         return rssRoot;
     }

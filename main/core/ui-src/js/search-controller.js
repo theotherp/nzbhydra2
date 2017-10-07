@@ -76,7 +76,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.category = searchCategory;
 
         //Show checkbox to ask if the user wants to search by ID (using autocomplete)
-        $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
+        if ($scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE") {
+            $scope.isAskById = true;
+            $scope.isById.value = true;
+        } else {
+            $scope.isAskById = false;
+            $scope.isById.value = false;
+        }
 
         if (oldCategory.searchType !== searchCategory.searchType) {
             $scope.selectedItem = null;

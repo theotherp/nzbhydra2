@@ -31,10 +31,10 @@ public class BrowserOpener {
             try {
                 desktop.browse(uri);
             } catch (Exception e) {
-                logger.error("Unable to open browser", e);
+                logger.error("Unable to open browser. Go to " + uri.toString(), e);
             }
         } else {
-            logger.error("Unable to open browser");
+            logger.error("Unable to open browser. Go to " + uri.toString());
         }
     }
 

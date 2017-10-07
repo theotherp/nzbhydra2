@@ -1,6 +1,5 @@
 package org.nzbhydra.mediainfo;
 
-import com.uwetrottmann.tmdb2.Tmdb;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -17,7 +16,7 @@ public class TmdbHandlerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        testee.tmdb = new Tmdb("4df99d58875c2d01fc04936759fea56f");
+        testee.tmdb = new CustomTmdb("4df99d58875c2d01fc04936759fea56f");
     }
 
     @Test

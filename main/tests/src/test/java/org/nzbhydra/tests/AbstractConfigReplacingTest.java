@@ -15,7 +15,7 @@ public class AbstractConfigReplacingTest {
 
     public void replaceConfig(URL resource) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValueAsString(BaseConfig.originalConfig());
+        objectMapper.writeValueAsString(baseConfig);
         ObjectReader updater = objectMapper.readerForUpdating(baseConfig);
         BaseConfig updatedConfig = updater.readValue(resource);
         baseConfig.replace(updatedConfig);

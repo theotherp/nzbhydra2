@@ -1,5 +1,5 @@
-<div class="btn-group" ng-class="{'open':columnFilterWrapperCtrl.open}">
-    <button id="single-button" type="button" class="btn btn-primary dropdown-toggle column-filter" ng-click="columnFilterWrapperCtrl.toggle()">
+<div class="btn-group filter-wrapper" ng-class="{'open':columnFilterWrapperCtrl.open}">
+    <button id="single-button" type="button" class="btn btn-primary dropdown-toggle column-filter toggle-column-filter" ng-click="columnFilterWrapperCtrl.toggle()">
         <span class="glyphicon glyphicon-filter" ng-class="{'filter-active': columnFilterWrapperCtrl.isActive}"></span>
     </button>
     <ul role="menu" class="dropdown-menu" ng-transclude>

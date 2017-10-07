@@ -25,7 +25,7 @@ public final class RssItemBuilder {
     private List<NewznabAttribute> newznabAttributes = new ArrayList<>();
     private List<NewznabAttribute> torznabAttributes = new ArrayList<>();
     private Instant pubDate = Instant.now().minus(random.nextInt(500), ChronoUnit.DAYS);
-    private RssGuid rssGuid = new RssGuid("guid", false);
+    private RssGuid rssGuid = new RssGuid("guid" + random.nextInt(), false);
     private String title = "title-rnd" + random.nextInt();
     private long size = random.nextLong();
 
