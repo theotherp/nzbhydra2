@@ -56,6 +56,11 @@ public class Torznab extends Newznab {
     }
 
     @Override
+    protected String addForbiddenWords(SearchRequest searchRequest, String query) {
+        return query; //Jackett etc don't support excluding words using the query
+    }
+
+    @Override
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
         RssChannel rssChannel = ((RssRoot) response).getRssChannel();
         super.completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest);

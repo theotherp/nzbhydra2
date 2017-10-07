@@ -194,22 +194,17 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    private String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
+    protected String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
         if (Strings.isNullOrEmpty(query)) {
             //Indexers do not allow having a query that only contains forbidden words
             return query;
         }
-        List<String> allRequiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
-        allRequiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
-        allRequiredWords.addAll(searchRequest.getCategory().getRequiredWords());
-        List<String> allPossibleRequiredWords = allRequiredWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
-        if (allRequiredWords.size() > allPossibleRequiredWords.size()) {
-            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
-        }
-        if (!allPossibleRequiredWords.isEmpty()) {
-            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(allPossibleRequiredWords);
-        }
+        query = addRequiredWords(searchRequest, query);
 
+        return addForbiddenWords(searchRequest, query);
+    }
+
+    protected String addForbiddenWords(SearchRequest searchRequest, String query) {
         List<String> allForbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
         allForbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         allForbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
@@ -223,6 +218,20 @@ public class Newznab extends Indexer<Xml> {
             } else {
                 query += (query.isEmpty() ? "" : " ") + "--" + Joiner.on(" --").join(allPossibleForbiddenWords);
             }
+        }
+        return query;
+    }
+
+    protected String addRequiredWords(SearchRequest searchRequest, String query) {
+        List<String> allRequiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
+        allRequiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
+        allRequiredWords.addAll(searchRequest.getCategory().getRequiredWords());
+        List<String> allPossibleRequiredWords = allRequiredWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
+        if (allRequiredWords.size() > allPossibleRequiredWords.size()) {
+            logger.debug("Not using some forbidden words in query because characters forbidden by newznab are contained");
+        }
+        if (!allPossibleRequiredWords.isEmpty()) {
+            query += (query.isEmpty() ? "" : " ") + Joiner.on(" ").join(allPossibleRequiredWords);
         }
         return query;
     }
