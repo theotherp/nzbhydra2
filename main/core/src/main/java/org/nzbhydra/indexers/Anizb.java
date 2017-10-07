@@ -71,6 +71,7 @@ public class Anizb extends Indexer<RssRoot> {
         if (Strings.isNullOrEmpty(query)) {
             throw new IndexerSearchAbortedException("Anizb cannot search without a query");
         }
+        query = cleanupQuery(query);
 
         return UriComponentsBuilder.fromHttpUrl("https://anizb.org/api/").queryParam("q", query);
     }

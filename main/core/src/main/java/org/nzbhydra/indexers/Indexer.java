@@ -200,6 +200,12 @@ public abstract class Indexer<T> {
 
     public abstract NfoResult getNfo(String guid);
 
+    //May be overwritten by specific indexer implementations
+    protected String cleanupQuery(String query) {
+
+        return query;
+    }
+
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
         Stopwatch stopwatch = Stopwatch.createStarted();

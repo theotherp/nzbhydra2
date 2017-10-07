@@ -23,13 +23,19 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -124,6 +130,15 @@ public class TorznabTest {
         rssItem.setComments("http://indexer.com/123/details#comments");
         rssItem.setTorznabAttributes(new ArrayList<>());
         return rssItem;
+    }
+
+    @Test
+    public void shouldNotAddExcludedWordsToQuery() throws Exception{
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.getInternalData().setForbiddenWords(Arrays.asList("notthis", "alsonotthis"));
+        searchRequest.setQuery("query");
+        UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
+        assertThat(builder.toUriString(), not(containsString("notthis")));
     }
 
 

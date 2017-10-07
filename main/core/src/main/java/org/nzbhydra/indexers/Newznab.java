@@ -129,11 +129,6 @@ public class Newznab extends Indexer<Xml> {
         return componentsBuilder;
     }
 
-    //May be overwritten by specific indexer implementations
-    protected String cleanupQuery(String query) {
-        return query;
-    }
-
     protected void addFurtherParametersToUri(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) {
         if (!query.isEmpty()) {
             componentsBuilder.queryParam("q", query);

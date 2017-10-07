@@ -202,6 +202,7 @@ public class Binsearch extends Indexer<String> {
         if (Strings.isNullOrEmpty(query)) {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
+        query = cleanupQuery(query);
 
         return UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date").queryParam("min", offset).queryParam("max", limit).queryParam("q", query);
     }

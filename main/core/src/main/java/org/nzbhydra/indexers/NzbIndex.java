@@ -105,7 +105,7 @@ public class NzbIndex extends Indexer<RssRoot> {
         }
 
         query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
-
+        query = cleanupQuery(query);
         componentsBuilder.queryParam("q", query);
 
         return componentsBuilder;
