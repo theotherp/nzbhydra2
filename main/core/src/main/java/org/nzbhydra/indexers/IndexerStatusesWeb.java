@@ -24,7 +24,7 @@ public class IndexerStatusesWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/indexerstatuses")
     public List<IndexerStatusEntity> indexerStatuses() {
-        return indexerStatusRepository.findAll();
+        return getSortedStatuses();
     }
 
     @RequestMapping(value = "/internalapi/indexerstatuses/enable/{indexerName}", method = RequestMethod.POST)
@@ -38,7 +38,14 @@ public class IndexerStatusesWeb {
 
         logger.info("Reenable indexer {}", indexerName);
 
-        return new ResponseEntity<>(indexerStatusRepository.findAll(), HttpStatus.OK);
+        List<IndexerStatusEntity> statuses = getSortedStatuses();
+        return new ResponseEntity<>(statuses, HttpStatus.OK);
+    }
+
+    protected List<IndexerStatusEntity> getSortedStatuses() {
+        List<IndexerStatusEntity> statuses = indexerStatusRepository.findAll();
+        statuses.sort((o1, o2) -> o1.getIndexer().getName().toLowerCase().compareTo(o2.getIndexer().getName()));
+        return statuses;
     }
 
 }
