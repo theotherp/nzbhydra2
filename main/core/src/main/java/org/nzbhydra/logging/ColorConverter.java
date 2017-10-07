@@ -10,12 +10,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ColorConverter extends org.springframework.boot.logging.logback.ColorConverter  {
+public class ColorConverter extends org.springframework.boot.logging.logback.ColorConverter {
 
     private static final Map<String, AnsiElement> ELEMENTS;
 
     static {
-        Map<String, AnsiElement> elements = new HashMap<String, AnsiElement>();
+        Map<String, AnsiElement> elements = new HashMap<>();
         elements.put("faint", AnsiStyle.FAINT);
         elements.put("red", AnsiColor.RED);
         elements.put("green", AnsiColor.GREEN);

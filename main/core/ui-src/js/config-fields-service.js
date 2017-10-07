@@ -475,8 +475,128 @@ function ConfigFields($injector) {
                                 help: "When no results were found for a query ID search again using a generated query (on indexer level)"
                             }
                         },
-
-
+                        {
+                            key: 'language',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Language',
+                                required: true,
+                                help: 'Used for movie query generation and autocomplete only.',
+                                options: [{"name": "Abkhaz", value: "ab"}, {"name": "Afar", value: "aa"}, {"name": "Afrikaans", value: "af"}, {"name": "Akan", value: "ak"}, {
+                                    "name": "Albanian",
+                                    value: "sq"
+                                }, {"name": "Amharic", value: "am"}, {"name": "Arabic", value: "ar"}, {"name": "Aragonese", value: "an"}, {"name": "Armenian", value: "hy"}, {
+                                    "name": "Assamese",
+                                    value: "as"
+                                }, {"name": "Avaric", value: "av"}, {"name": "Avestan", value: "ae"}, {"name": "Aymara", value: "ay"}, {"name": "Azerbaijani", value: "az"}, {
+                                    "name": "Bambara",
+                                    value: "bm"
+                                }, {"name": "Bashkir", value: "ba"}, {"name": "Basque", value: "eu"}, {"name": "Belarusian", value: "be"}, {"name": "Bengali", value: "bn"}, {
+                                    "name": "Bihari",
+                                    value: "bh"
+                                }, {"name": "Bislama", value: "bi"}, {"name": "Bosnian", value: "bs"}, {"name": "Breton", value: "br"}, {"name": "Bulgarian", value: "bg"}, {
+                                    "name": "Burmese",
+                                    value: "my"
+                                }, {"name": "Catalan", value: "ca"}, {"name": "Chamorro", value: "ch"}, {"name": "Chechen", value: "ce"}, {"name": "Chichewa", value: "ny"}, {
+                                    "name": "Chinese",
+                                    value: "zh"
+                                }, {"name": "Chuvash", value: "cv"}, {"name": "Cornish", value: "kw"}, {"name": "Corsican", value: "co"}, {"name": "Cree", value: "cr"}, {
+                                    "name": "Croatian",
+                                    value: "hr"
+                                }, {"name": "Czech", value: "cs"}, {"name": "Danish", value: "da"}, {"name": "Divehi", value: "dv"}, {"name": "Dutch", value: "nl"}, {
+                                    "name": "Dzongkha",
+                                    value: "dz"
+                                }, {"name": "English", value: "en"}, {"name": "Esperanto", value: "eo"}, {"name": "Estonian", value: "et"}, {"name": "Ewe", value: "ee"}, {
+                                    "name": "Faroese",
+                                    value: "fo"
+                                }, {"name": "Fijian", value: "fj"}, {"name": "Finnish", value: "fi"}, {"name": "French", value: "fr"}, {"name": "Fula", value: "ff"}, {
+                                    "name": "Galician",
+                                    value: "gl"
+                                }, {"name": "Georgian", value: "ka"}, {"name": "German", value: "de"}, {"name": "Greek", value: "el"}, {"name": "Guaraní", value: "gn"}, {
+                                    "name": "Gujarati",
+                                    value: "gu"
+                                }, {"name": "Haitian", value: "ht"}, {"name": "Hausa", value: "ha"}, {"name": "Hebrew", value: "he"}, {"name": "Herero", value: "hz"}, {
+                                    "name": "Hindi",
+                                    value: "hi"
+                                }, {"name": "Hiri Motu", value: "ho"}, {"name": "Hungarian", value: "hu"}, {"name": "Interlingua", value: "ia"}, {
+                                    "name": "Indonesian",
+                                    value: "id"
+                                }, {"name": "Interlingue", value: "ie"}, {"name": "Irish", value: "ga"}, {"name": "Igbo", value: "ig"}, {"name": "Inupiaq", value: "ik"}, {
+                                    "name": "Ido",
+                                    value: "io"
+                                }, {"name": "Icelandic", value: "is"}, {"name": "Italian", value: "it"}, {"name": "Inuktitut", value: "iu"}, {"name": "Japanese", value: "ja"}, {
+                                    "name": "Javanese",
+                                    value: "jv"
+                                }, {"name": "Kalaallisut", value: "kl"}, {"name": "Kannada", value: "kn"}, {"name": "Kanuri", value: "kr"}, {"name": "Kashmiri", value: "ks"}, {
+                                    "name": "Kazakh",
+                                    value: "kk"
+                                }, {"name": "Khmer", value: "km"}, {"name": "Kikuyu", value: "ki"}, {"name": "Kinyarwanda", value: "rw"}, {"name": "Kyrgyz", value: "ky"}, {
+                                    "name": "Komi",
+                                    value: "kv"
+                                }, {"name": "Kongo", value: "kg"}, {"name": "Korean", value: "ko"}, {"name": "Kurdish", value: "ku"}, {"name": "Kwanyama", value: "kj"}, {
+                                    "name": "Latin",
+                                    value: "la"
+                                }, {"name": "Luxembourgish", value: "lb"}, {"name": "Ganda", value: "lg"}, {"name": "Limburgish", value: "li"}, {"name": "Lingala", value: "ln"}, {
+                                    "name": "Lao",
+                                    value: "lo"
+                                }, {"name": "Lithuanian", value: "lt"}, {"name": "Luba-Katanga", value: "lu"}, {"name": "Latvian", value: "lv"}, {"name": "Manx", value: "gv"}, {
+                                    "name": "Macedonian",
+                                    value: "mk"
+                                }, {"name": "Malagasy", value: "mg"}, {"name": "Malay", value: "ms"}, {"name": "Malayalam", value: "ml"}, {"name": "Maltese", value: "mt"}, {
+                                    "name": "Māori",
+                                    value: "mi"
+                                }, {"name": "Marathi", value: "mr"}, {"name": "Marshallese", value: "mh"}, {"name": "Mongolian", value: "mn"}, {"name": "Nauru", value: "na"}, {
+                                    "name": "Navajo",
+                                    value: "nv"
+                                }, {"name": "Northern Ndebele", value: "nd"}, {"name": "Nepali", value: "ne"}, {"name": "Ndonga", value: "ng"}, {
+                                    "name": "Norwegian Bokmål",
+                                    value: "nb"
+                                }, {"name": "Norwegian Nynorsk", value: "nn"}, {"name": "Norwegian", value: "no"}, {"name": "Nuosu", value: "ii"}, {
+                                    "name": "Southern Ndebele",
+                                    value: "nr"
+                                }, {"name": "Occitan", value: "oc"}, {"name": "Ojibwe", value: "oj"}, {"name": "Old Church Slavonic", value: "cu"}, {"name": "Oromo", value: "om"}, {
+                                    "name": "Oriya",
+                                    value: "or"
+                                }, {"name": "Ossetian", value: "os"}, {"name": "Panjabi", value: "pa"}, {"name": "Pāli", value: "pi"}, {"name": "Persian", value: "fa"}, {
+                                    "name": "Polish",
+                                    value: "pl"
+                                }, {"name": "Pashto", value: "ps"}, {"name": "Portuguese", value: "pt"}, {"name": "Quechua", value: "qu"}, {"name": "Romansh", value: "rm"}, {
+                                    "name": "Kirundi",
+                                    value: "rn"
+                                }, {"name": "Romanian", value: "ro"}, {"name": "Russian", value: "ru"}, {"name": "Sanskrit", value: "sa"}, {"name": "Sardinian", value: "sc"}, {
+                                    "name": "Sindhi",
+                                    value: "sd"
+                                }, {"name": "Northern Sami", value: "se"}, {"name": "Samoan", value: "sm"}, {"name": "Sango", value: "sg"}, {"name": "Serbian", value: "sr"}, {
+                                    "name": "Gaelic",
+                                    value: "gd"
+                                }, {"name": "Shona", value: "sn"}, {"name": "Sinhala", value: "si"}, {"name": "Slovak", value: "sk"}, {"name": "Slovene", value: "sl"}, {
+                                    "name": "Somali",
+                                    value: "so"
+                                }, {"name": "Southern Sotho", value: "st"}, {"name": "Spanish", value: "es"}, {"name": "Sundanese", value: "su"}, {"name": "Swahili", value: "sw"}, {
+                                    "name": "Swati",
+                                    value: "ss"
+                                }, {"name": "Swedish", value: "sv"}, {"name": "Tamil", value: "ta"}, {"name": "Telugu", value: "te"}, {"name": "Tajik", value: "tg"}, {
+                                    "name": "Thai",
+                                    value: "th"
+                                }, {"name": "Tigrinya", value: "ti"}, {"name": "Tibetan Standard", value: "bo"}, {"name": "Turkmen", value: "tk"}, {"name": "Tagalog", value: "tl"}, {
+                                    "name": "Tswana",
+                                    value: "tn"
+                                }, {"name": "Tonga", value: "to"}, {"name": "Turkish", value: "tr"}, {"name": "Tsonga", value: "ts"}, {"name": "Tatar", value: "tt"}, {
+                                    "name": "Twi",
+                                    value: "tw"
+                                }, {"name": "Tahitian", value: "ty"}, {"name": "Uyghur", value: "ug"}, {"name": "Ukrainian", value: "uk"}, {"name": "Urdu", value: "ur"}, {
+                                    "name": "Uzbek",
+                                    value: "uz"
+                                }, {"name": "Venda", value: "ve"}, {"name": "Vietnamese", value: "vi"}, {"name": "Volapük", value: "vo"}, {"name": "Walloon", value: "wa"}, {
+                                    "name": "Welsh",
+                                    value: "cy"
+                                }, {"name": "Wolof", value: "wo"}, {"name": "Western Frisian", value: "fy"}, {"name": "Xhosa", value: "xh"}, {"name": "Yiddish", value: "yi"}, {
+                                    "name": "Yoruba",
+                                    value: "yo"
+                                }, {"name": "Zhuang", value: "za"}, {"name": "Zulu", value: "zu"}]
+                            }
+                        },
                         {
                             key: 'userAgent',
                             type: 'horizontalInput',
@@ -1664,7 +1784,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
 
     if (model.searchModuleType !== "ANIZB") {
         var cats = CategoriesService.getWithoutAll();
-        var options = _.map(cats, function(x) {
+        var options = _.map(cats, function (x) {
             return {id: x.name, label: x.name}
         });
         fieldset.push(

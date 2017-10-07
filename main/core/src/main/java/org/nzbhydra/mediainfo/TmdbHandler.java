@@ -5,6 +5,7 @@ import com.uwetrottmann.tmdb2.entities.FindResults;
 import com.uwetrottmann.tmdb2.entities.Movie;
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage;
 import com.uwetrottmann.tmdb2.enumerations.ExternalSource;
+import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ public class TmdbHandler {
     private static final Logger logger = LoggerFactory.getLogger(TmdbHandler.class);
     @Autowired
     protected Tmdb tmdb;
+    @Autowired
+    private ConfigProvider configProvider;
 
 
     public TmdbSearchResult getInfos(String value, InfoProvider.IdType idType) throws InfoProviderException {
@@ -74,8 +77,7 @@ public class TmdbHandler {
 
     public List<TmdbSearchResult> search(String title, Integer year) throws InfoProviderException {
         List<Movie> movies;
-        //query, page, language, include_adult, year, primary release year, search type
-        Call<MovieResultsPage> movieSearch = tmdb.searchService().movie(title, null, null, null, year, null, null);
+        Call<MovieResultsPage> movieSearch = tmdb.searchService().movie(title, null, configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null, year, null, null);
         try {
             Response<MovieResultsPage> response = movieSearch.execute();
             if (!response.isSuccessful()) {
@@ -96,19 +98,17 @@ public class TmdbHandler {
 
     private Movie getMovieByImdbId(String imdbId) throws InfoProviderException {
         Movie movie;
-        Call<FindResults> english = tmdb.findService().find(imdbId, ExternalSource.IMDB_ID, "en-US");
+        Call<FindResults> resultsCall = tmdb.findService().find(imdbId, ExternalSource.IMDB_ID, configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"));
         try {
-            Response<FindResults> response = english.execute();
+            Response<FindResults> response = resultsCall.execute();
             if (!response.isSuccessful()) {
                 throw new InfoProviderException("Error while contacting TMDB: " + response.errorBody().string());
             }
             if (response.body().movie_results.size() == 0) {
                 throw new InfoProviderException(String.format("TMDB query for IMDB ID %s returned no searchResults", imdbId));
             }
-            //logger.error("TMDB query for IMDB ID {} returned no searchResults", imdbId);
             movie = response.body().movie_results.get(0);
         } catch (IOException e) {
-            //logger.error("Error while contacting TMDB", e);
             throw new InfoProviderException("Error while contacting TMDB", e);
         }
         return movie;
@@ -117,7 +117,7 @@ public class TmdbHandler {
 
     private Movie getMovieByTmdbId(String tmdbId) throws InfoProviderException {
         Movie movie;
-        Call<Movie> english = tmdb.moviesService().summary(Integer.valueOf(tmdbId), null, null);
+        Call<Movie> english = tmdb.moviesService().summary(Integer.valueOf(tmdbId), configProvider.getBaseConfig().getSearching().getLanguage().orElse("en"), null);
         try {
             Response<Movie> response = english.execute();
             if (!response.isSuccessful()) {
@@ -126,7 +126,6 @@ public class TmdbHandler {
 
             movie = response.body();
         } catch (IOException e) {
-            //logger.error("Error while contacting TMDB", e);
             throw new InfoProviderException("Error while contacting TMDB", e);
         }
         return movie;

@@ -32,6 +32,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
     private int keepSearchResultsForDays = 14;
+    private String language = "en";
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
@@ -63,6 +64,12 @@ public class SearchingConfig extends ValidatingConfig {
     public Optional<String> getUserAgent() {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
+
+    public Optional<String> getLanguage() {
+        return Optional.ofNullable(Strings.emptyToNull(language));
+    }
+
+
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
