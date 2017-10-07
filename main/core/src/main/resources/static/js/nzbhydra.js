@@ -3091,7 +3091,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
       tv: ['hdtv'],
       camts: ['cam', 'ts'],
       web: ['webrip', 'web-dl', 'webdl'],
-      dvdbluray: ['dvd', 'bluray', 'blu-ray']
+      dvd: ['dvd'],
+      bluray: ['bluray', 'blu-ray']
     };
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
@@ -3436,7 +3437,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.getRejectedReasonsTooltip = function () {
-        if (_.isEmpty($scope.rejectedReasonsMap.length)) {
+        if (_.isEmpty($scope.rejectedReasonsMap)) {
             return "No rejected results";
         } else {
             var tooltip = "<span >Rejected results:<span><br>";
@@ -3841,7 +3842,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     $scope.autocompleteLoading = false;
     $scope.isAskById = $scope.category.searchType === "TVSEARCH" || $scope.category.searchType === "MOVIE";
-    $scope.isById = {value: true}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean
+    $scope.isById = {value: $scope.selectedItem !== null || angular.isUndefined($scope.mode) || $scope.mode === null}; //If true the user wants to search by id so we enable autosearch. Was unable to achieve this using a simple boolean. Set to false if last search was not by ID
     $scope.availableIndexers = [];
     $scope.selectedIndexers = [];
     $scope.autocompleteClass = "autocompletePosterMovies";
