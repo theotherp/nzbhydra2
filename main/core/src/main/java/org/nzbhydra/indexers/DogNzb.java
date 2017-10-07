@@ -8,11 +8,15 @@ import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DogNzb extends Newznab {
+
+    private static final Logger logger = LoggerFactory.getLogger(DogNzb.class);
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
         NewznabResponse newznabResponse = ((RssRoot) response).getRssChannel().getNewznabResponse();
@@ -45,7 +49,11 @@ public class DogNzb extends Newznab {
 
         @Override
         public boolean handlesIndexerConfig(IndexerConfig config) {
-            return config != null && config.getSearchModuleType() == SearchModuleType.NEWZNAB && config.getHost().toLowerCase().contains("dognzb");
+            boolean isIndexerDogNzb = config != null && config.getSearchModuleType() == SearchModuleType.NEWZNAB && config.getHost().toLowerCase().contains("dognzb");
+            if (isIndexerDogNzb) {
+                logger.debug("Will use special DOgNZB limit handling for indexer with host {}", config.getHost());
+            }
+            return isIndexerDogNzb;
         }
 
         @Override

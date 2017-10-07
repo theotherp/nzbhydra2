@@ -14,7 +14,7 @@ public class SearchRequestParameters {
     protected Integer maxsize;
     protected Integer minage;
     protected Integer maxage;
-    protected Boolean loadAll;
+    protected boolean loadAll;
     protected String category;
     protected Set<String> indexers;
 

@@ -57,7 +57,7 @@ public class NewznabMockBuilder {
         channel.setNewznabResponse(new NewznabResponse(request.getOffset(), request.getTotal()));
 
         List<RssItem> items = new ArrayList<>();
-        for (int i = 0; i < request.getNumberOfResults(); i++) {
+        for (int i = request.getOffset()+1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
 
             RssItem item = new RssItem();
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));

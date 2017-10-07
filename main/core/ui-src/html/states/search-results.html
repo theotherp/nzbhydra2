@@ -162,9 +162,15 @@
               tooltip-class="rejected-tooltip"
               tooltip-placement="top"
               tooltip-trigger="click"
-        >Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (
-            rejected {{ numberOfRejectedResults }}
-            )</span>
+        >
+            <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
+                Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
+            </span>
+            <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
+            Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})
+            </span>
+
+        </span>
 
         <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
             <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="!loadMoreEnabled"

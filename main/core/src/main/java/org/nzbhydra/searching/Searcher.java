@@ -74,9 +74,14 @@ public class Searcher {
 
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
         List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
-        while (indexersToSearchAndTheirResults.size() > 0 && searchResultItems.size() < numberOfWantedResults) {
+        while (indexersToSearchAndTheirResults.size() > 0 && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll())) {
 
-            logger.debug("Going to call {} indexers because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
+
+            if (searchRequest.isLoadAll()) {
+                logger.debug("Going to call {} indexers because {} results were loaded yet but more results are available and all were requested", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults());
+            } else {
+                logger.debug("Going to call {} indexers because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
+            }
 
             //Do the actual search
             indexersToSearchAndTheirResults = callSearchModules(searchRequest, indexersToSearchAndTheirResults);
@@ -124,6 +129,13 @@ public class Searcher {
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
         int limit = searchRequest.getLimit().orElse(100); //LATER configurable
+
+        if (searchRequest.isLoadAll()) {
+            logger.info("Returning all available search results");
+            searchResult.setSearchResultItems(searchResultItems);
+            return;
+        }
+
         if (offset > 0 && offset >= searchResultItems.size()) {
             logger.info("Offset {} exceeds the number of available results {}; returning empty search result", offset, searchResultItems.size());
             searchResult.setSearchResultItems(Collections.emptyList());

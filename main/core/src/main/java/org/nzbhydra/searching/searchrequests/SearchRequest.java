@@ -38,6 +38,7 @@ public class SearchRequest {
     protected Category category = new Category();
     protected Integer offset = 0;
     protected Integer limit = 100;
+    protected boolean loadAll;
     protected Integer minsize = null;
     protected Integer maxsize = null;
     protected Integer minage = null;

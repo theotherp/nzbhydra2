@@ -9,6 +9,7 @@ import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
+import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -58,7 +59,7 @@ public class MockNewznab {
         return "Would show comments for NZB with ID" + nzbId;
     }
 
-    @RequestMapping(value = "/api", produces = MediaType.TEXT_XML_VALUE)
+    @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
         logger.info(request.getHeader("user-agent"));
 
@@ -101,6 +102,23 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().equals("offsettest2")) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("offsettest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        if (params.getQ() != null && params.getQ().equals("dognzbtotaltest") && System.getProperty("nomockdognzb") == null) {
+            if (params.getOffset() >= 300) {
+                RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
+                return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+            }
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("dognzbtotaltest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if ((params.getQ() != null && params.getQ().equals("noresults")) || (params.getTvdbid() != null && params.getTvdbid().equals("329089"))) {
             RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -109,6 +127,7 @@ public class MockNewznab {
         if (params.getQ() != null && params.getQ().equals("sleep")) {
             Thread.sleep(new Random().nextInt(5000));
         }
+
 
         if (params.getQ() != null && params.getQ().contains("movies")) {
             RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));

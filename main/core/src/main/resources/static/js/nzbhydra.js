@@ -2998,9 +2998,10 @@ function SearchService($http) {
         return $http.post(uri.toString(), searchRequestParameters).then(processData);
     }
 
-    function loadMore(offset, limit) {
+    function loadMore(offset, limit, loadAll) {
         lastExecutedSearchRequestParameters.offset = offset;
         lastExecutedSearchRequestParameters.limit = limit;
+        lastExecutedSearchRequestParameters.loadAll = angular.isDefined(loadAll) ? loadAll : false;
 
         return $http.post(lastExecutedQuery.toString(), lastExecutedSearchRequestParameters).then(processData);
     }
@@ -3397,7 +3398,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     function loadMore(loadAll) {
         startBlocking(loadAll ? "Loading all results..." : "Loading more results...").then(function () {
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
-            SearchService.loadMore($scope.numberOfLoadedResults, limit).then(function (data) {
+            SearchService.loadMore($scope.numberOfLoadedResults, limit, loadAll).then(function (data) {
                 setDataFromSearchResult(data, allSearchResults);
                 stopBlocking();
             });
@@ -3435,7 +3436,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.getRejectedReasonsTooltip = function () {
-        if ($scope.rejectedReasonsMap.length === 0) {
+        if (_.isEmpty($scope.rejectedReasonsMap.length)) {
             return "No rejected results";
         } else {
             var tooltip = "<span >Rejected results:<span><br>";
