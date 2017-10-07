@@ -38,11 +38,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private HydraAnonymousAuthenticationFilter hydraAnonymousAuthenticationFilter;
     @Autowired
     private HydraUserDetailsManager hydraUserDetailsManager;
+    @Autowired
+    private AuthAndAccessEventHandler authAndAccessEventHandler;;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
-        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+        if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
+            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+        } else {
+            http.csrf().disable();
+        }
+
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
                     .httpBasic()
@@ -69,8 +76,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 http = http.rememberMe().alwaysRemember(true).tokenRepository(tokenRepository).and();
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
-        }
 
+        }
+        http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
     }
 
     @Override

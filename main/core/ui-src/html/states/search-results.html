@@ -157,32 +157,38 @@
         <dir-pagination-controls auto-hide="false" max-size="5"></dir-pagination-controls>
     </div>
     <div class="col-md-8" style="text-align: right;">
-        <span class="badge"
-              uib-tooltip-html="getRejectedReasonsTooltip()"
-              tooltip-class="rejected-tooltip"
-              tooltip-placement="top"
-              tooltip-trigger="click"
-        >
-            <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
-                Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
-            </span>
-            <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
-            Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})
+
+
+        <div style="margin-top:20px; margin-bottom:20px;">
+            <span class="badge"
+                  uib-tooltip-html="getRejectedReasonsTooltip()"
+                  tooltip-class="rejected-tooltip"
+                  tooltip-placement="top"
+                  tooltip-trigger="click"
+            >
+                <span ng-if="numberOfLoadedResults <= numberOfAvailableResults">
+                    Loaded {{ numberOfLoadedResults }} of <span ng-if="totalAvailableUnknown">&gt;</span>{{ numberOfAvailableResults }} results (rejected {{ numberOfRejectedResults }})
+                </span>
+                <span ng-if="numberOfLoadedResults > numberOfAvailableResults">
+                Loaded all {{ numberOfLoadedResults }} results (rejected {{ numberOfRejectedResults }})
+                </span>
             </span>
 
-        </span>
+            <div class="btn-group">
+                <!--Add tooltip div to body to prevent div being insert in btn-group and changing layout because more children are there -->
+                <button class="btn btn-default" ng-click="loadMore(false)"  ng-disabled="!loadMoreEnabled"
+                        tooltip-append-to-body="true"
+                        uib-tooltip="Click to load more results from the indexers"
+                        tooltip-placement="top"
+                        tooltip-trigger="mouseenter"
+                >Load more
+                </button>
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!loadMoreEnabled">
+                    <span class="caret"></span>
+                    <span class="sr-only">Toggle Dropdown</span>
+                </button>
+            </div>
 
-        <div class="btn-group" style="margin-top:20px; margin-bottom:20px;">
-            <button type="button" ng-click="loadMore(false)" class="btn btn-default" ng-disabled="!loadMoreEnabled"
-                    uib-tooltip="Click to load more results from the indexers"
-                    tooltip-placement="top"
-                    tooltip-trigger="mouseenter"
-            >Load more
-            </button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!loadMoreEnabled">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
             <ul class="dropdown-menu">
                 <li><a href="#" ng-click="loadMore(true)"
                        uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."

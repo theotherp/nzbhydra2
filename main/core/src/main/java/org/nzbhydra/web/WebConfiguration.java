@@ -87,7 +87,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
                     MDC.put("USERNAME", request.getRemoteUser());
                 }
-                SessionStorage.ipForExternal.set(request.getRemoteAddr());
+                SessionStorage.IP.set(ip);
                 if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.IP) {
                     SessionStorage.usernameOrIp.set(ip);
                 } else if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.USERNAME) {

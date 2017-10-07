@@ -2,16 +2,11 @@ package org.nzbhydra.tests.searching;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.junit.After;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockserver.integration.ClientAndProxy;
-import org.mockserver.integration.ClientAndServer;
-import org.mockserver.model.Header;
-import org.mockserver.model.HttpRequest;
-import org.mockserver.model.HttpResponse;
-import org.mockserver.model.Parameter;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchType;
@@ -27,8 +22,6 @@ import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
@@ -37,22 +30,15 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
     @Autowired
     private Searcher searcher;
 
-    private ClientAndProxy proxy;
-    private ClientAndServer mockServer;
+    private MockWebServer mockWebServer = new MockWebServer();
 
 
     @Before
     public void setUp() throws IOException {
-        mockServer = startClientAndServer(7070);
-        proxy = startClientAndProxy(7072);
+        mockWebServer.start(7070);
         replaceConfig(getClass().getResource("twoIndexers.json"));
     }
 
-    @After
-    public void stopProxy() {
-        proxy.stop();
-        mockServer.stop();
-    }
 
 
     @Test
@@ -63,15 +49,9 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
         String expectedContent1b = Resources.toString(Resources.getResource(SearchingIntegrationTest.class, "simplesearchresult1b.xml"), Charsets.UTF_8);
         String expectedContent2 = Resources.toString(Resources.getResource(SearchingIntegrationTest.class, "simplesearchresult2.xml"), Charsets.UTF_8);
 
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(expectedContent1a).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey1"))).respond(HttpResponse.response().withBody(expectedContent1b).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
-        mockServer.when(HttpRequest.request().withPath("/api").withQueryStringParameter(new Parameter("apikey", "apikey2"))).respond(HttpResponse.response().withBody(expectedContent2).withHeaders(
-                new Header("Content-Type", "application/xml; charset=utf-8")
-        ));
+        mockWebServer.enqueue(new MockResponse().setBody(expectedContent1a).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        mockWebServer.enqueue(new MockResponse().setBody(expectedContent2).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        mockWebServer.enqueue(new MockResponse().setBody(expectedContent1b).setHeader("Content-Type", "application/xml; charset=utf-8"));
 
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 2);
@@ -86,7 +66,6 @@ public class SearchingIntegrationTest extends AbstractConfigReplacingTest {
 
         assertThat(searchResult.getSearchResultItems().size(), is(1));
         assertThat(searchResult.getSearchResultItems().get(0).getTitle(), is("itemTitle1b"));
-
     }
 
 }

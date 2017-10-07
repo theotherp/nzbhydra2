@@ -1,10 +1,12 @@
 package org.nzbhydra.searching;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Set;
 
 @Data
+@Builder
 public class SearchRequestParameters {
 
     protected String query;

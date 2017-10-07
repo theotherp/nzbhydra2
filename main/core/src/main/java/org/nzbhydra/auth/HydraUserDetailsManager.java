@@ -4,6 +4,9 @@ import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.UserAuthConfig;
+import org.nzbhydra.web.SessionStorage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,7 +25,12 @@ import java.util.Map;
 @Component
 public class HydraUserDetailsManager implements UserDetailsManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(HydraUserDetailsManager.class);
+
     private final Map<String, UserDetails> users = new HashMap<>();
+
+    @Autowired
+    private LoginAndAccessAttemptService attemptService;
 
 
     public HydraUserDetailsManager(@Autowired BaseConfig baseConfig) {
@@ -80,6 +88,10 @@ public class HydraUserDetailsManager implements UserDetailsManager {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        if (attemptService.isBlocked(SessionStorage.IP.get())) {
+            logger.warn("Blocking access from IP {} because the maximum amount of attempts was reached", SessionStorage.IP.get());
+            throw new RuntimeException("IP " + SessionStorage.IP.get() + " is currently blocked");
+        }
         UserDetails user = users.get(username.toLowerCase());
 
         if (user == null) {
