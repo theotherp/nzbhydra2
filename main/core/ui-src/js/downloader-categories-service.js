@@ -21,15 +21,15 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function getCategories(downloader) {
         function loadAll() {
-            if (angular.isDefined(categories) && angular.isDefined(categories[downloader])) {
+            if (downloader.name in categories) {
                 var deferred = $q.defer();
-                deferred.resolve(categories[downloader]);
+                deferred.resolve(categories[downloader.name]);
                 return deferred.promise;
             }
 
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
-                    categories[downloader] = categoriesResponse.data;
+                    categories[downloader.name] = categoriesResponse.data;
                     return categoriesResponse.data;
 
                 }, function (error) {
@@ -72,8 +72,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
     }
 
     function invalidate() {
-
-        categories = undefined;
+        categories = {};
     }
 }
 

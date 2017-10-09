@@ -90,12 +90,12 @@ public final class RssItemBuilder {
     }
 
     public RssItemBuilder newznabAttributes(List<NewznabAttribute> newznabAttributes) {
-        this.newznabAttributes = newznabAttributes;
+        this.newznabAttributes.addAll(newznabAttributes);
         return this;
     }
 
     public RssItemBuilder torznabAttributes(List<NewznabAttribute> torznabAttributes) {
-        this.torznabAttributes = torznabAttributes;
+        this.torznabAttributes.addAll(torznabAttributes);
         return this;
     }
 
@@ -159,6 +159,9 @@ public final class RssItemBuilder {
         }
 
         newznabAttributes.add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(pubDate)));
+        if (grabs != null) {
+            newznabAttributes.add(new NewznabAttribute("grabs", String.valueOf(grabs)));
+        }
         return rssItem;
     }
 }

@@ -39,8 +39,6 @@ public class Sabnzbd extends Downloader {
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
-    private OkHttpClient client;
-
     private UriComponentsBuilder getBaseUrl() {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(downloaderConfig.getUrl()).pathSegment("api");
         if (!Strings.isNullOrEmpty(downloaderConfig.getApiKey())) {
@@ -123,6 +121,7 @@ public class Sabnzbd extends Downloader {
 
     @Override
     public GenericResponse checkConnection() {
+        logger.debug("Checking connection");
         UriComponentsBuilder baseUrl = getBaseUrl();
         try {
             restTemplate.exchange(baseUrl.queryParam("mode", "get_cats").toUriString(), HttpMethod.GET, null, CategoriesResponse.class);
@@ -136,6 +135,7 @@ public class Sabnzbd extends Downloader {
 
     @Override
     public List<String> getCategories() {
+        logger.debug("Loading list of categories");
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "get_cats");
         return restTemplate.getForObject(uriBuilder.build().toUri(), CategoriesResponse.class).getCategories();
     }

@@ -41,7 +41,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.minage = getNumberOrUndefined($stateParams.minage);
     $scope.maxage = getNumberOrUndefined($stateParams.maxage);
     if (angular.isDefined($stateParams.indexers)) {
-        $scope.indexers = decodeURIComponent($stateParams.indexers).split("|");
+        $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
     if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbid) || angular.isDefined($stateParams.imdbid) || angular.isDefined($stateParams.tvmazeid) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbid))) {
         $scope.selectedItem = {
@@ -164,7 +164,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         searchRequestId = Math.round(Math.random() * 999999);
         var modalInstance = $scope.openModal(searchRequestId);
 
-        var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
+        var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 modalInstance.close();
                 if (!isSearchCancelled) {
@@ -223,7 +223,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         stateParams.minage = $scope.minage;
         stateParams.maxage = $scope.maxage;
         stateParams.category = $scope.category.name;
-        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join("|"));
+        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join(","));
         $state.go("root.search", stateParams, {inherit: false, notify: true, reload: true});
     };
 
@@ -311,22 +311,24 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         return availableIndexersList;
     }
 
-    $scope.toggleAllIndexers = function (value) {
-        if (value === true) {
-            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
-        } else if (value === false) {
-            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
-        } else {
-            _.forEach($scope.availableIndexers, function (x) {
-                var index = _.indexOf($scope.selectedIndexers, x.name);
-                if (index === -1) {
-                    $scope.selectedIndexers.push(x.name);
-                } else {
-                    $scope.selectedIndexers.splice(index, 1);
-                }
-            });
-        }
+    $scope.invertSelection = function() {
+        _.forEach($scope.availableIndexers, function (x) {
+            var index = _.indexOf($scope.selectedIndexers, x.name);
+            if (index === -1) {
+                $scope.selectedIndexers.push(x.name);
+            } else {
+                $scope.selectedIndexers.splice(index, 1);
+            }
+        });
     };
+
+    $scope.selectAllIndexers = function() {
+            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
+    };
+    $scope.deselectAllIndexers = function() {
+            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+    };
+
 
     $scope.formatRequest = function (request) {
         return $sce.trustAsHtml(SearchHistoryService.formatRequest(request, false, true, true, true));

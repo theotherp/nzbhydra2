@@ -1,8 +1,12 @@
 package org.nzbhydra.tests.pageobjects;
 
+import org.nzbhydra.misc.Sleep;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.popper.fw.webdriver.elements.impl.AbstractWebElement;
 import org.popper.fw.webdriver.elements.impl.WebElementReference;
+
+import java.util.List;
 
 public class ColumnSortable extends AbstractWebElement implements IColumnSortable {
 
@@ -22,25 +26,33 @@ public class ColumnSortable extends AbstractWebElement implements IColumnSortabl
 
     @Override
     public void sortAscending() {
-        if (!isSorted()) {
+        if (!isSorted() || !isSortedAscending()) {
             toggleSort();
         }
+        Sleep.sleep(100);
         if (!isSortedAscending()) {
             toggleSort();
+        }
+        Sleep.sleep(100);
+        if (!isSortedAscending()) {
+            throw new RuntimeException("Unable to sort ascending");
         }
     }
 
     @Override
     public void sortDescending() {
-        if (!isSorted()) {
+        if (!isSorted() || !isSortedDescending()) {
             toggleSort();
         }
+        Sleep.sleep(100);
         if (!isSortedDescending()) {
             toggleSort();
         }
+        Sleep.sleep(100);
         if (!isSortedDescending()) {
             toggleSort();
         }
+        Sleep.sleep(100);
         if (!isSortedDescending()) {
             throw new RuntimeException("Unable to sort descending");
         }
@@ -51,11 +63,19 @@ public class ColumnSortable extends AbstractWebElement implements IColumnSortabl
     }
 
     public boolean isSortedAscending() {
-        return getElement().findElement(By.className("marker-sortable")).getAttribute("class").contains("triangle-top");
+        List<WebElement> elements = getElement().findElements(By.cssSelector(".marker-sortable.glyphicon-triangle-top"));
+        if (elements.isEmpty()) {
+            return false;
+        }
+        return elements.get(0).isDisplayed();
     }
 
     public boolean isSortedDescending() {
-        return getElement().findElement(By.className("marker-sortable")).getAttribute("class").contains("triangle-bottom");
+        List<WebElement> elements = getElement().findElements(By.cssSelector(".marker-sortable.glyphicon-triangle-bottom"));
+        if (elements.isEmpty()) {
+            return false;
+        }
+        return elements.get(0).isDisplayed();
     }
 
 }

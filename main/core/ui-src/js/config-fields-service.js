@@ -1318,6 +1318,9 @@ function getIndexerPresets(configuredIndexers) {
             {
                 name: "altHUB",
                 host: "https://api.althub.co.za"
+            }, {
+                name: "dbKitty",
+                host: "https://dbkitty.club"
             },
             {
                 name: "DogNZB",
@@ -1571,7 +1574,18 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                             return true;
                         },
                         message: '"Indexer \\"" + $viewValue + "\\" already exists"'
-                    }
+                    },
+                    noComma:
+                        {
+                            expression: function ($viewValue, $modelValue) {
+                                var value = $modelValue || $viewValue;
+                                if (value) {
+                                    return value.indexOf(",") === -1;
+                                }
+                                return true;
+                            },
+                            message: '"Name may not contain a comma"'
+                        }
                 }
             })
     }
@@ -2044,7 +2058,7 @@ function getDownloaderPresets() {
             downloaderType: "NZBGET",
             username: "nzbgetx",
             nzbAddingType: "SEND_LINK",
-            nzbaccesstype: "REDIRECT",
+            nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB",
             url: "http://nzbget:tegbzn6789@localhost:6789"
@@ -2054,13 +2068,12 @@ function getDownloaderPresets() {
             downloaderType: "SABNZBD",
             name: "SABnzbd",
             nzbAddingType: "SEND_LINK",
-            nzbaccesstype: "REDIRECT",
+            nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB"
         }
     ]];
 }
-
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;
@@ -2093,7 +2106,6 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
             text: "Aahh, let me try again"
         }
     });
-
 }
 
 

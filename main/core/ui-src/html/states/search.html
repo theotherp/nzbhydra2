@@ -110,21 +110,11 @@
 
                     <div class="col-md-10">
                         <div class="input-group" style="padding-top: 10px;">
-                             <div class="btn-group">
-                                <button class="btn btn-default" ng-click="toggleAllIndexers('invert')" id="invert-indexer-selection-button">Invert selection</button>
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="indexer-selection-dropdown">
-                                    <span class="caret"></span>
-                                    <span class="sr-only">Toggle Dropdown</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#" ng-click="toggleAllIndexers(true)" id="select-all-indexers-button">Select all</a></li>
-                                    <li><a href="#" ng-click="toggleAllIndexers(false)" id="deselect-all-indexers-button">Deselect all</a></li>
-                                </ul>
-                            </div>
-                            <!--<button ng-click="toggleAllIndexers()" class="btn btn-default"> Invert selection</button>-->
+                            <span selection-button invert-selection="invertSelection" select-all="selectAllIndexers" deselect-all="deselectAllIndexers" class="indexer-selection-button">
+                            </span>
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name"> {{ indexer.name }}
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
                             </label>
 
                         </div>

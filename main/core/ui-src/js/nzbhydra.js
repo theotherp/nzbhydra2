@@ -15,6 +15,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
 
     blockUIConfig.autoBlock = false;
     blockUIConfig.resetOnException = false;
+    blockUIConfig.autoInjectBodyBlock = false;
     $urlMatcherFactoryProvider.strictMode(false);
 
     $urlRouterProvider.otherwise("/");

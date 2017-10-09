@@ -138,17 +138,7 @@
 <div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults > 0" style="margin-top: 10px">
     <div class="col-md-8" style="text-align: left;">
         <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default" id="show-duplicates-checkbox">Show duplicates</input>
-        <div class="btn-group">
-            <button class="btn btn-default" ng-click="invertSelection()" id="invert-selection-button">Invert selection</button>
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="result-selection-dropdown">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a href="#" ng-click="selectAll()"  id="select-all-button">Select all</a></li>
-                <li><a href="#" ng-click="deselectAll()" id="deselect-all-button">Deselect all</a></li>
-            </ul>
-        </div>
+        <span selection-button invert-selection="invertSelection" select-all="selectAll" deselect-all="deselectAll" id="search-results-selection-button"></span>
         <download-nzbs-button search-results="selected"></download-nzbs-button>
         <download-nzbzip-button search-results="selected" search-title="searchTitle"></download-nzbzip-button>
     </div>

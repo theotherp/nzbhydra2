@@ -2,7 +2,9 @@ package org.nzbhydra.okhttp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Request.Builder;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +14,11 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
+@SuppressWarnings("ConstantConditions")
 @Component
 public class WebAccess {
 
@@ -23,8 +29,19 @@ public class WebAccess {
     ObjectMapper objectMapper = new ObjectMapper();
 
     public String callUrl(String url) throws IOException {
-        Request request = new Request.Builder().url(url).build();
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+        return callUrl(url, new HashMap<>());
+    }
+
+    public String callUrl(String url, Map<String, String> headers) throws IOException {
+        Builder builder = new Builder().url(url);
+        for (Entry<String, String> entry : headers.entrySet()) {
+            builder.addHeader(entry.getKey(), entry.getValue());
+        }
+
+        Request request = builder.build();
+
+        OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).build();
+        try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());
                 logger.error(error);
@@ -36,8 +53,8 @@ public class WebAccess {
         }
     }
 
-    public <T> T callUrl(String url, Class<T> clazz) throws IOException {
-        String body = callUrl(url);
+    public <T> T callUrl(String url, Map<String, String> headers, Class<T> clazz) throws IOException {
+        String body = callUrl(url, headers);
         return objectMapper.readValue(body, clazz);
     }
 

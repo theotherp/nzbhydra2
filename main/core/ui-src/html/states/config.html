@@ -4,7 +4,7 @@
             <li ng-repeat="tab in allTabs" ng-class="{'active': $index == activeTab}">
                 <a href="" ng-click="goToConfigState($index)">{{ tab.name }}</a>
             </li>
-            <li style="position: absolute; right:0px; ">
+            <li style="float: right">
                 <button ng-click="help()" class="btn config-button config-help-button btn-default">Help</button>
                 <button ng-click="submit()" class="btn config-button" ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">Save</button>
             </li>

@@ -92,15 +92,22 @@ function checkboxesFilter() {
         };
 
         if ($scope.preselect) {
-            $scope.selected.entries = $scope.entries.slice();
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
         }
 
         $scope.invert = function () {
             $scope.selected.entries = _.difference($scope.entries, $scope.selected.entries);
         };
 
-        $scope.apply = function () {
+        $scope.selectAll = function () {
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
+        };
 
+        $scope.deselectAll = function () {
+            $scope.selected.entries.splice(0, $scope.selected.entries.length);
+        };
+
+        $scope.apply = function () {
             var isActive = $scope.selected.entries.length < $scope.entries.length;
             $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }

@@ -44,6 +44,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public GenericResponse checkConnection() {
+        logger.debug("Checking connection");
         try {
             boolean successful = client.invoke("writelog", new Object[]{"INFO", "NZBHydra 2 connected to test connection"}, Boolean.class);
             logger.info("Connection check to NZBGet using URL {} successful", downloaderConfig.getUrl());
@@ -56,6 +57,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public List<String> getCategories() {
+        logger.debug("Loading list of categories");
         List<String> categories = new ArrayList<>();
         try {
             ArrayList<LinkedHashMap<String, String>> config = client.invoke("config", null, ArrayList.class);
@@ -70,6 +72,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public String addLink(String link, String title, String category) throws DownloaderException {
+        logger.debug("Adding link to NZB");
         try {
             return callAppend(link, title, category);
         } catch (Throwable throwable) {
@@ -80,6 +83,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public String addNzb(String content, String title, String category) throws DownloaderException {
+        logger.debug("Adding NZB");
         try {
             return callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
         } catch (Throwable throwable) {

@@ -6,7 +6,6 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
@@ -41,8 +40,6 @@ public class NzbHandlingWeb {
     private NzbHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
-    @Autowired
-    private UserAgentMapper userAgentMapper;
 
 
     /**

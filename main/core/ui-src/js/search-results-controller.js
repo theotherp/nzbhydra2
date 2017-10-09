@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService) {
 
 
     $scope.limitTo = 100;
@@ -79,7 +79,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})
     });
     $scope.categoriesForFiltering = [];
-    _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
+    _.forEach(CategoriesService.getWithoutAll(), function (category) {
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     _.forEach($scope.indexersearches, function (ps) {

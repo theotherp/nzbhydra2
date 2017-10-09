@@ -437,7 +437,14 @@ public abstract class Indexer<T> {
     }
 
     protected String sanitizeTitleForQuery(String query) {
-        return query; //LATER
+        if (query == null) {
+            return null;
+        }
+        String sanitizedQuery = query.replaceAll("[\\(\\)=@#\\$%\\^,\\?<>{}\\|!':]", "");
+        if (!sanitizedQuery.equals(query)) {
+            logger.debug("Removed illegal characters from title '{}'. Title that will be used for query is '{}'", query, sanitizedQuery);
+        }
+        return sanitizedQuery;
     }
 
     public Optional<Instant> tryParseDate(String dateString) {

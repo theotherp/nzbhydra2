@@ -1,6 +1,6 @@
 <span class="column-sortable-{{::column}}">
 <span ng-click="sort()" ng-transclude id="text-sortable-{{::column}}" class="text-sortable"></span>
 <span ng-click="sort()" class="glyphicon marker-sortable" id="marker-sortable-{{::column}}"
-      ng-class="{'glyphicon-triangle-top': (sortModel.sortMode==1 && !sortModel.reversed) || (sortModel.sortMode==2 && sortModel.reversed), 'glyphicon-triangle-bottom': sortModel.sortMode==2 || (sortModel.sortMode==1 && sortModel.reversed)}"
+      ng-class="{'glyphicon-triangle-top': (sortModel.sortMode==1 && !sortModel.reversed) || (sortModel.sortMode==2 && sortModel.reversed), 'glyphicon-triangle-bottom': (sortModel.sortMode==2 && !sortModel.reversed) || (sortModel.sortMode==1 && sortModel.reversed)}"
       style="font-size: 80%"></span>
     </span>

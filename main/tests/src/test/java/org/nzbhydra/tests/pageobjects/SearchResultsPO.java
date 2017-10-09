@@ -4,68 +4,99 @@ import org.popper.fw.annotations.Page;
 import org.popper.fw.element.IButton;
 import org.popper.fw.element.ICheckbox;
 import org.popper.fw.element.ILabel;
-import org.popper.fw.element.ILink;
 import org.popper.fw.webdriver.annotations.locator.Locator;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Page
-public interface SearchResultsPO {
+public abstract class SearchResultsPO {
 
     @Locator(id = "show-duplicates-checkbox")
-    ICheckbox showDuplicatesCheckbox();
+    public abstract ICheckbox showDuplicatesCheckbox();
 
-    @Locator(id = "invert-selection-button")
-    IButton invertSelection();
-
-    @Locator(id = "result-selection-dropdown")
-    IButton resultSelectionDropdown();
-
-    @Locator(id = "select-all-button")
-    ILink selectAll();
-
-    @Locator(id = "deselect-all-button")
-    ILink deselectAll();
-
+    @Locator(id = "search-results-selection-button")
+    public abstract ISelectionButton searchResultSelectionButton();
 
     @Locator(id = "send-selected-to-downloader")
-    IButton sendSelectedToDownloaderButton();
+    public abstract IButton sendSelectedToDownloaderButton();
 
     @Locator(id = "send-selected-to-downloader-dropdown")
-    IButton sendSelectedToDownloaderDropdown();
+    public abstract IButton sendSelectedToDownloaderDropdown();
 
     @Locator(cssSelector = ".send-to-downloader")
-    List<ILink> sendToDownloaderButtons();
+    public abstract List<ILink> sendToDownloaderButtons();
 
     @Locator(cssSelector = ".search-results-header-row")
-    TableHeader tableHeader();
+    public abstract TableHeader tableHeader();
 
     @Locator(cssSelector = ".search-results-row")
-    List<SearchResultRow> searchResultRows();
+    public abstract List<SearchResultRow> searchResultRows();
 
-    public abstract class TableHeader {
+    @Locator(cssSelector = ".result-checkbox")
+    public abstract List<ICheckbox> indexerSelectionCheckboxes();
 
+    public List<String> titles() {
+        return searchResultRows().stream().map(x -> x.title().text().trim()).collect(Collectors.toList());
+    }
+
+    public List<String> indexers() {
+        return searchResultRows().stream().map(x -> x.indexer().text().trim()).collect(Collectors.toList());
+    }
+
+    public List<String> categories() {
+        return searchResultRows().stream().map(x -> x.category().text().trim()).collect(Collectors.toList());
+    }
+
+    public List<String> sizes() {
+        return searchResultRows().stream().map(x -> x.size().text().trim()).collect(Collectors.toList());
+    }
+
+    public List<String> grabs() {
+        return searchResultRows().stream().map(x -> x.grabs().text().trim()).collect(Collectors.toList());
+    }
+
+    public List<String> ages() {
+        return searchResultRows().stream().map(x -> x.age().text().trim()).collect(Collectors.toList());
+    }
+
+
+    public interface TableHeader {
         @Locator(cssSelector = ".column-sortable-title")
-        public abstract IColumnSortable titleHeader();
+        IColumnSortable titleHeader();
 
-        @Locator(cssSelector =".search-results-header-row .result-title .filter-wrapper")
-        public abstract IFreetextFilter titleFilter();
+        @Locator(cssSelector = ".search-results-header-row .result-title .filter-wrapper")
+        IFreetextFilter titleFilter();
 
         @Locator(cssSelector = ".column-sortable-indexer")
-        public abstract IColumnSortable indexerHeader();
+        IColumnSortable indexerHeader();
+
+        @Locator(cssSelector = ".search-results-header-row .result-indexer .filter-wrapper")
+        ICheckboxFilter indexerFilter();
 
         @Locator(cssSelector = ".column-sortable-category")
-        public abstract IColumnSortable categoryHeader();
+        IColumnSortable categoryHeader();
+
+        @Locator(cssSelector = ".search-results-header-row .result-category .filter-wrapper")
+        ICheckboxFilter categoryFilter();
 
         @Locator(cssSelector = ".column-sortable-size")
-        public abstract IColumnSortable sizeHeader();
+        IColumnSortable sizeHeader();
+
+        @Locator(cssSelector = ".search-results-header-row .result-size .filter-wrapper")
+        INumberRangeFilter sizeFilter();
 
         @Locator(cssSelector = ".column-sortable-grabs")
-        public abstract IColumnSortable grabsHeader();
+        IColumnSortable grabsHeader();
 
-        @Locator(cssSelector = ".column-sortable-age")
-        public abstract IColumnSortable ageHeader();
+        @Locator(cssSelector = ".search-results-header-row .result-details .filter-wrapper")
+        INumberRangeFilter grabsFilter();
 
+        @Locator(cssSelector = ".column-sortable-epoch")
+        IColumnSortable ageHeader();
+
+        @Locator(cssSelector = ".search-results-header-row .result-age .filter-wrapper")
+        INumberRangeFilter ageFilter();
 
     }
 
@@ -85,28 +116,28 @@ public interface SearchResultsPO {
         ILabel size();
 
         @Locator(cssSelector = ".result-details")
-        ILabel details();
+        ILabel grabs();
 
         @Locator(cssSelector = ".result-age")
         ILabel age();
 
         @Locator(cssSelector = ".result-show-nfo-link")
-        ILink showNfoButton();
+        org.nzbhydra.tests.pageobjects.ILink  showNfoButton();
 
         @Locator(cssSelector = ".result-comments-link")
-        ILink commentsLink();
+        org.nzbhydra.tests.pageobjects.ILink  commentsLink();
 
         @Locator(cssSelector = ".result-details-link")
-        ILink detailsLink();
+        org.nzbhydra.tests.pageobjects.ILink  detailsLink();
 
         @Locator(cssSelector = ".result-torrent-download-link")
-        ILink downloadTorrentLink();
+        org.nzbhydra.tests.pageobjects.ILink  downloadTorrentLink();
 
         @Locator(cssSelector = ".result-nzb-download-link")
-        ILink downloadNzbLink();
+        org.nzbhydra.tests.pageobjects.ILink  downloadNzbLink();
 
         @Locator(cssSelector = ".result-send-to-downloader-link")
-        List<ILink> sendToDownloaderButtons();
+        List<org.nzbhydra.tests.pageobjects.ILink > sendToDownloaderButtons();
 
 
     }

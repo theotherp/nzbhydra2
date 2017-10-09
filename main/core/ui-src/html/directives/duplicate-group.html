@@ -1,7 +1,7 @@
 <table class="table" style="margin:0">
     <tr ng-init="result=duplicates[0]" class="search-results-row" ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}">
         <td class="col-md-12 search-results-cell result-title" ng-init="result = duplicates[0]" style="margin:0;">
-            <input type="checkbox" data-checklist-model="selected" data-checklist-value="result" ng-click="clickCheckbox($event)" data-checkbox-index="0"/>
+            <input type="checkbox" data-checklist-model="selected" data-checklist-value="result" ng-click="clickCheckbox($event)" data-checkbox-index="0" class="result-checkbox"/>
 
             <a href="" ng-click="toggleTitleExpansion()" ng-class="{'visibility-hidden': !displayTitleToggle}"
                uib-tooltip="Click to see or hide all results with the same title"
@@ -24,8 +24,7 @@
     <tr ng-if="duplicatesExpanded" ng-repeat="duplicate in duplicatesToShow() track by duplicate.searchResultId" class="search-results-row duplicate"
         ng-class="{ 'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}">
         <td class="col-md-12 search-results-cell result-title" style="margin:0;">
-            <input type="checkbox" data-checklist-model="selected" data-checklist-value="duplicate" ng-click="clickCheckbox($event)" data-checkbox-index="{{ ::$index+1 }}"/>
-
+            <input type="checkbox" data-checklist-model="selected" data-checklist-value="duplicate" ng-click="clickCheckbox($event)" data-checkbox-index="{{ ::$index+1 }}" class="result-checkbox"/>
         </td>
         <td other-columns result="duplicate"></td>
     </tr>

@@ -15,6 +15,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
 
     blockUIConfig.autoBlock = false;
     blockUIConfig.resetOnException = false;
+    blockUIConfig.autoInjectBodyBlock = false;
     $urlMatcherFactoryProvider.strictMode(false);
 
     $urlRouterProvider.otherwise("/");
@@ -911,6 +912,54 @@ function sendTorrentToBlackhole() {
 
 angular
     .module('nzbhydraApp')
+    .directive('selectionButton', selectionButton);
+
+function selectionButton() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/selection-button.html',
+        scope: {
+            selected: "=",
+            selectable: "=",
+            invertSelection: "<",
+            selectAll: "<",
+            deselectAll: "<",
+            btn: "@"
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+
+        if (angular.isUndefined($scope.btn)) {
+            $scope.btn = "default"; //Will form class "btn-default"
+        }
+
+        if (angular.isUndefined($scope.invertSelection)) {
+            $scope.invertSelection = function () {
+                $scope.selected = _.difference($scope.selectable, $scope.selected);
+            };
+        }
+
+        if (angular.isUndefined($scope.selectAll)) {
+            $scope.selectAll = function () {
+                $scope.selected.push.apply($scope.selected, $scope.selectable);
+            };
+        }
+
+        if (angular.isUndefined($scope.deselectAll)) {
+            $scope.deselectAll = function () {
+                $scope.selected.splice(0, $scope.selected.length);
+            };
+        }
+
+
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
     .directive('searchResult', searchResult);
 
 function searchResult() {
@@ -1569,13 +1618,15 @@ function downloadNzbsButton() {
 
                 NzbDownloadService.download(downloader, values).then(function (response) {
                     if (angular.isDefined(response.data)) {
-                        if (response.data.successful) {
-                            growl.info("Successfully added all NZBs");
+                        if (response !== "dismissed") {
+                            if (response.data.successful) {
+                                growl.info("Successfully added all NZBs");
+                            } else {
+                                growl.error(response.data.message);
+                            }
                         } else {
-                            growl.error(response.data.message);
+                            growl.error("Error while adding NZBs");
                         }
-                    } else {
-                        growl.error("Error while adding NZBs");
                     }
                 }, function () {
                     growl.error("Error while adding NZBs");
@@ -1685,15 +1736,22 @@ function checkboxesFilter() {
         };
 
         if ($scope.preselect) {
-            $scope.selected.entries = $scope.entries.slice();
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
         }
 
         $scope.invert = function () {
             $scope.selected.entries = _.difference($scope.entries, $scope.selected.entries);
         };
 
-        $scope.apply = function () {
+        $scope.selectAll = function () {
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
+        };
 
+        $scope.deselectAll = function () {
+            $scope.selected.entries.splice(0, $scope.selected.entries.length);
+        };
+
+        $scope.apply = function () {
             var isActive = $scope.selected.entries.length < $scope.entries.length;
             $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
         }
@@ -2976,7 +3034,7 @@ function SearchService($http) {
         searchRequestParameters.maxage = maxage;
         searchRequestParameters.category = category;
         if (!angular.isUndefined(indexers) && indexers !== null) {
-            searchRequestParameters.indexers = indexers.split("|");
+            searchRequestParameters.indexers = indexers.split(",");
         }
 
         if (metaData) {
@@ -3044,7 +3102,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService) {
 
 
     $scope.limitTo = 100;
@@ -3120,7 +3178,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})
     });
     $scope.categoriesForFiltering = [];
-    _.forEach(ConfigService.getSafe().categoriesConfig.categories, function (category) {
+    _.forEach(CategoriesService.getWithoutAll(), function (category) {
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     _.forEach($scope.indexersearches, function (ps) {
@@ -3465,7 +3523,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
 }
-SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService"];
+SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService"];
 
 
 angular
@@ -3817,7 +3875,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.minage = getNumberOrUndefined($stateParams.minage);
     $scope.maxage = getNumberOrUndefined($stateParams.maxage);
     if (angular.isDefined($stateParams.indexers)) {
-        $scope.indexers = decodeURIComponent($stateParams.indexers).split("|");
+        $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
     if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbid) || angular.isDefined($stateParams.imdbid) || angular.isDefined($stateParams.tvmazeid) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbid))) {
         $scope.selectedItem = {
@@ -3940,7 +3998,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         searchRequestId = Math.round(Math.random() * 999999);
         var modalInstance = $scope.openModal(searchRequestId);
 
-        var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join("|");
+        var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 modalInstance.close();
                 if (!isSearchCancelled) {
@@ -3999,7 +4057,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         stateParams.minage = $scope.minage;
         stateParams.maxage = $scope.maxage;
         stateParams.category = $scope.category.name;
-        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join("|"));
+        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join(","));
         $state.go("root.search", stateParams, {inherit: false, notify: true, reload: true});
     };
 
@@ -4087,22 +4145,24 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         return availableIndexersList;
     }
 
-    $scope.toggleAllIndexers = function (value) {
-        if (value === true) {
-            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
-        } else if (value === false) {
-            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
-        } else {
-            _.forEach($scope.availableIndexers, function (x) {
-                var index = _.indexOf($scope.selectedIndexers, x.name);
-                if (index === -1) {
-                    $scope.selectedIndexers.push(x.name);
-                } else {
-                    $scope.selectedIndexers.splice(index, 1);
-                }
-            });
-        }
+    $scope.invertSelection = function() {
+        _.forEach($scope.availableIndexers, function (x) {
+            var index = _.indexOf($scope.selectedIndexers, x.name);
+            if (index === -1) {
+                $scope.selectedIndexers.push(x.name);
+            } else {
+                $scope.selectedIndexers.splice(index, 1);
+            }
+        });
     };
+
+    $scope.selectAllIndexers = function() {
+            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
+    };
+    $scope.deselectAllIndexers = function() {
+            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+    };
+
 
     $scope.formatRequest = function (request) {
         return $sce.trustAsHtml(SearchHistoryService.formatRequest(request, false, true, true, true));
@@ -5551,7 +5611,6 @@ filters.filter('bytes', function () {
 filters
     .filter('unsafe', ['$sce', function($sce){
         return function(text) {
-            console.log(text);
             return $sce.trustAsHtml(text);
         };
     }]);
@@ -5686,15 +5745,15 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
 
     function getCategories(downloader) {
         function loadAll() {
-            if (angular.isDefined(categories) && angular.isDefined(categories[downloader])) {
+            if (downloader.name in categories) {
                 var deferred = $q.defer();
-                deferred.resolve(categories[downloader]);
+                deferred.resolve(categories[downloader.name]);
                 return deferred.promise;
             }
 
             return $http.get(encodeURI('internalapi/downloader/' + downloader.name + "/categories"))
                 .then(function (categoriesResponse) {
-                    categories[downloader] = categoriesResponse.data;
+                    categories[downloader.name] = categoriesResponse.data;
                     return categoriesResponse.data;
 
                 }, function (error) {
@@ -5737,8 +5796,7 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
     }
 
     function invalidate() {
-
-        categories = undefined;
+        categories = {};
     }
 }
 DownloaderCategoriesService.$inject = ["$http", "$q", "$uibModal"];
@@ -7274,6 +7332,9 @@ function getIndexerPresets(configuredIndexers) {
             {
                 name: "altHUB",
                 host: "https://api.althub.co.za"
+            }, {
+                name: "dbKitty",
+                host: "https://dbkitty.club"
             },
             {
                 name: "DogNZB",
@@ -7527,7 +7588,18 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                             return true;
                         },
                         message: '"Indexer \\"" + $viewValue + "\\" already exists"'
-                    }
+                    },
+                    noComma:
+                        {
+                            expression: function ($viewValue, $modelValue) {
+                                var value = $modelValue || $viewValue;
+                                if (value) {
+                                    return value.indexOf(",") === -1;
+                                }
+                                return true;
+                            },
+                            message: '"Name may not contain a comma"'
+                        }
                 }
             })
     }
@@ -8000,7 +8072,7 @@ function getDownloaderPresets() {
             downloaderType: "NZBGET",
             username: "nzbgetx",
             nzbAddingType: "SEND_LINK",
-            nzbaccesstype: "REDIRECT",
+            nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB",
             url: "http://nzbget:tegbzn6789@localhost:6789"
@@ -8010,13 +8082,12 @@ function getDownloaderPresets() {
             downloaderType: "SABNZBD",
             name: "SABnzbd",
             nzbAddingType: "SEND_LINK",
-            nzbaccesstype: "REDIRECT",
+            nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB"
         }
     ]];
 }
-
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;
@@ -8049,7 +8120,6 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
             text: "Aahh, let me try again"
         }
     });
-
 }
 
 

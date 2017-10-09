@@ -23,6 +23,7 @@ import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
 import org.nzbhydra.searching.IndexerSearchResult;
@@ -283,6 +284,19 @@ public class IndexerTest {
 
     @Test
     public void shouldGenerateQuery() throws IndexerSearchAbortedException {
+        baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        Map<IdType, String> identifiers = new HashMap<>();
+        identifiers.put(IdType.IMDB, "123");
+        searchRequest.setIdentifiers(identifiers);
+        String query = testee.generateQueryIfApplicable(searchRequest, "query");
+        assertThat(query, is("title"));
+    }
+
+    @Test
+    public void shouldSanitizeQuery() throws IndexerSearchAbortedException, InfoProviderException {
+        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", "title()':", 2017, "")));
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);

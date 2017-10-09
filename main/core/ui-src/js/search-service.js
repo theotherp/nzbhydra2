@@ -29,7 +29,7 @@ function SearchService($http) {
         searchRequestParameters.maxage = maxage;
         searchRequestParameters.category = category;
         if (!angular.isUndefined(indexers) && indexers !== null) {
-            searchRequestParameters.indexers = indexers.split("|");
+            searchRequestParameters.indexers = indexers.split(",");
         }
 
         if (metaData) {
