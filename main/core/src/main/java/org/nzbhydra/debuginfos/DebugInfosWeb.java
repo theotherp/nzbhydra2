@@ -1,5 +1,6 @@
 package org.nzbhydra.debuginfos;
 
+import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.logging.LogContentProvider;
@@ -38,7 +39,7 @@ public class DebugInfosWeb {
             if (logContentProvider.getLogFileSize() > 5 * 1024 * 1024) {
                 return ResponseEntity.status(500).body("Log file too big");
             }
-            return ResponseEntity.ok(logContentProvider.getLog());
+            return ResponseEntity.ok(StringEscapeUtils.escapeHtml(logContentProvider.getLog()));
         } catch (IOException e) {
             logger.error("Error while getting log file content", e);
             return ResponseEntity.status(500).body(e.getMessage());

@@ -10,9 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -29,8 +27,6 @@ import java.util.List;
 @Component
 public class LogContentProvider {
 
-    @Autowired
-    private ConfigProvider configProvider;
 
     public long getLogFileSize() throws IOException {
         File logfile = getCurrentLogfile(false);
@@ -93,7 +89,10 @@ public class LogContentProvider {
     }
 
     private File getCurrentLogfile(boolean getJsonFile) {
-        File clientLogFile;
+        File clientLogFile = new File(new File(NzbHydra.getDataFolder(), "logs"), (getJsonFile ? "nzbhydra2-log.json" : "nzbhydra2.log"));
+        if (clientLogFile.exists()) {
+            return clientLogFile;
+        }
         FileAppender<?> fileAppender = null;
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         for (Logger logger : context.getLoggerList()) {

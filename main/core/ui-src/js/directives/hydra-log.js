@@ -138,7 +138,16 @@ angular
 function formatTimestamp() {
     return function (date) {
         return moment(date).local().format("YYYY-MM-DD HH:mm");
+    }
+}
 
+angular
+    .module('nzbhydraApp')
+    .filter('escapeHtml', escapeHtml);
+
+function escapeHtml($sanitize) {
+    return function (text) {
+        return $sanitize(text);
     }
 }
 
