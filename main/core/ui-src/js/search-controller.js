@@ -96,7 +96,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             searchModel.$setViewValue(searchModel.$viewValue + " ");
         }
 
-        if (safeConfig.searching.enableCategorySizes) {
+        if (safeConfig.categoriesConfig.enableCategorySizes) {
             var min = searchCategory.minSizePreset;
             var max = searchCategory.maxSizePreset;
             if (_.isNumber(min)) {

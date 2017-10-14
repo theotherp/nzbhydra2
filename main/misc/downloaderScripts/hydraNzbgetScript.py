@@ -5,13 +5,13 @@
 
 # Updates NZB download status for NZBHydra 2
 #
-# NOTE: This script requires Python to be installed on your system.
+# NOTE: This script requires Python to be installed on your system. You might also need to make the file executable.
 
 ##############################################################################
 ### OPTIONS                                                                ###
 
-# URL of NZBHydra
-# url=http://127.0.0.1:5076
+#URL of NZBHydra (including URL base, if applicable)
+#url=http://127.0.0.1:5076
 ### NZBGET QUEUE/POST-PROCESSING SCRIPT
 
 import os

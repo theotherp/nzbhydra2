@@ -3930,7 +3930,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             searchModel.$setViewValue(searchModel.$viewValue + " ");
         }
 
-        if (safeConfig.searching.enableCategorySizes) {
+        if (safeConfig.categoriesConfig.enableCategorySizes) {
             var min = searchCategory.minSizePreset;
             var max = searchCategory.maxSizePreset;
             if (_.isNumber(min)) {
@@ -5835,10 +5835,20 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.successfulForFiltering = [{label: "Succesful", id: 'SUCCESSFUL'}, {label: "Connection error", id: 'CONNECTION_ERROR'}, {label: "API error", id: 'API_ERROR'}, {
-        label: "Auth error",
-        id: 'AUTH_ERROR'
-    }, {label: "Hydra error", id: 'HYDRA_ERROR'}, {label: "Unknown", id: 'UNKNOWN'}];
+    $scope.statusesForFiltering = [
+        {label: "None", id: 'NONE'},
+        {label: "Requested", id: 'REQUESTED'},
+        {label: "Internal error", id: 'INTERNAL_ERROR'},
+        {label: "NZB downloaded successful", id: 'NZB_DOWNLOAD_SUCCESSFUL'},
+        {label: "NZB download error", id: 'NZB_DOWNLOAD_ERROR'},
+        {label: "NZB added", id: 'NZB_ADDED'},
+        {label: "NZB not added", id: 'NZB_NOT_ADDED'},
+        {label: "NZB add error", id: 'NZB_ADD_ERROR'},
+        {label: "NZB add rejected", id: 'NZB_ADD_REJECTED'},
+        {label: "Content download successful", id: 'CONTENT_DOWNLOAD_SUCCESSFUL'},
+        {label: "Content download warning", id: 'CONTENT_DOWNLOAD_WARNING'},
+        {label: "Content download error", id: 'CONTENT_DOWNLOAD_ERROR'}
+        ];
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
 
@@ -6092,7 +6102,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
                             }
                         },
                         {
@@ -6960,7 +6970,7 @@ function ConfigFields($injector) {
                                 },
                                 fieldGroup: [
                                     {
-                                        key: 'min',
+                                        key: 'minSizePreset',
                                         type: 'duoSetting',
                                         templateOptions: {
                                             addonRight: {
@@ -6973,7 +6983,7 @@ function ConfigFields($injector) {
                                         type: 'duolabel'
                                     },
                                     {
-                                        key: 'max',
+                                        key: 'maxSizePreset',
                                         type: 'duoSetting', templateOptions: {addonRight: {text: 'MB'}}
                                     }
                                 ]
@@ -7446,7 +7456,7 @@ function getIndexerPresets(configuredIndexers) {
                 allCapsChecked: true,
                 configComplete: true,
                 name: "Jackett/Cardigann",
-                host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
+                host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
                 searchModuleType: "TORZNAB",
@@ -7604,25 +7614,29 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
             })
     }
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
-        fieldset.push(
-            {
-                key: 'host',
-                type: 'horizontalInput',
-                templateOptions: {
-                    type: 'text',
-                    label: 'Host',
-                    required: true,
-                    placeholder: 'http://www.someindexer.com'
-                },
-                watcher: {
-                    listener: function (field, newValue, oldValue, scope) {
-                        if (newValue !== oldValue) {
-                            scope.$parent.needsConnectionTest = true;
-                        }
+        var hostField = {
+            key: 'host',
+            type: 'horizontalInput',
+            templateOptions: {
+                type: 'text',
+                label: 'Host',
+                required: true,
+                placeholder: 'http://www.someindexer.com'
+            },
+            watcher: {
+                listener: function (field, newValue, oldValue, scope) {
+                    if (newValue !== oldValue) {
+                        scope.$parent.needsConnectionTest = true;
                     }
                 }
             }
-        )
+        };
+        if (model.searchModuleType === 'TORZNAB') {
+            hostField.templateOptions.help = 'If you use Jackett and have an external URL use that one';
+        }
+        fieldset.push(
+            hostField
+        );
     }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {

@@ -23,10 +23,20 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.successfulForFiltering = [{label: "Succesful", id: 'SUCCESSFUL'}, {label: "Connection error", id: 'CONNECTION_ERROR'}, {label: "API error", id: 'API_ERROR'}, {
-        label: "Auth error",
-        id: 'AUTH_ERROR'
-    }, {label: "Hydra error", id: 'HYDRA_ERROR'}, {label: "Unknown", id: 'UNKNOWN'}];
+    $scope.statusesForFiltering = [
+        {label: "None", id: 'NONE'},
+        {label: "Requested", id: 'REQUESTED'},
+        {label: "Internal error", id: 'INTERNAL_ERROR'},
+        {label: "NZB downloaded successful", id: 'NZB_DOWNLOAD_SUCCESSFUL'},
+        {label: "NZB download error", id: 'NZB_DOWNLOAD_ERROR'},
+        {label: "NZB added", id: 'NZB_ADDED'},
+        {label: "NZB not added", id: 'NZB_NOT_ADDED'},
+        {label: "NZB add error", id: 'NZB_ADD_ERROR'},
+        {label: "NZB add rejected", id: 'NZB_ADD_REJECTED'},
+        {label: "Content download successful", id: 'CONTENT_DOWNLOAD_SUCCESSFUL'},
+        {label: "Content download warning", id: 'CONTENT_DOWNLOAD_WARNING'},
+        {label: "Content download error", id: 'CONTENT_DOWNLOAD_ERROR'}
+        ];
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
 

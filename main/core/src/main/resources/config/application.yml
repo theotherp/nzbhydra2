@@ -302,7 +302,6 @@ searching:
   applyRestrictions: "NONE"
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0
-  enableCategorySizes: true
   forbiddenGroups: []
   forbiddenPosters: []
   forbiddenRegex: null

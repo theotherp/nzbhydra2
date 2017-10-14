@@ -21,7 +21,6 @@ public class SearchingConfig extends ValidatingConfig {
     //categorySettings ;
     private float duplicateAgeThreshold = 2.0F;
     private float duplicateSizeThresholdInPercent = 1.0F;
-    private boolean enableCategorySizes = true;
     private List<String> forbiddenGroups = new ArrayList<>();
     private List<String> forbiddenPosters = new ArrayList<>();
     private String forbiddenRegex;

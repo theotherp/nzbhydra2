@@ -7429,7 +7429,9 @@ a.disabled:hover {
 }
 .dropdown-menu {
   background-color: #1f2328;
-  color: #c8c8c8;
+}
+.dropdown-menu #freetext-filter-input {
+  color: black;
 }
 .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary {
   background-color: #62c462;

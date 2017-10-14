@@ -177,15 +177,15 @@
                     <span class="caret"></span>
                     <span class="sr-only">Toggle Dropdown</span>
                 </button>
+                <ul class="dropdown-menu">
+                    <li><a href="#" ng-click="loadMore(true)"
+                           uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."
+                           tooltip-placement="top"
+                           tooltip-trigger="mouseenter"
+                    >Load all results</a></li>
+                </ul>
             </div>
 
-            <ul class="dropdown-menu">
-                <li><a href="#" ng-click="loadMore(true)"
-                       uib-tooltip="Click to load all of the results from the indexers. May take a while and a lot of API requests..."
-                       tooltip-placement="top"
-                       tooltip-trigger="mouseenter"
-                >Load all results</a></li>
-            </ul>
         </div>
     </div>
     <div class="row" ng-if="::(isShowFilterButtons && (isShowFilterButtonsMovie || isShowFilterButtonsTv))">

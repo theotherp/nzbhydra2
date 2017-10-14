@@ -79,7 +79,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
                             }
                         },
                         {
@@ -947,7 +947,7 @@ function ConfigFields($injector) {
                                 },
                                 fieldGroup: [
                                     {
-                                        key: 'min',
+                                        key: 'minSizePreset',
                                         type: 'duoSetting',
                                         templateOptions: {
                                             addonRight: {
@@ -960,7 +960,7 @@ function ConfigFields($injector) {
                                         type: 'duolabel'
                                     },
                                     {
-                                        key: 'max',
+                                        key: 'maxSizePreset',
                                         type: 'duoSetting', templateOptions: {addonRight: {text: 'MB'}}
                                     }
                                 ]
@@ -1432,7 +1432,7 @@ function getIndexerPresets(configuredIndexers) {
                 allCapsChecked: true,
                 configComplete: true,
                 name: "Jackett/Cardigann",
-                host: "http://127.0.0.1:9117/torznab/YOURTRACKER",
+                host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
                 searchModuleType: "TORZNAB",
@@ -1590,25 +1590,29 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
             })
     }
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
-        fieldset.push(
-            {
-                key: 'host',
-                type: 'horizontalInput',
-                templateOptions: {
-                    type: 'text',
-                    label: 'Host',
-                    required: true,
-                    placeholder: 'http://www.someindexer.com'
-                },
-                watcher: {
-                    listener: function (field, newValue, oldValue, scope) {
-                        if (newValue !== oldValue) {
-                            scope.$parent.needsConnectionTest = true;
-                        }
+        var hostField = {
+            key: 'host',
+            type: 'horizontalInput',
+            templateOptions: {
+                type: 'text',
+                label: 'Host',
+                required: true,
+                placeholder: 'http://www.someindexer.com'
+            },
+            watcher: {
+                listener: function (field, newValue, oldValue, scope) {
+                    if (newValue !== oldValue) {
+                        scope.$parent.needsConnectionTest = true;
                     }
                 }
             }
-        )
+        };
+        if (model.searchModuleType === 'TORZNAB') {
+            hostField.templateOptions.help = 'If you use Jackett and have an external URL use that one';
+        }
+        fieldset.push(
+            hostField
+        );
     }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
