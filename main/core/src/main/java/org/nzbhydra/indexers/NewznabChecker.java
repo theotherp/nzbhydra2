@@ -47,6 +47,7 @@ public class NewznabChecker {
     private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
     public static final int MAX_CONNECTIONS = 2;
     public static final int ID_THRESHOLD_PERCENT = 85;
+    static int PAUSE_BETWEEN_CALLS = 1000;
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -62,7 +63,7 @@ public class NewznabChecker {
         Xml xmlResponse;
         try {
             URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
-            xmlResponse = indexerWebAccess.get(uri, Xml.class, indexerConfig);
+            xmlResponse = indexerWebAccess.get(uri, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof RssError) {
                 logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
@@ -105,7 +106,7 @@ public class NewznabChecker {
         for (int i = 0; i < requests.size(); i++) {
             CheckCapsRequest request = requests.get(i);
             callables.add(() -> {
-                Thread.sleep(1000); //Give indexer some time to breathe
+                Thread.sleep(PAUSE_BETWEEN_CALLS); //Give indexer some time to breathe
                 return singleCheckCaps(request, indexerConfig);
             });
         }
@@ -191,7 +192,7 @@ public class NewznabChecker {
             supportedSearchTypes.add(ActionAttribute.MOVIE);
         }
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
-        CapsRoot capsRoot = indexerWebAccess.get(uri, CapsRoot.class, indexerConfig);
+        CapsRoot capsRoot = indexerWebAccess.get(uri, indexerConfig);
         if (capsRoot.getSearching().getAudioSearch() != null) {
             supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
@@ -243,7 +244,7 @@ public class NewznabChecker {
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, IndexerConfig indexerConfig) throws IndexerAccessException {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         logger.debug("Calling URL {}", uri);
-        Xml response = indexerWebAccess.get(uri, Xml.class, indexerConfig);
+        Xml response = indexerWebAccess.get(uri, indexerConfig);
 
         if (response instanceof RssError) {
             String errorDescription = ((RssError) response).getDescription();

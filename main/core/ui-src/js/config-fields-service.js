@@ -433,6 +433,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'number',
                                 label: 'Timeout when accessing indexers',
+                                help: 'Any web call to an indexer taking longer than this is aborted',
                                 addonRight: {
                                     text: 'seconds'
                                 }
@@ -794,7 +795,7 @@ function ConfigFields($injector) {
                                             text: 'days'
                                         },
                                         required: true,
-                                        help: 'Meta data from searches is stored in the database. When they\'re deleted links to Hydra become invalid.'
+                                        help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
                                     }
                                 },
                                 {

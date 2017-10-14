@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -82,6 +83,9 @@ import java.util.regex.Pattern;
 @Primary
 public class HydraOkHttp3ClientHttpRequestFactory
         implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory, DisposableBean {
+
+    @Value("${nzbhydra.connectionTimeout:10}")
+    private int timeout;
 
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
     private static Pattern HOST_PATTERN = Pattern.compile("(\\w+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
@@ -134,9 +138,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
-
         return new OkHttp3ClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
-
     }
 
     @Override
@@ -227,7 +229,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     protected Builder getBaseBuilder() {
-        return new OkHttpClient().newBuilder().connectionPool(connectionPool);
+        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {

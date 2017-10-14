@@ -340,7 +340,7 @@ public abstract class Indexer<T> {
     }
 
     <T> T callInderWebAccess(URI uri, Class<T> responseType) throws IndexerAccessException {
-        return indexerWebAccess.get(uri, responseType, config);
+        return indexerWebAccess.get(uri, config);
     }
 
     protected String generateQueryIfApplicable(SearchRequest searchRequest, String query) throws IndexerSearchAbortedException {

@@ -9,6 +9,7 @@ import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ConstantConditions")
 @Component
@@ -26,6 +28,8 @@ public class WebAccess {
 
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    @Value("${nzbhydra.connectionTimeout:10}")
+    private int timeout;
     ObjectMapper objectMapper = new ObjectMapper();
 
     public String callUrl(String url) throws IOException {
@@ -33,6 +37,10 @@ public class WebAccess {
     }
 
     public String callUrl(String url, Map<String, String> headers) throws IOException {
+        return callUrl(url, headers, timeout);
+    }
+
+    public String callUrl(String url, Map<String, String> headers, int timeout) throws IOException {
         Builder builder = new Builder().url(url);
         for (Entry<String, String> entry : headers.entrySet()) {
             builder.addHeader(entry.getKey(), entry.getValue());
@@ -40,7 +48,7 @@ public class WebAccess {
 
         Request request = builder.build();
 
-        OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).build();
+        OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());

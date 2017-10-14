@@ -79,26 +79,26 @@ public class NewznabCheckerTest {
         capsRoot.setSearching(new CapsSearching());
         CapsLimits capsLimits = new CapsLimits(200, 100);
         capsRoot.setLimits(capsLimits);
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), CapsRoot.class, indexerConfig)).thenReturn(capsRoot);
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), indexerConfig)).thenReturn(capsRoot);
+        testee.PAUSE_BETWEEN_CALLS = 0;
     }
-
 
     @Test
     public void shouldCheckCaps() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
         RssRoot thronesResult = builder.getTestResult(1, 100, "Thrones", 0, 100);
         thronesResult.getRssChannel().setGenerator("nzedb");
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
                 .thenReturn(thronesResult);
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
@@ -121,14 +121,14 @@ public class NewznabCheckerTest {
 
         assertTrue(checkCapsRespone.isAllCapsChecked());
 
-        verify(indexerWebAccess, times(7)).get(any(), any(), eq(indexerConfig));
+        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
     }
 
     @Test
     public void shouldIdentifyCategoryMapping() throws Exception {
         String xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/nzbsOrgCapsResponse.xml"), Charsets.UTF_8);
         capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
-        when(indexerWebAccess.get(any(), eq(CapsRoot.class), eq(indexerConfig))).thenReturn(capsRoot);
+        when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
         IndexerCategoryConfig categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
@@ -139,7 +139,7 @@ public class NewznabCheckerTest {
         //Test with dog which has different mappings
         xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/dognzbCapsResponse.xml"), Charsets.UTF_8);
         capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
-        when(indexerWebAccess.get(any(), eq(CapsRoot.class), eq(indexerConfig))).thenReturn(capsRoot);
+        when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
         categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
@@ -153,45 +153,45 @@ public class NewznabCheckerTest {
     @Test
     public void shouldCheckCapsWithoutSupport() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
         CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(0, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
-        verify(indexerWebAccess, times(7)).get(any(), any(), eq(indexerConfig));
+        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
     }
 
     @Test
     public void shouldSaySoIfNotAllWereChecked() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&rid=24493"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), org.nzbhydra.mapping.newznab.Xml.class, indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenThrow(new IndexerAccessException("some error"));
 
         CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllCapsChecked());
-        verify(indexerWebAccess, times(7)).get(any(), any(), eq(indexerConfig));
+        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
     }
 
 
