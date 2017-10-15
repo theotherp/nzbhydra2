@@ -184,7 +184,7 @@ public class ExternalApi {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
         }
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API, SessionStorage.IP.get());
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API);
         if (!downloadResult.isSuccessful()) {
             throw new UnknownErrorException(downloadResult.getError());
         }
@@ -200,7 +200,6 @@ public class ExternalApi {
         } else {
             searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.NZB);
         }
-        searchRequest.getInternalData().setUserAgent(userAgentMapper.getUserAgent());
         SearchResult searchResult = searcher.search(searchRequest);
 
         RssRoot transformedResults = transformResults(searchResult, params, searchRequest);
@@ -297,7 +296,6 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
-        searchRequest.getInternalData().setUsernameOrIp(SessionStorage.IP.get());
         if (params.getCat() != null) {
             searchRequest.getInternalData().setNewznabCategories(params.getCat());
         }

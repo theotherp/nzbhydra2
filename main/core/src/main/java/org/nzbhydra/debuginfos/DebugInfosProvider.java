@@ -50,7 +50,7 @@ public class DebugInfosProvider {
 
     @Transactional
     public String executeSqlQuery(String sql) throws IOException {
-        logger.info("Executing SQL query \"{}\" and returning as CSV");
+        logger.info("Executing SQL query \"{}\" and returning as CSV", sql);
         File tempFile = File.createTempFile("nzbhydra", "csv");
         String path = tempFile.getAbsolutePath().replace("\\", "/");
         entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql)).executeUpdate();
@@ -59,7 +59,7 @@ public class DebugInfosProvider {
 
     @Transactional
     public String executeSqlUpdate(String sql) throws IOException {
-        logger.info("Executing SQL query \"{}\"");
+        logger.info("Executing SQL query \"{}\"", sql);
 
         int affectedRows = entityManager.createNativeQuery(sql).executeUpdate();
         return String.valueOf(affectedRows);

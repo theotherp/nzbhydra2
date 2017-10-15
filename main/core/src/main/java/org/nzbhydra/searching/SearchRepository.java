@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface SearchRepository extends JpaRepository<SearchEntity, Integer> {
 
-    @Query("select t from SearchEntity t where t.usernameOrIp = :usernameOrIp and t.source = 'INTERNAL' order by t.time desc")
-    Page<SearchEntity> findForUserSearchHistory(@Param("usernameOrIp") String usernameOrIp, Pageable pageable);
+    @Query("select t from SearchEntity t where t.username = :username and t.source = 'INTERNAL' order by t.time desc")
+    Page<SearchEntity> findForUserSearchHistory(@Param("username") String username, Pageable pageable);
 
     @Query("select t from SearchEntity t where t.source = 'INTERNAL' order by t.time desc")
     Page<SearchEntity> findForUserSearchHistory(Pageable pageable);

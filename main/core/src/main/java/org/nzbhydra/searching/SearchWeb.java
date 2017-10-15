@@ -12,7 +12,6 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
-import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +92,6 @@ public class SearchWeb {
         searchRequest.setMaxage(parameters.getMaxage());
         searchRequest.setMinsize(parameters.getMinsize());
         searchRequest.setMaxsize(parameters.getMaxsize());
-        searchRequest.getInternalData().setUsernameOrIp(SessionStorage.usernameOrIp.get());
 
         if (!Strings.isNullOrEmpty(parameters.getTitle())) {
             searchRequest.setTitle(parameters.getTitle());

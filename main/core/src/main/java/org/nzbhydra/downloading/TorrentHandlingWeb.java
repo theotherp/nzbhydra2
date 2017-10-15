@@ -8,7 +8,6 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +40,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/internalapi/torrent/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadTorrentInternal(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 
@@ -53,7 +52,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
     /**
@@ -64,7 +63,7 @@ public class TorrentHandlingWeb {
     @RequestMapping(value = "/internalapi/saveTorrent/{guid}")
     @Secured({"ROLE_USER"})
     public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid) {
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL, SessionStorage.usernameOrIp.get());
+        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL);
         if (!downloadResult.isSuccessful()) {
             return GenericResponse.notOk(downloadResult.getError());
         }
@@ -96,7 +95,7 @@ public class TorrentHandlingWeb {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 }

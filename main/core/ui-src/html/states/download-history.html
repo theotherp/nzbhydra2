@@ -7,28 +7,28 @@
 <table class="table">
     <thead>
     <tr>
-        <th class="col-md-2">
-            <column-sortable column="time" start-mode="2" style="width: 10%">Time
+        <th class="col-md-2" style="width: {{columnSizes.time}}%;">
+            <column-sortable column="time" start-mode="2" >Time
             </column-sortable>
             <column-filter-wrapper>
                 <time-filter column="time" selected="preselectedTimeInterval"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-2">
-            <column-sortable column="indexer.name" style="width: 10%">Indexer
+        <th class="col-md-2" style="width: {{columnSizes.indexer}}%;">
+            <column-sortable column="indexer.name">Indexer
             </column-sortable>
             <column-filter-wrapper>
                 <checkboxes-filter column="indexer" entries="indexersForFiltering" preselect="true" show-invert="true"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-8" style="width: 48%">
+        <th class="col-md-8" style="width: {{columnSizes.title}}%;">
             <column-sortable column="title">Title
             </column-sortable>
             <column-filter-wrapper>
                 <freetext-filter column="title"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-1" style="width: 9%">
+        <th class="col-md-1" style="width: {{columnSizes.result}}%;">
             <column-sortable column="status">Result <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
                                                           uib-tooltip="Actual download result only available if Hydra's downloader user scripts are used"></span></div>
             </column-sortable>
@@ -36,23 +36,29 @@
                 <checkboxes-filter column="status" entries="statusesForFiltering" preselect="true" show-invert="false"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-1" style="width: 7%">
+        <th class="col-md-1" style="width: {{columnSizes.source}}%;">
             <column-sortable column="access_source">Source
             </column-sortable>
             <column-filter-wrapper>
                 <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-1" style="width: 6%">
+        <th class="col-md-1" style="width: {{columnSizes.age}}%;">
             <column-sortable column="age">Age</column-sortable>
             <column-filter-wrapper>
                 <freetext-filter column="age"/>
             </column-filter-wrapper>
         </th>
-        <th class="col-md-2" style="width: 10%">
-            <column-sortable column="username_or_ip">User / IP</column-sortable>
+        <th class="col-md-2" style="width: {{columnSizes.username}}%;" ng-if="columnSizes.username > 0">
+            <column-sortable column="username">Username</column-sortable>
             <column-filter-wrapper>
-                <freetext-filter column="username_or_ip"/>
+                <freetext-filter column="username"/>
+            </column-filter-wrapper>
+        </th>
+        <th class="col-md-2" style="width: {{columnSizes.ip}}%" ng-if="columnSizes.ip > 0">
+            <column-sortable column="ip" reversed="false" start-mode="1">IP</column-sortable>
+            <column-filter-wrapper>
+                <freetext-filter column="ip"/>
             </column-filter-wrapper>
         </th>
     </tr>
@@ -70,7 +76,8 @@
         </td>
         <td class="narrow-row">{{ nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
         <td class="narrow-row">{{ nzbDownload.age }}</td>
-        <td class="narrow-row">{{ nzbDownload.usernameOrIp }}</td>
+        <td class="narrow-row" ng-if="columnSizes.username > 0">{{ nzbDownload.username }}</td>
+        <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ nzbDownload.ip }}</td>
     </tr>
     </tbody>
 </table>

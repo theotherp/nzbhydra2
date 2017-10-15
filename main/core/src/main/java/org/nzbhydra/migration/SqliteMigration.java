@@ -120,7 +120,7 @@ public class SqliteMigration {
             entity.setTime(oldDownloads.getTimestamp("time").toInstant());
             entity.setError(oldDownloads.getString("error"));
             entity.setTitle(oldDownloads.getString("title"));
-            entity.setUsernameOrIp(oldDownloads.getString("username"));
+            entity.setUsername(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
             entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
 
@@ -261,7 +261,7 @@ public class SqliteMigration {
             String oldCategory = oldSearches.getString("category");
             String newCategory = (!Strings.isNullOrEmpty(oldCategory) && categoryMap.containsKey(oldCategory.toLowerCase())) ? categoryMap.get(oldCategory.toLowerCase()) : "All";
             entity.setCategoryName(newCategory);
-            entity.setUsernameOrIp(oldSearches.getString("username"));
+            entity.setUsername(oldSearches.getString("username"));
             entity.setSeason(oldSearches.getObject("season") != null ? oldSearches.getInt("season") : null);
             entity.setEpisode(oldSearches.getString("episode"));
             entity.setQuery(oldSearches.getString("query"));

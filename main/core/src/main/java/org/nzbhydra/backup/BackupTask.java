@@ -41,6 +41,7 @@ public class BackupTask {
             boolean lastBackupWasToday = backupData.isPresent() && ChronoUnit.DAYS.between(backupData.get().getLastBackup(), LocalDateTime.now(clock)) == 0;
             if (!lastBackupWasToday) {
                 try {
+                    logger.info("Starting weekly backup");
                     backupAndRestore.backup();
                     genericStorage.save(KEY, new BackupData(LocalDateTime.now(clock)));
                 } catch (Exception e) {

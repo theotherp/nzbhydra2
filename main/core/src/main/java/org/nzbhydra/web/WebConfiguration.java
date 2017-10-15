@@ -2,7 +2,6 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Strings;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.HistoryUserInfoType;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -88,11 +87,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                     MDC.put("USERNAME", request.getRemoteUser());
                 }
                 SessionStorage.IP.set(ip);
-                if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.IP) {
-                    SessionStorage.usernameOrIp.set(ip);
-                } else if (configProvider.getBaseConfig().getMain().getLogging().getHistoryUserInfoType() == HistoryUserInfoType.USERNAME) {
-                    SessionStorage.usernameOrIp.set(request.getRemoteUser());
-                }
+                SessionStorage.username.set(request.getRemoteUser());
                 SessionStorage.userAgent.set(request.getHeader("User-Agent"));
                 SessionStorage.requestUrl.set(request.getRequestURI());
 

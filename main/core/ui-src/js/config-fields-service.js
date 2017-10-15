@@ -36,7 +36,6 @@ function ConfigFields($injector) {
         };
     }
 
-
     function getFields(rootModel) {
         return {
             main: [
@@ -350,11 +349,12 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'History user info',
                                 options: [
+                                    {name: 'IP and username', value: 'BOTH'},
                                     {name: 'IP address', value: 'IP'},
                                     {name: 'Username', value: 'USERNAME'},
                                     {name: 'None', value: 'NONE'}
                                 ],
-                                help: 'Will be stored and displayed in the search/download history for internal searches. If selected IP addresses will be saved for all API searches.'
+                                help: 'Only affects if value is displayed in the search/download history'
                             }
                         },
                         {

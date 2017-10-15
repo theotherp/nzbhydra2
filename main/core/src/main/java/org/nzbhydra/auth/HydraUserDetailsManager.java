@@ -88,7 +88,7 @@ public class HydraUserDetailsManager implements UserDetailsManager {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        if (attemptService.isBlocked(SessionStorage.IP.get())) {
+        if (SessionStorage.IP.get() != null && attemptService.isBlocked(SessionStorage.IP.get())) { //In some rare cases the IP might've not yet been set
             logger.warn("Blocking access from IP {} because the maximum amount of attempts was reached", SessionStorage.IP.get());
             throw new RuntimeException("IP " + SessionStorage.IP.get() + " is currently blocked");
         }

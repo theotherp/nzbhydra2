@@ -2,6 +2,8 @@ package org.nzbhydra.web;
 
 public class SessionStorage {
 
+    public static final ThreadLocal<String> username =
+            ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> usernameOrIp =
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> IP =

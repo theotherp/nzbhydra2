@@ -3731,6 +3731,30 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.searchRequests = history.data.content;
     $scope.totalRequests = history.data.totalElements;
 
+    $scope.columnSizes = {
+        time: 10,
+        query: 30,
+        category: 10,
+        additionalParameters: 22,
+        source: 8,
+        username: 10,
+        ip: 10
+    };
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.query += 10;
+        $scope.columnSizes.additionalParameters += 10;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.query += 5;
+        $scope.columnSizes.additionalParameters += 5;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.query += 5;
+        $scope.columnSizes.additionalParameters += 5;
+    }
+
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
             $scope.searchRequests = history.data.content;
@@ -5866,6 +5890,28 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     $scope.nzbDownloads = downloads.data.content;
     $scope.totalDownloads = downloads.data.totalElements;
 
+    $scope.columnSizes = {
+        time: 10,
+        indexer: 10,
+        title: 37,
+        result: 9,
+        source: 8,
+        age: 6,
+        username: 10,
+        ip: 10
+    };
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.title += 20;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.title += 10;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.title += 10;
+    }
+
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {
@@ -6068,7 +6114,6 @@ function ConfigFields($injector) {
             message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
         };
     }
-
 
     function getFields(rootModel) {
         return {
@@ -6383,11 +6428,12 @@ function ConfigFields($injector) {
                                 type: 'select',
                                 label: 'History user info',
                                 options: [
+                                    {name: 'IP and username', value: 'BOTH'},
                                     {name: 'IP address', value: 'IP'},
                                     {name: 'Username', value: 'USERNAME'},
                                     {name: 'None', value: 'NONE'}
                                 ],
-                                help: 'Will be stored and displayed in the search/download history for internal searches. If selected IP addresses will be saved for all API searches.'
+                                help: 'Only affects if value is displayed in the search/download history'
                             }
                         },
                         {

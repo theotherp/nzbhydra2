@@ -194,12 +194,10 @@ public class Searcher {
             searchEntity.setSource(searchRequest.getSource());
             searchEntity.setCategoryName(searchRequest.getCategory().getName());
             searchEntity.setQuery(searchRequest.getQuery().orElse(null));
-            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toSet()));
+            searchEntity.setIdentifiers(searchRequest.getIdentifiers().entrySet().stream().filter(x -> x.getValue() != null).map(x -> new IdentifierKeyValuePair(x.getKey().name(), x.getValue())).collect(Collectors.toSet()));
             searchEntity.setSeason(searchRequest.getSeason().orElse(null));
             searchEntity.setEpisode(searchRequest.getEpisode().orElse(null));
             searchEntity.setSearchType(searchRequest.getSearchType());
-            searchEntity.setUsernameOrIp(searchRequest.getInternalData().getUsernameOrIp());
-            searchEntity.setUserAgent(searchRequest.getInternalData().getUserAgent());
             searchEntity.setTitle(searchRequest.getTitle().orElse(null));
             searchEntity.setAuthor(searchRequest.getAuthor().orElse(null));
 

@@ -22,7 +22,6 @@ public class WelcomeWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/welcomeshown", method = RequestMethod.GET)
     public Boolean logfileContent() {
-        logger.debug("Welcome screen was shown: {}", configProvider.getBaseConfig().getMain().isWelcomeShown());
         return configProvider.getBaseConfig().getMain().isWelcomeShown();
     }
 

@@ -4,6 +4,7 @@ import lombok.Data;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.web.SessionStorage;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Convert;
@@ -47,11 +48,15 @@ public class SearchEntity {
     private String title;
     private String author;
 
-    private String usernameOrIp;
+    private String username;
+    private String ip;
     private String userAgent;
 
     public SearchEntity() {
         time = Instant.now();
+        this.username = SessionStorage.username.get();
+        this.userAgent = SessionStorage.userAgent.get();
+        this.ip = SessionStorage.IP.get();
     }
 
 

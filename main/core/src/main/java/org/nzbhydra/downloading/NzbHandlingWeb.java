@@ -7,7 +7,6 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
     /**
@@ -62,7 +61,7 @@ public class NzbHandlingWeb {
     @Secured({"ROLE_USER"})
     public Object downloadNzbZip(@RequestBody List<Long> guids) {
         try {
-            File zipFile = nzbHandler.getNzbsAsZip(guids, SessionStorage.usernameOrIp.get());
+            File zipFile = nzbHandler.getNzbsAsZip(guids);
             return ResponseEntity
                     .ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
@@ -111,7 +110,7 @@ public class NzbHandlingWeb {
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
     public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid) {
-        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
     /**
@@ -127,7 +126,7 @@ public class NzbHandlingWeb {
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL, SessionStorage.usernameOrIp.get()).getAsResponseEntity();
+        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
 }

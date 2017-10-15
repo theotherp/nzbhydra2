@@ -103,7 +103,7 @@ public class SqliteMigrationTest {
 
         SearchEntity entityTv = searchEntities.get(3);
         assertThat(entityTv.getAuthor(), is(nullValue()));
-        assertThat(entityTv.getUsernameOrIp(), is(nullValue()));
+        assertThat(entityTv.getUsername(), is(nullValue()));
         assertThat(entityTv.getSeason(), is(1));
         assertThat(entityTv.getEpisode(), is(2));
         assertThat(entityTv.getIdentifiers().size(), is(1));
@@ -116,7 +116,7 @@ public class SqliteMigrationTest {
 
         SearchEntity entityAll = searchEntities.get(2);
         assertThat(entityAll.getAuthor(), is(nullValue()));
-        assertThat(entityAll.getUsernameOrIp(), is(nullValue()));
+        assertThat(entityAll.getUsername(), is(nullValue()));
         assertThat(entityAll.getEpisode(), is(nullValue()));
         assertThat(entityAll.getSeason(), is(nullValue()));
         assertThat(entityAll.getIdentifiers(), is(empty()));

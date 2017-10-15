@@ -30,7 +30,7 @@ public class HistoryWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/history/searches/forsearching", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SearchEntity> searchHistoryForSearchPage(HttpServletRequest request) {
-        return history.getHistoryForSearching(request.getRemoteUser());
+        return history.getHistoryForSearching();
     }
 
 

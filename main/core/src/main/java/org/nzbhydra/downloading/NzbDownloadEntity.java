@@ -4,6 +4,7 @@ import lombok.Data;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.web.SessionStorage;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -39,8 +40,9 @@ public class NzbDownloadEntity {
     private String error;
     @Column(length = 4000)
     private String title;
+    private String username;
+    private String ip;
     private String userAgent;
-    private String usernameOrIp;
     /**
      * The age of the NZB at the time of downloading.
      */
@@ -48,15 +50,16 @@ public class NzbDownloadEntity {
     @Column(name = "EXTERNAL_ID")
     private String externalId;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, String usernameOrIp, String userAgent, Integer age, String error) {
+    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, Integer age, String error) {
         this.indexer = indexerEntity;
         this.title = title;
         this.nzbAccessType = nzbAccessType;
         this.accessSource = accessSource;
         this.status = status;
         this.time = Instant.now();
-        this.usernameOrIp = usernameOrIp;
-        this.userAgent = userAgent;
+        this.username = SessionStorage.username.get();
+        this.userAgent = SessionStorage.userAgent.get();
+        this.ip = SessionStorage.IP.get();
         this.age = age;
         this.error = error;
     }

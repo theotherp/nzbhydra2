@@ -2,7 +2,6 @@ package org.nzbhydra.downloading;
 
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.DownloaderConfig;
-import org.nzbhydra.misc.UserAgentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -19,8 +18,6 @@ public class DownloaderWeb {
 
     @Autowired
     private DownloaderProvider downloaderProvider;
-    @Autowired
-    private UserAgentMapper userAgentMapper;
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/downloader/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -32,7 +29,7 @@ public class DownloaderWeb {
     @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest) {
         org.nzbhydra.downloading.Downloader downloader = downloaderProvider.getDownloaderByName(addNzbsRequest.getDownloaderName());
-        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory(), userAgentMapper.getUserAgent());
+        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory());
     }
 
     @Secured({"ROLE_USER"})

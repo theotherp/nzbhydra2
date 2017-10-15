@@ -8,41 +8,47 @@
     <table class="table">
         <thead>
         <tr>
-            <th class="col-md-2">
+            <th class="col-md-2" style="width: {{columnSizes.time}}%;">
                 <column-sortable column="time" style="width: 10%" reversed="false" start-mode="2">Time
                 </column-sortable>
                 <column-filter-wrapper>
                     <time-filter column="time" selected="preselectedTimeInterval"/>
                 </column-filter-wrapper>
             </th>
-            <th class="col-md-8" style="width: 30%">
+            <th class="col-md-8" style="width: {{columnSizes.query}}%">
                 <column-sortable column="query" reversed="false" start-mode="1">Query
                 </column-sortable>
                 <column-filter-wrapper>
                     <freetext-filter column="query"/>
                 </column-filter-wrapper>
             </th>
-            <th style="width: 10%">
+            <th style="width: {{columnSizes.category}}%">
                 <column-sortable column="category_name" reversed="false" start-mode="1">Category
                 </column-sortable>
                 <column-filter-wrapper>
                     <checkboxes-filter column="category_name" entries="categoriesForFiltering" preselect="true" show-invert="true"/>
                 </column-filter-wrapper>
             </th>
-            <th style="width: 32%">
+            <th style="width: {{columnSizes.additionalParameters}}%">
                 Additional parameters
             </th>
-            <th class="col-md-1" style="width: 8%">
+            <th class="col-md-1" style="width: {{columnSizes.source}}%">
                 <column-sortable column="source" reversed="false" start-mode="1">Source
                 </column-sortable>
                 <column-filter-wrapper>
                     <boolean-filter column="source" options="accessOptionsForFiltering" preselect="0"/>
                 </column-filter-wrapper>
             </th>
-            <th class="col-md-2" style="width: 10%">
-                <column-sortable column="username_or_ip" reversed="false" start-mode="1">User / IP</column-sortable>
+            <th class="col-md-2" style="width: {{columnSizes.username}}%"  ng-if="columnSizes.username > 0">
+                <column-sortable column="username" reversed="false" start-mode="1">User</column-sortable>
                 <column-filter-wrapper>
-                    <freetext-filter column="username_or_ip"/>
+                    <freetext-filter column="username"/>
+                </column-filter-wrapper>
+            </th>
+            <th class="col-md-2" style="width: {{columnSizes.ip}}%"  ng-if="columnSizes.ip > 0">
+                <column-sortable column="ip" reversed="false" start-mode="1">IP</column-sortable>
+                <column-filter-wrapper>
+                    <freetext-filter column="ip"/>
                 </column-filter-wrapper>
             </th>
         </tr>
@@ -61,7 +67,8 @@
             <td class="narrow-row">{{ request.categoryName }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
             <td class="narrow-row">{{ request.source === "INTERNAL" ? "Internal" : "API"}}</td>
-            <td class="narrow-row">{{ request.usernameOrIp }}</td>
+            <td class="narrow-row" ng-if="columnSizes.username > 0">{{ request.username }}</td>
+            <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ request.ip }}</td>
         </tr>
         </tbody>
     </table>

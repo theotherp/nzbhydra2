@@ -44,6 +44,28 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     $scope.nzbDownloads = downloads.data.content;
     $scope.totalDownloads = downloads.data.totalElements;
 
+    $scope.columnSizes = {
+        time: 10,
+        indexer: 10,
+        title: 37,
+        result: 9,
+        source: 8,
+        age: 6,
+        username: 10,
+        ip: 10
+    };
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.title += 20;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.title += 10;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.title += 10;
+    }
+
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {

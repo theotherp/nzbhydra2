@@ -29,6 +29,30 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.searchRequests = history.data.content;
     $scope.totalRequests = history.data.totalElements;
 
+    $scope.columnSizes = {
+        time: 10,
+        query: 30,
+        category: 10,
+        additionalParameters: 22,
+        source: 8,
+        username: 10,
+        ip: 10
+    };
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.query += 10;
+        $scope.columnSizes.additionalParameters += 10;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "IP") {
+        $scope.columnSizes.username = 0;
+        $scope.columnSizes.query += 5;
+        $scope.columnSizes.additionalParameters += 5;
+    } else if (ConfigService.getSafe().logging.historyUserInfoType === "USERNAME") {
+        $scope.columnSizes.ip = 0;
+        $scope.columnSizes.query += 5;
+        $scope.columnSizes.additionalParameters += 5;
+    }
+
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
             $scope.searchRequests = history.data.content;

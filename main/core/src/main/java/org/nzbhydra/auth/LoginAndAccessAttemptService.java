@@ -36,7 +36,7 @@ public class LoginAndAccessAttemptService {
             int attempts = attemptsCache.getUnchecked(key);
             attempts++;
             attemptsCache.put(key, attempts);
-            logger.warn("{} failed access attempts from IP {} in the last 24 hours. Will block access at {} failed attempts", attempts, SessionStorage.IP.get(), MAX_ATTEMPTS);
+            logger.warn("{} failed access attempts from IP {} in the last 24 hours. Will block access after {} failed attempts", attempts, SessionStorage.IP.get(), MAX_ATTEMPTS);
         }
     }
 
