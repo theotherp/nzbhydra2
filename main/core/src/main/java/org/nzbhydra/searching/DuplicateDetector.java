@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
-import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -29,13 +29,13 @@ public class DuplicateDetector {
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDetector.class);
 
     @Autowired
-    private ConfigProvider configProvider;
+    protected SearchingConfig searchingConfig;
 
     public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().replaceFirst("[ .\\-_]", "")));
         Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
-        List<TreeSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
+        List<LinkedHashSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 
         //In each list of searchResults with the same title we want to find the duplicates
         int countDetectedDuplicates = 0;
@@ -43,14 +43,15 @@ public class DuplicateDetector {
         for (List<SearchResultItem> titleGroup : groupedByTitle.values()) {
             titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getPubDate).reversed()).collect(Collectors.toList());
             //So we start with a bucket with the first (later we have a list of buckets where all searchResults in a bucket are duplicates)
-            List<TreeSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
-            listOfBuckets.add(new TreeSet<>(newArrayList(titleGroup.get(0))));
+            List<LinkedHashSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
+            titleGroup.get(0).setDuplicateIdentifier(duplicateIdentifier);
+            listOfBuckets.add(new LinkedHashSet<>(newArrayList(titleGroup.get(0))));
             //And iterate over every other item in the list
             for (int i = 1; i < titleGroup.size(); i++) {
                 SearchResultItem searchResultItem = titleGroup.get(i);
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
-                for (TreeSet<SearchResultItem> bucket : listOfBuckets) {
+                for (LinkedHashSet<SearchResultItem> bucket : listOfBuckets) {
                     //And all searchResults in those buckets
                     for (SearchResultItem other : bucket) {
                         //Now we can check if the two searchResults are duplicates
@@ -58,9 +59,9 @@ public class DuplicateDetector {
                         if (same) {
                             //If they are the same we found a bucket for the result. We add it and continue
                             foundBucket = true;
-                            searchResultItem.setDuplicateIdentifier(duplicateIdentifier);
                             bucket.add(searchResultItem);
                             countDetectedDuplicates++;
+                            searchResultItem.setDuplicateIdentifier(duplicateIdentifier);
                             break;
                         }
                     }
@@ -72,12 +73,12 @@ public class DuplicateDetector {
                 //If we didn't find a bucket for the result we start a new one
                 if (!foundBucket) {
                     searchResultItem.setDuplicateIdentifier(duplicateIdentifier++);
-                    listOfBuckets.add(new TreeSet<>(newArrayList(searchResultItem)));
+                    listOfBuckets.add(new LinkedHashSet<>(newArrayList(searchResultItem)));
                 }
             }
-            TreeSet<SearchResultItem> lastBucket = Iterables.getLast(listOfBuckets);
+            LinkedHashSet<SearchResultItem> lastBucket = Iterables.getLast(listOfBuckets);
             if (lastBucket.size() == 1) {
-                countUniqueResultsPerIndexer.add(lastBucket.first().getIndexer());
+                countUniqueResultsPerIndexer.add(lastBucket.iterator().next().getIndexer());
             }
             duplicateGroups.addAll(listOfBuckets);
         }
@@ -88,6 +89,9 @@ public class DuplicateDetector {
     }
 
     private boolean testForSameness(SearchResultItem result1, SearchResultItem result2) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(LoggingMarkers.DUPLICATES, "Comparing {} and {}", result1, result2);
+        }
         if (result1.getIndexer().equals(result2.getIndexer())) {
             return false;
         }
@@ -97,8 +101,8 @@ public class DuplicateDetector {
         boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
         boolean samePoster = posterKnown && Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
-        float duplicateAgeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateAgeThreshold();
-        float duplicateSizeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateSizeThresholdInPercent();
+        float duplicateAgeThreshold = searchingConfig.getDuplicateAgeThreshold();
+        float duplicateSizeThreshold = searchingConfig.getDuplicateSizeThresholdInPercent();
 
         if ((groupKnown && !sameGroup) || (posterKnown && !samePoster)) {
             return false;
@@ -114,9 +118,16 @@ public class DuplicateDetector {
 
     private boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
         if (result1.getPubDate() == null || result2.getPubDate() == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(LoggingMarkers.DUPLICATES, "Either result has no pub date: {}, {}", result1, result2);
+            }
             return false;
         }
-        return Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
+        boolean isSameAge = Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
+        if (logger.isDebugEnabled()) {
+            logger.debug(LoggingMarkers.DUPLICATES, "{} and {} are the same age: {}", result1, result2, isSameAge);
+        }
+        return isSameAge;
     }
 
     private boolean testForDuplicateSize(SearchResultItem result1, SearchResultItem result2, float duplicateSizeDifference) {
@@ -126,8 +137,14 @@ public class DuplicateDetector {
         long sizeDifference = Math.abs(result1.getSize() - result2.getSize());
         float sizeAverage = (result1.getSize() + result2.getSize()) / 2;
         float sizeDiffPercent = Math.abs(sizeDifference / sizeAverage) * 100;
-        return sizeDiffPercent < duplicateSizeDifference;
+        boolean sameSize = sizeDiffPercent < duplicateSizeDifference;
+        if (logger.isDebugEnabled()) {
+            logger.debug(LoggingMarkers.DUPLICATES, "{} and {} are the same size: {}", result1, result2, sameSize);
+        }
+        return sameSize;
     }
+
+
 
 
 }

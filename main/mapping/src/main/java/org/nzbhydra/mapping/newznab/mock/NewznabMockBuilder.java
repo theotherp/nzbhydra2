@@ -57,8 +57,8 @@ public class NewznabMockBuilder {
             if (!request.getTitleWords().isEmpty()) {
                 title += " " + request.getTitleWords().get(random.nextInt(request.getTitleWords().size()));
             }
-            if (request.isGenerateDuplicates()) {
-                if (random.nextBoolean()) {
+            if (request.isGenerateDuplicates() || request.isGenerateOneDuplicate()) {
+                if (random.nextBoolean() || request.isGenerateOneDuplicate()) {
                     size = "1000000";
                     title = "aDuplicate";
                 }

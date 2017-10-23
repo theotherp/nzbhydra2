@@ -151,6 +151,18 @@
             <version>4.2.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>3.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-meta</artifactId>
+            <version>3.10.0</version>
+        </dependency>
+
+
         <!--Jackson-->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>

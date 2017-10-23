@@ -91,6 +91,7 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        boolean doGenerateDuplicates = "duplicates".equals(params.getQ());
         if (params.getQ() != null && params.getQ().equals("offsettest")) {
             RssRoot rssRoot = new RssRoot();
             rssRoot.getRssChannel().setNewznabResponse(new NewznabResponse(0, 0));
@@ -99,7 +100,7 @@ public class MockNewznab {
             }
             int start = params.getOffset() == 0 ? 0 : params.getOffset();
             int end = Math.min(start + 10 - 1, 40);
-            rssRoot = NewznabMockBuilder.generateResponse(start, end, "offsetTest", "duplicates".equals(params.getQ()), Collections.emptyList());
+            rssRoot = NewznabMockBuilder.generateResponse(start, end, "offsetTest", doGenerateDuplicates, Collections.emptyList());
 
             rssRoot.getRssChannel().getNewznabResponse().setTotal(40);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -162,18 +163,29 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if ("oneduplicate".equals(params.getQ())) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder()
+                    .numberOfResults(1)
+                    .titleBase(itemTitleBase)
+                    .generateOneDuplicate(true)
+                    .build();
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(1);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getTmdbid() != null) {
             if (itemTitleBase.equals("tmdberror")) {
                 RssError rssError = new RssError("123", "description");
                 return new ResponseEntity<Object>(rssError, HttpStatus.OK);
             }
 
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", "duplicates".equals(params.getQ()), Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
         if (params.getImdbid() != null) {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", "duplicates".equals(params.getQ()), Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
@@ -194,7 +206,7 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), itemTitleBase, "duplicates".equals(params.getQ()), Collections.emptyList());
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), itemTitleBase, doGenerateDuplicates, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

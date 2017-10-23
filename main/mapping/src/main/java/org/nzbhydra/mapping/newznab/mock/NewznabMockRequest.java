@@ -16,6 +16,7 @@ public class NewznabMockRequest {
     private String indexer;
     private int numberOfResults;
     private boolean generateDuplicates;
+    private boolean generateOneDuplicate;
     @Builder.Default
     private List<String> titleWords = new ArrayList<>();
 

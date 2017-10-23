@@ -5,5 +5,6 @@ public enum SearchModuleType {
     BINSEARCH,
     NEWZNAB,
     NZBINDEX,
-    TORZNAB
+    TORZNAB,
+    DEVONLY
 }

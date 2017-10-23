@@ -29,9 +29,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -112,8 +112,8 @@ public class SearcherUnitTest {
             @Override
             public DuplicateDetectionResult answer(InvocationOnMock invocation) throws Throwable {
                 List<SearchResultItem> items = invocation.getArgument(0);
-                List<TreeSet<SearchResultItem>> sets = items.stream().map(x -> {
-                    return Sets.newTreeSet(Arrays.asList(x));
+                List<LinkedHashSet<SearchResultItem>> sets = items.stream().map(x -> {
+                    return Sets.newLinkedHashSet(Arrays.asList(x));
                 }).collect(Collectors.toList());
 
                 return new DuplicateDetectionResult(sets, HashMultiset.create());

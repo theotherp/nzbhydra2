@@ -366,7 +366,8 @@ function ConfigFields($injector) {
                                 options: [
                                     {label: 'Removed trailing words', id: 'TRAILING'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
-                                    {label: 'Performance', id: 'PERFORMANCE'}
+                                    {label: 'Performance', id: 'PERFORMANCE'},
+                                    {label: 'Duplicate detection', id: 'DUPLICATES'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 placeholder: 'None'
