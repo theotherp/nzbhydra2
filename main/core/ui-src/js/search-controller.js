@@ -350,9 +350,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     }
 
     $scope.$on("searchResultsShown", function () {
-        getAndSetSearchRequests();
+        _.defer(getAndSetSearchRequests);
     });
-
 
 }
 

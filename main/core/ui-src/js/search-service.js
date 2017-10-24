@@ -19,6 +19,7 @@ function SearchService($http) {
 
 
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+        console.time("search");
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.searchRequestId = searchRequestId;
@@ -84,6 +85,7 @@ function SearchService($http) {
             "notPickedIndexersWithReason": notPickedIndexersWithReason
 
         };
+        console.timeEnd("search");
         return lastResults;
     }
 

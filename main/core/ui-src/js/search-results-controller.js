@@ -160,6 +160,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     function sortAndFilter(results) {
+        console.time("sortAndFilter");
         var query;
         var words;
         if ("title" in $scope.filterModel) {
@@ -312,6 +313,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         $scope.lastClicked = null;
+        console.timeEnd("sortAndFilter");
         return filtered;
     }
 

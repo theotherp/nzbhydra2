@@ -3034,6 +3034,7 @@ function SearchService($http) {
 
 
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
+        console.time("search");
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.searchRequestId = searchRequestId;
@@ -3099,6 +3100,7 @@ function SearchService($http) {
             "notPickedIndexersWithReason": notPickedIndexersWithReason
 
         };
+        console.timeEnd("search");
         return lastResults;
     }
 
@@ -3269,6 +3271,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     function sortAndFilter(results) {
+        console.time("sortAndFilter");
         var query;
         var words;
         if ("title" in $scope.filterModel) {
@@ -3421,6 +3424,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         $scope.lastClicked = null;
+        console.timeEnd("sortAndFilter");
         return filtered;
     }
 
@@ -4218,9 +4222,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     }
 
     $scope.$on("searchResultsShown", function () {
-        getAndSetSearchRequests();
+        _.defer(getAndSetSearchRequests);
     });
-
 
 }
 SearchController.$inject = ["$scope", "$http", "$stateParams", "$state", "$uibModal", "$timeout", "$sce", "growl", "SearchService", "focus", "ConfigService", "HydraAuthService", "CategoriesService", "$element", "SearchHistoryService"];

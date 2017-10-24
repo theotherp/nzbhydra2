@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ public class WebHooks {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    @Async
     @EventListener
     public void onSearchEvent(SearchEvent searchEvent) throws IOException {
         String searchHook = System.getProperty("nzbhydra.hooks.search");
@@ -48,6 +50,7 @@ public class WebHooks {
         }
     }
 
+    @Async
     @EventListener
     public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent) throws IOException {
         String downloadHook = System.getProperty("nzbhydra.hooks.download");
