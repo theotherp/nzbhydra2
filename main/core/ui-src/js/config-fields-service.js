@@ -1435,8 +1435,8 @@ function getIndexerPresets(configuredIndexers) {
                 configComplete: true,
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
-                supportedSearchIds: [],
-                supportedSearchTypes: [],
+                supportedSearchIds: undefined,
+                supportedSearchTypes: undefined,
                 searchModuleType: "TORZNAB",
                 enabledForSearchSource: "BOTH"
             }
@@ -1525,7 +1525,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 lines: ["Torznab indexers can only be used for internal searches or dedicated searches using /torznab/api"]
             }
         });
-    } else if (model.searchModuleType === "NEWZNAB" && !isInitial) {
+    } else if ((model.searchModuleType === "NEWZNAB" || model.searchModuleType === "TORZNAB") && !isInitial) {
         var message;
         var cssClass;
         if (!model.configComplete) {
