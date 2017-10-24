@@ -31,6 +31,8 @@ public class HydraUserDetailsManager implements UserDetailsManager {
 
     @Autowired
     private LoginAndAccessAttemptService attemptService;
+    @Autowired
+    private AuthAndAccessEventHandler authAndAccessEventHandler;
 
 
     public HydraUserDetailsManager(@Autowired BaseConfig baseConfig) {

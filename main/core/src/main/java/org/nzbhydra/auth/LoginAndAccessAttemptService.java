@@ -28,11 +28,19 @@ public class LoginAndAccessAttemptService {
     }
 
     public void accessSucceeded(String key) {
+        if (key == null) {
+            logger.warn("Unable to log successul login by empty IP");
+            return;
+        }
         attemptsCache.invalidate(key);
     }
 
     public void accessFailed(String key) {
         synchronized (attemptsCache) {
+            if (key == null) {
+                logger.warn("Unable to log failed login by empty IP");
+                return;
+            }
             int attempts = attemptsCache.getUnchecked(key);
             attempts++;
             attemptsCache.put(key, attempts);
@@ -45,6 +53,10 @@ public class LoginAndAccessAttemptService {
     }
 
     public boolean wasUnsuccessfulBefore(String key) {
+        if (key == null) {
+            logger.warn("Unable to determine unsuccessul login by empty IP. Will assume this access is OK");
+            return true;
+        }
         return attemptsCache.getUnchecked(key) > 0;
     }
 }

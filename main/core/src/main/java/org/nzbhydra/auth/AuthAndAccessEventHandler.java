@@ -31,12 +31,22 @@ public class AuthAndAccessEventHandler implements AccessDeniedHandler {
     @EventListener
     public void onApplicationEvent(AuthenticationFailureBadCredentialsEvent event) {
         Object userName = event.getAuthentication().getPrincipal();
+        String ip = SessionStorage.IP.get();
+        if (ip == null) { //Might not always be set
+            ip = ((HydraWebAuthenticationDetails)event.getAuthentication().getDetails()).getFilteredIp();
+            SessionStorage.IP.set(ip);
+        }
         logger.warn("Failed login with username {} from IP {}", userName, SessionStorage.IP.get());
         attemptService.accessFailed(SessionStorage.IP.get());
     }
 
     @EventListener
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
+        String ip = SessionStorage.IP.get();
+        if (ip == null) { //Might not always be set
+            ip = ((HydraWebAuthenticationDetails)event.getAuthentication().getDetails()).getFilteredIp();
+            SessionStorage.IP.set(ip);
+        }
         if (attemptService.wasUnsuccessfulBefore(SessionStorage.IP.get())) {
             User user;
             try {

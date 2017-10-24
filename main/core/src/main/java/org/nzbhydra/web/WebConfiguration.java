@@ -1,8 +1,5 @@
 package org.nzbhydra.web;
 
-import com.google.common.base.Strings;
-import org.nzbhydra.config.ConfigProvider;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -12,16 +9,12 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.Marshaller;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +24,7 @@ import java.util.Map;
 public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
-    private ConfigProvider configProvider;
+    private Interceptor interceptor;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -71,39 +64,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new HandlerInterceptor() {
-            @Override
-            public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-                String ip = request.getHeader("X-Forwarded-For");
-                if (ip != null) {
-                    ip = ip.split(",")[0];
-                } else {
-                    ip = request.getRemoteAddr();
-                }
-                if (configProvider.getBaseConfig().getMain().getLogging().isLogIpAddresses()) {
-                    MDC.put("IPADDRESS", ip);
-                }
-                if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
-                    MDC.put("USERNAME", request.getRemoteUser());
-                }
-                SessionStorage.IP.set(ip);
-                SessionStorage.username.set(request.getRemoteUser());
-                SessionStorage.userAgent.set(request.getHeader("User-Agent"));
-                SessionStorage.requestUrl.set(request.getRequestURI());
-
-                return true;
-            }
-
-            @Override
-            public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-
-            }
-
-            @Override
-            public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
-            }
-        });
+        registry.addInterceptor(interceptor);
     }
 
     /**

@@ -19,9 +19,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 
 @Configuration
@@ -53,6 +56,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
                     .httpBasic()
+                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                        @Override
+                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                            return new HydraWebAuthenticationDetails(context);
+                        }
+                    })
                     .and()
                     .logout().logoutUrl("/logout")
                     .and();
@@ -64,6 +73,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     //.anyRequest().authenticated()
                     .and()
                     .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
+                    .authenticationDetailsSource(new WebAuthenticationDetailsSource() {
+                        @Override
+                        public WebAuthenticationDetails buildDetails(HttpServletRequest context) {
+                            return new HydraWebAuthenticationDetails(context);
+                        }
+                    })
                     .and()
                     .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
                     .and();
