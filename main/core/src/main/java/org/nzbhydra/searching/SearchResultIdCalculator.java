@@ -5,11 +5,13 @@ import java.nio.charset.Charset;
 public class SearchResultIdCalculator {
 
     public static long calculateSearchResultId(SearchResultEntity result) {
-        return hash64((result.getIndexer().getName() + result.getIndexerGuid()));
+        long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid() + result.getTitle() + result.getLink()));
+        return hash;
     }
 
     public static long calculateSearchResultId(SearchResultItem result) {
-        return hash64((result.getIndexer().getName() + result.getIndexerGuid()));
+        long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid()) + result.getTitle() + result.getLink());
+        return hash;
     }
 
 

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.util.Objects;
 
 @RestController
 public class TorrentHandlingWeb {
@@ -71,7 +72,11 @@ public class TorrentHandlingWeb {
             logger.error("Torrent black hole folder not set");
             return GenericResponse.notOk("Torrent black hole folder not set");
         }
-        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), downloadResult.getTitle() + ".torrent");
+        String sanitizedTitle = downloadResult.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_");
+        if(!Objects.equals(sanitizedTitle, downloadResult.getTitle())) {
+            logger.info("Sanitized torrent title from '{}' to '{}'", downloadResult.getTitle(), sanitizedTitle);
+        }
+        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
         try {
             Files.write(downloadResult.getNzbContent().getBytes(), torrent);
             logger.info("Saved torrent file to {}", torrent.getAbsolutePath());

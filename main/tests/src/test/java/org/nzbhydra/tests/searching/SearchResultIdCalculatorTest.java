@@ -34,12 +34,13 @@ public class SearchResultIdCalculatorTest {
         indexerEntity = indexerRepository.save(indexerEntity);
         searchResultEntity.setIndexer(indexerEntity);
         searchResultEntity.setIndexerGuid("indexerGuid");
+        searchResultEntity.setTitle("title");
         searchResultEntity = searchResultRepository.save(searchResultEntity);
 
-        assertEquals(-5635017076782426087L, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
-        assertEquals(-5635017076782426087L, searchResultEntity.getId());
+        assertEquals(2154325977299537456L, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
+        assertEquals(2154325977299537456L, searchResultEntity.getId());
 
-        assertEquals(searchResultEntity, searchResultRepository.findOne(-5635017076782426087L));
+        assertEquals(searchResultEntity, searchResultRepository.findOne(2154325977299537456L));
     }
 
 }
