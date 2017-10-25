@@ -2,6 +2,7 @@ package org.nzbhydra.web;
 
 import com.google.common.base.Strings;
 import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.misc.UserAgentMapper;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 public class Interceptor extends HandlerInterceptorAdapter {
     @Autowired
     private MainConfig mainConfig;
+    @Autowired
+    private UserAgentMapper userAgentMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -31,7 +34,7 @@ public class Interceptor extends HandlerInterceptorAdapter {
         }
         SessionStorage.IP.set(ip);
         SessionStorage.username.set(request.getRemoteUser());
-        SessionStorage.userAgent.set(request.getHeader("User-Agent"));
+        SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
 
         return true;

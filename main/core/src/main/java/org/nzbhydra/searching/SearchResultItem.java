@@ -87,7 +87,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         if (pubDate == null && o.pubDate != null) {
             return -1;
         }
-        if (pubDate == null && o.pubDate == null) {
+        if (pubDate == null) {
             return 0;
         }
         return o.getPubDate().compareTo(pubDate);
@@ -98,20 +98,22 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof SearchResultItem)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        SearchResultItem that = (SearchResultItem) o;
-        return Objects.equal(indexerGuid, that.indexerGuid) &&
-                Objects.equal(title, that.title);
+        SearchResultItem item = (SearchResultItem) o;
+        return Objects.equal(indexer, item.indexer) &&
+                Objects.equal(indexerGuid, item.indexerGuid) &&
+                Objects.equal(link, item.link) &&
+                Objects.equal(title, item.title);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(super.hashCode(), indexerGuid, title);
+        return Objects.hashCode(super.hashCode(), indexer, indexerGuid, link, title);
     }
 
     @Override

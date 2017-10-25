@@ -1,6 +1,6 @@
 package org.nzbhydra.misc;
 
-import org.nzbhydra.web.SessionStorage;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,21 +15,19 @@ public class UserAgentMapper {
 
     private static final Logger logger = LoggerFactory.getLogger(UserAgentMapper.class);
 
-
-    public String getUserAgent() {
-        String userAgent = SessionStorage.userAgent.get();
+    public String getUserAgent(String userAgent) {
         if (userAgent == null) {
-            logger.debug("No user agent provided");
+            logger.debug(LoggingMarkers.USER_AGENT, "No user agent provided");
             return null;
         }
         for (String toCompare : USER_AGENTS) {
             String headerLowercase = userAgent.toLowerCase();
             if (headerLowercase.contains(toCompare.toLowerCase())) {
-                logger.debug("User agent '{} mapped to '{}'", userAgent, toCompare);
+                logger.debug(LoggingMarkers.USER_AGENT, "User agent '{} mapped to '{}'", userAgent, toCompare);
                 return toCompare;
             }
         }
-        logger.debug("Unknown user agent '{}'", userAgent);
+        logger.debug(LoggingMarkers.USER_AGENT, "Unknown user agent '{}'", userAgent);
         return "Other";
     }
 }

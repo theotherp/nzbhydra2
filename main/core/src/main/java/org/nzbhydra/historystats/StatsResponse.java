@@ -37,8 +37,10 @@ public class StatsResponse {
 
     private DownloadPerAgeStats downloadsPerAgeStats;
     private List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer;
-    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUserOrIp;
-    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUserOrIp;
+    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerUser;
+    private List<DownloadOrSearchSharePerUserOrIp> downloadSharesPerIp;
+    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerUser;
+    private List<DownloadOrSearchSharePerUserOrIp> searchSharesPerIp;
 
     private List<UserAgentShare> userAgentSearchShares;
     private List<UserAgentShare> userAgentDownloadShares;

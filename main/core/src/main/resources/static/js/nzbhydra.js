@@ -2598,7 +2598,7 @@ angular
     .module('nzbhydraApp')
     .controller('StatsController', StatsController);
 
-function StatsController($scope, $filter, StatsService, blockUI, localStorageService, $timeout, $window) {
+function StatsController($scope, $filter, StatsService, blockUI, localStorageService, $timeout, $window, ConfigService) {
 
     $scope.dateOptions = {
         dateDisabled: false,
@@ -2609,6 +2609,8 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
     var initializingBefore = true;
     $scope.afterDate = moment().subtract(30, "days").toDate();
     $scope.beforeDate = moment().add(1, "days").toDate();
+    var historyInfoTypeUserEnabled = ConfigService.getSafe().logging.historyUserInfoType === 'USERNAME' || ConfigService.getSafe().logging.historyUserInfoType === 'BOTH';
+    var historyInfoTypeIpEnabled = ConfigService.getSafe().logging.historyUserInfoType === 'IP' || ConfigService.getSafe().logging.historyUserInfoType === 'BOTH';
     $scope.foo = {
         includeDisabledIndexersInStats: localStorageService.get("includeDisabledIndexersInStats") !== null ? localStorageService.get("includeDisabledIndexersInStats") : false,
         statsSwichState: localStorageService.get("statsSwitchState") !== null ? localStorageService.get("statsSwitchState") :
@@ -2623,12 +2625,15 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                 searchesPerHourOfDay: true,
                 downloadsPerAgeStats: true,
                 successfulDownloadsPerIndexer: true,
-                downloadSharesPerUserOrIp: true,
-                searchSharesPerUserOrIp: true,
+                downloadSharesPerUser: historyInfoTypeUserEnabled,
+                searchSharesPerUser: historyInfoTypeIpEnabled,
+                downloadSharesPerIp: true,
+                searchSharesPerIp: true,
                 userAgentSearchShares: true,
                 userAgentDownloadShares: true
             }
     };
+    localStorageService.set("statsSwitchState", $scope.foo.statsSwichState);
     $scope.stats = {};
 
     updateStats();
@@ -2862,11 +2867,17 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             };
         }
 
-        if ($scope.stats.searchSharesPerUserOrIp !== null) {
-            $scope.downloadSharesPerUserOrIpChart = getSharesPieChart($scope.stats.downloadSharesPerUserOrIp, 300, "userOrIp", "percentage");
+        if ($scope.stats.searchSharesPerIp !== null) {
+            $scope.downloadSharesPerIpChart = getSharesPieChart($scope.stats.downloadSharesPerIp, 300, "key", "percentage");
         }
-        if ($scope.stats.searchSharesPerUserOrIpChart !== null) {
-            $scope.searchSharesPerUserOrIpChart = getSharesPieChart($scope.stats.searchSharesPerUserOrIp, 300, "userOrIp", "percentage");
+        if ($scope.stats.searchSharesPerIpChart !== null) {
+            $scope.searchSharesPerIpChart = getSharesPieChart($scope.stats.searchSharesPerIp, 300, "key", "percentage");
+        }
+        if ($scope.stats.searchSharesPerUser !== null) {
+            $scope.downloadSharesPerUserChart = getSharesPieChart($scope.stats.downloadSharesPerUser, 300, "key", "percentage");
+        }
+        if ($scope.stats.searchSharesPerUserChart !== null) {
+            $scope.searchSharesPerUserChart = getSharesPieChart($scope.stats.searchSharesPerUser, 300, "key", "percentage");
         }
 
         if ($scope.stats.userAgentSearchShares) {
@@ -3009,7 +3020,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         };
     }
 }
-StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService", "$timeout", "$window"];
+StatsController.$inject = ["$scope", "$filter", "StatsService", "blockUI", "localStorageService", "$timeout", "$window", "ConfigService"];
 
 
 
@@ -4218,11 +4229,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.startSearch();
     } else {
         //Getting the search history only makes sense when we're not currently searching
-        getAndSetSearchRequests();
+        _.defer(getAndSetSearchRequests);
     }
 
     $scope.$on("searchResultsShown", function () {
-        _.defer(getAndSetSearchRequests);
+        _.defer(getAndSetSearchRequests); //Defer because otherwise the results are only shown when this returns which may take a while with big databases
     });
 
 }
@@ -6449,7 +6460,8 @@ function ConfigFields($injector) {
                                     {label: 'Removed trailing words', id: 'TRAILING'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
-                                    {label: 'Duplicate detection', id: 'DUPLICATES'}
+                                    {label: 'Duplicate detection', id: 'DUPLICATES'},
+                                    {label: 'Uer agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 placeholder: 'None'

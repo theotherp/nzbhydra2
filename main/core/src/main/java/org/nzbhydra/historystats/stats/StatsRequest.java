@@ -26,8 +26,10 @@ public class StatsRequest {
     private boolean searchesPerHourOfDay;
     private boolean downloadsPerAgeStats;
     private boolean successfulDownloadsPerIndexer;
-    private boolean downloadSharesPerUserOrIp;
-    private boolean searchSharesPerUserOrIp;
+    private boolean downloadSharesPerUser;
+    private boolean downloadSharesPerIp;
+    private boolean searchSharesPerUser;
+    private boolean searchSharesPerIp;
     private boolean userAgentSearchShares;
     private boolean userAgentDownloadShares;
 

@@ -13,4 +13,8 @@ public class AverageResponseTime {
     private double avgResponseTime;
     private double delta;
 
+    public AverageResponseTime(String indexer, double avgResponseTime) {
+        this.indexer = indexer;
+        this.avgResponseTime = avgResponseTime;
+    }
 }

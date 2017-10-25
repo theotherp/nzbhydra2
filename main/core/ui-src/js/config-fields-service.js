@@ -367,7 +367,8 @@ function ConfigFields($injector) {
                                     {label: 'Removed trailing words', id: 'TRAILING'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
-                                    {label: 'Duplicate detection', id: 'DUPLICATES'}
+                                    {label: 'Duplicate detection', id: 'DUPLICATES'},
+                                    {label: 'Uer agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 placeholder: 'None'

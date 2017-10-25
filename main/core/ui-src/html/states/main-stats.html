@@ -247,31 +247,31 @@
         <div class="col-md-10 stat-box">
             <div class="caption">
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
-                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchSharesPerUserOrIp" switch-size="mini" ng-change="onStatsSwitchToggle('searchSharesPerUserOrIp')">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchSharesPerUser" switch-size="mini" ng-change="onStatsSwitchToggle('searchSharesPerUser')">
                     </span>
 
-                Searches per username / IP
+                Searches per username
             </div>
-            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchSharesPerUserOrIp">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchSharesPerUser">
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>User or IP</th>
+                        <th>User</th>
                         <th>Percentage</th>
                         <th>Count</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in stats.searchSharesPerUserOrIp">
-                        <td>{{ stat.userOrIp }}</td>
+                    <tr ng-repeat="stat in stats.searchSharesPerUser">
+                        <td>{{ stat.key }}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                         <td>{{ stat.count }}</td>
                     </tr>
                     </tbody>
                 </table>
 
-                <chart class="searchSharesPerUserOrIpChart">
-                    <nvd3 options="searchSharesPerUserOrIpChart.options" data="searchSharesPerUserOrIpChart.data"></nvd3>
+                <chart class="searchSharesPerUserChart">
+                    <nvd3 options="searchSharesPerUserChart.options" data="searchSharesPerUserChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
         </div>
@@ -279,30 +279,95 @@
         <div class="col-md-10 stat-box">
             <div class="caption">
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
-                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadSharesPerUserOrIp" switch-size="mini" ng-change="onStatsSwitchToggle('downloadSharesPerUserOrIp')">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadSharesPerUser" switch-size="mini" ng-change="onStatsSwitchToggle('downloadSharesPerUser')">
                 </span>
-                Downloads per username / IP
+                Downloads per username
             </div>
-            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadSharesPerUserOrIp">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadSharesPerUser">
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>User or IP</th>
+                        <th>User</th>
                         <th>Percentage</th>
                         <th>Count</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="stat in downloadSharesPerUserOrIp">
-                        <td>{{ stat.userOrIp }}</td>
+                    <tr ng-repeat="stat in downloadSharesPerUser">
+                        <td>{{ stat.user }}</td>
                         <td>{{ stat.percentage | number : 1}}</td>
                         <td>{{ stat.count}}</td>
                     </tr>
                     </tbody>
                 </table>
 
-                <chart class="downloadSharesPerUserOrIpChart">
-                    <nvd3 options="downloadSharesPerUserOrIpChart.options" data="downloadSharesPerUserOrIpChart.data"></nvd3>
+                <chart class="downloadSharesPerUserChart">
+                    <nvd3 options="downloadSharesPerUserChart.options" data="downloadSharesPerUserChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchSharesPerIp" switch-size="mini" ng-change="onStatsSwitchToggle('searchSharesPerIp')">
+                    </span>
+
+                Searches per IP
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchSharesPerIp">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in stats.searchSharesPerIp">
+                        <td>{{ stat.key }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="searchSharesPerIpChart">
+                    <nvd3 options="searchSharesPerIpChart.options" data="searchSharesPerIpChart.data"></nvd3>
+                </chart>
+            </tab-or-chart>
+        </div>
+
+        <div class="col-md-10 stat-box">
+            <div class="caption">
+                <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
+                    <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadSharesPerIp" switch-size="mini" ng-change="onStatsSwitchToggle('downloadSharesPerIp')">
+                </span>
+                Downloads per IP
+            </div>
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadSharesPerIp">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>IP</th>
+                        <th>Percentage</th>
+                        <th>Count</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="stat in downloadSharesPerIp">
+                        <td>{{ stat.key }}</td>
+                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.count}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <chart class="downloadSharesPerIpChart">
+                    <nvd3 options="downloadSharesPerIpChart.options" data="downloadSharesPerIpChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
         </div>

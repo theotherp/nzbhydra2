@@ -75,6 +75,7 @@ public class Stats {
 
         List<Future> futures = new ArrayList<>();
 
+
         if (statsRequest.isAvgResponseTimes()) {
             futures.add(executor.submit(() -> statsResponse.setAvgResponseTimes(averageResponseTimes(statsRequest))));
         }
@@ -121,16 +122,28 @@ public class Stats {
         }
 
 
-        if (statsRequest.isDownloadSharesPerUserOrIp()) {
-            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
-            if (countDownloadsWithData.intValue() > 0) {
-                futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD"))));
+        if (statsRequest.isSearchSharesPerUser()) {
+            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME IS NOT NULL").getSingleResult();
+            if (countSearchesWithData.intValue() > 0) {
+                futures.add(executor.submit(() -> statsResponse.setSearchSharesPerUser(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH", "USERNAME"))));
             }
         }
-        if (statsRequest.isSearchSharesPerUserOrIp()) {
-            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.USERNAME_OR_IP IS NOT NULL").getSingleResult();
+        if (statsRequest.isDownloadSharesPerUser()) {
+            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.USERNAME IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData.intValue() > 0) {
+                futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerUser(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "USERNAME"))));
+            }
+        }
+        if (statsRequest.isSearchSharesPerIp()) {
+            BigInteger countSearchesWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM SEARCH t WHERE t.IP IS NOT NULL").getSingleResult();
             if (countSearchesWithData.intValue() > 0) {
-                futures.add(executor.submit(() -> statsResponse.setSearchSharesPerUserOrIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH"))));
+                futures.add(executor.submit(() -> statsResponse.setSearchSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "SEARCH", "IP"))));
+            }
+        }
+        if (statsRequest.isDownloadSharesPerIp()) {
+            BigInteger countDownloadsWithData = (BigInteger) entityManager.createNativeQuery("SELECT count(*) FROM INDEXERNZBDOWNLOAD t WHERE t.IP IS NOT NULL").getSingleResult();
+            if (countDownloadsWithData.intValue() > 0) {
+                futures.add(executor.submit(() -> statsResponse.setDownloadSharesPerIp(downloadsOrSearchesPerUserOrIp(statsRequest, "INDEXERNZBDOWNLOAD", "IP"))));
             }
         }
 
@@ -535,22 +548,22 @@ public class Stats {
         return result;
     }
 
-    List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename) {
+    List<DownloadOrSearchSharePerUserOrIp> downloadsOrSearchesPerUserOrIp(final StatsRequest statsRequest, String tablename, final String column) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        logger.debug("Calculating download or search shares for table {}", tablename);
+        logger.debug("Calculating download or search shares for table {} and column {}", tablename, column);
         String sql = "" +
                 "SELECT\n" +
-                "  USERNAME_OR_IP,\n" +
-                "  count(*)                                                    AS peruser,\n" +
+                "  " + column + ",\n" +
+                "  count(*) AS peruser,\n" +
                 "  (SELECT count(*)\n" +
                 "   FROM " + tablename + "\n" +
-                "   WHERE USERNAME_OR_IP IS NOT NULL AND USERNAME_OR_IP != ''" +
+                "   WHERE " + column + " IS NOT NULL AND " + column + " != ''" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 ") AS countall\n" +
                 "FROM " + tablename + "\n" +
-                " WHERE USERNAME_OR_IP IS NOT NULL AND USERNAME_OR_IP != ''\n" +
+                " WHERE " + column + " IS NOT NULL AND " + column + " != ''\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY USERNAME_OR_IP";
+                "GROUP BY " + column;
         Query query = entityManager.createNativeQuery(sql);
         List<Object> resultList = query.getResultList();
         List<DownloadOrSearchSharePerUserOrIp> result = new ArrayList<>();
@@ -562,7 +575,7 @@ public class Stats {
             result.add(new DownloadOrSearchSharePerUserOrIp(usernameOrIp, countForUser, percentSuccessful));
         }
         result.sort(Comparator.comparingDouble(DownloadOrSearchSharePerUserOrIp::getPercentage).reversed());
-        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated download or search shares for table {}. Took {}ms", tablename, stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated download or search shares for table {} and column {}. Took {}ms", tablename, column, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }
 
@@ -574,6 +587,7 @@ public class Stats {
                 "  count(*)\n" +
                 "FROM SEARCH\n" +
                 "WHERE user_agent IS NOT NULL\n" +
+                "AND SOURCE = 'API'" +
                 buildWhereFromStatsRequest(true, statsRequest) +
                 "GROUP BY user_agent";
         Query query = entityManager.createNativeQuery(sql);

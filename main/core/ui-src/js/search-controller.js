@@ -346,11 +346,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.startSearch();
     } else {
         //Getting the search history only makes sense when we're not currently searching
-        getAndSetSearchRequests();
+        _.defer(getAndSetSearchRequests);
     }
 
     $scope.$on("searchResultsShown", function () {
-        _.defer(getAndSetSearchRequests);
+        _.defer(getAndSetSearchRequests); //Defer because otherwise the results are only shown when this returns which may take a while with big databases
     });
 
 }

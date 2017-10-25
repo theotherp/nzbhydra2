@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.downloading.NzbDownloadEntity;
@@ -70,8 +69,6 @@ public class StatsComponentTest {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
-    @Autowired
-    private ConfigProvider configProvider;
 
     @Autowired
     private Stats stats;
