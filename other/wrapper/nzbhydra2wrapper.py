@@ -267,7 +267,7 @@ def startup():
         xmx = 128
     if args.xmx:
         xmx = args.xmx
-    java_arguments = ["-Xmx" + str(xmx) + "M", "-Xss256k", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
+    java_arguments = ["-Xmx" + str(xmx) + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     arguments = [args.java]+ java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
