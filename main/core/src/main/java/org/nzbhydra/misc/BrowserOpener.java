@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.awt.*;
 import java.net.URI;
@@ -25,7 +26,12 @@ public class BrowserOpener {
             logger.debug("Unable to get desktop");
             return;
         }
-        URI uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
+        URI uri;
+        if(configProvider.getBaseConfig().getMain().getExternalUrl().isPresent()) {
+            uri = UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getMain().getExternalUrl().get()).build().toUri();
+        } else {
+            uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
+        }
         if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
             logger.info("Opening {} in browser", uri);
             try {

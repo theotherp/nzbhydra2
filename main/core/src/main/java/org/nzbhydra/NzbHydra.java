@@ -34,12 +34,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -224,7 +226,13 @@ public class NzbHydra {
             }
             browserOpener.openBrowser();
         } else {
-            logger.info("You can access NZBHydra 2 in your browser via {}", configProvider.getBaseConfig().getBaseUriBuilder().build().toUri());
+            URI uri;
+            if(configProvider.getBaseConfig().getMain().getExternalUrl().isPresent()) {
+                uri = UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getMain().getExternalUrl().get()).build().toUri();
+            } else {
+                uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
+            }
+            logger.info("You can access NZBHydra 2 in your browser via {}", uri);
         }
     }
 
