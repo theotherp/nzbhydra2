@@ -228,7 +228,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     };
 
     $scope.repeatSearch = function (request) {
-        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
+        var stateParams = SearchHistoryService.getStateParamsForRepeatedSearch(request);
+        stateParams.indexers = encodeURIComponent($scope.selectedIndexers.join(","));
+        $state.go("root.search", stateParams, {inherit: false, notify: true, reload: true});
     };
 
     $scope.searchBoxTooltip = "Prefix terms with -- to exclude'";
