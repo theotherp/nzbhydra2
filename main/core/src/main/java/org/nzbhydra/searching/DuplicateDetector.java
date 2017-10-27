@@ -39,12 +39,10 @@ public class DuplicateDetector {
 
         //In each list of searchResults with the same title we want to find the duplicates
         int countDetectedDuplicates = 0;
-        int duplicateIdentifier = 1;
         for (List<SearchResultItem> titleGroup : groupedByTitle.values()) {
             titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getPubDate).reversed()).collect(Collectors.toList());
             //So we start with a bucket with the first (later we have a list of buckets where all searchResults in a bucket are duplicates)
             List<LinkedHashSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
-            titleGroup.get(0).setDuplicateIdentifier(duplicateIdentifier);
             listOfBuckets.add(new LinkedHashSet<>(newArrayList(titleGroup.get(0))));
             //And iterate over every other item in the list
             for (int i = 1; i < titleGroup.size(); i++) {
@@ -61,7 +59,6 @@ public class DuplicateDetector {
                             foundBucket = true;
                             bucket.add(searchResultItem);
                             countDetectedDuplicates++;
-                            searchResultItem.setDuplicateIdentifier(duplicateIdentifier);
                             break;
                         }
                     }
@@ -72,7 +69,6 @@ public class DuplicateDetector {
                 }
                 //If we didn't find a bucket for the result we start a new one
                 if (!foundBucket) {
-                    searchResultItem.setDuplicateIdentifier(duplicateIdentifier++);
                     listOfBuckets.add(new LinkedHashSet<>(newArrayList(searchResultItem)));
                 }
             }
@@ -82,6 +78,13 @@ public class DuplicateDetector {
             }
             duplicateGroups.addAll(listOfBuckets);
         }
+        int duplicateIdentifier = 0;
+        for (LinkedHashSet<SearchResultItem> group : duplicateGroups) {
+            for (SearchResultItem x : group) {
+                x.setDuplicateIdentifier(duplicateIdentifier);
+            }
+            duplicateIdentifier++;
+        }
 
         logger.debug(LoggingMarkers.PERFORMANCE, "Duplicate detection for {} search results took {}ms. Found {} duplicates", results.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS), countDetectedDuplicates);
 
@@ -89,10 +92,9 @@ public class DuplicateDetector {
     }
 
     private boolean testForSameness(SearchResultItem result1, SearchResultItem result2) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(LoggingMarkers.DUPLICATES, "Comparing {} and {}", result1, result2);
-        }
+        logger.debug(LoggingMarkers.DUPLICATES, "Comparing {} and {}", result1, result2);
         if (result1.getIndexer().equals(result2.getIndexer())) {
+            logger.debug(LoggingMarkers.DUPLICATES, "Same indexer");
             return false;
         }
 
@@ -104,7 +106,12 @@ public class DuplicateDetector {
         float duplicateAgeThreshold = searchingConfig.getDuplicateAgeThreshold();
         float duplicateSizeThreshold = searchingConfig.getDuplicateSizeThresholdInPercent();
 
-        if ((groupKnown && !sameGroup) || (posterKnown && !samePoster)) {
+        if (groupKnown && !sameGroup) {
+            logger.debug(LoggingMarkers.DUPLICATES, "Not the same group: {} and {}", result1.getGroup().orElse(null), result2.getGroup().orElse(null));
+            return false;
+        }
+        if (posterKnown && !samePoster) {
+            logger.debug(LoggingMarkers.DUPLICATES, "Not the same poster: {} and {}", result1.getPoster().orElse(null), result2.getPoster().orElse(null));
             return false;
         }
 
@@ -118,15 +125,11 @@ public class DuplicateDetector {
 
     private boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
         if (result1.getPubDate() == null || result2.getPubDate() == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug(LoggingMarkers.DUPLICATES, "Either result has no pub date: {}, {}", result1, result2);
-            }
+            logger.debug(LoggingMarkers.DUPLICATES, "At least result has no pub date");
             return false;
         }
         boolean isSameAge = Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
-        if (logger.isDebugEnabled()) {
-            logger.debug(LoggingMarkers.DUPLICATES, "{} and {} are the same age: {}", result1, result2, isSameAge);
-        }
+        logger.debug(LoggingMarkers.DUPLICATES, "Same age: {}", isSameAge);
         return isSameAge;
     }
 
@@ -138,13 +141,9 @@ public class DuplicateDetector {
         float sizeAverage = (result1.getSize() + result2.getSize()) / 2;
         float sizeDiffPercent = Math.abs(sizeDifference / sizeAverage) * 100;
         boolean sameSize = sizeDiffPercent < duplicateSizeDifference;
-        if (logger.isDebugEnabled()) {
-            logger.debug(LoggingMarkers.DUPLICATES, "{} and {} are the same size: {}", result1, result2, sameSize);
-        }
+        logger.debug(LoggingMarkers.DUPLICATES, "Same size: {}", sameSize);
         return sameSize;
     }
-
-
 
 
 }

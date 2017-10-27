@@ -15,7 +15,6 @@ import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +65,6 @@ public class NzbHandler {
         int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));
         logger.info("{} download request for {} from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
 
-        String userAgent = SessionStorage.userAgent.get();
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
             NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, ageInDays, null);

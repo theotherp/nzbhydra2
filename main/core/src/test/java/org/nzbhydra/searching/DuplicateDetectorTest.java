@@ -27,13 +27,13 @@ public class DuplicateDetectorTest {
     }
 
     @Test
-    public void detectDuplicates() throws Exception {
+    public void shouldDetectThatTheSame() throws Exception {
         SearchResultItem item1 = new SearchResultItem();
-        setValues(item1, "1");
+        setValues(item1, "1", "poster");
         SearchResultItem item2 = new SearchResultItem();
-        setValues(item2, "2");
+        setValues(item2, "2", "poster");
         SearchResultItem item3 = new SearchResultItem();
-        setValues(item3, "3");
+        setValues(item3, "3", "poster");
 
         DuplicateDetectionResult result = testee.detectDuplicates(Arrays.asList(item1, item2, item3));
         assertThat(result.getDuplicateGroups().size()).isEqualTo(1);
@@ -43,12 +43,33 @@ public class DuplicateDetectorTest {
         assertThat(items.get(0).getDuplicateIdentifier()).isEqualTo(items.get(1).getDuplicateIdentifier()).isEqualTo(items.get(2).getDuplicateIdentifier());
     }
 
-    protected void setValues(SearchResultItem item, String indexerName) {
+    @Test
+    public void duplicateIdsShouldBeSameForDuplicates() throws Exception {
+        SearchResultItem item1 = new SearchResultItem();
+        setValues(item1, "1", "poster1");
+        SearchResultItem item2 = new SearchResultItem();
+        setValues(item2, "2", "poster1");
+        SearchResultItem item3 = new SearchResultItem();
+        setValues(item3, "3", "poster2");
+        SearchResultItem item4 = new SearchResultItem();
+        setValues(item4, "4", "poster2");
+
+        DuplicateDetectionResult result = testee.detectDuplicates(Arrays.asList(item1, item2, item3, item4));
+        assertThat(result.getDuplicateGroups().size()).isEqualTo(2);
+
+        List<SearchResultItem> items = new ArrayList<>(result.getDuplicateGroups().get(0));
+        assertThat(items.get(0).getDuplicateIdentifier()).isEqualTo(items.get(1).getDuplicateIdentifier()).as("Duplicates should have the same duplicate identifiers");
+        items = new ArrayList<>(result.getDuplicateGroups().get(1));
+        assertThat(items.get(0).getDuplicateIdentifier()).isEqualTo(items.get(1).getDuplicateIdentifier()).as("Duplicates should have the same duplicate identifiers");
+    }
+
+
+    protected void setValues(SearchResultItem item, String indexerName, String poster) {
         item.setAgePrecise(true);
         item.setTitle("title");
         item.setIndexerGuid("123");
         item.setPubDate(Instant.now());
-        item.setPoster("poster");
+        item.setPoster(poster);
         item.setGroup("group");
         item.setSize(10000L);
         Newznab indexer = new Newznab();
