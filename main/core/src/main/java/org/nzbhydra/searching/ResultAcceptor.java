@@ -246,21 +246,26 @@ public class ResultAcceptor {
     protected boolean checkRequiredWords(Multiset<String> reasonsForRejection, List<String> requiredWords, SearchResultItem item) {
         if (!requiredWords.isEmpty()) {
             List<String> titleWords = getTitleWords(item);
-
+            boolean allPresent = true;
             for (String requiredWord : requiredWords) {
                 if (requiredWord.contains(".") || requiredWord.contains("-")) {
-                    if (item.getTitle().contains(requiredWord)) {
-                        return true;
+                    if (!item.getTitle().contains(requiredWord)) {
+                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
+                        allPresent = false;
+                        break;
                     }
                 } else {
-                    if (titleWords.contains(requiredWord)) { //Words must match
-                        return true;
+                    if (!titleWords.contains(requiredWord)) { //Words must match
+                        logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
+                        allPresent = false;
+                        break;
                     }
                 }
             }
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found any of the required words in the title {}", item.getTitle());
-            reasonsForRejection.add("No required word found");
-            return false;
+            if (!allPresent) {
+                reasonsForRejection.add("No required word found");
+                return false;
+            }
         }
         return true;
     }

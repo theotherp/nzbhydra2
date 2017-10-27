@@ -62,11 +62,6 @@ public class ResultAcceptorTest {
     }
 
     @Test
-    public void shouldCallSubroutines() {
-
-    }
-
-    @Test
     public void shouldCheckForRequiredWords() throws Exception {
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc.def");
@@ -77,7 +72,6 @@ public class ResultAcceptorTest {
         item.setTitle("abc def ghi");
         assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
 
-
         internalData.getRequiredWords().clear();
         internalData.getRequiredWords().add("abc");
         item.setTitle("abc def ghi");
@@ -87,6 +81,12 @@ public class ResultAcceptorTest {
         item.setTitle("abcdef ghi");
         assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
         item.setTitle("def ghi");
+        assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+
+        internalData.getRequiredWords().add("def");
+        item.setTitle("abc def ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+        item.setTitle("abc de");
         assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
     }
 

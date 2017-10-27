@@ -201,6 +201,7 @@ public class JsonConfigMigration {
 
     protected List<String> migrateCategories(Categories oldCategories, CategoriesConfig newCategories) {
         //Will only migrate categories that exist under that name in the new config
+        List<String> messages = new ArrayList<>();
         newCategories.setEnableCategorySizes(oldCategories.isEnableCategorySizes());
         for (Category newCategory : newCategories.getCategories()) {
             org.nzbhydra.migration.configmapping.Category oldCat = oldCategories.getCategories().get(newCategory.getName().replace(" ", "").toLowerCase());
@@ -212,11 +213,16 @@ public class JsonConfigMigration {
                 newCategory.setMaxSizePreset(oldCat.getMax());
                 newCategory.setNewznabCategories(oldCat.getNewznabCategories() == null ? new ArrayList<>() : oldCat.getNewznabCategories());
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
-                newCategory.setRequiredWords(oldCat.getRequiredWords() == null ? new ArrayList<>() : oldCat.getRequiredWords());
+                if (oldCat.getRequiredWords() != null && !oldCat.getRequiredWords().isEmpty()) {
+                    newCategory.setRequiredWords(oldCat.getRequiredWords());
+                    logAsWarningAndAdd(messages, "Behavior for required words changed: Now *all* words must be present");
+                } else {
+                    newCategory.setRequiredWords(new ArrayList<>());
+                }
                 newCategory.setIgnoreResultsFrom(searchSourceRestrictionMap.getOrDefault(oldCat.getIgnoreResults(), SearchSourceRestriction.NONE));
             }
         }
-        return Collections.emptyList();
+        return messages;
     }
 
     private List<String> migrateLogging(Logging oldLogging, LoggingConfig newLogging) {
@@ -303,7 +309,12 @@ public class JsonConfigMigration {
             newSearching.setNzbAccessType(NzbAccessType.REDIRECT);
         }
         newSearching.setRemoveTrailing(oldSearching.getRemoveTrailing() == null ? new ArrayList<>(): oldSearching.getRemoveTrailing());
-        newSearching.setRequiredWords(oldSearching.getRequiredWords() == null ? new ArrayList<>(): oldSearching.getRequiredWords());
+        if (oldSearching.getRequiredWords() != null && !oldSearching.getRequiredWords().isEmpty()) {
+            newSearching.setRequiredWords(oldSearching.getRequiredWords());
+            logAsWarningAndAdd(messages, "Behavior for required words changed: Now *all* words must be present");
+        } else {
+            newSearching.setRequiredWords(new ArrayList<>());
+        }
         newSearching.setTimeout(oldSearching.getTimeout());
         newSearching.setUserAgent(oldSearching.getUserAgent());
         newSearching.setRequiredRegex(oldSearching.getRequiredRegex());

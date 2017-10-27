@@ -656,7 +656,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required words',
-                                help: "Only results with at least one of these words in the title will be used. Title is converted to lowercase before. Apply words with return key."
+                                help: "Only results with titles that contain *all* words will be used. Title is converted to lowercase before. Apply words with return key."
                             }
                         },
                         {
@@ -898,7 +898,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required words',
-                                    help: "Title is converted to lowercase before. Apply words with return key."
+                                    help: "Must *all* be present in a title which is converted to lowercase before. Apply words with return key."
                                 }
                             },
                             {
@@ -907,7 +907,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required regex',
-                                    help: 'Must be present in a title (title is converted to lowercase before)'
+                                    help: 'Must be present in a title which is converted to lowercase before'
                                 }
                             },
                             {
@@ -916,7 +916,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden words',
-                                    help: "Title is converted to lowercase before. Apply words with return key."
+                                    help: "None may be present in a title which is converted to lowercase before. Apply words with return key."
                                 }
                             },
                             {
@@ -925,7 +925,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden regex',
-                                    help: 'Must not be present in a title (title is converted to lowercase before)'
+                                    help: 'Must not be present in a title which is converted to lowercase before'
                                 }
                             },
                             {
