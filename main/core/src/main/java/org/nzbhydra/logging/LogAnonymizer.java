@@ -26,6 +26,7 @@ public class LogAnonymizer {
      * @throws IOException Unable to read log file
      */
     public String getAnonymizedLog() throws IOException {
+        //LATER chunk up so it can handle big files
         String log = logContentProvider.getLog();
         Optional<String> externalUrlOptional = configProvider.getBaseConfig().getMain().getExternalUrl();
         if (externalUrlOptional.isPresent()) {

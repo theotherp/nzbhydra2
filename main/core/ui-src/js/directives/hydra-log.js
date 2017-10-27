@@ -24,8 +24,12 @@ function hydralog() {
                     $scope.hasMoreJsonLines = data.hasMore;
                 });
             } else if ($scope.active === 1) {
-                return $http.get("internalapi/debuginfos/logfilecontent").success(function (data) {
-                    $scope.log = $sce.trustAsHtml(data);
+                return $http.get("internalapi/debuginfos/currentlogfile").success(function (data) {
+                    $scope.log = $sce.trustAsHtml(data.replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;"));
                 }, function(data) {
                     growl.error(data)
                 });

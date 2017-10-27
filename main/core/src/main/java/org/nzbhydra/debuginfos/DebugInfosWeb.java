@@ -1,6 +1,5 @@
 package org.nzbhydra.debuginfos;
 
-import net.logstash.logback.encoder.org.apache.commons.lang.StringEscapeUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.logging.LogContentProvider;
@@ -33,18 +32,11 @@ public class DebugInfosWeb {
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosWeb.class);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/internalapi/debuginfos/logfilecontent", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public ResponseEntity<String> logfileContent() {
-        try {
-            if (logContentProvider.getLogFileSize() > 5 * 1024 * 1024) {
-                return ResponseEntity.status(500).body("Log file too big");
-            }
-            return ResponseEntity.ok(StringEscapeUtils.escapeHtml(logContentProvider.getLog()));
-        } catch (IOException e) {
-            logger.error("Error while getting log file content", e);
-            return ResponseEntity.status(500).body(e.getMessage());
-        }
+    @RequestMapping(value = "/internalapi/debuginfos/currentlogfile", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public FileSystemResource getCurrentLogFile() {
+        return new FileSystemResource(logContentProvider.getCurrentLogfile(false));
     }
+
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/debuginfos/downloadlog", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)

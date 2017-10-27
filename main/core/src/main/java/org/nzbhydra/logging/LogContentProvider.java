@@ -88,7 +88,7 @@ public class LogContentProvider {
         return new JsonLogResponse(objects, line != null, offset, objects.size());
     }
 
-    private File getCurrentLogfile(boolean getJsonFile) {
+    public File getCurrentLogfile(boolean getJsonFile) {
         File clientLogFile = new File(new File(NzbHydra.getDataFolder(), "logs"), (getJsonFile ? "nzbhydra2-log.json" : "nzbhydra2.log"));
         if (clientLogFile.exists()) {
             return clientLogFile;

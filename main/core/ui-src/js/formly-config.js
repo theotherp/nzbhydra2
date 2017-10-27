@@ -485,7 +485,7 @@ angular
     .module('nzbhydraApp')
     .factory('ConfigBoxService', ConfigBoxService);
 
-function ConfigBoxService($http, $q) {
+function ConfigBoxService($http, $q, $uibModal) {
 
     return {
         checkConnection: checkConnection,
@@ -512,15 +512,66 @@ function ConfigBoxService($http, $q) {
     function checkCaps(url, model) {
         var deferred = $q.defer();
 
-        $http.post(url, model).success(function (data) {
-            deferred.resolve(data, model);
+        var result = $uibModal.open({
+            templateUrl: 'static/html/checker-state.html',
+            controller: CheckCapsModalInstanceCtrl,
+            size: "md",
+            backdrop: "static",
+            backdropClass: "waiting-cursor",
+            resolve: {
+                url: function () {
+                    return url;
+                },
+                model: function() {
+                    return model;
+                }
+            }
+        });
 
-        }).error(function () {
-            deferred.reject("Unknown error");
+        result.result.then(function(data) {
+            console.log(data);
+            deferred.resolve(data[0], data[1]);
+        }, function(message) {
+            console.log(message)
+            deferred.reject(message);
         });
 
         return deferred.promise;
     }
+
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('CheckCapsModalInstanceCtrl', CheckCapsModalInstanceCtrl);
+
+function CheckCapsModalInstanceCtrl($scope, $interval, $http, url, model) {
+
+    var updateMessagesInterval = undefined;
+
+    $scope.messages = undefined;
+
+    $http.post(url, model).success(function (data) {
+        //deferred.resolve(data, model);
+        $scope.$close([data, model]);
+
+    }).error(function () {
+        $scope.$dismiss("Unknown error")
+    });
+
+    updateMessagesInterval = $interval(function () {
+        $http.get("internalapi/indexer/checkCapsMessages").then(function(data) {
+           $scope.messages = data.data;
+        });
+    }, 500);
+
+
+    $scope.$on('$destroy', function () {
+        if (angular.isDefined(updateMessagesInterval)) {
+            $interval.cancel(updateMessagesInterval);
+        }
+    });
+
 
 }
 

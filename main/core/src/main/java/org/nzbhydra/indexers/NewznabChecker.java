@@ -22,6 +22,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -52,6 +53,8 @@ public class NewznabChecker {
     protected ConfigProvider configProvider;
     @Autowired
     protected IndexerWebAccess indexerWebAccess;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
 
     protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
@@ -250,15 +253,18 @@ public class NewznabChecker {
             String errorDescription = ((RssError) response).getDescription();
             if (errorDescription.toLowerCase().contains("function not available")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getKey());
+                eventPublisher.publishEvent(new CheckerEvent("Doesn't support " + request.getKey()));
                 return new SingleCheckCapsResponse(request.getKey(), false, null);
             }
             logger.debug("RSS error from indexer {}: {}", request.indexerConfig.getName(), errorDescription);
+            eventPublisher.publishEvent(new CheckerEvent("RSS error from indexer: " + errorDescription));
             throw new IndexerAccessException("RSS error from indexer: " + errorDescription);
         }
         RssRoot rssRoot = (RssRoot) response;
 
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());
+            eventPublisher.publishEvent(new CheckerEvent("Probably doesn't support " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> request.getTitleExpectedToContain().stream().anyMatch(y -> x.getTitle().toLowerCase().contains(y.toLowerCase()))).count();
@@ -266,13 +272,20 @@ public class NewznabChecker {
         boolean supported = percentCorrect >= ID_THRESHOLD_PERCENT;
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
+            eventPublisher.publishEvent(new CheckerEvent("Probably supports " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
         } else {
             logger.info("Indexer {} probably doesn't support the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
+            eventPublisher.publishEvent(new CheckerEvent("Probably doesn't support " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
     }
 
+    @Data
+    @AllArgsConstructor
+    public static class CheckerEvent {
+        private String message;
+    }
 
     @Data
     @AllArgsConstructor

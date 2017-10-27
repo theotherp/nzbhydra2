@@ -64,7 +64,6 @@ public class MockNewznab {
 
     @RequestMapping(value = {"/api", "/dognzb/api"}, produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params, HttpServletRequest request) throws Exception {
-        logger.info(request.getHeader("user-agent"));
 
         if (params.getT() == ActionAttribute.CAPS) {
             //throw new RuntimeException("test");
