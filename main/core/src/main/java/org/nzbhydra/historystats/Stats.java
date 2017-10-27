@@ -234,15 +234,17 @@ public class Stats {
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
-        OptionalDouble overallAverage = resultList.stream().mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
+        OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
+
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
             String indexerName = (String) resultSet[0];
-            if (!indexerNamesToInclude.contains(indexerName)) {
+
+            if (resultSet[0] == null || resultSet[1] == null || !indexerNamesToInclude.contains(indexerName)) {
                 continue;
             }
             Long averageResponseTime = ((BigInteger) resultSet[1]).longValue();
-            averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, averageResponseTime - overallAverage.getAsDouble()));
+            averageResponseTimes.add(new AverageResponseTime(indexerName, averageResponseTime, averageResponseTime - overallAverage.orElse(0D)));
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated average response times for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return averageResponseTimes;
