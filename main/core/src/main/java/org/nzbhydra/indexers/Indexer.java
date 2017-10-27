@@ -5,6 +5,7 @@ import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
@@ -75,6 +76,8 @@ public abstract class Indexer<T> {
 
     @Autowired
     protected ConfigProvider configProvider;
+    @Autowired
+    protected SearchingConfig searchingConfig;
     @Autowired
     protected IndexerRepository indexerRepository;
     @Autowired
