@@ -14,12 +14,11 @@ it as it is if you have no problems. This allows indexers to gather better stati
 This section allows you to define global filters which will be applied to all search results. You can define words and regexes 
 which must or must not be matched for a search result to be matched. You can also exclude certain usenet posters and groups which are known for spamming.
 
-One forbidden word in a result title dismisses the result. If none of the required words is found anywhere in a result title it's also dismissed. 
+One forbidden word in a result title dismisses the result. If any of the required words is not found anywhere in a result title it's also dismissed. 
 You can define forbidden and required words for categories in the next tab.
 Usually required or forbidden words are applied on a word base, so they must form a complete word in a title. Only if they contain a 
 dash or a dot they may appear anywhere in the title. Example: "ea" matches "something.from.ea" but not "release.from.other". "web-dl" 
 matches "title.web-dl" and "someweb-dl".
-
 
 Some indexers provide information if a release is passworded. If you select to ignore these releases only those will be ignored 
 of which I know for sure that they're actually passworded.

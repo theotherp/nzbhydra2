@@ -3131,7 +3131,6 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService) {
 
-
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -3456,7 +3455,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
+        console.time("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
+        allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
@@ -3479,6 +3480,22 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             })) {
             growl.info("Errors occurred during searching, Check indexer statuses")
         }
+        console.timeEnd("setDataFromSearchResult");
+    }
+
+    function uniq(searchResults) {
+        var seen = {};
+        var out = [];
+        var len = searchResults.length;
+        var j = 0;
+        for(var i = 0; i < len; i++) {
+            var item = searchResults[i];
+            if(seen[item.searchResultId] !== 1) {
+                seen[item.searchResultId] = 1;
+                out[j++] = item;
+            }
+        }
+        return out;
     }
 
     $scope.loadMore = loadMore;
