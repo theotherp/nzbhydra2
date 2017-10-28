@@ -18,11 +18,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class LogContentProvider {
@@ -51,8 +53,11 @@ public class LogContentProvider {
     }
 
     public List<String> getLogFileNames() {
-        String[] files = new File(NzbHydra.getDataFolder(), "logs").list((dir, name) -> name.toLowerCase().endsWith("log"));
-        return files == null ? Collections.emptyList() : Arrays.asList(files);
+        File[] logFiles = new File(NzbHydra.getDataFolder(), "logs").listFiles();
+        if (logFiles == null) {
+            return Collections.emptyList();
+        }
+        return Stream.of(logFiles).sorted(Comparator.comparingLong(File::lastModified).reversed()).filter(x -> x.getName().toLowerCase().endsWith("log")).map(File::getName).collect(Collectors.toList());
     }
 
     public JsonLogResponse getLogsAsJsonLines(int offset, int limit) throws IOException {
