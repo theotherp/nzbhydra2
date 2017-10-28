@@ -8,7 +8,12 @@
     {{ ::result.size | byteFmt: 2 }}
 </td>
 <td class="col-md-1 search-results-cell result-details" style="text-align: right">
-    {{ ::(result.grabs ? result.grabs : '-') }}
+    <span ng-if="::result.grabs">
+        {{ ::result.grabs }}
+    </span>
+    <span ng-if="::result.seeders">
+        {{ ::result.seeders }} / {{ ::result.peers }}
+    </span>
 </td>
 <td class="col-md-1 search-results-cell result-age" style="text-align: right">
     <span uib-tooltip="{{ ::result.date }}"
@@ -27,7 +32,7 @@
            uib-tooltip="Comments"
            tooltip-placement="top"
            tooltip-trigger="mouseenter">
-            <i class="fa fa-comment" aria-hidden="true" style="margin-left:0px; margin-right:3px;"></i>
+            <i class="fa fa-comment" aria-hidden="true" style="margin-left:0; margin-right:3px;"></i>
         </a>
         <a target="_blank" href="{{ ::result.details_link | dereferer}}" ng-class="::{'no-nfo': !result.details_link}" style="vertical-align: middle" class="no-underline result-details-link"
            uib-tooltip="Details"

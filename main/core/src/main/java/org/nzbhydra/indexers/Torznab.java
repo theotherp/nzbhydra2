@@ -47,6 +47,10 @@ public class Torznab extends Newznab {
                 searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
             } else if (attribute.getName().equals("guid")) {
                 searchResultItem.setIndexerGuid(attribute.getValue());
+            } else if (attribute.getName().equals("seeders")) {
+                searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
+            } else if (attribute.getName().equals("peers")) {
+                searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
             }
         }
         searchResultItem.setHasNfo(HasNfo.NO);

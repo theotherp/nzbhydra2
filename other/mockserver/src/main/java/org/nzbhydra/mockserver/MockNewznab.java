@@ -219,11 +219,15 @@ public class MockNewznab {
 
     @RequestMapping(value = "/torznab/api", produces = MediaType.TEXT_XML_VALUE)
     public ResponseEntity<? extends Object> torznabapi(NewznabParameters params) throws Exception {
+        if (params.getT() == ActionAttribute.CAPS) {
+            return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
+        }
         RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "torznab", false, Collections.emptyList());
+        Random random = new Random();
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());
-            item.getTorznabAttributes().add(new NewznabAttribute("seeders", "123"));
-            item.getTorznabAttributes().add(new NewznabAttribute("peers", "456"));
+            item.getTorznabAttributes().add(new NewznabAttribute("seeders", String.valueOf(random.nextInt(30000))));
+            item.getTorznabAttributes().add(new NewznabAttribute("peers", String.valueOf(random.nextInt(30000))));
             item.setCategory("5000");
             item.setGrabs(null);
         }

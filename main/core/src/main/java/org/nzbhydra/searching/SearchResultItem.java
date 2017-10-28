@@ -47,9 +47,11 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String link;
     private String originalCategory;
     private boolean passworded;
+    private Integer peers;
     private String poster = null;
     private Instant pubDate = null;
     private Long searchResultId;
+    private Integer seeders;
     private Long size;
     private String title;
     private Instant usenetDate = null;

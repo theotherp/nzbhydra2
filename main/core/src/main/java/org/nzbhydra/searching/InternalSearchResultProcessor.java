@@ -86,6 +86,8 @@ public class InternalSearchResultProcessor {
                     .downloadType(item.getDownloadType().name())
                     .files(item.getFiles())
                     .grabs(item.getGrabs())
+                    .seeders(item.getSeeders())
+                    .peers(item.getPeers())
                     .hasNfo(item.getHasNfo().name())
                     .hash(item.getDuplicateIdentifier())
                     .indexer(item.getIndexer().getName())

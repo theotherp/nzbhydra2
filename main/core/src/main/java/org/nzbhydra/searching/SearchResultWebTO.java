@@ -19,6 +19,8 @@ public class SearchResultWebTO {
     private Long epoch;
     private Integer files;
     private Integer grabs;
+    private Integer seeders;
+    private Integer peers;
     private String hasNfo;
     private Integer hash;
     private String indexer;
