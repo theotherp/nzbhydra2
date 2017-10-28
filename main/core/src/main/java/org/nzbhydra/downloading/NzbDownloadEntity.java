@@ -2,7 +2,7 @@ package org.nzbhydra.downloading;
 
 import lombok.Data;
 import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.SessionStorage;
 
@@ -28,7 +28,7 @@ public class NzbDownloadEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
     @ManyToOne
-    private IndexerEntity indexer;
+    private SearchResultEntity searchResult;
     @Enumerated(EnumType.STRING)
     private NzbAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
@@ -38,8 +38,6 @@ public class NzbDownloadEntity {
     @Enumerated(EnumType.STRING)
     private NzbDownloadStatus status;
     private String error;
-    @Column(length = 4000)
-    private String title;
     private String username;
     private String ip;
     private String userAgent;
@@ -50,9 +48,8 @@ public class NzbDownloadEntity {
     @Column(name = "EXTERNAL_ID")
     private String externalId;
 
-    public NzbDownloadEntity(IndexerEntity indexerEntity, String title, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, Integer age, String error) {
-        this.indexer = indexerEntity;
-        this.title = title;
+    public NzbDownloadEntity(SearchResultEntity searchResult, NzbAccessType nzbAccessType, SearchSource accessSource, NzbDownloadStatus status, Integer age, String error) {
+        this.searchResult = searchResult;
         this.nzbAccessType = nzbAccessType;
         this.accessSource = accessSource;
         this.status = status;
@@ -63,7 +60,6 @@ public class NzbDownloadEntity {
         this.age = age;
         this.error = error;
     }
-
 
     public NzbDownloadEntity() {
         this.time = Instant.now();

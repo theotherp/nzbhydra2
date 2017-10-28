@@ -67,7 +67,7 @@ public class NzbHandler {
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());
-            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, ageInDays, null);
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result, NzbAccessType.REDIRECT, accessSource, NzbDownloadStatus.REQUESTED, ageInDays, null);
             downloadRepository.save(downloadEntity);
             eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
@@ -78,7 +78,7 @@ public class NzbHandler {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
-                NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, ageInDays, e.getMessage());
+                NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result, NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, ageInDays, e.getMessage());
 
                 downloadRepository.save(downloadEntity);
                 eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
@@ -89,7 +89,7 @@ public class NzbHandler {
             //LATER CHeck content of file for errors, perhaps an indexer returns successful code but error in message for some reason
             logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
-            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result.getIndexer(), result.getTitle(), NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, ageInDays, null);
+            NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result, NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, ageInDays, null);
             downloadRepository.save(downloadEntity);
             eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
 
@@ -193,7 +193,7 @@ public class NzbHandler {
         NzbDownloadStatus oldStatus = entity.getStatus();
         entity.setStatus(status);
         downloadRepository.save(entity);
-        logger.info("Updated download status of NZB \"{}\" from {} to {}", entity.getTitle(), oldStatus, status);
+        logger.info("Updated download status of NZB \"{}\" from {} to {}", entity.getSearchResult().getTitle(), oldStatus, status);
         return true;
     }
 
@@ -219,12 +219,12 @@ public class NzbHandler {
         NzbDownloadEntity entity = foundEntities.iterator().next();
         entity.setStatus(status);
         downloadRepository.save(entity);
-        logger.info("Updated download status of NZB \"{}\" to {}", entity.getTitle(), status);
+        logger.info("Updated download status of NZB \"{}\" to {}", entity.getSearchResult().getTitle(), status);
         return true;
     }
 
     public boolean updateStatusByNzbTitle(String title, NzbDownloadStatus status) {
-        List<NzbDownloadEntity> foundEntities = downloadRepository.findByTitleOrderByTimeDesc(title);
+        List<NzbDownloadEntity> foundEntities = downloadRepository.findBySearchResultTitleOrderByTimeDesc(title);
         NzbDownloadEntity entity = null;
         if (foundEntities.size() == 0) {
             logger.debug("Did not find any download for an NZB with the title \"{}\". Skipping this", title);

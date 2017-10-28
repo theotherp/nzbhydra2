@@ -18,5 +18,4 @@ public interface SearchResultRepository extends JpaRepository<SearchResultEntity
     @Modifying
     int deleteByFirstFoundBefore(Instant foundBefore);
 
-
 }

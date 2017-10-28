@@ -320,5 +320,6 @@ searching:
   showQuickFilterButtons: true
   timeout: 20
   userAgent: "NZBHydra2"
+  userAgents: ["Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"]
   useOriginalCategories: false
   wrapApiErrors: false

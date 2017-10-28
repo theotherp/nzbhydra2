@@ -68,7 +68,7 @@ public class History {
         }
         SortModel sortModel = requestData.getSortModel();
         if (sortModel != null) {
-            sort = String.format(" order by %s %s nulls last ", sortModel.getColumn(), sortModel.getSortMode() == 1 ? "ASC" : "DESC");
+            sort = String.format(" order by lower(%s) %s nulls last ", sortModel.getColumn(), sortModel.getSortMode() == 1 ? "ASC" : "DESC");
         }
 
         String whereConditions = "";

@@ -23,7 +23,6 @@ import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,8 +58,6 @@ public class Stats {
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     @Transactional
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
@@ -187,18 +184,18 @@ public class Stats {
                         "  count(*) AS total,\n" +
                         "  countall.countall\n" +
                         "FROM\n" +
-                        "  indexernzbdownload dl,\n" +
+                        "  indexernzbdownload dl LEFT JOIN SEARCHRESULT,\n" +
                         "  (SELECT count(*) AS countall\n" +
                         "   FROM\n" +
-                        "     indexernzbdownload dl\n" +
+                        "     indexernzbdownload dl LEFT JOIN SEARCHRESULT\n" +
                         buildWhereFromStatsRequest(false, statsRequest) +
                         ")\n" +
                         "  countall\n" +
                         "  , INDEXER\n" +
                         buildWhereFromStatsRequest(false, statsRequest) +
-                        "      AND dl.INDEXER_ID = indexer.ID\n" +
+                        "      AND INDEXER_ID = indexer.ID\n" +
                         "GROUP BY\n" +
-                        "  dl.INDEXER_ID";
+                        "  INDEXER_ID";
 
         Query query = entityManager.createNativeQuery(sql);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
@@ -518,22 +515,19 @@ public class Stats {
 
     List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        String sql = "SELECT  INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
+        String sql = "SELECT INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
                 "from\n" +
-                "  (select indexer_id as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD  WHERE " +
-                //"INDEXER_ID IN (:indexerIds) AND " +
+                "  (select indexer.ID as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD left join SEARCHRESULT LEFT JOIN indexer  WHERE " +
                 "status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY INDEXER_ID),\n" +
-                "  (select indexer_id as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD WHERE " +
-                //"INDEXER_ID IN (:indexerIds) AND  " +
+                "GROUP BY indexer.ID),\n" +
+                "  (select indexer.ID as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD left join SEARCHRESULT LEFT JOIN indexer WHERE " +
                 "status ='CONTENT_DOWNLOAD_SUCCESSFUL' " +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY INDEXER_ID) " +
+                "GROUP BY indexer.ID) " +
                 ",INDEXER where id_1 = id_2 and id_1 = INDEXER.ID";
         Query query = entityManager.createNativeQuery(sql);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
-        //query.setParameter("indexerIds", indexerIdsToInclude);
         List<Object> resultList = query.getResultList();
         List<SuccessfulDownloadsPerIndexer> result = new ArrayList<>();
         for (Object o : resultList) {

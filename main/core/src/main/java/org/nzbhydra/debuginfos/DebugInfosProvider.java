@@ -53,7 +53,7 @@ public class DebugInfosProvider {
         logger.info("Executing SQL query \"{}\" and returning as CSV", sql);
         File tempFile = File.createTempFile("nzbhydra", "csv");
         String path = tempFile.getAbsolutePath().replace("\\", "/");
-        entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql)).executeUpdate();
+        entityManager.createNativeQuery(String.format("CALL CSVWRITE('%s', '%s')", path, sql.replace("'", "''"))).executeUpdate();
         return new String(Files.readAllBytes(tempFile.toPath()));
     }
 

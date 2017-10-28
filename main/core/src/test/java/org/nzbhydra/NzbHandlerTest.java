@@ -65,7 +65,7 @@ public class NzbHandlerTest {
 
     @Test
     public void shouldUpdateStatusByTitleIfFoundOne() {
-        when(nzbDownloadRepositoryMock.findByTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(entityMock));
+        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(entityMock));
 
         boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.REQUESTED);
 
@@ -76,7 +76,7 @@ public class NzbHandlerTest {
 
     @Test
     public void shouldNotUpdateStatusByTitleIfNotFound() {
-        when(nzbDownloadRepositoryMock.findByTitleOrderByTimeDesc(anyString())).thenReturn(Collections.emptyList());
+        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Collections.emptyList());
 
         boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.REQUESTED);
 
@@ -91,7 +91,7 @@ public class NzbHandlerTest {
         when(olderMockNotUpdatable.getStatus()).thenReturn(NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NzbDownloadEntity olderMockUpdatable = mock(NzbDownloadEntity.class);
         when(olderMockUpdatable.getStatus()).thenReturn(NzbDownloadStatus.REQUESTED);
-        when(nzbDownloadRepositoryMock.findByTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(olderMockNotUpdatable, olderMockUpdatable));
+        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(olderMockNotUpdatable, olderMockUpdatable));
 
         boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.NZB_ADDED);
 

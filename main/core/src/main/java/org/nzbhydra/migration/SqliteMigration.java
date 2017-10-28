@@ -23,6 +23,8 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IdentifierKeyValuePair;
 import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.searching.SearchRepository;
+import org.nzbhydra.searching.SearchResultEntity;
+import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
@@ -40,10 +42,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -59,6 +64,8 @@ public class SqliteMigration {
     @Autowired
     private IndexerRepository indexerRepository;
     @Autowired
+    private SearchResultRepository searchResultRepository;
+    @Autowired
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private CategoryProvider categoryProvider;
@@ -66,6 +73,7 @@ public class SqliteMigration {
     private EntityManager entityManager;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    private Random random = new Random();
 
     protected ObjectMapper objectMapper = new ObjectMapper();
     protected TypeReference<List<Map<String, Object>>> listOfMapsTypeReference = new TypeReference<List<Map<String, Object>>>() {
@@ -114,24 +122,26 @@ public class SqliteMigration {
         eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countDownloads + " NZB download entries"));
         ResultSet oldDownloads = statement.executeQuery("SELECT * FROM indexernzbdownload LEFT JOIN indexerapiaccess ON indexernzbdownload.apiAccess_id = indexerapiaccess.id");
         List<NzbDownloadEntity> downloadEntities = new ArrayList<>();
+        List<SearchResultEntity> dummySearchResultEntities = new ArrayList<>();
         while (oldDownloads.next()) {
             NzbDownloadEntity entity = new NzbDownloadEntity();
-            entity.setIndexer(oldIdToIndexersMap.get(oldDownloads.getInt("indexer_id")));
             entity.setTime(oldDownloads.getTimestamp("time").toInstant());
+            IndexerEntity indexerEntity = oldIdToIndexersMap.get(oldDownloads.getInt("indexer_id"));
             entity.setError(oldDownloads.getString("error"));
-            entity.setTitle(oldDownloads.getString("title"));
             entity.setUsername(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
             entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
-
-            entity.setStatus(oldDownloads.getBoolean("response_successful") ? NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL : NzbDownloadStatus.NZB_DOWNLOAD_ERROR); //Close enough
-            if (oldDownloads.wasNull()) {
-                entity.setStatus(NzbDownloadStatus.NONE);
-            }
+            entity.setStatus(NzbDownloadStatus.NONE);
+            Instant dummyTime = Instant.now().minus(10000, ChronoUnit.DAYS);
+            String title = oldDownloads.getString("title");
+            SearchResultEntity searchResultEntity = new SearchResultEntity(indexerEntity, dummyTime, title, "", String.valueOf(random.nextInt()), null, null, dummyTime);//Must set a random link because the calculator would always return the same ID
+            entity.setSearchResult(searchResultEntity);
+            dummySearchResultEntities.add(searchResultEntity);
             downloadEntities.add(entity);
-
         }
+        searchResultRepository.save(dummySearchResultEntities);
         downloadRepository.save(downloadEntities);
+
         logger.info("Successfully migrated downloads from old database");
         eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated NZB download entries"));
     }

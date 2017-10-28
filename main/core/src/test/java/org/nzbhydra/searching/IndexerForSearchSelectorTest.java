@@ -246,7 +246,7 @@ public class IndexerForSearchSelectorTest {
         when(indexerConfigMock.getHitLimit()).thenReturn(Optional.empty());
         when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.empty());
         testee.checkIndexerHitLimit(indexer);
-        verify(nzbDownloadRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
+        verify(nzbDownloadRepository, never()).findBySearchResultIndexerOrderByTimeDesc(any(), any());
         verify(indexerApiAccessRepository, never()).findByIndexerOrderByTimeDesc(any(), any());
     }
 
@@ -271,10 +271,10 @@ public class IndexerForSearchSelectorTest {
     @Test
     public void shouldIgnoreDownloadLimitIfNotYetReached() {
         when(indexerConfigMock.getDownloadLimit()).thenReturn(Optional.of(10));
-        when(nzbDownloadRepository.findByIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        when(nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
         boolean result = testee.checkIndexerHitLimit(indexer);
         assertTrue(result);
-        verify(nzbDownloadRepository).findByIndexerOrderByTimeDesc(any(), any());
+        verify(nzbDownloadRepository).findBySearchResultIndexerOrderByTimeDesc(any(), any());
     }
 
     @Test

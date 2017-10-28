@@ -249,7 +249,7 @@ public class IndexerForSearchSelector {
                 }
             }
             if (indexerConfig.getDownloadLimit().isPresent()) {
-                Page<NzbDownloadEntity> page = nzbDownloadRepository.findByIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
+                Page<NzbDownloadEntity> page = nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
                 if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
                     LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
 

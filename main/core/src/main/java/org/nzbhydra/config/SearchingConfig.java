@@ -41,6 +41,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean showQuickFilterButtons = true;
     private Integer timeout = 30;
     private String userAgent = "NZBHydra2";
+    private List<String> userAgents = new ArrayList<>();
     private boolean useOriginalCategories = false;
     private boolean wrapApiErrors = false;
 

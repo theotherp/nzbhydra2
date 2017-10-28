@@ -65,6 +65,20 @@ public class SearchResultEntity {
     @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
     protected Instant pubDate;
 
+    public SearchResultEntity() {
+    }
+
+    public SearchResultEntity(IndexerEntity indexer, Instant firstFound, String title, String indexerGuid, String link, String details, DownloadType downloadType, Instant pubDate) {
+        this.indexer = indexer;
+        this.firstFound = firstFound;
+        this.title = title;
+        this.indexerGuid = indexerGuid;
+        this.link = link;
+        this.details = details;
+        this.downloadType = downloadType;
+        this.pubDate = pubDate;
+    }
+
     public void setId(long id) {
         this.id = id;
     }

@@ -6774,10 +6774,19 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'User agent',
+                                help: 'Used when accessing indexers',
                                 required: true
                             }
+                        },
+                        {
+                            key: 'userAgents',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Map user agents',
+                                help: 'Used to map the user agent from accessing services to the service names'
+                            }
                         }
-
                     ]
                 },
                 {

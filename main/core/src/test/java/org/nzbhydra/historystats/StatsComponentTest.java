@@ -28,6 +28,7 @@ import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.SearchRepository;
+import org.nzbhydra.searching.SearchResultEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -214,17 +215,34 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateIndexerDownloadShares() throws Exception {
         NzbDownloadEntity download1 = new NzbDownloadEntity();
-        download1.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity1 = new SearchResultEntity();
+        searchResultEntity1.setIndexer(indexer1);
+        download1.setSearchResult(searchResultEntity1);
+        
         NzbDownloadEntity download2 = new NzbDownloadEntity();
-        download2.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity2 = new SearchResultEntity();
+        searchResultEntity2.setIndexer(indexer1);
+        download2.setSearchResult(searchResultEntity2);
+        
         NzbDownloadEntity download3 = new NzbDownloadEntity();
-        download3.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity3 = new SearchResultEntity();
+        searchResultEntity3.setIndexer(indexer1);
+        download3.setSearchResult(searchResultEntity3);
+        
         NzbDownloadEntity download4 = new NzbDownloadEntity();
-        download4.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity4 = new SearchResultEntity();
+        searchResultEntity4.setIndexer(indexer1);
+        download4.setSearchResult(searchResultEntity4);
+        
         NzbDownloadEntity download5 = new NzbDownloadEntity();
-        download5.setIndexer(indexer2);
+        SearchResultEntity searchResultEntity5 = new SearchResultEntity();
+        searchResultEntity5.setIndexer(indexer2);
+        download5.setSearchResult(searchResultEntity5);
+        
         NzbDownloadEntity download6 = new NzbDownloadEntity();
-        download6.setIndexer(indexer2);
+        SearchResultEntity searchResultEntity6 = new SearchResultEntity();
+        searchResultEntity6.setIndexer(indexer2);
+        download6.setSearchResult(searchResultEntity6);
 
         downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
 

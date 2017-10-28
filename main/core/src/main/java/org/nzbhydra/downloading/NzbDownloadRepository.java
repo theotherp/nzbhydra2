@@ -11,13 +11,12 @@ import java.util.List;
 
 public interface NzbDownloadRepository extends JpaRepository<NzbDownloadEntity, Integer> {
 
-    Collection<NzbDownloadEntity> findByIndexer(IndexerEntity indexerEntity);
 
     Collection<NzbDownloadEntity> findByExternalId(String externalId);
 
-    List<NzbDownloadEntity> findByTitleOrderByTimeDesc(String title);
+    List<NzbDownloadEntity> findBySearchResultTitleOrderByTimeDesc(String title);
 
-    Page<NzbDownloadEntity> findByIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
+    Page<NzbDownloadEntity> findBySearchResultIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
 
 
 }

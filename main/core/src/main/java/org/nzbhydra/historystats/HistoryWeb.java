@@ -37,7 +37,7 @@ public class HistoryWeb {
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Page<NzbDownloadEntity> downloadHistory(@RequestBody HistoryRequestData requestData) {
-        return history.getHistory(requestData, "INDEXERNZBDOWNLOAD left join INDEXER on INDEXERNZBDOWNLOAD.INDEXER_ID = INDEXER.ID", NzbDownloadEntity.class);
+        return history.getHistory(requestData, "INDEXERNZBDOWNLOAD left join SEARCHRESULT on INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID LEFT JOIN INDEXER ON SEARCHRESULT.INDEXER_ID = INDEXER.ID", NzbDownloadEntity.class);
     }
 
 }

@@ -125,7 +125,7 @@ public class DuplicateDetector {
 
     private boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
         if (result1.getPubDate() == null || result2.getPubDate() == null) {
-            logger.debug(LoggingMarkers.DUPLICATES, "At least result has no pub date");
+            logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no pub date");
             return false;
         }
         boolean isSameAge = Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
