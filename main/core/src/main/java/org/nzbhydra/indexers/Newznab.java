@@ -272,7 +272,7 @@ public class Newznab extends Indexer<Xml> {
                 if (entry.getValue() == null) {
                     continue;
                 }
-                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt",""));
+                componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));
             }
 
         }
@@ -409,8 +409,15 @@ public class Newznab extends Indexer<Xml> {
         if (attributes.containsKey("usenetdate")) {
             tryParseDate(attributes.get("usenetdate")).ifPresent(searchResultItem::setUsenetDate);
         }
-        if (attributes.containsKey("password") && !attributes.get("password").equals("0")) {
-            searchResultItem.setPassworded(true);
+        if (attributes.containsKey("password")) {
+            String passwordValue = attributes.get("password");
+            try {
+                if (Integer.parseInt(passwordValue) > 0) {
+                    searchResultItem.setPassworded(true);
+                }
+            } catch (NumberFormatException e) {
+                error("Unable to parse password value "+ passwordValue);
+            }
         }
         if (attributes.containsKey("nfo")) {
             searchResultItem.setHasNfo(attributes.get("nfo").equals("1") ? HasNfo.YES : HasNfo.NO);
