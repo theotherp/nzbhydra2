@@ -270,6 +270,8 @@ def startup():
     java_arguments = ["-Xmx" + str(xmx) + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
+    if args.debug:
+        java_arguments.append("-Ddebug=true")
     arguments = [args.java]+ java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
@@ -318,6 +320,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', action='store', help='Set the port')
     parser.add_argument('--baseurl', action='store', help='Set the base URL (e.g. /nzbhydra)')
     parser.add_argument('--nobrowser', action='store_true', help='Set to disable all console output', default=False)
+    parser.add_argument('--debug', action='store_true', help='Start with more debugging output', default=False)
     # Main process actions
     parser.add_argument('--repairdb', action='store', help='Attempt to repair the database. Provide path to database file as parameter')
     parser.add_argument('--version', action='store_true', help='Print version')
