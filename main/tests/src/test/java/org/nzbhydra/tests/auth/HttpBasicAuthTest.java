@@ -53,7 +53,6 @@ public class HttpBasicAuthTest {
         userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
-
     @Test
     public void shouldFollowRoles() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/").with(csrf())).andExpect(status().is(401));

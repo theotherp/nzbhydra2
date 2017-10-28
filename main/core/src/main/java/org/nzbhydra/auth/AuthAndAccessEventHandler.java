@@ -10,7 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
-public class AuthAndAccessEventHandler implements AccessDeniedHandler {
+public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthAndAccessEventHandler.class);
 
@@ -61,8 +61,9 @@ public class AuthAndAccessEventHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        logger.warn("Access denied to IP {}: {}", SessionStorage.IP.get(), accessDeniedException.toString());
+        logger.warn("Access denied to IP {}: {}", SessionStorage.IP.get(), accessDeniedException.getMessage());
         attemptService.accessFailed(SessionStorage.IP.get());
+        super.handle(request, response, accessDeniedException);
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)

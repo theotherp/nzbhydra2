@@ -1880,7 +1880,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 hideExpression: '!model.host || !model.apiKey || !model.name',
                 templateOptions: {
                     label: 'Check capabilities',
-                    help: 'Find out what search types the indexer supports. Done automatically for new indexers.'
+                    help: 'Find out what search types and IDs the indexer supports. Done automatically for new indexers.'
                 }
             }
         )
