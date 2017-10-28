@@ -3317,10 +3317,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             if ("grabs" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.grabs.filterValue;
-                if (angular.isDefined(filterValue.min) && item.grabs < filterValue.min) {
+                if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs < filterValue.min) || (item.seeders !== null && item.seeders < filterValue.min))) {
                     return false;
                 }
-                if (angular.isDefined(filterValue.max) && item.grabs > filterValue.max) {
+                if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs > filterValue.min) || (item.seeders !== null && item.seeders > filterValue.masx))) {
                     return false;
                 }
             }
@@ -3386,7 +3386,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 var sortedHashGroup = _.sortBy(hashGroup, function (item) {
                     var sortPredicateValue;
                     if (sortPredicate === "grabs") {
-                        sortPredicateValue = angular.isDefined(item.grabs) ? item.grabs : 0;
+                        if (item.grabs !== null) {
+                            sortPredicateValue = item.grabs;
+                        } else if (item.seeders !== null) {
+                            sortPredicateValue = item.seeders;
+                        } else {
+                            sortPredicateValue = 0;
+                        }
                     } else {
                         sortPredicateValue = item[sortPredicate];
                     }
@@ -3401,7 +3407,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 if (sortPredicate === "grabs") {
-                    sortPredicateValue = angular.isDefined(hashGroup[0].grabs) ? hashGroup[0].grabs : 0;
+                    if (hashGroup[0].grabs !== null) {
+                        sortPredicateValue = hashGroup[0].grabs;
+                    } else if (hashGroup[0].seeders !== null) {
+                        sortPredicateValue = hashGroup[0].seeders;
+                    } else {
+                        sortPredicateValue = 0;
+                    }
                 } else {
                     var sortPredicateValue = hashGroup[0][sortPredicate];
                 }
@@ -3416,7 +3428,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             if (sortPredicate === "title") {
                 sortPredicateValue = titleGroup[0][0].title.toLowerCase();
             } else if (sortPredicate === "grabs") {
-                sortPredicateValue = angular.isDefined(titleGroup[0][0].grabs) ? titleGroup[0][0].grabs : 0;
+                if (titleGroup[0][0].grabs !== null) {
+                    sortPredicateValue = titleGroup[0][0].grabs;
+                } else if (titleGroup[0][0].seeders !== null) {
+                    sortPredicateValue = titleGroup[0][0].seeders;
+                } else {
+                    sortPredicateValue = 0;
+                }
             } else {
                 sortPredicateValue = titleGroup[0][0][sortPredicate];
             }

@@ -8,10 +8,10 @@
     {{ ::result.size | byteFmt: 2 }}
 </td>
 <td class="col-md-1 search-results-cell result-details" style="text-align: right">
-    <span ng-if="::result.grabs">
+    <span ng-if="::result.grabs !== null">
         {{ ::result.grabs }}
     </span>
-    <span ng-if="::result.seeders">
+    <span ng-if="::result.seeders !== null">
         {{ ::result.seeders }} / {{ ::result.peers }}
     </span>
 </td>

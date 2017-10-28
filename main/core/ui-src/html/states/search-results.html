@@ -188,6 +188,7 @@
 
         </div>
     </div>
+
     <div class="row" ng-if="::(isShowFilterButtons && (isShowFilterButtonsMovie || isShowFilterButtonsTv))">
         <div class="col-md-5">
         </div>
@@ -247,8 +248,13 @@
                     <number-range-filter column="size" addon="MB" id="size-filter"/>
                 </column-filter-wrapper>
             </th>
-            <th class="col-md-1 cursor-default search-results-cell result-details" style="vertical-align: top; text-align: right">
-                <column-sortable column="grabs" reversed="false" start-mode="2">Grabs
+            <th class="col-md-1 cursor-default search-results-cell result-details" style="vertical-align: top; text-align: right"
+                tooltip-append-to-body="true"
+                uib-tooltip="Grabs for NZBs. For torrents seeders / peers with sort and filter effecting seeders "
+                tooltip-placement="top"
+                tooltip-trigger="mouseenter"
+            >
+                <column-sortable column="grabs" reversed="false" start-mode="2">Details
                 </column-sortable>
                 <column-filter-wrapper>
                     <number-range-filter column="grabs" id="grabs-filter"/>
