@@ -109,6 +109,11 @@ public class Newznab extends Indexer<Xml> {
         if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
             searchType = SearchType.SEARCH;
         }
+        if (searchRequest.getSearchType() == SearchType.MOVIE && searchRequest.getIdentifiers().isEmpty()) {
+            debug("Switching search type to SEARCH because some indexers don't allow using search type MOVIE without identifiers");
+            searchType = SearchType.SEARCH;
+            //Don't change the category, should always be set anyway
+        }
         componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase()).queryParam("extended", "1");
 
         String query = "";

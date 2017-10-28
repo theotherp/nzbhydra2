@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -668,5 +669,19 @@ public class NewznabTest {
         assertThat(uri, is("http://127.0.0.1:1234/api?apikey&t=search&extended=1&cat=9090&limit=100&offset=0"));
     }
 
+    @Test
+    public void shouldNotUseMovieWithoutIdentifiers() throws Exception {
+        SearchRequest request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
+        String uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, containsString("t=search"));
+
+        request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
+        request.getIdentifiers().put(IdType.IMDB, "123");
+        testee.config.getSupportedSearchIds().add(IdType.IMDB);
+        testee.config.getSupportedSearchTypes().add(ActionAttribute.MOVIE);
+        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, containsString("t=movie"));
+        assertThat(uri, containsString("imdbid=123"));
+    }
 
 }
