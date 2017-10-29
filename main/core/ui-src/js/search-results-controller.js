@@ -297,6 +297,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
+            if (sortPredicateKey === "title") {
+                //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
+                return titleGroup[0][0]["epoch"] * -1;
+            }
             return getSortPredicateValue(titleGroup[0][0]);
         }
 

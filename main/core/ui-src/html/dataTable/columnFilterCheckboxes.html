@@ -4,11 +4,11 @@
 </div>
 
 <li ng-repeat="entry in entries" style="margin-left: 5px; margin-right: 5px">
-            <span style="white-space:nowrap">
-                <label class="dropdown-label">
-                    <input type="checkbox" data-checklist-model="selected.entries" data-checklist-value="entry" class="checkbox-filter-option" data-label="{{::entry.label}}"> {{ ::entry.label }}
-                </label>
-            </span>
+    <span style="white-space:nowrap">
+        <label class="dropdown-label">
+            <input type="checkbox" data-checklist-model="selected.entries" data-checklist-value="entry" class="checkbox-filter-option" data-label="{{::entry.label}}"> {{ ::entry.label }}
+        </label>
+    </span>
 </li>
 
 <button type="button" class="btn btn-primary checkbox-filter-button-apply" ng-click="apply()" style="margin-left: 5px; margin-bottom: 5px">
