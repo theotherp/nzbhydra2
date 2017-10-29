@@ -17,9 +17,7 @@ public class CheckboxFilter extends AbstractWebElement implements ICheckboxFilte
 
     @Override
     public void filterBy(List<String> values) {
-        if (!getWebelement().findElement(By.className("checkbox-filter-button-apply")).isDisplayed()) {
-            getWebelement().findElement(By.className("toggle-column-filter")).click();
-        }
+        makeVisible();
         List<WebElement> elements = getWebelement().findElements(By.className("checkbox-filter-option"));
         for (WebElement element : elements) {
             String label = element.getAttribute("data-label");
@@ -33,6 +31,12 @@ public class CheckboxFilter extends AbstractWebElement implements ICheckboxFilte
         getWebelement().findElement(By.className("checkbox-filter-button-apply")).click();
     }
 
+    protected void makeVisible() {
+        if (!getWebelement().findElement(By.className("checkbox-filter-button-apply")).isDisplayed()) {
+            getWebelement().findElement(By.className("toggle-column-filter")).click();
+        }
+    }
+
     @Override
     public void selectAll() {
         filterBy(getWebelement().findElements(By.className("checkbox-filter-option")).stream().map(x -> x.getAttribute("data-label")).collect(Collectors.toList()));
@@ -41,5 +45,11 @@ public class CheckboxFilter extends AbstractWebElement implements ICheckboxFilte
     @Override
     public void invertSelection() {
         getWebelement().findElement(By.className("checkbox-filter-button-invert")).click();
+    }
+
+    @Override
+    public void clear() {
+        makeVisible();
+        getWebelement().findElement(By.className("checkbox-filter-button-clear")).click();
     }
 }

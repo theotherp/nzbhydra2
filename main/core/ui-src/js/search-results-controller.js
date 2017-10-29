@@ -194,7 +194,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs < filterValue.min) || (item.seeders !== null && item.seeders < filterValue.min))) {
                     return false;
                 }
-                if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs > filterValue.min) || (item.seeders !== null && item.seeders > filterValue.masx))) {
+                if (angular.isDefined(filterValue.max) && ((item.grabs !== null && item.grabs > filterValue.max) || (item.seeders !== null && item.seeders > filterValue.max))) {
                     return false;
                 }
             }
@@ -251,25 +251,33 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
 
-        var sortPredicate = sortModel.column;
+        var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
+
+        function getSortPredicateValue(containgObject) {
+            var sortPredicateValue;
+            if (sortPredicateKey === "grabs") {
+                if (containgObject["grabs"] !== null) {
+                    sortPredicateValue = containgObject["grabs"];
+                } else if (containgObject["seeders"] !== null) {
+                    sortPredicateValue = containgObject["seeders"];
+                } else {
+                    sortPredicateValue = 0;
+                }
+            } else if (sortPredicateKey === "title") {
+                sortPredicateValue = containgObject["title"].toLowerCase();
+            } else
+                {
+                sortPredicateValue = containgObject[sortPredicateKey];
+            }
+            return sortPredicateValue;
+        }
 
         function createSortedHashgroups(titleGroup) {
             function createHashGroup(hashGroup) {
                 //Sorting hash group's contents should not matter for size and age and title but might for category (we might remove this, it's probably mostly unnecessary)
                 var sortedHashGroup = _.sortBy(hashGroup, function (item) {
-                    var sortPredicateValue;
-                    if (sortPredicate === "grabs") {
-                        if (item.grabs !== null) {
-                            sortPredicateValue = item.grabs;
-                        } else if (item.seeders !== null) {
-                            sortPredicateValue = item.seeders;
-                        } else {
-                            sortPredicateValue = 0;
-                        }
-                    } else {
-                        sortPredicateValue = item[sortPredicate];
-                    }
+                    var sortPredicateValue = getSortPredicateValue(item);
                     return sortReversed ? -sortPredicateValue : sortPredicateValue;
                 });
                 //Now sort the hash group by indexer score (inverted) so that the result with the highest indexer score is shown on top (or as the only one of a hash group if it's collapsed)
@@ -279,18 +287,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 return sortedHashGroup;
             }
 
+
             function getHashGroupFirstElementSortPredicate(hashGroup) {
-                if (sortPredicate === "grabs") {
-                    if (hashGroup[0].grabs !== null) {
-                        sortPredicateValue = hashGroup[0].grabs;
-                    } else if (hashGroup[0].seeders !== null) {
-                        sortPredicateValue = hashGroup[0].seeders;
-                    } else {
-                        sortPredicateValue = 0;
-                    }
-                } else {
-                    var sortPredicateValue = hashGroup[0][sortPredicate];
-                }
+                var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortReversed ? -sortPredicateValue : sortPredicateValue;
             }
 
@@ -298,22 +297,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
-            var sortPredicateValue;
-            if (sortPredicate === "title") {
-                sortPredicateValue = titleGroup[0][0].title.toLowerCase();
-            } else if (sortPredicate === "grabs") {
-                if (titleGroup[0][0].grabs !== null) {
-                    sortPredicateValue = titleGroup[0][0].grabs;
-                } else if (titleGroup[0][0].seeders !== null) {
-                    sortPredicateValue = titleGroup[0][0].seeders;
-                } else {
-                    sortPredicateValue = 0;
-                }
-            } else {
-                sortPredicateValue = titleGroup[0][0][sortPredicate];
-            }
-
-            return sortPredicateValue;
+            return getSortPredicateValue(titleGroup[0][0]);
         }
 
         var filtered = _.chain(results)
@@ -372,6 +356,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             })) {
             growl.info("Errors occurred during searching, Check indexer statuses")
         }
+        //Only show those categories in filter that are actually present in the results
+        $scope.categoriesForFiltering = [];
+        var allUsedCategories = _.uniq(_.pluck(allSearchResults, "category"));
+        _.forEach(CategoriesService.getWithoutAll(), function (category) {
+            if (allUsedCategories.indexOf(category.name) > -1) {
+                $scope.categoriesForFiltering.push({label: category.name, id: category.name})
+            }
+        });
         console.timeEnd("setDataFromSearchResult");
     }
 

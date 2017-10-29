@@ -12,7 +12,6 @@ nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
 }]);
 
 angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
-
     blockUIConfig.autoBlock = false;
     blockUIConfig.resetOnException = false;
     blockUIConfig.autoInjectBodyBlock = false;

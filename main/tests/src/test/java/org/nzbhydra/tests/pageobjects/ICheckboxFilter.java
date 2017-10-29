@@ -10,4 +10,5 @@ public interface ICheckboxFilter {
 
     void invertSelection();
 
+    void clear();
 }

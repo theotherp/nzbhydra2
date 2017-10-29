@@ -29,6 +29,12 @@ function columnFilterWrapper() {
             }
         };
 
+        vm.clear = function() {
+            if (vm.open) {
+                $scope.$broadcast("clear");
+            }
+        };
+
         $scope.$on("filter", function (event, column, filterModel, isActive) {
             vm.open = false;
             vm.isActive = isActive;
@@ -90,6 +96,7 @@ function checkboxesFilter() {
         $scope.selected = {
             entries: []
         };
+        $scope.active = false;
 
         if ($scope.preselect) {
             $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
@@ -108,9 +115,16 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            var isActive = $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
-        }
+            $scope.active =   $scope.selected.entries.length < $scope.entries.length;
+            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.clear = function () {
+
+            $scope.selectAll();
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -132,11 +146,18 @@ function booleanFilter() {
 
     function controller($scope) {
         $scope.selected = {value: $scope.options[$scope.preselect].value};
+        $scope.active = false;
 
         $scope.apply = function () {
-
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value !== $scope.options[0].value)
-        }
+            $scope.active = $scope.selected.value !== $scope.options[0].value;
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.value = true;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -164,6 +185,7 @@ function timeFilter() {
         $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
         $scope.format = $scope.formats[0];
         $scope.altInputFormats = ['M!/d!/yyyy'];
+        $scope.active = false;
 
         $scope.openAfter = function () {
             $scope.after.opened = true;
@@ -182,9 +204,16 @@ function timeFilter() {
         };
 
         $scope.apply = function () {
-            var isActive = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, isActive)
-        }
+            $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
+            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.beforeDate = undefined;
+            $scope.selected.afterDate = undefined;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -205,11 +234,18 @@ function numberRangeFilter() {
 
     function controller($scope) {
         $scope.filterValue = {min: undefined, max: undefined};
+        $scope.active = false;
 
         function apply() {
-            var isActive = $scope.filterValue.min || $scope.filterValue.max;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, isActive)
+            $scope.active = $scope.filterValue.min || $scope.filterValue.max;
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, $scope.active)
         }
+        $scope.clear = function () {
+            $scope.filterValue = {min: undefined, max: undefined};
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "numberRange", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
 
         $scope.apply = function () {
             apply();
@@ -242,8 +278,6 @@ function columnSortable() {
     };
 
     function controller($scope) {
-
-
         if (angular.isUndefined($scope.sortMode)) {
             $scope.sortMode = 0;
         }
@@ -260,39 +294,23 @@ function columnSortable() {
             active: false
         };
 
-
-        $scope.$on("newSortColumn", function (event, column, sortMode, reversed) {
+        $scope.$on("newSortColumn", function (event, column, sortMode) {
             $scope.sortModel.active = column === $scope.sortModel.column;
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
             } else {
                 $scope.sortModel.sortMode = sortMode;
-                // $scope.sortModel.reversed = reversed;
             }
         });
 
         $scope.sort = function () {
-            //0 -> 1 -> 2
-            //0 -> 2 -> 1
             if ($scope.sortModel.sortMode === 0 || angular.isUndefined($scope.sortModel.sortMode)) {
                 $scope.sortModel.sortMode = $scope.sortModel.startMode;
             } else if ($scope.sortModel.sortMode === 1) {
-                if ($scope.sortModel.startMode === 1) {
-                    $scope.sortModel.sortMode = 2;
-                } else {
-                    $scope.sortModel.sortMode = 0;
-                }
-            } else if ($scope.sortModel.sortMode === 2) {
-                if ($scope.sortModel.startMode === 2) {
-                    $scope.sortModel.sortMode = 1;
-                } else if ($scope.sortModel.active) {
-                    //Prevent active filters to going back to 0 and then being set to 2
-                    $scope.sortModel.sortMode = 1;
-                } else {
-                    $scope.sortModel.sortMode = 0;
-                }
+                $scope.sortModel.sortMode = 2;
+            } else {
+                $scope.sortModel.sortMode = 1;
             }
-
             $scope.$emit("sort", $scope.sortModel.column, $scope.sortModel.sortMode, $scope.sortModel.reversed)
         };
 

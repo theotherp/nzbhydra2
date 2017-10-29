@@ -43,6 +43,7 @@ import org.popper.fw.element.ICheckbox;
 import org.popper.fw.interfaces.IPoFactory;
 import org.popper.fw.webdriver.DefaultWebdriverConfig;
 import org.popper.fw.webdriver.WebdriverContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
+@TestPropertySource(locations = "classpath:config/application.properties")
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     private final static String PHANTJOMJS = "c:\\programme\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
@@ -71,8 +73,9 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     public void setUp() throws IOException {
         mockWebServer.start(7070);
         System.setProperty("disableBlockUi", "true");
-        initializePhantomJs();
-        //initializeChromeDriver();
+        System.setProperty("server.port", "5077");
+        //initializePhantomJs();
+        initializeChromeDriver();
 
         prepareFiveResultsFromTwoIndexers();
         url = "http://127.0.0.1:5077";

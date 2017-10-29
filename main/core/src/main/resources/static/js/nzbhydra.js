@@ -12,7 +12,6 @@ nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
 }]);
 
 angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$locationProvider", "blockUIConfig", "$urlMatcherFactoryProvider", "localStorageServiceProvider", "bootstrapped", function ($stateProvider, $urlRouterProvider, $locationProvider, blockUIConfig, $urlMatcherFactoryProvider, localStorageServiceProvider, bootstrapped) {
-
     blockUIConfig.autoBlock = false;
     blockUIConfig.resetOnException = false;
     blockUIConfig.autoInjectBodyBlock = false;
@@ -1685,6 +1684,12 @@ function columnFilterWrapper() {
             }
         };
 
+        vm.clear = function() {
+            if (vm.open) {
+                $scope.$broadcast("clear");
+            }
+        };
+
         $scope.$on("filter", function (event, column, filterModel, isActive) {
             vm.open = false;
             vm.isActive = isActive;
@@ -1748,6 +1753,7 @@ function checkboxesFilter() {
         $scope.selected = {
             entries: []
         };
+        $scope.active = false;
 
         if ($scope.preselect) {
             $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
@@ -1766,9 +1772,16 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            var isActive = $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, isActive)
-        }
+            $scope.active =   $scope.selected.entries.length < $scope.entries.length;
+            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.clear = function () {
+
+            $scope.selectAll();
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -1791,11 +1804,18 @@ function booleanFilter() {
 
     function controller($scope) {
         $scope.selected = {value: $scope.options[$scope.preselect].value};
+        $scope.active = false;
 
         $scope.apply = function () {
-
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.selected.value !== $scope.options[0].value)
-        }
+            $scope.active = $scope.selected.value !== $scope.options[0].value;
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.value = true;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -1824,6 +1844,7 @@ function timeFilter() {
         $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
         $scope.format = $scope.formats[0];
         $scope.altInputFormats = ['M!/d!/yyyy'];
+        $scope.active = false;
 
         $scope.openAfter = function () {
             $scope.after.opened = true;
@@ -1842,9 +1863,16 @@ function timeFilter() {
         };
 
         $scope.apply = function () {
-            var isActive = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, isActive)
-        }
+            $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
+            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.beforeDate = undefined;
+            $scope.selected.afterDate = undefined;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
     }
 }
 
@@ -1866,11 +1894,18 @@ function numberRangeFilter() {
 
     function controller($scope) {
         $scope.filterValue = {min: undefined, max: undefined};
+        $scope.active = false;
 
         function apply() {
-            var isActive = $scope.filterValue.min || $scope.filterValue.max;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, isActive)
+            $scope.active = $scope.filterValue.min || $scope.filterValue.max;
+            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, $scope.active)
         }
+        $scope.clear = function () {
+            $scope.filterValue = {min: undefined, max: undefined};
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "numberRange", isBoolean: $scope.isBoolean}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
 
         $scope.apply = function () {
             apply();
@@ -1904,8 +1939,6 @@ function columnSortable() {
     };
 
     function controller($scope) {
-
-
         if (angular.isUndefined($scope.sortMode)) {
             $scope.sortMode = 0;
         }
@@ -1922,39 +1955,23 @@ function columnSortable() {
             active: false
         };
 
-
-        $scope.$on("newSortColumn", function (event, column, sortMode, reversed) {
+        $scope.$on("newSortColumn", function (event, column, sortMode) {
             $scope.sortModel.active = column === $scope.sortModel.column;
             if (column !== $scope.sortModel.column) {
                 $scope.sortModel.sortMode = 0;
             } else {
                 $scope.sortModel.sortMode = sortMode;
-                // $scope.sortModel.reversed = reversed;
             }
         });
 
         $scope.sort = function () {
-            //0 -> 1 -> 2
-            //0 -> 2 -> 1
             if ($scope.sortModel.sortMode === 0 || angular.isUndefined($scope.sortModel.sortMode)) {
                 $scope.sortModel.sortMode = $scope.sortModel.startMode;
             } else if ($scope.sortModel.sortMode === 1) {
-                if ($scope.sortModel.startMode === 1) {
-                    $scope.sortModel.sortMode = 2;
-                } else {
-                    $scope.sortModel.sortMode = 0;
-                }
-            } else if ($scope.sortModel.sortMode === 2) {
-                if ($scope.sortModel.startMode === 2) {
-                    $scope.sortModel.sortMode = 1;
-                } else if ($scope.sortModel.active) {
-                    //Prevent active filters to going back to 0 and then being set to 2
-                    $scope.sortModel.sortMode = 1;
-                } else {
-                    $scope.sortModel.sortMode = 0;
-                }
+                $scope.sortModel.sortMode = 2;
+            } else {
+                $scope.sortModel.sortMode = 1;
             }
-
             $scope.$emit("sort", $scope.sortModel.column, $scope.sortModel.sortMode, $scope.sortModel.reversed)
         };
 
@@ -2043,6 +2060,132 @@ function connectionTest() {
     }
 }
 
+
+//Taken from https://github.com/IamAdamJowett/angular-click-outside
+
+function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
+    while((c=c.parentNode)&&c!==p);
+    return !!c;
+};
+
+    angular
+        .module('nzbhydraApp').directive("clickOutside", clickOutside);
+
+    /**
+     * @ngdoc directive
+     * @name angular-click-outside.directive:clickOutside
+     * @description Directive to add click outside capabilities to DOM elements
+     * @requires $document
+     * @requires $parse
+     * @requires $timeout
+     **/
+    function clickOutside($document, $parse, $timeout) {
+        return {
+            restrict: 'A',
+            link: function($scope, elem, attr) {
+
+                // postpone linking to next digest to allow for unique id generation
+                $timeout(function() {
+                    var classList = (attr.outsideIfNot !== undefined) ? attr.outsideIfNot.split(/[ ,]+/) : [],
+                        fn;
+
+                    function eventHandler(e) {
+                        var i,
+                            element,
+                            r,
+                            id,
+                            classNames,
+                            l;
+
+                        // check if our element already hidden and abort if so
+                        if (angular.element(elem).hasClass("ng-hide")) {
+                            return;
+                        }
+
+                        // if there is no click target, no point going on
+                        if (!e || !e.target) {
+                            return;
+                        }
+
+                        if (angular.isDefined(attr.outsideIgnore) && $scope.$eval(attr.outsideIgnore)) {
+                            return;
+                        }
+                        var isChild = childOf(e.target, elem.context);
+                        if (isChild) {
+                            return;
+                        }
+                        console.log("Clicked outside");
+                        // loop through the available elements, looking for classes in the class list that might match and so will eat
+                        for (element = e.target; element; element = element.parentNode) {
+                            // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
+                            if (element === elem[0]) {
+                                return;
+                            }
+
+                            // now we have done the initial checks, start gathering id's and classes
+                            id = element.id,
+                                classNames = element.className,
+                                l = classList.length;
+
+                            // Unwrap SVGAnimatedString classes
+                            if (classNames && classNames.baseVal !== undefined) {
+                                classNames = classNames.baseVal;
+                            }
+
+                            // if there are no class names on the element clicked, skip the check
+                            if (classNames || id) {
+
+                                // loop through the elements id's and classnames looking for exceptions
+                                for (i = 0; i < l; i++) {
+                                    //prepare regex for class word matching
+                                    r = new RegExp('\\b' + classList[i] + '\\b');
+
+                                    // check for exact matches on id's or classes, but only if they exist in the first place
+                                    if ((id !== undefined && id === classList[i]) || (classNames && r.test(classNames))) {
+                                        // now let's exit out as it is an element that has been defined as being ignored for clicking outside
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+
+                        // if we have got this far, then we are good to go with processing the command passed in via the click-outside attribute
+                        $timeout(function() {
+                            fn = $parse(attr['clickOutside']);
+                            fn($scope, { event: e });
+                        });
+                    }
+
+                    // if the devices has a touchscreen, listen for this event
+                    if (_hasTouch()) {
+                        $document.on('touchstart', eventHandler);
+                    }
+
+                    // still listen for the click event even if there is touch to cater for touchscreen laptops
+                    $document.on('click', eventHandler);
+
+                    // when the scope is destroyed, clean up the documents event handlers as we don't want it hanging around
+                    $scope.$on('$destroy', function() {
+                        if (_hasTouch()) {
+                            $document.off('touchstart', eventHandler);
+                        }
+
+                        $document.off('click', eventHandler);
+                    });
+
+                    /**
+                     * @description Private function to attempt to figure out if we are on a touch device
+                     * @private
+                     **/
+                    function _hasTouch() {
+                        // works on most browsers, IE10/11 and Surface
+                        return 'ontouchstart' in window || navigator.maxTouchPoints;
+                    };
+                });
+            }
+        };
+    }
+    clickOutside.$inject = ["$document", "$parse", "$timeout"];
 
 angular
     .module('nzbhydraApp')
@@ -3320,7 +3463,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs < filterValue.min) || (item.seeders !== null && item.seeders < filterValue.min))) {
                     return false;
                 }
-                if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs > filterValue.min) || (item.seeders !== null && item.seeders > filterValue.masx))) {
+                if (angular.isDefined(filterValue.max) && ((item.grabs !== null && item.grabs > filterValue.max) || (item.seeders !== null && item.seeders > filterValue.max))) {
                     return false;
                 }
             }
@@ -3377,25 +3520,33 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
 
-        var sortPredicate = sortModel.column;
+        var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
+
+        function getSortPredicateValue(containgObject) {
+            var sortPredicateValue;
+            if (sortPredicateKey === "grabs") {
+                if (containgObject["grabs"] !== null) {
+                    sortPredicateValue = containgObject["grabs"];
+                } else if (containgObject["seeders"] !== null) {
+                    sortPredicateValue = containgObject["seeders"];
+                } else {
+                    sortPredicateValue = 0;
+                }
+            } else if (sortPredicateKey === "title") {
+                sortPredicateValue = containgObject["title"].toLowerCase();
+            } else
+                {
+                sortPredicateValue = containgObject[sortPredicateKey];
+            }
+            return sortPredicateValue;
+        }
 
         function createSortedHashgroups(titleGroup) {
             function createHashGroup(hashGroup) {
                 //Sorting hash group's contents should not matter for size and age and title but might for category (we might remove this, it's probably mostly unnecessary)
                 var sortedHashGroup = _.sortBy(hashGroup, function (item) {
-                    var sortPredicateValue;
-                    if (sortPredicate === "grabs") {
-                        if (item.grabs !== null) {
-                            sortPredicateValue = item.grabs;
-                        } else if (item.seeders !== null) {
-                            sortPredicateValue = item.seeders;
-                        } else {
-                            sortPredicateValue = 0;
-                        }
-                    } else {
-                        sortPredicateValue = item[sortPredicate];
-                    }
+                    var sortPredicateValue = getSortPredicateValue(item);
                     return sortReversed ? -sortPredicateValue : sortPredicateValue;
                 });
                 //Now sort the hash group by indexer score (inverted) so that the result with the highest indexer score is shown on top (or as the only one of a hash group if it's collapsed)
@@ -3405,18 +3556,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 return sortedHashGroup;
             }
 
+
             function getHashGroupFirstElementSortPredicate(hashGroup) {
-                if (sortPredicate === "grabs") {
-                    if (hashGroup[0].grabs !== null) {
-                        sortPredicateValue = hashGroup[0].grabs;
-                    } else if (hashGroup[0].seeders !== null) {
-                        sortPredicateValue = hashGroup[0].seeders;
-                    } else {
-                        sortPredicateValue = 0;
-                    }
-                } else {
-                    var sortPredicateValue = hashGroup[0][sortPredicate];
-                }
+                var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortReversed ? -sortPredicateValue : sortPredicateValue;
             }
 
@@ -3424,22 +3566,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
-            var sortPredicateValue;
-            if (sortPredicate === "title") {
-                sortPredicateValue = titleGroup[0][0].title.toLowerCase();
-            } else if (sortPredicate === "grabs") {
-                if (titleGroup[0][0].grabs !== null) {
-                    sortPredicateValue = titleGroup[0][0].grabs;
-                } else if (titleGroup[0][0].seeders !== null) {
-                    sortPredicateValue = titleGroup[0][0].seeders;
-                } else {
-                    sortPredicateValue = 0;
-                }
-            } else {
-                sortPredicateValue = titleGroup[0][0][sortPredicate];
-            }
-
-            return sortPredicateValue;
+            return getSortPredicateValue(titleGroup[0][0]);
         }
 
         var filtered = _.chain(results)
@@ -3498,6 +3625,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             })) {
             growl.info("Errors occurred during searching, Check indexer statuses")
         }
+        //Only show those categories in filter that are actually present in the results
+        $scope.categoriesForFiltering = [];
+        var allUsedCategories = _.uniq(_.pluck(allSearchResults, "category"));
+        _.forEach(CategoriesService.getWithoutAll(), function (category) {
+            if (allUsedCategories.indexOf(category.name) > -1) {
+                $scope.categoriesForFiltering.push({label: category.name, id: category.name})
+            }
+        });
         console.timeEnd("setDataFromSearchResult");
     }
 

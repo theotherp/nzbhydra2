@@ -1,5 +1,6 @@
 package org.nzbhydra.tests.pageobjects;
 
+import org.nzbhydra.misc.Sleep;
 import org.openqa.selenium.By;
 import org.popper.fw.webdriver.elements.impl.AbstractWebElement;
 import org.popper.fw.webdriver.elements.impl.WebElementReference;
@@ -13,9 +14,7 @@ public class NumberRangeFilter extends AbstractWebElement implements INumberRang
 
     @Override
     public void filterBy(Integer min, Integer max) {
-        if (!getWebelement().findElement(By.className("number-range-filter-button-apply")).isDisplayed()) {
-            getWebelement().findElement(By.className("toggle-column-filter")).click();
-        }
+        makeVisible();
 
         if (min != null) {
             getWebelement().findElement(By.className("number-range-filter-min")).sendKeys(min.toString());
@@ -31,8 +30,16 @@ public class NumberRangeFilter extends AbstractWebElement implements INumberRang
         getWebelement().findElement(By.className("number-range-filter-button-apply")).click();
     }
 
+    protected void makeVisible() {
+        if (!getWebelement().findElement(By.className("number-range-filter-button-apply")).isDisplayed()) {
+            getWebelement().findElement(By.className("toggle-column-filter")).click();
+        }
+    }
+
     @Override
     public void clear() {
-        filterBy(null, null);
+        makeVisible();
+        getWebelement().findElement(By.className("number-range-filter-button-clear")).click();
+        Sleep.sleep(200);
     }
 }

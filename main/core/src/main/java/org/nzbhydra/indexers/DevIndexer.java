@@ -40,6 +40,9 @@ public class DevIndexer extends Newznab {
                 rssItem.setPubDate(Instant.now());
             }
 
+        } else {
+            rssRoot = NewznabMockBuilder.generateResponse(0, 100, "results", false, Collections.emptyList());
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
         }
         return rssRoot;
     }
