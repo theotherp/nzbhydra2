@@ -9,10 +9,13 @@
 </td>
 <td class="col-md-1 search-results-cell result-details" style="text-align: right">
     <span ng-if="::result.grabs !== null">
-        {{ ::result.grabs }}
+        {{ ::result.grabs | kify }}
+    </span>
+    <span ng-if="::result.grabs !== null && result.seeders !== null">
+         /
     </span>
     <span ng-if="::result.seeders !== null">
-        {{ ::result.seeders }} / {{ ::result.peers }}
+        {{ ::result.seeders | kify }} / {{ ::result.peers | kify }}
     </span>
 </td>
 <td class="col-md-1 search-results-cell result-age" style="text-align: right">

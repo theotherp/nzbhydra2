@@ -1118,6 +1118,19 @@ function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
     };
 }
 NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];
+
+angular
+    .module('nzbhydraApp')
+    .filter('kify', kify);
+
+function kify() {
+    return function (number) {
+        if (number > 1000) {
+            return Math.round(number / 1000) + "k";
+        }
+        return number;
+    }
+}
 //Can be used in an ng-repeat directive to call a function when the last element was rendered
 //We use it to mark the end of sorting / filtering so we can stop blocking the UI
 
@@ -1507,6 +1520,9 @@ function duplicateGroup() {
 
         $scope.$on("duplicatesDisplayed", function (event, args) {
             $scope.foo.duplicatesDisplayed = args;
+            if (!args) {
+                $scope.duplicatesExpanded = false;
+            }
         });
 
         $scope.clickCheckbox = function (event) {
@@ -3460,11 +3476,15 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             if ("grabs" in $scope.filterModel) {
                 var filterValue = $scope.filterModel.grabs.filterValue;
-                if (angular.isDefined(filterValue.min) && ((item.grabs !== null && item.grabs < filterValue.min) || (item.seeders !== null && item.seeders < filterValue.min))) {
-                    return false;
+                if (angular.isDefined(filterValue.min)) {
+                    if ((item.seeders !== null && item.seeders < filterValue.min) || (item.seeders === null && item.grabs !== null && item.grabs < filterValue.min)) {
+                        return false;
+                    }
                 }
-                if (angular.isDefined(filterValue.max) && ((item.grabs !== null && item.grabs > filterValue.max) || (item.seeders !== null && item.seeders > filterValue.max))) {
-                    return false;
+                if (angular.isDefined(filterValue.max)) {
+                    if ((item.seeders !== null && item.seeders > filterValue.max) || (item.seeders === null && item.grabs !== null && item.grabs > filterValue.max)) {
+                        return false;
+                    }
                 }
             }
 
@@ -3526,11 +3546,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         function getSortPredicateValue(containgObject) {
             var sortPredicateValue;
             if (sortPredicateKey === "grabs") {
-                if (containgObject["grabs"] !== null) {
-                    sortPredicateValue = containgObject["grabs"];
-                } else if (containgObject["seeders"] !== null) {
+                if (containgObject["seeders"] !== null) {
                     sortPredicateValue = containgObject["seeders"];
-                } else {
+                } else if (containgObject["grabs"] !== null) {
+                    sortPredicateValue = containgObject["grabs"];
+                }  else {
                     sortPredicateValue = 0;
                 }
             } else if (sortPredicateKey === "title") {
@@ -3692,7 +3712,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.toggleDuplicatesDisplayed = function () {
-        //$scope.foo.duplicatesDisplayed = !$scope.foo.duplicatesDisplayed;
         localStorageService.set("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
         $scope.$broadcast("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
     };

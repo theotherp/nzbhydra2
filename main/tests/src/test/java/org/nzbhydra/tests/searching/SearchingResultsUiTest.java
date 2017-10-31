@@ -33,16 +33,13 @@ import org.nzbhydra.tests.pageobjects.SearchResultsPO;
 import org.nzbhydra.tests.pageobjects.SelectionButton;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.popper.fw.element.ICheckbox;
 import org.popper.fw.interfaces.IPoFactory;
 import org.popper.fw.webdriver.DefaultWebdriverConfig;
 import org.popper.fw.webdriver.WebdriverContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,12 +58,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(locations = "classpath:config/application.properties")
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
-    private final static String PHANTJOMJS = "c:\\programme\\phantomjs-2.1.1-windows\\bin\\phantomjs.exe";
-    private final static String CHROMEDRIVER = "c:\\programme\\chromedriver\\chromedriver.exe";
+
     private IPoFactory factory;
 
     private MockWebServer mockWebServer = new MockWebServer();
-    WebDriver webDriver = null;
+    @Autowired
+    WebDriver webDriver;
     String url = null;
 
     @Before
@@ -74,8 +71,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         mockWebServer.start(7070);
         System.setProperty("disableBlockUi", "true");
         System.setProperty("server.port", "5077");
-        //initializePhantomJs();
-        initializeChromeDriver();
 
         prepareFiveResultsFromTwoIndexers();
         url = "http://127.0.0.1:5077";
@@ -93,19 +88,9 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
 
-    protected void initializeChromeDriver() {
-        System.setProperty("webdriver.chrome.driver", CHROMEDRIVER);
-        webDriver = new ChromeDriver();
-    }
 
-    protected void initializePhantomJs() {
-        DesiredCapabilities caps = new DesiredCapabilities();
-        caps.setJavascriptEnabled(true);
-        caps.setCapability("takesScreenshot", true);
-        caps.setCapability(
-                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, PHANTJOMJS);
-        webDriver = new PhantomJSDriver(caps);
-    }
+
+
 
     @After
     public void tearDown() throws IOException {

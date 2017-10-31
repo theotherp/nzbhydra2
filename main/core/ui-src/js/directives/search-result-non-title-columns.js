@@ -95,3 +95,16 @@ function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
         $uibModalInstance.dismiss();
     };
 }
+
+angular
+    .module('nzbhydraApp')
+    .filter('kify', kify);
+
+function kify() {
+    return function (number) {
+        if (number > 1000) {
+            return Math.round(number / 1000) + "k";
+        }
+        return number;
+    }
+}

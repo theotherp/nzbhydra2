@@ -154,8 +154,6 @@ public class MockNewznab {
         }
 
 
-
-
         if (params.getQ() != null && params.getQ().contains("movies")) {
             RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
@@ -228,6 +226,9 @@ public class MockNewznab {
             item.setNewznabAttributes(new ArrayList<>());
             item.getTorznabAttributes().add(new NewznabAttribute("seeders", String.valueOf(random.nextInt(30000))));
             item.getTorznabAttributes().add(new NewznabAttribute("peers", String.valueOf(random.nextInt(30000))));
+            if (random.nextInt(5) > 3) {
+                item.getTorznabAttributes().add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(30000))));
+            }
             item.setCategory("5000");
             item.setGrabs(null);
         }

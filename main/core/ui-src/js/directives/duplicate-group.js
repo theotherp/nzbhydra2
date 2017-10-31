@@ -63,6 +63,9 @@ function duplicateGroup() {
 
         $scope.$on("duplicatesDisplayed", function (event, args) {
             $scope.foo.duplicatesDisplayed = args;
+            if (!args) {
+                $scope.duplicatesExpanded = false;
+            }
         });
 
         $scope.clickCheckbox = function (event) {
