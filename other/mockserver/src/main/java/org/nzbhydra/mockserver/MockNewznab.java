@@ -171,6 +171,18 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if ("titlegroup".equals(params.getQ())) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder()
+                    .numberOfResults(1)
+                    .titleBase(itemTitleBase)
+                    .generateOneDuplicate(false)
+                    .build();
+            RssRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(1);
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setTitle("titlegroup"));
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getTmdbid() != null) {
             if (itemTitleBase.equals("tmdberror")) {
                 RssError rssError = new RssError("123", "description");

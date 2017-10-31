@@ -8,6 +8,7 @@ function titleGroup() {
         scope: {
             titles: "<",
             selected: "=",
+            expanded: "=",
             rowIndex: "<",
             doShowDuplicates: "<",
             internalRowIndex: "@"
@@ -17,11 +18,17 @@ function titleGroup() {
     };
 
     function controller($scope, $element, $attrs) {
-        $scope.expanded = false;
-        $scope.titleGroupExpanded = false;
+        $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
-        $scope.$on("toggleTitleExpansion", function (event, args) {
-            $scope.titleGroupExpanded = args;
+        $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
+            $scope.titleGroupExpanded = isExpanded;
+            var index = $scope.expanded.indexOf(title);
+            if (!isExpanded && index > -1) {
+                $scope.expanded.splice(index, 1);
+            } else if(isExpanded){
+                $scope.expanded.push(title);
+            }
+
             event.stopPropagation();
         });
 

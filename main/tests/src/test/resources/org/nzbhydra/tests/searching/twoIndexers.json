@@ -25,6 +25,7 @@
   ],
   "main": {
     "apiKey": "apikey",
-    "welcomeShown": true
+    "welcomeShown": true,
+    "theme": "grey"
   }
 }

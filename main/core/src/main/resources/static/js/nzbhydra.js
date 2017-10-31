@@ -828,6 +828,7 @@ function titleGroup() {
         scope: {
             titles: "<",
             selected: "=",
+            expanded: "=",
             rowIndex: "<",
             doShowDuplicates: "<",
             internalRowIndex: "@"
@@ -837,11 +838,17 @@ function titleGroup() {
     };
 
     function controller($scope, $element, $attrs) {
-        $scope.expanded = false;
-        $scope.titleGroupExpanded = false;
+        $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
-        $scope.$on("toggleTitleExpansion", function (event, args) {
-            $scope.titleGroupExpanded = args;
+        $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
+            $scope.titleGroupExpanded = isExpanded;
+            var index = $scope.expanded.indexOf(title);
+            if (!isExpanded && index > -1) {
+                $scope.expanded.splice(index, 1);
+            } else if(isExpanded){
+                $scope.expanded.push(title);
+            }
+
             event.stopPropagation();
         });
 
@@ -1468,7 +1475,8 @@ function duplicateGroup() {
             isFirstRow: "<",
             rowIndex: "<",
             displayTitleToggle: "<",
-            internalRowIndex: "@"
+            internalRowIndex: "@",
+            titlesExpanded: "="
         },
         controller: titleRowController
     };
@@ -1476,7 +1484,6 @@ function duplicateGroup() {
     function titleRowController($scope, localStorageService) {
         $scope.internalRowIndex = Number($scope.internalRowIndex);
         $scope.rowIndex = Number($scope.rowIndex);
-        $scope.titlesExpanded = false;
         $scope.duplicatesExpanded = false;
         $scope.foo = {
             duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
@@ -1489,7 +1496,7 @@ function duplicateGroup() {
 
         $scope.toggleTitleExpansion = function () {
             $scope.titlesExpanded = !$scope.titlesExpanded;
-            $scope.$emit("toggleTitleExpansion", $scope.titlesExpanded);
+            $scope.$emit("toggleTitleExpansion", $scope.titlesExpanded, $scope.duplicates[0].title);
         };
 
         $scope.toggleDuplicateExpansion = function () {
@@ -3357,6 +3364,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
+    $scope.expandedTitlegroups = [];
 
     $scope.indexersForFiltering = [];
     _.forEach($scope.indexersearches, function (indexer) {
@@ -3579,10 +3587,16 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
-                return sortReversed ? -sortPredicateValue : sortPredicateValue;
+                return sortPredicateValue;
             }
 
-            return _.chain(titleGroup).groupBy("hash").map(createHashGroup).sortBy(getHashGroupFirstElementSortPredicate).value();
+            var grouped =_.groupBy(titleGroup, "hash");
+            var mapped = _.map(grouped, createHashGroup);
+            var sorted = _.sortBy(mapped, getHashGroupFirstElementSortPredicate);
+            if (sortModel.sortMode === 2) {
+                sorted = sorted.reverse();
+            }
+            return sorted;
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
@@ -3593,22 +3607,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return getSortPredicateValue(titleGroup[0][0]);
         }
 
-        var filtered = _.chain(results)
-            .filter(filter)
-            //Make groups of results with the same title
-            .groupBy(getCleanedTitle)
-            //For every title group make subgroups of duplicates and sort the group    
-            .map(createSortedHashgroups)
-            //And then sort the title group using its first hashgroup's first item (the group itself is already sorted and so are the hash groups)    
-            .sortBy(getTitleGroupFirstElementsSortPredicate)
-            .value();
+        var filtered = _.filter(results, filter);
+        var grouped = _.groupBy(filtered, getCleanedTitle);
+        var mapped = _.map(grouped, createSortedHashgroups);
+        var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);
         if (sortModel.sortMode === 2) {
-            filtered = filtered.reverse();
+            sorted = sorted.reverse();
         }
 
         $scope.lastClicked = null;
+
         console.timeEnd("sortAndFilter");
-        return filtered;
+        return sorted;
     }
 
     $scope.toggleTitlegroupExpand = function toggleTitlegroupExpand(titleGroup) {
@@ -3737,6 +3747,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.lastClicked = rowIndex;
         $scope.lastClickedValue = newCheckedValue;
     });
+
+
 
     $scope.filterRejectedZero = function () {
         return function (entry) {

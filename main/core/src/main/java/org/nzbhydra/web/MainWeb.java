@@ -82,7 +82,8 @@ public class MainWeb {
         }
         session.setAttribute("baseUrl", (urlBase + "/").replace("//", "/"));
         session.setAttribute("bootstrap", bootstrappedData);
-        session.setAttribute("cssUrl", "static/css/" + configProvider.getBaseConfig().getMain().getTheme() + ".css");
+        String theme = configProvider.getBaseConfig().getMain().getTheme();
+        session.setAttribute("cssUrl", "static/css/" + theme + ".css");
         session.setAttribute("disableBlockUi", System.getProperty("disableBlockUi", null) != null); //BlockUI overlays stuff and selenium thinks it's visible when it's not
     }
 

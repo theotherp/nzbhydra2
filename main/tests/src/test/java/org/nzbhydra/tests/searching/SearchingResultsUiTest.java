@@ -26,11 +26,13 @@ import org.nzbhydra.tests.pageobjects.IFreetextFilter;
 import org.nzbhydra.tests.pageobjects.ILink;
 import org.nzbhydra.tests.pageobjects.INumberRangeFilter;
 import org.nzbhydra.tests.pageobjects.ISelectionButton;
+import org.nzbhydra.tests.pageobjects.IToggle;
 import org.nzbhydra.tests.pageobjects.Link;
 import org.nzbhydra.tests.pageobjects.NumberRangeFilter;
 import org.nzbhydra.tests.pageobjects.SearchPO;
 import org.nzbhydra.tests.pageobjects.SearchResultsPO;
 import org.nzbhydra.tests.pageobjects.SelectionButton;
+import org.nzbhydra.tests.pageobjects.Toggle;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -58,7 +60,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(locations = "classpath:config/application.properties")
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
-
     private IPoFactory factory;
 
     private MockWebServer mockWebServer = new MockWebServer();
@@ -71,8 +72,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         mockWebServer.start(7070);
         System.setProperty("disableBlockUi", "true");
         System.setProperty("server.port", "5077");
-
-        prepareFiveResultsFromTwoIndexers();
         url = "http://127.0.0.1:5077";
         WebdriverContext context = new WebdriverContext();
         context.setConfig(new WebdriverConfig(webDriver, url));
@@ -84,12 +83,9 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         context.getDefaultElementFactory().addImplClassForElement(ISelectionButton.class, SelectionButton.class);
         context.getDefaultElementFactory().addImplClassForElement(ICheckBox.class, CheckBox.class);
         context.getDefaultElementFactory().addImplClassForElement(ILink.class, Link.class);
+        context.getDefaultElementFactory().addImplClassForElement(IToggle.class, Toggle.class);
         factory = context.getFactory();
     }
-
-
-
-
 
 
     @After
@@ -129,6 +125,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Test
     public void testSearchResults() throws Exception {
+        prepareFiveResultsFromTwoIndexers();
         webDriver.get(url + "/?category=All&query=uitest&mode=search&indexers=mock1%252Cmock2");
 
         WebDriverWait wait = new WebDriverWait(webDriver, 10);
@@ -217,6 +214,67 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.ages()).containsExactlyInAnyOrder("1d", "2d", "3d", "4d", "5d");
     }
 
+
+    @Test
+    public void testSearchResultsDuplicatesAndTitleGroups() throws Exception {
+        prepareDuplicateAndTitleGroupedResults();
+        webDriver.get(url + "/?category=All&query=uitest&mode=search&indexers=mock1%252Cmock2");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+
+        //Make sure duplicates are hidden
+        if (searchResultsPage.showDuplicatesCheckbox().ischecked()) {
+            searchResultsPage.showDuplicatesCheckbox().uncheck();
+        }
+
+        assertThat(searchResultsPage.titleGroupToggles().size()).as("Duplicates should be hidden").isEqualTo(2);
+        assertThat(searchResultsPage.titleGroupToggles().get(0).isVisible()).isFalse();
+        assertThat(searchResultsPage.titleGroupToggles().get(1).isVisible()).isTrue();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(2);
+
+        //Expand "grouptitle"
+        searchResultsPage.titleGroupToggles().get(1).click();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(3);
+        assertThat(searchResultsPage.titles().get(2)).as("Titles in title groups shouldn't be shown").isNullOrEmpty();
+        searchResultsPage.titleGroupToggles().get(1).click();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(2);
+
+        //Expand duplicates
+        assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should not exist").isEqualTo(0);
+        searchResultsPage.showDuplicatesCheckbox().check();
+        assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should exist").isEqualTo(2);
+        assertThat(searchResultsPage.duplicateGroupToggles().get(0).isVisible()).as("A duplicate buttom should be visible for the duplicates").isTrue();
+        assertThat(searchResultsPage.duplicateGroupToggles().get(1).isVisible()).as("No duplicate buttom should be visible for the titlegroup").isFalse();
+        //Expand duplicates
+        searchResultsPage.duplicateGroupToggles().get(0).click();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(3);
+        assertThat(searchResultsPage.titles().get(1)).as("Duplicates' titles shouldn't be shown").isNullOrEmpty();
+        //Collapse duplicates
+        searchResultsPage.duplicateGroupToggles().get(0).click();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(2);
+        //Expand and then disable duplicates
+        searchResultsPage.duplicateGroupToggles().get(0).click();
+        assertThat(searchResultsPage.titles().size()).isEqualTo(3);
+        searchResultsPage.showDuplicatesCheckbox().uncheck();
+        assertThat(searchResultsPage.titles().size()).as("Unchecking duplicates should collapse all duplicate groups").isEqualTo(2);
+
+        //Sort when title group expanded
+        searchResultsPage.titleGroupToggles().get(1).click();
+        searchResultsPage.tableHeader().titleHeader().sortAscending();
+        assertThat(searchResultsPage.titles().size()).as("Changing the sort predicate should keep the title groups expanded").isEqualTo(3);
+        assertThat(searchResultsPage.titles()).containsExactly("duplicate", "grouptitle", "");
+        assertThat(searchResultsPage.ages()).containsExactly("1d", "2d", "3d").as("Sorting by title should sort the title group internally by age ascending");
+
+        //Check sorting inside title group
+        searchResultsPage.tableHeader().ageHeader().sortDescending();
+        assertThat(searchResultsPage.ages()).containsExactly("3d", "2d", "1d").as("Title groups should be sorted internally as well");
+        searchResultsPage.tableHeader().ageHeader().sortAscending();
+        assertThat(searchResultsPage.ages()).containsExactly("1d", "2d", "3d").as("Title groups should be sorted internally as well");
+    }
+
     protected void prepareFiveResultsFromTwoIndexers() throws IOException {
         replaceConfig(getClass().getResource("twoIndexers.json"));
 
@@ -233,6 +291,30 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
                     RssItem result4 = RssItemBuilder.builder("indexer2-result1").pubDate(Instant.now().minus(4, ChronoUnit.DAYS)).grabs(4).size(mbToBytes(4)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2000")))).category("Movies").build();
                     RssItem result5 = RssItemBuilder.builder("indexer2-result2").pubDate(Instant.now().minus(5, ChronoUnit.DAYS)).grabs(5).size(mbToBytes(5)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2040")))).category("Movies HD").build();
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result4, result5), 0, 2);
+                    return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
+                } else {
+                    throw new RuntimeException("Unexpected api key " + request.getRequestUrl().queryParameter("apikey"));
+                }
+            }
+        });
+    }
+
+    protected void prepareDuplicateAndTitleGroupedResults() throws IOException {
+        replaceConfig(getClass().getResource("twoIndexers.json"));
+
+        mockWebServer.setDispatcher(new Dispatcher() {
+            @Override
+            public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
+                if (request.getRequestUrl().queryParameter("apikey").equals("apikey1")) {
+                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
+                    RssItem result2 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").build();
+                    RssItem result3 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("comments").grabs(3).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").build();
+                    RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate, result2, result3), 0, 3);
+                    return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
+                } else if (request.getRequestUrl().queryParameter("apikey").equals("apikey2")) {
+                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
+
+                    RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate), 0, 1);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
                 } else {
                     throw new RuntimeException("Unexpected api key " + request.getRequestUrl().queryParameter("apikey"));

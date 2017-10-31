@@ -11,7 +11,8 @@ function duplicateGroup() {
             isFirstRow: "<",
             rowIndex: "<",
             displayTitleToggle: "<",
-            internalRowIndex: "@"
+            internalRowIndex: "@",
+            titlesExpanded: "="
         },
         controller: titleRowController
     };
@@ -19,7 +20,6 @@ function duplicateGroup() {
     function titleRowController($scope, localStorageService) {
         $scope.internalRowIndex = Number($scope.internalRowIndex);
         $scope.rowIndex = Number($scope.rowIndex);
-        $scope.titlesExpanded = false;
         $scope.duplicatesExpanded = false;
         $scope.foo = {
             duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
@@ -32,7 +32,7 @@ function duplicateGroup() {
 
         $scope.toggleTitleExpansion = function () {
             $scope.titlesExpanded = !$scope.titlesExpanded;
-            $scope.$emit("toggleTitleExpansion", $scope.titlesExpanded);
+            $scope.$emit("toggleTitleExpansion", $scope.titlesExpanded, $scope.duplicates[0].title);
         };
 
         $scope.toggleDuplicateExpansion = function () {

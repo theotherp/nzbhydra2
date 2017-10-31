@@ -36,6 +36,12 @@ public abstract class SearchResultsPO {
     @Locator(cssSelector = ".result-checkbox")
     public abstract List<ICheckbox> indexerSelectionCheckboxes();
 
+    @Locator(cssSelector = ".title-expand-toggle")
+    public abstract List<IToggle> titleGroupToggles();
+
+    @Locator(cssSelector = ".duplicate-expand-toggle")
+    public abstract List<IToggle> duplicateGroupToggles();
+
     public List<String> titles() {
         return searchResultRows().stream().map(x -> x.title().text().trim()).collect(Collectors.toList());
     }
@@ -122,22 +128,22 @@ public abstract class SearchResultsPO {
         ILabel age();
 
         @Locator(cssSelector = ".result-show-nfo-link")
-        org.nzbhydra.tests.pageobjects.ILink  showNfoButton();
+        org.nzbhydra.tests.pageobjects.ILink showNfoButton();
 
         @Locator(cssSelector = ".result-comments-link")
-        org.nzbhydra.tests.pageobjects.ILink  commentsLink();
+        org.nzbhydra.tests.pageobjects.ILink commentsLink();
 
         @Locator(cssSelector = ".result-details-link")
-        org.nzbhydra.tests.pageobjects.ILink  detailsLink();
+        org.nzbhydra.tests.pageobjects.ILink detailsLink();
 
         @Locator(cssSelector = ".result-torrent-download-link")
-        org.nzbhydra.tests.pageobjects.ILink  downloadTorrentLink();
+        org.nzbhydra.tests.pageobjects.ILink downloadTorrentLink();
 
         @Locator(cssSelector = ".result-nzb-download-link")
-        org.nzbhydra.tests.pageobjects.ILink  downloadNzbLink();
+        org.nzbhydra.tests.pageobjects.ILink downloadNzbLink();
 
         @Locator(cssSelector = ".result-send-to-downloader-link")
-        List<org.nzbhydra.tests.pageobjects.ILink > sendToDownloaderButtons();
+        List<org.nzbhydra.tests.pageobjects.ILink> sendToDownloaderButtons();
 
 
     }
