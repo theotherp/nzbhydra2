@@ -13,6 +13,9 @@ import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
+import org.nzbhydra.searching.SearchEntity;
+import org.nzbhydra.searching.SearchRepository;
+import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.nzbhydra.tests.NzbhydraMockMvcTest;
 import org.nzbhydra.tests.pageobjects.CheckBox;
@@ -50,6 +53,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +69,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     private MockWebServer mockWebServer = new MockWebServer();
     @Autowired
     WebDriver webDriver;
+    @Autowired
+    SearchRepository searchRepository;
     String url = null;
 
     @Before
@@ -130,6 +136,12 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         WebDriverWait wait = new WebDriverWait(webDriver, 10);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
+
+        SearchPO searchPO = factory.createPage(SearchPO.class);
+        searchPO.historyDropdownButton().click();
+        List<org.popper.fw.element.ILink> historyEntries = searchPO.searchHistoryEntries();
+        assertThat(historyEntries.size()).isEqualTo(1);
+        assertThat(historyEntries.get(0).text()).isEqualTo("Category: All, Query: uitest");
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(5);
@@ -214,6 +226,32 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.ages()).containsExactlyInAnyOrder("1d", "2d", "3d", "4d", "5d");
     }
 
+    @Test
+    public void testRepeatSearch() throws Exception {
+        prepareFiveResultsFromTwoIndexers();
+        SearchEntity entity = new SearchEntity();
+        entity.setQuery("uitest");
+        entity.setCategoryName("All");
+        entity.setSource(SearchSource.INTERNAL);
+        searchRepository.save(entity);
+        webDriver.get(url);
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("history-dropdown-button")));
+
+        SearchPO searchPO = factory.createPage(SearchPO.class);
+        searchPO.historyDropdownButton().click();
+        List<org.popper.fw.element.ILink> historyEntries = searchPO.searchHistoryEntries();
+        assertThat(historyEntries.size()).isEqualTo(1);
+        assertThat(historyEntries.get(0).text()).isEqualTo("Category: All, Query: uitest");
+        historyEntries.get(0).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        //Only indexer1 was preselected and that's the one used for the repeated search
+        assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(3);
+        assertThat(searchResultsPage.titles()).containsExactly("indexer1-result1", "indexer1-result2", "indexer1-result3");
+    }
 
     @Test
     public void testSearchResultsDuplicatesAndTitleGroups() throws Exception {
