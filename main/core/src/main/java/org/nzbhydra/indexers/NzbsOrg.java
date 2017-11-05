@@ -19,7 +19,7 @@ public class NzbsOrg extends Newznab {
 
     protected String addForbiddenWords(SearchRequest searchRequest, String query) {
         List<String> allForbiddenWords = new ArrayList<>(searchRequest.getInternalData().getForbiddenWords());
-        allForbiddenWords.addAll(searchingConfig.getForbiddenWords());
+        allForbiddenWords.addAll(configProvider.getBaseConfig().getSearching().getForbiddenWords());
         allForbiddenWords.addAll(searchRequest.getCategory().getForbiddenWords());
         List<String> allPossibleForbiddenWords = allForbiddenWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
         if (allForbiddenWords.size() > allPossibleForbiddenWords.size()) {
@@ -40,7 +40,7 @@ public class NzbsOrg extends Newznab {
 
     protected String addRequiredWords(SearchRequest searchRequest, String query) {
         List<String> allRequiredWords = new ArrayList<>(searchRequest.getInternalData().getRequiredWords());
-        allRequiredWords.addAll(searchingConfig.getRequiredWords());
+        allRequiredWords.addAll(configProvider.getBaseConfig().getSearching().getRequiredWords());
         allRequiredWords.addAll(searchRequest.getCategory().getRequiredWords());
         List<String> allPossibleRequiredWords = allRequiredWords.stream().filter(x -> !(x.contains(" ") || x.contains("-") || x.contains("."))).collect(Collectors.toList());
         if (allRequiredWords.size() > allPossibleRequiredWords.size()) {

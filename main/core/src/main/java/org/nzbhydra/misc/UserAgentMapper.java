@@ -1,6 +1,6 @@
 package org.nzbhydra.misc;
 
-import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class UserAgentMapper {
 
     @Autowired
-    private SearchingConfig searchingConfig;
+    private ConfigProvider configProvider;
 
     private static final Logger logger = LoggerFactory.getLogger(UserAgentMapper.class);
 
@@ -21,7 +21,7 @@ public class UserAgentMapper {
             return null;
         }
         String headerLowercase = userAgent.toLowerCase();
-        for (String toCompare : searchingConfig.getUserAgents()) {
+        for (String toCompare : configProvider.getBaseConfig().getSearching().getUserAgents()) {
             if (headerLowercase.contains(toCompare.toLowerCase())) {
                 logger.debug(LoggingMarkers.USER_AGENT, "User agent '{} mapped to '{}'", userAgent, toCompare);
                 return toCompare;

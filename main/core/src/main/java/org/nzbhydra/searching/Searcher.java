@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
@@ -51,6 +52,8 @@ public class Searcher {
     protected IndexerForSearchSelector indexerPicker;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private ConfigProvider configProvider;
 
 
     /**
@@ -129,6 +132,11 @@ public class Searcher {
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
         int offset = searchRequest.getOffset().orElse(0);
         int limit = searchRequest.getLimit().orElse(100); //LATER configurable
+
+        if (searchRequest.getSource() == SearchSource.INTERNAL && offset == 0 && limit == 100 && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
+            logger.debug("Will load all cached results");
+            limit = searchResultItems.size();
+        }
 
         if (searchRequest.isLoadAll()) {
             logger.info("Returning all available search results");

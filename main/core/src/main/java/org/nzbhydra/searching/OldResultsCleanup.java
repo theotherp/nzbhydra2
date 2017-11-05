@@ -1,7 +1,6 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +15,6 @@ import java.time.temporal.ChronoUnit;
 @Component
 public class OldResultsCleanup {
 
-    @Autowired
-    private SearchResultRepository searchResultRepository;
-    @Autowired
-    private NzbDownloadRepository nzbDownloadRepository;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired

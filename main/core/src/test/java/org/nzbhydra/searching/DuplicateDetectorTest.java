@@ -3,7 +3,10 @@ package org.nzbhydra.searching;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -15,15 +18,21 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 public class DuplicateDetectorTest {
     @InjectMocks
     private DuplicateDetector testee = new DuplicateDetector();
+    @Mock
+    private ConfigProvider configProviderMock;
+
     
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        testee.searchingConfig = new SearchingConfig();
+        BaseConfig baseConfig = new BaseConfig();
+        baseConfig.setSearching(new SearchingConfig());
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
     }
 
     @Test

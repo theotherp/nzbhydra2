@@ -1,8 +1,8 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.io.BaseEncoding;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.okhttp.WebAccess;
@@ -32,7 +32,7 @@ public class IndexerWebAccess {
     private static final Logger logger = LoggerFactory.getLogger(IndexerWebAccess.class);
 
     @Autowired
-    protected SearchingConfig searchingConfig;
+    protected ConfigProvider configProvider;
     @Autowired
     protected WebAccess webAccess;
     protected Unmarshaller unmarshaller = new WebConfiguration().marshaller();
@@ -40,8 +40,8 @@ public class IndexerWebAccess {
 
     @SuppressWarnings("unchecked")
     protected <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
-        int timeout = indexerConfig.getTimeout().orElse(searchingConfig.getTimeout());
-        String userAgent = indexerConfig.getUserAgent().orElse(searchingConfig.getUserAgent().orElse("NZBHydra2"));
+        int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
+        String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
 
         Map<String, String> headers = new HashMap<>();
         headers.put("User-Agent", userAgent);

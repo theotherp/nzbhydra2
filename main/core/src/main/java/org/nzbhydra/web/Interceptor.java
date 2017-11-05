@@ -1,7 +1,7 @@
 package org.nzbhydra.web;
 
 import com.google.common.base.Strings;
-import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class Interceptor extends HandlerInterceptorAdapter {
     @Autowired
-    private MainConfig mainConfig;
+    private ConfigProvider configProvider;
     @Autowired
     private UserAgentMapper userAgentMapper;
 
@@ -26,10 +26,10 @@ public class Interceptor extends HandlerInterceptorAdapter {
         } else {
             ip = request.getRemoteAddr();
         }
-        if (mainConfig.getLogging().isLogIpAddresses()) {
+        if (configProvider.getBaseConfig().getMain().getLogging().isLogIpAddresses()) {
             MDC.put("IPADDRESS", ip);
         }
-        if (mainConfig.getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
+        if (configProvider.getBaseConfig().getMain().getLogging().isLogUsername() && !Strings.isNullOrEmpty(request.getRemoteUser())) {
             MDC.put("USERNAME", request.getRemoteUser());
         }
         SessionStorage.IP.set(ip);

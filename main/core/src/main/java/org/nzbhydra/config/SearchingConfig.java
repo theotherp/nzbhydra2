@@ -32,6 +32,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean ignoreTemporarilyDisabled = false;
     private int keepSearchResultsForDays = 14;
     private String language = "en";
+    private boolean loadAllCachedOnInternal;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;

@@ -791,6 +791,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'loadAllCachedOnInternal',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Load all cached results',
+                                help: 'Show all cached results when searching internally. Might make sorting / filtering slower'
+                            }
+                        },
+                        {
                             wrapper: 'fieldset',
                             templateOptions: {
                                 label: 'Other'

@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
-import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class DuplicateDetector {
     private static final Logger logger = LoggerFactory.getLogger(DuplicateDetector.class);
 
     @Autowired
-    protected SearchingConfig searchingConfig;
+    protected ConfigProvider configProvider;
 
     public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -103,8 +103,8 @@ public class DuplicateDetector {
         boolean posterKnown = result1.getPoster().isPresent() && result2.getPoster().isPresent();
         boolean samePoster = posterKnown && Objects.equals(result1.getPoster().get(), result2.getPoster().get());
 
-        float duplicateAgeThreshold = searchingConfig.getDuplicateAgeThreshold();
-        float duplicateSizeThreshold = searchingConfig.getDuplicateSizeThresholdInPercent();
+        float duplicateAgeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateAgeThreshold();
+        float duplicateSizeThreshold = configProvider.getBaseConfig().getSearching().getDuplicateSizeThresholdInPercent();
 
         if (groupKnown && !sameGroup) {
             logger.debug(LoggingMarkers.DUPLICATES, "Not the same group: {} and {}", result1.getGroup().orElse(null), result2.getGroup().orElse(null));
