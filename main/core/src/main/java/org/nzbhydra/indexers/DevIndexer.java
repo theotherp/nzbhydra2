@@ -44,6 +44,11 @@ public class DevIndexer extends Newznab {
             rssRoot = NewznabMockBuilder.generateResponse(0, 100, "results", false, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
         }
+        if (uri.toString().contains("punkte")) {
+            rssRoot.getRssChannel().getItems().get(0).setTitle("a a");
+            rssRoot.getRssChannel().getItems().get(1).setTitle("ab");
+            rssRoot.getRssChannel().getItems().get(2).setTitle("a.c");
+        }
         return rssRoot;
     }
 

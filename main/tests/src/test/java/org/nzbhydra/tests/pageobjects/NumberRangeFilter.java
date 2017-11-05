@@ -28,12 +28,14 @@ public class NumberRangeFilter extends AbstractWebElement implements INumberRang
         }
 
         getWebelement().findElement(By.className("number-range-filter-button-apply")).click();
+        Sleep.sleep(200);
     }
 
     protected void makeVisible() {
         if (!getWebelement().findElement(By.className("number-range-filter-button-apply")).isDisplayed()) {
             getWebelement().findElement(By.className("toggle-column-filter")).click();
         }
+        Sleep.sleep(200);
     }
 
     @Override

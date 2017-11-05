@@ -3457,7 +3457,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         var words;
         if ("title" in $scope.filterModel) {
             query = $scope.filterModel.title.filterValue;
-            words = query.toLowerCase().split(" ");
+            words = query.toLowerCase().split(/[\s.\-]+/);
         }
 
         function filter(item) {
@@ -3562,7 +3562,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                     sortPredicateValue = 0;
                 }
             } else if (sortPredicateKey === "title") {
-                sortPredicateValue = containgObject["title"].toLowerCase();
+                sortPredicateValue = getCleanedTitle(containgObject);
             } else
                 {
                 sortPredicateValue = containgObject[sortPredicateKey];
@@ -3586,6 +3586,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
+                if (sortPredicateKey === "title") {
+                    //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
+                    return hashGroup[0]["epoch"] * -1;
+                }
                 var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortPredicateValue;
             }
@@ -3593,17 +3597,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             var grouped =_.groupBy(titleGroup, "hash");
             var mapped = _.map(grouped, createHashGroup);
             var sorted = _.sortBy(mapped, getHashGroupFirstElementSortPredicate);
-            if (sortModel.sortMode === 2) {
+            if (sortModel.sortMode === 2 && sortPredicateKey !== "title") {
                 sorted = sorted.reverse();
             }
             return sorted;
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
-            if (sortPredicateKey === "title") {
-                //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
-                return titleGroup[0][0]["epoch"] * -1;
-            }
             return getSortPredicateValue(titleGroup[0][0]);
         }
 

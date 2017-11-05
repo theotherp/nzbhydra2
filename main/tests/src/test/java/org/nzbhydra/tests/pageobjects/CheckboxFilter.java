@@ -1,5 +1,6 @@
 package org.nzbhydra.tests.pageobjects;
 
+import org.nzbhydra.misc.Sleep;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.popper.fw.webdriver.elements.impl.AbstractWebElement;
@@ -29,6 +30,7 @@ public class CheckboxFilter extends AbstractWebElement implements ICheckboxFilte
         }
 
         getWebelement().findElement(By.className("checkbox-filter-button-apply")).click();
+        Sleep.sleep(200);
     }
 
     protected void makeVisible() {
@@ -40,16 +42,19 @@ public class CheckboxFilter extends AbstractWebElement implements ICheckboxFilte
     @Override
     public void selectAll() {
         filterBy(getWebelement().findElements(By.className("checkbox-filter-option")).stream().map(x -> x.getAttribute("data-label")).collect(Collectors.toList()));
+        Sleep.sleep(200);
     }
 
     @Override
     public void invertSelection() {
         getWebelement().findElement(By.className("checkbox-filter-button-invert")).click();
+        Sleep.sleep(200);
     }
 
     @Override
     public void clear() {
         makeVisible();
         getWebelement().findElement(By.className("checkbox-filter-button-clear")).click();
+        Sleep.sleep(200);
     }
 }
