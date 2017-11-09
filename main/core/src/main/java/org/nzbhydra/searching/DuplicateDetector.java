@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -50,6 +51,9 @@ public class DuplicateDetector {
                 boolean foundBucket = false;
                 //Iterate over already existing buckets
                 for (LinkedHashSet<SearchResultItem> bucket : listOfBuckets) {
+                    if (bucket.stream().map(SearchResultItem::getIndexer).collect(Collectors.toList()).contains(searchResultItem.getIndexer())) {
+                        continue;
+                    }
                     //And all searchResults in those buckets
                     for (SearchResultItem other : bucket) {
                         //Now we can check if the two searchResults are duplicates
@@ -123,12 +127,14 @@ public class DuplicateDetector {
         return testForDuplicateAge(result1, result2, duplicateAgeThreshold) && testForDuplicateSize(result1, result2, duplicateSizeThreshold);
     }
 
-    private boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
-        if (result1.getPubDate() == null || result2.getPubDate() == null) {
-            logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no pub date");
+    protected boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
+        Instant date1 = result1.getUsenetDate().orElse(result1.getPubDate());
+        Instant date2 = result2.getUsenetDate().orElse(result2.getPubDate());
+        if (date1 == null || date2 == null) {
+            logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no usenet date and no pub date");
             return false;
         }
-        boolean isSameAge = Math.abs(result1.getPubDate().getEpochSecond() - result2.getPubDate().getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
+        boolean isSameAge = Math.abs(date1.getEpochSecond() - date2.getEpochSecond()) / (60 * 60) <= duplicateAgeThreshold;
         logger.debug(LoggingMarkers.DUPLICATES, "Same age: {}", isSameAge);
         return isSameAge;
     }
