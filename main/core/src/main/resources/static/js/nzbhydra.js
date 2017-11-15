@@ -1394,9 +1394,16 @@ function hydralog() {
             modalInstance.result.then();
         };
 
+        $scope.$on('$destroy', function () {
+            if ($scope.tailInterval !== null) {
+                $interval.cancel($scope.tailInterval);
+            }
+        });
+
         if ($scope.doUpdateLog) {
             startUpdateLogInterval();
         }
+
 
     }
 }
@@ -5468,7 +5475,7 @@ angular
             ].join(' '),
             controller: function ($scope, FileSelectionService) {
                 $scope.open = function () {
-                    FileSelectionService.open($scope.model[$scope.options.key], $scope.to.type).then(function(selection) {
+                    FileSelectionService.open($scope.model[$scope.options.key], $scope.to.type).then(function (selection) {
                         $scope.model[$scope.options.key] = selection;
                     });
                 }
@@ -5852,16 +5859,16 @@ function ConfigBoxService($http, $q, $uibModal) {
                 url: function () {
                     return url;
                 },
-                model: function() {
+                model: function () {
                     return model;
                 }
             }
         });
 
-        result.result.then(function(data) {
+        result.result.then(function (data) {
             console.log(data);
             deferred.resolve(data[0], data[1]);
-        }, function(message) {
+        }, function (message) {
             console.log(message)
             deferred.reject(message);
         });
@@ -5876,7 +5883,7 @@ angular
     .module('nzbhydraApp')
     .controller('CheckCapsModalInstanceCtrl', CheckCapsModalInstanceCtrl);
 
-function CheckCapsModalInstanceCtrl($scope, $interval, $http, url, model) {
+function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, url, model) {
 
     var updateMessagesInterval = undefined;
 
@@ -5885,16 +5892,17 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, url, model) {
     $http.post(url, model).success(function (data) {
         //deferred.resolve(data, model);
         $scope.$close([data, model]);
-
     }).error(function () {
         $scope.$dismiss("Unknown error")
     });
 
-    updateMessagesInterval = $interval(function () {
-        $http.get("internalapi/indexer/checkCapsMessages").then(function(data) {
-           $scope.messages = data.data;
-        });
-    }, 500);
+    $timeout(
+        updateMessagesInterval = $interval(function () {
+            $http.get("internalapi/indexer/checkCapsMessages").then(function (data) {
+                $scope.messages = data.data;
+            });
+        }, 500),
+        500);
 
 
     $scope.$on('$destroy', function () {
@@ -5905,7 +5913,7 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, url, model) {
 
 
 }
-CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "url", "model"];
+CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "url", "model"];
 
 
 

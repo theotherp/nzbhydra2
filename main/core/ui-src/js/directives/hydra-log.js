@@ -115,9 +115,16 @@ function hydralog() {
             modalInstance.result.then();
         };
 
+        $scope.$on('$destroy', function () {
+            if ($scope.tailInterval !== null) {
+                $interval.cancel($scope.tailInterval);
+            }
+        });
+
         if ($scope.doUpdateLog) {
             startUpdateLogInterval();
         }
+
 
     }
 }
