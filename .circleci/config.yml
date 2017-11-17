@@ -30,8 +30,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: mvn -pl "!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" -DskipTests=true install
-      - run: mvn dependency:go-offline
+      - run: mvn -pl "!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
 
       - save_cache:
           paths:
@@ -39,4 +38,5 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn -f main/pom.xml -fae test 
+      #- run: mvn -f main/pom.xml -fae test 
+      - run: mvn -f main/pom.xml -o surefire:test
