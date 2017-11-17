@@ -42,4 +42,4 @@ jobs:
       #- run: mvn -f main/pom.xml -o surefire:test
       
       - store_test_results:
-        path: /home/circleci/repo/main/core/target/surefire-reports
+          path: /home/circleci/repo/main/core/target/surefire-reports
