@@ -38,5 +38,5 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      #- run: mvn -f main/pom.xml -fae test 
-      - run: mvn -f main/pom.xml -o surefire:test
+      - run: mvn -f main/pom.xml -fae test 
+      #- run: mvn -f main/pom.xml -o surefire:test
