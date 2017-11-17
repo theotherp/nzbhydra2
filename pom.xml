@@ -8,8 +8,8 @@
 
     <modules>
         <module>shared</module>
-        <module>main</module>
         <module>other</module>
+        <module>main</module>
     </modules>
 
     <scm>
