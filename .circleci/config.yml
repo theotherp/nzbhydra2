@@ -29,11 +29,8 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-      - run: mvn -f main/mapping/pom.xml install -DskipTests=true
-      - run: mvn -f other/github-release-plugin/pom.xml install -DskipTests=true
-      - run: mvn -f other/sockslib/pom.xml install -DskipTests=true
 
-      #- run: mvn -f main/pom.xml dependency:go-offline
+      - run: mvn dependency:go-offline
 
       - save_cache:
           paths:
