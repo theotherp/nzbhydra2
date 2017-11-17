@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -99,13 +100,15 @@ public class NzbHandler {
 
     public File getNzbsAsZip(List<Long> guids) throws Exception {
         List<File> nzbFiles = new ArrayList<>();
+        Path tempDirectory = null;
         for (Long guid : guids) {
             NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL);
             if (!result.isSuccessful()) {
                 continue;
             }
             try {
-                File tempFile = File.createTempFile(result.getTitle(), "nzb");
+                tempDirectory = Files.createTempDirectory("nzbhydra");
+                File tempFile = new File(tempDirectory.toFile(), result.getTitle() + ".nzb");
                 logger.debug("Writing NZB to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
                 nzbFiles.add(tempFile);
@@ -118,6 +121,9 @@ public class NzbHandler {
         }
         File zip = createZip(nzbFiles);
         logger.info("Successfully added {}/{} NZBs to ZIP", nzbFiles.size(), guids.size());
+        if (tempDirectory != null) {
+            tempDirectory.toFile().delete();
+        }
         return zip;
     }
 
