@@ -8,7 +8,6 @@
 
     <modules>
         <module>core</module>
-        <module>mapping</module>
         <module>tests</module>
         <module>releases</module>
     </modules>
