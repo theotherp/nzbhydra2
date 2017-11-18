@@ -40,7 +40,7 @@ jobs:
 
     environment:
       - MAVEN_OPTS: -Xmx3200m
-      - phantomjsbin: /usr/local/bin/phantomjs
+      - PHANTOMJSBIN: /usr/local/bin/phantomjs
 
     steps:
       - attach_workspace:
