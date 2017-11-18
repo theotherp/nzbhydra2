@@ -26,8 +26,15 @@ public class WebDriverConfiguration {
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setJavascriptEnabled(true);
         caps.setCapability("takesScreenshot", true);
+        String phantomJsPath = PHANTJOMJS;
+        if (System.getProperty("phantomjsbin") != null) {
+            phantomJsPath = System.getProperty("phantomjsbin");
+            logger.info("Using phantomJs bin {} from environment", phantomJsPath);
+        } else {
+            logger.info("Using default phantomJs bin {}", phantomJsPath);
+        }
         caps.setCapability(
-                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, PHANTJOMJS);
+                PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomJsPath);
         return new PhantomJSDriver(caps);
     }
 

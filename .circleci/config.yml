@@ -32,7 +32,7 @@ jobs:
           root: .
           paths: .
 
-  unit-test:
+  test:
     docker:
       - image: circleci/openjdk:8-jdk
 
@@ -50,10 +50,10 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
 
-      - run: mvn -f main/pom.xml -fae -DreportsDirectory=allSurefireReports test
+      - run: mvn -f main/pom.xml surefire-report:report -Daggregate=true
 
       - store_test_results:
-          path: /home/circleci/repo/main/core/target/surefire-reports
+          path: /home/circleci/repo/main/target/surefire-reports
 
 workflows:
   version: 2
@@ -61,6 +61,6 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - unit-test:
+      - test:
           requires:
             - build
