@@ -29,8 +29,8 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
       - persist_to_workspace:
-        root: .
-        paths: .
+          root: .
+          paths: .
 
   unit-test:
     docker:
@@ -43,7 +43,7 @@ jobs:
 
     steps:
       - attach_workspace:
-        at: .
+          at: .
 
       - restore_cache:
           keys:
