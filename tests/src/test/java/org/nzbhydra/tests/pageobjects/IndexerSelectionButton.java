@@ -16,6 +16,7 @@
 
 package org.nzbhydra.tests.pageobjects;
 
+import org.nzbhydra.misc.Sleep;
 import org.openqa.selenium.By;
 import org.popper.fw.webdriver.elements.impl.WebElementReference;
 
@@ -29,18 +30,21 @@ public class IndexerSelectionButton extends SelectionButton implements IIndexerS
     @Override
     public void reset() {
         getWebelement().findElement(By.className("selection-button-toggle-dropdown")).click();
+        Sleep.sleep(100);
         getWebelement().findElement(By.className("selection-button-reset-selection")).click();
     }
 
     @Override
     public void selectAllUsenet() {
         getWebelement().findElement(By.className("selection-button-toggle-dropdown")).click();
+        Sleep.sleep(100);
         getWebelement().findElement(By.className("selection-button-select-usenet")).click();
     }
 
     @Override
     public void selectAllTorrent() {
         getWebelement().findElement(By.className("selection-button-toggle-dropdown")).click();
+        Sleep.sleep(100);
         getWebelement().findElement(By.className("selection-button-select-torrent")).click();
     }
 }
