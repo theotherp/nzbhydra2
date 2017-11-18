@@ -26,14 +26,14 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
         <fileSet>
-            <directory>../../../</directory>
+            <directory>../../</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
                 <include>readme.md</include>
                 <include>changelog.md</include>
                 <include>LICENSE</include>
             </includes>
-            <lineEnding>crlf</lineEnding>
+            <lineEnding>unix</lineEnding>
         </fileSet>
     </fileSets>
 </assembly>

@@ -3,7 +3,7 @@
 
     <parent>
         <groupId>org.nzbhydra</groupId>
-        <artifactId>parentpom</artifactId>
+        <artifactId>nzbhydra2</artifactId>
         <version>0.0.3-SNAPSHOT</version>
     </parent>
 	

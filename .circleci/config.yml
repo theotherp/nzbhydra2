@@ -21,8 +21,11 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
 
-      - run: mvn -pl "!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
-      - run: mvn -f main/core/pom.xml test
+      #Clean install all but without integration tests (next job)
+      - run: mvn -pl "!org.nzbhydra:tests" clean install dependency:resolve-plugins dependency:go-offline
+      #Collect all surefire reports and put them in one folder for Circle to parse
+      - run: mkdir -p ~/junit/
+      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
       - save_cache:
           paths:
             - ~/.m2
@@ -32,7 +35,7 @@ jobs:
           root: .
           paths: .
       - store_test_results:
-          path: main/core/target/surefire-reports
+          path: ~/junit
 
   test:
     docker:
@@ -53,10 +56,10 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
 
-      - run: mvn -f main/tests/pom.xml verify
+      - run: mvn -f tests/pom.xml verify
 
       - store_test_results:
-          path: main/tests/target/surefire-reports
+          path: tests/target/surefire-reports
 
 workflows:
   version: 2

@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
@@ -66,7 +67,7 @@ public class UpdateManagerTest {
                 "* a\n" +
                 "* b");
 
-        when(restTemplateMock.getForEntity(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases/latest"), any())).thenReturn(
+        when(restTemplateMock.getForEntity(startsWith("http:/127.0.0.1:7070/repos/theotherp/apitests/releases/latest"), any())).thenReturn(
                 new ResponseEntity<>(latestRelease, HttpStatus.OK)
         );
 
