@@ -6,19 +6,6 @@ import org.popper.fw.webdriver.elements.impl.WebElementReference;
 
 public class SelectionButton extends AbstractWebElement implements ISelectionButton {
 
-//    @Locator(cssSelector = ".election-button-invert-selection")
-//    abstract IButton invertSelectionButton();
-//
-//    @Locator(cssSelector = ".selection-button-toggle-dropdown")
-//    abstract IButton indexerSelectionDropdown();
-//
-//    @Locator(cssSelector = ".selection-button-select-all")
-//    abstract ILink selectAllButton();
-//
-//    @Locator(cssSelector = "selection-button-deselect-all")
-//    abstract ILink deselectAllButton();
-
-
     public SelectionButton(WebElementReference reference) {
         super(reference);
     }

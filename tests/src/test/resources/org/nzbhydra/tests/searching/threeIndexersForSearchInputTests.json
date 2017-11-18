@@ -21,6 +21,17 @@
       "score": 0,
       "searchModuleType": "NEWZNAB",
       "configComplete": true
+    },
+    {
+      "apiKey": "apikey3",
+      "enabled": true,
+      "enabledForSearchSource": "BOTH",
+      "host": "http://127.0.0.1:7070",
+      "name": "mock3",
+      "preselect": false,
+      "score": 0,
+      "searchModuleType": "TORZNAB",
+      "configComplete": true
     }
   ],
   "main": {

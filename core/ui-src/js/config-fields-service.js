@@ -1120,6 +1120,7 @@ function ConfigFields($injector) {
                             preselect: true,
                             score: 0,
                             searchModuleType: 'NEWZNAB',
+                            searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
                             supportedSearchIds: undefined,
                             supportedSearchTypes: undefined,

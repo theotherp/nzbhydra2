@@ -13,7 +13,8 @@ public class SafeIndexerConfig {
     private boolean enabled;
     private List<String> categories;
     private boolean showOnSearch;
-    String enabledForSearchSource;
+    private String enabledForSearchSource;
+    private String searchModuleType;
 
     public SafeIndexerConfig(IndexerConfig indexerConfig) {
         this.name = indexerConfig.getName();
@@ -22,6 +23,7 @@ public class SafeIndexerConfig {
         this.categories = indexerConfig.getEnabledCategories();
         this.showOnSearch = indexerConfig.isShowOnSearch();
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
+        this.searchModuleType = indexerConfig.getSearchModuleType().name();
     }
 
 }

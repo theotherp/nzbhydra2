@@ -50,7 +50,7 @@ public  interface SearchPO {
     public  IButton goButton();
 
     @Locator(cssSelector = ".indexer-selection-button")
-    public  ISelectionButton indexerSelectionButton();
+    public  IIndexerSelectionButton indexerSelectionButton();
 
     @Locator(cssSelector = ".indexer-selection-checkbox")
     public  List<ICheckBox> indexerSelectionCheckboxes();

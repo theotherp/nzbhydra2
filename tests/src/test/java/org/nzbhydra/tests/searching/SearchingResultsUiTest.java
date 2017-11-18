@@ -27,10 +27,12 @@ import org.nzbhydra.tests.pageobjects.ICheckBox;
 import org.nzbhydra.tests.pageobjects.ICheckboxFilter;
 import org.nzbhydra.tests.pageobjects.IColumnSortable;
 import org.nzbhydra.tests.pageobjects.IFreetextFilter;
+import org.nzbhydra.tests.pageobjects.IIndexerSelectionButton;
 import org.nzbhydra.tests.pageobjects.ILink;
 import org.nzbhydra.tests.pageobjects.INumberRangeFilter;
 import org.nzbhydra.tests.pageobjects.ISelectionButton;
 import org.nzbhydra.tests.pageobjects.IToggle;
+import org.nzbhydra.tests.pageobjects.IndexerSelectionButton;
 import org.nzbhydra.tests.pageobjects.Link;
 import org.nzbhydra.tests.pageobjects.NumberRangeFilter;
 import org.nzbhydra.tests.pageobjects.SearchPO;
@@ -89,6 +91,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         context.getDefaultElementFactory().addImplClassForElement(ICheckboxFilter.class, CheckboxFilter.class);
         context.getDefaultElementFactory().addImplClassForElement(INumberRangeFilter.class, NumberRangeFilter.class);
         context.getDefaultElementFactory().addImplClassForElement(ISelectionButton.class, SelectionButton.class);
+        context.getDefaultElementFactory().addImplClassForElement(IIndexerSelectionButton.class, IndexerSelectionButton.class);
         context.getDefaultElementFactory().addImplClassForElement(ICheckBox.class, CheckBox.class);
         context.getDefaultElementFactory().addImplClassForElement(ILink.class, Link.class);
         context.getDefaultElementFactory().addImplClassForElement(IToggle.class, Toggle.class);
@@ -104,7 +107,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Test
     public void testSearchInput() throws Exception {
-        replaceConfig(getClass().getResource("twoIndexersOneWithOnlySomeCategories.json"));
+        replaceConfig(getClass().getResource("threeIndexersForSearchInputTests.json"));
 
         SearchPO searchPage = factory.createPage(SearchPO.class);
         searchPage.open();
@@ -114,23 +117,39 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).as("Should be preselected").isTrue();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).as("Should not be preselected").isFalse();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).as("Should not be preselected").isFalse();
 
         searchPage.indexerSelectionButton().invertSelection();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
         searchPage.indexerSelectionButton().deselectAll();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
         searchPage.indexerSelectionButton().selectAll();
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
+        searchPage.indexerSelectionButton().reset();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
+        searchPage.indexerSelectionButton().selectAllUsenet();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isTrue();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isTrue();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isFalse();
+        searchPage.indexerSelectionButton().selectAllTorrent();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).isFalse();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
+        assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
 
         searchPage.categoryToggleButton().click();
         searchPage.categoryOptions().stream().filter(x -> x.text().equals("Anime")).findFirst().get().click();
-        assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).as("Should've removed mock2 because it's not enabled for Anime category").containsExactly("mock1");
+        assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).as("Should've removed mock2 because it's not enabled for Anime category").containsExactly("mock1", "mock3");
         searchPage.categoryToggleButton().click();
         searchPage.categoryOptions().stream().filter(x -> x.text().equals("Movies")).findFirst().get().click();
-        assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).containsExactly("mock1", "mock2");
+        assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).containsExactly("mock1", "mock2", "mock3");
     }
 
     @Test

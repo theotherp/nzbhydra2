@@ -301,7 +301,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             return indexer.name.toLowerCase();
         })
             .map(function (indexer) {
-                return {name: indexer.name, activated: isIndexerPreselected(indexer), categories: indexer.categories};
+                return {name: indexer.name, activated: isIndexerPreselected(indexer), preselect: indexer.preselect, categories: indexer.categories, searchModuleType: indexer.searchModuleType};
             }).value();
         _.forEach(availableIndexersList, function (x) {
             var deselectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) === -1);
@@ -312,24 +312,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         });
         return availableIndexersList;
     }
-
-    $scope.invertSelection = function() {
-        _.forEach($scope.availableIndexers, function (x) {
-            var index = _.indexOf($scope.selectedIndexers, x.name);
-            if (index === -1) {
-                $scope.selectedIndexers.push(x.name);
-            } else {
-                $scope.selectedIndexers.splice(index, 1);
-            }
-        });
-    };
-
-    $scope.selectAllIndexers = function() {
-            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
-    };
-    $scope.deselectAllIndexers = function() {
-            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
-    };
 
 
     $scope.formatRequest = function (request) {
