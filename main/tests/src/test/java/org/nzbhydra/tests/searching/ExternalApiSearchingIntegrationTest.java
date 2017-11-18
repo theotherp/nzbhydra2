@@ -26,6 +26,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,6 +55,8 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     private SearchModuleProvider searchModuleProvider;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
     @MockBean
     private InfoProvider infoProvider;
 
@@ -66,14 +69,13 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         webServer.start(7070);
         replaceConfig(getClass().getResource("twoIndexers.json"));
         configProvider.getBaseConfig().getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
+        searchResultRepository.deleteAll();
     }
 
     @After
     public void tearDown() throws IOException {
         webServer.close();
     }
-
-
 
     @Test
     public void shouldSearch() throws Exception {
@@ -167,9 +169,8 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         prepareIndexerWithOneResponse();
         searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(IdType.IMDB, IdType.TMDB));
 
-        RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
-
         RssRoot root = (RssRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").imdbid("1234").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
+        RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
 
         assertThat(request.getPath()).contains("imdbid=1234").contains("tmdbid=abcd");
         assertThat(root.getRssChannel().getNewznabResponse().getTotal()).isEqualTo(1);

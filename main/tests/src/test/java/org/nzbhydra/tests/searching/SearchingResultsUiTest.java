@@ -73,6 +73,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     SearchRepository searchRepository;
     String url = null;
 
+
     @Before
     public void setUp() throws IOException {
         mockWebServer.start(7070);
@@ -102,6 +103,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Test
     public void testSearchInput() throws Exception {
+        prepareFiveResultsFromTwoIndexers();
         SearchPO searchPage = factory.createPage(SearchPO.class);
         searchPage.open();
 

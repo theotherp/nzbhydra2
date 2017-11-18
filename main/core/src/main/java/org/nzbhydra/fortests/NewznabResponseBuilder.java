@@ -45,7 +45,7 @@ public class NewznabResponseBuilder {
             item.setComments("http://www.comments.com/" + i);
             item.setLink("http://www.link.com/" + i);
             item.setCategory("category");
-            item.setRssGuid(new RssGuid("http://www.guid.com/" + i, true));
+            item.setRssGuid(new RssGuid("http://www."+itemTitleBase +".com/" + i, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", "7000"));
