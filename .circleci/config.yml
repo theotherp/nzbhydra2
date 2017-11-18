@@ -61,6 +61,6 @@ workflows:
   build_and_test:
     jobs:
       - build
-      - junit-test
+      - unit-test
         requires:
         - build
