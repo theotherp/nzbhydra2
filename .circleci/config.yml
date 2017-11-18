@@ -56,7 +56,7 @@ jobs:
       - run: mvn -f main/tests/pom.xml verify
 
       - store_test_results:
-          path: main/test/target/surefire-reports
+          path: main/tests/target/surefire-reports
 
 workflows:
   version: 2
