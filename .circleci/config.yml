@@ -29,10 +29,9 @@ jobs:
       - run: mvn -f tests/pom.xml verify
 
       #Build releases
-      - run: echo "All successful? Now we would build the releases"
       - run: mkdir -p ~/releases/
       - run: mvn -T 2 -pl "org.nzbhydra:linux-release,org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
-      - run: cp releases/linux-release/*.tar.gz ~/releases/
+      - run: cp releases/linux-release/*.tgz ~/releases/
       - run: cp releases/windows-release/*.zip ~/releases/
 
       #Collect all surefire reports and put them in one folder for Circle to parse
@@ -50,3 +49,6 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: ~/releases
+
+#workflows didn't work because I cached the m2 cache in the build step and then restored it in the test step. without a changed pom.xml old JARs would be used
+#possible fix: another more specific save_cache for ~/.m2/repository/org/nzbhydra/
