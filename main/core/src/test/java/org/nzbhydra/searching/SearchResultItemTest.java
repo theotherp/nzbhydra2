@@ -1,7 +1,6 @@
 package org.nzbhydra.searching;
 
 import org.junit.Test;
-import org.mockito.InjectMocks;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -9,9 +8,6 @@ import java.time.temporal.ChronoUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SearchResultItemTest {
-
-    @InjectMocks
-    private SearchResultItem testee = new SearchResultItem();
 
     @Test
     public void compareTo() throws Exception {

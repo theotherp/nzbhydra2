@@ -92,7 +92,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         if (pubDate == null) {
             return 0;
         }
-        return o.getPubDate().compareTo(getPubDate());
+        return getPubDate().compareTo(o.getPubDate());
     }
 
     @Override

@@ -13,6 +13,7 @@ import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
+import org.nzbhydra.misc.Sleep;
 import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.searching.SearchRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -103,7 +104,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Test
     public void testSearchInput() throws Exception {
-        prepareFiveResultsFromTwoIndexers();
+        replaceConfig(getClass().getResource("twoIndexersOneWithOnlySomeCategories.json"));
+
         SearchPO searchPage = factory.createPage(SearchPO.class);
         searchPage.open();
 
@@ -270,7 +272,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
             searchResultsPage.showDuplicatesCheckbox().uncheck();
         }
 
-        assertThat(searchResultsPage.titleGroupToggles().size()).as("Duplicates should be hidden").isEqualTo(2);
+        assertThat(searchResultsPage.titleGroupToggles().size()).isEqualTo(2).as("Duplicates should be hidden");
         assertThat(searchResultsPage.titleGroupToggles().get(0).isVisible()).isFalse();
         assertThat(searchResultsPage.titleGroupToggles().get(1).isVisible()).isTrue();
         assertThat(searchResultsPage.titles().size()).isEqualTo(2);
@@ -282,23 +284,28 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         searchResultsPage.titleGroupToggles().get(1).click();
         assertThat(searchResultsPage.titles().size()).isEqualTo(2);
 
-        //Expand duplicates
+        //Show duplicates
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should not exist").isEqualTo(0);
         searchResultsPage.showDuplicatesCheckbox().check();
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should exist").isEqualTo(2);
         assertThat(searchResultsPage.duplicateGroupToggles().get(0).isVisible()).as("A duplicate buttom should be visible for the duplicates").isTrue();
         assertThat(searchResultsPage.duplicateGroupToggles().get(1).isVisible()).as("No duplicate buttom should be visible for the titlegroup").isFalse();
         //Expand duplicates
+        Sleep.sleep(100);
         searchResultsPage.duplicateGroupToggles().get(0).click();
+        Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).isEqualTo(3);
         assertThat(searchResultsPage.titles().get(1)).as("Duplicates' titles shouldn't be shown").isNullOrEmpty();
         //Collapse duplicates
         searchResultsPage.duplicateGroupToggles().get(0).click();
+        Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).isEqualTo(2);
         //Expand and then disable duplicates
         searchResultsPage.duplicateGroupToggles().get(0).click();
+        Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).isEqualTo(3);
         searchResultsPage.showDuplicatesCheckbox().uncheck();
+        Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).as("Unchecking duplicates should collapse all duplicate groups").isEqualTo(2);
 
         //Sort when title group expanded
@@ -352,7 +359,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate, result2, result3), 0, 3);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
                 } else if (request.getRequestUrl().queryParameter("apikey").equals("apikey2")) {
-                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
+                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
 
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate), 0, 1);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");

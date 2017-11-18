@@ -1,0 +1,33 @@
+{
+  "indexers": [
+    {
+      "apiKey": "apikey1",
+      "enabled": true,
+      "enabledForSearchSource": "BOTH",
+      "host": "http://127.0.0.1:7070",
+      "name": "mock1",
+      "score": 0,
+      "searchModuleType": "NEWZNAB",
+      "configComplete": true
+    },
+    {
+      "apiKey": "apikey2",
+      "enabled": true,
+      "enabledForSearchSource": "BOTH",
+      "enabledCategories": ["Movies", "Movies HD", "Movies SD", "TV", "TV SD", "TV HD"],
+      "host": "http://127.0.0.1:7070",
+      "name": "mock2",
+      "preselect": false,
+      "score": 0,
+      "searchModuleType": "NEWZNAB",
+      "configComplete": true
+    }
+  ],
+  "main": {
+    "apiKey": "apikey",
+    "welcomeShown": true,
+    "theme": "grey"
+  },
+  "searching": {
+  }
+}
