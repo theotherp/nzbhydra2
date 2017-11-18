@@ -22,7 +22,7 @@ jobs:
           - v1-dependencies-
 
       - run: mvn -pl "!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
-
+      - run: mvn -f main/core/pom.xml test
       - save_cache:
           paths:
             - ~/.m2
@@ -31,6 +31,8 @@ jobs:
       - persist_to_workspace:
           root: .
           paths: .
+      - store_test_results:
+          path: main/core/target/surefire-reports
 
   test:
     docker:
@@ -51,14 +53,10 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
 
-      - run: mvn -f main/pom.xml surefire-report:report -Daggregate=true
+      - run: mvn -f main/tests/pom.xml verify
 
-      - run: mkdir -p ~/junit/
-      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
       - store_test_results:
-          path: ~/junit/
-      - store_artifacts:
-          path: ~/junit/
+          path: main/test/target/surefire-reports
 
 workflows:
   version: 2

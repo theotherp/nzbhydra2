@@ -310,6 +310,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         //Sort when title group expanded
         searchResultsPage.titleGroupToggles().get(1).click();
+        Sleep.sleep(100);
         searchResultsPage.tableHeader().titleHeader().sortAscending();
         assertThat(searchResultsPage.titles().size()).as("Changing the sort predicate should keep the title groups expanded").isEqualTo(3);
         assertThat(searchResultsPage.titles()).containsExactly("duplicate", "grouptitle", "");

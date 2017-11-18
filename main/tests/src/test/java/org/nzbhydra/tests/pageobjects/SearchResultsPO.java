@@ -109,7 +109,7 @@ public abstract class SearchResultsPO {
     public interface SearchResultRow {
         //Later Support for duplicate rows
 
-        @Locator(cssSelector = ".result-title")
+        @Locator(cssSelector = ".result-title .title")
         ILabel title();
 
         @Locator(cssSelector = ".result-indexer")

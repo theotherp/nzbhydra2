@@ -16,7 +16,9 @@
                tooltip-trigger="mouseenter"
             ><span class="glyphicon"
                    ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span></a>
-            <span ng-if="isFirstRow">{{ ::result.title }}</span>
+            <span class="title">
+                <span ng-if="isFirstRow" >{{ ::result.title }}</span>
+            </span>
         </td>
         <td other-columns result="result"></td>
     </tr>
@@ -25,8 +27,8 @@
         ng-class="{ 'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}">
         <td class="col-md-12 search-results-cell result-title" style="margin:0;">
             <input type="checkbox" data-checklist-model="selected" data-checklist-value="duplicate" ng-click="clickCheckbox($event)" data-checkbox-index="{{ ::$index+1 }}" class="result-checkbox"/>
+            <span class="title"></span>
         </td>
         <td other-columns result="duplicate"></td>
     </tr>
-
 </table>

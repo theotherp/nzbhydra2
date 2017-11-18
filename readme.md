@@ -1,5 +1,5 @@
 # NZBHydra 2 
-[![CircleCI](https://circleci.com/gh/theotherp/nzbhydra2.svg?style=svg&circle-token=20568f733a8f77b2f168d7d6f463aa198951949a)](https://circleci.com/gh/theotherp/nzbhydra2) [!Average time to resolve an issue](http://isitmaintained.com/badge/resolution/theotherp/nzbhydra.svg)] [![Percentage of issues still open](http://isitmaintained.com/badge/open/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Percentage of issues still open")
+[![CircleCI](https://circleci.com/gh/theotherp/nzbhydra2.svg?style=svg&circle-token=20568f733a8f77b2f168d7d6f463aa198951949a)](https://circleci.com/gh/theotherp/nzbhydra2) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Percentage of issues still open")
 NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a number of raw and newznab based indexers. You can search all your indexers from one place and use it as indexer source for tools like Sonarr or CouchPotato.
 
 It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Alpha. 
