@@ -6,28 +6,19 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/openjdk:8-jdk
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
 
     working_directory: ~/repo
 
     environment:
-      # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
     
     steps:
       - checkout
 
-      # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
-          # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
       - run: mvn -pl "!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" -DskipTests=true clean install dependency:resolve-plugins dependency:go-offline
@@ -36,10 +27,40 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
-        
-      # run tests!
-      - run: mvn -f main/pom.xml -fae test 
-      #- run: mvn -f main/pom.xml -o surefire:test
-      
+
+      - persist_to_workspace:
+        root: .
+        paths: .
+
+  unit-test:
+    docker:
+      - image: circleci/openjdk:8-jdk
+
+    working_directory: ~/repo
+
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+
+    steps:
+      - attach_workspace:
+        at: .
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+
+      - run: mvn -f main/pom.xml -fae -DreportsDirectory=allSurefireReports test
+
       - store_test_results:
           path: /home/circleci/repo/main/core/target/surefire-reports
+
+workflows:
+  version: 2
+
+  build_and_test:
+    jobs:
+      - build
+      - junit-test
+        requires:
+        - build
