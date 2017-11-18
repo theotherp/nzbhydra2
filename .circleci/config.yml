@@ -58,8 +58,11 @@ jobs:
 
       - run: mvn -f tests/pom.xml verify
 
+      - run: mkdir tests/target/screenshots
       - store_test_results:
           path: tests/target/surefire-reports
+      - store_artifacts:
+          path: tests/target/screenshots
 
 workflows:
   version: 2

@@ -4,14 +4,9 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssItem;
@@ -46,7 +41,6 @@ import org.nzbhydra.tests.pageobjects.SelectionButton;
 import org.nzbhydra.tests.pageobjects.Toggle;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.ScreenshotException;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.popper.fw.element.ICheckbox;
@@ -57,10 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -74,6 +65,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
+//@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, ScreenshotTakingTestExecutionListener.class})
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
@@ -114,25 +106,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         webDriver.quit();
     }
 
-    @Rule
-    public final TestRule watchman = new TestWatcher() {
-        @Override
-        protected void failed(Throwable e, Description description) {
-            if(e.getCause() instanceof ScreenshotException) {
-                new File("screenshots").mkdirs();
-                byte[] data = Base64.decodeBase64(((ScreenshotException)e.getCause()).getBase64EncodedScreenshot());
-                File file = new File("screenshots",(description.getDisplayName() + ".png").replaceAll("[\\\\/:*?\"<>|]", "_"));
-                try (OutputStream stream = new FileOutputStream(file)) {
-                    stream.write(data);
-                    System.out.println("Wrote screenshot to " + file.getAbsolutePath());
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
-            super.failed(e, description);
-        }
-    };
-
     @Test
     public void testSearchInput() throws Exception {
         replaceConfig(getClass().getResource("threeIndexersForSearchInputTests.json"));
@@ -142,8 +115,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         WebDriverWait wait = new WebDriverWait(webDriver, 10);
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("searchfield")));
-
-        webDriver.findElement(By.className("selection-button-reset-selection")).click();
 
         assertThat(searchPage.indexerSelectionCheckboxes().get(0).ischecked()).as("Should be preselected").isTrue();
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).as("Should not be preselected").isFalse();
