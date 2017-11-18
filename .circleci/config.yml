@@ -54,7 +54,7 @@ jobs:
       - run: mvn -f main/pom.xml surefire-report:report -Daggregate=true
 
       - store_test_results:
-          path: /home/circleci/repo/main/target/surefire-reports
+          path: /home/circleci/repo/target/surefire-reports
 
 workflows:
   version: 2

@@ -27,8 +27,8 @@ public class WebDriverConfiguration {
         caps.setJavascriptEnabled(true);
         caps.setCapability("takesScreenshot", true);
         String phantomJsPath = PHANTJOMJS;
-        if (System.getProperty("PHANTOMJSBIN") != null) {
-            phantomJsPath = System.getProperty("PHANTOMJSBIN");
+        if (System.getenv("PHANTOMJSBIN") != null) {
+            phantomJsPath = System.getenv("PHANTOMJSBIN");
             logger.info("Using phantomJs bin {} from environment", phantomJsPath);
         } else {
             logger.info("Using default phantomJs bin {}", phantomJsPath);
