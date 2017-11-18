@@ -23,10 +23,17 @@ jobs:
           - v1-dependencies-
 
       #Clean install all but without integration tests
-      - run: mvn -pl "!org.nzbhydra:tests" clean install dependency:resolve-plugins dependency:go-offline
+      - run: mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
 
       #Run integration tests
       - run: mvn -f tests/pom.xml verify
+
+      #Build releases
+      - run: "All successful? Now we would build the releases"
+      - run: mkdir -p ~/releases/
+      - run: mvn -T 2 -pl "org.nzbhydra:linux-release,org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
+      - run: cp releases/linux-release/*.tar.gz ~/releases/
+      - run: cp releases/windows-release/*.zip ~/releases/
 
       #Collect all surefire reports and put them in one folder for Circle to parse
       - run: mkdir -p ~/junit/
@@ -41,3 +48,5 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: ~/junit
+      - store_artifacts:
+          path: ~/releases
