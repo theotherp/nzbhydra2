@@ -110,6 +110,7 @@ public class ConfigMigrationTest {
         AuthConfig auth = result.getMigratedConfig().getAuth();
         assertThat(auth.getAuthType(), is(AuthType.BASIC));
         assertThat(auth.isRememberUsers(), is(true));
+        assertThat(auth.getRememberMeValidityDays(), is(21));
         assertThat(auth.isRestrictAdmin(), is(true));
         assertThat(auth.isRestrictDetailsDl(), is(true));
         assertThat(auth.isRestrictIndexerSelection(), is(true));
@@ -123,6 +124,7 @@ public class ConfigMigrationTest {
         assertThat(auth.getUsers().get(0).isShowIndexerSelection(), is(true));
         assertThat(auth.getUsers().get(0).getUsername(), is("auser"));
         assertThat(auth.getUsers().get(0).getPassword(), is("apass"));
+
 
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().size(), is(3));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(0).getName(), is("NZBGet"));

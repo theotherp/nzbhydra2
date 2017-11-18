@@ -22,6 +22,7 @@ public class AuthConfig extends ValidatingConfig {
     @RestartRequired
     private AuthType authType;
     private boolean rememberUsers = true;
+    private int rememberMeValidityDays;
     private boolean restrictAdmin = false;
     private boolean restrictDetailsDl = false;
     private boolean restrictIndexerSelection = false;
@@ -34,7 +35,6 @@ public class AuthConfig extends ValidatingConfig {
     public boolean isAuthConfigured() {
         return authType != AuthType.NONE;
     }
-
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {

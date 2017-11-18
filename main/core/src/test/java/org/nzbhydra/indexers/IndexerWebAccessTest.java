@@ -7,6 +7,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -28,6 +30,8 @@ public class IndexerWebAccessTest {
     @Mock
     private SearchingConfig searchingConfigMock;
     @Mock
+    private ConfigProvider configProviderMock;
+    @Mock
     private WebAccess webAccessMock;
     private IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
@@ -47,6 +51,9 @@ public class IndexerWebAccessTest {
                 "<metadata>\n" +
                 "</metadata>";
         when(webAccessMock.callUrl(anyString(), headersCaptor.capture(), timeoutCaptor.capture())).thenReturn(xml);
+        BaseConfig baseConfig = new BaseConfig();
+        baseConfig.setSearching(searchingConfigMock);
+        when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         when(searchingConfigMock.getUserAgent()).thenReturn(Optional.of("globalUa"));
         when(searchingConfigMock.getTimeout()).thenReturn(100);
         indexerConfig.setTimeout(10);

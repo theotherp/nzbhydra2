@@ -2,6 +2,7 @@
 auth:
   authType: "NONE"
   rememberUsers: true
+  rememberMeValidityDays: 14
   restrictAdmin: false
   restrictDetailsDl: false
   restrictIndexerSelection: false

@@ -38,14 +38,13 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 @Component
-@ConfigurationProperties
 @EnableConfigurationProperties
 @Data
+@ConfigurationProperties
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"})
 public class BaseConfig extends ValidatingConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
-
 
     @Autowired
     @Getter(AccessLevel.NONE)

@@ -33,6 +33,7 @@ import javax.sql.DataSource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final int SECONDS_PER_DAY = 60 * 60 * 24;
 
     @Autowired
     private ConfigProvider configProvider;
@@ -42,7 +43,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private HydraUserDetailsManager hydraUserDetailsManager;
     @Autowired
-    private AuthAndAccessEventHandler authAndAccessEventHandler;;
+    private AuthAndAccessEventHandler authAndAccessEventHandler;
+    ;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -80,7 +82,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                     })
                     .and()
-                    .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
+                    .logout().permitAll().logoutUrl("/logout").deleteCookies("rememberMe")
                     .and();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
@@ -88,9 +90,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             if (baseConfig.getAuth().isRememberUsers()) {
                 JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
                 tokenRepository.setDataSource(dataSource());
-                http = http.rememberMe().alwaysRemember(true).tokenRepository(tokenRepository).and();
+                http = http.rememberMe().alwaysRemember(true).tokenValiditySeconds(configProvider.getBaseConfig().getAuth().getRememberMeValidityDays() * SECONDS_PER_DAY).tokenRepository(tokenRepository).and();
             }
-            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
+            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("rememberMe");
 
         }
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);

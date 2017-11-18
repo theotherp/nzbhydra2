@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean showQuickFilterButtons = true;
     private Integer timeout = 30;
     private String userAgent = "NZBHydra2";
-    private List<String> userAgents = new ArrayList<>();
+    private List<String> userAgents = new ArrayList<>(Arrays.asList("Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"));
     private boolean useOriginalCategories = false;
     private boolean wrapApiErrors = false;
 

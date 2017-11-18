@@ -29,6 +29,7 @@ import org.nzbhydra.searching.SearchModuleConfigProvider;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.SearchRepository;
 import org.nzbhydra.searching.SearchResultEntity;
+import org.nzbhydra.searching.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -68,6 +69,8 @@ public class StatsComponentTest {
     private SearchRepository searchRepository;
     @Autowired
     private NzbDownloadRepository downloadRepository;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
 
@@ -215,41 +218,44 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateIndexerDownloadShares() throws Exception {
         NzbDownloadEntity download1 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity1 = new SearchResultEntity();
-        searchResultEntity1.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity1 = getSearchResultEntity(indexer1, "1");
         download1.setSearchResult(searchResultEntity1);
         
         NzbDownloadEntity download2 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity2 = new SearchResultEntity();
-        searchResultEntity2.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity2 = getSearchResultEntity(indexer1, "2");
         download2.setSearchResult(searchResultEntity2);
         
         NzbDownloadEntity download3 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity3 = new SearchResultEntity();
-        searchResultEntity3.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity3 = getSearchResultEntity(indexer1, "3");
         download3.setSearchResult(searchResultEntity3);
         
         NzbDownloadEntity download4 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity4 = new SearchResultEntity();
-        searchResultEntity4.setIndexer(indexer1);
+        SearchResultEntity searchResultEntity4 = getSearchResultEntity(indexer1, "4");
         download4.setSearchResult(searchResultEntity4);
         
         NzbDownloadEntity download5 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity5 = new SearchResultEntity();
-        searchResultEntity5.setIndexer(indexer2);
+        SearchResultEntity searchResultEntity5 = getSearchResultEntity(indexer2, "5");
         download5.setSearchResult(searchResultEntity5);
         
         NzbDownloadEntity download6 = new NzbDownloadEntity();
-        SearchResultEntity searchResultEntity6 = new SearchResultEntity();
-        searchResultEntity6.setIndexer(indexer2);
+        SearchResultEntity searchResultEntity6 = getSearchResultEntity(indexer2, "6");
         download6.setSearchResult(searchResultEntity6);
 
+        searchResultRepository.save(Arrays.asList(searchResultEntity1, searchResultEntity2, searchResultEntity3, searchResultEntity4, searchResultEntity5, searchResultEntity6));
         downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<IndexerDownloadShare> shares = stats.indexerDownloadShares(new StatsRequest(Instant.now().minus(100, ChronoUnit.DAYS), Instant.now().plus(1, ChronoUnit.DAYS), true));
         assertThat(shares.get(0).getIndexerName(), is("indexer1"));
         assertThat((int) shares.get(0).getShare(), is(66));
         assertThat((int) shares.get(1).getShare(), is(33));
+    }
+
+    protected SearchResultEntity getSearchResultEntity(IndexerEntity indexer1, String title) {
+        SearchResultEntity searchResultEntity1 = new SearchResultEntity();
+        searchResultEntity1.setIndexer(indexer1);
+        searchResultEntity1.setTitle(title);
+        searchResultEntity1.setIndexerGuid(title);
+        return searchResultEntity1;
     }
 
     @Test

@@ -16,6 +16,8 @@ public class Auth {
     public String authType;
     @JsonProperty("rememberUsers")
     public boolean rememberUsers;
+    @JsonProperty("rememberUsersExpiry")
+    public int rememberUsersExpiry;
     @JsonProperty("restrictAdmin")
     public boolean restrictAdmin;
     @JsonProperty("restrictDetailsDl")
