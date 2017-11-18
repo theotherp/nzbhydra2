@@ -34,12 +34,13 @@ jobs:
 
   test:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:8-jdk-browsers
 
     working_directory: ~/repo
 
     environment:
-      MAVEN_OPTS: -Xmx3200m
+      - MAVEN_OPTS: -Xmx3200m
+      - phantomjsbin: /usr/local/bin/phantomjs
 
     steps:
       - attach_workspace:
