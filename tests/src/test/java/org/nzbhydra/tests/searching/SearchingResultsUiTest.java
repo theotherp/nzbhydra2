@@ -65,7 +65,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
-//@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, ScreenshotTakingTestExecutionListener.class})
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
@@ -274,7 +273,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         //Only indexer1 was preselected and that's the one used for the repeated search
         assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(3);
-        assertThat(searchResultsPage.titles()).containsExactly("indexer1-result1", "indexer1-result2", "indexer1-result3");
+        assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3");
     }
 
     @Test

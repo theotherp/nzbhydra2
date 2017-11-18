@@ -34,18 +34,22 @@ public class ScreenshotTakingTestExecutionListener extends AbstractTestExecution
     @Override
     public void afterTestMethod(TestContext testContext) throws Exception {
         super.afterTestMethod(testContext);
-        if (testContext.getTestException() != null && testContext.getTestException().getCause() instanceof ScreenshotException) {
-            File screenshotFolderFile = new File("target", "screenshots");
-            screenshotFolderFile.mkdirs();
-            byte[] data = Base64.decodeBase64(((ScreenshotException) testContext.getTestException().getCause()).getBase64EncodedScreenshot());
-            String screenshotFileName = (testContext.getTestMethod().getDeclaringClass().getName() + "." + testContext.getTestMethod().getName() + ".png").replaceAll("[\\\\/:*?\"<>|]", "_");
-            File file = new File(screenshotFolderFile, screenshotFileName);
-            try (OutputStream stream = new FileOutputStream(file)) {
-                stream.write(data);
-                logger.info("Wrote screenshot to " + file.getAbsolutePath());
-            } catch (Exception e1) {
-                e1.printStackTrace();
+        try {
+            if (testContext.getTestException() != null && testContext.getTestException().getCause() instanceof ScreenshotException) {
+                File screenshotFolderFile = new File("target", "screenshots");
+                screenshotFolderFile.mkdirs();
+                byte[] data = Base64.decodeBase64(((ScreenshotException) testContext.getTestException().getCause()).getBase64EncodedScreenshot());
+                String screenshotFileName = (testContext.getTestMethod().getDeclaringClass().getName() + "." + testContext.getTestMethod().getName() + ".png").replaceAll("[\\\\/:*?\"<>|]", "_");
+                File file = new File(screenshotFolderFile, screenshotFileName);
+                try (OutputStream stream = new FileOutputStream(file)) {
+                    stream.write(data);
+                    logger.info("Wrote screenshot to " + file.getAbsolutePath());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -6,12 +6,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: circleci/openjdk:8-jdk-browsers
 
     working_directory: ~/repo
 
     environment:
-      MAVEN_OPTS: -Xmx3200m
+      - MAVEN_OPTS: -Xmx3200m
+      - PHANTOMJSBIN: /usr/local/bin/phantomjs
     
     steps:
       - checkout
@@ -21,55 +22,22 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
 
-      #Clean install all but without integration tests (next job)
+      #Clean install all but without integration tests
       - run: mvn -pl "!org.nzbhydra:tests" clean install dependency:resolve-plugins dependency:go-offline
+
+      #Run integration tests
+      - run: mvn -f tests/pom.xml verify
+
       #Collect all surefire reports and put them in one folder for Circle to parse
       - run: mkdir -p ~/junit/
       - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+      - run: find . -type f -regex ".*/target/screenshots/.*png" -exec cp {} ~/junit/ \;
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
 
-      - persist_to_workspace:
-          root: .
-          paths: .
       - store_test_results:
           path: ~/junit
-
-  test:
-    docker:
-      - image: circleci/openjdk:8-jdk-browsers
-
-    working_directory: ~/repo
-
-    environment:
-      - MAVEN_OPTS: -Xmx3200m
-      - PHANTOMJSBIN: /usr/local/bin/phantomjs
-
-    steps:
-      - attach_workspace:
-          at: .
-
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "pom.xml" }}
-          - v1-dependencies-
-
-      - run: mvn -f tests/pom.xml verify
-
-      - run: mkdir tests/target/screenshots
-      - store_test_results:
-          path: tests/target/surefire-reports
       - store_artifacts:
-          path: tests/target/screenshots
-
-workflows:
-  version: 2
-
-  build_and_test:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
+          path: ~/junit

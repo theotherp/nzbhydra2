@@ -21,6 +21,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT, classes = NzbHydra.class)
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:config/application.properties")
-@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, ScreenshotTakingTestExecutionListener.class})
+@TestExecutionListeners(listeners = {DependencyInjectionTestExecutionListener.class, ScreenshotTakingTestExecutionListener.class}, mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public @interface NzbhydraMockMvcTest {
 }
