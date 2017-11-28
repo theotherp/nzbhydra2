@@ -110,7 +110,12 @@ gulp.task('copy-assets', function () {
         .pipe(cached("images"))
         .pipe(gulp.dest(imgDest));
 
-    return merge(img, fonts1, fonts2);
+    var favIconDest = 'src/main/resources/static';
+    var favIcon = gulp.src("ui-src/img/**/favicon.ico")
+        .pipe(cached("favicon"))
+        .pipe(gulp.dest(favIconDest));
+
+    return merge(img, fonts1, fonts2, favIcon);
 });
 
 

@@ -20,6 +20,8 @@ import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.caps.CapsCategories;
+import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
 import org.nzbhydra.mapping.newznab.caps.CapsRetention;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
@@ -174,9 +176,8 @@ public class ExternalApi {
         capsSearching.setAudioSearch(new CapsSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
-        capsRoot.setCategories(null);
-        //Later categories, actually needed for anything?
-
+        List<CapsCategory> capsCategories = configProvider.getBaseConfig().getCategoriesConfig().getWithoutAll().stream().map(x -> new CapsCategory(x.getNewznabCategories().get(0), x.getName())).collect(Collectors.toList());
+        capsRoot.setCategories(new CapsCategories(capsCategories));
         return new ResponseEntity<>(capsRoot, HttpStatus.OK);
     }
 

@@ -51,5 +51,9 @@ public class CategoriesConfig extends ValidatingConfig {
         return new ConfigValidationResult(errors.isEmpty(), false, errors, Collections.emptyList());
     }
 
+    public List<Category> getWithoutAll() {
+        return categories.stream().filter(x -> !allCategory.equals(x)).collect(Collectors.toList());
+    }
+
 
 }
