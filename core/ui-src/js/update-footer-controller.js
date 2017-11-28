@@ -83,7 +83,7 @@ function UpdateFooterController($scope, UpdateService, RequestsErrorHandler, Hyd
                     welcomeIsBeingShown = false;
                 });
             } else {
-                checkAndShowNews();
+                _.defer(checkAndShowNews);
             }
         });
     }

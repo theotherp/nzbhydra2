@@ -2652,7 +2652,7 @@ function UpdateFooterController($scope, UpdateService, RequestsErrorHandler, Hyd
                     welcomeIsBeingShown = false;
                 });
             } else {
-                checkAndShowNews();
+                _.defer(checkAndShowNews);
             }
         });
     }
@@ -3477,7 +3477,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     });
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
-
     $scope.$emit("searchResultsShown");
     stopBlocking();
 

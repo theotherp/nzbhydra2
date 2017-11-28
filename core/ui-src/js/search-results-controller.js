@@ -87,7 +87,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     });
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
-
     $scope.$emit("searchResultsShown");
     stopBlocking();
 

@@ -69,14 +69,14 @@
                             >
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control season-input" placeholder="S" name="season" id="seriesSearchS" style="width:40px; " ng-model="season"
-                                     ng-enter="submitSearch(selectedItem)"
+                                     ng-enter="initiateSearch()"
                                      uib-tooltip="Enter a season to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
                             </span>
                             <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
                               <input type="text" class="form-control episode-input" placeholder="E" name="episode" id="seriesSearchE" style="width:40px;" ng-model="episode"
-                                     ng-enter="submitSearch(selectedItem)"
+                                     ng-enter="initiateSearch()"
                                      uib-tooltip="Enter an episode to search for."
                                      tooltip-placement="top"
                                      tooltip-trigger="mouseenter">
@@ -84,7 +84,7 @@
                             <span class="input-group-btn input-group-btn1">
                             <div class="btn-group" uib-dropdown is-open="status.isopen">
                               <button id="history-dropdown-button" type="button" class="btn btn-default" uib-dropdown-toggle
-                                      ng-enter="submitSearch(selectedItem)"
+                                      ng-enter="initiateSearch()"
                                       uib-tooltip="Search history"
                                       tooltip-placement="top"
                                       tooltip-trigger="mouseenter"

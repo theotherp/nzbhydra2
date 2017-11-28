@@ -66,12 +66,12 @@ public class SearchWeb {
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
         SearchResponse response = searchResultProcessor.createSearchResponse(searchResult);
 
-        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
 
         SearchResponse searchResponse = response;
 
         searchStates.remove(searchRequest.getSearchRequestId());
 
+        logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
     }
 
