@@ -316,6 +316,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         var filtered = _.filter(results, filter);
+        $scope.selected = _.filter($scope.selected, function(x) {
+            if (filtered.indexOf(x) === -1) {
+                console.log("Removing " + x.title + " from selected results because it's being hidden");
+                return false;
+            }
+            return true;
+        });
         var grouped = _.groupBy(filtered, getCleanedTitle);
         var mapped = _.map(grouped, createSortedHashgroups);
         var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);

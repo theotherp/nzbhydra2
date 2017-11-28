@@ -28,16 +28,17 @@ jobs:
       #Run integration tests
       - run: mvn -f tests/pom.xml verify
 
+      #Collect all surefire reports and put them in one folder for Circle to parse
+      - run: mkdir -p ~/junit/
+      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
+      - run: find . -type f -regex ".*/target/screenshots/.*png" -exec cp {} ~/junit/ \;
+
       #Build releases
       - run: mkdir -p ~/releases/
       - run: mvn -T 2 -pl "org.nzbhydra:linux-release,org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
       - run: cp releases/linux-release/target/*.tgz ~/releases/
       - run: cp releases/windows-release/target/*.zip ~/releases/
 
-      #Collect all surefire reports and put them in one folder for Circle to parse
-      - run: mkdir -p ~/junit/
-      - run: find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/junit/ \;
-      - run: find . -type f -regex ".*/target/screenshots/.*png" -exec cp {} ~/junit/ \;
       - save_cache:
           paths:
             - ~/.m2
