@@ -61,6 +61,8 @@ gulp.task('scripts', function () {
         .pipe(sourcemaps.init())
         .pipe(concat('nzbhydra.js'))
         .on('error', swallowError)
+        .pipe(uglify())
+        .on('error', swallowError)
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(dest));
 
@@ -73,6 +75,7 @@ gulp.task('less', function () {
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
+        .pipe(cleancss())
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
@@ -81,6 +84,7 @@ gulp.task('less', function () {
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
+        .pipe(cleancss())
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 
@@ -89,6 +93,7 @@ gulp.task('less', function () {
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
+        .pipe(cleancss())
         .pipe(sourcemaps.write("."))
         .pipe(gulp.dest(dest));
 

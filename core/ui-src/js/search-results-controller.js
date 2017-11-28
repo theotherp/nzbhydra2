@@ -291,7 +291,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 return sortedHashGroup;
             }
 
-
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 if (sortPredicateKey === "title") {
                     //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
