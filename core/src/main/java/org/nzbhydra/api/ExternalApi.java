@@ -176,7 +176,7 @@ public class ExternalApi {
         capsSearching.setAudioSearch(new CapsSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
-        List<CapsCategory> capsCategories = configProvider.getBaseConfig().getCategoriesConfig().getWithoutAll().stream().map(x -> new CapsCategory(x.getNewznabCategories().get(0), x.getName())).collect(Collectors.toList());
+        List<CapsCategory> capsCategories = configProvider.getBaseConfig().getCategoriesConfig().withoutAll().stream().map(x -> new CapsCategory(x.getNewznabCategories().get(0), x.getName())).collect(Collectors.toList());
         capsRoot.setCategories(new CapsCategories(capsCategories));
         return new ResponseEntity<>(capsRoot, HttpStatus.OK);
     }
