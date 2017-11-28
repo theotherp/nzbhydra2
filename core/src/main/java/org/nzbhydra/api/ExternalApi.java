@@ -276,7 +276,7 @@ public class ExternalApi {
         rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
         rssItem.setComments(searchResultItem.getCommentsLink());
         rssItem.setDescription(searchResultItem.getDescription());
-        rssItem.setDescription(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());
+        rssItem.setCategory(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());
         return rssItem;
     }
 

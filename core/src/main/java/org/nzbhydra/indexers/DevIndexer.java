@@ -38,6 +38,7 @@ public class DevIndexer extends Newznab {
                 rssItem.getEnclosure().setLength(100000L);
                 rssItem.getNewznabAttributes().clear();
                 rssItem.setPubDate(Instant.now());
+                rssItem.setDescription("Indexer: " + getName() + ", title:" + rssItem.getTitle());
             }
 
         } else {
