@@ -61,7 +61,7 @@ gulp.task('scripts', function () {
         .pipe(sourcemaps.init())
         .pipe(concat('nzbhydra.js'))
         .on('error', swallowError)
-        .pipe(uglify())
+        //.pipe(uglify()) //Will cause errors
         .on('error', swallowError)
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(dest));
