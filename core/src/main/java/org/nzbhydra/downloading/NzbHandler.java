@@ -1,6 +1,8 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -32,6 +34,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -98,9 +101,10 @@ public class NzbHandler {
         }
     }
 
-    public File getNzbsAsZip(List<Long> guids) throws Exception {
+    public NzbsZipResponse getNzbsAsZip(List<Long> guids) throws Exception {
         List<File> nzbFiles = new ArrayList<>();
         Path tempDirectory = null;
+        List<Long> foundNzbIds = new ArrayList<>();
         for (Long guid : guids) {
             NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL);
             if (!result.isSuccessful()) {
@@ -112,19 +116,20 @@ public class NzbHandler {
                 logger.debug("Writing NZB to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
                 nzbFiles.add(tempFile);
+                foundNzbIds.add(guid);
             } catch (IOException e) {
                 logger.error("Unable to write NZB content to temporary file: " + e.getMessage());
             }
         }
         if (nzbFiles.isEmpty()) {
-            throw new RuntimeException("No NZBs could be retrieved");
+            return new NzbsZipResponse(false, null, "No NZB files could be retrieved", Collections.emptyList(), guids);
         }
         File zip = createZip(nzbFiles);
         logger.info("Successfully added {}/{} NZBs to ZIP", nzbFiles.size(), guids.size());
         if (tempDirectory != null) {
             tempDirectory.toFile().delete();
         }
-        return zip;
+        return new NzbsZipResponse(true, zip.getAbsolutePath(),"No NZB files could be retrieved", foundNzbIds,Collections.emptyList());
     }
 
     public File createZip(List<File> nzbFiles) throws Exception {
@@ -274,6 +279,16 @@ public class NzbHandler {
         public NzbDownloadEvent(NzbDownloadEntity downloadEntity) {
             this.downloadEntity = downloadEntity;
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class NzbsZipResponse {
+        private boolean successful;
+        private String zipFilepath;
+        private String message;
+        private Collection<Long> addedIds;
+        private Collection<Long> missedIds;
     }
 
 

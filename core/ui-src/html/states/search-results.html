@@ -139,8 +139,8 @@
     <div class="col-md-8" style="text-align: left;">
         <input style="margin-top:20px; margin-bottom:20px;" type="checkbox" ng-model="foo.duplicatesDisplayed" ng-click="toggleDuplicatesDisplayed()" class="btn btn-default" id="show-duplicates-checkbox">Show duplicates</input>
         <span selection-button invert-selection="invertSelection" select-all="selectAll" deselect-all="deselectAll" id="search-results-selection-button"></span>
-        <download-nzbs-button search-results="selected"></download-nzbs-button>
-        <download-nzbzip-button search-results="selected" search-title="searchTitle"></download-nzbzip-button>
+        <download-nzbs-button search-results="selected" callback="downloadNzbsCallback(result)"></download-nzbs-button>
+        <download-nzbzip-button search-results="selected" search-title="searchTitle" callback="downloadNzbsCallback(result)"></download-nzbzip-button>
     </div>
 
     <div class="col-md-4" style="margin-top: 20px">

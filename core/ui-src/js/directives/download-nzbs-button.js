@@ -7,7 +7,8 @@ function downloadNzbsButton() {
         templateUrl: 'static/html/directives/download-nzbs-button.html',
         require: ['^searchResults'],
         scope: {
-            searchResults: "<"
+            searchResults: "<",
+            callback: "&"
         },
         controller: controller
     };
@@ -42,6 +43,9 @@ function downloadNzbsButton() {
                             }
                         } else {
                             growl.error("Error while adding NZBs");
+                        }
+                        if (angular.isDefined($scope.callback)) {
+                            $scope.callback({result:response.data.addedIds});
                         }
                     }
                 }, function () {

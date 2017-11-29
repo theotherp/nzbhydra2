@@ -2,6 +2,7 @@ package org.nzbhydra.downloading;
 
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.downloading.Downloader.AddNzbsResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -27,7 +28,7 @@ public class DownloaderWeb {
 
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public GenericResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest) {
+    public AddNzbsResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest) {
         org.nzbhydra.downloading.Downloader downloader = downloaderProvider.getDownloaderByName(addNzbsRequest.getDownloaderName());
         return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory());
     }
@@ -38,5 +39,7 @@ public class DownloaderWeb {
         org.nzbhydra.downloading.Downloader downloader = downloaderProvider.getDownloaderByName(downloaderName);
         return downloader.getCategories();
     }
+
+
 
 }

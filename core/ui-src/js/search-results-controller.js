@@ -39,18 +39,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
     $scope.isShowFilterButtonsMovie = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("movie") > -1;
-    $scope.isShowFilterButtonsTv =  $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
+    $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
     $scope.filterButtonsModel = {
         source: {},
-        quality: {
-        }
+        quality: {}
     };
     $scope.filterButtonsModelMap = {
-      tv: ['hdtv'],
-      camts: ['cam', 'ts'],
-      web: ['webrip', 'web-dl', 'webdl'],
-      dvd: ['dvd'],
-      bluray: ['bluray', 'blu-ray']
+        tv: ['hdtv'],
+        camts: ['cam', 'ts'],
+        web: ['webrip', 'web-dl', 'webdl'],
+        dvd: ['dvd'],
+        bluray: ['bluray', 'blu-ray']
     };
     if (localStorageService.get("sorting") !== null) {
         var sorting = localStorageService.get("sorting");
@@ -104,7 +103,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         return item[0][0].searchResultId;
     }
 
-    $scope.onFilterButtonsModelChange = function() {
+    $scope.onFilterButtonsModelChange = function () {
         blockAndUpdate();
     };
 
@@ -221,13 +220,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             }
             if ($scope.filterButtonsModel.source !== null) {
                 var mustContain = [];
-                _.each($scope.filterButtonsModel.source, function(value, key) { //key is something like 'camts', value is true or false
-                   if (value) {
-                       Array.prototype.push.apply(mustContain, $scope.filterButtonsModelMap[key]);
-                   }
+                _.each($scope.filterButtonsModel.source, function (value, key) { //key is something like 'camts', value is true or false
+                    if (value) {
+                        Array.prototype.push.apply(mustContain, $scope.filterButtonsModelMap[key]);
+                    }
                 });
                 if (mustContain.length > 0) {
-                    var containsAtLeastOne = _.any(mustContain, function(word) {
+                    var containsAtLeastOne = _.any(mustContain, function (word) {
                         return item.title.toLowerCase().indexOf(word) > -1
                     });
                     if (!containsAtLeastOne) {
@@ -238,7 +237,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             if ($scope.filterButtonsModel.quality !== null && !_.isEmpty($scope.filterButtonsModel.quality)) {
                 var containsAtLeastOne = false;
                 var anyRequired = false;
-                _.each($scope.filterButtonsModel.quality, function(value, key) { //key is something like 'q720p', value is true or false
+                _.each($scope.filterButtonsModel.quality, function (value, key) { //key is something like 'q720p', value is true or false
                     anyRequired = anyRequired || value;
                     if (value && item.title.toLowerCase().indexOf(key.substring(1)) > -1) {
                         containsAtLeastOne = true;
@@ -265,13 +264,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                     sortPredicateValue = containgObject["seeders"];
                 } else if (containgObject["grabs"] !== null) {
                     sortPredicateValue = containgObject["grabs"];
-                }  else {
+                } else {
                     sortPredicateValue = 0;
                 }
             } else if (sortPredicateKey === "title") {
                 sortPredicateValue = getCleanedTitle(containgObject);
-            } else
-                {
+            } else {
                 sortPredicateValue = containgObject[sortPredicateKey];
             }
             return sortPredicateValue;
@@ -300,7 +298,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 return sortPredicateValue;
             }
 
-            var grouped =_.groupBy(titleGroup, "hash");
+            var grouped = _.groupBy(titleGroup, "hash");
             var mapped = _.map(grouped, createHashGroup);
             var sorted = _.sortBy(mapped, getHashGroupFirstElementSortPredicate);
             if (sortModel.sortMode === 2 && sortPredicateKey !== "title") {
@@ -314,7 +312,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         var filtered = _.filter(results, filter);
-        $scope.selected = _.filter($scope.selected, function(x) {
+        $scope.selected = _.filter($scope.selected, function (x) {
             if (filtered.indexOf(x) === -1) {
                 console.log("Removing " + x.title + " from selected results because it's being hidden");
                 return false;
@@ -323,11 +321,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         });
 
         function getGroupingString(element) {
-            var groupingSTring = getCleanedTitle(element);
+            var groupingString = getCleanedTitle(element);
             if (!ConfigService.getSafe().searching.groupTorrentAndNewznabResults) {
-                groupingSTring = groupingSTring + element.downloadType;
+                groupingString = groupingString + element.downloadType;
             }
-            return groupingSTring;
+            return groupingString;
         }
 
         var grouped = _.groupBy(filtered, getGroupingString);
@@ -397,9 +395,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         var out = [];
         var len = searchResults.length;
         var j = 0;
-        for(var i = 0; i < len; i++) {
+        for (var i = 0; i < len; i++) {
             var item = searchResults[i];
-            if(seen[item.searchResultId] !== 1) {
+            if (seen[item.searchResultId] !== 1) {
                 seen[item.searchResultId] = 1;
                 out[j++] = item;
             }
@@ -470,6 +468,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.lastClickedValue = newCheckedValue;
     });
 
+    $scope.downloadNzbsCallback = function (addedIds) {
+        if (addedIds !== null && addedIds.length > 0) {
+            growl.info("Removing downloaded NZBs from selection");
+            $scope.selected = _.filter($scope.selected, function (x) {
+                return addedIds.indexOf(x) > -1;
+            })
+        }
+    };
 
 
     $scope.filterRejectedZero = function () {

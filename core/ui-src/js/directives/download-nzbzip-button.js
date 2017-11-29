@@ -8,12 +8,13 @@ function downloadNzbzipButton() {
         require: ['^searchResults'],
         scope: {
             searchResults: "<",
-            searchTitle: "<"
+            searchTitle: "<",
+            callback: "&"
         },
         controller: controller
     };
 
-    function controller($scope, growl, FileDownloadService) {
+    function controller($scope, growl, $http, FileDownloadService) {
 
         $scope.download = function () {
             if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
@@ -31,7 +32,18 @@ function downloadNzbzipButton() {
                     searchTitle = "";
                 }
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                FileDownloadService.downloadFile(link, filename, "POST", values);
+                $http({method: "post", url: link, data: values}).success(function (response) {
+                    if (response.successful && response.zip !== null) {
+                        //FileDownloadService.sendFile($base64.decode(response.zip), filename);
+                        link = "internalapi/nzbzipDownload";
+                        FileDownloadService.downloadFile(link, filename, "POST", response.zipFilepath);
+                        if (angular.isDefined($scope.callback)) {
+                            $scope.callback({result:response.addedIds});
+                        }
+                    }
+                }).error(function (data, status, headers, config) {
+                    growl.error(status);
+                });
             }
         }
     }

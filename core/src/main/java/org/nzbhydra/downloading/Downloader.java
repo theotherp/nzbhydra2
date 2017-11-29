@@ -1,5 +1,7 @@
 package org.nzbhydra.downloading;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.DownloaderConfig;
 import org.nzbhydra.config.NzbAddingType;
@@ -14,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -34,9 +39,9 @@ public abstract class Downloader {
     }
 
     @Transactional
-    public GenericResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
+    public AddNzbsResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
-        int countAddedNzbs = 0;
+        List<Long> addedNzbs = new ArrayList<>();
         try {
             for (Long searchResultId : searchResultIds) {
                 if (addingType == NzbAddingType.UPLOAD) {
@@ -51,19 +56,19 @@ public abstract class Downloader {
                     //At this point we don't have a DownloadEntity for which we could set the external status. When a link is added to the download it will download the NZB from us and only then
                     //will there be an entity. So just adding an link will not be considered a download. The external ID will have to be set using the title (for now)
                 }
-
-                countAddedNzbs++;
+                addedNzbs.add(searchResultId);
             }
 
         } catch (DownloaderException e) {
             String message = "Error while adding NZB(s) to downloader: " + e.getMessage();
             logger.error(message);
-            if (countAddedNzbs > 0) {
-                message += ".\n" + countAddedNzbs + " were added successfully";
+            if (!addedNzbs.isEmpty()) {
+                message += ".\n" + addedNzbs.size() + " were added successfully";
             }
-            return new GenericResponse(false, message);
+            searchResultIds.removeAll(addedNzbs);
+            return new AddNzbsResponse(false, message, addedNzbs, searchResultIds);
         }
-        return new GenericResponse(true, null);
+        return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
     }
 
 
@@ -88,5 +93,14 @@ public abstract class Downloader {
      * @throws DownloaderException
      */
     public abstract String addNzb(String content, String title, String category) throws DownloaderException;
+
+    @Data
+    @AllArgsConstructor
+    public class AddNzbsResponse {
+        private boolean successful;
+        private String message;
+        private Collection<Long> addedIds;
+        private Collection<Long> missedIds;
+    }
 
 }

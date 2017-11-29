@@ -1,9 +1,9 @@
 package org.nzbhydra.downloading;
 
-import org.nzbhydra.GenericResponse;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.NzbHandler.NzbsZipResponse;
 import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -57,20 +56,22 @@ public class NzbHandlingWeb {
      *
      * @return The ZIP content or a generic response with an error
      */
-    @RequestMapping(value = "/internalapi/nzbzip", produces = "application/x-nzb", method = RequestMethod.POST)
+    @RequestMapping(value = "/internalapi/nzbzip", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
     @Secured({"ROLE_USER"})
-    public Object downloadNzbZip(@RequestBody List<Long> guids) {
+    public NzbsZipResponse getNzbZipData(@RequestBody List<Long> guids) {
         try {
-            File zipFile = nzbHandler.getNzbsAsZip(guids);
-            return ResponseEntity
-                    .ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + zipFile.getName())
-                    .contentLength(zipFile.length())
-                    .body(new FileSystemResource(zipFile));
+            NzbsZipResponse response = nzbHandler.getNzbsAsZip(guids);
+            return response;
         } catch (Exception e) {
             logger.error("Error while creating ZIP with NZBs", e);
-            return GenericResponse.notOk(e.getMessage());
+            return new NzbsZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(),Collections.emptyList(), guids);
         }
+    }
+
+    @RequestMapping(value = "/internalapi/nzbzipDownload", produces = MediaType.APPLICATION_JSON_VALUE, method = RequestMethod.POST)
+    @Secured({"ROLE_USER"})
+    public FileSystemResource downloadNzbZip(@RequestBody String zipFilepath) {
+        return new FileSystemResource(zipFilepath);
     }
 
 
