@@ -71,7 +71,6 @@ public class ResultAcceptor {
                 continue;
             }
 
-
             //Forbidden words from query
             if (!checkForForbiddenWords(indexerConfig, reasonsForRejection, searchRequest.getInternalData().getForbiddenWords(), item)) {
                 continue;
@@ -249,13 +248,13 @@ public class ResultAcceptor {
             boolean allPresent = true;
             for (String requiredWord : requiredWords) {
                 if (requiredWord.contains(".") || requiredWord.contains("-")) {
-                    if (!item.getTitle().contains(requiredWord)) {
+                    if (!item.getTitle().toLowerCase().contains(requiredWord.toLowerCase())) {
                         logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
                         allPresent = false;
                         break;
                     }
                 } else {
-                    if (!titleWords.contains(requiredWord)) { //Words must match
+                    if (!titleWords.contains(requiredWord.toLowerCase())) { //Words must match
                         logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not found required word {} in the title {}", requiredWord, item.getTitle());
                         allPresent = false;
                         break;
@@ -284,7 +283,7 @@ public class ResultAcceptor {
 
     protected boolean checkForForbiddenWords(IndexerConfig indexerConfig, Multiset<String> reasonsForRejection, List<String> forbiddenWords, SearchResultItem item) {
         for (String forbiddenWord : forbiddenWords) {
-            if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().contains("nzbgeek")) {
+            if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().toLowerCase().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
                     logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
@@ -292,7 +291,7 @@ public class ResultAcceptor {
                 }
             } else {
                 List<String> titleWords = getTitleWords(item);
-                Optional<String> found = titleWords.stream().filter(x -> x.equals(forbiddenWord)).findFirst(); //Title word must match excluded word to reject result, not just be contained
+                Optional<String> found = titleWords.stream().filter(x -> x.toLowerCase().equals(forbiddenWord.toLowerCase())).findFirst(); //Title word must match excluded word to reject result, not just be contained
                 if (found.isPresent()) {
                     logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word in title word {}", found.get());
                     reasonsForRejection.add("Forbidden word");

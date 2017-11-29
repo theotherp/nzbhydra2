@@ -67,6 +67,10 @@ public class ResultAcceptorTest {
         internalData.getRequiredWords().add("abc.def");
         item.setTitle("abc.def ghi");
         assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+        item.setTitle("abc.DEF ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+        item.setTitle("abc.dEF ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
         item.setTitle("abcdef ghi");
         assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
         item.setTitle("abc def ghi");
@@ -88,6 +92,14 @@ public class ResultAcceptorTest {
         assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
         item.setTitle("abc de");
         assertFalse(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+
+        internalData.getRequiredWords().add("def");
+        item.setTitle("abc def ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+        item.setTitle("abc DEF ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
+        item.setTitle("abc dEF ghi");
+        assertTrue(testee.checkRequiredWords(HashMultiset.create(), internalData.getRequiredWords(), item));
     }
 
 
@@ -96,6 +108,10 @@ public class ResultAcceptorTest {
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc.def");
         item.setTitle("abc.def ghi");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
+        item.setTitle("abc.DEF ghi");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
+        item.setTitle("abc.dEF ghi");
         assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
 
         item.setTitle("abcdef ghi");
@@ -107,6 +123,10 @@ public class ResultAcceptorTest {
         internalData.getForbiddenWords().clear();
         internalData.getForbiddenWords().add("abc");
         item.setTitle("abc def ghi");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
+        item.setTitle("ABC def ghi");
+        assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
+        item.setTitle("aBC def ghi");
         assertFalse(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
         item.setTitle("abcdef ghi");
         assertTrue(testee.checkForForbiddenWords(indexerConfig, HashMultiset.create(), internalData.getForbiddenWords(), item));
