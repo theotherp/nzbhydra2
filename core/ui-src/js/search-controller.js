@@ -158,6 +158,14 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
+    $scope.onTypeAheadKeyDown = function(event) {
+        if (event.keyCode === 8) {
+            if ($scope.query === "") {
+                $scope.clearAutocomplete();
+            }
+        }
+    };
+
     //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
         isSearchCancelled = false;
@@ -382,6 +390,4 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             $interval.cancel(updateSearchMessagesInterval);
         }
     });
-
-
 }

@@ -58,7 +58,7 @@
                             <script type="text/ng-template" id="movieAutocompleteEntry">
                                 <a>{{ match.label }}</a>
                             </script>
-                            <input id="searchfield" type="search" ngtype="search" ng-model="query" ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait"
+                            <input id="searchfield" type="search" ngtype="search" ng-model="query" ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
                                    uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
                                    ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems"
                                    typeahead-on-select="selectAutocompleteItem($item)" class="form-control"

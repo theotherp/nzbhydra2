@@ -29,12 +29,13 @@ gulp.task('vendor-scripts', function () {
 
 gulp.task('vendor-css', function () {
     var dest = 'src/main/resources/static/css';
-    return merge(gulp.src(wiredep().css)
-            .pipe(cached("vendor-css")),
+    return merge(
+        gulp.src(wiredep().css).pipe(cached("vendor-css")),
         gulp.src(wiredep().less)
             .pipe(cached("vendor-less"))
             .pipe(less())
-    )
+        )
+        .pipe(cached("vendor-less-and-css"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.css'))
         .pipe(cleancss())
