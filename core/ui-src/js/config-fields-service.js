@@ -800,6 +800,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'groupTorrentAndNewznabResults',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Group newznab and torznab',
+                                help: 'When disabled newznab and torznab with the same title will not be grouped in the UI'
+                            }
+                        },
+                        {
                             wrapper: 'fieldset',
                             templateOptions: {
                                 label: 'Other'

@@ -308,6 +308,7 @@ searching:
   forbiddenRegex: null
   forbiddenWords: []
   generateQueries: "NONE"
+  groupTorrentAndNewznabResults: false
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false

@@ -19,7 +19,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean alwaysShowDuplicates;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
-    //categorySettings ;
+
     private float duplicateAgeThreshold = 2.0F;
     private float duplicateSizeThresholdInPercent = 1.0F;
     private List<String> forbiddenGroups = new ArrayList<>();
@@ -27,6 +27,7 @@ public class SearchingConfig extends ValidatingConfig {
     private String forbiddenRegex;
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
+    private boolean groupTorrentAndNewznabResults = true;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;

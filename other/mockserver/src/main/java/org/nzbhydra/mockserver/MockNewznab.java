@@ -232,7 +232,7 @@ public class MockNewznab {
         if (params.getT() == ActionAttribute.CAPS) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
         }
-        RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "torznab", false, Collections.emptyList());
+        RssRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, params.getApikey(), false, Collections.emptyList());
         Random random = new Random();
         for (RssItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());

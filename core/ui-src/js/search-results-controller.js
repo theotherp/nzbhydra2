@@ -321,7 +321,16 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             }
             return true;
         });
-        var grouped = _.groupBy(filtered, getCleanedTitle);
+
+        function getGroupingString(element) {
+            var groupingSTring = getCleanedTitle(element);
+            if (!ConfigService.getSafe().searching.groupTorrentAndNewznabResults) {
+                groupingSTring = groupingSTring + element.downloadType;
+            }
+            return groupingSTring;
+        }
+
+        var grouped = _.groupBy(filtered, getGroupingString);
         var mapped = _.map(grouped, createSortedHashgroups);
         var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);
         if (sortModel.sortMode === 2) {
