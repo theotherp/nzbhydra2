@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class Stats {
 
     private static final Logger logger = LoggerFactory.getLogger(Stats.class);
+    private static final int TIMEOUT = 120;
 
     @Autowired
     private SearchModuleProvider searchModuleProvider;
@@ -149,11 +150,10 @@ public class Stats {
 
 
         executor.shutdown();
-        int timeout = 90;
-        boolean wasCompleted = executor.awaitTermination(timeout, TimeUnit.SECONDS);
+        boolean wasCompleted = executor.awaitTermination(TIMEOUT, TimeUnit.SECONDS);
         if (!wasCompleted) {
             executor.shutdownNow();
-            logger.error("Aborted stats generation because it took longer than {} seconds", timeout);
+            logger.error("Aborted stats generation because it took longer than {} seconds. Please restart", TIMEOUT);
         } else {
             for (Future future : futures) {
                 try {
@@ -182,7 +182,6 @@ public class Stats {
         }
 
         List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
-
 
         String sqlQueryByIndexer =
                 "SELECT\n" +
@@ -260,11 +259,8 @@ public class Stats {
      * <li>"update queries" because here some indexers return a "total" of 1000 and some of 1000000 or something like that</li>
      * <p>
      * </ul>
-     *
-     * @param statsRequest
-     * @return
      */
-    @Transactional
+    @Transactional(readOnly = true)
     List<IndexerSearchResultsShare> indexerSearchShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer search shares");
