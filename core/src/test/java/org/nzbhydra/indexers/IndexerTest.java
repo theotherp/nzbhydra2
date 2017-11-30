@@ -233,7 +233,7 @@ public class IndexerTest {
 
     @Test
     public void shouldGetAndStoreResultToDatabaseWithSuccess() throws Exception {
-        when(indexerWebAccessMock.get(any(), eq(testee.config))).thenReturn("result");
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn("result");
 
         String result = (String) testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
