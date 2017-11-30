@@ -244,7 +244,7 @@ public class IndexerTest {
     @Test(expected = IndexerAccessException.class)
     public void shouldGetAndStoreResultToDatabaseWithError() throws Exception {
         IndexerAccessException exception = new IndexerAccessException("error");
-        when(indexerWebAccessMock.get(any(), eq(testee.config))).thenThrow(exception);
+        when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenThrow(exception);
 
         testee.getAndStoreResultToDatabase(new URI("http://127.0.0.1"), String.class, IndexerApiAccessType.SEARCH);
 
