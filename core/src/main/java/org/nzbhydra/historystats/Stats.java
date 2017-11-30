@@ -2,6 +2,7 @@ package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
@@ -58,8 +59,10 @@ public class Stats {
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private NzbDownloadRepository downloadRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
         logger.debug("Request for stats between {} and {}", statsRequest.getAfter(), statsRequest.getBefore());
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -169,6 +172,7 @@ public class Stats {
         return statsResponse;
     }
 
+
     List<IndexerDownloadShare> indexerDownloadShares(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer download shares");
@@ -178,26 +182,28 @@ public class Stats {
         }
 
         List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
-        String sql =
+
+
+        String sqlQueryByIndexer =
                 "SELECT\n" +
                         "  indexer.name,\n" +
                         "  count(*) AS total,\n" +
                         "  countall.countall\n" +
                         "FROM\n" +
-                        "  indexernzbdownload dl LEFT JOIN SEARCHRESULT,\n" +
+                        "  indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                        "  LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+                        "  ,\n" +
                         "  (SELECT count(*) AS countall\n" +
                         "   FROM\n" +
-                        "     indexernzbdownload dl LEFT JOIN SEARCHRESULT\n" +
+                        "     indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
                         buildWhereFromStatsRequest(false, statsRequest) +
                         ")\n" +
                         "  countall\n" +
-                        "  , INDEXER\n" +
                         buildWhereFromStatsRequest(false, statsRequest) +
-                        "      AND INDEXER_ID = indexer.ID\n" +
                         "GROUP BY\n" +
-                        "  INDEXER_ID";
+                        "  INDEXER.NAME";
 
-        Query query = entityManager.createNativeQuery(sql);
+        Query query = entityManager.createNativeQuery(sqlQueryByIndexer);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List resultList = query.getResultList();
         for (Object result : resultList) {

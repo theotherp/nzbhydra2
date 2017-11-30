@@ -11,12 +11,9 @@ import java.util.List;
 
 public interface NzbDownloadRepository extends JpaRepository<NzbDownloadEntity, Integer> {
 
-
     Collection<NzbDownloadEntity> findByExternalId(String externalId);
 
     List<NzbDownloadEntity> findBySearchResultTitleOrderByTimeDesc(String title);
 
     Page<NzbDownloadEntity> findBySearchResultIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
-
-
 }
