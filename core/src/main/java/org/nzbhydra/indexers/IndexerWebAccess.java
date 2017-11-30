@@ -40,6 +40,10 @@ public class IndexerWebAccess {
 
     @SuppressWarnings("unchecked")
     protected <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
+        return get(uri, indexerConfig, null);
+    }
+
+    protected <T> T get(URI uri, IndexerConfig indexerConfig, Class responseType) throws IndexerAccessException {
         int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
 
@@ -54,6 +58,9 @@ public class IndexerWebAccess {
         try {
             future = Executors.newSingleThreadExecutor().submit(() -> {
                 String response = webAccess.callUrl(uri.toString(), headers, timeout);
+                if (responseType == String.class) {
+                    return (T) response;
+                }
                 return (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
             });
         } catch (RejectedExecutionException e) {
@@ -73,5 +80,6 @@ public class IndexerWebAccess {
             throw new RuntimeException("Unexpected error while accessing indexer", e);
         }
     }
+
 
 }

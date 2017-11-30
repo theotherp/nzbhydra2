@@ -38,7 +38,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
                         growl.info("No NFO available");
                     }
                 } else {
-                    grow.error(response.data.content);
+                    growl.error(response.data.content);
                 }
             });
         }

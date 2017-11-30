@@ -84,4 +84,9 @@ public class WebAccess {
         }
     }
 
+    public class WebAccessResponse {
+        String response;
+
+    }
+
 }
