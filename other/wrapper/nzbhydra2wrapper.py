@@ -224,12 +224,14 @@ def startup():
     if not os.path.exists(libFolder):
         logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
         sys.exit(-1)
-    jarFiles = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f))]
+    jarFiles = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
     if len(jarFiles) == 0:
         logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
         sys.exit(-1)
     if len(jarFiles) > 1:
         logger.critical("Error: Multiple JAR files found in folder %s. An update might've failed. Please delete all but the latest version and try again", libFolder)
+        for file in jarFiles:
+            logger.critical("Error: Found file: %s", file)
         sys.exit(-1)
     jarFile = os.path.join(libFolder, jarFiles[0])
 

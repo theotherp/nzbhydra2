@@ -1,4 +1,8 @@
+#Run like this: docker run -p 5076:5076 -v /home/ubuntu/dockertest/data/:/data -v /home/ubuntu/dockertest/downloads:/downloads nzbhydra2
+#TODO: Automatically download latest release (see http://www.starkandwayne.com/blog/how-to-download-the-latest-release-from-github/) and use that
+
 FROM alpine:edge
+MAINTAINER theotherp
 
 #For running NZBHydra2
 RUN apk add --no-cache openjdk8-jre
@@ -8,6 +12,7 @@ RUN python -m ensurepip
 RUN pip install pyyaml
 
 WORKDIR /
+RUN mkdir torrents
 ADD . /
 EXPOSE 5076
 
