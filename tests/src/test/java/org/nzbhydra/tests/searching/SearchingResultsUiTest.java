@@ -171,7 +171,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(5);
-        assertThat(searchResultsPage.titles()).containsExactly("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
+        assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
 
         checkSortAndFilter(searchResultsPage);
 
@@ -288,6 +288,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        searchResultsPage.tableHeader().ageHeader().sortAscending();
 
         //Make sure duplicates are hidden
         if (searchResultsPage.displayOptions().isSelected("Display duplicates")) {

@@ -37,24 +37,28 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     }
 
     protected void setValueAll(boolean value) {
-        List<WebElement> elements = getWebelement().findElements(By.className("option"));
+        List<WebElement> elements = getAllOptions();
         for (WebElement element : elements) {
-            if (element.findElement(By.tagName("span")).getAttribute("class").contains("glyphicon-ok") ^ value) {
+            if (isElementSelected(element) ^ value) {
                 element.click();
             }
         }
     }
 
+    private List<WebElement> getAllOptions() {
+        return getWebelement().findElements(By.cssSelector("a"));
+    }
+
     protected void ensureOpen() {
         if (!getWebelement().getAttribute("class").contains("open")) {
-            getWebelement().click();
+            getWebelement().findElement(By.tagName("button")).click();
         }
         Sleep.sleep(100);
     }
 
     protected void ensureClosed() {
         if (getWebelement().getAttribute("class").contains("open")) {
-            getWebelement().click();
+            getWebelement().findElement(By.tagName("button")).click();
         }
         Sleep.sleep(100);
     }
@@ -67,10 +71,10 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     @Override
     public boolean isSelected(String caption) {
         ensureOpen();
-        List<WebElement> elements = getWebelement().findElements(By.className("option"));
+        List<WebElement> elements = getAllOptions();
         for (WebElement element : elements) {
             if (element.getText().contains(caption)) {
-                return element.findElement(By.tagName("span")).getAttribute("class").contains("glyphicon-ok");
+                return isElementSelected(element);
             }
         }
         throw new RuntimeException("Unable to find option with caption " + caption);
@@ -83,14 +87,18 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     }
 
     protected void setValue(String caption, boolean value) {
-        List<WebElement> elements = getWebelement().findElements(By.className("option"));
+        List<WebElement> elements = getAllOptions();
         for (WebElement element : elements) {
             if (element.getText().contains(caption)) {
-                if (element.findElement(By.tagName("span")).getAttribute("class").contains("glyphicon-ok") ^ value) {
+                if (isElementSelected(element) ^ value) {
                     element.click();
                 }
             }
         }
+    }
+
+    private boolean isElementSelected(WebElement element) {
+        return element.findElement(By.tagName("span")).getAttribute("class").contains("glyphicon-ok");
     }
 
     @Override

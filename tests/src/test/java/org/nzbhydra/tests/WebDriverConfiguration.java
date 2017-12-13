@@ -19,6 +19,8 @@ public class WebDriverConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(WebDriverConfiguration.class);
 
+    public static WebDriver webDriver;
+
     @Bean
     @Profile("!dev")
     public WebDriver getPhantomJsWebDriver() {
@@ -35,7 +37,8 @@ public class WebDriverConfiguration {
         }
         caps.setCapability(
                 PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY, phantomJsPath);
-        return new PhantomJSDriver(caps);
+        WebDriverConfiguration.webDriver = new PhantomJSDriver(caps);
+        return WebDriverConfiguration.webDriver;
     }
 
     @Bean
@@ -43,7 +46,10 @@ public class WebDriverConfiguration {
     protected ChromeDriver initializeChromeDriver() {
         logger.info("Creating chrome web driver");
         System.setProperty("webdriver.chrome.driver", CHROMEDRIVER);
-        return new ChromeDriver();
+        ChromeDriver webDriver = new ChromeDriver();
+        WebDriverConfiguration.webDriver = webDriver;
+
+        return webDriver;
     }
 
 }
