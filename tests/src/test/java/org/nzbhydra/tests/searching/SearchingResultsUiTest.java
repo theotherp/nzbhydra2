@@ -22,10 +22,12 @@ import org.nzbhydra.tests.NzbhydraMockMvcTest;
 import org.nzbhydra.tests.pageobjects.CheckBox;
 import org.nzbhydra.tests.pageobjects.CheckboxFilter;
 import org.nzbhydra.tests.pageobjects.ColumnSortable;
+import org.nzbhydra.tests.pageobjects.DropdownCheckboxButton;
 import org.nzbhydra.tests.pageobjects.FreetextFilter;
 import org.nzbhydra.tests.pageobjects.ICheckBox;
 import org.nzbhydra.tests.pageobjects.ICheckboxFilter;
 import org.nzbhydra.tests.pageobjects.IColumnSortable;
+import org.nzbhydra.tests.pageobjects.IDropdownCheckboxButton;
 import org.nzbhydra.tests.pageobjects.IFreetextFilter;
 import org.nzbhydra.tests.pageobjects.IIndexerSelectionButton;
 import org.nzbhydra.tests.pageobjects.ILink;
@@ -91,6 +93,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         context.getDefaultElementFactory().addImplClassForElement(ICheckboxFilter.class, CheckboxFilter.class);
         context.getDefaultElementFactory().addImplClassForElement(INumberRangeFilter.class, NumberRangeFilter.class);
         context.getDefaultElementFactory().addImplClassForElement(ISelectionButton.class, SelectionButton.class);
+        context.getDefaultElementFactory().addImplClassForElement(IDropdownCheckboxButton.class, DropdownCheckboxButton.class);
         context.getDefaultElementFactory().addImplClassForElement(IIndexerSelectionButton.class, IndexerSelectionButton.class);
         context.getDefaultElementFactory().addImplClassForElement(ICheckBox.class, CheckBox.class);
         context.getDefaultElementFactory().addImplClassForElement(ILink.class, Link.class);
@@ -287,8 +290,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
 
         //Make sure duplicates are hidden
-        if (searchResultsPage.showDuplicatesCheckbox().ischecked()) {
-            searchResultsPage.showDuplicatesCheckbox().uncheck();
+        if (searchResultsPage.displayOptions().isSelected("Display duplicates")) {
+            searchResultsPage.displayOptions().deselect("Display duplicates");
         }
 
         assertThat(searchResultsPage.titleGroupToggles().size()).isEqualTo(2).as("Duplicates should be hidden");
@@ -305,7 +308,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         //Show duplicates
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should not exist").isEqualTo(0);
-        searchResultsPage.showDuplicatesCheckbox().check();
+        searchResultsPage.displayOptions().select("Display duplicates");
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should exist").isEqualTo(2);
         assertThat(searchResultsPage.duplicateGroupToggles().get(0).isVisible()).as("A duplicate buttom should be visible for the duplicates").isTrue();
         assertThat(searchResultsPage.duplicateGroupToggles().get(1).isVisible()).as("No duplicate buttom should be visible for the titlegroup").isFalse();
@@ -323,7 +326,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         searchResultsPage.duplicateGroupToggles().get(0).click();
         Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).isEqualTo(3);
-        searchResultsPage.showDuplicatesCheckbox().uncheck();
+        searchResultsPage.displayOptions().deselect("Display duplicates");
         Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).as("Unchecking duplicates should collapse all duplicate groups").isEqualTo(2);
 

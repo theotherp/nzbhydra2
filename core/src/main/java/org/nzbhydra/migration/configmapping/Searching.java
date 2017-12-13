@@ -11,7 +11,6 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "alwaysShowDuplicates",
         "applyRestrictions",
         "duplicateAgeThreshold",
         "duplicateSizeThresholdInPercent",
@@ -36,8 +35,6 @@ import java.util.List;
 @Data
 public class Searching {
 
-    @JsonProperty("alwaysShowDuplicates")
-    public boolean alwaysShowDuplicates;
     @JsonProperty("applyRestrictions")
     public String applyRestrictions;
     @JsonProperty("duplicateAgeThreshold")

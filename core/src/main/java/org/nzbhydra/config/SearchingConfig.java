@@ -16,7 +16,6 @@ import java.util.Optional;
 @Data
 public class SearchingConfig extends ValidatingConfig {
 
-    private boolean alwaysShowDuplicates;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
 
@@ -27,7 +26,6 @@ public class SearchingConfig extends ValidatingConfig {
     private String forbiddenRegex;
     private List<String> forbiddenWords = new ArrayList<>();
     private SearchSourceRestriction generateQueries = SearchSourceRestriction.NONE;
-    private boolean groupTorrentAndNewznabResults = true;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;

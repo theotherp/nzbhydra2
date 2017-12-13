@@ -273,7 +273,6 @@ public class JsonConfigMigration {
         logger.info("Migrating search settings");
         List<String> messages = new ArrayList<>();
         Searching oldSearching = oldConfig.getSearching();
-        newSearching.setAlwaysShowDuplicates(oldSearching.isAlwaysShowDuplicates());
         try {
             newSearching.setApplyRestrictions(SearchSourceRestriction.valueOf(oldSearching.getApplyRestrictions().toUpperCase()));
         } catch (IllegalArgumentException e) {

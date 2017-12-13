@@ -800,15 +800,6 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'groupTorrentAndNewznabResults',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Group newznab and torznab',
-                                help: 'When disabled newznab and torznab with the same title will not be grouped in the UI'
-                            }
-                        },
-                        {
                             wrapper: 'fieldset',
                             templateOptions: {
                                 label: 'Other'
@@ -825,15 +816,6 @@ function ConfigFields($injector) {
                                         },
                                         required: true,
                                         help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
-                                    }
-                                },
-                                {
-                                    key: 'alwaysShowDuplicates',
-                                    type: 'horizontalSwitch',
-                                    templateOptions: {
-                                        type: 'switch',
-                                        label: 'Always show duplicates',
-                                        help: 'Activate to show duplicates in search results by default'
                                     }
                                 },
                                 {

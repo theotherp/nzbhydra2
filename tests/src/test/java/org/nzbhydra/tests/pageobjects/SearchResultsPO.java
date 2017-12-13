@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 @Page
 public abstract class SearchResultsPO {
 
-    @Locator(id = "show-duplicates-checkbox")
-    public abstract ICheckbox showDuplicatesCheckbox();
+    @Locator(id = "display-options")
+    public abstract IDropdownCheckboxButton displayOptions();
 
     @Locator(id = "search-results-selection-button")
     public abstract ISelectionButton searchResultSelectionButton();

@@ -299,7 +299,6 @@ main:
   welcomeShown: false
   xmx: 128
 searching:
-  alwaysShowDuplicates: false
   applyRestrictions: "NONE"
   duplicateAgeThreshold: 2.0
   duplicateSizeThresholdInPercent: 1.0
@@ -308,7 +307,6 @@ searching:
   forbiddenRegex: null
   forbiddenWords: []
   generateQueries: "NONE"
-  groupTorrentAndNewznabResults: false
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false

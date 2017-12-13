@@ -82,21 +82,21 @@ public class NzbHandlingWeb {
     }
 
     @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET)
+    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with GUID {} to status {}", externalId, status);
         return nzbHandler.updateStatusByExternalId(externalId, status);
     }
 
     @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET)
+    @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
     @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET)
+    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
     public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByExternalIdOrTitle(externalId, title, status);

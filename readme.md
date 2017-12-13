@@ -84,6 +84,8 @@ Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheO
 ## Donate ###
 If you like to help me with any running or upcoming costs you're welcome to send Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm or Ether via 0xa6C33b4756D24027227C14285AfAeEE9a9738D42
 
+If you'd like to send other coins like Monero, LiteCoin, etc. please contact me. 
+
 ## Thanks ###
 <img src="https://github.com/theotherp/nzbhydra/raw/gh-pages/images/logo.png" width="60px"/> To Jetbrains for kindly providing me a license for IntelliJ - I can't imagine developing without it
 

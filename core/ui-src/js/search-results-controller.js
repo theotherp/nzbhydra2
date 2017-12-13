@@ -52,7 +52,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         bluray: ['bluray', 'blu-ray']
     };
     if (localStorageService.get("sorting") !== null) {
-        var sorting = localStorageService.get("sorting");
         sortModel = localStorageService.get("sorting");
     } else {
         sortModel = {
@@ -67,11 +66,51 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
-        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
+        duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false,
+        groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
     $scope.expandedTitlegroups = [];
+    $scope.optionsOptions = [
+        {id: "duplicatesDisplayed", label: "Display duplicates"},
+        {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"}
+    ];
+    $scope.optionsSelectedModel = [];
+    $scope.optionsExtraSettings = {
+        showCheckAll: false,
+        showUncheckAll: false,
+        dynamicTitle: false
+    };
+    $scope.optionsEvents = {
+        onItemSelect: function(item) {
+            if(item.id === "duplicatesDisplayed") {
+                toggleDuplicatesDisplayed(true);
+            } else if(item.id === "groupTorrentAndNewznabResults") {
+                toggleGroupTorrentAndNewznabResults(true);
+            }
+        },
+        onItemDeselect: function(item) {
+            if(item.id === "duplicatesDisplayed") {
+                toggleDuplicatesDisplayed(false);
+            } else if(item.id === "groupTorrentAndNewznabResults") {
+                toggleGroupTorrentAndNewznabResults(false);
+            }
+        }
+    };
+
+    function toggleDuplicatesDisplayed(value) {
+        localStorageService.set("duplicatesDisplayed", value);
+        $scope.$broadcast("duplicatesDisplayed", value);
+        $scope.foo.duplicatesDisplayed = value;
+    }
+
+    function toggleGroupTorrentAndNewznabResults(value) {
+        localStorageService.set("groupTorrentAndNewznabResults", value);
+        $scope.foo.groupTorrentAndNewznabResults = value;
+        blockAndUpdate();
+    }
+
 
     $scope.indexersForFiltering = [];
     _.forEach($scope.indexersearches, function (indexer) {
@@ -322,7 +361,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
         function getGroupingString(element) {
             var groupingString = getCleanedTitle(element);
-            if (!ConfigService.getSafe().searching.groupTorrentAndNewznabResults) {
+            if (!$scope.foo.groupTorrentAndNewznabResults) {
                 groupingString = groupingString + element.downloadType;
             }
             return groupingString;
@@ -439,11 +478,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.toggleIndexerStatuses = function () {
         $scope.foo.indexerStatusesExpanded = !$scope.foo.indexerStatusesExpanded;
         localStorageService.set("indexerStatusesExpanded", $scope.foo.indexerStatusesExpanded);
-    };
-
-    $scope.toggleDuplicatesDisplayed = function () {
-        localStorageService.set("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
-        $scope.$broadcast("duplicatesDisplayed", $scope.foo.duplicatesDisplayed);
     };
 
     $scope.getRejectedReasonsTooltip = function () {

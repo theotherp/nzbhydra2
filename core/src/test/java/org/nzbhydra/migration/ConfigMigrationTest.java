@@ -208,7 +208,6 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().getUrlBase().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().isUseLocalUrlForApiAccess(), is(true));
 
-        assertThat(result.getMigratedConfig().getSearching().isAlwaysShowDuplicates(), is(true));
         assertThat(result.getMigratedConfig().getSearching().getApplyRestrictions(), is(SearchSourceRestriction.BOTH));
         assertThat(result.getMigratedConfig().getSearching().getDuplicateAgeThreshold(), is(2.0F));
         assertThat(result.getMigratedConfig().getSearching().getDuplicateSizeThresholdInPercent(), is(1.0F));
