@@ -1,5 +1,5 @@
 target/
 !.mvn/wrapper/maven-wrapper.jar
-Dockerfile.swap
+Dockerfile.swp
 lib/
 *.py
