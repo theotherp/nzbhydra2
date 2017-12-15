@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.sensitive.SensitiveDataModule;
 import org.nzbhydra.logging.LogAnonymizer;
@@ -43,6 +44,10 @@ public class DebugInfosProvider {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
                 writeStringToZip(zos, "nzbhydra.log", anonymizedLog.getBytes("UTF-8"));
                 writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes("UTF-8"));
+                File traceFile = new File(new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
+                if (traceFile.exists()) {
+                    writeFileToZip(zos,"nzbhydra.trace.db",traceFile);
+                }
             }
         }
         return Files.readAllBytes(tempFile.toPath());
@@ -71,6 +76,11 @@ public class DebugInfosProvider {
         zos.putNextEntry(zipEntry);
         zos.write(bytes);
         zos.closeEntry();
+    }
+
+    private void writeFileToZip(ZipOutputStream zos, String name, File file) throws IOException {
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        writeStringToZip(zos, name, bytes);
     }
 
 
