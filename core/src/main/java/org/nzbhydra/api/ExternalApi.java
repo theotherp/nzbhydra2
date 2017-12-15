@@ -29,7 +29,6 @@ import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 import org.nzbhydra.mapping.newznab.caps.CapsServer;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -89,8 +88,6 @@ public class ExternalApi {
     protected ConfigProvider configProvider;
     @Autowired
     private CategoryProvider categoryProvider;
-    @Autowired
-    private UserAgentMapper userAgentMapper;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 
@@ -268,6 +265,7 @@ public class ExternalApi {
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
         rssItem.setPubDate(searchResultItem.getPubDate());
+        searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
             rssItem.setNewznabAttributes(newznabAttributes);
