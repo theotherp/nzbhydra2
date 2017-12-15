@@ -21,17 +21,20 @@ import urllib2
 
 queue_event_type = os.environ.get('NZBNA_EVENT')
 if queue_event_type is not None and queue_event_type not in ['NZB_ADDED', 'NZB_DOWNLOADED', 'NZB_DELETED', 'URL_COMPLETED']:
-    print 'Unknown event type'
+    print '[WARNING] Unknown event type'
     sys.exit(94)
 if not ('NZBNA_EVENT' in os.environ or 'NZBPP_DIRECTORY' in os.environ):
-    print('Neither queue script nor PP script, what is going on?')
+    print('[WARNING] Neither queue script nor PP script, what is going on?')
     sys.exit(94)
 base_url = os.environ.get('NZBPO_URL')
 if base_url is None:
-    print 'Hydra URL not set, using http://127.0.0.1:5076'
+    print '[WARNING] Hydra URL not set, using http://127.0.0.1:5076'
     base_url = 'http://127.0.0.1:5076'
 pp_status = os.environ.get('NZBPP_TOTALSTATUS')
 apikey = os.environ.get('NZBPO_APIKEY')
+if apikey is None:
+    print '[ERROR] API key not set'
+    sys.exit(94)
 
 try:
     nzbget_hydra_status_map = {
@@ -49,6 +52,9 @@ try:
     else:
         hydra_status = nzbget_hydra_status_map[pp_status]
         nzb_name = os.environ.get('NZBPP_NZBFILENAME')
+    if nzb_name.endswith('.nzb'):
+	    nzb_name = nzb_name[:-4]
+    print '[INFO] Updating status of '	 + nzb_name + ' to status ' + hydra_status
     url = base_url + '/externalapi/nzbstatus/title/' + urllib2.quote(nzb_name) + '/' + hydra_status + "?apikey=" + apikey
     urllib2.urlopen(url).read()
     if pp_status is not None:
@@ -56,5 +62,5 @@ try:
 
     sys.exit(93)
 except Exception as e:
-    print "Exception: " + str(e)
+    print "[ERROR] " + str(e)
     sys.exit(94)

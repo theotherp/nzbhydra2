@@ -102,7 +102,7 @@ public class NzbHandlingWeb {
             logger.error("Received API call with wrong API key");
             throw new BadCredentialsException("Wrong api key");
         }
-        logger.debug("Status update for download of NZB with title to status {}", title, status);
+        logger.debug("Status update for download of NZB with title {} to status {}", title, status);
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
@@ -113,7 +113,7 @@ public class NzbHandlingWeb {
             logger.error("Received API call with wrong API key");
             throw new BadCredentialsException("Wrong api key");
         }
-        logger.debug("Status update for download of NZB with title to status {}", title, status);
+        logger.debug("Status update for download of NZB with title {} to status {}", title, status);
         return nzbHandler.updateStatusByExternalIdOrTitle(externalId, title, status);
     }
 
