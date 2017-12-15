@@ -220,18 +220,24 @@
                 <input bs-switch type="checkbox" ng-model="foo.statsSwichState.successfulDownloadsPerIndexer" switch-size="mini" ng-change="onStatsSwitchToggle('successfulDownloadsPerIndexer')">
                     </span>
                 Successful downloads per indexer <span class="glyphicon glyphicon-question-sign" tooltip-placement="top"
-                                                       uib-tooltip="Only works if user scripts report the actual download result of a NZB's content"></span>
+                                                       uib-tooltip="Only works if user scripts report the actual download result of a NZB's content. Shows percentage of successful downloads of all downloads with reported status."></span>
             </div>
             <tab-or-chart display="chart" ng-show="foo.statsSwichState.successfulDownloadsPerIndexer">
                 <table class="table">
                     <thead>
                     <th>Indexer</th>
-                    <th>% of downloads successful</th>
+                    <th>% of successful downloads</th>
+                    <th># of all downloads</th>
+                    <th># of successful downloads</th>
+                    <th># of unsuccessful downloads</th>
                     </thead>
                     <tbody>
                     <tr ng-repeat="stat in stats.successfulDownloadsPerIndexer">
                         <td>{{ stat.indexerName}}</td>
-                        <td>{{ stat.percentage | number : 1}}</td>
+                        <td>{{ stat.percentSuccessful | number : 1}}</td>
+                        <td>{{ stat.countAll | number : 0}}</td>
+                        <td>{{ stat.countSuccessful | number : 0}}</td>
+                        <td>{{ stat.countError | number : 0}}</td>
                     </tr>
                     </tbody>
                 </table>

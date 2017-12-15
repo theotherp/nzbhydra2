@@ -90,7 +90,7 @@ If you'd like to send other coins like Monero, LiteCoin, etc. please contact me.
 ## Thanks ###
 <img src="https://github.com/theotherp/nzbhydra/raw/gh-pages/images/logo.png" width="60px"/> To Jetbrains for kindly providing me a license for IntelliJ - I can't imagine developing without it
 
-To all testers, bug reporters, donators, all around awesome people
+To all testers, bug reporters, donators, all around awesome people; especially judhat2 for beta testing and loads of helpful feedback
 
 ## License ###
    Licensed under the Apache License, Version 2.0 (the "License");

@@ -515,17 +515,42 @@ public class Stats {
 
     List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        String sql = "SELECT INDEXER.name, 100/((CAST((count_error+ count_success) as float))/count_success) as percent\n" +
-                "from\n" +
-                "  (select indexer.ID as id_1, count(*)as count_error from INDEXERNZBDOWNLOAD left join SEARCHRESULT LEFT JOIN indexer  WHERE " +
-                "status in ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING') " +
+        String sql = "SELECT\n" +
+                "  name1,\n" +
+                "  count_all,\n" +
+                "  count_success,\n" +
+                "  count_error\n" +
+                "FROM\n" +
+                "  (SELECT\n" +
+                "     indexer.NAME AS name1,\n" +
+                "     count(*)   AS count_success\n" +
+                "   FROM INDEXERNZBDOWNLOAD\n" +
+                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+                "   WHERE\n" +
+                "     status = 'CONTENT_DOWNLOAD_SUCCESSFUL'\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY indexer.ID),\n" +
-                "  (select indexer.ID as id_2, count(*)as count_success from INDEXERNZBDOWNLOAD left join SEARCHRESULT LEFT JOIN indexer WHERE " +
-                "status ='CONTENT_DOWNLOAD_SUCCESSFUL' " +
+                "   GROUP BY name1)\n" +
+                "  LEFT JOIN\n" +
+                "  (SELECT\n" +
+                "     indexer.NAME AS name2,\n" +
+                "     count(*)   AS count_error\n" +
+                "   FROM INDEXERNZBDOWNLOAD\n" +
+                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+                "   WHERE\n" +
+                "     status IN ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING')\n" +
                 buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY indexer.ID) " +
-                ",INDEXER where id_1 = id_2 and id_1 = INDEXER.ID";
+                "   GROUP BY name2) ON name1 = name2\n" +
+                "  LEFT JOIN\n" +
+                "  (SELECT\n" +
+                "     indexer.NAME AS name3,\n" +
+                "     count(*)   AS count_all\n" +
+                "   FROM INDEXERNZBDOWNLOAD\n" +
+                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+                buildWhereFromStatsRequest(false, statsRequest) +
+                "   GROUP BY name3) ON name1 = name3;";
         Query query = entityManager.createNativeQuery(sql);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List<Object> resultList = query.getResultList();
@@ -536,10 +561,30 @@ public class Stats {
             if (!indexerNamesToInclude.contains(indexerName)) {
                 continue;
             }
-            Double percentSuccessful = (Double) o2[1];
-            result.add(new SuccessfulDownloadsPerIndexer(indexerName, percentSuccessful));
+            BigInteger countAll = (BigInteger) o2[1];
+            BigInteger countSuccess = (BigInteger) o2[2];
+            BigInteger countError = (BigInteger) o2[3];
+            if (countAll == null) {
+                countAll = BigInteger.ZERO;
+            }
+            if (countSuccess == null) {
+                countSuccess = BigInteger.ZERO;
+            }
+            if (countError == null) {
+                countError = BigInteger.ZERO;
+            }
+
+            Float percentSuccessful;
+            if (countSuccess.intValue() > 0) {
+                percentSuccessful = 100F / ((countSuccess.floatValue()+countError.floatValue()) / countSuccess.floatValue());
+            } else if (countAll.intValue() >0){
+                percentSuccessful = 0F;
+            } else {
+                percentSuccessful = null;
+            }
+            result.add(new SuccessfulDownloadsPerIndexer(indexerName, countAll.intValue(), countSuccess.intValue(), countError.intValue(), percentSuccessful));
         }
-        result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentage).reversed());
+        result.sort(Comparator.comparingDouble(SuccessfulDownloadsPerIndexer::getPercentSuccessful).reversed());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated successful download percentages for indexers. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return result;
     }

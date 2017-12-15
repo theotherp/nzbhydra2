@@ -7,5 +7,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class SuccessfulDownloadsPerIndexer {
     private String indexerName;
-    private double percentage;
+    private int countAll;
+    private int countSuccessful;
+    private int countError;
+    private Float percentSuccessful;
 }

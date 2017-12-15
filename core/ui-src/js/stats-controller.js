@@ -183,7 +183,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         }
 
         if ($scope.stats.successfulDownloadsPerIndexer) {
-            $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.stats.successfulDownloadsPerIndexer, "indexerName", "percentage", "Indexer", '% successful');
+            $scope.successfulDownloadsPerIndexerChart = getChart("multiBarHorizontalChart", $scope.stats.successfulDownloadsPerIndexer, "indexerName", "percentSuccessful", "Indexer", '% successful');
             $scope.successfulDownloadsPerIndexerChart.options.chart.xAxis.rotateLabels = 90;
             $scope.successfulDownloadsPerIndexerChart.options.chart.yAxis.tickFormat = function (d) {
                 return $filter('number')(d, 0);
