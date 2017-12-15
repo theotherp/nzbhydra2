@@ -2,7 +2,6 @@ package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.nzbhydra.historystats.stats.AverageResponseTime;
 import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
 import org.nzbhydra.historystats.stats.CountPerHourOfDay;
@@ -60,8 +59,6 @@ public class Stats {
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
-    @Autowired
-    private NzbDownloadRepository downloadRepository;
 
     @Transactional(readOnly = true)
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
@@ -84,7 +81,8 @@ public class Stats {
             futures.add(executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))));
         }
         if (statsRequest.isAvgIndexerSearchResultsShares()) {
-            futures.add(executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))));
+            statsResponse.setAvgIndexerSearchResultsShares(Collections.emptyList());
+            //futures.add(executor.submit(() -> statsResponse.setAvgIndexerSearchResultsShares(indexerSearchShares(statsRequest))));
         }
 
         if (statsRequest.isSearchesPerDayOfWeek()) {
