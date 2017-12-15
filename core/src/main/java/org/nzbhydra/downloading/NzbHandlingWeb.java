@@ -15,6 +15,8 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class NzbHandlingWeb {
@@ -83,21 +86,33 @@ public class NzbHandlingWeb {
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") NzbDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
+        if (!noApiKeyNeeded && !Objects.equals(apikey, configProvider.getBaseConfig().getMain().getApiKey())) {
+            logger.error("Received API call with wrong API key");
+            throw new BadCredentialsException("Wrong api key");
+        }
         logger.debug("Status update for download of NZB with GUID {} to status {}", externalId, status);
         return nzbHandler.updateStatusByExternalId(externalId, status);
     }
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
+        if (!noApiKeyNeeded && !Objects.equals(apikey, configProvider.getBaseConfig().getMain().getApiKey())) {
+            logger.error("Received API call with wrong API key");
+            throw new BadCredentialsException("Wrong api key");
+        }
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByNzbTitle(title, status);
     }
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status) throws IndexerAccessException {
+    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, @RequestParam("apikey") String apikey ) throws AuthenticationException {
+        if (!noApiKeyNeeded && !Objects.equals(apikey, configProvider.getBaseConfig().getMain().getApiKey())) {
+            logger.error("Received API call with wrong API key");
+            throw new BadCredentialsException("Wrong api key");
+        }
         logger.debug("Status update for download of NZB with title to status {}", title, status);
         return nzbHandler.updateStatusByExternalIdOrTitle(externalId, title, status);
     }
