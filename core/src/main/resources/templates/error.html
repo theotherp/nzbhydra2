@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>NZBHydra 2</title>
+    <meta name="robots" content="noindex"/>
+    <meta name="referrer" content="no-referrer"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="shortcut icon" type="image/x-icon" href="static/img/favicon.ico"/>
+    <meta charset="utf-8"/>
+</head>
+<body>
+An error occurred. Check the logs.
+
+<br>Some details:
+<table>
+    <tr>
+        <td>Path</td>
+        <td th:text="${#vars.getVariable('path')}"></td>
+    </tr>
+    <tr>
+        <td>Query parameters</td>
+        <td th:text="${#vars.getVariable('javax.servlet.forward.query_string')}"></td>
+    </tr>
+    <tr>
+        <td>Error</td>
+        <td th:text="${#vars.getVariable('error')}"></td>
+    </tr>
+    <tr>
+        <td>Exception</td>
+        <td th:text="${#vars.getVariable('exception')}"></td>
+    </tr>
+    <tr>
+        <td>Timestamp</td>
+        <td th:text="${#vars.getVariable('timestamp')}"></td>
+    </tr>
+</table>
+
+<!--Print available variables-->
+<!--
+Session
+<table>
+    <tr th:each="var : ${session}">
+        <td th:text="${var.key}"></td>
+        <td th:text="${var.value}"></td>
+    </tr>
+</table>
+Vars
+<table>
+    <tr th:each="var : ${#vars.getVariableNames()}">
+        <td th:text="${var}"></td>
+        <td th:text="${#vars.getVariable(var)}"></td>
+    </tr>
+</table>
+-->
+</body>
+</html>
+

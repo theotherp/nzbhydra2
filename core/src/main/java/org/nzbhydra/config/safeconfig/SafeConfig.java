@@ -1,13 +1,13 @@
 package org.nzbhydra.config.safeconfig;
 
-import lombok.Getter;
+import lombok.Data;
 import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Getter
+@Data
 public class SafeConfig {
 
     private SafeCategoriesConfig categoriesConfig;
