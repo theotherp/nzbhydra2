@@ -40,6 +40,7 @@ public class IndexerConfig extends ValidatingConfig {
     @SensitiveData
     private String password = null;
     private boolean preselect = true;
+    private List<String> schedule = new ArrayList<>();
     private Integer score = null;
     private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
     private boolean showOnSearch = true;

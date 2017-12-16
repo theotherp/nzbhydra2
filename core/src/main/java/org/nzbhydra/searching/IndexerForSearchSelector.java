@@ -15,7 +15,6 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.downloading.NzbDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -33,6 +32,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -45,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -52,12 +55,12 @@ public class IndexerForSearchSelector {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexerForSearchSelector.class);
 
+    private static final Pattern SCHEDULER_PATTERN = Pattern.compile("(?<day1>(?:mo|tu|we|th|fr|sa|su))?\\-?(?<day2>(?:mo|tu|we|th|fr|sa|su))?(?<hour1>\\d{1,2})?\\-?(?<hour2>\\d{1,2})?", Pattern.CASE_INSENSITIVE);
+
     @Autowired
     private InfoProvider infoProvider;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
-    @Autowired
-    private IndexerApiAccessRepository indexerApiAccessRepository;
     @Autowired
     private NzbDownloadRepository nzbDownloadRepository;
     @Autowired
@@ -81,6 +84,7 @@ public class IndexerForSearchSelector {
 
         protected Map<Indexer, String> notSelectedIndersWithReason = new HashMap<>();
         protected SearchRequest searchRequest;
+        protected Clock clock = Clock.systemDefaultZone();
 
         public InnerInstance(SearchRequest searchRequest) {
             this.searchRequest = searchRequest;
@@ -115,6 +119,9 @@ public class IndexerForSearchSelector {
                     continue;
                 }
                 if (!checkDisabledForCategory(indexer)) {
+                    continue;
+                }
+                if (!checkSchedule(indexer)) {
                     continue;
                 }
                 if (!checkLoadLimiting(indexer)) {
@@ -297,6 +304,72 @@ public class IndexerForSearchSelector {
                 return handleIndexerNotSelected(indexer, message, "NZB API search");
             }
             return true;
+        }
+
+        protected boolean checkSchedule(Indexer indexer) {
+            if (!indexer.getConfig().getSchedule().isEmpty() && indexer.getConfig().getSchedule().stream().noneMatch(this::isInTime)) {
+                String message = String.format("Not using %s because the current time is out of its schedule", indexer.getName());
+                return handleIndexerNotSelected(indexer, message, "Out of schedule");
+            }
+            return true;
+        }
+
+        protected boolean isInTime(String scheduleTime) {
+            Map<String, Integer> days = new HashMap<>();
+            days.put("mo", 1);
+            days.put("tu", 2);
+            days.put("we", 3);
+            days.put("th", 4);
+            days.put("fr", 5);
+            days.put("sa", 6);
+            days.put("su", 7);
+
+            LocalDateTime now = LocalDateTime.now(clock);
+            Matcher matcher = SCHEDULER_PATTERN.matcher(scheduleTime.toLowerCase());
+            if (!matcher.matches()) {
+                logger.error("Unable to parse schedule string {}", scheduleTime);
+                return false;
+            }
+            if (matcher.group("day1") != null) {
+                int fromDay = days.get(matcher.group("day1"));
+                int toDay;
+                if (matcher.group("day2") == null) {
+                    toDay = fromDay;
+                } else {
+                    toDay = days.get(matcher.group("day2"));
+                }
+
+                DayOfWeek currentDay = now.getDayOfWeek();
+                if (!inRange(fromDay, toDay, currentDay.getValue())) {
+                    logger.debug(LoggingMarkers.SCHEDULER, "Current date does not match scheduler string {}: Current day {} is not between {} and {}", scheduleTime, currentDay, DayOfWeek.of(fromDay).name(), DayOfWeek.of(toDay % 7).name());
+                    return false;
+                }
+            }
+
+            if (matcher.group("hour1") != null) {
+                int fromHour = Integer.valueOf(matcher.group("hour1"));
+                int toHour;
+                if (matcher.group("hour2") != null) {
+                    toHour = Integer.valueOf(matcher.group("hour2"));
+                } else {
+                    toHour = fromHour;
+                }
+                if (fromHour > toHour) {
+                    if (!(now.getHour() >= fromHour || now.getHour() <= toHour)) {
+                        logger.debug(LoggingMarkers.SCHEDULER, "Current date does not match scheduler string {}: Current hour {} is not between {} and {}", scheduleTime, now.getHour(), toHour, fromHour);
+                        return false;
+                    }
+                } else if (now.getHour() < fromHour || now.getHour() > toHour) {
+                    logger.debug(LoggingMarkers.SCHEDULER, "Current date does not match scheduler string {}: Current hour {} is not between {} and {}", scheduleTime, now.getHour(), fromHour, toHour);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private boolean inRange(int a, int b, int val) {
+            return val >= Math.min(a, b) && val <= Math.max(a, b);
         }
 
         private boolean handleIndexerNotSelected(Indexer indexer, String message, String reason) {

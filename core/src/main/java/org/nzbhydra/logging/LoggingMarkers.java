@@ -10,6 +10,7 @@ public class LoggingMarkers {
     public static final Marker PERFORMANCE = MarkerFactory.getMarker("PERFORMANCE");
     public static final Marker DUPLICATES = MarkerFactory.getMarker("DUPLICATES");
     public static final Marker USER_AGENT = MarkerFactory.getMarker("USER_AGENT");
+    public static final Marker SCHEDULER = MarkerFactory.getMarker("SCHEDULER");
 
 
 }

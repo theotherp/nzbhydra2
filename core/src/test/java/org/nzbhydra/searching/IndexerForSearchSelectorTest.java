@@ -30,8 +30,10 @@ import org.springframework.data.domain.PageImpl;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -334,6 +336,47 @@ public class IndexerForSearchSelectorTest {
         nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
         //24 hours after the last hit
         assertEquals(LocalDateTime.ofInstant(firstInWindow, ZoneOffset.UTC).plus(1, ChronoUnit.DAYS), nextHit);
+    }
+
+    @Test
+    public void shouldHonorSchedule() throws Exception {
+        testee.clock = Clock.fixed(Instant.ofEpochSecond(1512974083), ZoneId.of("UTC")); //Monday, December 11, 2017 6:34:43 AM
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-su")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-mo")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we")).isFalse();
+
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6-10")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6-23")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo1-10")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo1-5")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo7-23")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo22-8")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo22-5")).isFalse();
+
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu6")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu6-10")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu1-2")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we6")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we6-10")).isFalse();
+
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("6")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("6-10")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("7-10")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("10-7")).isTrue();
+
+        when(indexerConfigMock.getSchedule()).thenReturn(Arrays.asList("tu-we6", "mo"));
+        org.assertj.core.api.Assertions.assertThat(testee.checkSchedule(indexer)).isTrue();
+
+        when(indexerConfigMock.getSchedule()).thenReturn(Arrays.asList("tu-we6"));
+        org.assertj.core.api.Assertions.assertThat(testee.checkSchedule(indexer)).isFalse();
+
+        testee.clock = Clock.fixed(Instant.ofEpochSecond(1513412203), ZoneId.of("UTC")); //Saturday, December 16, 2017 8:16:43 AM
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("fr-sa")).isTrue();
+        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-sa")).isTrue();
     }
 
 

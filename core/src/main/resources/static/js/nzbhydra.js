@@ -6881,6 +6881,7 @@ function ConfigFields($injector) {
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
+                                    {label: 'Indexer scheduler', id: 'SCHEDULER'},
                                     {label: 'Uer agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
@@ -7129,7 +7130,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Map user agents',
-                                help: 'Used to map the user agent from accessing services to the service names'
+                                help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.'
                             }
                         }
                     ]
@@ -7858,9 +7859,9 @@ function getIndexerPresets(configuredIndexers) {
                 name: "altHUB",
                 host: "https://api.althub.co.za"
             }, {
-                name: "dbKitty",
-                host: "https://dbkitty.club"
-            },
+            name: "dbKitty",
+            host: "https://dbkitty.club"
+        },
             {
                 name: "DogNZB",
                 host: "https://api.dognzb.cr"
@@ -8195,7 +8196,17 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 label: 'Timeout',
                 help: 'Supercedes the general timeout in "Searching"'
             }
-        });
+        },
+        {
+            key: 'schedule',
+            type: 'horizontalChips',
+            templateOptions: {
+                type: 'text',
+                label: 'Schedule',
+                help: 'Determines when an indexer should be selected. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Indexer-schedules" target="_blank">wiki</a>. You can enter multiple time spans. Apply values with return key.'
+            }
+        }
+    );
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
