@@ -65,13 +65,8 @@ public class ReleaseMojo extends AbstractMojo {
 
         getLog().info("Will release version " + tagName + " to GitHub");
 
-        if (Strings.isNullOrEmpty(githubToken)) {
-            if (githubTokenFile == null) {
-                throw new MojoExecutionException("GitHub Token and GitHub token file not set");
-            } else if (!githubTokenFile.exists()) {
-                throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
-            }
-        }
+        executePrechecks();
+
         if (githubTokenFile != null && githubTokenFile.exists()) {
             try {
                 githubToken = new String(Files.readAllBytes(githubTokenFile.toPath()));
@@ -80,19 +75,9 @@ public class ReleaseMojo extends AbstractMojo {
             }
         }
 
-        if (!windowsAsset.exists()) {
-            throw new MojoExecutionException("Windows asset file does not exist: " + windowsAsset.getAbsolutePath());
-        }
+
         getLog().info("Will use windows asset " + windowsAsset.getAbsolutePath());
-
-        if (!linuxAsset.exists()) {
-            throw new MojoExecutionException("Linux asset file does not exist: " + linuxAsset.getAbsolutePath());
-        }
         getLog().info("Will use linux asset " + linuxAsset.getAbsolutePath());
-
-        if (!changelogJsonFile.exists()) {
-            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
-        }
         getLog().info("Will use changelog entry from " + changelogJsonFile.getAbsolutePath());
 
         try {
@@ -111,6 +96,28 @@ public class ReleaseMojo extends AbstractMojo {
 
         } catch (IOException e) {
             throw new MojoExecutionException("Error releasing", e);
+        }
+    }
+
+    protected void executePrechecks() throws MojoExecutionException {
+        if (Strings.isNullOrEmpty(githubToken)) {
+            if (githubTokenFile == null) {
+                throw new MojoExecutionException("GitHub Token and GitHub token file not set");
+            } else if (!githubTokenFile.exists()) {
+                throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
+            }
+        }
+
+        if (!windowsAsset.exists()) {
+            throw new MojoExecutionException("Unable to find windows asset at " + windowsAsset.getAbsolutePath());
+        }
+
+        if (!linuxAsset.exists()) {
+            throw new MojoExecutionException("Unable to find linux asset at " + linuxAsset.getAbsolutePath());
+        }
+
+        if (!changelogJsonFile.exists()) {
+            throw new MojoExecutionException("JSON file does not exist: " + changelogJsonFile.getAbsolutePath());
         }
     }
 
