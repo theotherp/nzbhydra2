@@ -268,7 +268,7 @@ public class NzbHandler {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.MILLISECONDS).connectTimeout(timeout, TimeUnit.MILLISECONDS).build().newCall(request).execute()) {
+        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).build().newCall(request).execute()) {
             return response.body().string();
         }
     }
