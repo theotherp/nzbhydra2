@@ -39,7 +39,9 @@ public class MainConfig extends ValidatingConfig {
     private int proxyPort;
     private boolean proxyIgnoreLocal = true;
     private List<String> proxyIgnoreDomains = new ArrayList<>();
+    @SensitiveData
     private String proxyUsername;
+    @SensitiveData
     private String proxyPassword;
     private String repositoryBase;
     private boolean showNews = true;

@@ -2,9 +2,12 @@ package org.nzbhydra.logging;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.UserAuthConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -13,6 +16,8 @@ import java.util.Optional;
  */
 @Component
 public class LogAnonymizer {
+
+    private static final Logger logger = LoggerFactory.getLogger(LogAnonymizer.class);
 
     @Autowired
     private LogContentProvider logContentProvider;
@@ -30,13 +35,19 @@ public class LogAnonymizer {
         String log = logContentProvider.getLog();
         Optional<String> externalUrlOptional = configProvider.getBaseConfig().getMain().getExternalUrl();
         if (externalUrlOptional.isPresent()) {
+            logger.debug("Removing external URL from log");
             log = log.replaceAll("(?i)" + externalUrlOptional.get(), "<EXTERNALURL>");
         }
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
+            logger.debug("Removing username from log");
             log = log.replaceAll("(?i)User[=:]" + userAuthConfig.getUsername(), "User=<USERNAME>");
         }
+        logger.debug("Removing IPs from log");
         log = log.replaceAll("\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b", "<IP>");
         log = log.replaceAll("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))", "<IP>");
+
+        logger.debug("Removing base path from log");
+        log = log.replace(new File("").getAbsolutePath(), "<BASEPATH>");
 
         return log;
     }
