@@ -64,6 +64,9 @@ echo Making snapshot version effective
 call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" goto error
 
+echo Building new versions
+call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+
 goto eof
 :error
 echo Error, aborted

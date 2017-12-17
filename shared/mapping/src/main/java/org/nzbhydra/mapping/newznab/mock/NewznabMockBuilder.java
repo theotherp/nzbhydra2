@@ -71,7 +71,7 @@ public class NewznabMockBuilder {
             item.setPubDate(pubDate);
             item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
-            String guid = "http://127.0.0.1:5080/details/" + request.getTitleBase() + "/" + i;
+            String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
             item.setLink(guid);
             item.setCategory("TV > HD");
             item.setRssGuid(new RssGuid(guid, true));
