@@ -39,8 +39,8 @@
                     <commitish>master</commitish>
                     <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
-                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
-                    <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
+                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.tgz</linuxAsset>
+                    <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
                     <tagName>v${project.version}</tagName>
