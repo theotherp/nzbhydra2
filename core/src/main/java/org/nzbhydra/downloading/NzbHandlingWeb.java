@@ -67,7 +67,7 @@ public class NzbHandlingWeb {
             return response;
         } catch (Exception e) {
             logger.error("Error while creating ZIP with NZBs", e);
-            return new NzbsZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(),Collections.emptyList(), guids);
+            return new NzbsZipResponse(false, null, "Error while creating ZIP with NZBs: " + e.getMessage(), Collections.emptyList(), guids);
         }
     }
 
@@ -108,7 +108,7 @@ public class NzbHandlingWeb {
 
     @CrossOrigin
     @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, @RequestParam("apikey") String apikey ) throws AuthenticationException {
+    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") NzbDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
         if (!noApiKeyNeeded && !Objects.equals(apikey, configProvider.getBaseConfig().getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
             throw new BadCredentialsException("Wrong api key");

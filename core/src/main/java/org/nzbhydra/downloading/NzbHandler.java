@@ -105,6 +105,7 @@ public class NzbHandler {
         List<File> nzbFiles = new ArrayList<>();
         Path tempDirectory = null;
         List<Long> foundNzbIds = new ArrayList<>();
+        List<Long> missedNzbIds = new ArrayList<>();
         for (Long guid : guids) {
             NzbDownloadResult result = getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL);
             if (!result.isSuccessful()) {
@@ -119,6 +120,7 @@ public class NzbHandler {
                 foundNzbIds.add(guid);
             } catch (IOException e) {
                 logger.error("Unable to write NZB content to temporary file: " + e.getMessage());
+                missedNzbIds.add(guid);
             }
         }
         if (nzbFiles.isEmpty()) {
@@ -129,7 +131,9 @@ public class NzbHandler {
         if (tempDirectory != null) {
             tempDirectory.toFile().delete();
         }
-        return new NzbsZipResponse(true, zip.getAbsolutePath(),"No NZB files could be retrieved", foundNzbIds,Collections.emptyList());
+
+        String message = missedNzbIds.isEmpty() ? "All NZBs successfully retrieved" : missedNzbIds.size() + " NZBs could not be loaded";
+        return new NzbsZipResponse(true, zip.getAbsolutePath(), message, foundNzbIds, missedNzbIds);
     }
 
     public File createZip(List<File> nzbFiles) throws Exception {

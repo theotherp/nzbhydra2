@@ -40,6 +40,9 @@ function downloadNzbzipButton() {
                         if (angular.isDefined($scope.callback)) {
                             $scope.callback({result:response.addedIds});
                         }
+                        if (response.missedIds.length > 0) {
+                            growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
+                        }
                     }
                 }).error(function (data, status, headers, config) {
                     growl.error(status);
