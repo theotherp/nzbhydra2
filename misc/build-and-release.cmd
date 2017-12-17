@@ -16,16 +16,16 @@ if not exist changelog.json (
     goto error
 )
 
+echo Checking preconditions
+call mvn github-release:precheck
+if not "%ERRORLEVEL%" == "0" goto error
+
 echo Generating changelog
 call mvn github-release:generate-changelog
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Setting release version
 call mvn versions:set -DnewVersion=%1
-if not "%ERRORLEVEL%" == "0" goto error
-
-echo Checking preconditions
-call mvn github-release:precheck
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Running clean install

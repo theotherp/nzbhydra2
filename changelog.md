@@ -1,3 +1,6 @@
+### v0.0.4
+Note: Another test release
+
 ### v0.0.3
 Note: Another test release
 

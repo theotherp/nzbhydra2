@@ -25,5 +25,14 @@
         "text": "Another test release"
       }
     ]
+  },
+  {
+    "version": "v0.0.4",
+    "changes": [
+      {
+        "type": "note",
+        "text": "Another test release"
+      }
+    ]
   }
 ]
