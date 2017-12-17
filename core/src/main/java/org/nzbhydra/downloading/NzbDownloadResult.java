@@ -15,6 +15,7 @@ public class NzbDownloadResult {
     private boolean successful;
     private String error;
     private NzbDownloadEntity downloadEntity;
+    private int statusCode;
 
     private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error, NzbDownloadEntity downloadEntity) {
         this.nzbContent = nzbContent;
@@ -23,6 +24,11 @@ public class NzbDownloadResult {
         this.successful = successful;
         this.error = error;
         this.downloadEntity = downloadEntity;
+    }
+
+    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error, int statusCode, NzbDownloadEntity downloadEntity) {
+        this(title, nzbContent, url, successful, error, downloadEntity);
+        this.statusCode = statusCode;
     }
 
     public boolean isRedirect() {
@@ -51,6 +57,9 @@ public class NzbDownloadResult {
 
     public static NzbDownloadResult createErrorResult(String error, NzbDownloadEntity entity) {
         return new NzbDownloadResult(null, null, null, false, error, entity);
+    }
+    public static NzbDownloadResult createErrorResult(String error, int statusCode, NzbDownloadEntity entity) {
+        return new NzbDownloadResult(null, null, null, false, error, statusCode,entity);
     }
 
 

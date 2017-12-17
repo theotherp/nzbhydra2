@@ -62,8 +62,7 @@ public class NzbHandler {
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
-
-            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid, null);
+            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid, 300, null);
         }
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));
@@ -81,6 +80,7 @@ public class NzbHandler {
             try {
                 nzbContent = downloadNzb(result);
             } catch (IOException e) {
+                //LATER get status code and use that
                 logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
                 NzbDownloadEntity downloadEntity = new NzbDownloadEntity(result, NzbAccessType.PROXY, accessSource, NzbDownloadStatus.NZB_DOWNLOAD_ERROR, ageInDays, e.getMessage());
 

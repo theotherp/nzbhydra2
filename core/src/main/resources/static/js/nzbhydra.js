@@ -2497,7 +2497,7 @@ angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
-function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler) {
+function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler, $uibModal) {
 
     var currentVersion;
     var latestVersion;
@@ -2543,8 +2543,6 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
     function showChanges() {
         return $http.get("internalapi/updates/changesSince").then(function (response) {
-            var myInjector = angular.injector(["ng", "ui.bootstrap"]);
-            var $uibModal = myInjector.get("$uibModal");
             var params = {
                 size: "lg",
                 templateUrl: "static/html/changelog-modal.html",
@@ -2563,7 +2561,6 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             };
 
             var modalInstance = $uibModal.open(params);
-
             modalInstance.result.then();
         });
     }
@@ -2582,7 +2579,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             });
     }
 }
-UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler"];
+UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal"];
 angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
