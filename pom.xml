@@ -43,8 +43,13 @@
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
                     <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
-                    <tagName>v@{project.version}</tagName>
+                    <tagName>v${project.version}</tagName>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.4</version>
             </plugin>
         </plugins>
     </build>
