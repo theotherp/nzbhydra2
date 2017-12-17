@@ -1,4 +1,7 @@
 rm ./lib/*.jar
 cp ../../other/wrapper/nzbhydra2wrapper.py .
 cp ../../core/target/*-exec*.jar ./lib
-docker build -t nzbhydra2 .
+echo -n "Enter version"
+read VERSION
+docker build -t theotherp/nzbhydra2:${VERSION} .
+docker tag theotherp/nzbhydra:${VERSION} theotherp/nzbhydra:latest

@@ -21,6 +21,33 @@
         <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
       <tag>HEAD</tag>
   </scm>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.nzbhydra</groupId>
+                <artifactId>github-release-plugin</artifactId>
+                <version>1.0.0</version>
+                <configuration>
+                    <commitish>master</commitish>
+                    <githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
+                    <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
+                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhyra2-${project.version}-linux.tgz</linuxAsset>
+                    <windowsAsset>${basedir}/releases/windows-release/target/nzbhyra2-${project.version}-windows.zip</windowsAsset>
+                    <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
+                    <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
+                    <tagName>v@{project.version}</tagName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
   
   <properties>
         <spring.boot.version>1.5.7.RELEASE</spring.boot.version>

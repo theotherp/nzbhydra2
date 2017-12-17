@@ -18,7 +18,6 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
         })
     }
 
-
     function startCountdown(message, baseUrl) {
         $uibModal.open({
             templateUrl: 'static/html/restart-modal.html',
@@ -35,10 +34,7 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
                 }
             }
         });
-
     }
-
-
 }
 
 angular
