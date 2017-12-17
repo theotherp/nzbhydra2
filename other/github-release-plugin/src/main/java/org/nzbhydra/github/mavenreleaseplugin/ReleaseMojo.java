@@ -66,6 +66,13 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Will release version " + tagName + " to GitHub");
 
         executePrechecks();
+        if (!windowsAsset.exists()) {
+            throw new MojoExecutionException("Unable to find windows asset at " + windowsAsset.getAbsolutePath());
+        }
+
+        if (!linuxAsset.exists()) {
+            throw new MojoExecutionException("Unable to find linux asset at " + linuxAsset.getAbsolutePath());
+        }
 
         if (githubTokenFile != null && githubTokenFile.exists()) {
             try {
@@ -106,14 +113,6 @@ public class ReleaseMojo extends AbstractMojo {
             } else if (!githubTokenFile.exists()) {
                 throw new MojoExecutionException("GitHub Token not set and " + githubTokenFile.getAbsolutePath() + " doesn't exist");
             }
-        }
-
-        if (!windowsAsset.exists()) {
-            throw new MojoExecutionException("Unable to find windows asset at " + windowsAsset.getAbsolutePath());
-        }
-
-        if (!linuxAsset.exists()) {
-            throw new MojoExecutionException("Unable to find linux asset at " + linuxAsset.getAbsolutePath());
         }
 
         if (!changelogJsonFile.exists()) {

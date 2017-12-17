@@ -1,5 +1,8 @@
 @echo off
+rem call like this misc\build-and-release.cmd 0.0.3 0.0.4 <skiptests> from main folder
+
 if "%1" == "" (
+
     echo Release version missing
     goto error
 )
