@@ -35,6 +35,7 @@ public class MainConfig extends ValidatingConfig {
     private int port = 5076;
     @JsonFormat(shape = Shape.STRING)
     private ProxyType proxyType = ProxyType.NONE;
+    @SensitiveData
     private String proxyHost = null;
     private int proxyPort;
     private boolean proxyIgnoreLocal = true;
