@@ -26,7 +26,11 @@ call mvn github-release:precheck
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Running clean install
-call mvn clean install
+if "%3" == "skiptests" (
+    call mvn clean install -DskipTests=true
+) else (
+    call mvn clean install
+)
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Making version effective
