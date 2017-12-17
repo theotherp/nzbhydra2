@@ -15,10 +15,10 @@
     </modules>
 
     <scm>
-        <!--<connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>-->
-        <!--<developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>-->
-        <connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>
-        <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
+        <connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>
+        <developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>
+        <!--<connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>-->
+        <!--<developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>-->
       <tag>HEAD</tag>
   </scm>
     <build>

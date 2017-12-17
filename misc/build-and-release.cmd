@@ -33,12 +33,6 @@ echo Making version effective
 call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" goto error
 
-cd..
-if not exist changelog.md (
-    echo Tried to switch to root folder but didn't find changelog.md
-    goto error
-)
-
 echo Committing
 call git commit -am "Update to %1"
 if not "%ERRORLEVEL%" == "0" goto error
@@ -50,12 +44,6 @@ if not "%ERRORLEVEL%" == "0" goto error
 echo Pushing
 call git push origin
 if not "%ERRORLEVEL%" == "0" goto error
-
-cd main
-if not exist changelog.json (
-    echo Tried to switch to main folder but didn't find changelog.json
-    goto error
-)
 
 echo Releasing to GitHub
 call mvn github-release:release
