@@ -30,9 +30,9 @@ if not "%ERRORLEVEL%" == "0" goto error
 
 echo Running clean install
 if "%3" == "skiptests" (
-    call mvn clean install -DskipTests=true
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install -DskipTests=true
 ) else (
-    call mvn clean install
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install
 )
 if not "%ERRORLEVEL%" == "0" goto error
 
@@ -57,7 +57,7 @@ call mvn github-release:release
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Setting new snapshot version
-call mvn versions:set -DnewVersion=%1-SNAPSHOT
+call mvn versions:set -DnewVersion=%2-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Making snapshot version effective
