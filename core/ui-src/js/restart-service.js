@@ -54,9 +54,9 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
 
     $scope.internalCaR = function (message, timer) {
         if (timer === 45) {
-            $scope.message = message + "Restarting takes longer than expected. You might want to check the log to see what's going on.";
+            $scope.message = message + " Restarting takes longer than expected. You might want to check the log to see what's going on.";
         } else {
-            $scope.message = message + "Will reload page when NZBHydra is back.";
+            $scope.message = message + " Will reload page when NZBHydra is back.";
             $timeout(function () {
                 $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
@@ -67,7 +67,7 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
                     $scope.internalCaR(message, timer + 1);
                 });
             }, 1000);
-            $scope.message = message + "Will reload page when NZBHydra is back.";
+            $scope.message = message + " Will reload page when NZBHydra is back.";
         }
     };
 

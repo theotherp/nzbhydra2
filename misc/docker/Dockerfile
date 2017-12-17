@@ -16,5 +16,5 @@ RUN mkdir torrents
 ADD . /
 EXPOSE 5076
 
-ENTRYPOINT ["/usr/bin/python"]
-CMD ["nzbhydra2wrapper.py", "--nobrowser"]
+ENTRYPOINT ["/usr/bin/python", "nzbhydra2wrapper.py", "--nobrowser"]
+#CMD ["nzbhydra2wrapper.py", "--nobrowser"]

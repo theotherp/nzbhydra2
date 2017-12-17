@@ -47,7 +47,8 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container:
-docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 TODO:Register and verify
+docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments> 
+TODO:Register and verify
 
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there you need to provide the full path via <tt>--java</tt> paramater
 

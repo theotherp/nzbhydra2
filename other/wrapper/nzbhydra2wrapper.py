@@ -163,17 +163,19 @@ def update():
                     zf.extract(member, basePath)
         logger.info("Removing update ZIP %s", updateZip)
         os.remove(updateZip)
-        filesInLibFolder = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f))]
-        if len(filesInLibFolder) != 2:
-            if len(filesInLibFolder) == 1:
-                if filesInLibFolder[0] == os.path.basename(jarFile):
-                    logger.warning("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
-                else:
-                    logger.critical("Expected the number of files in folder %s to be 2 but it's %d", libFolder, len(filesInLibFolder))
-                    sys.exit(-2)
-        else:
+        filesInLibFolder = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+        logger.info("Found %d JAR files in lib folder", len(filesInLibFolder))
+        for file in filesInLibFolder:
+            logger.info("Found file: %s", file)
+        if len(filesInLibFolder) == 2:
             logger.info("Deleting old JAR %s", jarFile)
             os.remove(jarFile)
+        elif len(filesInLibFolder) == 1:
+            if filesInLibFolder[0] == os.path.basename(jarFile):
+                logger.warning("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
+        else:
+            logger.critical("Expected the number of JAR files in folder %s to be 2 but it's %d", libFolder, len(filesInLibFolder))
+            sys.exit(-2)
     except zipfile.BadZipfile:
         logger.critical("File is not a ZIP")
         sys.exit(-2)
@@ -305,6 +307,16 @@ def escape_parameter(is_windows, parameter):
     # return '"' + parameter + '"' if is_windows else parameter
 
 
+def list_files(startpath):
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        logger.info('{}{}/'.format(indent, os.path.basename(root)))
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            logger.info('{}{}'.format(subindent, f))
+
+
 if __name__ == '__main__':
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
@@ -313,6 +325,7 @@ if __name__ == '__main__':
     parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
     parser.add_argument('--nopidfile', action='store_true', help='Disable writing of PID file. Only relevant with daemon argument', default=False)
     parser.add_argument('--nocolors', action='store_true', help='Disable color coded console output (disabled on Windows by default)', default=False)
+    parser.add_argument('--listfiles', action='store', help='Lists all files in given folder and quits. For debugging docker', default=None)
 
     # Pass to main process
     parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc', default=os.path.join(getBasePath(), "data"))
@@ -349,8 +362,14 @@ if __name__ == '__main__':
     if "--version" in unknownArgs or "--help" in unknownArgs:
         # no fancy shit, just start the file
         startup()
+    elif args.listfiles is not None:
+        path = args.listfiles
+        curpath = os.path.dirname(os.path.realpath(__file__))
+        if not os.path.isabs(path):
+            path = os.path.join(curpath, path)
+        logger.info("Listing files in " + str(path))
+        list_files(os.path.dirname(path))
     else:
-
         if args.daemon:
             logger.info("Daemonizing...")
             daemonize(args.pidfile, args.nopidfile)

@@ -183,6 +183,7 @@ public class UpdateManager implements InitializingBean {
             if (!updateFolder.exists()) {
                 Files.createDirectory(updateFolder.toPath());
             } else {
+                logger.debug("Cleaning update folder {}", updateFolder.getAbsolutePath());
                 FileUtils.cleanDirectory(updateFolder);
             }
 
