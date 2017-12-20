@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
@@ -79,9 +80,13 @@ public class Searcher {
         List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
         while (indexersToSearchAndTheirResults.size() > 0 && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll())) {
 
-
             if (searchRequest.isLoadAll()) {
                 logger.debug("Going to call {} indexers because {} results were loaded yet but more results are available and all were requested", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults());
+                int maxResultsToLoad = searchRequest.getIndexers().orElse(Sets.newHashSet("")).size() * 1000;
+                if (searchResultItems.size() > maxResultsToLoad) {
+                    logger.info("Aborting loading all results because more than {} results were already loaded and we don't want to hammer the indexers too much", maxResultsToLoad);
+                    break;
+                }
             } else {
                 logger.debug("Going to call {} indexers because {} of {} wanted results were loaded yet", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
             }
