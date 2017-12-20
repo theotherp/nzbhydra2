@@ -1,5 +1,5 @@
 var gulp = require('gulp');
-var print = require('gulp-print');
+var sort = require('gulp-sort');
 var wiredep = require('wiredep');
 var angularFilesort = require('gulp-angular-filesort');
 var ngAnnotate = require('gulp-ng-annotate');
@@ -30,8 +30,11 @@ gulp.task('vendor-scripts', function () {
 gulp.task('vendor-css', function () {
     var dest = 'src/main/resources/static/css';
     return merge(
-        gulp.src(wiredep().css).pipe(cached("vendor-css")),
+        gulp.src(wiredep().css)
+            .pipe(sort())
+            .pipe(cached("vendor-css")),
         gulp.src(wiredep().less)
+            .pipe(sort())
             .pipe(cached("vendor-less"))
             .pipe(less())
         )

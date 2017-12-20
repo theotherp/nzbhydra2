@@ -385,7 +385,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.groupExpanded[titleGroup[0][0].hash] = !$scope.groupExpanded[titleGroup[0][0].hash];
     };
 
-
     $scope.stopBlocking = stopBlocking;
 
     function stopBlocking() {
