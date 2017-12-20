@@ -65,7 +65,7 @@ Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-servic
 This is still in early development. Don't run in on the machine where the nuclear launch codes are stored.
 
 ## Development and how you can help
-Generally testing and any bug reports are very welcome.
+Generally testing and any bug reports are very welcome. I'd also very much appreciate an invite to the indexer where **NZBs** don't go out but **in**...
 
 I haven't been able to get the wrapper to run in docker. If you have found a way or want to help please let me know.
 
@@ -86,6 +86,8 @@ Send me an email at TheOtherP@gmx.de or a PM at https://www.reddit.com/user/TheO
 If you like to help me with any running or upcoming costs you're welcome to send Bitcoin via 1LPCUF9eKEXi58nHbxTbJyfxCJkcCXKzvm or Ether via 0xa6C33b4756D24027227C14285AfAeEE9a9738D42
 
 If you'd like to send other coins like Monero, LiteCoin, etc. please contact me. 
+
+I'd also very much appreciate an invite to the indexer where **NZBs** don't go out but **in**... 
 
 ## Thanks ###
 <img src="https://github.com/theotherp/nzbhydra/raw/gh-pages/images/logo.png" width="60px"/> To Jetbrains for kindly providing me a license for IntelliJ - I can't imagine developing without it

@@ -39,15 +39,15 @@
     "merge-stream": "^1.0.0",
     "run-sequence": "^1.1.4",
     "wiredep": "^2.2.2",
-    "wiredep-cli": "^0.1.0"
-  },
-  "devDependencies": {
+    "wiredep-cli": "^0.1.0",
     "add-stream": "^1.0.0",
     "gulp-angular-templatecache": "^2.0.0",
     "gulp-clean-css": "^3.9.0",
     "gulp-less": "^3.3.2",
     "gulp-sort": "^2.0.0",
     "gulp-uglify": "^1.5.4"
+  },
+  "devDependencies": {
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
