@@ -286,20 +286,23 @@ def startup():
         si = None
     # todo check shell=True/False for linux and windows
     # shell=true: pass string, shell=false: pass arguments
-    process = subprocess.Popen(arguments, shell=False, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si, env=os.environ.copy())
+    try:
+        process = subprocess.Popen(arguments, shell=False, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si, env=os.environ.copy())
 
     #atexit.register(killProcess)
-    while True:
-        # Handle error first in case startup of main process returned only an error (on stderror)
-        nextline = process.stdout.readline()
-        if nextline == '' and process.poll() is not None:
-            break
-        if not args.quiet:
-            sys.stdout.write(nextline)
-            sys.stdout.flush()
-    process.wait()
+        while True:
+            # Handle error first in case startup of main process returned only an error (on stderror)
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
+                break
+            if not args.quiet:
+                sys.stdout.write(nextline)
+                sys.stdout.flush()
+        process.wait()
 
-    return process
+        return process
+    except Exception as e:
+        logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
 
 
 def escape_parameter(is_windows, parameter):
@@ -376,6 +379,10 @@ if __name__ == '__main__':
 
         while doStart:
             process = startup()
+
+            if process is None:
+                logger.debug("No process found, exiting")
+                sys.exit(-1)
 
             if terminatedByWrapper:
                 logger.debug("Shutting down because child process was terminated by us after getting signal")
