@@ -9,11 +9,13 @@ import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
@@ -94,7 +96,17 @@ public class IndexerConfig extends ValidatingConfig {
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
-        return new ConfigValidationResult();
+        ConfigValidationResult validationResult = new ConfigValidationResult();
+        for (IndexerConfig config : oldConfig.getIndexers()) {
+            for (String schedule : config.getSchedule()) {
+                Matcher matcher = IndexerForSearchSelector.SCHEDULER_PATTERN.matcher(schedule);
+                if (!matcher.matches()) {
+                    validationResult.getErrorMessages().add("Indexer " + config.getName() + " contains an invalid schedule: " + schedule);
+                }
+            }
+        }
+
+        return validationResult;
     }
 
     @Override

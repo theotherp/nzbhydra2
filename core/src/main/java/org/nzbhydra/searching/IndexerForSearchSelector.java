@@ -55,7 +55,7 @@ public class IndexerForSearchSelector {
 
     private static final Logger logger = LoggerFactory.getLogger(IndexerForSearchSelector.class);
 
-    private static final Pattern SCHEDULER_PATTERN = Pattern.compile("(?<day1>(?:mo|tu|we|th|fr|sa|su))?\\-?(?<day2>(?:mo|tu|we|th|fr|sa|su))?(?<hour1>\\d{1,2})?\\-?(?<hour2>\\d{1,2})?", Pattern.CASE_INSENSITIVE);
+    public static final Pattern SCHEDULER_PATTERN = Pattern.compile("(?<day1>(?:mo|tu|we|th|fr|sa|su))?\\-?(?<day2>(?:mo|tu|we|th|fr|sa|su))?(?<hour1>\\d{1,2})?\\-?(?<hour2>\\d{1,2})?", Pattern.CASE_INSENSITIVE);
 
     @Autowired
     private InfoProvider infoProvider;
