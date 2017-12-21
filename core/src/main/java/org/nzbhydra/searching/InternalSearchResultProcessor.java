@@ -109,14 +109,19 @@ public class InternalSearchResultProcessor {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
 
-    private SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
+    protected SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
         Instant date = item.getUsenetDate().orElse(item.getPubDate());
         long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
         if (ageInDays > 0) {
             builder.age(ageInDays + "d");
         } else {
-            long ageInHours = item.getPubDate().until(Instant.now(), ChronoUnit.HOURS);
-            builder.age(ageInHours + "h");
+            long ageInHours = date.until(Instant.now(), ChronoUnit.HOURS);
+            if (ageInHours > 0) {
+                builder.age(ageInHours + "h");
+            } else {
+                long ageInMinutes = date.until(Instant.now(), ChronoUnit.MINUTES);
+                builder.age(ageInMinutes + "m");
+            }
         }
         builder = builder
                 .age_precise(item.isAgePrecise())
