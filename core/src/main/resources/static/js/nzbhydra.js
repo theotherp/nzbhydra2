@@ -3473,34 +3473,51 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false,
-        groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false
+        groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false,
+        sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
     $scope.expandedTitlegroups = [];
     $scope.optionsOptions = [
         {id: "duplicatesDisplayed", label: "Display duplicates"},
-        {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"}
+        {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
+        {id: "sumGrabs", label: "Use sum of grabs / seeders in groups for filtering / sorting"}
+
     ];
     $scope.optionsSelectedModel = [];
+    for (var key in $scope.optionsOptions) {
+        if ($scope.foo[$scope.optionsOptions[key]["id"]]) {
+            $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
+        }
+    }
+
+
+
     $scope.optionsExtraSettings = {
         showCheckAll: false,
         showUncheckAll: false,
         dynamicTitle: false
     };
+
+    //TODO: This probably could be done better...
     $scope.optionsEvents = {
-        onItemSelect: function(item) {
-            if(item.id === "duplicatesDisplayed") {
+        onItemSelect: function (item) {
+            if (item.id === "duplicatesDisplayed") {
                 toggleDuplicatesDisplayed(true);
-            } else if(item.id === "groupTorrentAndNewznabResults") {
+            } else if (item.id === "groupTorrentAndNewznabResults") {
                 toggleGroupTorrentAndNewznabResults(true);
+            } else if (item.id === "sumGrabs") {
+                toggleSumGrabs(true);
             }
         },
-        onItemDeselect: function(item) {
-            if(item.id === "duplicatesDisplayed") {
+        onItemDeselect: function (item) {
+            if (item.id === "duplicatesDisplayed") {
                 toggleDuplicatesDisplayed(false);
-            } else if(item.id === "groupTorrentAndNewznabResults") {
+            } else if (item.id === "groupTorrentAndNewznabResults") {
                 toggleGroupTorrentAndNewznabResults(false);
+            } else if (item.id === "sumGrabs") {
+                toggleSumGrabs(false);
             }
         }
     };
@@ -3514,6 +3531,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     function toggleGroupTorrentAndNewznabResults(value) {
         localStorageService.set("groupTorrentAndNewznabResults", value);
         $scope.foo.groupTorrentAndNewznabResults = value;
+        blockAndUpdate();
+    }
+
+    function toggleSumGrabs(value) {
+        localStorageService.set("sumGrabs", value);
+        $scope.foo.sumGrabs = value;
         blockAndUpdate();
     }
 
@@ -3694,6 +3717,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return true;
         }
 
+
         function getCleanedTitle(element) {
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
@@ -3754,7 +3778,20 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         function getTitleGroupFirstElementsSortPredicate(titleGroup) {
-            return getSortPredicateValue(titleGroup[0][0]);
+            var sortPredicateValue;
+            if (sortPredicateKey === "grabs" && $scope.foo.sumGrabs) {
+                var sumOfGrabs = 0;
+                _.each(titleGroup, function (element1) {
+                    _.each(element1, function (element2) {
+                        sumOfGrabs += getSortPredicateValue(element2);
+                    })
+                });
+
+                sortPredicateValue = sumOfGrabs;
+            } else {
+                sortPredicateValue = getSortPredicateValue(titleGroup[0][0]);
+            }
+            return sortPredicateValue
         }
 
         var filtered = _.filter(results, filter);
