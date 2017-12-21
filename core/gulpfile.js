@@ -19,7 +19,6 @@ var angularTemplateCache = require('gulp-angular-templatecache');
 gulp.task('vendor-scripts', function () {
     var dest = 'src/main/resources/static/js';
     return gulp.src(wiredep().js)
-        .pipe(sort())
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.js'))

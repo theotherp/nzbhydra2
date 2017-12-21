@@ -3694,7 +3694,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return true;
         }
 
-
         function getCleanedTitle(element) {
             return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
         }
@@ -3714,6 +3713,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 }
             } else if (sortPredicateKey === "title") {
                 sortPredicateValue = getCleanedTitle(containgObject);
+            } else if (sortPredicateKey === "indexer") {
+                sortPredicateValue = containgObject["indexer"];
             } else {
                 sortPredicateValue = containgObject[sortPredicateKey];
             }

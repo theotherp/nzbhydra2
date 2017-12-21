@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -44,7 +45,7 @@ public class IndexerStatusesWeb {
 
     protected List<IndexerStatusEntity> getSortedStatuses() {
         List<IndexerStatusEntity> statuses = indexerStatusRepository.findAll();
-        statuses.sort((o1, o2) -> o1.getIndexer().getName().toLowerCase().compareTo(o2.getIndexer().getName()));
+        statuses.sort(Comparator.comparing(o -> o.getIndexer().getName().toLowerCase()));
         return statuses;
     }
 
