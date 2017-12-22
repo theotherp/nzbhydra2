@@ -72,7 +72,7 @@ public class UpdatesWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> getVersionHistory() throws Exception {
-        return updateManager.getAllChanges();
+        return updateManager.getCurrentVersionChanges();
     }
 
     @Secured({"ROLE_ADMIN"})

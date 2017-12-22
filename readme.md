@@ -38,20 +38,21 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 ## How to run
 You need [Java Runtime Environment (>=8u101)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup> 
 
-
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
 * On windows you can either start "NZBHydra2.exe" which will add a tray icon or "NZBHydra2 Console.exe" which will open a console window.
 * On linux start "nzbhydra2"
 * On Mac: No idea, I don't have one. If you have found out please tell me.
+* If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://github.com/theotherp/nzbhydra2/blob/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and start it. You will need to install [PyYAML](https://pypi.python.org/pypi/PyYAML).
 
 After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container:
 docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>
 
-The java executable is expected to be in the PATH. If it's not and you can't/won't put it there you need to provide the full path via <tt>--java</tt> paramater
+The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
 If you get SSL errors when contacting indexers make please update your java runtime.
+  
 
 #### A note on memory
 The memory usage mainly depends on the database size which depends on the amount of indexers you use, how long you've been running NZBHydra and how many queries are done. 

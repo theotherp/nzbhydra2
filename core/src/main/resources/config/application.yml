@@ -270,7 +270,7 @@ main:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
     logfilelevel: "INFO"
-    logMaxSize: 5
+    logMaxHistory: 30
     logIpAddresses: true
     logUsername: false
     markersToLog: []

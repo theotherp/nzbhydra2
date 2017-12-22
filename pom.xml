@@ -42,7 +42,7 @@
                     <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.tgz</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
-                    <changelogJsonFile>${basedir}/changelog.json</changelogJsonFile>
+                    <changelogJsonFile>${basedir}/core/src/main/resources/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
                     <tagName>v${project.version}</tagName>
                 </configuration>

@@ -302,14 +302,12 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'logMaxSize',
+                            key: 'logMaxHistory',
                             type: 'horizontalInput',
                             templateOptions: {
                                 type: 'number',
-                                label: 'Max log file size',
-                                addonRight: {
-                                    text: 'MB'
-                                }
+                                label: 'Max log history',
+                                help: 'How many daily log files will be kept'
                             }
                         },
                         {

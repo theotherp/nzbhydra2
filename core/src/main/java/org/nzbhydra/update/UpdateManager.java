@@ -4,8 +4,10 @@ package org.nzbhydra.update;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.io.Resources;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
@@ -74,6 +76,8 @@ public class UpdateManager implements InitializingBean {
 
     private ObjectMapper objectMapper;
     protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
+    protected TypeReference<List<ChangelogVersionEntry>> changelogEntryListTypeReference = new TypeReference<List<ChangelogVersionEntry>>() {
+    };
 
     public UpdateManager() {
         objectMapper = new ObjectMapper();
@@ -154,11 +158,31 @@ public class UpdateManager implements InitializingBean {
         return collectedVersionChanges;
     }
 
-    public List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
+    /**
+     * Retrieves the most current changes from the web
+     */
+    protected List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
             changelogVersionEntries = webAccess.callUrl(changelogUrl, new TypeReference<List<ChangelogVersionEntry>>() {
             });
+        } catch (IOException e) {
+            throw new UpdateException("Error while getting changelog: " + e.getMessage());
+        }
+
+        Collections.sort(changelogVersionEntries);
+        Collections.reverse(changelogVersionEntries);
+        return changelogVersionEntries;
+    }
+
+    /**
+     * Retrieves the changes from the changelog that came with the currently running version
+     */
+    public List<ChangelogVersionEntry> getCurrentVersionChanges() throws UpdateException {
+        List<ChangelogVersionEntry> changelogVersionEntries;
+        try {
+            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
+            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }

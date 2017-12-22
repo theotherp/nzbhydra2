@@ -13,7 +13,7 @@ public class LoggingConfig extends ValidatingConfig {
     private String consolelevel;
     private HistoryUserInfoType historyUserInfoType = HistoryUserInfoType.NONE;
     private boolean logIpAddresses;
-    private int logMaxSize;
+    private int logMaxHistory;
     @RestartRequired
     private String logfilelevel;
     private boolean logUsername;

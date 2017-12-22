@@ -54,12 +54,12 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         for (ChangelogVersionEntry entry : entries) {
             lines.addAll(getMarkdownLinesFromEntry(entry));
         }
+
         try {
             Files.write(changelogMdFile.toPath(), Joiner.on("\n").join(lines).getBytes());
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to write lines to MD file " + changelogMdFile.getAbsolutePath(), e);
         }
-
 
     }
 
