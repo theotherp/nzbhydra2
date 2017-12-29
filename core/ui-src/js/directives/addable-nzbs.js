@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .directive('addableNzbs', addableNzbs);
 
-function addableNzbs() {
+function addableNzbs(DebugService) {
     return {
         templateUrl: 'static/html/directives/addable-nzbs.html',
         require: ['^searchResultId'],
@@ -20,5 +20,7 @@ function addableNzbs() {
             }
             return true;
         });
+
+        DebugService.log("addable-nzbs");
     }
 }

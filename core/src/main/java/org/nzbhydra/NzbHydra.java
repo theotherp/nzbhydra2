@@ -49,6 +49,34 @@ import java.util.stream.Collectors;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+//@Import({
+//
+//        BootGlobalAuthenticationConfiguration.class,
+//        DataSourceConfiguration.class,
+//        DataSourceTransactionManagerAutoConfiguration.class,
+//        DispatcherServletAutoConfiguration.class,
+//        EmbeddedServletContainerAutoConfiguration.class,
+//        EmbeddedServletContainerAutoConfiguration.EmbeddedTomcat.class,
+//        ErrorMvcAutoConfiguration.class,
+//        FlywayAutoConfiguration.class,
+//        GsonAutoConfiguration.class,
+//        HibernateJpaAutoConfiguration.class,
+//        HttpMessageConvertersAutoConfiguration.class,
+//
+//        JacksonAutoConfiguration.class,
+//
+//        JtaAutoConfiguration.class,
+//        MultipartAutoConfiguration.class,
+//        PersistenceExceptionTranslationAutoConfiguration.class,
+//        SecurityAutoConfiguration.class,
+//        SecurityFilterAutoConfiguration.class,
+//        ServerPropertiesAutoConfiguration.class,
+//        SpringDataWebAutoConfiguration.class,
+//        ThymeleafAutoConfiguration.class,
+//        TransactionAutoConfiguration.class,
+//        ValidationAutoConfiguration.class,
+//        WebClientAutoConfiguration.RestTemplateConfiguration.class,
+//        })
 @ComponentScan
 @RestController
 @EnableCaching

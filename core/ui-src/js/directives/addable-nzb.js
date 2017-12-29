@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .directive('addableNzb', addableNzb);
 
-function addableNzb() {
+function addableNzb(DebugService) {
     return {
         templateUrl: 'static/html/directives/addable-nzb.html',
         scope: {
@@ -39,6 +39,6 @@ function addableNzb() {
             })
         };
 
-
+        DebugService.log("addable-nzb");
     }
 }

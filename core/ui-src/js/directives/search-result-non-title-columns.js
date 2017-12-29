@@ -19,7 +19,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
         controller: controller
     };
 
-    function controller($scope, $http, $uibModal, growl, HydraAuthService) {
+    function controller($scope, $http, $uibModal, growl, HydraAuthService, DebugService) {
 
         $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
 
@@ -76,7 +76,9 @@ function otherColumns($http, $templateCache, $compile, $window) {
                 return "No NFO available";
             }
         };
+        DebugService.log("other-columns");
     }
+
 }
 
 angular

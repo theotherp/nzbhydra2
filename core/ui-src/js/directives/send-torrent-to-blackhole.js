@@ -11,7 +11,7 @@ function sendTorrentToBlackhole() {
         controller: controller
     };
 
-    function controller($scope, $http, growl, ConfigService) {
+    function controller($scope, $http, growl, ConfigService, DebugService) {
         $scope.useBlackhole = ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "";
         $scope.cssClass = "glyphicon-save-file";
         $scope.add = function () {
@@ -26,7 +26,7 @@ function sendTorrentToBlackhole() {
             });
 
         };
-
+        DebugService.log("blackhole");
 
     }
 }

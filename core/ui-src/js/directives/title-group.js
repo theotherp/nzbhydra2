@@ -10,14 +10,13 @@ function titleGroup() {
             selected: "=",
             expanded: "=",
             rowIndex: "<",
-            doShowDuplicates: "<",
             internalRowIndex: "@"
         },
-        controller: ['$scope', '$element', '$attrs', controller],
+        controller: controller,
         multiElement: true
     };
 
-    function controller($scope, $element, $attrs) {
+    function controller($scope, DebugService) {
         $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
         $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
@@ -38,6 +37,8 @@ function titleGroup() {
         function titlesToShow() {
             return $scope.titles.slice(1);
         }
+
+        DebugService.log("title-group");
 
     }
 }

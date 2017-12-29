@@ -4,7 +4,7 @@ angular.module('templates', []);
 var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64', 'angularjs-dropdown-multiselect']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
-    $compileProvider.debugInfoEnabled(false);
+    $compileProvider.debugInfoEnabled(true);
 }]);
 
 nzbhydraapp.config(['$animateProvider', function ($animateProvider) {
@@ -788,41 +788,10 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
 }]);
 angular
     .module('nzbhydraApp')
-    .directive('titleRow', titleRow);
-
-function titleRow() {
-    return {
-        templateUrl: 'static/html/directives/title-row.html',
-        scope: {
-            duplicates: "<",
-            selected: "<",
-            rowIndex: "@"
-        },
-        controller: ['$scope', '$element', '$attrs', titleRowController]
-    };
-
-    function titleRowController($scope) {
-        $scope.expanded = false;
-
-        $scope.duplicatesToShow = duplicatesToShow;
-
-        function duplicatesToShow() {
-            if ($scope.expanded && $scope.duplicates.length > 1) {
-
-                return $scope.duplicates;
-            } else {
-
-                return [$scope.duplicates[0]];
-            }
-        }
-
-    }
-}
-angular
-    .module('nzbhydraApp')
     .directive('titleGroup', titleGroup);
 
 function titleGroup() {
+    controller.$inject = ["$scope", "DebugService"];
     return {
         templateUrl: 'static/html/directives/title-group.html',
         scope: {
@@ -830,14 +799,13 @@ function titleGroup() {
             selected: "=",
             expanded: "=",
             rowIndex: "<",
-            doShowDuplicates: "<",
             internalRowIndex: "@"
         },
-        controller: ['$scope', '$element', '$attrs', controller],
+        controller: controller,
         multiElement: true
     };
 
-    function controller($scope, $element, $attrs) {
+    function controller($scope, DebugService) {
         $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
         $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
@@ -858,6 +826,8 @@ function titleGroup() {
         function titlesToShow() {
             return $scope.titles.slice(1);
         }
+
+        DebugService.log("title-group");
 
     }
 }
@@ -887,7 +857,7 @@ angular
     .directive('sendTorrentToBlackhole', sendTorrentToBlackhole);
 
 function sendTorrentToBlackhole() {
-    controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
+    controller.$inject = ["$scope", "$http", "growl", "ConfigService", "DebugService"];
     return {
         templateUrl: 'static/html/directives/send-torrent-to-blackhole.html',
         scope: {
@@ -896,7 +866,7 @@ function sendTorrentToBlackhole() {
         controller: controller
     };
 
-    function controller($scope, $http, growl, ConfigService) {
+    function controller($scope, $http, growl, ConfigService, DebugService) {
         $scope.useBlackhole = ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "";
         $scope.cssClass = "glyphicon-save-file";
         $scope.add = function () {
@@ -911,7 +881,7 @@ function sendTorrentToBlackhole() {
             });
 
         };
-
+        DebugService.log("blackhole");
 
     }
 }
@@ -974,7 +944,6 @@ function searchResult() {
         require: '^titleGroup',
         scope: {
             titleGroup: "<",
-            showDuplicates: "<",
             selected: "<",
             rowIndex: "<"
         },
@@ -982,9 +951,10 @@ function searchResult() {
         multiElement: true
     };
 
-    function controller($scope, $element, $attrs) {
+    function controller($scope, $element, $attrs, DebugService) {
         $scope.titleGroupExpanded = false;
         $scope.hashGroupExpanded = {};
+        $scope.showDuplicates = false; //TODO: Set by receiving event
 
         $scope.toggleTitleGroup = function () {
             $scope.titleGroupExpanded = !$scope.titleGroupExpanded;
@@ -1023,6 +993,8 @@ function searchResult() {
                 return [];
             }
         }
+
+        DebugService.log("search-result");
     }
 }
 angular
@@ -1030,7 +1002,7 @@ angular
     .directive('otherColumns', otherColumns);
 
 function otherColumns($http, $templateCache, $compile, $window) {
-    controller.$inject = ["$scope", "$http", "$uibModal", "growl", "HydraAuthService"];
+    controller.$inject = ["$scope", "$http", "$uibModal", "growl", "HydraAuthService", "DebugService"];
     return {
         scope: {
             result: "<"
@@ -1047,7 +1019,7 @@ function otherColumns($http, $templateCache, $compile, $window) {
         controller: controller
     };
 
-    function controller($scope, $http, $uibModal, growl, HydraAuthService) {
+    function controller($scope, $http, $uibModal, growl, HydraAuthService, DebugService) {
 
         $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
 
@@ -1104,7 +1076,9 @@ function otherColumns($http, $templateCache, $compile, $window) {
                 return "No NFO available";
             }
         };
+        DebugService.log("other-columns");
     }
+
 }
 otherColumns.$inject = ["$http", "$templateCache", "$compile", "$window"];
 
@@ -1564,7 +1538,7 @@ angular
     .directive('duplicateGroup', duplicateGroup);
 
 function duplicateGroup() {
-    titleRowController.$inject = ["$scope", "localStorageService"];
+    duplicateGroupController.$inject = ["$scope", "localStorageService", "DebugService"];
     return {
         templateUrl: 'static/html/directives/duplicate-group.html',
         scope: {
@@ -1576,10 +1550,10 @@ function duplicateGroup() {
             internalRowIndex: "@",
             titlesExpanded: "="
         },
-        controller: titleRowController
+        controller: duplicateGroupController
     };
 
-    function titleRowController($scope, localStorageService) {
+    function duplicateGroupController($scope, localStorageService, DebugService) {
         $scope.internalRowIndex = Number($scope.internalRowIndex);
         $scope.rowIndex = Number($scope.rowIndex);
         $scope.duplicatesExpanded = false;
@@ -1670,6 +1644,13 @@ function duplicateGroup() {
                     a.push(b);
             }
         }
+
+        // var myInjector = angular.injector(["ng"]);
+        // var timeout = myInjector.get("$timeout");
+        // timeout(function () {
+        //     console.log("duplicateGroup watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
+        // }, 1000);
+        DebugService.log("duplicate-group");
     }
 
 
@@ -1787,7 +1768,6 @@ function downloadNzbsButton() {
             }
         }
 
-
     }
 }
 
@@ -1796,7 +1776,7 @@ angular
     .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
 
 function columnFilterWrapper() {
-    controller.$inject = ["$scope", "$document"];
+    controller.$inject = ["$scope", "DebugService"];
     return {
         restrict: "E",
         templateUrl: 'static/html/dataTable/columnFilterOuter.html',
@@ -1811,7 +1791,7 @@ function columnFilterWrapper() {
         }
     };
 
-    function controller($scope, $document) {
+    function controller($scope, DebugService) {
         var vm = this;
 
         vm.open = false;
@@ -1835,6 +1815,7 @@ function columnFilterWrapper() {
             vm.isActive = isActive;
         });
 
+        DebugService.log("filter-wrapper");
 
     }
 
@@ -1844,7 +1825,7 @@ function columnFilterWrapper() {
 angular
     .module('nzbhydraApp').directive("freetextFilter", freetextFilter);
 
-function freetextFilter() {
+function freetextFilter(DebugService) {
     controller.$inject = ["$scope", "focus"];
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
@@ -1868,14 +1849,16 @@ function freetextFilter() {
                 $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
         }
+        DebugService.log("filter-freetext");
     }
 }
+freetextFilter.$inject = ["DebugService"];
 
 angular
     .module('nzbhydraApp').directive("checkboxesFilter", checkboxesFilter);
 
 function checkboxesFilter() {
-    controller.$inject = ["$scope"];
+    controller.$inject = ["$scope", "DebugService"];
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterCheckboxes.html\'"/>',
         controllerAs: 'checkboxesFilterController',
@@ -1889,7 +1872,7 @@ function checkboxesFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
         $scope.selected = {
             entries: []
         };
@@ -1922,13 +1905,14 @@ function checkboxesFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-checkboxes");
     }
 }
 
 angular
     .module('nzbhydraApp').directive("booleanFilter", booleanFilter);
 
-function booleanFilter() {
+function booleanFilter(DebugService) {
     controller.$inject = ["$scope"];
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
@@ -1956,14 +1940,16 @@ function booleanFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-boolean");
     }
 }
+booleanFilter.$inject = ["DebugService"];
 
 angular
     .module('nzbhydraApp').directive("timeFilter", timeFilter);
 
 function timeFilter() {
-    controller.$inject = ["$scope"];
+    controller.$inject = ["$scope", "DebugService"];
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterTime.html\'"/>',
         scope: {
@@ -1973,7 +1959,7 @@ function timeFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
 
         $scope.dateOptions = {
             dateDisabled: false,
@@ -2013,6 +1999,7 @@ function timeFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-time");
     }
 }
 
@@ -2020,7 +2007,7 @@ angular
     .module('nzbhydraApp').directive("numberRangeFilter", numberRangeFilter);
 
 function numberRangeFilter() {
-    controller.$inject = ["$scope"];
+    controller.$inject = ["$scope", "DebugService"];
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterNumberRange.html\'"/>',
         scope: {
@@ -2032,7 +2019,7 @@ function numberRangeFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
         $scope.filterValue = {min: undefined, max: undefined};
         $scope.active = false;
 
@@ -2056,6 +2043,8 @@ function numberRangeFilter() {
                 apply();
             }
         }
+
+        DebugService.log("filter-number");
     }
 }
 
@@ -2428,7 +2417,7 @@ angular
     .module('nzbhydraApp')
     .directive('addableNzbs', addableNzbs);
 
-function addableNzbs() {
+function addableNzbs(DebugService) {
     controller.$inject = ["$scope", "NzbDownloadService"];
     return {
         templateUrl: 'static/html/directives/addable-nzbs.html',
@@ -2447,14 +2436,17 @@ function addableNzbs() {
             }
             return true;
         });
+
+        DebugService.log("addable-nzbs");
     }
 }
+addableNzbs.$inject = ["DebugService"];
 
 angular
     .module('nzbhydraApp')
     .directive('addableNzb', addableNzb);
 
-function addableNzb() {
+function addableNzb(DebugService) {
     controller.$inject = ["$scope", "NzbDownloadService", "growl"];
     return {
         templateUrl: 'static/html/directives/addable-nzb.html',
@@ -2492,9 +2484,10 @@ function addableNzb() {
             })
         };
 
-
+        DebugService.log("addable-nzb");
     }
 }
+addableNzb.$inject = ["DebugService"];
 
 angular
     .module('nzbhydraApp')
@@ -3409,7 +3402,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
 
     $scope.limitTo = 100;
     $scope.offset = 0;
@@ -3961,8 +3954,56 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
     };
 
+    console.log("Search results controller end");
+    $timeout(function () {
+        console.log("searchResults watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
+
+        function getWatchers(root) {
+            root = angular.element(root || document.documentElement);
+            var watcherCount = 0;
+            var ids = [];
+
+            function getElemWatchers(element, ids) {
+                var isolateWatchers = getWatchersFromScope(element.data().$isolateScope, ids);
+                var scopeWatchers = getWatchersFromScope(element.data().$scope, ids);
+                var watchers = scopeWatchers.concat(isolateWatchers);
+                angular.forEach(element.children(), function (childElement) {
+                    watchers = watchers.concat(getElemWatchers(angular.element(childElement), ids));
+                });
+                return watchers;
+            }
+
+            function getWatchersFromScope(scope, ids) {
+                if (scope) {
+                    if (_.indexOf(ids, scope.$id) > -1) {
+                        return [];
+                    }
+                    ids.push(scope.$id);
+                    if (scope.$$watchers) {
+                        if (scope.$$watchers.length > 1) {
+                            var a;
+                            a = 1;
+                        }
+                        return scope.$$watchers;
+                    } {
+                        return [];
+                    }
+
+                } else {
+                    return [];
+                }
+            }
+
+            return getElemWatchers(root, ids);
+        }
+        console.log(getWatchers().length);
+
+        DebugService.print();
+
+    }, 100);
+
 }
-SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService"];
+SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService"];
 
 
 angular
@@ -5407,7 +5448,9 @@ function HeaderController($scope, $state, growl, HydraAuthService, $state) {
                 growl.info("You shouldn't need to login but here you go!");
             }
         }
+
     }
+        console.log("New header controller");
 }
 HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "$state"];
 
@@ -6457,6 +6500,56 @@ function reformatDateEpoch() {
 
     }
 }
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .factory('DebugService', DebugService);
+
+function DebugService($filter) {
+
+    var debug = {};
+
+    return {
+        log: log,
+        print: print
+    };
+
+    function log(name) {
+        if (!(name in debug)) {
+            debug[name] = {first: new Date().getTime(), last: new Date().getTime()};
+        } else {
+            debug[name]["last"] = new Date().getTime();
+        }
+    }
+    
+    function print() {
+        for (var key in debug) {
+            if (debug.hasOwnProperty(key)) {
+                console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));
+                console.log("Last " + key + ": " + $filter("date")(new Date(debug[key]["last"]), "h:mm:ss:sss"));
+            }
+        }
+    }
+
+
+
+}
+DebugService.$inject = ["$filter"];
 angular
     .module('nzbhydraApp')
     .factory('ConfigService', ConfigService);

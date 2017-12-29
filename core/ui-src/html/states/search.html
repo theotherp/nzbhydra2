@@ -28,12 +28,12 @@
                         <span class="input-group-btn input-group-btn2">
                               <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
                                       ng-cloak>
-                                  {{ category.name }} <span class="caret"></span>
+                                  {{ ::category.name }} <span class="caret"></span>
                               </button>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
                                     
                                     <li ng-repeat="category in categories">
-                                        <a href="" class="searchCategoryButton search-category-option" ng-click="toggleCategory(category)">{{ category.name }}</a>
+                                        <a href="" class="searchCategoryButton search-category-option" ng-click="toggleCategory(category)">{{ ::category.name }}</a>
                                     </li>
                                 </ul>
                               
@@ -116,7 +116,7 @@
                             </span>
                             <span style="margin-right: 10px;"></span>
                             <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
+                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name" indexer-name="{{::indexer.name}}"> {{ ::indexer.name }}
                             </label>
 
                         </div>

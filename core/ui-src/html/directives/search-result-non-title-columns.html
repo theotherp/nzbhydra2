@@ -18,6 +18,7 @@
         {{ ::result.seeders | kify }} / {{ ::result.peers | kify }}
     </span>
 </td>
+
 <td class="col-md-1 search-results-cell result-age" style="text-align: right">
     <span uib-tooltip="{{ ::result.date }}"
           tooltip-placement="top"
@@ -44,6 +45,7 @@
             <i class="fa fa-info" aria-hidden="true" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
     </span>
+
     <span ng-switch on="::result.downloadType">
         <span ng-switch-when="TORRENT">
             <a target="_self" href="gettorrent/user/{{ ::result.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
@@ -61,7 +63,7 @@
                tooltip-placement="top"
                tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
             </a>
-            <addable-nzbs search-result-id="result.searchResultId" download-type="result.downloadType"></addable-nzbs>
+            <addable-nzbs search-result-id="::result.searchResultId" download-type="::result.downloadType"></addable-nzbs>
         </span>
     </span>
 </td>

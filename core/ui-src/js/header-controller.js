@@ -80,5 +80,7 @@ function HeaderController($scope, $state, growl, HydraAuthService, $state) {
                 growl.info("You shouldn't need to login but here you go!");
             }
         }
+
     }
+        console.log("New header controller");
 }

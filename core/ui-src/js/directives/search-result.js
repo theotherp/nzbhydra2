@@ -8,7 +8,6 @@ function searchResult() {
         require: '^titleGroup',
         scope: {
             titleGroup: "<",
-            showDuplicates: "<",
             selected: "<",
             rowIndex: "<"
         },
@@ -16,9 +15,10 @@ function searchResult() {
         multiElement: true
     };
 
-    function controller($scope, $element, $attrs) {
+    function controller($scope, $element, $attrs, DebugService) {
         $scope.titleGroupExpanded = false;
         $scope.hashGroupExpanded = {};
+        $scope.showDuplicates = false; //TODO: Set by receiving event
 
         $scope.toggleTitleGroup = function () {
             $scope.titleGroupExpanded = !$scope.titleGroupExpanded;
@@ -57,5 +57,7 @@ function searchResult() {
                 return [];
             }
         }
+
+        DebugService.log("search-result");
     }
 }

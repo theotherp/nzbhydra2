@@ -36,23 +36,23 @@
                     <!-- First result in the list, show regularly -->
                     <tr>
                         <td class="text-left">
-                            {{ ps.indexerName }}
+                            {{ ::ps.indexerName }}
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.didSearch">
-                        <span ng-if="!ps.totalResultsKnown && ps.numberOfAvailableResults > 0">&gt;</span>{{ ps.numberOfAvailableResults }}
+                    <span ng-if="::ps.didSearch">
+                        <span ng-if="::!ps.totalResultsKnown && ps.numberOfAvailableResults > 0">&gt;</span>{{ ::ps.numberOfAvailableResults }}
                     </span>
                         </td>
                         <td class="text-left">
-                    <span ng-if="ps.didSearch">
-                        {{ ps.responseTime }}ms
+                    <span ng-if="::ps.didSearch">
+                        {{ ::ps.responseTime }}ms
                     </span>
                         </td>
                         <td class="text-left">
                     <span ng-if="::ps.didSearch">
                         <span class="glyphicon" ng-class="{'glyphicon-ok' : ps.wasSuccessful, 'glyphicon-remove' : !ps.wasSuccessful}"></span>
 
-                            <span ng-if="::!ps.wasSuccessful">{{ ps.errorMessage }}</span>
+                            <span ng-if="::!ps.wasSuccessful">{{ ::ps.errorMessage }}</span>
                         </span>
                             </span>
                             <span ng-if="::!ps.didSearch">
@@ -63,10 +63,10 @@
                     <tr ng-repeat-end ng-if="0"></tr>
 
 
-                    <tr ng-repeat-start="ps in notPickedIndexersWithReason" ng-if="0"></tr>
+                    <tr ng-repeat-start="ps in ::notPickedIndexersWithReason" ng-if="0"></tr>
                     <tr>
                         <td class="text-left">
-                            {{ ps.indexer }}
+                            {{ ::ps.indexer }}
                         </td>
                         <td class="text-left">
                         </td>
@@ -74,7 +74,7 @@
                         </td>
                         <td class="text-left">
                             <span class="glyphicon glyphicon-minus"></span>
-                            {{ps.reason}}
+                            {{::ps.reason}}
                         </td>
                     </tr>
                     <tr ng-repeat-end ng-if="0"></tr>
@@ -124,7 +124,7 @@
         <div style="width: 520px; margin: auto;text-align: left;">
             Reasons:
             <ul style="padding-left: 15px">
-                <li ng-repeat="tuple in ::notPickedIndexersWithReason">{{tuple.indexer}}: {{tuple.reason}}</li>
+                <li ng-repeat="tuple in ::notPickedIndexersWithReason">{{::tuple.indexer}}: {{::tuple.reason}}</li>
             </ul>
         </div>
     </div>
@@ -274,11 +274,19 @@
         </tr>
         </thead>
 
+
         <tbody dir-paginate-start="titleGroup in filteredResults | itemsPerPage:limitTo track by groupId(titleGroup)" ng-show="0"></tbody>
 
-        <tbody title-group titles="titleGroup" selected="selected" expanded="expandedTitlegroups" style="display: table-row-group" row-index="$index" do-show-duplicates="foo.duplicatesDisplayed"></tbody>
+        <tbody title-group
+               titles="::titleGroup"
+               selected="::selected"
+               expanded="::expandedTitlegroups" style="display: table-row-group"
+               row-index="::$index"
+               do-show-duplicates="::foo.duplicatesDisplayed"
+        ></tbody>
 
         <tbody dir-paginate-end ng-show="0"></tbody>
+
 
     </table>
     <dir-pagination-controls auto-hide="false"></dir-pagination-controls>

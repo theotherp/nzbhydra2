@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
 
     $scope.limitTo = 100;
     $scope.offset = 0;
@@ -554,6 +554,54 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return entry[1] > 0;
         }
     };
+
+    console.log("Search results controller end");
+    $timeout(function () {
+        console.log("searchResults watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
+
+        function getWatchers(root) {
+            root = angular.element(root || document.documentElement);
+            var watcherCount = 0;
+            var ids = [];
+
+            function getElemWatchers(element, ids) {
+                var isolateWatchers = getWatchersFromScope(element.data().$isolateScope, ids);
+                var scopeWatchers = getWatchersFromScope(element.data().$scope, ids);
+                var watchers = scopeWatchers.concat(isolateWatchers);
+                angular.forEach(element.children(), function (childElement) {
+                    watchers = watchers.concat(getElemWatchers(angular.element(childElement), ids));
+                });
+                return watchers;
+            }
+
+            function getWatchersFromScope(scope, ids) {
+                if (scope) {
+                    if (_.indexOf(ids, scope.$id) > -1) {
+                        return [];
+                    }
+                    ids.push(scope.$id);
+                    if (scope.$$watchers) {
+                        if (scope.$$watchers.length > 1) {
+                            var a;
+                            a = 1;
+                        }
+                        return scope.$$watchers;
+                    } {
+                        return [];
+                    }
+
+                } else {
+                    return [];
+                }
+            }
+
+            return getElemWatchers(root, ids);
+        }
+        console.log(getWatchers().length);
+
+        DebugService.print();
+
+    }, 100);
 
 }
 

@@ -14,10 +14,10 @@ function duplicateGroup() {
             internalRowIndex: "@",
             titlesExpanded: "="
         },
-        controller: titleRowController
+        controller: duplicateGroupController
     };
 
-    function titleRowController($scope, localStorageService) {
+    function duplicateGroupController($scope, localStorageService, DebugService) {
         $scope.internalRowIndex = Number($scope.internalRowIndex);
         $scope.rowIndex = Number($scope.rowIndex);
         $scope.duplicatesExpanded = false;
@@ -108,6 +108,13 @@ function duplicateGroup() {
                     a.push(b);
             }
         }
+
+        // var myInjector = angular.injector(["ng"]);
+        // var timeout = myInjector.get("$timeout");
+        // timeout(function () {
+        //     console.log("duplicateGroup watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
+        // }, 1000);
+        DebugService.log("duplicate-group");
     }
 
 

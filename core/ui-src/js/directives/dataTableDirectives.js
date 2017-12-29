@@ -16,7 +16,7 @@ function columnFilterWrapper() {
         }
     };
 
-    function controller($scope, $document) {
+    function controller($scope, DebugService) {
         var vm = this;
 
         vm.open = false;
@@ -40,6 +40,7 @@ function columnFilterWrapper() {
             vm.isActive = isActive;
         });
 
+        DebugService.log("filter-wrapper");
 
     }
 
@@ -49,7 +50,7 @@ function columnFilterWrapper() {
 angular
     .module('nzbhydraApp').directive("freetextFilter", freetextFilter);
 
-function freetextFilter() {
+function freetextFilter(DebugService) {
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
         require: "^columnFilterWrapper",
@@ -72,6 +73,7 @@ function freetextFilter() {
                 $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
         }
+        DebugService.log("filter-freetext");
     }
 }
 
@@ -92,7 +94,7 @@ function checkboxesFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
         $scope.selected = {
             entries: []
         };
@@ -125,13 +127,14 @@ function checkboxesFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-checkboxes");
     }
 }
 
 angular
     .module('nzbhydraApp').directive("booleanFilter", booleanFilter);
 
-function booleanFilter() {
+function booleanFilter(DebugService) {
     return {
         template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
         controllerAs: 'booleanFilterController',
@@ -158,6 +161,7 @@ function booleanFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-boolean");
     }
 }
 
@@ -174,7 +178,7 @@ function timeFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
 
         $scope.dateOptions = {
             dateDisabled: false,
@@ -214,6 +218,7 @@ function timeFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-time");
     }
 }
 
@@ -232,7 +237,7 @@ function numberRangeFilter() {
         controller: controller
     };
 
-    function controller($scope) {
+    function controller($scope, DebugService) {
         $scope.filterValue = {min: undefined, max: undefined};
         $scope.active = false;
 
@@ -256,6 +261,8 @@ function numberRangeFilter() {
                 apply();
             }
         }
+
+        DebugService.log("filter-number");
     }
 }
 
