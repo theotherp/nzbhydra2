@@ -17,10 +17,10 @@ function titleGroup() {
     };
 
     function controller($scope, DebugService) {
-        $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
+        $scope.titlesExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
         $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
-            $scope.titleGroupExpanded = isExpanded;
+            $scope.titlesExpanded = isExpanded;
             var index = $scope.expanded.indexOf(title);
             if (!isExpanded && index > -1) {
                 $scope.expanded.splice(index, 1);

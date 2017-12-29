@@ -30,7 +30,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     });
 
     //For shift clicking results
-    $scope.lastClicked = null;
+    $scope.lastClickedRowIndex = null;
     $scope.lastClickedValue = null;
 
     var allSearchResults = [];
@@ -74,7 +74,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.totalAvailableUnknown = false;
     $scope.expandedTitlegroups = [];
     $scope.optionsOptions = [
-        {id: "duplicatesDisplayed", label: "Display duplicates"},
+        {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
         {id: "sumGrabs", label: "Use sum of grabs / seeders in groups for filtering / sorting"}
 
@@ -85,7 +85,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
         }
     }
-
 
 
     $scope.optionsExtraSettings = {
@@ -149,7 +148,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
     $scope.$emit("searchResultsShown");
-    stopBlocking();
+    //stopBlocking();
 
     //Returns the content of the property (defined by the current sortPredicate) of the first group element 
     $scope.firstResultPredicate = firstResultPredicate;
@@ -172,7 +171,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
             $scope.filteredResults = sortAndFilter(allSearchResults);
-            blockUI.reset();
+            //stopBlocking();
             localStorageService.set("sorting", sortModel);
         });
     }
@@ -218,6 +217,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.resort = function () {
     };
+
+    function getCleanedTitle(element) {
+        return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
+    }
+
+    function getGroupingString(element) {
+        var groupingString = getCleanedTitle(element);
+        if (!$scope.foo.groupTorrentAndNewznabResults) {
+            groupingString = groupingString + element.downloadType;
+        }
+        return groupingString;
+    }
 
     function sortAndFilter(results) {
         console.time("sortAndFilter");
@@ -312,10 +323,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
 
-        function getCleanedTitle(element) {
-            return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
-        }
-
         var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
 
@@ -368,6 +375,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             if (sortModel.sortMode === 2 && sortPredicateKey !== "title") {
                 sorted = sorted.reverse();
             }
+
             return sorted;
         }
 
@@ -397,13 +405,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return true;
         });
 
-        function getGroupingString(element) {
-            var groupingString = getCleanedTitle(element);
-            if (!$scope.foo.groupTorrentAndNewznabResults) {
-                groupingString = groupingString + element.downloadType;
-            }
-            return groupingString;
-        }
 
         var grouped = _.groupBy(filtered, getGroupingString);
         var mapped = _.map(grouped, createSortedHashgroups);
@@ -412,10 +413,30 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             sorted = sorted.reverse();
         }
 
-        $scope.lastClicked = null;
+        $scope.lastClickedRowIndex = null;
+
+        var filteredResults = [];
+        _.forEach(sorted, function (titleGroup) {
+            var titleGroupIndex = 0;
+            _.forEach(titleGroup, function (duplicateGroup) {
+                var duplicateIndex = 0;
+                _.forEach(duplicateGroup, function (result) {
+                    result.titleGroupIndicator = getGroupingString(result);
+                    result.titleGroupIndex = titleGroupIndex;
+                    result.duplicateGroupIndex = duplicateIndex;
+                    result.duplicatesLength = duplicateGroup.length;
+                    result.titlesLength = titleGroup.length;
+                    filteredResults.push(result);
+                    duplicateIndex += 1;
+                });
+                titleGroupIndex += 1;
+            });
+        });
+
+        $scope.$broadcast("calculateDisplayState");
 
         console.timeEnd("sortAndFilter");
-        return sorted;
+        return filteredResults;
     }
 
     $scope.toggleTitlegroupExpand = function toggleTitlegroupExpand(titleGroup) {
@@ -434,6 +455,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
+
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.anyResultsRejected = !_.isEmpty(data.rejectedReasonsMap);
@@ -488,7 +510,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
             SearchService.loadMore($scope.numberOfLoadedResults, limit, loadAll).then(function (data) {
                 setDataFromSearchResult(data, allSearchResults);
-                stopBlocking();
+                //stopBlocking();
             });
         });
     }
@@ -532,11 +554,28 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {
-        if (originalEvent.shiftKey && $scope.lastClicked !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClicked), Number(rowIndex), Number($scope.lastClickedValue));
+        if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue));
         }
-        $scope.lastClicked = rowIndex;
+        $scope.lastClickedRowIndex = rowIndex;
         $scope.lastClickedValue = newCheckedValue;
+    });
+
+    $scope.$on("toggleTitleExpansionUp", function ($event, value, titleGroupIndicator) {
+        $scope.$broadcast("toggleTitleExpansionDown", value, titleGroupIndicator);
+    });
+
+    $scope.$on("toggleDuplicateExpansionUp", function ($event, value, hash) {
+        $scope.$broadcast("toggleDuplicateExpansionDown", value, hash);
+    });
+
+    $scope.$on("selection", function ($event, result, value) {
+        var index = $scope.selected.indexOf(result);
+        if (value && index === -1) {
+            $scope.selected.push(result);
+        } else if (!value && index > -1) {
+            $scope.selected.splice(index, 1);
+        }
     });
 
     $scope.downloadNzbsCallback = function (addedIds) {
@@ -554,6 +593,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return entry[1] > 0;
         }
     };
+
+    $scope.$on("onFinishRender", function() {
+        console.log("Last rendered");
+        //stopBlocking();
+    });
 
     console.log("Search results controller end");
     $timeout(function () {
@@ -586,7 +630,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                             a = 1;
                         }
                         return scope.$$watchers;
-                    } {
+                    }
+                    {
                         return [];
                     }
 
@@ -597,6 +642,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             return getElemWatchers(root, ids);
         }
+
         console.log(getWatchers().length);
 
         DebugService.print();

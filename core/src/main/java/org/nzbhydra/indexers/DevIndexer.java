@@ -41,7 +41,12 @@ public class DevIndexer extends Newznab {
                 rssItem.setDescription("Indexer: " + getName() + ", title:" + rssItem.getTitle());
             }
 
-        } else {
+        }else if (uri.toString().contains("tworesults")) {
+            rssRoot = NewznabMockBuilder.generateResponse(0, 2, "results", false, Collections.emptyList());
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(2);
+        }
+
+        else {
             rssRoot = NewznabMockBuilder.generateResponse(0, 100, "results", false, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
         }

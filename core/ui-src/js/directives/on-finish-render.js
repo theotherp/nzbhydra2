@@ -10,7 +10,7 @@ function onFinishRender($timeout) {
 
         if (scope.$last === true) {
             $timeout(function () {
-                scope.$evalAsync(attr.onFinishRender);
+                scope.$emit("onFinishRender")
             });
         }
     }

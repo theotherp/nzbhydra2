@@ -274,17 +274,8 @@
         </tr>
         </thead>
 
-
-        <tbody dir-paginate-start="titleGroup in filteredResults | itemsPerPage:limitTo track by groupId(titleGroup)" ng-show="0"></tbody>
-
-        <tbody title-group
-               titles="::titleGroup"
-               selected="::selected"
-               expanded="::expandedTitlegroups" style="display: table-row-group"
-               row-index="::$index"
-               do-show-duplicates="::foo.duplicatesDisplayed"
-        ></tbody>
-
+        <tbody dir-paginate-start="result in filteredResults | itemsPerPage:limitTo track by result.searchResultId" ng-show="0"></tbody>
+        <tbody search-result data-result="result" data-row-index="$index" on-finish-render></tbody>
         <tbody dir-paginate-end ng-show="0"></tbody>
 
 

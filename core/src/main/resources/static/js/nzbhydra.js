@@ -806,10 +806,10 @@ function titleGroup() {
     };
 
     function controller($scope, DebugService) {
-        $scope.titleGroupExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
+        $scope.titlesExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
 
         $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
-            $scope.titleGroupExpanded = isExpanded;
+            $scope.titlesExpanded = isExpanded;
             var index = $scope.expanded.indexOf(title);
             if (!isExpanded && index > -1) {
                 $scope.expanded.splice(index, 1);
@@ -939,60 +939,186 @@ angular
     .directive('searchResult', searchResult);
 
 function searchResult() {
+    controller.$inject = ["$scope", "$element", "$http", "growl", "$attrs", "$uibModal", "$window", "DebugService", "localStorageService", "HydraAuthService"];
     return {
         templateUrl: 'static/html/directives/search-result.html',
-        require: '^titleGroup',
+        require: '^result',
         scope: {
-            titleGroup: "<",
-            selected: "<",
+            result: "<",
             rowIndex: "<"
         },
-        controller: ['$scope', '$element', '$attrs', controller],
-        multiElement: true
+        controller: controller
     };
 
-    function controller($scope, $element, $attrs, DebugService) {
-        $scope.titleGroupExpanded = false;
-        $scope.hashGroupExpanded = {};
-        $scope.showDuplicates = false; //TODO: Set by receiving event
 
-        $scope.toggleTitleGroup = function () {
-            $scope.titleGroupExpanded = !$scope.titleGroupExpanded;
-            if (!$scope.titleGroupExpanded) {
-                $scope.hashGroupExpanded[$scope.titleGroup[0][0].hash] = false; //Also collapse the first title's duplicates
-            }
+    function handleDisplay($scope, localStorageService) {
+        //Display state / expansion
+        $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
+        $scope.duplicatesExpanded = false;
+        $scope.titlesExpanded = false;
+
+        function calculateDisplayState() {
+            $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
+        }
+
+        calculateDisplayState();
+
+        $scope.toggleTitleExpansion = function () {
+            $scope.titlesExpanded = !$scope.titlesExpanded;
+            $scope.$emit("toggleTitleExpansionUp", $scope.titlesExpanded, $scope.result.titleGroupIndicator);
         };
 
-        $scope.groupingRowDuplicatesToShow = groupingRowDuplicatesToShow;
+        $scope.toggleDuplicateExpansion = function () {
+            $scope.duplicatesExpanded = !$scope.duplicatesExpanded;
+            $scope.$emit("toggleDuplicateExpansionUp", $scope.duplicatesExpanded, $scope.result.hash);
+        };
 
-        function groupingRowDuplicatesToShow() {
-            if ($scope.showDuplicates && $scope.titleGroup[0].length > 1 && $scope.hashGroupExpanded[$scope.titleGroup[0][0].hash]) {
-                return $scope.titleGroup[0].slice(1);
-            } else {
-                return [];
+        $scope.$on("toggleTitleExpansionDown", function ($event, value, titleGroupIndicator) {
+            if ($scope.result.titleGroupIndicator === titleGroupIndicator) {
+                $scope.titlesExpanded = value;
+                calculateDisplayState();
             }
+        });
+
+        $scope.$on("toggleDuplicateExpansionDown", function ($event, value, hash) {
+            if ($scope.result.hash === hash) {
+                $scope.duplicatesExpanded = value;
+                calculateDisplayState();
+            }
+        });
+
+        $scope.$on("duplicatesDisplayed", function($event, value) {
+            $scope.foo.duplicatesDisplayed = value;
+            calculateDisplayState();
+        });
+
+        $scope.$on("calculateDisplayState", function () {
+            calculateDisplayState();
+        });
+    }
+
+    function handleSelection($scope) {
+        $scope.foo.selected = false;
+
+        function sendSelectionEvent() {
+            $scope.$emit("selection", $scope.result, $scope.foo.selected);
         }
 
-        //<div ng-repeat="hashGroup in titleGroup" ng-if="titleGroup.length > 0 && titleGroupExpanded"  class="search-results-row">
-        $scope.otherTitleRowsToShow = otherTitleRowsToShow;
+        $scope.clickCheckbox = function () {
+            sendSelectionEvent();
+            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected);
+        };
 
-        function otherTitleRowsToShow() {
-            if ($scope.titleGroup.length > 1 && $scope.titleGroupExpanded) {
-                return $scope.titleGroup.slice(1);
-            } else {
-                return [];
-            }
+        function isBetween(num, betweena, betweenb) {
+            return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
         }
 
-        $scope.hashGroupDuplicatesToShow = hashGroupDuplicatesToShow;
-
-        function hashGroupDuplicatesToShow(hashGroup) {
-            if ($scope.showDuplicates && $scope.hashGroupExpanded[hashGroup[0].hash]) {
-                return hashGroup.slice(1);
-            } else {
-                return [];
+        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue) {
+            if (!$scope.resultDisplayed) {
+                return;
             }
+            if (isBetween($scope.rowIndex, startIndex, endIndex)) {
+                if (newValue) {
+                    $scope.foo.selected = true;
+                } else {
+                    $scope.foo.selected = false;
+                }
+                sendSelectionEvent();
+            }
+        });
+        $scope.$on("invertSelection", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = !$scope.foo.selected;
+            sendSelectionEvent();
+        });
+        $scope.$on("deselectAll", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = false;
+            sendSelectionEvent();
+        });
+        $scope.$on("selectAll", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = true;
+            sendSelectionEvent();
+        });
+    }
+
+    function handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService) {
+        $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
+
+        $scope.showNfo = showNfo;
+
+        function showNfo(resultItem) {
+            if (resultItem.has_nfo === 0) {
+                return;
+            }
+            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
+            return $http.get(uri.toString()).then(function (response) {
+                if (response.data.successful) {
+                    if (response.data.hasNfo) {
+                        $scope.openModal("lg", response.data.content)
+                    } else {
+                        growl.info("No NFO available");
+                    }
+                } else {
+                    growl.error(response.data.content);
+                }
+            });
         }
+
+        $scope.openModal = openModal;
+
+        function openModal(size, nfo) {
+            var modalInstance = $uibModal.open({
+                template: '<pre class="nfo"><span ng-bind-html="nfo"></span></pre>',
+                controller: NfoModalInstanceCtrl,
+                size: size,
+                resolve: {
+                    nfo: function () {
+                        return nfo;
+                    }
+                }
+            });
+
+            modalInstance.result.then();
+        }
+
+        $scope.getNfoTooltip = function () {
+            if ($scope.result.hasNfo === "YES") {
+                return "Show NFO"
+            } else if ($scope.result.hasNfo === "MAYBE") {
+                return "Try to load NFO (may not be available)";
+            } else {
+                return "No NFO available";
+            }
+        };
+    }
+
+    function handleNzbDownload($scope, $window) {
+        $scope.downloadNzb = downloadNzb;
+
+        function downloadNzb(resultItem) {
+            //href = "{{ result.link }}"
+            $window.location.href = resultItem.link;
+        }
+    }
+
+
+    function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService) {
+        $scope.foo = {};
+        handleDisplay($scope, localStorageService);
+        handleSelection($scope);
+        handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
+        handleNzbDownload($scope, $window);
+
+
+
 
         DebugService.log("search-result");
     }
@@ -1124,7 +1250,7 @@ function onFinishRender($timeout) {
 
         if (scope.$last === true) {
             $timeout(function () {
-                scope.$evalAsync(attr.onFinishRender);
+                scope.$emit("onFinishRender")
             });
         }
     }
@@ -3429,7 +3555,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     });
 
     //For shift clicking results
-    $scope.lastClicked = null;
+    $scope.lastClickedRowIndex = null;
     $scope.lastClickedValue = null;
 
     var allSearchResults = [];
@@ -3473,7 +3599,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.totalAvailableUnknown = false;
     $scope.expandedTitlegroups = [];
     $scope.optionsOptions = [
-        {id: "duplicatesDisplayed", label: "Display duplicates"},
+        {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
         {id: "sumGrabs", label: "Use sum of grabs / seeders in groups for filtering / sorting"}
 
@@ -3484,7 +3610,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
         }
     }
-
 
 
     $scope.optionsExtraSettings = {
@@ -3548,7 +3673,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
     $scope.$emit("searchResultsShown");
-    stopBlocking();
+    //stopBlocking();
 
     //Returns the content of the property (defined by the current sortPredicate) of the first group element 
     $scope.firstResultPredicate = firstResultPredicate;
@@ -3571,7 +3696,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     function blockAndUpdate() {
         startBlocking("Sorting / filtering...").then(function () {
             $scope.filteredResults = sortAndFilter(allSearchResults);
-            blockUI.reset();
+            //stopBlocking();
             localStorageService.set("sorting", sortModel);
         });
     }
@@ -3617,6 +3742,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.resort = function () {
     };
+
+    function getCleanedTitle(element) {
+        return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
+    }
+
+    function getGroupingString(element) {
+        var groupingString = getCleanedTitle(element);
+        if (!$scope.foo.groupTorrentAndNewznabResults) {
+            groupingString = groupingString + element.downloadType;
+        }
+        return groupingString;
+    }
 
     function sortAndFilter(results) {
         console.time("sortAndFilter");
@@ -3711,10 +3848,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
 
-        function getCleanedTitle(element) {
-            return element.title.toLowerCase().replace(/[\s\-\._]/ig, "");
-        }
-
         var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
 
@@ -3767,6 +3900,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             if (sortModel.sortMode === 2 && sortPredicateKey !== "title") {
                 sorted = sorted.reverse();
             }
+
             return sorted;
         }
 
@@ -3796,13 +3930,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return true;
         });
 
-        function getGroupingString(element) {
-            var groupingString = getCleanedTitle(element);
-            if (!$scope.foo.groupTorrentAndNewznabResults) {
-                groupingString = groupingString + element.downloadType;
-            }
-            return groupingString;
-        }
 
         var grouped = _.groupBy(filtered, getGroupingString);
         var mapped = _.map(grouped, createSortedHashgroups);
@@ -3811,10 +3938,30 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             sorted = sorted.reverse();
         }
 
-        $scope.lastClicked = null;
+        $scope.lastClickedRowIndex = null;
+
+        var filteredResults = [];
+        _.forEach(sorted, function (titleGroup) {
+            var titleGroupIndex = 0;
+            _.forEach(titleGroup, function (duplicateGroup) {
+                var duplicateIndex = 0;
+                _.forEach(duplicateGroup, function (result) {
+                    result.titleGroupIndicator = getGroupingString(result);
+                    result.titleGroupIndex = titleGroupIndex;
+                    result.duplicateGroupIndex = duplicateIndex;
+                    result.duplicatesLength = duplicateGroup.length;
+                    result.titlesLength = titleGroup.length;
+                    filteredResults.push(result);
+                    duplicateIndex += 1;
+                });
+                titleGroupIndex += 1;
+            });
+        });
+
+        $scope.$broadcast("calculateDisplayState");
 
         console.timeEnd("sortAndFilter");
-        return sorted;
+        return filteredResults;
     }
 
     $scope.toggleTitlegroupExpand = function toggleTitlegroupExpand(titleGroup) {
@@ -3833,6 +3980,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
+
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.anyResultsRejected = !_.isEmpty(data.rejectedReasonsMap);
@@ -3887,7 +4035,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             var limit = loadAll ? $scope.numberOfAvailableResults - $scope.numberOfProcessedResults : null;
             SearchService.loadMore($scope.numberOfLoadedResults, limit, loadAll).then(function (data) {
                 setDataFromSearchResult(data, allSearchResults);
-                stopBlocking();
+                //stopBlocking();
             });
         });
     }
@@ -3931,11 +4079,28 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {
-        if (originalEvent.shiftKey && $scope.lastClicked !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClicked), Number(rowIndex), Number($scope.lastClickedValue));
+        if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue));
         }
-        $scope.lastClicked = rowIndex;
+        $scope.lastClickedRowIndex = rowIndex;
         $scope.lastClickedValue = newCheckedValue;
+    });
+
+    $scope.$on("toggleTitleExpansionUp", function ($event, value, titleGroupIndicator) {
+        $scope.$broadcast("toggleTitleExpansionDown", value, titleGroupIndicator);
+    });
+
+    $scope.$on("toggleDuplicateExpansionUp", function ($event, value, hash) {
+        $scope.$broadcast("toggleDuplicateExpansionDown", value, hash);
+    });
+
+    $scope.$on("selection", function ($event, result, value) {
+        var index = $scope.selected.indexOf(result);
+        if (value && index === -1) {
+            $scope.selected.push(result);
+        } else if (!value && index > -1) {
+            $scope.selected.splice(index, 1);
+        }
     });
 
     $scope.downloadNzbsCallback = function (addedIds) {
@@ -3953,6 +4118,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return entry[1] > 0;
         }
     };
+
+    $scope.$on("onFinishRender", function() {
+        console.log("Last rendered");
+        //stopBlocking();
+    });
 
     console.log("Search results controller end");
     $timeout(function () {
@@ -3985,7 +4155,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                             a = 1;
                         }
                         return scope.$$watchers;
-                    } {
+                    }
+                    {
                         return [];
                     }
 
@@ -3996,6 +4167,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             return getElemWatchers(root, ids);
         }
+
         console.log(getWatchers().length);
 
         DebugService.print();

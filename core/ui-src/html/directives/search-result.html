@@ -1,0 +1,107 @@
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<tr ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}" style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed">
+    <td class="col-md-12 search-results-cell result-title" style="margin:0;">
+        <input type="checkbox"
+               ng-model="foo.selected"
+               ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
+        <a href="" ng-click="toggleTitleExpansion()" ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0)}" class="title-expand-toggle"
+           uib-tooltip="Click to see or hide all results with the same title"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter"
+        >
+                <span class="glyphicon"
+                      ng-class="{'glyphicon-minus': titlesExpanded, 'glyphicon-plus': !titlesExpanded}"></span></a>
+
+        <a ng-if="foo.duplicatesDisplayed" href="" ng-click="toggleDuplicateExpansion()" ng-class="{'visibility-hidden': (result.duplicatesLength == 1 || result.duplicateGroupIndex > 0)}" class="duplicate-expand-toggle"
+           uib-tooltip="Click to see or hide all duplicates of this result"
+           tooltip-placement="right"
+           tooltip-trigger="mouseenter"
+        ><span class="glyphicon"
+               ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span></a>
+        <span class="title">
+                <span ng-if="result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0">{{ ::result.title }}</span>
+            </span>
+    </td>
+    <td class="col-md-1 search-results-cell result-indexer" style="text-align: right">
+        {{ ::result.indexer }}
+    </td>
+    <td class="col-md-1 search-results-cell result-category" style="text-align: right">
+        {{ ::result.category }}
+    </td>
+    <td class="col-md-1 search-results-cell result-size" style="text-align: right">
+        {{ ::result.size | byteFmt: 2 }}
+    </td>
+    <td class="col-md-1 search-results-cell result-details" style="text-align: right">
+    <span ng-if="::result.grabs !== null">
+        {{ ::result.grabs | kify }}
+    </span>
+        <span ng-if="::result.grabs !== null && result.seeders !== null">
+         /
+    </span>
+        <span ng-if="::result.seeders !== null">
+        {{ ::result.seeders | kify }} / {{ ::result.peers | kify }}
+    </span>
+    </td>
+    <td class="col-md-1 search-results-cell result-age" style="text-align: right">
+    <span uib-tooltip="{{ ::result.date }}"
+          tooltip-placement="top"
+          tooltip-trigger="mouseenter">{{ ::result.age }}</span>
+    </td>
+    <td class="col-md-3 search-results-cell result-links">
+        <a href ng-click="showNfo(result)" ng-class="::{'no-nfo': result.hasNfo === 'NO'}" class="no-underline result-show-nfo-link"
+           uib-tooltip="{{ ::getNfoTooltip() }}"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-file-text" aria-hidden="true" ng-class="::{'fuzzy-nfo': result.hasNfo == 'MAYBE'}" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        </a>
+        <span ng-if="::showDetailsDl">
+        <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link | dereferer}}" target="_blank" class="no-underline result-comments-link"
+           uib-tooltip="Comments"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-comment" aria-hidden="true" style="margin-left:0; margin-right:3px;"></i>
+        </a>
+        <a target="_blank" href="{{ ::result.details_link | dereferer}}" ng-class="::{'no-nfo': !result.details_link}" style="vertical-align: middle" class="no-underline result-details-link"
+           uib-tooltip="Details"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-info" aria-hidden="true" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        </a>
+    </span>
+        <span ng-switch on="::result.downloadType">
+            <span ng-switch-when="TORRENT">
+                <a target="_blank" href="gettorrent/user/{{ ::result.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                   class="no-underline result-torrent-download-link"
+                   uib-tooltip="Download torrent"
+                   tooltip-placement="top"
+                   tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
+                </a>
+                <send-torrent-to-blackhole search-result-id="result.searchResultId"></send-torrent-to-blackhole>
+            </span>
+            <span ng-switch-default>
+                <a target="_blank" href="getnzb/user/{{ ::result.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                   class="no-underline result-nzb-download-link"
+                   uib-tooltip="Download NZB"
+                   tooltip-placement="top"
+                   tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
+                </a>
+                <addable-nzbs search-result-id="::result.searchResultId" download-type="::result.downloadType"></addable-nzbs>
+            </span>
+        </span>
+    </td>
+</tr>
