@@ -3451,6 +3451,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     setDataFromSearchResult(SearchService.getLastResults(), []);
     $scope.$emit("searchResultsShown");
+    if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0) {
+        //Close modal instance because no search results will be rendered that could trigger the closing
+        SearchService.getModalInstance().close();
+    }
     //stopBlocking();
 
     //Returns the content of the property (defined by the current sortPredicate) of the first group element 
@@ -3763,6 +3767,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.anyResultsRejected = !_.isEmpty(data.rejectedReasonsMap);
+        $scope.anyIndexersSearchedSuccessfully = _.any(data.indexerSearchMetaDatas, function(x) {return x.wasSuccessful;});
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;

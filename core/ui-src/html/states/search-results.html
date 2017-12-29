@@ -131,7 +131,8 @@
 </div>
 <div class="row" ng-if="::indexersearches.length > 0 && numberOfAvailableResults === 0" style="margin-top: 50px">
     <div class="well">
-        <h2 ng-if="!anyResultsRejected">No results were found for this search</h2>
+        <h2 ng-if="!anyIndexersSearchedSuccessfully">Was unable to search any indexer successfully; no results available</h2>
+        <h2 ng-if="!anyResultsRejected && anyIndexersSearchedSuccessfully">No results were found for this search</h2>
         <h2 ng-if="anyResultsRejected">No (non-rejected) results were found for this search</h2>
     </div>
 </div>
