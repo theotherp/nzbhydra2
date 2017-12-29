@@ -43,6 +43,7 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
                 element.click();
             }
         }
+        ensureClosed();
     }
 
     private List<WebElement> getAllOptions() {
@@ -50,14 +51,18 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     }
 
     protected void ensureOpen() {
-        if (!getWebelement().getAttribute("class").contains("open")) {
+        if (!isOpen()) {
             getWebelement().findElement(By.tagName("button")).click();
         }
         Sleep.sleep(100);
     }
 
+    private boolean isOpen() {
+        return getWebelement().findElement(By.tagName("div")).getAttribute("class").contains("open");
+    }
+
     protected void ensureClosed() {
-        if (getWebelement().getAttribute("class").contains("open")) {
+        if (isOpen()) {
             getWebelement().findElement(By.tagName("button")).click();
         }
         Sleep.sleep(100);
@@ -95,6 +100,7 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
                 }
             }
         }
+        ensureClosed();
     }
 
     private boolean isElementSelected(WebElement element) {
@@ -105,6 +111,7 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     public void deselect(String caption) {
         ensureOpen();
         setValue(caption, false);
+
     }
 
 

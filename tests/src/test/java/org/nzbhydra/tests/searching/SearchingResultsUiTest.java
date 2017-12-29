@@ -264,8 +264,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         Sleep.sleep(100);
         assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(5L);
         searchResultsPage.downloadSelectedAsZipButton().click();
-        new Thread(() -> searchResultsPage.downloadSelectedAsZipButton().click()).start();
-        Sleep.sleep(250);
+        Sleep.sleep(1000);
         assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
         searchResultsPage.searchResultSelectionButton().selectAll();
         searchResultsPage.tableHeader().indexerFilter().filterBy(Arrays.asList("mock1"));
@@ -290,7 +289,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(historyEntries.get(0).text()).isEqualTo("Category: All, Query: uitest");
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
-        Sleep.sleep(500);
         assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(5);
         assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
         return searchResultsPage;
@@ -319,6 +317,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
         //Only indexer1 was preselected and that's the one used for the repeated search
+
         assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(3);
         assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3");
     }
