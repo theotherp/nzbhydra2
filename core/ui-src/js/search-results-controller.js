@@ -76,7 +76,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.optionsOptions = [
         {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
-        {id: "sumGrabs", label: "Use sum of grabs / seeders in groups for filtering / sorting"}
+        {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"}
 
     ];
     $scope.optionsSelectedModel = [];
@@ -85,7 +85,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
         }
     }
-
 
     $scope.optionsExtraSettings = {
         showCheckAll: false,
@@ -397,14 +396,15 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         var filtered = _.filter(results, filter);
-        $scope.selected = _.filter($scope.selected, function (x) {
+        var newSelected = $scope.selected;
+        _.forEach($scope.selected, function (x) {
             if (filtered.indexOf(x) === -1) {
                 console.log("Removing " + x.title + " from selected results because it's being hidden");
-                return false;
+                $scope.$broadcast("toggleSelection", x, false);
+                newSelected.splice($scope.selected.indexOf(x), 1);
             }
-            return true;
         });
-
+        $scope.selected = newSelected;
 
         var grouped = _.groupBy(filtered, getGroupingString);
         var mapped = _.map(grouped, createSortedHashgroups);
@@ -581,9 +581,15 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.downloadNzbsCallback = function (addedIds) {
         if (addedIds !== null && addedIds.length > 0) {
             growl.info("Removing downloaded NZBs from selection");
-            $scope.selected = _.filter($scope.selected, function (x) {
-                return addedIds.indexOf(x) > -1;
-            })
+            var toRemove = _.filter($scope.selected, function (x) {
+                return addedIds.indexOf(Number(x.searchResultId)) > -1;
+            });
+            var newSelected = $scope.selected;
+            _.forEach(toRemove, function (x) {
+                $scope.$broadcast("toggleSelection", x, false);
+                newSelected.splice($scope.selected.indexOf(x), 1);
+            });
+            $scope.selected = newSelected;
         }
     };
 
@@ -594,9 +600,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
     };
 
-    $scope.$on("onFinishRender", function() {
+    $scope.$on("onFinishRender", function () {
         console.log("Last rendered");
-        //stopBlocking();
+        SearchService.getModalInstance().close();
+        stopBlocking();
     });
 
     console.log("Search results controller end");

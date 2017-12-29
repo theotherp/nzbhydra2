@@ -43,6 +43,8 @@ function downloadNzbzipButton() {
                         if (response.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
                         }
+                    } else {
+                        growl.error(response.message);
                     }
                 }).error(function (data, status, headers, config) {
                     growl.error(status);

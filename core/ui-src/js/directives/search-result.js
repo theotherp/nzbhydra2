@@ -52,6 +52,10 @@ function searchResult() {
 
         $scope.$on("duplicatesDisplayed", function($event, value) {
             $scope.foo.duplicatesDisplayed = value;
+            if (!value) {
+                //Collapse duplicate groups they shouldn't be displayed
+                $scope.duplicatesExpanded = false;
+            }
             calculateDisplayState();
         });
 
@@ -109,6 +113,12 @@ function searchResult() {
             }
             $scope.foo.selected = true;
             sendSelectionEvent();
+        });
+        $scope.$on("toggleSelection", function ($event, result, value) {
+            if (!$scope.resultDisplayed || result !== $scope.result) {
+                return;
+            }
+            $scope.foo.selected = value;
         });
     }
 
@@ -180,9 +190,42 @@ function searchResult() {
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
 
-
-
-
+        $scope.kify =  function() {
+           return function (number) {
+                if (number > 1000) {
+                    return Math.round(number / 1000) + "k";
+                }
+                return number;
+            };
+        };
         DebugService.log("search-result");
     }
 }
+
+angular
+    .module('nzbhydraApp')
+    .controller('NfoModalInstanceCtrl', NfoModalInstanceCtrl);
+
+function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
+
+    $scope.nfo = nfo;
+
+    $scope.ok = function () {
+        $uibModalInstance.close($scope.selected.item);
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('kify', function() {
+        return function (number) {
+            if (number > 1000) {
+                return Math.round(number / 1000) + "k";
+            }
+            return number;
+        }
+    });

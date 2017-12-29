@@ -72,7 +72,7 @@ function freetextFilter(DebugService) {
             if (keyEvent.which === 13) {
                 $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
-        }
+        };
         DebugService.log("filter-freetext");
     }
 }

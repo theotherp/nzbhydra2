@@ -14,7 +14,7 @@
   ~  limitations under the License.
   -->
 
-<tr ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}" style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed">
+<tr ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}" style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-">
     <td class="col-md-12 search-results-cell result-title" style="margin:0;">
         <input type="checkbox"
                ng-model="foo.selected"
@@ -47,7 +47,7 @@
         {{ ::result.size | byteFmt: 2 }}
     </td>
     <td class="col-md-1 search-results-cell result-details" style="text-align: right">
-    <span ng-if="::result.grabs !== null">
+    <span ng-if="::(result.grabs !== null)">
         {{ ::result.grabs | kify }}
     </span>
         <span ng-if="::result.grabs !== null && result.seeders !== null">

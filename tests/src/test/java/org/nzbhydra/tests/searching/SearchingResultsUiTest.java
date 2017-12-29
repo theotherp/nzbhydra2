@@ -1,5 +1,7 @@
 package org.nzbhydra.tests.searching;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -8,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nzbhydra.downloading.NzbHandler.NzbsZipResponse;
 import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -42,7 +45,9 @@ import org.nzbhydra.tests.pageobjects.SearchResultsPO;
 import org.nzbhydra.tests.pageobjects.SelectionButton;
 import org.nzbhydra.tests.pageobjects.Toggle;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.popper.fw.element.ICheckbox;
@@ -54,16 +59,19 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
@@ -81,7 +89,16 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Before
     public void setUp() throws IOException {
-        mockWebServer.start(7070);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mockWebServer.start(7070);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
         System.setProperty("disableBlockUi", "true");
         System.setProperty("server.port", "5077");
         url = "http://127.0.0.1:5077";
@@ -157,40 +174,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     @Test
     public void testSearchResults() throws Exception {
-        prepareFiveResultsFromTwoIndexers();
-        webDriver.get(url + "/?category=All&query=uitest&mode=search&indexers=mock1%252Cmock2");
+        SearchResultsPO searchResultsPage = prepareAndOpenSearchResultsPage();
 
-        WebDriverWait wait = new WebDriverWait(webDriver, 10);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
-
-        SearchPO searchPO = factory.createPage(SearchPO.class);
-        searchPO.historyDropdownButton().click();
-        List<org.popper.fw.element.ILink> historyEntries = searchPO.searchHistoryEntries();
-        assertThat(historyEntries.size()).isEqualTo(1);
-        assertThat(historyEntries.get(0).text()).isEqualTo("Category: All, Query: uitest");
-
-        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
-        assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(5);
-        assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
-
-        checkSortAndFilter(searchResultsPage);
-
-        searchResultsPage.searchResultSelectionButton().selectAll();
-        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(5L);
-        searchResultsPage.indexerSelectionCheckboxes().get(0).uncheck();
-        searchResultsPage.searchResultSelectionButton().invertSelection();
-        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(1L);
-        searchResultsPage.searchResultSelectionButton().deselectAll();
-        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
-
-        searchResultsPage.tableHeader().titleHeader().sortAscending();
-        assertThat(searchResultsPage.searchResultRows().get(0).showNfoButton().getAttribute("class")).contains("no-nfo");
-        assertThat(searchResultsPage.searchResultRows().get(1).showNfoButton().isDisplayed()).isTrue();
-
-        assertThat(searchResultsPage.searchResultRows().get(0).downloadNzbLink().href()).contains("/getnzb/user/");
-    }
-
-    protected void checkSortAndFilter(SearchResultsPO searchResultsPage) {
         searchResultsPage.tableHeader().titleHeader().sortAscending();
         assertThat(searchResultsPage.titles()).containsExactly("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
         searchResultsPage.tableHeader().titleHeader().sortDescending();
@@ -253,6 +238,65 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
     @Test
+    public void testSearchResultsSelection() throws Exception {
+        SearchResultsPO searchResultsPage = prepareAndOpenSearchResultsPage();
+
+        //Test multi-selection boxes
+        searchResultsPage.searchResultSelectionButton().selectAll();
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(5L);
+        searchResultsPage.indexerSelectionCheckboxes().get(0).uncheck();
+        searchResultsPage.searchResultSelectionButton().invertSelection();
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(1L);
+        searchResultsPage.searchResultSelectionButton().deselectAll();
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
+
+        searchResultsPage.tableHeader().titleHeader().sortAscending();
+        assertThat(searchResultsPage.searchResultRows().get(0).showNfoButton().getAttribute("class")).contains("no-nfo");
+        assertThat(searchResultsPage.searchResultRows().get(1).showNfoButton().isDisplayed()).isTrue();
+
+        assertThat(searchResultsPage.searchResultRows().get(0).downloadNzbLink().href()).contains("/getnzb/user/");
+
+        //Test deselection of results when hiding or downloading them
+        searchResultsPage.searchResultSelectionButton().deselectAll();
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
+        Actions shiftClick = new Actions(webDriver);
+        shiftClick.click(searchResultsPage.indexerSelectionCheckboxes().get(0).getWebelement()).keyDown(Keys.SHIFT).click(searchResultsPage.indexerSelectionCheckboxes().get(4).getWebelement()).keyUp(Keys.SHIFT).perform();
+        Sleep.sleep(100);
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(5L);
+        searchResultsPage.downloadSelectedAsZipButton().click();
+        new Thread(() -> searchResultsPage.downloadSelectedAsZipButton().click()).start();
+        Sleep.sleep(250);
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
+        searchResultsPage.searchResultSelectionButton().selectAll();
+        searchResultsPage.tableHeader().indexerFilter().filterBy(Arrays.asList("mock1"));
+        searchResultsPage.tableHeader().indexerFilter().filterBy(Arrays.asList("mock1"));
+        Sleep.sleep(100);
+        searchResultsPage.tableHeader().indexerFilter().selectAll();
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(3L);
+    }
+
+    protected SearchResultsPO prepareAndOpenSearchResultsPage() throws Exception {
+        prepareFiveResultsFromTwoIndexers();
+        webDriver.get(url + "/?category=All&query=uitest&mode=search&indexers=mock1%252Cmock2");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("search-results-table")));
+
+        SearchPO searchPO = factory.createPage(SearchPO.class);
+        Sleep.sleep(500);
+        searchPO.historyDropdownButton().click();
+        List<org.popper.fw.element.ILink> historyEntries = searchPO.searchHistoryEntries();
+        assertThat(historyEntries.size()).isEqualTo(1);
+        assertThat(historyEntries.get(0).text()).isEqualTo("Category: All, Query: uitest");
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        Sleep.sleep(500);
+        assertThat(searchResultsPage.searchResultRows().size()).isEqualTo(5);
+        assertThat(searchResultsPage.titles()).containsExactlyInAnyOrder("indexer1-result1", "indexer1-result2", "indexer1-result3", "indexer2-result1", "indexer2-result2");
+        return searchResultsPage;
+    }
+
+    @Test
     public void testRepeatSearch() throws Exception {
         prepareFiveResultsFromTwoIndexers();
         SearchEntity entity = new SearchEntity();
@@ -291,8 +335,9 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         searchResultsPage.tableHeader().ageHeader().sortAscending();
 
         //Make sure duplicates are hidden
-        if (searchResultsPage.displayOptions().isSelected("Display duplicates")) {
-            searchResultsPage.displayOptions().deselect("Display duplicates");
+        String displayTriggers = "Show duplicate display triggers";
+        if (searchResultsPage.displayOptions().isSelected(displayTriggers)) {
+            searchResultsPage.displayOptions().deselect(displayTriggers);
         }
 
         assertThat(searchResultsPage.titleGroupToggles().size()).isEqualTo(2).as("Duplicates should be hidden");
@@ -309,7 +354,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         //Show duplicates
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should not exist").isEqualTo(0);
-        searchResultsPage.displayOptions().select("Display duplicates");
+        searchResultsPage.displayOptions().select(displayTriggers);
         assertThat(searchResultsPage.duplicateGroupToggles().size()).as("Duplicate toggle buttons should exist").isEqualTo(2);
         assertThat(searchResultsPage.duplicateGroupToggles().get(0).isVisible()).as("A duplicate buttom should be visible for the duplicates").isTrue();
         assertThat(searchResultsPage.duplicateGroupToggles().get(1).isVisible()).as("No duplicate buttom should be visible for the titlegroup").isFalse();
@@ -327,7 +372,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         searchResultsPage.duplicateGroupToggles().get(0).click();
         Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).isEqualTo(3);
-        searchResultsPage.displayOptions().deselect("Display duplicates");
+        searchResultsPage.displayOptions().deselect(displayTriggers);
         Sleep.sleep(100);
         assertThat(searchResultsPage.titles().size()).as("Unchecking duplicates should collapse all duplicate groups").isEqualTo(2);
 
@@ -346,23 +391,43 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.ages()).containsExactly("1d", "2d", "3d").as("Title groups should be sorted internally as well");
     }
 
-    protected void prepareFiveResultsFromTwoIndexers() throws IOException {
+
+    protected void prepareFiveResultsFromTwoIndexers() throws Exception {
         replaceConfig(getClass().getResource("twoIndexers.json"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                if (request.getRequestUrl().queryParameter("apikey").equals("apikey1")) {
-                    RssItem result1 = RssItemBuilder.builder("indexer1-result1").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
-                    RssItem result2 = RssItemBuilder.builder("indexer1-result2").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").build();
-                    RssItem result3 = RssItemBuilder.builder("indexer1-result3").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("comments").grabs(3).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").build();
+                int mockServerPort = mockWebServer.getPort();
+                String mockServerBaseUrl = "http://127.0.0.1:" + mockServerPort + "/";
+                if (request.getRequestUrl().queryParameter("apikey") != null && request.getRequestUrl().queryParameter("apikey").equals("apikey1")) {
+                    RssItem result1 = RssItemBuilder.builder("indexer1-result1").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink1").hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
+                    RssItem result2 = RssItemBuilder.builder("indexer1-result2").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink2").hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").build();
+                    RssItem result3 = RssItemBuilder.builder("indexer1-result3").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink3").comments("comments").grabs(3).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").build();
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result1, result2, result3), 0, 3);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
-                } else if (request.getRequestUrl().queryParameter("apikey").equals("apikey2")) {
-                    RssItem result4 = RssItemBuilder.builder("indexer2-result1").pubDate(Instant.now().minus(4, ChronoUnit.DAYS)).grabs(4).size(mbToBytes(4)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2000")))).category("Movies").build();
-                    RssItem result5 = RssItemBuilder.builder("indexer2-result2").pubDate(Instant.now().minus(5, ChronoUnit.DAYS)).grabs(5).size(mbToBytes(5)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2040")))).category("Movies HD").build();
+                } else if (request.getRequestUrl().queryParameter("apikey") != null && request.getRequestUrl().queryParameter("apikey").equals("apikey2")) {
+                    RssItem result5 = RssItemBuilder.builder("indexer2-result2").pubDate(Instant.now().minus(5, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink5").grabs(5).size(mbToBytes(5)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2040")))).category("Movies HD").build();
+                    RssItem result4 = RssItemBuilder.builder("indexer2-result1").pubDate(Instant.now().minus(4, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink4").grabs(4).size(mbToBytes(4)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "2000")))).category("Movies").build();
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result4, result5), 0, 2);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
+                } else if (request.getPath().endsWith("nzbzip")) {
+                    System.out.println("Returning NZB ZIP response");
+                    String body = request.getBody().readString(Charset.defaultCharset());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        List<Long> ids = objectMapper.readValue(body, new TypeReference<List<Long>>() {
+                        });
+                        NzbsZipResponse response = new NzbsZipResponse(true, "bla", null, ids, Collections.emptyList());
+                        return new MockResponse().setBody(objectMapper.writeValueAsString(response)).setHeader("Content-Type", "application/xml; charset=utf-8");
+                    } catch (IOException e) {
+
+
+                    }
+                    throw new RuntimeException("Unable to handle nzbzip");
+                } else if (request.getPath().contains("nzblink")) {
+                    System.out.println("Returning NZB");
+                    return new MockResponse().setBody("nzb").setHeader("Content-Type", "application/x-nzb; charset=utf-8");
                 } else {
                     throw new RuntimeException("Unexpected api key " + request.getRequestUrl().queryParameter("apikey"));
                 }
@@ -377,13 +442,13 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
                 if (request.getRequestUrl().queryParameter("apikey").equals("apikey1")) {
-                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
-                    RssItem result2 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").build();
-                    RssItem result3 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("comments").grabs(3).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").build();
+                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").link("link1").build();
+                    RssItem result2 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).hasNfo(true).grabs(2).size(mbToBytes(2)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5040")))).category("TV SD").link("link2").build();
+                    RssItem result3 = RssItemBuilder.builder("grouptitle").pubDate(Instant.now().minus(3, ChronoUnit.DAYS)).comments("comments").grabs(3).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5030")))).category("TV HD").link("link3").build();
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate, result2, result3), 0, 3);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");
                 } else if (request.getRequestUrl().queryParameter("apikey").equals("apikey2")) {
-                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
+                    RssItem duplicate = RssItemBuilder.builder("duplicate").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).hasNfo(false).grabs(1).size(mbToBytes(3)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").link("link4").build();
 
                     RssRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(duplicate), 0, 1);
                     return new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8");

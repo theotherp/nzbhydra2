@@ -47,8 +47,8 @@ public class InternalSearchResultProcessor {
 
         List<SearchResultWebTO> transformedSearchResults = transformSearchResults(searchResult.getSearchResultItems());
         searchResponse.setSearchResults(transformedSearchResults);
-        searchResponse.setOffset(searchResponse.getOffset());
-        searchResponse.setLimit(searchResponse.getLimit());
+        searchResponse.setOffset(searchResult.getOffset());
+        searchResponse.setLimit(searchResult.getLimit());
 
         logger.debug(LoggingMarkers.PERFORMANCE, "Creating web response for search results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;

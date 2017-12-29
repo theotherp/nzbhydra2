@@ -12,7 +12,7 @@ import java.util.List;
 
 
 @Page
-public  interface SearchPO {
+public interface SearchPO {
     @PageAccessor(uri = "/")
     public  void open();
 

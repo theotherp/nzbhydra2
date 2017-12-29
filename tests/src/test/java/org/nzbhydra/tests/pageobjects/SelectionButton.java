@@ -17,6 +17,7 @@ public class SelectionButton extends AbstractWebElement implements ISelectionBut
         getWebelement().findElement(By.className("selection-button-toggle-dropdown")).click();
         Sleep.sleep(100);
         getWebelement().findElement(By.className("selection-button-select-all")).click();
+        Sleep.sleep(100);
     }
 
     @Override
@@ -24,12 +25,14 @@ public class SelectionButton extends AbstractWebElement implements ISelectionBut
         getWebelement().findElement(By.className("selection-button-toggle-dropdown")).click();
         Sleep.sleep(100);
         getWebelement().findElement(By.className("selection-button-deselect-all")).click();
+        Sleep.sleep(100);
 
     }
 
     @Override
     public void invertSelection() {
         getWebelement().findElement(By.className("selection-button-invert-selection")).click();
+        Sleep.sleep(100);
     }
 
 

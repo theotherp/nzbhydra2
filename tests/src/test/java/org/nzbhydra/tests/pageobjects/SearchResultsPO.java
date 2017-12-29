@@ -2,7 +2,6 @@ package org.nzbhydra.tests.pageobjects;
 
 import org.popper.fw.annotations.Page;
 import org.popper.fw.element.IButton;
-import org.popper.fw.element.ICheckbox;
 import org.popper.fw.element.ILabel;
 import org.popper.fw.webdriver.annotations.locator.Locator;
 
@@ -27,14 +26,17 @@ public abstract class SearchResultsPO {
     @Locator(cssSelector = ".send-to-downloader")
     public abstract List<ILink> sendToDownloaderButtons();
 
+    @Locator(id = "download-selected-as-zip")
+    public abstract IButton downloadSelectedAsZipButton();
+
     @Locator(cssSelector = ".search-results-header-row")
     public abstract TableHeader tableHeader();
 
-    @Locator(cssSelector = ".search-results-row")
+    @Locator(cssSelector = ".search-result-row")
     public abstract List<SearchResultRow> searchResultRows();
 
     @Locator(cssSelector = ".result-checkbox")
-    public abstract List<ICheckbox> indexerSelectionCheckboxes();
+    public abstract List<ICheckBox> indexerSelectionCheckboxes();
 
     @Locator(cssSelector = ".title-expand-toggle")
     public abstract List<IToggle> titleGroupToggles();

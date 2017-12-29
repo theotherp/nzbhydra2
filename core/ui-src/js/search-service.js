@@ -9,14 +9,24 @@ function SearchService($http) {
     var lastExecutedQuery;
     var lastExecutedSearchRequestParameters;
     var lastResults;
+    var modalInstance;
 
     return {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
-        getSearchState: getSearchState
+        getSearchState: getSearchState,
+        getModalInstance: getModalInstance,
+        setModalInstance: setModalInstance,
     };
 
+    function getModalInstance() {
+        return modalInstance;
+    }
+
+    function setModalInstance(mi) {
+        modalInstance = mi;
+    }
 
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         console.time("search");

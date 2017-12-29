@@ -174,7 +174,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
-                modalInstance.close();
+                //modalInstance.close();
+            SearchService.setModalInstance(modalInstance);
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
                         minsize: $scope.minsize,
@@ -374,7 +375,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
                 $interval.cancel(updateSearchMessagesInterval);
             }
         );
-    }, 500);
+    }, 200);
 
     $scope.cancelSearch = function () {
         if (angular.isDefined(updateSearchMessagesInterval)) {

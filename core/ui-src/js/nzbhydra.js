@@ -494,6 +494,9 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                     options: {
                         inherit: true
                     },
+                    params: {
+                        modalInstance: null
+                    },
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
                             return loginRequired($q, $timeout, $state, HydraAuthService, "search")
@@ -786,3 +789,4 @@ nzbhydraapp.directive('eventFocus', function (focus) {
         });
     };
 });
+

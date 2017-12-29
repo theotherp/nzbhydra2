@@ -494,6 +494,9 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     options: {
                         inherit: true
                     },
+                    params: {
+                        modalInstance: null
+                    },
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
                             return loginRequired($q, $timeout, $state, HydraAuthService, "search")
@@ -786,51 +789,8 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
         });
     };
 }]);
-angular
-    .module('nzbhydraApp')
-    .directive('titleGroup', titleGroup);
-
-function titleGroup() {
-    controller.$inject = ["$scope", "DebugService"];
-    return {
-        templateUrl: 'static/html/directives/title-group.html',
-        scope: {
-            titles: "<",
-            selected: "=",
-            expanded: "=",
-            rowIndex: "<",
-            internalRowIndex: "@"
-        },
-        controller: controller,
-        multiElement: true
-    };
-
-    function controller($scope, DebugService) {
-        $scope.titlesExpanded = $scope.expanded.indexOf($scope.titles[0][0].title) > -1;
-
-        $scope.$on("toggleTitleExpansion", function (event, isExpanded, title) {
-            $scope.titlesExpanded = isExpanded;
-            var index = $scope.expanded.indexOf(title);
-            if (!isExpanded && index > -1) {
-                $scope.expanded.splice(index, 1);
-            } else if(isExpanded){
-                $scope.expanded.push(title);
-            }
-
-            event.stopPropagation();
-        });
 
 
-        $scope.titlesToShow = titlesToShow;
-
-        function titlesToShow() {
-            return $scope.titles.slice(1);
-        }
-
-        DebugService.log("title-group");
-
-    }
-}
 angular
     .module('nzbhydraApp')
     .directive('tabOrChart', tabOrChart);
@@ -989,6 +949,10 @@ function searchResult() {
 
         $scope.$on("duplicatesDisplayed", function($event, value) {
             $scope.foo.duplicatesDisplayed = value;
+            if (!value) {
+                //Collapse duplicate groups they shouldn't be displayed
+                $scope.duplicatesExpanded = false;
+            }
             calculateDisplayState();
         });
 
@@ -1046,6 +1010,12 @@ function searchResult() {
             }
             $scope.foo.selected = true;
             sendSelectionEvent();
+        });
+        $scope.$on("toggleSelection", function ($event, result, value) {
+            if (!$scope.resultDisplayed || result !== $scope.result) {
+                return;
+            }
+            $scope.foo.selected = value;
         });
     }
 
@@ -1117,96 +1087,17 @@ function searchResult() {
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
 
-
-
-
+        $scope.kify =  function() {
+           return function (number) {
+                if (number > 1000) {
+                    return Math.round(number / 1000) + "k";
+                }
+                return number;
+            };
+        };
         DebugService.log("search-result");
     }
 }
-angular
-    .module('nzbhydraApp')
-    .directive('otherColumns', otherColumns);
-
-function otherColumns($http, $templateCache, $compile, $window) {
-    controller.$inject = ["$scope", "$http", "$uibModal", "growl", "HydraAuthService", "DebugService"];
-    return {
-        scope: {
-            result: "<"
-        },
-        multiElement: true,
-
-        link: function (scope, element, attrs) {
-            $http.get('static/html/directives/search-result-non-title-columns.html', {cache: $templateCache}).success(function (templateContent) {
-                element.replaceWith($compile(templateContent)(scope));
-            });
-
-        },
-        // templateUrl: 'static/html/directives/search-result-non-title-columns.html',
-        controller: controller
-    };
-
-    function controller($scope, $http, $uibModal, growl, HydraAuthService, DebugService) {
-
-        $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
-
-        $scope.showNfo = showNfo;
-
-        function showNfo(resultItem) {
-            if (resultItem.has_nfo === 0) {
-                return;
-            }
-            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
-            return $http.get(uri.toString()).then(function (response) {
-                if (response.data.successful) {
-                    if (response.data.hasNfo) {
-                        $scope.openModal("lg", response.data.content)
-                    } else {
-                        growl.info("No NFO available");
-                    }
-                } else {
-                    growl.error(response.data.content);
-                }
-            });
-        }
-
-        $scope.openModal = openModal;
-
-        function openModal(size, nfo) {
-            var modalInstance = $uibModal.open({
-                template: '<pre class="nfo"><span ng-bind-html="nfo"></span></pre>',
-                controller: NfoModalInstanceCtrl,
-                size: size,
-                resolve: {
-                    nfo: function () {
-                        return nfo;
-                    }
-                }
-            });
-
-            modalInstance.result.then();
-        }
-
-        $scope.downloadNzb = downloadNzb;
-
-        function downloadNzb(resultItem) {
-            //href = "{{ result.link }}"
-            $window.location.href = resultItem.link;
-        }
-
-        $scope.getNfoTooltip = function () {
-            if ($scope.result.hasNfo === "YES") {
-                return "Show NFO"
-            } else if ($scope.result.hasNfo === "MAYBE") {
-                return "Try to load NFO (may not be available)";
-            } else {
-                return "No NFO available";
-            }
-        };
-        DebugService.log("other-columns");
-    }
-
-}
-otherColumns.$inject = ["$http", "$templateCache", "$compile", "$window"];
 
 angular
     .module('nzbhydraApp')
@@ -1228,16 +1119,14 @@ NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];
 
 angular
     .module('nzbhydraApp')
-    .filter('kify', kify);
-
-function kify() {
-    return function (number) {
-        if (number > 1000) {
-            return Math.round(number / 1000) + "k";
+    .filter('kify', function() {
+        return function (number) {
+            if (number > 1000) {
+                return Math.round(number / 1000) + "k";
+            }
+            return number;
         }
-        return number;
-    }
-}
+    });
 //Can be used in an ng-repeat directive to call a function when the last element was rendered
 //We use it to mark the end of sorting / filtering so we can stop blocking the UI
 
@@ -1661,128 +1550,6 @@ function focusOn() {
 
 angular
     .module('nzbhydraApp')
-    .directive('duplicateGroup', duplicateGroup);
-
-function duplicateGroup() {
-    duplicateGroupController.$inject = ["$scope", "localStorageService", "DebugService"];
-    return {
-        templateUrl: 'static/html/directives/duplicate-group.html',
-        scope: {
-            duplicates: "<",
-            selected: "=",
-            isFirstRow: "<",
-            rowIndex: "<",
-            displayTitleToggle: "<",
-            internalRowIndex: "@",
-            titlesExpanded: "="
-        },
-        controller: duplicateGroupController
-    };
-
-    function duplicateGroupController($scope, localStorageService, DebugService) {
-        $scope.internalRowIndex = Number($scope.internalRowIndex);
-        $scope.rowIndex = Number($scope.rowIndex);
-        $scope.duplicatesExpanded = false;
-        $scope.foo = {
-            duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false
-        };
-        $scope.duplicatesToShow = duplicatesToShow;
-
-        function duplicatesToShow() {
-            return $scope.duplicates.slice(1);
-        }
-
-        $scope.toggleTitleExpansion = function () {
-            $scope.titlesExpanded = !$scope.titlesExpanded;
-            $scope.$emit("toggleTitleExpansion", $scope.titlesExpanded, $scope.duplicates[0].title);
-        };
-
-        $scope.toggleDuplicateExpansion = function () {
-            $scope.duplicatesExpanded = !$scope.duplicatesExpanded;
-        };
-
-        $scope.$on("invertSelection", function () {
-            for (var i = 0; i < $scope.duplicates.length; i++) {
-                if ($scope.duplicatesExpanded) {
-                    invertSelection($scope.selected, $scope.duplicates[i]);
-                } else {
-                    if (i > 0) {
-                        //Always remove duplicates that aren't displayed
-                        invertSelection($scope.selected, $scope.duplicates[i], true);
-                    } else {
-                        invertSelection($scope.selected, $scope.duplicates[i]);
-                    }
-                }
-            }
-        });
-        $scope.$on("deselectAll", function () {
-            $scope.selected.splice(0, $scope.selected.length);
-
-        });
-        $scope.$on("selectAll", function () {
-            $scope.selected.push.apply($scope.selected, $scope.duplicates);
-        });
-
-        $scope.$on("duplicatesDisplayed", function (event, args) {
-            $scope.foo.duplicatesDisplayed = args;
-            if (!args) {
-                $scope.duplicatesExpanded = false;
-            }
-        });
-
-        $scope.clickCheckbox = function (event) {
-            var globalCheckboxIndex = $scope.rowIndex * 1000 + $scope.internalRowIndex * 100 + Number(event.currentTarget.dataset.checkboxIndex);
-
-            $scope.$emit("checkboxClicked", event, globalCheckboxIndex, event.currentTarget.checked);
-        };
-
-        function isBetween(num, betweena, betweenb) {
-            return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
-        }
-
-        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue) {
-            var globalDuplicateGroupIndex = $scope.rowIndex * 1000 + $scope.internalRowIndex * 100;
-            if (isBetween(globalDuplicateGroupIndex, startIndex, endIndex)) {
-
-                for (var i = 0; i < $scope.duplicates.length; i++) {
-                    if (isBetween(globalDuplicateGroupIndex + i, startIndex, endIndex)) {
-                        if (i === 0 || $scope.duplicatesExpanded) {
-                            console.log("Indirectly clicked row with global index " + (globalDuplicateGroupIndex + i) + " setting new checkbox value to " + newValue);
-                            var index = _.indexOf($scope.selected, $scope.duplicates[i]);
-                            if (index === -1 && newValue) {
-                                $scope.selected.push($scope.duplicates[i]);
-                            } else if (index > -1 && !newValue) {
-                                $scope.selected.splice(index, 1);
-
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        function invertSelection(a, b, dontPush) {
-            var index = _.indexOf(a, b);
-            if (index > -1) {
-                a.splice(index, 1);
-            } else {
-                if (!dontPush)
-                    a.push(b);
-            }
-        }
-
-        // var myInjector = angular.injector(["ng"]);
-        // var timeout = myInjector.get("$timeout");
-        // timeout(function () {
-        //     console.log("duplicateGroup watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
-        // }, 1000);
-        DebugService.log("duplicate-group");
-    }
-
-
-}
-angular
-    .module('nzbhydraApp')
     .directive('downloadNzbzipButton', downloadNzbzipButton);
 
 function downloadNzbzipButton() {
@@ -1827,6 +1594,8 @@ function downloadNzbzipButton() {
                         if (response.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
                         }
+                    } else {
+                        growl.error(response.message);
                     }
                 }).error(function (data, status, headers, config) {
                     growl.error(status);
@@ -1974,7 +1743,7 @@ function freetextFilter(DebugService) {
             if (keyEvent.which === 13) {
                 $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
             }
-        }
+        };
         DebugService.log("filter-freetext");
     }
 }
@@ -3438,14 +3207,24 @@ function SearchService($http) {
     var lastExecutedQuery;
     var lastExecutedSearchRequestParameters;
     var lastResults;
+    var modalInstance;
 
     return {
         search: search,
         getLastResults: getLastResults,
         loadMore: loadMore,
-        getSearchState: getSearchState
+        getSearchState: getSearchState,
+        getModalInstance: getModalInstance,
+        setModalInstance: setModalInstance,
     };
 
+    function getModalInstance() {
+        return modalInstance;
+    }
+
+    function setModalInstance(mi) {
+        modalInstance = mi;
+    }
 
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
         console.time("search");
@@ -3601,7 +3380,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.optionsOptions = [
         {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
-        {id: "sumGrabs", label: "Use sum of grabs / seeders in groups for filtering / sorting"}
+        {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"}
 
     ];
     $scope.optionsSelectedModel = [];
@@ -3610,7 +3389,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
         }
     }
-
 
     $scope.optionsExtraSettings = {
         showCheckAll: false,
@@ -3922,14 +3700,15 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
 
         var filtered = _.filter(results, filter);
-        $scope.selected = _.filter($scope.selected, function (x) {
+        var newSelected = $scope.selected;
+        _.forEach($scope.selected, function (x) {
             if (filtered.indexOf(x) === -1) {
                 console.log("Removing " + x.title + " from selected results because it's being hidden");
-                return false;
+                $scope.$broadcast("toggleSelection", x, false);
+                newSelected.splice($scope.selected.indexOf(x), 1);
             }
-            return true;
         });
-
+        $scope.selected = newSelected;
 
         var grouped = _.groupBy(filtered, getGroupingString);
         var mapped = _.map(grouped, createSortedHashgroups);
@@ -4106,9 +3885,15 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.downloadNzbsCallback = function (addedIds) {
         if (addedIds !== null && addedIds.length > 0) {
             growl.info("Removing downloaded NZBs from selection");
-            $scope.selected = _.filter($scope.selected, function (x) {
-                return addedIds.indexOf(x) > -1;
-            })
+            var toRemove = _.filter($scope.selected, function (x) {
+                return addedIds.indexOf(Number(x.searchResultId)) > -1;
+            });
+            var newSelected = $scope.selected;
+            _.forEach(toRemove, function (x) {
+                $scope.$broadcast("toggleSelection", x, false);
+                newSelected.splice($scope.selected.indexOf(x), 1);
+            });
+            $scope.selected = newSelected;
         }
     };
 
@@ -4119,9 +3904,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         }
     };
 
-    $scope.$on("onFinishRender", function() {
+    $scope.$on("onFinishRender", function () {
         console.log("Last rendered");
-        //stopBlocking();
+        SearchService.getModalInstance().close();
+        stopBlocking();
     });
 
     console.log("Search results controller end");
@@ -4684,7 +4470,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
-                modalInstance.close();
+                //modalInstance.close();
+            SearchService.setModalInstance(modalInstance);
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
                         minsize: $scope.minsize,
@@ -4885,7 +4672,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
                 $interval.cancel(updateSearchMessagesInterval);
             }
         );
-    }, 500);
+    }, 200);
 
     $scope.cancelSearch = function () {
         if (angular.isDefined(updateSearchMessagesInterval)) {
@@ -6330,6 +6117,8 @@ filters
             return $sce.trustAsHtml(text);
         };
     }]);
+
+
 angular
     .module('nzbhydraApp')
     .factory('FileSelectionService', FileSelectionService);
