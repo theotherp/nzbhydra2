@@ -14,12 +14,12 @@
   ~  limitations under the License.
   -->
 
-<tr ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1}" style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
+<tr ng-class="{'odd': rowIndex % 2 == 0, 'even' : rowIndex % 2 == 1, 'duplicate' : result.duplicateGroupIndex > 0} " style="margin:0; border-width: 0; padding: 0" ng-if="resultDisplayed" class="search-result-row">
     <td class="col-md-12 search-results-cell result-title" style="margin:0;">
         <input type="checkbox"
                ng-model="foo.selected"
                ng-click="clickCheckbox($event, result)" data-checkbox-index="0" class="result-checkbox"/>
-        <a href="" ng-click="toggleTitleExpansion()" ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0)}" class="title-expand-toggle"
+        <a href="" ng-click="toggleTitleExpansion()" ng-class="{'visibility-hidden': (result.titlesLength === 1 || result.titleGroupIndex > 0 || result.duplicateGroupIndex > 0)}" class="title-expand-toggle"
            uib-tooltip="Click to see or hide all results with the same title"
            tooltip-placement="top"
            tooltip-trigger="mouseenter"

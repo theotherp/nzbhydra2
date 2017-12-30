@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
@@ -30,7 +31,34 @@ public class DevIndexer extends Newznab {
             rssRoot.getRssChannel().getNewznabResponse().setTotal(1);
             rssRoot.getRssChannel().getItems().get(0).getEnclosure().setLength(100000L);
             rssRoot.getRssChannel().getItems().get(0).getNewznabAttributes().clear();
-        } else if (uri.toString().contains("duplicates")) {
+        } else if (uri.toString().contains("duplicatesandtitlegroups")) {
+            //One duplicate
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();
+            rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getItems().get(0).getEnclosure().setLength(100000L);
+            rssRoot.getRssChannel().getItems().get(0).getNewznabAttributes().clear();
+            rssRoot.getRssChannel().getItems().get(0).getTorznabAttributes().clear();
+            rssRoot.getRssChannel().getItems().get(0).getNewznabAttributes().add(new NewznabAttribute("grabs", "100"));
+
+            //Another duplicate in the same title group
+            mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();
+            RssRoot rssRoot3 = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot3.getRssChannel().getItems().get(0).getEnclosure().setLength(200000L);
+            rssRoot3.getRssChannel().getItems().get(0).getNewznabAttributes().clear();
+            rssRoot3.getRssChannel().getItems().get(0).getTorznabAttributes().clear();
+            rssRoot3.getRssChannel().getItems().get(0).getNewznabAttributes().add(new NewznabAttribute("grabs", "2000"));
+            rssRoot3.getRssChannel().getItems().get(0).setLink("anotherlink"); //Otherwise it will result in a unique key exception
+            rssRoot.getRssChannel().getItems().add(rssRoot3.getRssChannel().getItems().get(0));
+
+            //Will be a grouped title but have no duplicates
+            mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("anotherresult").titleWords(Collections.emptyList()).total(1).build();
+            RssRoot rssRoot2 = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getItems().add(rssRoot2.getRssChannel().getItems().get(0));
+
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(3);
+
+        }
+        else if (uri.toString().contains("duplicates")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(10).titleBase("duplicates").titleWords(Collections.emptyList()).total(10).build();
             rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10);
@@ -41,7 +69,7 @@ public class DevIndexer extends Newznab {
                 rssItem.setDescription("Indexer: " + getName() + ", title:" + rssItem.getTitle());
             }
 
-        }else if (uri.toString().contains("tworesults")) {
+        }  else if (uri.toString().contains("tworesults")) {
             rssRoot = NewznabMockBuilder.generateResponse(0, 2, "results", false, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(2);
         }
