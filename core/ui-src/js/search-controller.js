@@ -168,6 +168,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
+        // console.time("searchonly");
+        // console.time("searchall");
         isSearchCancelled = false;
         searchRequestId = Math.round(Math.random() * 999999);
         var modalInstance = $scope.openModal(searchRequestId);

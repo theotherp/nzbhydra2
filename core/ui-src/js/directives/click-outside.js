@@ -51,7 +51,6 @@ function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
                         if (isChild) {
                             return;
                         }
-                        console.log("Clicked outside");
                         // loop through the available elements, looking for classes in the class list that might match and so will eat
                         for (element = e.target; element; element = element.parentNode) {
                             // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)

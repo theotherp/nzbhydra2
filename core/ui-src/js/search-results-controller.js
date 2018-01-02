@@ -4,7 +4,7 @@ angular
 
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
-
+    // console.time("Presenting");
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -63,6 +63,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $timeout(function () {
         $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode, sortModel.reversed);
     }, 10);
+
 
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
@@ -234,7 +235,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function sortAndFilter(results) {
-        console.time("sortAndFilter");
+        // console.time("sortAndFilter");
         var query;
         var words;
         if ("title" in $scope.filterModel) {
@@ -439,7 +440,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
         $scope.$broadcast("calculateDisplayState");
 
-        console.timeEnd("sortAndFilter");
+        // console.timeEnd("sortAndFilter");
         return filteredResults;
     }
 
@@ -455,7 +456,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        console.time("setDataFromSearchResult");
+        // console.time("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
@@ -490,7 +491,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 $scope.categoriesForFiltering.push({label: category.name, id: category.name})
             }
         });
-        console.timeEnd("setDataFromSearchResult");
+        // console.timeEnd("setDataFromSearchResult");
     }
 
     function uniq(searchResults) {
@@ -606,15 +607,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.$on("onFinishRender", function () {
-        console.log("Last rendered");
+        // console.log("Last rendered");
         SearchService.getModalInstance().close();
         stopBlocking();
     });
 
-    console.log("Search results controller end");
     $timeout(function () {
-        console.log("searchResults watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
-
         function getWatchers(root) {
             root = angular.element(root || document.documentElement);
             var watcherCount = 0;
@@ -654,8 +652,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             return getElemWatchers(root, ids);
         }
-
-        console.log(getWatchers().length);
 
         DebugService.print();
 

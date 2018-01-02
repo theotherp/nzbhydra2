@@ -529,10 +529,8 @@ function ConfigBoxService($http, $q, $uibModal) {
         });
 
         result.result.then(function (data) {
-            console.log(data);
             deferred.resolve(data[0], data[1]);
         }, function (message) {
-            console.log(message)
             deferred.reject(message);
         });
 

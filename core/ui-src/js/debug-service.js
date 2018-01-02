@@ -36,6 +36,7 @@ function DebugService($filter) {
     }
     
     function print() {
+        return; //Re-enable if necessary
         for (var key in debug) {
             if (debug.hasOwnProperty(key)) {
                 console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));

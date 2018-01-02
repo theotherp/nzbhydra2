@@ -81,6 +81,5 @@ function HeaderController($scope, $state, growl, HydraAuthService, $state) {
             }
         }
 
-    }
-        console.log("New header controller");
+    };
 }

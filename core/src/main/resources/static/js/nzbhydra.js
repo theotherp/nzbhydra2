@@ -1138,9 +1138,10 @@ function onFinishRender($timeout) {
     function linkFunction(scope, element, attr) {
 
         if (scope.$last === true) {
-            $timeout(function () {
-                scope.$emit("onFinishRender")
-            });
+            // console.log("Render finished");
+            // console.timeEnd("Presenting");
+            // console.timeEnd("searchall");
+            scope.$emit("onFinishRender")
         }
     }
 
@@ -1312,7 +1313,6 @@ function hydraupdates() {
             $scope.updateAvailable = data.data.updateAvailable;
             $scope.latestVersionIgnored = data.data.latestVersionIgnored;
             $scope.changelog = data.data.changelog;
-            console.log($scope);
         });
 
         UpdateService.getVersionHistory().then(function (data) {
@@ -2138,7 +2138,6 @@ function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
                         if (isChild) {
                             return;
                         }
-                        console.log("Clicked outside");
                         // loop through the available elements, looking for classes in the class list that might match and so will eat
                         for (element = e.target; element; element = element.parentNode) {
                             // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
@@ -3227,7 +3226,7 @@ function SearchService($http) {
     }
 
     function search(searchRequestId, category, query, metaData, season, episode, minsize, maxsize, minage, maxage, indexers, mode) {
-        console.time("search");
+        // console.time("search");
         var uri = new URI("internalapi/search");
         var searchRequestParameters = {};
         searchRequestParameters.searchRequestId = searchRequestId;
@@ -3293,7 +3292,7 @@ function SearchService($http) {
             "notPickedIndexersWithReason": notPickedIndexersWithReason
 
         };
-        console.timeEnd("search");
+        // console.timeEnd("searchonly");
         return lastResults;
     }
 
@@ -3308,7 +3307,7 @@ angular
 
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
-
+    // console.time("Presenting");
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -3367,6 +3366,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $timeout(function () {
         $scope.$broadcast("newSortColumn", sortModel.column, sortModel.sortMode, sortModel.reversed);
     }, 10);
+
 
     $scope.foo = {
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
@@ -3538,7 +3538,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function sortAndFilter(results) {
-        console.time("sortAndFilter");
+        // console.time("sortAndFilter");
         var query;
         var words;
         if ("title" in $scope.filterModel) {
@@ -3743,7 +3743,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
         $scope.$broadcast("calculateDisplayState");
 
-        console.timeEnd("sortAndFilter");
+        // console.timeEnd("sortAndFilter");
         return filteredResults;
     }
 
@@ -3759,7 +3759,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        console.time("setDataFromSearchResult");
+        // console.time("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
@@ -3794,7 +3794,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 $scope.categoriesForFiltering.push({label: category.name, id: category.name})
             }
         });
-        console.timeEnd("setDataFromSearchResult");
+        // console.timeEnd("setDataFromSearchResult");
     }
 
     function uniq(searchResults) {
@@ -3910,15 +3910,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     };
 
     $scope.$on("onFinishRender", function () {
-        console.log("Last rendered");
+        // console.log("Last rendered");
         SearchService.getModalInstance().close();
         stopBlocking();
     });
 
-    console.log("Search results controller end");
     $timeout(function () {
-        console.log("searchResults watchers: " + ($scope.$$watchers === null ? 0 : $scope.$$watchers.length));
-
         function getWatchers(root) {
             root = angular.element(root || document.documentElement);
             var watcherCount = 0;
@@ -3958,8 +3955,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
             return getElemWatchers(root, ids);
         }
-
-        console.log(getWatchers().length);
 
         DebugService.print();
 
@@ -4469,6 +4464,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     //Is called when the search page is opened with params, either because the user initiated the search (which triggered a goTo to this page) or because a search URL was entered
     $scope.startSearch = function () {
+        // console.time("searchonly");
+        // console.time("searchall");
         isSearchCancelled = false;
         searchRequestId = Math.round(Math.random() * 999999);
         var modalInstance = $scope.openModal(searchRequestId);
@@ -5413,8 +5410,7 @@ function HeaderController($scope, $state, growl, HydraAuthService, $state) {
             }
         }
 
-    }
-        console.log("New header controller");
+    };
 }
 HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "$state"];
 
@@ -6055,10 +6051,8 @@ function ConfigBoxService($http, $q, $uibModal) {
         });
 
         result.result.then(function (data) {
-            console.log(data);
             deferred.resolve(data[0], data[1]);
         }, function (message) {
-            console.log(message)
             deferred.reject(message);
         });
 
@@ -6158,7 +6152,6 @@ function FileSelectionService($http, $q, $uibModal) {
         });
 
         instance.result.then(function (selection) {
-                console.log(selection);
                 deferred.resolve(selection);
             }, function () {
                 deferred.reject("dismissed");
@@ -6504,6 +6497,7 @@ function DebugService($filter) {
     }
     
     function print() {
+        return; //Re-enable if necessary
         for (var key in debug) {
             if (debug.hasOwnProperty(key)) {
                 console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));

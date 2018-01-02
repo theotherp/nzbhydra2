@@ -16,7 +16,6 @@ function hydraupdates() {
             $scope.updateAvailable = data.data.updateAvailable;
             $scope.latestVersionIgnored = data.data.latestVersionIgnored;
             $scope.changelog = data.data.changelog;
-            console.log($scope);
         });
 
         UpdateService.getVersionHistory().then(function (data) {

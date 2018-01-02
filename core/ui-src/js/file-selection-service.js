@@ -32,7 +32,6 @@ function FileSelectionService($http, $q, $uibModal) {
         });
 
         instance.result.then(function (selection) {
-                console.log(selection);
                 deferred.resolve(selection);
             }, function () {
                 deferred.reject("dismissed");
