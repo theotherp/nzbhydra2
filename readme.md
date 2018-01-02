@@ -21,8 +21,8 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 [Screenshots](https://imgur.com/a/ePxwj)  
 
 ### Major improvements over NZBHydra v1
-* Improved performance especially when using many indexers and/or doing multiple searches concurrently. Up to six times faster search times (ignoring indexer response times):
-  * I wrote a benchmark. 5*3 concurrent searches took v1 50 seconds while v2 only took 4 seconds. 5 subsequent single searches took 15 versus 2 seconds.
+* Improved performance especially when using many indexers and/or doing multiple searches concurrently. Up to six times faster search times (ignoring indexer response times) and twice as fast result presentation:
+  * I wrote a benchmark. 5*3 concurrent API searches took 50 seconds on v1 compared to 4 seconds on v2. 5 subsequent single searches took 15 versus 2 seconds.
   * Stats calculation may be slower, but you don't do that so often 
 * Display of search progress with update messages and option to cancel searching
 * RSS support which will cache the results for a given time

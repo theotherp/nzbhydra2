@@ -1,6 +1,10 @@
 package org.nzbhydra.historystats;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.historystats.stats.HistoryRequestData;
+import org.nzbhydra.indexers.IndexerSearchEntity;
+import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.SearchEntity;
 import org.nzbhydra.searching.SearchRepository;
 import org.nzbhydra.web.SessionStorage;
@@ -16,6 +20,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +36,8 @@ public class History {
     private EntityManager entityManager;
     @Autowired
     private SearchRepository searchRepository;
+    @Autowired
+    private IndexerSearchRepository indexerSearchRepository;
 
     public <T> Page<T> getHistory(HistoryRequestData requestData, String tableName, Class<T> resultClass) {
         Map<String, Object> parameters = new HashMap<>();
@@ -68,7 +75,11 @@ public class History {
         }
         SortModel sortModel = requestData.getSortModel();
         if (sortModel != null) {
-            sort = String.format(" order by lower(%s) %s nulls last ", sortModel.getColumn(), sortModel.getSortMode() == 1 ? "ASC" : "DESC");
+            String column = sortModel.getColumn();
+            if (!"time".equalsIgnoreCase(sortModel.getColumn())) {
+                column = column.toLowerCase();
+            }
+            sort = String.format(" order by lower(%s) %s nulls last ", column, sortModel.getSortMode() == 1 ? "ASC" : "DESC");
         }
 
         String whereConditions = "";
@@ -114,5 +125,33 @@ public class History {
         }
 
         return entities;
+    }
+
+    public SearchDetails getSearchDetails(int searchId) {
+        SearchEntity search = searchRepository.findOne(searchId);
+        Collection<IndexerSearchEntity> entities = indexerSearchRepository.findBySearchEntity(search);
+        List<IndexerSearchTO> details = new ArrayList<>();
+        for (IndexerSearchEntity entity : entities) {
+            details.add(new IndexerSearchTO(entity.getIndexerEntity().getName(), entity.getSuccessful(), entity.getResultsCount()));
+        }
+        return new SearchDetails(search.getUsername(), search.getIp(), search.getSource().name(), details);
+    }
+
+
+    @Data
+    @AllArgsConstructor
+    public class SearchDetails {
+        String username;
+        String ip;
+        String source;
+        List<IndexerSearchTO> indexerSearches;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class IndexerSearchTO {
+        private String indexerName;
+        private boolean successful;
+        private int resultsCount;
     }
 }

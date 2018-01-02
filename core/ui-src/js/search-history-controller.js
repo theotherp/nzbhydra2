@@ -3,7 +3,7 @@ angular
     .controller('SearchHistoryController', SearchHistoryController);
 
 
-function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout) {
+function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout, $http, $uibModal) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
@@ -160,5 +160,29 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         return $sce.trustAsHtml(result.join(", "));
     };
 
+    $scope.showDetails = function (searchId) {
+
+        function ModalInstanceCtrl($scope, $uibModalInstance, $http, searchId) {
+            $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
+                $scope.details = data.data;
+            });
+
+
+        }
+
+        $uibModal.open({
+            templateUrl: 'static/html/search-history-details-modal.html',
+            controller: ModalInstanceCtrl,
+            size: "md",
+            resolve: {
+                searchId: function () {
+                    return searchId;
+                }
+            }
+        });
+
+
+    }
 
 }
+

@@ -2378,7 +2378,7 @@ function addableNzb(DebugService) {
             })
         };
 
-        DebugService.log("addable-nzb");
+
     }
 }
 addableNzb.$inject = ["DebugService"];
@@ -3308,6 +3308,7 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
     // console.time("Presenting");
+    DebugService.log("foobar");
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -3915,6 +3916,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         stopBlocking();
     });
 
+    $timeout(function() {
+        DebugService.print();
+    }, 3000);
+
     $timeout(function () {
         function getWatchers(root) {
             root = angular.element(root || document.documentElement);
@@ -3956,9 +3961,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return getElemWatchers(root, ids);
         }
 
-        DebugService.print();
 
     }, 100);
+
 
 }
 SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService"];
@@ -4133,7 +4138,7 @@ angular
     .controller('SearchHistoryController', SearchHistoryController);
 
 
-function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout) {
+function SearchHistoryController($scope, $state, SearchHistoryService, ConfigService, history, $sce, $filter, $timeout, $http, $uibModal) {
     $scope.limit = 100;
     $scope.pagination = {
         current: 1
@@ -4290,9 +4295,33 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         return $sce.trustAsHtml(result.join(", "));
     };
 
+    $scope.showDetails = function (searchId) {
+
+        function ModalInstanceCtrl($scope, $uibModalInstance, $http, searchId) {
+            $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
+                $scope.details = data.data;
+            });
+
+
+        }
+
+        $uibModal.open({
+            templateUrl: 'static/html/search-history-details-modal.html',
+            controller: ModalInstanceCtrl,
+            size: "md",
+            resolve: {
+                searchId: function () {
+                    return searchId;
+                }
+            }
+        });
+
+
+    }
 
 }
-SearchHistoryController.$inject = ["$scope", "$state", "SearchHistoryService", "ConfigService", "history", "$sce", "$filter", "$timeout"];
+SearchHistoryController.$inject = ["$scope", "$state", "SearchHistoryService", "ConfigService", "history", "$sce", "$filter", "$timeout", "$http", "$uibModal"];
+
 
 angular
     .module('nzbhydraApp')
@@ -4445,7 +4474,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             //Very hacky way of preventing a press of "enter" to select an autocomplete item from triggering a search
             //This is called *after* selectAutoComplete() is called
             var epochEnterNow = (new Date).getTime();
-            var diff = epochEnterNow-epochEnter;
+            var diff = epochEnterNow - epochEnter;
             if (diff > 50) {
                 $scope.initiateSearch();
             }
@@ -4454,7 +4483,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
-    $scope.onTypeAheadKeyDown = function(event) {
+    $scope.onTypeAheadKeyDown = function (event) {
         if (event.keyCode === 8) {
             if ($scope.query === "") {
                 $scope.clearAutocomplete();
@@ -4473,7 +4502,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 //modalInstance.close();
-            SearchService.setModalInstance(modalInstance);
+                SearchService.setModalInstance(modalInstance);
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
                         minsize: $scope.minsize,
@@ -4661,7 +4690,13 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
 
     updateSearchMessagesInterval = $interval(function () {
         SearchService.getSearchState(searchRequestId).then(function (data) {
-                $scope.messages = data.data.messages;
+                if ($scope.messages && $scope.messages.length > 0 && data.data.messages.length === 0) {
+                    //We already received messages but now the messages are empty. That means that the search is finished in the backend and we're currently waiting for the
+                    //presentation to finish
+                    $scope.messages.push("Finished searching. Preparing results...")
+                }  else {
+                    $scope.messages = data.data.messages;
+                }
                 $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
                 $scope.indexersSelected = data.data.indexersSelected;
                 $scope.indexersFinished = data.data.indexersFinished;
@@ -6502,6 +6537,7 @@ function DebugService($filter) {
             if (debug.hasOwnProperty(key)) {
                 console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));
                 console.log("Last " + key + ": " + $filter("date")(new Date(debug[key]["last"]), "h:mm:ss:sss"));
+                console.log("Diff: " + (debug[key]["last"] - debug[key]["first"]));
             }
         }
     }

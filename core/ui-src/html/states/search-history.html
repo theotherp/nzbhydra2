@@ -51,6 +51,7 @@
                     <freetext-filter column="ip"/>
                 </column-filter-wrapper>
             </th>
+            <th>Details</th>
         </tr>
         </thead>
         <tbody>
@@ -64,11 +65,12 @@
                     {{ formatQuery(request) }}
                 </span>
             </td>
-            <td class="narrow-row">{{ request.categoryName }}</td>
+            <td class="narrow-row">{{ ::request.categoryName }}</td>
             <td class="narrow-row" ng-bind-html="formatAdditional(request)"></td>
-            <td class="narrow-row">{{ request.source === "INTERNAL" ? "Internal" : "API"}}</td>
-            <td class="narrow-row" ng-if="columnSizes.username > 0">{{ request.username }}</td>
-            <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ request.ip }}</td>
+            <td class="narrow-row">{{ ::request.source === "INTERNAL" ? "Internal" : "API"}}</td>
+            <td class="narrow-row" ng-if="columnSizes.username > 0">{{ ::request.username }}</td>
+            <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ ::request.ip }}</td>
+            <td class="narrow-row"><span ng-click="showDetails(request.id)" class="glyphicon glyphicon-eye-open"></span></td>
         </tr>
         </tbody>
     </table>

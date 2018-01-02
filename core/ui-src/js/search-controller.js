@@ -149,7 +149,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             //Very hacky way of preventing a press of "enter" to select an autocomplete item from triggering a search
             //This is called *after* selectAutoComplete() is called
             var epochEnterNow = (new Date).getTime();
-            var diff = epochEnterNow-epochEnter;
+            var diff = epochEnterNow - epochEnter;
             if (diff > 50) {
                 $scope.initiateSearch();
             }
@@ -158,7 +158,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
     };
 
-    $scope.onTypeAheadKeyDown = function(event) {
+    $scope.onTypeAheadKeyDown = function (event) {
         if (event.keyCode === 8) {
             if ($scope.query === "") {
                 $scope.clearAutocomplete();
@@ -177,7 +177,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var indexers = angular.isUndefined($scope.indexers) ? undefined : $scope.indexers.join(",");
         SearchService.search(searchRequestId, $scope.category.name, $scope.query, $scope.selectedItem, $scope.season, $scope.episode, $scope.minsize, $scope.maxsize, $scope.minage, $scope.maxage, indexers, $scope.mode).then(function () {
                 //modalInstance.close();
-            SearchService.setModalInstance(modalInstance);
+                SearchService.setModalInstance(modalInstance);
                 if (!isSearchCancelled) {
                     $state.go("root.search.results", {
                         minsize: $scope.minsize,
@@ -364,7 +364,13 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
 
     updateSearchMessagesInterval = $interval(function () {
         SearchService.getSearchState(searchRequestId).then(function (data) {
-                $scope.messages = data.data.messages;
+                if ($scope.messages && $scope.messages.length > 0 && data.data.messages.length === 0) {
+                    //We already received messages but now the messages are empty. That means that the search is finished in the backend and we're currently waiting for the
+                    //presentation to finish
+                    $scope.messages.push("Finished searching. Preparing results...")
+                }  else {
+                    $scope.messages = data.data.messages;
+                }
                 $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
                 $scope.indexersSelected = data.data.indexersSelected;
                 $scope.indexersFinished = data.data.indexersFinished;

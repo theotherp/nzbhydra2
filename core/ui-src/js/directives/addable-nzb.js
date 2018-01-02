@@ -39,6 +39,6 @@ function addableNzb(DebugService) {
             })
         };
 
-        DebugService.log("addable-nzb");
+
     }
 }

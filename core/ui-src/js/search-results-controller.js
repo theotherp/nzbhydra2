@@ -5,6 +5,7 @@ angular
 //SearchResultsController.$inject = ['blockUi'];
 function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
     // console.time("Presenting");
+    DebugService.log("foobar");
     $scope.limitTo = 100;
     $scope.offset = 0;
     //Handle incoming data
@@ -612,6 +613,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         stopBlocking();
     });
 
+    $timeout(function() {
+        DebugService.print();
+    }, 3000);
+
     $timeout(function () {
         function getWatchers(root) {
             root = angular.element(root || document.documentElement);
@@ -653,9 +658,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
             return getElemWatchers(root, ids);
         }
 
-        DebugService.print();
 
     }, 100);
+
 
 }
 
