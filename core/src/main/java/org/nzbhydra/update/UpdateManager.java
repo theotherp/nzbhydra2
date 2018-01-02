@@ -26,6 +26,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -61,6 +62,8 @@ public class UpdateManager implements InitializingBean {
     @Value("${nzbhydra.blockedVersionsUrl}")
     protected String blockedVersionsUrl;
 
+    @Autowired
+    private ConfigurableEnvironment environment;
     @Autowired
     private BackupAndRestore backupAndRestore;
     @Autowired
@@ -110,7 +113,7 @@ public class UpdateManager implements InitializingBean {
 
     public boolean latestVersionBlocked() throws UpdateException {
         SemanticVersion latestVersion = getLatestVersion();
-        if (getBlockedVersions().stream().anyMatch(x -> x.getVersion().equals(latestVersion))) {
+        if (getBlockedVersions().stream().anyMatch(x -> new SemanticVersion(x.getVersion()).equals(latestVersion))) {
             logger.debug("Version {} is in the list of blocked updates", latestVersion);
             return true;
         }
@@ -293,6 +296,8 @@ public class UpdateManager implements InitializingBean {
         }).start();
     }
 
+    
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -306,7 +311,7 @@ public class UpdateManager implements InitializingBean {
     @Data
     @AllArgsConstructor
     public static class BlockedVersion {
-        private SemanticVersion version;
+        private String version;
         private String comment;
     }
 }

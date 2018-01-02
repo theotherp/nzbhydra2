@@ -1,11 +1,6 @@
 [
   {
-    "version": {
-      "major": 0,
-      "minor": 0,
-      "patch": 97,
-      "asString": "0.0.97"
-    },
+    "version": "0.0.97",
     "comment": "some comment for 0.0.97"
   }
 ]

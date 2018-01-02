@@ -1,37 +1,10 @@
 [
   {
-    "version": "v0.0.1",
+    "version": "v1.0.0",
     "changes": [
       {
         "type": "note",
-        "text": "Initial release"
-      }
-    ]
-  },
-  {
-    "version": "v0.0.2",
-    "changes": [
-      {
-        "type": "note",
-        "text": "Just a test release"
-      }
-    ]
-  },
-  {
-    "version": "v0.0.3",
-    "changes": [
-      {
-        "type": "note",
-        "text": "Another test release"
-      }
-    ]
-  },
-  {
-    "version": "v0.0.4",
-    "changes": [
-      {
-        "type": "note",
-        "text": "Another test release"
+        "text": "First public release. Welcome!"
       }
     ]
   }

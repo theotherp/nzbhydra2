@@ -38,7 +38,6 @@ public class NewsProvider {
 
     public List<NewsEntry> getNews() throws IOException {
         if (Instant.now().minus(2, ChronoUnit.HOURS).isAfter(lastCheckedForNews)) {
-
             newsEntries = webAccess.callUrl(newsUrl, new TypeReference<List<NewsEntry>>() {
             });
             newsEntries.sort(Comparator.comparing(NewsEntry::getShowForVersion).reversed());

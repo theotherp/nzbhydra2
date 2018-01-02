@@ -87,7 +87,7 @@ public class UpdateManagerTest {
                 ));
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"), any(TypeReference.class))).thenReturn(
-                Arrays.asList(new BlockedVersion(new SemanticVersion("3.0.0"), "comment"))
+                Arrays.asList(new BlockedVersion("3.0.0", "comment"))
         );
     }
 

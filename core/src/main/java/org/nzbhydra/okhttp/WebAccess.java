@@ -2,6 +2,7 @@ package org.nzbhydra.okhttp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -31,6 +33,8 @@ public class WebAccess {
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
     ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ConfigurableEnvironment environment;
 
     public String callUrl(String url) throws IOException {
         return callUrl(url, new HashMap<>());
@@ -44,6 +48,12 @@ public class WebAccess {
         Builder builder = new Builder().url(url);
         for (Entry<String, String> entry : headers.entrySet()) {
             builder.addHeader(entry.getKey(), entry.getValue());
+        }
+        if (url.toLowerCase().contains("github.com")) {
+            String token = environment.getProperty("githubToken");
+            if (!Strings.isNullOrEmpty(token)) {
+                builder.addHeader("Authorization", "token " + token);
+            }
         }
 
         Request request = builder.build();

@@ -79,7 +79,7 @@ public class MockGithub {
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    public Asset uploadSeet(@RequestBody byte[] body) throws Exception {
+    public Asset uploadAsset(@RequestBody byte[] body) throws Exception {
         logger.info("Upload of {} bytes successful", body.length);
         return windowsAsset;
     }
@@ -93,9 +93,9 @@ public class MockGithub {
         );
     }
 
-    @RequestMapping(value = "/theotherp/nzbhydra/master/news.md", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @RequestMapping(value = "/theotherp/nzbhydra/master/news.json", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public String news() throws Exception {
-        return Resources.toString(Resources.getResource(MockGithub.class, "/static/news.md"), Charsets.UTF_8);
+        return Resources.toString(Resources.getResource(MockGithub.class, "/static/news.json"), Charsets.UTF_8);
     }
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)

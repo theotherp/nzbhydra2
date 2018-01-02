@@ -8,6 +8,6 @@
   "showForVersion" : "1.0.0",
   "newsAsMarkdown" : "<p>news1.0.0</p>\n"
 }, {
-  "showForVersion" : "0.0.0",
-  "newsAsMarkdown" : "<p>news0.0.0</p>\n"
+  "showForVersion" : "0.0.5-SNAPSHOT",
+  "newsAsMarkdown" : "<p>news0.0.5-SNAPSHOT </p>\n"
 } ]

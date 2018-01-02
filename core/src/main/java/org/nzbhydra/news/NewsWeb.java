@@ -6,7 +6,9 @@ import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
 import org.nzbhydra.auth.UserInfosProvider;
+import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.news.NewsProvider.NewsEntry;
+import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ public class NewsWeb {
     private UserInfosProvider userInfosProvider;
     @Autowired
     private NewsProvider newsProvider;
+    @Autowired
+    private UpdateManager updateManager;
 
     @RequestMapping(value = "/internalapi/news", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})
@@ -76,7 +80,9 @@ public class NewsWeb {
     private List<NewsEntryForWeb> transform(List<NewsEntry> entries) {
         List<NewsEntryForWeb> transformedEntries = new ArrayList<>();
         for (NewsEntry entry : entries) {
-            transformedEntries.add(new NewsEntryForWeb(entry.getShowForVersion().getAsString(), Markdown.renderMarkdownAsHtml(entry.getNewsAsMarkdown())));
+            boolean isForCurrentVersion = entry.getShowForVersion().equals(new SemanticVersion(updateManager.getCurrentVersionString()));
+            boolean isForNewerVersion = entry.getShowForVersion().isUpdateFor(new SemanticVersion(updateManager.getCurrentVersionString()));
+            transformedEntries.add(new NewsEntryForWeb(entry.getShowForVersion().getAsString(), Markdown.renderMarkdownAsHtml(entry.getNewsAsMarkdown()), isForCurrentVersion, isForNewerVersion));
         }
         return transformedEntries;
     }
@@ -87,5 +93,7 @@ public class NewsWeb {
     public static class NewsEntryForWeb {
         private String version;
         private String news;
+        private boolean forCurrentVersion;
+        private boolean forNewerVersion;
     }
 }
