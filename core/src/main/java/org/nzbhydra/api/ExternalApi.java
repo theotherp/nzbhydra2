@@ -267,6 +267,9 @@ public class ExternalApi {
         rssItem.setPubDate(searchResultItem.getPubDate());
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
+        newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
+        newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
+        newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
         if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
             rssItem.setNewznabAttributes(newznabAttributes);
         } else {
