@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
     // console.time("Presenting");
     DebugService.log("foobar");
     $scope.limitTo = 100;
@@ -70,7 +70,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         indexerStatusesExpanded: localStorageService.get("indexerStatusesExpanded") !== null ? localStorageService.get("indexerStatusesExpanded") : false,
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false,
         groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false,
-        sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true
+        sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true,
+        scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
@@ -78,8 +79,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
     $scope.optionsOptions = [
         {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
-        {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"}
-
+        {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"},
+        {id: "scrollToResults", label: "Scroll to results when finished"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -103,6 +104,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 toggleGroupTorrentAndNewznabResults(true);
             } else if (item.id === "sumGrabs") {
                 toggleSumGrabs(true);
+            } else if (item.id === "scrollToResults") {
+                toggleScrollToResults(true);
             }
         },
         onItemDeselect: function (item) {
@@ -112,6 +115,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
                 toggleGroupTorrentAndNewznabResults(false);
             } else if (item.id === "sumGrabs") {
                 toggleSumGrabs(false);
+            } else if (item.id === "scrollToResults") {
+                toggleScrollToResults(false);
             }
         }
     };
@@ -132,6 +137,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         localStorageService.set("sumGrabs", value);
         $scope.foo.sumGrabs = value;
         blockAndUpdate();
+    }
+
+    function toggleScrollToResults(value) {
+        localStorageService.set("scrollToResults", value);
+        $scope.foo.scrollToResults = value;
     }
 
 
@@ -465,7 +475,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
         $scope.numberOfAvailableResults = data.numberOfAvailableResults;
         $scope.rejectedReasonsMap = data.rejectedReasonsMap;
         $scope.anyResultsRejected = !_.isEmpty(data.rejectedReasonsMap);
-        $scope.anyIndexersSearchedSuccessfully = _.any(data.indexerSearchMetaDatas, function(x) {return x.wasSuccessful;});
+        $scope.anyIndexersSearchedSuccessfully = _.any(data.indexerSearchMetaDatas, function (x) {
+            return x.wasSuccessful;
+        });
         $scope.numberOfAcceptedResults = data.numberOfAcceptedResults;
         $scope.numberOfRejectedResults = data.numberOfRejectedResults;
         $scope.numberOfProcessedResults = data.numberOfProcessedResults;
@@ -609,11 +621,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, blockUI, gr
 
     $scope.$on("onFinishRender", function () {
         // console.log("Last rendered");
-        SearchService.getModalInstance().close();
-        stopBlocking();
+        $scope.doShowResults = true;
+        $timeout(function () {
+            if ($scope.foo.scrollToResults) {
+                var searchResultsElement = angular.element(document.getElementById('display-options'));
+                $document.scrollToElement(searchResultsElement, 0, 500);
+            }
+            stopBlocking();
+            SearchService.getModalInstance().close();
+        }, 1);
     });
 
-    $timeout(function() {
+    $timeout(function () {
         DebugService.print();
     }, 3000);
 

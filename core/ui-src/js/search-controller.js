@@ -357,33 +357,35 @@ angular
 function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibModalInstance, searchRequestId, onCancel) {
 
     var updateSearchMessagesInterval = undefined;
-    $scope.messages = undefined;
+    var loggedSearchFinished = false;
+    $scope.messages = [];
     $scope.indexerSelectionFinished = false;
     $scope.indexersSelected = 0;
     $scope.indexersFinished = 0;
 
     updateSearchMessagesInterval = $interval(function () {
         SearchService.getSearchState(searchRequestId).then(function (data) {
-                if ($scope.messages && $scope.messages.length > 0 && data.data.messages.length === 0) {
-                    //We already received messages but now the messages are empty. That means that the search is finished in the backend and we're currently waiting for the
-                    //presentation to finish
-                    $scope.messages.push("Finished searching. Preparing results...")
-                }  else {
-                    $scope.messages = data.data.messages;
-                }
                 $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
+                $scope.searchFinished = data.data.searchFinished;
                 $scope.indexersSelected = data.data.indexersSelected;
                 $scope.indexersFinished = data.data.indexersFinished;
                 $scope.progressMax = data.data.indexersSelected;
                 if ($scope.progressMax > data.data.indexersSelected) {
                     $scope.progressMax = ">=" + data.data.indexersSelected;
                 }
+                if (data.data.messages) {
+                    $scope.messages = data.data.messages;
+                }
+                if ($scope.searchFinished && !loggedSearchFinished) {
+                    $scope.messages.push("Finished searching. Preparing results...");
+                    loggedSearchFinished = true;
+                }
             },
             function () {
                 $interval.cancel(updateSearchMessagesInterval);
             }
         );
-    }, 200);
+    }, 100);
 
     $scope.cancelSearch = function () {
         if (angular.isDefined(updateSearchMessagesInterval)) {

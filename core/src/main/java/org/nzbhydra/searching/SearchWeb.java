@@ -48,8 +48,8 @@ public class SearchWeb {
     private Lock lock = new ReentrantLock();
 
     private Map<Long, SearchState> searchStates = ExpiringMap.builder()
-            .maxSize(100)
-            .expiration(30, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
+            .maxSize(10)
+            .expiration(5, TimeUnit.MINUTES) //This should be more than enough... Nobody will wait that long
             .expirationPolicy(ExpirationPolicy.ACCESSED)
             .build();
 
@@ -57,19 +57,17 @@ public class SearchWeb {
     @Secured({"ROLE_USER"})
     @RequestMapping(value = "/internalapi/search", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public SearchResponse search(@RequestBody SearchRequestParameters parameters) {
-
         SearchRequest searchRequest = createSearchRequest(parameters);
-
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.info("New search request: " + searchRequest);
-
         org.nzbhydra.searching.SearchResult searchResult = searcher.search(searchRequest);
-        SearchResponse response = searchResultProcessor.createSearchResponse(searchResult);
 
+        SearchResponse searchResponse = searchResultProcessor.createSearchResponse(searchResult);
 
-        SearchResponse searchResponse = response;
-
-        searchStates.remove(searchRequest.getSearchRequestId());
+        lock.lock();
+        SearchState searchState = searchStates.get(searchRequest.getSearchRequestId());
+        searchState.setSearchFinished(true);
+        lock.unlock();
 
         logger.info("Search took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResponse;
@@ -186,6 +184,7 @@ public class SearchWeb {
     private class SearchState {
 
         private boolean indexerSelectionFinished = false;
+        private boolean searchFinished = false;
         private int indexersSelected = 0;
         private int indexersFinished = 0;
         private List<String> messages = new ArrayList<>();
