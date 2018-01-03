@@ -903,9 +903,9 @@ function searchResult() {
     return {
         templateUrl: 'static/html/directives/search-result.html',
         require: '^result',
+        replace: false,
         scope: {
-            result: "<",
-            rowIndex: "<"
+            result: "<"
         },
         controller: controller
     };
@@ -961,7 +961,7 @@ function searchResult() {
         });
     }
 
-    function handleSelection($scope) {
+    function handleSelection($scope, $element) {
         $scope.foo.selected = false;
 
         function sendSelectionEvent() {
@@ -970,18 +970,22 @@ function searchResult() {
 
         $scope.clickCheckbox = function () {
             sendSelectionEvent();
-            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected);
+            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
         };
 
         function isBetween(num, betweena, betweenb) {
             return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
         }
 
-        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue) {
+        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue, previousClickTargetElement, newClickTargetElement) {
+            var fromYlocation = $($(previousClickTargetElement).prop("parentNode")).prop("offsetTop");
+            var newYlocation = $($(newClickTargetElement).prop("parentNode")).prop("offsetTop");
+            var elementYlocation = $($element).prop("offsetTop");
             if (!$scope.resultDisplayed) {
                 return;
             }
-            if (isBetween($scope.rowIndex, startIndex, endIndex)) {
+            //if (isBetween($scope.rowIndex, startIndex, endIndex)) {
+            if (isBetween(elementYlocation, fromYlocation, newYlocation)) {
                 if (newValue) {
                     $scope.foo.selected = true;
                 } else {
@@ -1083,7 +1087,7 @@ function searchResult() {
     function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService) {
         $scope.foo = {};
         handleDisplay($scope, localStorageService);
-        handleSelection($scope);
+        handleSelection($scope, $element);
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
 
@@ -3875,11 +3879,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
     };
 
-    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {
+    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
         if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue));
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
         }
         $scope.lastClickedRowIndex = rowIndex;
+        $scope.lastClickedElement = clickTargetElement;
         $scope.lastClickedValue = newCheckedValue;
     });
 

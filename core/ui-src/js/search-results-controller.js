@@ -572,11 +572,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
     };
 
-    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue) {
+    $scope.$on("checkboxClicked", function (event, originalEvent, rowIndex, newCheckedValue, clickTargetElement) {
         if (originalEvent.shiftKey && $scope.lastClickedRowIndex !== null) {
-            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue));
+            $scope.$broadcast("shiftClick", Number($scope.lastClickedRowIndex), Number(rowIndex), Number($scope.lastClickedValue), $scope.lastClickedElement, clickTargetElement);
         }
         $scope.lastClickedRowIndex = rowIndex;
+        $scope.lastClickedElement = clickTargetElement;
         $scope.lastClickedValue = newCheckedValue;
     });
 
