@@ -30,7 +30,7 @@ public class DownloaderWeb {
     @RequestMapping(value = "/internalapi/downloader/addNzbs", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     public AddNzbsResponse addNzb(@RequestBody AddNzbsRequest addNzbsRequest) {
         org.nzbhydra.downloading.Downloader downloader = downloaderProvider.getDownloaderByName(addNzbsRequest.getDownloaderName());
-        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResultIds(), addNzbsRequest.getCategory());
+        return downloader.addBySearchResultIds(addNzbsRequest.getSearchResults(), addNzbsRequest.getCategory());
     }
 
     @Secured({"ROLE_USER"})

@@ -1635,18 +1635,16 @@ function downloadNzbsButton() {
                 growl.info("You should select at least one result...");
             } else {
 
-                var values = _.map(_.filter($scope.searchResults, function (value) {
+                var searchResults = _.filter($scope.searchResults, function (value) {
                     if (value.downloadType === "NZB") {
                         return true;
                     } else {
-                        console.log("Not sending result with download type " +value.downloadType + " to downloader");
+                        console.log("Not sending result with download type " + value.downloadType + " to downloader");
                         return false;
                     }
-                }), function (value) {
-                    return value.searchResultId;
                 });
 
-                NzbDownloadService.download(downloader, values).then(function (response) {
+                NzbDownloadService.download(downloader, searchResults).then(function (response) {
                     if (angular.isDefined(response.data)) {
                         if (response !== "dismissed") {
                             if (response.data.successful) {
@@ -1658,7 +1656,7 @@ function downloadNzbsButton() {
                             growl.error("Error while adding NZBs");
                         }
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.data.addedIds});
+                            $scope.callback({result: response.data.addedIds});
                         }
                     }
                 }, function () {
@@ -2319,18 +2317,17 @@ function addableNzbs(DebugService) {
     controller.$inject = ["$scope", "NzbDownloadService"];
     return {
         templateUrl: 'static/html/directives/addable-nzbs.html',
-        require: ['^searchResultId'],
+        require: [],
         scope: {
-            searchResultId: "<",
-            downloadType: "<"
+            searchresult: "<"
         },
         controller: controller
     };
 
     function controller($scope, NzbDownloadService) {
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
-            if ($scope.downloadType !== "NZB") {
-                return downloader.downloadType === $scope.downloadType
+            if ($scope.searchresult.downloadType !== "NZB") {
+                return downloader.downloadType === $scope.searchresult.downloadType
             }
             return true;
         });
@@ -2349,7 +2346,7 @@ function addableNzb(DebugService) {
     return {
         templateUrl: 'static/html/directives/addable-nzb.html',
         scope: {
-            searchResultId: "<",
+            searchresult: "=",
             downloader: "<"
         },
         controller: controller
@@ -2365,7 +2362,7 @@ function addableNzb(DebugService) {
         $scope.add = function () {
             var originalClass = $scope.cssClass;
             $scope.cssClass = "nzb-spinning";
-            NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
+            NzbDownloadService.download($scope.downloader, [$scope.searchresult]).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful) {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
@@ -3985,9 +3982,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return getElemWatchers(root, ids);
         }
 
-
     }, 100);
-
 
 }
 SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "$document", "blockUI", "growl", "localStorageService", "SearchService", "ConfigService", "CategoriesService", "DebugService"];
@@ -4867,26 +4862,23 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     return service;
 
-    function sendNzbAddCommand(downloader, searchresultids, category) {
-        var params = {downloaderName: downloader.name, searchResultIds: searchresultids};
-        if (category !== "No category") {
-            params["category"] = category;
-        }
+    function sendNzbAddCommand(downloader, searchResults, category) {
+        var params = {downloaderName: downloader.name, searchResults: searchResults, category: category === "No category" ? "" : category};
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
-    function download(downloader, searchresultids) {
+    function download(downloader, searchResults) {
 
         var category = downloader.defaultCategory;
 
         if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
-                return sendNzbAddCommand(downloader, searchresultids, category);
+                return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {
                 return result;
             });
         } else {
-            return sendNzbAddCommand(downloader, searchresultids, category)
+            return sendNzbAddCommand(downloader, searchResults, category)
         }
     }
 

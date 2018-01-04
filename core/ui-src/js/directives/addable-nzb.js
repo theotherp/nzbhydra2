@@ -6,7 +6,7 @@ function addableNzb(DebugService) {
     return {
         templateUrl: 'static/html/directives/addable-nzb.html',
         scope: {
-            searchResultId: "<",
+            searchresult: "=",
             downloader: "<"
         },
         controller: controller
@@ -22,7 +22,7 @@ function addableNzb(DebugService) {
         $scope.add = function () {
             var originalClass = $scope.cssClass;
             $scope.cssClass = "nzb-spinning";
-            NzbDownloadService.download($scope.downloader, [$scope.searchResultId]).then(function (response) {
+            NzbDownloadService.download($scope.downloader, [$scope.searchresult]).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful) {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";

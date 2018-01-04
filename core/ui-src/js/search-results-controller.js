@@ -678,9 +678,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return getElemWatchers(root, ids);
         }
 
-
     }, 100);
-
 
 }
 

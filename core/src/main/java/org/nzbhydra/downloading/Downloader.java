@@ -1,5 +1,7 @@
 package org.nzbhydra.downloading;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
@@ -9,6 +11,7 @@ import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
+import org.nzbhydra.searching.SearchResultWebTO;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public abstract class Downloader {
@@ -39,24 +43,26 @@ public abstract class Downloader {
     }
 
     @Transactional
-    public AddNzbsResponse addBySearchResultIds(Set<Long> searchResultIds, String category) {
+    public AddNzbsResponse addBySearchResultIds(List<SearchResultWebTO> searchResults, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
         List<Long> addedNzbs = new ArrayList<>();
         try {
-            for (Long searchResultId : searchResultIds) {
+            for (SearchResultWebTO entry : searchResults) {
+                Long guid = Long.valueOf(entry.getSearchResultId());
+                String categoryToSend = Strings.isNullOrEmpty(category) ? entry.getOriginalCategory() : category;
                 if (addingType == NzbAddingType.UPLOAD) {
-                    NzbDownloadResult result = nzbHandler.getNzbByGuid(searchResultId, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL);
-                    String externalId = addNzb(result.getNzbContent(), result.getTitle(), category);
+                    NzbDownloadResult result = nzbHandler.getNzbByGuid(guid, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL);
+                    String externalId = addNzb(result.getNzbContent(), result.getTitle(), categoryToSend);
                     result.getDownloadEntity().setExternalId(externalId);
                     nzbHandler.updateStatusByEntity(result.getDownloadEntity(), NzbDownloadStatus.NZB_ADDED);
                 } else {
-                    SearchResultEntity searchResultEntity = searchResultRepository.getOne(searchResultId);
-                    addLink(nzbHandler.getNzbDownloadLink(searchResultId, false, DownloadType.NZB), searchResultEntity.getTitle(), category);
+                    SearchResultEntity searchResultEntity = searchResultRepository.getOne(guid);
+                    addLink(nzbHandler.getNzbDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
                     //LATER: Use the external ID some way, perhaps store it or something
                     //At this point we don't have a DownloadEntity for which we could set the external status. When a link is added to the download it will download the NZB from us and only then
                     //will there be an entity. So just adding an link will not be considered a download. The external ID will have to be set using the title (for now)
                 }
-                addedNzbs.add(searchResultId);
+                addedNzbs.add(guid);
             }
 
         } catch (DownloaderException e) {
@@ -65,6 +71,7 @@ public abstract class Downloader {
             if (!addedNzbs.isEmpty()) {
                 message += ".\n" + addedNzbs.size() + " were added successfully";
             }
+            Set<Long> searchResultIds = Sets.newHashSet(searchResults.stream().map(x -> Long.valueOf(x.getSearchResultId())).collect(Collectors.toSet()));
             searchResultIds.removeAll(addedNzbs);
             return new AddNzbsResponse(false, message, addedNzbs, searchResultIds);
         }

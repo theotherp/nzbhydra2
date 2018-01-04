@@ -27,6 +27,7 @@ public class SearchResultWebTO {
     private String indexerguid;
     private Integer indexerscore;
     private String link;
+    private String originalCategory;
     private String searchResultId;
     private Long size;
     private String title;

@@ -94,6 +94,7 @@ public class InternalSearchResultProcessor {
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
                     .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
+                    .originalCategory(item.getOriginalCategory())
                     .searchResultId(item.getSearchResultId().toString())
                     .size(item.getSize())
                     .title(item.getTitle());

@@ -1,21 +1,20 @@
 package org.nzbhydra.downloading;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.searching.SearchResultWebTO;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class AddNzbsRequest {
 
     private String downloaderName;
-    private Set<Long> searchResultIds = new HashSet<>();
-    private String category = null;
+    private List<SearchResultWebTO> searchResults = new ArrayList<>();
+    private String category;
 
-    public AddNzbsRequest(String downloaderName, Set<Long> searchResultIds) {
-        this.downloaderName = downloaderName;
-        this.searchResultIds = searchResultIds;
-    }
 }

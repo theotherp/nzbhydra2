@@ -11,26 +11,23 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     return service;
 
-    function sendNzbAddCommand(downloader, searchresultids, category) {
-        var params = {downloaderName: downloader.name, searchResultIds: searchresultids};
-        if (category !== "No category") {
-            params["category"] = category;
-        }
+    function sendNzbAddCommand(downloader, searchResults, category) {
+        var params = {downloaderName: downloader.name, searchResults: searchResults, category: category === "No category" ? "" : category};
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
-    function download(downloader, searchresultids) {
+    function download(downloader, searchResults) {
 
         var category = downloader.defaultCategory;
 
         if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
-                return sendNzbAddCommand(downloader, searchresultids, category);
+                return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {
                 return result;
             });
         } else {
-            return sendNzbAddCommand(downloader, searchresultids, category)
+            return sendNzbAddCommand(downloader, searchResults, category)
         }
     }
 

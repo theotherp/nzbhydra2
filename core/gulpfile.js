@@ -59,14 +59,10 @@ gulp.task('scripts', function () {
     var dest = 'src/main/resources/static/js';
     return gulp.src("ui-src/js/**/*.js")
         .pipe(ngAnnotate())
-        .on('error', swallowError)
         .pipe(angularFilesort())
-        .on('error', swallowError)
         .pipe(sourcemaps.init())
         .pipe(concat('nzbhydra.js'))
-        .on('error', swallowError)
         //.pipe(uglify()) //Will cause errors
-        .on('error', swallowError)
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(dest));
 

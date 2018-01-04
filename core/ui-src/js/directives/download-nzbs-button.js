@@ -22,18 +22,16 @@ function downloadNzbsButton() {
                 growl.info("You should select at least one result...");
             } else {
 
-                var values = _.map(_.filter($scope.searchResults, function (value) {
+                var searchResults = _.filter($scope.searchResults, function (value) {
                     if (value.downloadType === "NZB") {
                         return true;
                     } else {
-                        console.log("Not sending result with download type " +value.downloadType + " to downloader");
+                        console.log("Not sending result with download type " + value.downloadType + " to downloader");
                         return false;
                     }
-                }), function (value) {
-                    return value.searchResultId;
                 });
 
-                NzbDownloadService.download(downloader, values).then(function (response) {
+                NzbDownloadService.download(downloader, searchResults).then(function (response) {
                     if (angular.isDefined(response.data)) {
                         if (response !== "dismissed") {
                             if (response.data.successful) {
@@ -45,7 +43,7 @@ function downloadNzbsButton() {
                             growl.error("Error while adding NZBs");
                         }
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.data.addedIds});
+                            $scope.callback({result: response.data.addedIds});
                         }
                     }
                 }, function () {
