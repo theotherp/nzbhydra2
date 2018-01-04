@@ -1,7 +1,6 @@
 package org.nzbhydra.tests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +22,7 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultRepository;
+import org.nzbhydra.searching.SearchResultWebTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +39,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.Collections;
 
 import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
@@ -144,7 +145,8 @@ public class NzbDownloadingTests {
         mockServer.when(expectedRequest).respond(HttpResponse.response().withStatusCode(200).withBody("{\"isStatus\":true}"));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("/internalapi/downloader/addNzbs");
-        AddNzbsRequest addNzbsRequest = new AddNzbsRequest("sabnzbd", Sets.newHashSet(searchResultId));
+        SearchResultWebTO item = SearchResultWebTO.builder().searchResultId(String.valueOf(searchResultId)).build();
+        AddNzbsRequest addNzbsRequest = new AddNzbsRequest("sabnzbd", Collections.singletonList(item), "");
         request.contentType(MediaType.APPLICATION_JSON_VALUE);
         request.content(new ObjectMapper().writeValueAsString(addNzbsRequest));
         request.with(csrf());
