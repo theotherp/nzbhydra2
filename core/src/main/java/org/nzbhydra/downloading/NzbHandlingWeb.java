@@ -50,7 +50,7 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/nzb/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadNzbInternal(@PathVariable("guid") long guid) {
+    public ResponseEntity<Object> downloadNzbInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException{
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
@@ -125,7 +125,7 @@ public class NzbHandlingWeb {
      */
     @RequestMapping(value = "/getnzb/user/{guid}", produces = "application/x-nzb")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadNzbForUsers(@PathVariable("guid") long guid) {
+    public ResponseEntity<Object> downloadNzbForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException {
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
@@ -135,14 +135,21 @@ public class NzbHandlingWeb {
      * @return A {@link ResponseEntity} with the NZB content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/getnzb/api/{guid}", produces = "application/x-nzb")
-    public ResponseEntity<String> downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+    public ResponseEntity downloadNzbWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if ((apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) && !noApiKeyNeeded) {
             logger.error("Received NZB API download call with wrong API key");
             throw new WrongApiKeyException("Wrong api key");
         }
 
-        return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
+        try {
+            return nzbHandler.getNzbByGuid(guid, baseConfig.getSearching().getNzbAccessType(), SearchSource.API).getAsResponseEntity();
+        } catch (InvalidSearchResultIdException e) {
+            //Should be RssError but causes an exception in ServletInvocableHandlerMethod.invokeAndHandle()
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
+        }
     }
+
+
 
 }

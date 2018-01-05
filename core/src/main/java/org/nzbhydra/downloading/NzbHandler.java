@@ -58,11 +58,11 @@ public class NzbHandler {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource) {
+    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource) throws InvalidSearchResultIdException{
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
-            return NzbDownloadResult.createErrorResult("Download request with invalid/outdated GUID " + guid, 300, null);
+            throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));

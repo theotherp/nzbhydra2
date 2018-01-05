@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.NzbDownloadResult;
 import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -182,7 +183,12 @@ public class ExternalApi {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
         }
-        NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API);
+        NzbDownloadResult downloadResult = null;
+        try {
+            downloadResult = nzbHandler.getNzbByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API);
+        } catch (InvalidSearchResultIdException e) {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_XML).body("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>");
+        }
         if (!downloadResult.isSuccessful()) {
             throw new UnknownErrorException(downloadResult.getError());
         }

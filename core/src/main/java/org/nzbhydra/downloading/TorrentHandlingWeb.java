@@ -40,7 +40,7 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/torrent/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadTorrentInternal(@PathVariable("guid") long guid) {
+    public ResponseEntity<Object> downloadTorrentInternal(@PathVariable("guid") long guid) throws InvalidSearchResultIdException{
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
@@ -52,7 +52,7 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/gettorrent/user/{guid}", produces = "application/x-bittorrent")
     @Secured({"ROLE_USER"})
-    public ResponseEntity<String> downloadTorrentForUsers(@PathVariable("guid") long guid) {
+    public ResponseEntity<Object> downloadTorrentForUsers(@PathVariable("guid") long guid) throws InvalidSearchResultIdException{
         return nzbHandler.getNzbByGuid(guid, configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.INTERNAL).getAsResponseEntity();
     }
 
@@ -63,7 +63,7 @@ public class TorrentHandlingWeb {
      */
     @RequestMapping(value = "/internalapi/saveTorrent/{guid}")
     @Secured({"ROLE_USER"})
-    public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid) {
+    public GenericResponse sentTorrentToBlackhole(@PathVariable("guid") long guid) throws InvalidSearchResultIdException{
         NzbDownloadResult downloadResult = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL);
         if (!downloadResult.isSuccessful()) {
             return GenericResponse.notOk(downloadResult.getError());
@@ -93,7 +93,7 @@ public class TorrentHandlingWeb {
      * @return A {@link ResponseEntity} with the torrent content, a redirect to the actual indexer link or an error
      */
     @RequestMapping(value = "/gettorrent/api/{guid}", produces = "application/x-bittorrent")
-    public ResponseEntity<String> downloadTorrentWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException {
+    public ResponseEntity<Object> downloadTorrentWithApikey(@PathVariable("guid") long guid, @RequestParam(required = false) String apikey) throws WrongApiKeyException, InvalidSearchResultIdException {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if (apikey == null || !apikey.equals(baseConfig.getMain().getApiKey())) {
             logger.error("Received torrent API download call with wrong API key");

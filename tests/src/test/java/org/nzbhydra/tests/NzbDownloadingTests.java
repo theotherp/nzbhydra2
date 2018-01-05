@@ -134,6 +134,18 @@ public class NzbDownloadingTests {
     }
 
     @Test
+    public void shouldReturnErrorCodeWhenNzbNotFound() throws Exception {
+        baseConfig.getSearching().setNzbAccessType(NzbAccessType.PROXY);
+        mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/123").with(csrf())).andExpect(result -> {
+            result.getResponse().getStatus();
+        }).andExpect(content().string("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>"));
+
+        mvc.perform(MockMvcRequestBuilders.get("/api?t=get&id=123").with(csrf())).andExpect(result -> {
+            result.getResponse().getStatus();
+        }).andExpect(content().string("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>"));
+    }
+
+    @Test
     public void shouldSendUrlToDownloader() throws Exception {
         baseConfig.getDownloading().getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
         //http://127.0.0.1:7070/sabnzbd/api?apikey=apikey&output=json&mode=addurl&name=http://127.0.0.1:5076/getnzb/api/5293954792479313301?apikey&nzbname=someNzb.nzb

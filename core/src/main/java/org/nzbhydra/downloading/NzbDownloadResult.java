@@ -35,8 +35,8 @@ public class NzbDownloadResult {
         return url != null;
     }
 
-    public ResponseEntity<String> getAsResponseEntity() {
-        ResponseEntity<String> response;
+    public ResponseEntity<Object> getAsResponseEntity() {
+        ResponseEntity<Object> response;
         if (isRedirect()) {
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(getUrl()));

@@ -65,8 +65,13 @@ public abstract class Downloader {
                 addedNzbs.add(guid);
             }
 
-        } catch (DownloaderException e) {
-            String message = "Error while adding NZB(s) to downloader: " + e.getMessage();
+        } catch (InvalidSearchResultIdException | DownloaderException e) {
+            String message;
+            if (e instanceof DownloaderException) {
+                message = "Error while adding NZB(s) to downloader: " + e.getMessage();
+            } else {
+                message = e.getMessage();
+            }
             logger.error(message);
             if (!addedNzbs.isEmpty()) {
                 message += ".\n" + addedNzbs.size() + " were added successfully";
