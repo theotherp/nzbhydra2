@@ -143,14 +143,23 @@ public class SqliteMigration {
             NzbDownloadEntity entity = new NzbDownloadEntity();
             entity.setTime(timestampToInstant(oldDownloads.getString("time")));
             IndexerEntity indexerEntity = oldIdToIndexersMap.get(oldDownloads.getInt("indexer_id"));
+            if (indexerEntity == null) {
+                logger.info("Skipping migration of download with indexer that doesn't exist anymore");
+                continue;
+            }
             entity.setError(oldDownloads.getString("error"));
             entity.setUsername(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
             entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
             entity.setStatus(NzbDownloadStatus.NONE);
+            //long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid() + result.getTitle() + result.getLink()));
             Instant dummyTime = Instant.now().minus(10000, ChronoUnit.DAYS);
             String title = oldDownloads.getString("title");
-            SearchResultEntity searchResultEntity = new SearchResultEntity(indexerEntity, dummyTime, title, "", String.valueOf(random.nextInt()), null, null, dummyTime);//Must set a random link because the calculator would always return the same ID
+            if (title == null) {
+                logger.warn("Skipping migration of download without title");
+            }
+            String randomIntSTring = String.valueOf(random.nextInt()) + indexerEntity.getName();
+            SearchResultEntity searchResultEntity = new SearchResultEntity(indexerEntity, dummyTime, title, "guid"+randomIntSTring, "link" + randomIntSTring,  "details"+ randomIntSTring, null, dummyTime);//Must set a random link because the calculator would always return the same ID
             entity.setSearchResult(searchResultEntity);
             dummySearchResultEntities.add(searchResultEntity);
             downloadEntities.add(entity);

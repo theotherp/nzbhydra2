@@ -300,7 +300,7 @@ public class IndexerForSearchSelector {
                 return handleIndexerNotSelected(indexer, message, "No torrent search");
             }
             if (searchRequest.getDownloadType() == DownloadType.NZB && indexer.getConfig().getSearchModuleType() == SearchModuleType.TORZNAB && searchRequest.getSource() == SearchSource.API) {
-                String message = String.format("Not using %s because torznab indexers cannot by used by API NZB searches", indexer.getName());
+                String message = String.format("Not using %s because torznab indexers cannot be used by API NZB searches", indexer.getName());
                 return handleIndexerNotSelected(indexer, message, "NZB API search");
             }
             return true;

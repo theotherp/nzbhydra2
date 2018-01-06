@@ -51,7 +51,6 @@ Alternatively you can use a docker container:
 `docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>`. In the Hyra main config set the external URL correctly (i.e. which targets 
 the running instance) and disable "Use local address in API results". 
 
-
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
 If you get SSL errors when contacting indexers make please update your java runtime.
