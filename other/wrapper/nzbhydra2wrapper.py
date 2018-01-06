@@ -8,7 +8,6 @@ import platform
 import shutil
 import subprocess
 import sys
-import yaml
 import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
@@ -320,8 +319,10 @@ def startup():
     yamlPath = os.path.join(args.datafolder, "nzbhydra.yml")
     if os.path.exists(yamlPath):
         with open(yamlPath, "r") as f:
-            y = yaml.load(f)
-            xmx = y["main"]["xmx"]
+            for line in f.readlines():
+                index = line.find("xmx:")
+                if index > -1:
+                    xmx = line[index + 5:]
     else:
         logger.info("No file nzbhydra.yml found. Using 128M XMX")
         xmx = 128
