@@ -1,5 +1,14 @@
 [
   {
+  "version": "v1.0.7",
+  "changes": [
+    {
+      "type": "fix",
+      "text": "Fix bug in wrapper that I introduced in last version. Oh well..."
+    }
+  ]
+},
+  {
     "version": "v1.0.6",
     "changes": [
       {

@@ -1,3 +1,6 @@
+### v1.0.7
+Fix: Fix bug in wrapper that I introduced in last version. Oh well...
+
 ### v1.0.6
 Note: Improve the way the host is determined. External URL should not need to be set when not using a reverse proxy
 Note: Remove PyYAML dependency from wrapper

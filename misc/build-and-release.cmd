@@ -73,7 +73,7 @@ call git commit -am "Set snapshot to %2"
 if not "%ERRORLEVEL%" == "0" goto error
 
 echo Pushing to repo ***********************************************************************
-call git commit push
+call git push
 if not "%ERRORLEVEL%" == "0" goto error
 
 

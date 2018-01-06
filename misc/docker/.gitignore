@@ -3,3 +3,5 @@ target/
 *.swp
 lib/
 *.py
+readme.md
+changelog.md
