@@ -12,7 +12,6 @@ import yaml
 import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
-from time import sleep
 
 jarFile = None
 args = []
@@ -150,15 +149,15 @@ def update():
     updateZip = os.path.join(updateFolder, onlyfiles[0])
 
     try:
-        if isWindows:
-            logger.info("Renaming old EXE files to be updated")
-            shutil.move("NZBHydra2.exe", "NZBHydra2.old")
-            shutil.move("NZBHydra2 Console.exe", "NZBHydra2 Console.old")
-            sleep(1)  # Give time for file operation to be completed, otherwise access to EXE files may still be restricted
+        # if isWindows:
+        #     logger.info("Renaming old EXE files to be updated")
+        #     shutil.move("NZBHydra2.exe", "NZBHydra2.old")
+        #     shutil.move("NZBHydra2 Console.exe", "NZBHydra2 Console.old")
+        #     sleep(1)  # Give time for file operation to be completed, otherwise access to EXE files may still be restricted
         with zipfile.ZipFile(updateZip, "r") as zf:
             logger.info("Extracting updated files to %s", basePath)
             for member in zf.namelist():
-                if not member.lower().endswith("nssm.exe"):
+                if not member.lower() == "nzbhydra2" and not member.lower().endswith(".exe"):
                     logger.debug("Extracting %s to %s", member, basePath)
                     zf.extract(member, basePath)
         logger.info("Removing update ZIP %s", updateZip)
@@ -276,7 +275,7 @@ def startup():
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
         java_arguments.append("-Ddebug=true")
-    arguments = [args.java]+ java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
+    arguments = [args.java] + java_arguments + ["-jar", escape_parameter(isWindows, jarFile)] + arguments
     commandLine = " ".join(arguments)
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
@@ -289,7 +288,7 @@ def startup():
     try:
         process = subprocess.Popen(arguments, shell=False, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si, env=os.environ.copy())
 
-    #atexit.register(killProcess)
+        # atexit.register(killProcess)
         while True:
             # Handle error first in case startup of main process returned only an error (on stderror)
             nextline = process.stdout.readline()

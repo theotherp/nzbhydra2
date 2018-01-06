@@ -100,8 +100,8 @@ public class BackupAndRestore {
 
 
     private void backupDatabase(File targetFile) {
-        logger.info("Backing up database");
         String formattedFilepath = targetFile.getAbsolutePath().replace("\\", "/");
+        logger.info("Backing up database to " + formattedFilepath);
         entityManager.createNativeQuery("BACKUP TO '" + formattedFilepath + "';").executeUpdate();
         logger.debug("Wrote database backup files to {}", targetFile.getAbsolutePath());
     }

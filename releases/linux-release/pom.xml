@@ -29,7 +29,7 @@
                     <descriptor>bin.xml</descriptor>
                     <finalName>nzbhydra2-${project.version}-linux</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
-                    <formats>tgz</formats>
+                    <!--<formats>tgz</formats>-->
                 </configuration>
                 <executions>
                     <execution>
