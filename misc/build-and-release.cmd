@@ -68,7 +68,14 @@ echo Building new versions *****************************************************
 call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" goto error
 
+echo Committing snapshot ***********************************************************************
 call git commit -am "Set snapshot to %2"
+if not "%ERRORLEVEL%" == "0" goto error
+
+echo Pushing to repo ***********************************************************************
+call git commit push
+if not "%ERRORLEVEL%" == "0" goto error
+
 
 goto eof
 :error

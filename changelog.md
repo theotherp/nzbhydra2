@@ -1,3 +1,7 @@
+### v1.0.6
+Note: Improve the way the host is determined. External URL should not need to be set when not using a reverse proxy
+Note: Remove PyYAML dependency from wrapper
+
 ### v1.0.5
 Note: Make migration a bit more stable
 Note: Make sure wrapper is started from correct folder

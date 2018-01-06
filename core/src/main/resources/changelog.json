@@ -11,7 +11,7 @@
         "text": "Remove PyYAML dependency from wrapper"
       }
     ]
-  },,
+  },
   {
     "version": "v1.0.5",
     "changes": [
