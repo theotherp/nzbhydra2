@@ -4,7 +4,7 @@
     <groupId>org.nzbhydra</groupId>
     <artifactId>nzbhydra2</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <modules>
         <module>shared</module>
@@ -40,7 +40,7 @@
                     <!--<githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
                     <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
-                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.tgz</linuxAsset>
+                    <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <changelogJsonFile>${basedir}/core/src/main/resources/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
