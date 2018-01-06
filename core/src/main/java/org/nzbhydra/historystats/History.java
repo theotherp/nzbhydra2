@@ -74,12 +74,18 @@ public class History {
             }
         }
         SortModel sortModel = requestData.getSortModel();
+        boolean useNullsLast = true;
+        boolean useLower = true;
         if (sortModel != null) {
             String column = sortModel.getColumn();
-            if (!"time".equalsIgnoreCase(sortModel.getColumn())) {
-                column = column.toLowerCase();
+            if ("time".equalsIgnoreCase(column)) {
+                useNullsLast = false;
+                useLower = false;
             }
-            sort = String.format(" order by lower(%s) %s nulls last ", column, sortModel.getSortMode() == 1 ? "ASC" : "DESC");
+            if (useLower) {
+                column = "lower(" + column + ")";
+            }
+            sort = String.format(" order by %s %s %s ", column, sortModel.getSortMode() == 1 ? "ASC" : "DESC", useNullsLast ? "nulls last" : "");
         }
 
         String whereConditions = "";

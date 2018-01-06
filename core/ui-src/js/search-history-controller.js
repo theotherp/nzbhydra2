@@ -29,6 +29,19 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.searchRequests = history.data.content;
     $scope.totalRequests = history.data.totalElements;
 
+    var anyUsername = false;
+    var anyIp = false;
+    for (var request in $scope.searchRequests) {
+        if (request.username) {
+            anyUsername = true;
+        }
+        if (request.ip) {
+            anyIp = true;
+        }
+        if (anyIp && anyUsername) {
+            break;
+        }
+    }
     $scope.columnSizes = {
         time: 10,
         query: 30,
@@ -38,7 +51,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         username: 10,
         ip: 10
     };
-    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE" || (!anyUsername && !anyIp)) {
         $scope.columnSizes.username = 0;
         $scope.columnSizes.ip = 0;
         $scope.columnSizes.query += 10;
@@ -166,8 +179,6 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
                 $scope.details = data.data;
             });
-
-
         }
 
         $uibModal.open({
