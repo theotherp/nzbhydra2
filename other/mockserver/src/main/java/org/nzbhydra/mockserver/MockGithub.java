@@ -100,7 +100,7 @@ public class MockGithub {
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)
     public String blockedVersions() throws Exception {
-        return "[{\"version\":{\"major\":3,\"minor\":0,\"patch\":0,\"asString\":\"3.0.0\"},\"comment\":\"some comment\"}]";
+        return "[{\"version\":\"3.0.0\",\"comment\":\"some comment\"}]";
     }
 
     @Configuration

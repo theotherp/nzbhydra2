@@ -354,7 +354,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             } else if (sortPredicateKey === "title") {
                 sortPredicateValue = getCleanedTitle(containgObject);
             } else if (sortPredicateKey === "indexer") {
-                sortPredicateValue = containgObject["indexer"];
+                sortPredicateValue = containgObject["indexer"].toLowerCase();
             } else {
                 sortPredicateValue = containgObject[sortPredicateKey];
             }

@@ -54,7 +54,21 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         username: 10,
         ip: 10
     };
-    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+    var anyUsername = false;
+    var anyIp = false;
+    for (var download in $scope.nzbDownloads) {
+        if (download.username) {
+            anyUsername = true;
+        }
+        if (download.ip) {
+            anyIp = true;
+        }
+        if (anyIp && anyUsername) {
+            break;
+        }
+    }
+
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE" || (!anyUsername && !anyIp)) {
         $scope.columnSizes.username = 0;
         $scope.columnSizes.ip = 0;
         $scope.columnSizes.title += 20;

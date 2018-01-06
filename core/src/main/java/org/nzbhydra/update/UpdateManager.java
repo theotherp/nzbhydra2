@@ -263,7 +263,7 @@ public class UpdateManager implements InitializingBean {
 
 
     protected List<BlockedVersion> getBlockedVersions() throws UpdateException {
-        logger.debug("Getting blocked versions from GitHub");
+        logger.debug("Getting blocked versions from GitHub using URL {}", blockedVersionsUrl);
         List<BlockedVersion> blockedVersions;
         try {
             blockedVersions = webAccess.callUrl(blockedVersionsUrl, new TypeReference<List<BlockedVersion>>() {
