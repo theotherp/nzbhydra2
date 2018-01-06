@@ -104,6 +104,9 @@ public class IndexerConfig extends ValidatingConfig {
                     validationResult.getErrorMessages().add("Indexer " + config.getName() + " contains an invalid schedule: " + schedule);
                 }
             }
+            if (config.getHitLimit().isPresent() && config.getHitLimit().get() == 0) {
+                validationResult.getErrorMessages().add("Indexer " + config.getName() + " has a hit limit of 0 which doesn't make sense: ");
+            }
         }
 
         return validationResult;
