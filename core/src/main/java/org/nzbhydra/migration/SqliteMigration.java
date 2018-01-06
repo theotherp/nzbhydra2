@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
@@ -266,6 +267,8 @@ public class SqliteMigration {
         logger.info("Migrating {} searches from old database", searches);
         eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + searches + " search entries"));
         ResultSet oldSearches = statement.executeQuery("SELECT * FROM search");
+        boolean hasAuthor = hasColumn(oldSearches, "author");
+        boolean hasTitle = hasColumn(oldSearches, "title");
         while (oldSearches.next()) {
             SearchEntity entity = new SearchEntity();
             String oldCategory = oldSearches.getString("category");
@@ -275,8 +278,12 @@ public class SqliteMigration {
             entity.setSeason(oldSearches.getObject("season") != null ? oldSearches.getInt("season") : null);
             entity.setEpisode(oldSearches.getString("episode"));
             entity.setQuery(oldSearches.getString("query"));
-            entity.setAuthor(oldSearches.getString("author"));
-            entity.setTitle(oldSearches.getString("title"));
+            if (hasAuthor) {
+                entity.setAuthor(oldSearches.getString("author"));
+            }
+            if (hasTitle) {
+                entity.setTitle(oldSearches.getString("title"));
+            }
             entity.setSearchType(oldTypeToNewMap.getOrDefault(oldSearches.getString("type"), SearchType.SEARCH));
 
             if (oldSearches.getString("identifier_key") != null && oldSearches.getString("identifier_value") != null && oldIdTypeToNewMap.containsKey(oldSearches.getString("identifier_key"))) {
@@ -293,6 +300,17 @@ public class SqliteMigration {
         logger.info("Successfully migrated searches from old database");
         eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated searches from old database"));
         return oldIdToNewEntity;
+    }
+
+    private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
+        ResultSetMetaData rsmd = rs.getMetaData();
+        int columns = rsmd.getColumnCount();
+        for (int x = 1; x <= columns; x++) {
+            if (columnName.equals(rsmd.getColumnName(x))) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

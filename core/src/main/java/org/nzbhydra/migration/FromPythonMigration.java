@@ -46,6 +46,7 @@ public class FromPythonMigration {
 
     @Transactional
     public MigrationResult migrateFromFiles(String settingsFile, String databaseFile) {
+        logger.info("Received request to migrate from settings file {} and database file {}", settingsFile, databaseFile);
         Map<String, String> migrationData = new HashMap<>();
         migrationData.put("databaseFile", databaseFile);
         try {
@@ -67,7 +68,7 @@ public class FromPythonMigration {
 
     @Transactional
     public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl) {
-        logger.info("Received migration request");
+        logger.info("Received request to migrate from URL " + nzbhydra1BaseUrl);
 
         OkHttpResponse versionsResponse = callHydraUrl(nzbhydra1BaseUrl, "get_versions");
         if (!versionsResponse.isSuccessful()) {
@@ -97,6 +98,7 @@ public class FromPythonMigration {
     }
 
     protected MigrationResult startMigration(Map<String, String> migrationData) {
+        logger.info("Starting migration");
         List<String> migrationMessages = new ArrayList<>();
 
         try {
