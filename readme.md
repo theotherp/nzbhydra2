@@ -17,6 +17,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
   * For GUI searches, allowing you to download torrents to a blackhole folder
   * A separate TORZNAB compatible endpoint for API requests, allowing you to merge multiple trackers
 * Extensive configurability
+* Migration of database and settings from v1
 
 [Screenshots](https://imgur.com/a/ePxwj)  
 
