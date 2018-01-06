@@ -43,7 +43,7 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 * On windows you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window.
 * On linux start "nzbhydra2"
 * On Mac: No idea, I don't have one. If you have found out please tell me.
-* If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://github.com/theotherp/nzbhydra2/blob/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and start it
+* If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and start it
 
 After a while your browser should open to http://127.0.0.1:5076
 
