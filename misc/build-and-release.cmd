@@ -1,8 +1,8 @@
 @echo off
 rem call like this misc\build-and-release.cmd 0.0.3 0.0.4 <skiptests> from main folder
 
-if "%1" == "" (
 
+if "%1" == "" (
     echo Release version missing
     goto error
 )
@@ -11,7 +11,7 @@ if "%2" == "" (
     goto error
 )
 
-if not exist changelog.json (
+if not exist readme.md (
     echo Not running in main folder
     goto error
 )
