@@ -1,3 +1,6 @@
+### v1.0.8
+Fix: Increase lengths for columns which may contain very long texts (errors, queries)
+
 ### v1.0.7
 Fix: Fix bug in wrapper that I introduced in last version. Oh well...
 
