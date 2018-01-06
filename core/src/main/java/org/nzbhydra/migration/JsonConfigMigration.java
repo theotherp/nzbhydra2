@@ -405,7 +405,7 @@ public class JsonConfigMigration {
                 newIndexer.setHost(oldIndexer.getHost());
                 newIndexer.setTimeout(oldIndexer.getTimeout());
                 newIndexer.setDownloadLimit(oldIndexer.getDownloadLimit());
-                newIndexer.setHitLimit(oldIndexer.getHitLimit());
+                newIndexer.setHitLimit(oldIndexer.getHitLimit() == 0 ? null : oldIndexer.getHitLimit());
                 newIndexer.setHitLimitResetTime(oldIndexer.getHitLimitResetTime());
                 newIndexer.setName(oldIndexer.getName());
                 newIndexer.setApiKey(oldIndexer.getApikey());

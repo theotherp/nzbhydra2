@@ -104,11 +104,19 @@ public class SqliteMigration {
         return migrationMessages;
     }
 
-    protected void migrate() throws IOException, SQLException {
+    protected void migrate() throws SQLException, IOException {
         logger.info("Starting database migration");
         eventPublisher.publishEvent(new MigrationMessageEvent("Starting database migration"));
         Map<Integer, IndexerEntity> oldIdToIndexersMap = migrateIndexers();
         Map<Integer, SearchEntity> oldIdToSearchesMap = migrateSearches();
+
+        Statement statement = connection.createStatement();
+        int databaseVersion = statement.executeQuery("select version from versioninfo limit 1").getInt(1);
+        if (databaseVersion != 21) {
+            logger.error("Expected database version 21 but got {}", databaseVersion);
+            throw new SQLException("Expected database version 21 but got " + databaseVersion);
+        }
+
         migrateIndexerApiAccesses(oldIdToIndexersMap);
         migrateIndexerSearches(oldIdToIndexersMap, oldIdToSearchesMap);
         migrateDownloads(oldIdToIndexersMap);
@@ -312,6 +320,8 @@ public class SqliteMigration {
         }
         return false;
     }
+
+
 
 
 }
