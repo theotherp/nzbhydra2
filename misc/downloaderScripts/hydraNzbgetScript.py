@@ -48,7 +48,7 @@ try:
     }
     if queue_event_type is not None:
         hydra_status = nzbget_hydra_status_map[queue_event_type]
-        nzb_name = os.environ.get('NZBPP_NZBFILENAME')
+        nzb_name = os.environ.get('NZBNA_FILENAME')
     else:
         hydra_status = nzbget_hydra_status_map[pp_status]
         nzb_name = os.environ.get('NZBPP_NZBFILENAME')
