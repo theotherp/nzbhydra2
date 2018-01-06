@@ -36,35 +36,35 @@ if "%3" == "skiptests" (
 )
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Making version effective
+echo Making version effective ***********************************************************************
 call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Committing
+echo Committing ***********************************************************************
 call git commit -am "Update to %1"
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Tagging
+echo Tagging ***********************************************************************
 call git tag -a v%1 -m "v%1"
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Pushing
+echo Pushing ***********************************************************************
 call git push origin
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Releasing to GitHub
+echo Releasing to GitHub ***********************************************************************
 call mvn github-release:release
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Setting new snapshot version
+echo Setting new snapshot version ***********************************************************************
 call mvn versions:set -DnewVersion=%2-SNAPSHOT
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Making snapshot version effective
+echo Making snapshot version effective ***********************************************************************
 call mvn versions:commit
 if not "%ERRORLEVEL%" == "0" goto error
 
-echo Building new versions
+echo Building new versions ***********************************************************************
 call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" goto error
 
