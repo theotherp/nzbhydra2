@@ -16,7 +16,7 @@ function sendTorrentToBlackhole() {
         $scope.cssClass = "glyphicon-save-file";
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
-            $http.get("internalapi/saveTorrent/" + $scope.searchResultId).then(function (response) {
+            $http.put("internalapi/saveTorrent", [$scope.searchResultId]).then(function (response) {
                 if (response.data.successful) {
                     $scope.cssClass = "glyphicon-ok";
                 } else {

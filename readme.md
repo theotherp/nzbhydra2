@@ -31,7 +31,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * Downloader scripts to inform Hydra about the actual download result of an NZB
 * Extended configurability of categories and improved mapping of categories between Hydra and indexers
 * Improved config validation
-* Save torrents in a black hole folder; tornab API endpoint
+* Save torrents in a black hole folder; torznab API endpoint
 * Many more QoL improvements, background checks, log outputs, etc.
 
 

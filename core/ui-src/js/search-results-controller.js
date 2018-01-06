@@ -589,13 +589,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("toggleDuplicateExpansionDown", value, hash);
     });
 
-    $scope.$on("selection", function ($event, result, value) {
+    $scope.$on("selectionUp", function ($event, result, value) {
         var index = $scope.selected.indexOf(result);
         if (value && index === -1) {
             $scope.selected.push(result);
         } else if (!value && index > -1) {
             $scope.selected.splice(index, 1);
         }
+        $scope.$broadcast("selectionDown", result, value);
     });
 
     $scope.downloadNzbsCallback = function (addedIds) {

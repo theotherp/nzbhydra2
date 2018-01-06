@@ -68,7 +68,7 @@ function searchResult() {
         $scope.foo.selected = false;
 
         function sendSelectionEvent() {
-            $scope.$emit("selection", $scope.result, $scope.foo.selected);
+            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
         }
 
         $scope.clickCheckbox = function () {

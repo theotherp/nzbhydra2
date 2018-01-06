@@ -13,6 +13,9 @@
             <li ng-repeat="downloader in downloaders">
                 <a ng-click="download(downloader)" class="send-to-downloader">{{ ::downloader.name }}</a>
             </li>
+            <li ng-if="blackholeEnabled">
+                <a ng-click="sendToBlackhole()" class="send-to-downloader">Torrent black hole</a>
+            </li>
         </ul>
     </span>
 

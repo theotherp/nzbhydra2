@@ -831,7 +831,7 @@ function sendTorrentToBlackhole() {
         $scope.cssClass = "glyphicon-save-file";
         $scope.add = function () {
             $scope.cssClass = "nzb-spinning";
-            $http.get("internalapi/saveTorrent/" + $scope.searchResultId).then(function (response) {
+            $http.put("internalapi/saveTorrent", [$scope.searchResultId]).then(function (response) {
                 if (response.data.successful) {
                     $scope.cssClass = "glyphicon-ok";
                 } else {
@@ -965,7 +965,7 @@ function searchResult() {
         $scope.foo.selected = false;
 
         function sendSelectionEvent() {
-            $scope.$emit("selection", $scope.result, $scope.foo.selected);
+            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
         }
 
         $scope.clickCheckbox = function () {
@@ -1615,7 +1615,7 @@ angular
     .directive('downloadNzbsButton', downloadNzbsButton);
 
 function downloadNzbsButton() {
-    controller.$inject = ["$scope", "NzbDownloadService", "growl"];
+    controller.$inject = ["$scope", "$http", "NzbDownloadService", "ConfigService", "growl"];
     return {
         templateUrl: 'static/html/directives/download-nzbs-button.html',
         require: ['^searchResults'],
@@ -1626,23 +1626,37 @@ function downloadNzbsButton() {
         controller: controller
     };
 
-    function controller($scope, NzbDownloadService, growl) {
+    function controller($scope, $http, NzbDownloadService, ConfigService, growl) {
 
         $scope.downloaders = NzbDownloadService.getEnabledDownloaders();
+        $scope.blackholeEnabled = ConfigService.getSafe().downloading.saveTorrentsTo !== null;
 
         $scope.download = function (downloader) {
             if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
             } else {
 
+                var didFilterOutResults = false;
+                var didKeepAnyResults = false;
                 var searchResults = _.filter($scope.searchResults, function (value) {
                     if (value.downloadType === "NZB") {
+                        didKeepAnyResults = true;
                         return true;
                     } else {
-                        console.log("Not sending result with download type " + value.downloadType + " to downloader");
+                        console.log("Not sending torrent result to downloader");
+                        didFilterOutResults = true;
                         return false;
                     }
                 });
+                if (didFilterOutResults && !didKeepAnyResults) {
+                    growl.info("None of the selected results were NZBs. Adding aborted");
+                    if (angular.isDefined($scope.callback)) {
+                        $scope.callback({result: []});
+                    }
+                    return;
+                } else if (didFilterOutResults && didKeepAnyResults) {
+                    growl.info("Some the selected results are torrent results which were skipped");
+                }
 
                 NzbDownloadService.download(downloader, searchResults).then(function (response) {
                     if (angular.isDefined(response.data)) {
@@ -1663,7 +1677,42 @@ function downloadNzbsButton() {
                     growl.error("Error while adding NZBs");
                 });
             }
-        }
+        };
+
+       $scope.sendToBlackhole = function() {
+           var didFilterOutResults = false;
+           var didKeepAnyResults = false;
+           var searchResults = _.filter($scope.searchResults, function (value) {
+               if (value.downloadType === "TORRENT") {
+                   didKeepAnyResults = true;
+                   return true;
+               } else {
+                   console.log("Not sending NZB result to black hole");
+                   didFilterOutResults = true;
+                   return false;
+               }
+           });
+           if (didFilterOutResults && !didKeepAnyResults) {
+               growl.info("None of the selected results were torrents. Adding aborted");
+               if (angular.isDefined($scope.callback)) {
+                   $scope.callback({result: []});
+               }
+               return;
+           } else if (didFilterOutResults && didKeepAnyResults) {
+               growl.info("Some the selected results are NZB results which were skipped");
+           }
+           var searchResultIds = _.pluck(searchResults, "searchResultId");
+           $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
+               if (response.data.successful) {
+                   growl.info("Successfully saved all torrents");
+               } else {
+                   growl.error(response.data.message);
+               }
+               if (angular.isDefined($scope.callback)) {
+                   $scope.callback({result: response.data.addedIds});
+               }
+           });
+       }
 
     }
 }
@@ -3893,13 +3942,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("toggleDuplicateExpansionDown", value, hash);
     });
 
-    $scope.$on("selection", function ($event, result, value) {
+    $scope.$on("selectionUp", function ($event, result, value) {
         var index = $scope.selected.indexOf(result);
         if (value && index === -1) {
             $scope.selected.push(result);
         } else if (!value && index > -1) {
             $scope.selected.splice(index, 1);
         }
+        $scope.$broadcast("selectionDown", result, value);
     });
 
     $scope.downloadNzbsCallback = function (addedIds) {
@@ -6704,7 +6754,7 @@ function ConfigFields($injector) {
                                 label: 'Host',
                                 required: true,
                                 placeholder: 'IPv4 address to bind to',
-                                help: 'I strongly recommend using a reverse proxy instead of exposing this directly. Requires restart.'
+                                help: 'I strongly recommend <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">using a reverse proxy</a> instead of exposing this directly. Requires restart.'
                             },
                             validators: {
                                 ipAddress: ipValidator()
@@ -6731,7 +6781,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
                             }
                         },
                         {

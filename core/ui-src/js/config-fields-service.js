@@ -51,7 +51,7 @@ function ConfigFields($injector) {
                                 label: 'Host',
                                 required: true,
                                 placeholder: 'IPv4 address to bind to',
-                                help: 'I strongly recommend using a reverse proxy instead of exposing this directly. Requires restart.'
+                                help: 'I strongly recommend <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">using a reverse proxy</a> instead of exposing this directly. Requires restart.'
                             },
                             validators: {
                                 ipAddress: ipValidator()
@@ -78,7 +78,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
-                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
+                                help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
                             }
                         },
                         {
