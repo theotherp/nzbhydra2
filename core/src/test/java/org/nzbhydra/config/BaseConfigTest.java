@@ -41,18 +41,6 @@ public class BaseConfigTest {
     @InjectMocks
     private BaseConfig testee = new BaseConfig();
 
-    @Test
-    public void shouldBuildCorrectBaseUrl() {
-        testee.getMain().setSsl(false);
-        testee.getMain().setHost("0.0.0.0");
-        testee.getMain().setPort(1234);
-        testee.getMain().setUrlBase("/");
-
-        assertEquals("http://127.0.0.1:1234", testee.getBaseUrl());
-
-        testee.getMain().setUrlBase("/nzbhydra");
-        assertEquals("http://127.0.0.1:1234/nzbhydra", testee.getBaseUrl());
-    }
 
     @Test
     public void shouldRecognizeRestartRequired() {
@@ -95,11 +83,6 @@ public class BaseConfigTest {
         HashMap<String, Object> mapFromBaseConfig = jsonMapper.readValue(jsonFromBaseConfig, typeRef);
 
         compare(mapFromApplicationYml, mapFromBaseConfig);
-    }
-
-    @Test
-    public void bla() throws Exception{
-        System.out.println(BaseConfig.getLocalHostLANAddress().getHostAddress());
     }
 
     private void compare(Object left, Object right) {
