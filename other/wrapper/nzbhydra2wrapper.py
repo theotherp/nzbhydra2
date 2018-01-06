@@ -217,6 +217,47 @@ def restore():
     return True
 
 
+# From https://github.com/pyinstaller/pyinstaller/wiki/Recipe-subprocess
+def subprocess_args(include_stdout=True):
+    # The following is true only on Windows.
+    if hasattr(subprocess, 'STARTUPINFO'):
+        # On Windows, subprocess calls will pop up a command window by default
+        # when run from Pyinstaller with the ``--noconsole`` option. Avoid this
+        # distraction.
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        # Windows doesn't search the path by default. Pass it an environment so
+        # it will.
+        env = os.environ.copy()
+    else:
+        si = None
+        env = None
+
+    # ``subprocess.check_output`` doesn't allow specifying ``stdout``::
+    #
+    #   Traceback (most recent call last):
+    #     File "test_subprocess.py", line 58, in <module>
+    #       **subprocess_args(stdout=None))
+    #     File "C:\Python27\lib\subprocess.py", line 567, in check_output
+    #       raise ValueError('stdout argument not allowed, it will be overridden.')
+    #   ValueError: stdout argument not allowed, it will be overridden.
+    #
+    # So, add it only if it's needed.
+    if include_stdout:
+        ret = {'stdout': subprocess.PIPE}
+    else:
+        ret = {}
+
+    # On Windows, running this from the binary produced by Pyinstaller
+    # with the ``--noconsole`` option requires redirecting everything
+    # (stdin, stdout, stderr) to avoid an OSError exception
+    # "[Error 6] the handle is invalid."
+    ret.update({'stdin': subprocess.PIPE,
+                'stderr': subprocess.STDOUT,
+                'startupinfo': si,
+                'env': env })
+    return ret
+
 def startup():
     global jarFile, process, args, unknownArgs
     basePath = getBasePath()
@@ -286,7 +327,7 @@ def startup():
     # todo check shell=True/False for linux and windows
     # shell=true: pass string, shell=false: pass arguments
     try:
-        process = subprocess.Popen(arguments, shell=False, stdout=subprocess.PIPE, cwd=basePath, stderr=subprocess.STDOUT, bufsize=-1, startupinfo=si, env=os.environ.copy())
+        process = subprocess.Popen(arguments, shell=False, cwd=basePath, bufsize=-1, **subprocess_args())
 
         # atexit.register(killProcess)
         while True:
@@ -302,6 +343,7 @@ def startup():
         return process
     except Exception as e:
         logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
+
 
 
 def escape_parameter(is_windows, parameter):

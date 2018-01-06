@@ -40,7 +40,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 You need [Java Runtime Environment (>=8u101)](https://www.java.com/de/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup> 
 
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
-* On windows you can either start "NZBHydra2.exe" which will add a tray icon or "NZBHydra2 Console.exe" which will open a console window.
+* On windows you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window.
 * On linux start "nzbhydra2"
 * On Mac: No idea, I don't have one. If you have found out please tell me.
 * If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://github.com/theotherp/nzbhydra2/blob/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and start it. You will need to install [PyYAML](https://pypi.python.org/pypi/PyYAML).
