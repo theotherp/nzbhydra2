@@ -118,9 +118,9 @@ public class SqliteMigration {
 
         Statement statement = connection.createStatement();
         int databaseVersion = statement.executeQuery("SELECT version FROM versioninfo LIMIT 1").getInt(1);
-        if (databaseVersion != 21) {
-            logger.error("Expected database version 21 but got {}", databaseVersion);
-            throw new SQLException("Expected database version 21 but got " + databaseVersion);
+        if (databaseVersion < 18) {
+            logger.error("Expected database version to be at least 18 but got {}", databaseVersion);
+            throw new SQLException("Expected database version to be at least 18 but got " + databaseVersion);
         }
 
         migrateIndexerApiAccesses(oldIdToIndexersMap);
