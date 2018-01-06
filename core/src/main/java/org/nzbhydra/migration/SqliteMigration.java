@@ -111,7 +111,7 @@ public class SqliteMigration {
         Map<Integer, SearchEntity> oldIdToSearchesMap = migrateSearches();
 
         Statement statement = connection.createStatement();
-        int databaseVersion = statement.executeQuery("select version from versioninfo limit 1").getInt(1);
+        int databaseVersion = statement.executeQuery("SELECT version FROM versioninfo LIMIT 1").getInt(1);
         if (databaseVersion != 21) {
             logger.error("Expected database version 21 but got {}", databaseVersion);
             throw new SQLException("Expected database version 21 but got " + databaseVersion);
@@ -277,36 +277,49 @@ public class SqliteMigration {
         ResultSet oldSearches = statement.executeQuery("SELECT * FROM search");
         boolean hasAuthor = hasColumn(oldSearches, "author");
         boolean hasTitle = hasColumn(oldSearches, "title");
+        int skippedSearches = 0;
         while (oldSearches.next()) {
-            SearchEntity entity = new SearchEntity();
-            String oldCategory = oldSearches.getString("category");
-            String newCategory = (!Strings.isNullOrEmpty(oldCategory) && categoryMap.containsKey(oldCategory.toLowerCase())) ? categoryMap.get(oldCategory.toLowerCase()) : "All";
-            entity.setCategoryName(newCategory);
-            entity.setUsername(oldSearches.getString("username"));
-            entity.setSeason(oldSearches.getObject("season") != null ? oldSearches.getInt("season") : null);
-            entity.setEpisode(oldSearches.getString("episode"));
-            entity.setQuery(oldSearches.getString("query"));
-            if (hasAuthor) {
-                entity.setAuthor(oldSearches.getString("author"));
-            }
-            if (hasTitle) {
-                entity.setTitle(oldSearches.getString("title"));
-            }
-            entity.setSearchType(oldTypeToNewMap.getOrDefault(oldSearches.getString("type"), SearchType.SEARCH));
+            try {
+                SearchEntity entity = new SearchEntity();
+                String oldCategory = oldSearches.getString("category");
+                String newCategory = (!Strings.isNullOrEmpty(oldCategory) && categoryMap.containsKey(oldCategory.toLowerCase())) ? categoryMap.get(oldCategory.toLowerCase()) : "All";
+                entity.setCategoryName(newCategory);
+                entity.setUsername(oldSearches.getString("username"));
+                entity.setSeason(oldSearches.getObject("season") != null ? oldSearches.getInt("season") : null);
+                entity.setEpisode(oldSearches.getString("episode"));
+                entity.setQuery(oldSearches.getString("query"));
+                if (hasAuthor) {
+                    entity.setAuthor(oldSearches.getString("author"));
+                }
+                if (hasTitle) {
+                    entity.setTitle(oldSearches.getString("title"));
+                }
+                entity.setSearchType(oldTypeToNewMap.getOrDefault(oldSearches.getString("type"), SearchType.SEARCH));
 
-            if (oldSearches.getString("identifier_key") != null && oldSearches.getString("identifier_value") != null && oldIdTypeToNewMap.containsKey(oldSearches.getString("identifier_key"))) {
-                String identifierKey = oldIdTypeToNewMap.get(oldSearches.getString("identifier_key")).name();
-                IdentifierKeyValuePair keyValuePair = new IdentifierKeyValuePair(identifierKey, oldSearches.getString("identifier_value"));
-                entity.setIdentifiers(Sets.newHashSet(keyValuePair));
+                if (oldSearches.getString("identifier_key") != null && oldSearches.getString("identifier_value") != null && oldIdTypeToNewMap.containsKey(oldSearches.getString("identifier_key"))) {
+                    String identifierKey = oldIdTypeToNewMap.get(oldSearches.getString("identifier_key")).name();
+                    IdentifierKeyValuePair keyValuePair = new IdentifierKeyValuePair(identifierKey, oldSearches.getString("identifier_value"));
+                    entity.setIdentifiers(Sets.newHashSet(keyValuePair));
+                }
+                entity.setSource((oldSearches.getBoolean("internal")) ? SearchSource.INTERNAL : SearchSource.API);
+                entity.setTime(oldSearches.getTimestamp("time").toInstant());
+                oldIdToNewEntity.put(oldSearches.getInt("id"), entity);
+
+            } catch (SQLException e) {
+                logger.error("Problem while migrating search", e);
+                skippedSearches++;
             }
-            entity.setSource((oldSearches.getBoolean("internal")) ? SearchSource.INTERNAL : SearchSource.API);
-            entity.setTime(oldSearches.getTimestamp("time").toInstant());
-            oldIdToNewEntity.put(oldSearches.getInt("id"), entity);
         }
         logger.info("Saving search entities to database");
         searchRepository.save(oldIdToNewEntity.values());
-        logger.info("Successfully migrated searches from old database");
-        eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated searches from old database"));
+        if (skippedSearches > 0) {
+            String message = "Skipped " + skippedSearches + " of " + (skippedSearches + oldIdToNewEntity.size()) + " searches because the database entries could not be read";
+            logger.warn(message);
+            eventPublisher.publishEvent(new MigrationMessageEvent(message));
+        } else {
+            logger.info("Successfully migrated searches from old database");
+            eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated searches from old database"));
+        }
         return oldIdToNewEntity;
     }
 
@@ -320,8 +333,6 @@ public class SqliteMigration {
         }
         return false;
     }
-
-
 
 
 }
