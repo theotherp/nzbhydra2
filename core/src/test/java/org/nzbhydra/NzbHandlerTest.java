@@ -55,12 +55,11 @@ public class NzbHandlerTest {
         assertEquals("http://www.domain.com/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
 
         baseConfig.getMain().setUseLocalUrlForApiAccess(true);
-        assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
+        String nzbDownloadLink = testee.getNzbDownloadLink(123L, false, DownloadType.NZB).substring(20); //Remove host specific IP stuff
+        assertEquals(":1234/getnzb/api/123?apikey=apikey", nzbDownloadLink);
 
-
-        assertEquals("http://127.0.0.1:1234/getnzb/api/123?apikey=apikey", testee.getNzbDownloadLink(123L, false, DownloadType.NZB));
-
-        assertEquals("http://127.0.0.1:1234/getnzb/user/123", testee.getNzbDownloadLink(123L, true, DownloadType.NZB));
+        nzbDownloadLink = testee.getNzbDownloadLink(123L, true, DownloadType.NZB).substring(20);
+        assertEquals(":1234/getnzb/user/123", nzbDownloadLink);
     }
 
     @Test
