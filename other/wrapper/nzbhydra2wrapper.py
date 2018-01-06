@@ -14,6 +14,7 @@ from __builtin__ import file
 from logging.handlers import RotatingFileHandler
 
 jarFile = None
+basepath = None
 args = []
 unknownArgs = []
 terminatedByWrapper = False
@@ -34,8 +35,19 @@ if sys.version_info >= (3, 0):
 
 
 def getBasePath():
+    global basepath
+    if basepath is not None:
+        return basepath
     if "HYDRAWORKINGFOLDER" in os.environ.keys():
         return os.environ["HYDRAWORKINGFOLDER"]
+    import sys
+    if sys.executable:
+        basepath = os.path.dirname(sys.executable)
+        if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
+            return basepath
+    basepath = os.path.dirname(os.path.abspath(sys.argv[0]))
+    if os.path.exists(os.path.join(basepath, "readme.md")) and os.path.exists(os.path.join(basepath, "changelog.md")):
+        return basepath
     try:
         basepath = os.path.dirname(os.path.abspath(__file__))
     except NameError:  # We are the main py2exe script, not a module
@@ -261,6 +273,10 @@ def subprocess_args(include_stdout=True):
 def startup():
     global jarFile, process, args, unknownArgs
     basePath = getBasePath()
+    readme = os.path.join(basePath, "readme.md")
+    if not os.path.exists(readme):
+        logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
+        sys.exit(-1)
     isWindows = platform.system().lower() == "windows"
     libFolder = os.path.join(basePath, "lib")
     if not os.path.exists(libFolder):
@@ -372,7 +388,7 @@ if __name__ == '__main__':
     parser.add_argument('--listfiles', action='store', help='Lists all files in given folder and quits. For debugging docker', default=None)
 
     # Pass to main process
-    parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc', default=os.path.join(getBasePath(), "data"))
+    parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc using an absolute path', default=os.path.join(getBasePath(), "data"))
     parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 128)', default=None)
     parser.add_argument('--quiet', action='store_true', help='Set to disable all console output', default=False)
     parser.add_argument('--host', action='store', help='Set the host')
@@ -396,6 +412,10 @@ if __name__ == '__main__':
         logger.info("Deleting .old files from last update")
         for f in oldFiles:
             os.remove(f)
+
+    if not (os.path.isabs(args.datafolder)):
+        args.datafolder = os.path.join(os.getcwd(), args.datafolder)
+        logger.info("Data folder path is not absolute. Will assume " + args.datafolder + " was meant")
 
     # Delete old control id file if it exists. Shouldn't ever exist or if it does it should be overwritten by main process, but who knows
     controlIdFilePath = os.path.join(getBasePath(), "data", "control.id")

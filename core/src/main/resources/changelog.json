@@ -1,12 +1,25 @@
-[ {
-  "version": "v1.0.4",
+[{
+  "version": "v1.0.5",
   "changes": [
     {
       "type": "note",
-      "text": "So many fixes"
+      "text": "Make migration a bit more stable"
+    },
+    {
+      "type": "note",
+      "text": "Make sure wrapper is started from correct folder"
     }
   ]
 },
+  {
+    "version": "v1.0.4",
+    "changes": [
+      {
+        "type": "note",
+        "text": "So many fixes"
+      }
+    ]
+  },
   {
     "version": "v1.0.3",
     "changes": [
