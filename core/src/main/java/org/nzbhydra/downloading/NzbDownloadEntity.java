@@ -58,7 +58,15 @@ public class NzbDownloadEntity {
         this.userAgent = SessionStorage.userAgent.get();
         this.ip = SessionStorage.IP.get();
         this.age = age;
-        this.error = error;
+        setError(error);
+    }
+
+    public void setError(String error) {
+        if (error != null && error.length() > 4000) {
+            this.error = error.substring(0,4000);
+        } else {
+            this.error = error;
+        }
     }
 
     public NzbDownloadEntity() {
