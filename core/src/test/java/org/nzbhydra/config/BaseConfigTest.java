@@ -97,6 +97,11 @@ public class BaseConfigTest {
         compare(mapFromApplicationYml, mapFromBaseConfig);
     }
 
+    @Test
+    public void bla() throws Exception{
+        System.out.println(BaseConfig.getLocalHostLANAddress().getHostAddress());
+    }
+
     private void compare(Object left, Object right) {
         if (left instanceof HashMap) {
             compareMaps((HashMap) left, (HashMap) right);

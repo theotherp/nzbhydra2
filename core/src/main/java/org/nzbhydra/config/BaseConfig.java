@@ -30,9 +30,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -60,8 +64,9 @@ public class BaseConfig extends ValidatingConfig {
     private SearchingConfig searching = new SearchingConfig();
     @JsonIgnore
     private final DefaultPrettyPrinter defaultPrettyPrinter;
+    @JsonIgnore
+    private String host;
     private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-
 
 
     public BaseConfig() {
@@ -150,16 +155,25 @@ public class BaseConfig extends ValidatingConfig {
 
     @JsonIgnore
     public UriComponentsBuilder getBaseUriBuilder() {
-        String host = main.getHost();
-        if (!Strings.isNullOrEmpty(System.getProperty("server.address"))) {
-            host = System.getProperty("server.address");
+        if (host == null) {
+            host = main.getHost();
+            if (!Strings.isNullOrEmpty(System.getProperty("server.address"))) {
+                host = System.getProperty("server.address");
+            }
+            if (host.equals("0.0.0.0")) {
+                try {
+                    host = getLocalHostLANAddress().getHostAddress();
+                } catch (UnknownHostException e) {
+                    logger.warn("Unable to determine host address. Will use 127.0.0.1. Error: {}", e.getMessage());
+                }
+            }
         }
         int port = main.getPort();
         if (!Strings.isNullOrEmpty(System.getProperty("server.port"))) {
             port = Integer.valueOf(System.getProperty("server.port"));
         }
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                .host(host.equals("0.0.0.0") ? "127.0.0.1" : host)
+                .host(host)
                 .scheme(main.isSsl() ? "https" : "http")
                 .port(port);
         String baseUrl = null;
@@ -250,6 +264,51 @@ public class BaseConfig extends ValidatingConfig {
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
 
         return configValidationResult;
+    }
+
+    protected static InetAddress getLocalHostLANAddress() throws UnknownHostException {
+        try {
+            InetAddress candidateAddress = null;
+            // Iterate all NICs (network interface cards)...
+            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
+                NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
+                // Iterate all IP addresses assigned to each card...
+                for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
+                    InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
+                    if (!inetAddr.isLoopbackAddress()) {
+
+                        if (inetAddr.isSiteLocalAddress()) {
+                            // Found non-loopback site-local address. Return it immediately...
+                            return inetAddr;
+                        } else if (candidateAddress == null) {
+                            // Found non-loopback address, but not necessarily site-local.
+                            // Store it as a candidate to be returned if site-local address is not subsequently found...
+                            candidateAddress = inetAddr;
+                            // Note that we don't repeatedly assign non-loopback non-site-local addresses as candidates,
+                            // only the first. For subsequent iterations, candidate will be non-null.
+                        }
+                    }
+                }
+            }
+            if (candidateAddress != null) {
+                // We did not find a site-local address, but we found some other non-loopback address.
+                // Server might have a non-site-local address assigned to its NIC (or it might be running
+                // IPv6 which deprecates the "site-local" concept).
+                // Return this non-loopback candidate address...
+                return candidateAddress;
+            }
+            // At this point, we did not find a non-loopback address.
+            // Fall back to returning whatever InetAddress.getLocalHost() returns...
+            InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
+            if (jdkSuppliedAddress == null) {
+                throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
+            }
+            return jdkSuppliedAddress;
+        } catch (Exception e) {
+            UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN address: " + e);
+            unknownHostException.initCause(e);
+            throw unknownHostException;
+        }
     }
 
 
