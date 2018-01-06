@@ -2,17 +2,17 @@
     <caption>Indexer statuses</caption>
     <thead>
     <tr>
-        <th>Indexer</th>
-        <th>Last failure</th>
-        <th>Disabled until</th>
-        <th>Reason</th>
+        <th class="col-md-1">Indexer</th>
+        <th class="col-md-2">Last failure</th>
+        <th class="col-md-2">Disabled until</th>
+        <th class="col-md-15">Reason</th>
     </tr>
     </thead>
     <tbody>
     <tr ng-repeat="indexerStatus in statuses">
-        <td class="col-md-2">{{ indexerStatus.indexer.name }}</td>
-        <td class="col-md-3"><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
-        <td class="col-md-4">
+        <td >{{ indexerStatus.indexer.name }}</td>
+        <td ><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
+        <td>
             <span ng-if="indexerStatus.disabledUntil">
                 <a href="" ng-click="enable(indexerStatus.indexer.name)"
                    uib-tooltip="Click to enable the indexer again"
@@ -27,7 +27,7 @@
             <span ng-if="indexerStatus.disabledPermanently">Permanently</span>
 
         </td>
-        <td class="col-md-11">{{ indexerStatus.reason }}</td>
+        <td style="word-break: break-all;">{{ indexerStatus.reason }}</td>
     </tr>
     </tbody>
 </table>
