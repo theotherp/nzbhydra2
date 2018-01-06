@@ -328,6 +328,9 @@ def startup():
     else:
         logger.info("No file nzbhydra.yml found. Using 128M XMX")
         xmx = 128
+    if xmx.lower().endswith("m"):
+        logger.info("Removing superfluous M from XMX value " + xmx)
+        xmx = xmx[:-1]
     java_arguments = ["-Xmx" + str(xmx) + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
