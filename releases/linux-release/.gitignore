@@ -2,3 +2,5 @@ target/
 .idea/*
 *.iws
 *.ipr
+*.exe
+include/nzbhydra2

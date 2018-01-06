@@ -317,17 +317,17 @@ def startup():
             arguments.append("--baseurl")
             arguments.append(args.baseurl)
     yamlPath = os.path.join(args.datafolder, "nzbhydra.yml")
-    if os.path.exists(yamlPath):
+    if args.xmx:
+        xmx = args.xmx
+    elif os.path.exists(yamlPath):
         with open(yamlPath, "r") as f:
             for line in f.readlines():
                 index = line.find("xmx:")
                 if index > -1:
-                    xmx = line[index + 5:]
+                    xmx = line[index + 5:].rstrip("\n\r ")
     else:
         logger.info("No file nzbhydra.yml found. Using 128M XMX")
         xmx = 128
-    if args.xmx:
-        xmx = args.xmx
     java_arguments = ["-Xmx" + str(xmx) + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")

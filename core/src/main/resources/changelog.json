@@ -1,16 +1,30 @@
-[{
-  "version": "v1.0.5",
-  "changes": [
-    {
-      "type": "note",
-      "text": "Make migration a bit more stable"
-    },
-    {
-      "type": "note",
-      "text": "Make sure wrapper is started from correct folder"
-    }
-  ]
-},
+[
+  {
+    "version": "v1.0.6",
+    "changes": [
+      {
+        "type": "note",
+        "text": "Improve the way the host is determined. External URL should not need to be set when not using a reverse proxy"
+      },
+      {
+        "type": "note",
+        "text": "Remove PyYAML dependency from wrapper"
+      }
+    ]
+  },,
+  {
+    "version": "v1.0.5",
+    "changes": [
+      {
+        "type": "note",
+        "text": "Make migration a bit more stable"
+      },
+      {
+        "type": "note",
+        "text": "Make sure wrapper is started from correct folder"
+      }
+    ]
+  },
   {
     "version": "v1.0.4",
     "changes": [

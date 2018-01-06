@@ -35,10 +35,10 @@ jobs:
       - run: find . -type f -regex ".*/target/screenshots/.*png" -exec cp {} ~/junit/ \;
 
       #Build releases
-      - run: mkdir -p ~/releases/
-      - run: mvn -T 2 -pl "org.nzbhydra:linux-release,org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
-      - run: cp releases/linux-release/target/*.zip ~/releases/
-      - run: cp releases/windows-release/target/*.zip ~/releases/
+#      - run: mkdir -p ~/releases/
+#      - run: mvn -T 2 -pl "org.nzbhydra:linux-release,org.nzbhydra:windows-release" clean install dependency:resolve-plugins dependency:go-offline
+#      - run: cp releases/linux-release/target/*.zip ~/releases/
+#      - run: cp releases/windows-release/target/*.zip ~/releases/
 
       #Collect all surefire reports and put them in one folder for Circle to parse
       - save_cache:
@@ -48,10 +48,10 @@ jobs:
 
       - store_test_results:
           path: ~/junit
-      - store_artifacts:
-          path: ~/junit
-      - store_artifacts:
-          path: ~/releases
+#      - store_artifacts:
+#          path: ~/junit
+#      - store_artifacts:
+#          path: ~/releases
 
 #workflows didn't work because I cached the m2 cache in the build step and then restored it in the test step. without a changed pom.xml old JARs would be used
 #possible fix: another more specific save_cache for ~/.m2/repository/org/nzbhydra/
