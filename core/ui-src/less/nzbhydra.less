@@ -190,12 +190,6 @@ a.expand-collapse:focus {
   vertical-align: middle;
 }
 
-.config-tab-content {
-  background-color: @gray-dark;
-  margin: 30px;
-  padding: 20px;
-}
-
 .config-field {
   width: 400px;
 }
@@ -479,7 +473,6 @@ a.disabled:hover {
 .title-group-expanded {
   background-color: darken(@table-bg, 5%);
 }
-
 
 .search-results-cell:focus {
   outline: none;
@@ -1043,3 +1036,78 @@ select.form-control {
   margin-bottom: 0;
 }
 
+.formly-multiselect {
+  float: left;
+}
+
+.setting-wrapper {
+
+  .config-label {
+    width: 20%;
+  }
+
+  .config-content {
+    width: 30%;
+  }
+
+  .config-help {
+    width: 50%;
+  }
+}
+
+.config-box {
+  .config-label {
+    width: 20%;
+  }
+
+  .config-content {
+    width: 30%;
+  }
+
+  .config-help {
+    width: 50%;
+  }
+}
+
+.config {
+  .config-left-space {
+    width: 10%;
+  }
+}
+
+.config-fieldset-legend {
+  float: left;
+  margin-left: 292px;
+}
+
+.config-tab-content {
+
+}
+
+.formly > .formly-field-group {
+  position: relative;
+  background-color: fade(@modal-content-bg, 50%);
+  border: 1px solid @modal-content-border-color;
+  border-radius: @border-radius-large;
+  //.box-shadow(0 1px 5px rgba(0, 0, 0, .5));
+  background-clip: padding-box;
+  // Remove focus outline from opened modal
+  outline: 0;
+}
+
+.formly-field-group:not(:first-child) {
+  margin-top: 25px;
+}
+
+.formly-field-group:first-child {
+  margin-top: -25px;
+}
+
+.repeatsection {
+  box-shadow: 0 0 4px 1px #aaaaaa2e;
+  border-radius: 3px;
+
+  &:not(:first-child) {
+    margin-top: 25px;
+  }
+}

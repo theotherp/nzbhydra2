@@ -370,7 +370,7 @@ function ConfigFields($injector) {
                                     {label: 'Uer agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
-                                placeholder: 'None'
+                                buttonText: "None"
                             }
                         }
                     ]
@@ -1844,15 +1844,13 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 key: 'enabledCategories',
                 type: 'horizontalMultiselect',
                 templateOptions: {
-                    label: 'Enable for...',
-                    help: 'Only use indexer for these and also reject results from others',
+                    label: 'Categories',
+                    help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
                     options: options,
-                    getPlaceholder: function () {
-                        return "All categories";
-                    }
+                    buttonText: "All"
                 }
             }
-        )
+        );
     }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
@@ -1870,6 +1868,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
+                    buttonText: "None",
                     getPlaceholder: function (model) {
                         if (angular.isUndefined(model)) {
                             return "Unknown";
@@ -1893,12 +1892,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'Ebooks', id: 'BOOK'},
                         {label: 'Audio', id: 'AUDIO'}
                     ],
-                    getPlaceholder: function (model) {
-                        if (angular.isUndefined(model)) {
-                            return "Unknown";
-                        }
-                        return "None";
-                    }
+                    buttonText: "None"
                 }
             }
         )

@@ -4233,6 +4233,19 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.searchRequests = history.data.content;
     $scope.totalRequests = history.data.totalElements;
 
+    var anyUsername = false;
+    var anyIp = false;
+    for (var request in $scope.searchRequests) {
+        if (request.username) {
+            anyUsername = true;
+        }
+        if (request.ip) {
+            anyIp = true;
+        }
+        if (anyIp && anyUsername) {
+            break;
+        }
+    }
     $scope.columnSizes = {
         time: 10,
         query: 30,
@@ -4242,7 +4255,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         username: 10,
         ip: 10
     };
-    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE") {
+    if (ConfigService.getSafe().logging.historyUserInfoType === "NONE" || (!anyUsername && !anyIp)) {
         $scope.columnSizes.username = 0;
         $scope.columnSizes.ip = 0;
         $scope.columnSizes.query += 10;
@@ -4370,8 +4383,6 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
                 $scope.details = data.data;
             });
-
-
         }
 
         $uibModal.open({
@@ -5655,7 +5666,7 @@ angular
             name: 'fieldset',
             template: [
                 '<fieldset>',
-                '<legend>{{options.templateOptions.label}}</legend>',
+                '<legend><span class="config-fieldset-legend">{{options.templateOptions.label}}</span></legend>',
                 '<formly-transclude></formly-transclude>',
                 '</fieldset>'
             ].join(' ')
@@ -5904,20 +5915,39 @@ angular
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
+
         formlyConfigProvider.setType({
             name: 'horizontalMultiselect',
             defaultOptions: {
                 templateOptions: {
                     optionsAttr: 'bs-options',
-                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search',
-                    valueProp: 'id',
-                    labelProp: 'label',
-                    getPlaceholder: function () {
-                        return "";
-                    }
+                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
                 }
             },
-            templateUrl: 'ui-select-multiple.html',
+            templateUrl: 'static/html/directives/formly-multiselect.html',
+            controller: function($scope) {
+                $scope.availableOptions = $scope.to.options;
+                $scope.selectedModel = _.map($scope.model[$scope.options.key], function (x) {
+                    return {id: x, label: x}
+                });
+
+                $scope.extraSettings = {
+                    showCheckAll: true,
+                    showUncheckAll: true,
+                    dynamicTitle: true,
+                    buttonClasses: "btn btn-default multiselect-button"
+                };
+                $scope.events = {
+                    onSelectionChanged: function() {
+                        $scope.model[$scope.options.key] = _.pluck($scope.selectedModel, "id");
+                    }
+                };
+                $scope.texts = {
+                    buttonDefaultText: $scope.to.buttonText,
+                    dynamicButtonTextSuffix: "selected"
+                }
+
+            },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
@@ -7087,7 +7117,7 @@ function ConfigFields($injector) {
                                     {label: 'Uer agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
-                                placeholder: 'None'
+                                buttonText: "None"
                             }
                         }
                     ]
@@ -8562,15 +8592,13 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 key: 'enabledCategories',
                 type: 'horizontalMultiselect',
                 templateOptions: {
-                    label: 'Enable for...',
-                    help: 'Only use indexer for these and also reject results from others',
+                    label: 'Categories',
+                    help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
                     options: options,
-                    getPlaceholder: function () {
-                        return "All categories";
-                    }
+                    buttonText: "All"
                 }
             }
-        )
+        );
     }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
@@ -8588,6 +8616,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
+                    buttonText: "None",
                     getPlaceholder: function (model) {
                         if (angular.isUndefined(model)) {
                             return "Unknown";
@@ -8611,12 +8640,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'Ebooks', id: 'BOOK'},
                         {label: 'Audio', id: 'AUDIO'}
                     ],
-                    getPlaceholder: function (model) {
-                        if (angular.isUndefined(model)) {
-                            return "Unknown";
-                        }
-                        return "None";
-                    }
+                    buttonText: "None"
                 }
             }
         )

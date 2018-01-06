@@ -59,8 +59,11 @@ gulp.task('scripts', function () {
     var dest = 'src/main/resources/static/js';
     return gulp.src("ui-src/js/**/*.js")
         .pipe(ngAnnotate())
+        .on('error', swallowError)
         .pipe(angularFilesort())
+        .on('error', swallowError)
         .pipe(sourcemaps.init())
+        .on('error', swallowError)
         .pipe(concat('nzbhydra.js'))
         //.pipe(uglify()) //Will cause errors
         .pipe(sourcemaps.write('./'))
@@ -72,6 +75,7 @@ gulp.task('less', function () {
     var dest = 'src/main/resources/static/css';
     var brightTheme = gulp.src('ui-src/less/bright.less')
         .pipe(cached("bright"))
+        .on('error', swallowError)
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
@@ -81,6 +85,7 @@ gulp.task('less', function () {
 
     var greyTheme = gulp.src('ui-src/less/grey.less')
         .pipe(cached("grey"))
+        .on('error', swallowError)
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
@@ -90,6 +95,7 @@ gulp.task('less', function () {
 
     var darkTheme = gulp.src('ui-src/less/dark.less')
         .pipe(cached("dark"))
+        .on('error', swallowError)
         .pipe(sourcemaps.init())
         .pipe(less())
         .on('error', swallowError)
@@ -155,6 +161,7 @@ gulp.task('index', function () {
 });
 
 function swallowError(error) {
+    console.log(error);
     this.emit('end');
 }
 

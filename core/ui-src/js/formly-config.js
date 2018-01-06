@@ -30,7 +30,7 @@ angular
             name: 'fieldset',
             template: [
                 '<fieldset>',
-                '<legend>{{options.templateOptions.label}}</legend>',
+                '<legend><span class="config-fieldset-legend">{{options.templateOptions.label}}</span></legend>',
                 '<formly-transclude></formly-transclude>',
                 '</fieldset>'
             ].join(' ')
@@ -279,20 +279,39 @@ angular
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
+
         formlyConfigProvider.setType({
             name: 'horizontalMultiselect',
             defaultOptions: {
                 templateOptions: {
                     optionsAttr: 'bs-options',
-                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search',
-                    valueProp: 'id',
-                    labelProp: 'label',
-                    getPlaceholder: function () {
-                        return "";
-                    }
+                    ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
                 }
             },
-            templateUrl: 'ui-select-multiple.html',
+            templateUrl: 'static/html/directives/formly-multiselect.html',
+            controller: function($scope) {
+                $scope.availableOptions = $scope.to.options;
+                $scope.selectedModel = _.map($scope.model[$scope.options.key], function (x) {
+                    return {id: x, label: x}
+                });
+
+                $scope.extraSettings = {
+                    showCheckAll: true,
+                    showUncheckAll: true,
+                    dynamicTitle: true,
+                    buttonClasses: "btn btn-default multiselect-button"
+                };
+                $scope.events = {
+                    onSelectionChanged: function() {
+                        $scope.model[$scope.options.key] = _.pluck($scope.selectedModel, "id");
+                    }
+                };
+                $scope.texts = {
+                    buttonDefaultText: $scope.to.buttonText,
+                    dynamicButtonTextSuffix: "selected"
+                }
+
+            },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
