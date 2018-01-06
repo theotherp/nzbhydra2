@@ -61,9 +61,10 @@ import java.util.stream.Collectors;
 public class SqliteMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(SqliteMigration.class);
-    protected static final DateTimeFormatter DATE_TIME_FORMATTER1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
-    protected static final DateTimeFormatter DATE_TIME_FORMATTER2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    protected static final DateTimeFormatter DATE_TIME_FORMATTER3 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSXXX");
+    protected static final DateTimeFormatter FORMAT_NANO = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+    protected static final DateTimeFormatter FORMAT_SECOND = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    protected static final DateTimeFormatter FORMAT_NANO_ZONE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSXXX");
+    protected static final DateTimeFormatter FORMAT_SECOND_ZONE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXXX");
 
     protected Connection connection;
     @Autowired
@@ -333,15 +334,16 @@ public class SqliteMigration {
         return oldIdToNewEntity;
     }
 
-    private Instant timestampToInstant(String timeString) {
+    protected Instant timestampToInstant(String timeString) {
         Instant time;
-        if (timeString.contains("+")) {
-            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER3).toInstant(ZoneOffset.UTC);
-        }
-        else if (timeString.contains(".")) {
-            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER1).toInstant(ZoneOffset.UTC);
+        if (timeString.contains("+") && timeString.contains(".")) {
+            time = LocalDateTime.parse(timeString, FORMAT_NANO_ZONE).toInstant(ZoneOffset.UTC);
+        } else if (timeString.contains(".") && !timeString.contains("+")) {
+            time = LocalDateTime.parse(timeString, FORMAT_NANO).toInstant(ZoneOffset.UTC);
+        } else if (!timeString.contains(".") && !timeString.contains("+")) {
+            time = LocalDateTime.parse(timeString, FORMAT_SECOND).toInstant(ZoneOffset.UTC);
         } else {
-            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER2).toInstant(ZoneOffset.UTC);
+            time = LocalDateTime.parse(timeString, FORMAT_SECOND_ZONE).toInstant(ZoneOffset.UTC);
         }
         return time;
     }

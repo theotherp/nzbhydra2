@@ -22,8 +22,6 @@ import org.nzbhydra.searching.SearchRepository;
 import org.nzbhydra.searching.SearchType;
 
 import java.sql.Connection;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +32,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.nzbhydra.migration.SqliteMigration.DATE_TIME_FORMATTER1;
-import static org.nzbhydra.migration.SqliteMigration.DATE_TIME_FORMATTER2;
-import static org.nzbhydra.migration.SqliteMigration.DATE_TIME_FORMATTER3;
 
 public class SqliteMigrationTest {
 
@@ -133,13 +128,16 @@ public class SqliteMigrationTest {
     @Test
     public void bla() throws Exception {
         String a = "2018-01-06 18:16:22.285000";
-        LocalDateTime.parse(a, DATE_TIME_FORMATTER1).toInstant(ZoneOffset.UTC);
+        testee.timestampToInstant(a);
 
         a = "2018-01-06 18:16:22";
-        LocalDateTime.parse(a, DATE_TIME_FORMATTER2).toInstant(ZoneOffset.UTC);
+        testee.timestampToInstant(a);
 
         a = "2018-01-06 18:16:22.365000+00:00";
-        LocalDateTime.parse(a, DATE_TIME_FORMATTER3).toInstant(ZoneOffset.UTC);
+        testee.timestampToInstant(a);
+
+        a = "2016-03-26 22:16:52+00:00";
+        testee.timestampToInstant(a);
 
     }
 

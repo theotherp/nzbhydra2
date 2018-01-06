@@ -48,7 +48,8 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container:
-docker run -p \<localport\>:5076 -v \<localdatafolder\>:/data -v \<localtorrentsfolder\>:/torrents theotherp/nzbhydra2 \<arguments\>
+`docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>`. In the Hyra main config set the external URL to the  
+
 
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
