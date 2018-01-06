@@ -7114,7 +7114,7 @@ function ConfigFields($injector) {
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
-                                    {label: 'Uer agent mapping', id: 'USER_AGENT'}
+                                    {label: 'User agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"

@@ -44,6 +44,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +61,9 @@ import java.util.stream.Collectors;
 public class SqliteMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(SqliteMigration.class);
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    protected static final DateTimeFormatter DATE_TIME_FORMATTER3 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSSXXX");
 
     protected Connection connection;
     @Autowired
@@ -134,7 +140,7 @@ public class SqliteMigration {
         List<SearchResultEntity> dummySearchResultEntities = new ArrayList<>();
         while (oldDownloads.next()) {
             NzbDownloadEntity entity = new NzbDownloadEntity();
-            entity.setTime(oldDownloads.getTimestamp("time").toInstant());
+            entity.setTime(timestampToInstant(oldDownloads.getString("time")));
             IndexerEntity indexerEntity = oldIdToIndexersMap.get(oldDownloads.getInt("indexer_id"));
             entity.setError(oldDownloads.getString("error"));
             entity.setUsername(oldDownloads.getString("username"));
@@ -176,7 +182,7 @@ public class SqliteMigration {
         while (oldIndexerApiAccesses.next()) {
             entity = new IndexerApiAccessEntity();
             entity.setIndexer(oldIdToIndexersMap.get(oldIndexerApiAccesses.getInt("indexer_id")));
-            entity.setTime(oldIndexerApiAccesses.getTimestamp("time").toInstant());
+            entity.setTime(timestampToInstant(oldIndexerApiAccesses.getString("time")));
             Object responseTime = oldIndexerApiAccesses.getObject("response_time");
             entity.setResponseTime(responseTime != null ? ((Integer) responseTime).longValue() : null);
             String error = oldIndexerApiAccesses.getString("error");
@@ -302,7 +308,11 @@ public class SqliteMigration {
                     entity.setIdentifiers(Sets.newHashSet(keyValuePair));
                 }
                 entity.setSource((oldSearches.getBoolean("internal")) ? SearchSource.INTERNAL : SearchSource.API);
-                entity.setTime(oldSearches.getTimestamp("time").toInstant());
+
+                Instant time;
+                String timeString = oldSearches.getString("time");
+                time = timestampToInstant(timeString);
+                entity.setTime(time);
                 oldIdToNewEntity.put(oldSearches.getInt("id"), entity);
 
             } catch (SQLException e) {
@@ -321,6 +331,19 @@ public class SqliteMigration {
             eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated searches from old database"));
         }
         return oldIdToNewEntity;
+    }
+
+    private Instant timestampToInstant(String timeString) {
+        Instant time;
+        if (timeString.contains("+")) {
+            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER3).toInstant(ZoneOffset.UTC);
+        }
+        else if (timeString.contains(".")) {
+            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER1).toInstant(ZoneOffset.UTC);
+        } else {
+            time = LocalDateTime.parse(timeString, DATE_TIME_FORMATTER2).toInstant(ZoneOffset.UTC);
+        }
+        return time;
     }
 
     private boolean hasColumn(ResultSet rs, String columnName) throws SQLException {
