@@ -1,3 +1,6 @@
+### v1.0.12
+Feature: Allow migrating only the config, skipping the database migration
+
 ### v1.0.11
 Fix: Fix error in auth introduced in a previous version
 
