@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.0.9",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Allow NZBHydra2 to be shown in an iFrame (e.g. organizr)"
+      }
+    ]
+  },
+  {
     "version": "v1.0.8",
     "changes": [
       {

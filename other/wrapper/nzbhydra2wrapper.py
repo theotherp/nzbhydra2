@@ -399,7 +399,7 @@ if __name__ == '__main__':
     parser.add_argument('--host', action='store', help='Set the host')
     parser.add_argument('--port', action='store', help='Set the port')
     parser.add_argument('--baseurl', action='store', help='Set the base URL (e.g. /nzbhydra)')
-    parser.add_argument('--nobrowser', action='store_true', help='Set to disable all console output', default=False)
+    parser.add_argument('--nobrowser', action='store_true', help='Set to disable opening of browser at startup', default=False)
     parser.add_argument('--debug', action='store_true', help='Start with more debugging output', default=False)
     # Main process actions
     parser.add_argument('--repairdb', action='store', help='Attempt to repair the database. Provide path to database file as parameter')

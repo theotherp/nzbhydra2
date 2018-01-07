@@ -54,6 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         } else {
             http.csrf().disable();
         }
+        http.headers().frameOptions().disable();
 
         if (baseConfig.getAuth().getAuthType() == AuthType.BASIC) {
             http = http
