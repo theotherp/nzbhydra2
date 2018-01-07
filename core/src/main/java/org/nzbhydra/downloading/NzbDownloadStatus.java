@@ -20,7 +20,7 @@ public enum NzbDownloadStatus {
     INTERNAL_ERROR(NONE, REQUESTED),
 
     /**
-     * when the NZB file was downloaded by hydra successfully
+     * when the NZB file was downloaded successfully by hydra
      */
     NZB_DOWNLOAD_SUCCESSFUL(NONE, REQUESTED),
     /**

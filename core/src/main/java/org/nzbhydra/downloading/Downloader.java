@@ -1,13 +1,18 @@
 package org.nzbhydra.downloading;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.DownloaderConfig;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
@@ -19,11 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +47,10 @@ public abstract class Downloader {
 
     public void intialize(DownloaderConfig downloaderConfig) {
         this.downloaderConfig = downloaderConfig;
+    }
+
+    public boolean isEnabled() {
+        return downloaderConfig != null && downloaderConfig.isEnabled();
     }
 
     @Transactional
@@ -106,6 +117,50 @@ public abstract class Downloader {
      */
     public abstract String addNzb(String content, String title, String category) throws DownloaderException;
 
+    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads) {
+        logger.debug("Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        if (downloads.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Instant earliestDownload = Iterables.getLast(downloads).getTime();
+        List<NzbDownloadEntity> updatedDownloads = new ArrayList<>();
+        try {
+            List<DownloaderHistoryEntry> history = getHistory(earliestDownload);
+            for (NzbDownloadEntity download : downloads) {
+                for (DownloaderHistoryEntry entry : history) {
+                    if (download.getSearchResult() == null) {
+                        continue;
+                    }
+                    if (isDownloadMatchingHistoryEntry(download, entry)) {
+                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Matched download {} with history entry {}");
+                        NzbDownloadStatus newStatus = getDownloadStatusFromHistoryEntry(entry);
+                        if (newStatus == null) {
+                            //Could be any status that we're not prepared for
+                            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to map NZBGet status {}", entry.getStatus());
+                            continue;
+                        }
+                        if (newStatus.canUpdate(download.getStatus())) {
+                            download.setStatus(newStatus);
+                            updatedDownloads.add(download);
+                            logger.info("Updating download status for {} to {}", entry.getName(), newStatus);
+                        }
+                    }
+                }
+
+            }
+
+            logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} history", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), history.size(), downloaderConfig.getName());
+        } catch (Throwable throwable) {
+            logger.error("Error while trying to update download statuses", throwable);
+        }
+        return updatedDownloads;
+    }
+
+    public abstract List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable;
+    protected abstract NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry);
+    protected abstract boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry);
+
     @Data
     @AllArgsConstructor
     public class AddNzbsResponse {
@@ -113,6 +168,24 @@ public abstract class Downloader {
         private String message;
         private Collection<Long> addedIds;
         private Collection<Long> missedIds;
+    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    protected class DownloaderHistoryEntry {
+        private String name;
+        private int nzbId;
+        private String nzbName;
+        private String status;
+        private Instant time;
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                    .add("nzbId", nzbId)
+                    .add("name", name)
+                    .toString();
+        }
     }
 
 }

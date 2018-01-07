@@ -7109,7 +7109,8 @@ function ConfigFields($injector) {
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
-                                    {label: 'User agent mapping', id: 'USER_AGENT'}
+                                    {label: 'User agent mapping', id: 'USER_AGENT'},
+                                    {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"
@@ -8808,7 +8809,7 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
                     {name: 'Send link', value: 'SEND_LINK'},
                     {name: 'Upload NZB', value: 'UPLOAD'}
                 ],
-                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data"
+                help: "How NZBs are added to the downloader, either by sending a link to the NZB or by uploading the NZB data. Uploading is recommended"
             }
         },
         {
@@ -8832,7 +8833,7 @@ function getDownloaderPresets() {
             name: "NZBGet",
             downloaderType: "NZBGET",
             username: "nzbgetx",
-            nzbAddingType: "SEND_LINK",
+            nzbAddingType: "UPLOAD",
             nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB",
@@ -8842,7 +8843,7 @@ function getDownloaderPresets() {
             url: "http://localhost:8086",
             downloaderType: "SABNZBD",
             name: "SABnzbd",
-            nzbAddingType: "SEND_LINK",
+            nzbAddingType: "UPLOAD",
             nzbAccessType: "REDIRECT",
             iconCssClass: "",
             downloadType: "NZB"

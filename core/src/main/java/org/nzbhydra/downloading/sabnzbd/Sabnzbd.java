@@ -11,6 +11,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.downloading.Downloader;
+import org.nzbhydra.downloading.NzbDownloadEntity;
+import org.nzbhydra.downloading.NzbDownloadStatus;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
@@ -26,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 
 @Component
@@ -116,6 +119,28 @@ public class Sabnzbd extends Downloader {
             throw new DownloaderException("Error while communicating with downloader: " + e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads) {
+        logger.warn("Missing implementation for status updates");
+        return downloads;
+    }
+
+    @Override
+    public List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable {
+        logger.error("Missing implementation");
+        return null;
+    }
+
+    @Override
+    protected NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry) {
+        return null;
+    }
+
+    @Override
+    protected boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry) {
+        return false;
     }
 
 

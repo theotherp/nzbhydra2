@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,6 +21,32 @@ import java.util.stream.Collectors;
 
 @Component
 public class NzbGet extends Downloader {
+
+    private static final Map<String, NzbDownloadStatus> NZBGET_STATUS_TO_HYDRA_STATUS = new HashMap<>();
+
+    static {
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/ALL", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/UNPACK", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/PAR", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/HEALTH", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/GOOD", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/MARK", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/MOVE", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL); //We consider this good enough
+
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/SCRIPT", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/SPACE", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/HEALTH", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/PASSWORD", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/DAMAGED", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/REPAIRABLE", NzbDownloadStatus.CONTENT_DOWNLOAD_WARNING);
+
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/PAR", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/UNPACK", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/HEALTH", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/BAD", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
+
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/SCAN", NzbDownloadStatus.NZB_ADD_REJECTED);
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
@@ -90,6 +117,41 @@ public class NzbGet extends Downloader {
             logger.info("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
             throw new DownloaderException("Error while adding NZB to NZBGet: " + throwable.getMessage());
         }
+    }
+
+
+    protected boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry) {
+        boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(String.valueOf(entry.getNzbId()));
+        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
+        return idMatches || nameMatches;
+    }
+
+    @Override
+    protected NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry) {
+        return NZBGET_STATUS_TO_HYDRA_STATUS.get(entry.getStatus());
+    }
+
+
+    public List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable {
+        ArrayList<LinkedHashMap<String, Object>> history = client.invoke("history", new Object[]{false}, ArrayList.class);
+        List<DownloaderHistoryEntry> historyEntries = new ArrayList<>();
+        for (LinkedHashMap<String, Object> map : history) {
+            if (!map.get("Kind").equals("NZB")) {
+                continue;
+            }
+            DownloaderHistoryEntry historyEntry = new DownloaderHistoryEntry();
+            historyEntry.setNzbId((Integer) map.get("NZBID"));
+            historyEntry.setName((String) map.get("Name"));
+            historyEntry.setNzbName((String) map.get("NZBName"));
+            historyEntry.setStatus((String) map.get("Status"));
+            historyEntry.setTime(Instant.ofEpochSecond((Integer) map.get("HistoryTime")));
+            historyEntries.add(historyEntry);
+            if (historyEntry.getTime().isBefore(earliestDownload)) {
+                return historyEntries;
+            }
+        }
+
+        return historyEntries;
     }
 
     private String callAppend(String contentOrLink, String title, String category) throws Throwable {

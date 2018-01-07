@@ -2,9 +2,11 @@ package org.nzbhydra.downloading;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.nzbhydra.config.DownloaderConfig;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.Instant;
 
 public class NzbGetTest {
     @InjectMocks
@@ -24,6 +26,13 @@ public class NzbGetTest {
         //        Map<String, String> headers = new HashMap<>();
 //        headers.put("Authorization",  "Basic " + BaseEncoding.base64().encode("nzbget:nzbget?:".getBytes()));
 //        new JsonRpcHttpClient(url, headers).invoke("writelog", new Object[]{"INFO", "NZBHydra connected to test connection"}, String.class);
+
+        DownloaderConfig config = new DownloaderConfig();
+        config.setUrl("http://127.0.0.1:6789");
+        config.setUsername("nzbget");
+        config.setPassword("");
+        testee.intialize(config);
+        testee.getHistory(Instant.now());
     }
 
 

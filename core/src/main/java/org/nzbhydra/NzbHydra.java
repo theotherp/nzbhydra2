@@ -5,11 +5,9 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
-import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.downloading.DownloadStatusUpdateTask;
 import org.nzbhydra.genericstorage.GenericStorage;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.migration.FromPythonMigration;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
@@ -45,7 +43,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
@@ -281,26 +278,16 @@ public class NzbHydra {
         return guavaCacheManager;
     }
 
-    @RequestMapping(value = "/rss")
-    public RssRoot get() {
-        RssRoot rssRoot = restTemplate.getForObject("http://127.0.0.1:5000/api?apikey=a", RssRoot.class);
-
-        return rssRoot;
-    }
 
     @Autowired
-    private FromPythonMigration migration;
+    private DownloadStatusUpdateTask task;
 
-    @RequestMapping(value = "/migrate")
-    public String delete() throws Exception {
-        migration.migrateFromUrl("http://127.0.0.1:5075/");
 
-        return "Ok";
-    }
 
-    @RequestMapping(value = "/categories")
+    @RequestMapping(value = "/updatestatus")
     public String getCats() {
-        return categoryProvider.getCategories().stream().map(Category::getName).collect(Collectors.joining(","));
+        task.checkStatus();
+        return "ok";
 
     }
 

@@ -14,6 +14,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,9 @@ public class DownloaderProvider implements InitializingBean {
         return downloader.checkConnection();
     }
 
+    public Collection<Downloader> getAllDownloaders() {
+        return downloadersMap.values();
+    }
 
     public Downloader getDownloaderByName(String downloaderName) {
         if (!downloadersMap.containsKey(downloaderName.toLowerCase())) {

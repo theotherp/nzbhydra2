@@ -11,6 +11,7 @@ public class LoggingMarkers {
     public static final Marker DUPLICATES = MarkerFactory.getMarker("DUPLICATES");
     public static final Marker USER_AGENT = MarkerFactory.getMarker("USER_AGENT");
     public static final Marker SCHEDULER = MarkerFactory.getMarker("SCHEDULER");
+    public static final Marker DOWNLOAD_STATUS_UPDATE = MarkerFactory.getMarker("DOWNLOAD_STATUS_UPDATE");
 
 
 }
