@@ -7,6 +7,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,6 +83,7 @@ public class WebAccess {
     }
 
     public void downloadToFile(String url, File file) throws IOException {
+        logger.debug("Downloading file from {} to {}", url, file.getAbsolutePath());
         Request request = new Request.Builder().url(url).build();
         try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -89,7 +91,10 @@ public class WebAccess {
                 logger.error(error);
                 throw new IOException(error);
             }
-            Files.copy(response.body().byteStream(), file.toPath());
+            BufferedSink sink = Okio.buffer(Okio.sink(file));
+            sink.writeAll(response.body().source());
+            sink.flush();
+            sink.close();
             response.body().close();
         }
     }
