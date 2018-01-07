@@ -41,6 +41,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
@@ -52,7 +53,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//@ControllerAdvice
+@ControllerAdvice
 @Component
 //Do NOT extend ResponseEntityExceptionHandler or it won't work
 public class ErrorHandler {
@@ -78,7 +79,21 @@ public class ErrorHandler {
     );
 
 
-    @ExceptionHandler(value = {Exception.class})
+    @ExceptionHandler(value = { HttpRequestMethodNotSupportedException.class,
+            HttpMediaTypeNotSupportedException.class,
+            HttpMediaTypeNotAcceptableException.class,
+            MissingPathVariableException.class,
+            MissingServletRequestParameterException.class,
+            ServletRequestBindingException.class,
+            ConversionNotSupportedException.class,
+            TypeMismatchException.class,
+            HttpMessageNotReadableException.class,
+            HttpMessageNotWritableException.class,
+            MethodArgumentNotValidException.class,
+            MissingServletRequestPartException.class,
+            BindException.class,
+            NoHandlerFoundException.class,
+            AsyncRequestTimeoutException.class})
     @ResponseBody
     public ResponseEntity<Object> handleConflict(Exception ex, HttpServletRequest request) {
         String fullParametersString = "";
