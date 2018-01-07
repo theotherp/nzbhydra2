@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.0.10",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Name of the category would not update in the category dropdown box on the search page"
+      }
+    ]
+  },
+  {
     "version": "v1.0.9",
     "changes": [
       {
