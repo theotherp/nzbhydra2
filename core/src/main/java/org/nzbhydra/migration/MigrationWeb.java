@@ -25,16 +25,16 @@ public class MigrationWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/migration/url", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public MigrationResult migrateFromUrl(@RequestParam(name = "baseurl") String oldHydraBaseUrl) throws IOException {
+    public MigrationResult migrateFromUrl(@RequestParam(name = "baseurl") String oldHydraBaseUrl, @RequestParam(name = "doMigrateDatabase") boolean doMigrateDatabase) throws IOException {
         messages.clear();
-        return migration.migrateFromUrl(oldHydraBaseUrl);
+        return migration.migrateFromUrl(oldHydraBaseUrl, doMigrateDatabase);
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/migration/files", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public MigrationResult migrateFromFiles(@RequestParam(name = "settingsCfgFile") String settingsFile, @RequestParam(name = "dbFile") String dbFile) throws IOException {
+    public MigrationResult migrateFromFiles(@RequestParam(name = "settingsCfgFile") String settingsFile, @RequestParam(name = "dbFile") String dbFile, @RequestParam(name = "doMigrateDatabase") boolean doMigrateDatabase) throws IOException {
         messages.clear();
-        return migration.migrateFromFiles(settingsFile, dbFile);
+        return migration.migrateFromFiles(settingsFile, dbFile, doMigrateDatabase);
     }
 
     @Secured({"ROLE_ADMIN"})

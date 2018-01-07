@@ -45,10 +45,11 @@ public class FromPythonMigration {
     };
 
     @Transactional
-    public MigrationResult migrateFromFiles(String settingsFile, String databaseFile) {
+    public MigrationResult migrateFromFiles(String settingsFile, String databaseFile, boolean doMigrateDatabase) {
         logger.info("Received request to migrate from settings file {} and database file {}", settingsFile, databaseFile);
         Map<String, String> migrationData = new HashMap<>();
         migrationData.put("databaseFile", databaseFile);
+        migrationData.put("doMigrateDatabase", String.valueOf(doMigrateDatabase));
         try {
             migrationData.put("config", new String(Files.readAllBytes(new File(settingsFile).toPath())));
         } catch (IOException e) {
@@ -67,7 +68,7 @@ public class FromPythonMigration {
     }
 
     @Transactional
-    public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl) {
+    public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl, boolean doMigrateDatabase) {
         logger.info("Received request to migrate from URL " + nzbhydra1BaseUrl);
 
         OkHttpResponse versionsResponse = callHydraUrl(nzbhydra1BaseUrl, "get_versions");
@@ -89,6 +90,7 @@ public class FromPythonMigration {
             }
             OkHttpResponse migrationResponse = callHydraUrl(nzbhydra1BaseUrl, "migration");
             migrationData = new ObjectMapper().readValue(migrationResponse.getBody(), mapTypeReference);
+            migrationData.put("doMigrateDatabase", String.valueOf(doMigrateDatabase));
         } catch (Exception e) {
             logger.error("Unexpected error while migrating", e);
             return MigrationResult.requirementsNotMet("Unexpected error while migrating: " + e.getMessage());
@@ -101,11 +103,13 @@ public class FromPythonMigration {
         logger.info("Starting migration");
         List<String> migrationMessages = new ArrayList<>();
 
-        try {
-            migrationMessages = sqliteMigration.migrate(migrationData.get("databaseFile"), migrationMessages);
-        } catch (Exception e) {
-            logger.error("Error while migrating database", e);
-            return MigrationResult.databaseMigrationFailed("Error while migrating database: " + e.getMessage(), migrationMessages);
+        if (migrationData.getOrDefault("doMigrateDatabase", "true").equals("true")) {
+            try {
+                migrationMessages = sqliteMigration.migrate(migrationData.get("databaseFile"), migrationMessages);
+            } catch (Exception e) {
+                logger.error("Error while migrating database", e);
+                return MigrationResult.databaseMigrationFailed("Error while migrating database: " + e.getMessage(), migrationMessages);
+            }
         }
 
         try {

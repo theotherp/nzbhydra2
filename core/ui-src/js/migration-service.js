@@ -20,7 +20,6 @@ function MigrationService($uibModal) {
         modalInstance.result.then(function () {
             ConfigService.reloadConfig();
         }, function () {
-
         });
     }
 }
@@ -34,6 +33,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
     $scope.baseUrl = "http://127.0.0.1:5075";
 
     $scope.foo = {isMigrating: false, baseUrl: $scope.baseUrl};
+    $scope.doMigrateDatabase = true;
 
     $scope.yes = function () {
         var params;
@@ -44,10 +44,10 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
         //blockUI.start("Starting migration. This may take a while...");
         if ($scope.foo.isUrlBasedOpen) {
             url = "internalapi/migration/url";
-            params = {baseurl: $scope.foo.baseUrl};
+            params = {baseurl: $scope.foo.baseUrl, doMigrateDatabase: $scope.doMigrateDatabase};
         } else {
             url = "internalapi/migration/files";
-            params = {settingsCfgFile: $scope.foo.settingsCfgFile, dbFile: $scope.foo.nzbhydraDbFile};
+            params = {settingsCfgFile: $scope.foo.settingsCfgFile, dbFile: $scope.foo.nzbhydraDbFile, doMigrateDatabase: $scope.doMigrateDatabase};
         }
 
         $scope.foo.isMigrating = true;
@@ -129,6 +129,9 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 }
+            }, function(data) {
+            //TOD handle error
+                console.log(data);
             }
         );
 

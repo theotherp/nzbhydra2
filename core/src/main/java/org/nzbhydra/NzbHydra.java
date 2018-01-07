@@ -293,7 +293,7 @@ public class NzbHydra {
 
     @RequestMapping(value = "/migrate")
     public String delete() throws Exception {
-        migration.migrateFromUrl("http://127.0.0.1:5075/");
+        migration.migrateFromUrl("http://127.0.0.1:5075/", true);
 
         return "Ok";
     }
