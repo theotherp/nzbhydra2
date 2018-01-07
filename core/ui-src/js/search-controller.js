@@ -273,12 +273,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             $scope.goToSearchUrl();
         } else {
             //Simple query search
-            if (!$scope.query) {
-                growl.error("You didn't enter a query...");
-            } else {
-                //Reset values because they might've been set from the last search
-                $scope.goToSearchUrl();
-            }
+            $scope.goToSearchUrl();
         }
     };
 
@@ -402,7 +397,7 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
         }
     });
 
-    $scope.$watch("category", function($event) {
+    $scope.$watch("category", function ($event) {
         console.log($event);
     })
 }

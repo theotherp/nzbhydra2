@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Name of the category would not update in the category dropdown box on the search page"
+      },
+      {
+        "type": "fix",
+        "text": "Allow searching without a query in the UI"
       }
     ]
   },
