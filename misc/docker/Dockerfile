@@ -1,4 +1,4 @@
-#Run like this: docker run -p 5076:5076 -v /home/ubuntu/dockertest/data/:/data -v /home/ubuntu/dockertest/downloads:/downloads nzbhydra2
+#Run like this: docker run -p 5076:5076 -v /home/ubuntu/dockertest/data/:/data -v /home/ubuntu/dockertest/torrents:/torrents nzbhydra2
 #TODO: Automatically download latest release (see http://www.starkandwayne.com/blog/how-to-download-the-latest-release-from-github/) and use that
 
 FROM alpine:edge
@@ -13,6 +13,7 @@ WORKDIR /
 RUN mkdir torrents
 ADD . /
 EXPOSE 5076
+VOLUME /torrents
+VOLUME /data
 
-ENTRYPOINT ["/usr/bin/python", "nzbhydra2wrapper.py", "--nobrowser"]
-#CMD ["nzbhydra2wrapper.py", "--nobrowser"]
+ENTRYPOINT ["/usr/bin/python", "nzbhydra2wrapper.py", "--nobrowser", "--datafolder", "/data"]

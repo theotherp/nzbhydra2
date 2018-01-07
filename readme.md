@@ -42,8 +42,8 @@ You need [Java Runtime Environment (>=8u101)](https://www.java.com/en/download/m
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
 * On windows you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window.
 * On linux start "nzbhydra2"
-* On Mac: No idea, I don't have one. If you have found out please tell me.
-* If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and start it
+* On Mac: No executable yet, see next point 
+* If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and run it
 
 After a while your browser should open to http://127.0.0.1:5076
 
