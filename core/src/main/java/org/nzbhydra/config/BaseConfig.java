@@ -164,7 +164,7 @@ public class BaseConfig extends ValidatingConfig {
                 try {
                     host = getLocalHostLANAddress().getHostAddress();
                 } catch (UnknownHostException e) {
-                    logger.warn("Unable to determine host address. Will use 127.0.0.1. Error: {}", e.getMessage());
+                    logger.warn("Unable to automatically determine host address. Error: {}", e.getMessage());
                 }
             }
             if (host == null) {

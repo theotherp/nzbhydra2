@@ -1,3 +1,6 @@
+### v1.0.9
+Fix: Allow NZBHydra2 to be shown in an iFrame (e.g. organizr)
+
 ### v1.0.8
 Fix: Increase lengths for columns which may contain very long texts (errors, queries)
 
