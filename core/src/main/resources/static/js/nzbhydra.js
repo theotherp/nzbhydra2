@@ -4802,10 +4802,6 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
             $interval.cancel(updateSearchMessagesInterval);
         }
     });
-
-    $scope.$watch("category", function ($event) {
-        console.log($event);
-    })
 }
 SearchUpdateModalInstanceCtrl.$inject = ["$scope", "$interval", "SearchService", "$uibModalInstance", "searchRequestId", "onCancel"];
 
