@@ -403,7 +403,11 @@ public class Newznab extends Indexer<Xml> {
 
     protected void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
-        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(newznabAttribute -> Integer.parseInt(newznabAttribute.getValue())).collect(Collectors.toList());
+        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> {
+            return x.getName().equals("category") && !"None".equals(x.getValue());
+        }).map(newznabAttribute -> {
+            return Integer.parseInt(newznabAttribute.getValue());
+        }).collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
 
         if (attributes.containsKey("usenetdate")) {
