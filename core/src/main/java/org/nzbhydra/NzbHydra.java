@@ -5,12 +5,12 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
-import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.migration.FromPythonMigration;
 import org.nzbhydra.misc.BrowserOpener;
+import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
@@ -298,9 +297,13 @@ public class NzbHydra {
         return "Ok";
     }
 
-    @RequestMapping(value = "/categories")
-    public String getCats() {
-        return categoryProvider.getCategories().stream().map(Category::getName).collect(Collectors.joining(","));
+
+    @Autowired
+    private WebAccess webAccess;
+    @RequestMapping(value = "/dltest")
+    public String dlTest() throws Exception{
+        webAccess.downloadToFile("https://github.com/theotherp/nzbhydra2/releases/download/v1.0.11/nzbhydra2-1.0.11-windows.zip", new File("c:\\temp\\nzbhydra2-1.0.11-windows.zip"));
+        return "ok";
 
     }
 
