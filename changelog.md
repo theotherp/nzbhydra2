@@ -1,3 +1,6 @@
+### v1.0.11
+Fix: Fix error in auth introduced in a previous version
+
 ### v1.0.10
 Feature: Improve the logging for web exceptions (which are often swallowed which makes debugging harder)
 Fix: Name of the category would not update in the category dropdown box on the search page
