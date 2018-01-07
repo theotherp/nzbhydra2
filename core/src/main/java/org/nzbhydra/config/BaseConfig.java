@@ -167,7 +167,12 @@ public class BaseConfig extends ValidatingConfig {
                     logger.warn("Unable to determine host address. Will use 127.0.0.1. Error: {}", e.getMessage());
                 }
             }
-            logger.info("Using base host {}", host);
+            if (host == null) {
+                logger.warn("Unable to determine host, will use 127.0.0.1");
+                host = "127.0.0.1";
+            } else {
+                logger.info("Using base host {}", host);
+            }
         }
         int port = main.getPort();
         if (!Strings.isNullOrEmpty(System.getProperty("server.port"))) {
