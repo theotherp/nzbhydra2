@@ -1,12 +1,22 @@
-[ {
-  "version": "v1.0.11",
-  "changes": [
-    {
-      "type": "fix",
-      "text": "Fix error in auth introduced in a previous version"
-    }
-  ]
-},
+[
+  {
+    "version": "v1.0.12",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Allow migrating only the config, skipping the database migration"
+      }
+    ]
+  },
+  {
+    "version": "v1.0.11",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix error in auth introduced in a previous version"
+      }
+    ]
+  },
   {
     "version": "v1.0.10",
     "changes": [

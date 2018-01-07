@@ -47,6 +47,13 @@ public class FromPythonMigration {
     @Transactional
     public MigrationResult migrateFromFiles(String settingsFile, String databaseFile, boolean doMigrateDatabase) {
         logger.info("Received request to migrate from settings file {} and database file {}", settingsFile, databaseFile);
+        if (doMigrateDatabase && databaseFile == null) {
+            return MigrationResult.requirementsNotMet("Database file not provided and database migration not selected to be skipped");
+        }
+        if (settingsFile == null) {
+            return MigrationResult.requirementsNotMet("Config file not provided");
+        }
+
         Map<String, String> migrationData = new HashMap<>();
         migrationData.put("databaseFile", databaseFile);
         migrationData.put("doMigrateDatabase", String.valueOf(doMigrateDatabase));
@@ -59,7 +66,7 @@ public class FromPythonMigration {
         MigrationResult migrationResult = new MigrationResult();
         migrationResult.setConfigMigrated(false);
         migrationResult.setDatabaseMigrated(false);
-        if (!new File(databaseFile).exists()) {
+        if (doMigrateDatabase && !new File(databaseFile).exists()) {
             return MigrationResult.requirementsNotMet("Database file does not exist");
         } else if (!new File(settingsFile).exists()) {
             return MigrationResult.requirementsNotMet("Config file does not exist");

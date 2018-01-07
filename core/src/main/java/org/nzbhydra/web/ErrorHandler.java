@@ -38,7 +38,6 @@ import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.accept.HeaderContentNegotiationStrategy;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -83,9 +82,6 @@ public class ErrorHandler {
             NoHandlerFoundException.class,
             AsyncRequestTimeoutException.class
     );
-
-    HeaderContentNegotiationStrategy negotiationStrategy = new HeaderContentNegotiationStrategy();
-
 
     @ExceptionHandler(value = { HttpRequestMethodNotSupportedException.class,
             HttpMediaTypeNotSupportedException.class,

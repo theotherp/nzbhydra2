@@ -5242,9 +5242,10 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 }
-            }, function(data) {
-            //TOD handle error
-                console.log(data);
+            }, function (data) {
+                $interval.cancel(updateMigrationMessagesInterval);
+                //$scope.foo.isMigrating = false;
+                $scope.foo.messages = [data.data.message];
             }
         );
 

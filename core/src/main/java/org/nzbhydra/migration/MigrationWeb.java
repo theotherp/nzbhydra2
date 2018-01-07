@@ -32,7 +32,7 @@ public class MigrationWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/migration/files", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public MigrationResult migrateFromFiles(@RequestParam(name = "settingsCfgFile") String settingsFile, @RequestParam(name = "dbFile") String dbFile, @RequestParam(name = "doMigrateDatabase") boolean doMigrateDatabase) throws IOException {
+    public MigrationResult migrateFromFiles(@RequestParam(name = "settingsCfgFile") String settingsFile, @RequestParam(name = "dbFile", required = false) String dbFile, @RequestParam(name = "doMigrateDatabase") boolean doMigrateDatabase) throws IOException {
         messages.clear();
         return migration.migrateFromFiles(settingsFile, dbFile, doMigrateDatabase);
     }
