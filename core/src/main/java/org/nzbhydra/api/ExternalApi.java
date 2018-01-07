@@ -20,7 +20,6 @@ import org.nzbhydra.mapping.newznab.RssError;
 import org.nzbhydra.mapping.newznab.RssGuid;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mapping.newznab.caps.CapsCategories;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
@@ -216,7 +215,7 @@ public class ExternalApi {
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
-    public Xml handler(ExternalApiException e) {
+    public RssError handler(ExternalApiException e) {
         RssError error = new RssError(e.getStatusCode(), e.getMessage());
         return error;
     }

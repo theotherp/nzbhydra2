@@ -3,6 +3,10 @@
     "version": "v1.0.10",
     "changes": [
       {
+        "type": "feature",
+        "text": "Improve the logging for web exceptions (which are often swallowed which makes debugging harder)"
+      },
+      {
         "type": "fix",
         "text": "Name of the category would not update in the category dropdown box on the search page"
       },
