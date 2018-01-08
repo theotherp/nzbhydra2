@@ -5390,7 +5390,7 @@ angular
 
 function reformatDate() {
     return function (date, format) {
-        if (angular.isUndefined(formaz)) {
+        if (angular.isUndefined(format)) {
             format = "YYYY-MM-DD HH:mm";
         }
         //Date in database is saved as UTC without timezone information

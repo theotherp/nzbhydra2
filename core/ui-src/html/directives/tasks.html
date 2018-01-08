@@ -27,7 +27,7 @@
             <tr ng-repeat="task in tasks" class="row">
                 <td class="col-md-10" style="text-align: left">{{task.name}}</td>
                 <td class="col-md-5" style="text-align: left"><span ng-show="task.lastExecutionTime" uib-tooltip="{{task.lastExecutionTime | reformatDateSeconds}}">{{ task.lastExecutionTime | humanizeDate }}</span></td>
-                <td class="col-md-5" style="text-align: center" ><span uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span></td>
+                <td class="col-md-5" style="text-align: left" ><span uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span></td>
             </tr>
         </table>
     </div>

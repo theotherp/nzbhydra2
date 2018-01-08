@@ -54,7 +54,7 @@ public class DownloadStatusUpdater {
     @Autowired
     private NzbDownloadRepository downloadRepository;
 
-    @HydraTask(value = "Download history check", interval = TEN_MINUTES_MS)
+    @HydraTask(value = "Download history check", interval = TEN_SECONDS_MS)
     @Transactional
     public void checkHistoryStatus() {
         List<NzbDownloadStatus> statusesToCheck = Arrays.asList(NzbDownloadStatus.REQUESTED, NzbDownloadStatus.NZB_ADDED, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);

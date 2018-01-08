@@ -173,7 +173,7 @@ public class NzbGet extends Downloader {
 
     protected DownloaderEntry getBasicDownloaderEntry(LinkedHashMap<String, Object> map) {
         DownloaderEntry entry = new DownloaderEntry();
-        entry.setNzbId((Integer) map.get("NZBID"));
+        entry.setNzbId(String.valueOf(map.get("NZBID")));
         entry.setNzbName((String) map.get("NZBName"));
         entry.setStatus((String) map.get("Status"));
         return entry;

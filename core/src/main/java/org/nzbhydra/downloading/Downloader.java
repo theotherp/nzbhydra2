@@ -74,9 +74,6 @@ public abstract class Downloader {
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(guid);
                     addLink(nzbHandler.getNzbDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
-                    //LATER: Use the external ID some way, perhaps store it or something
-                    //At this point we don't have a DownloadEntity for which we could set the external status. When a link is added to the download it will download the NZB from us and only then
-                    //will there be an entity. So just adding an link will not be considered a download. The external ID will have to be set using the title (for now)
                 }
                 addedNzbs.add(guid);
             }
@@ -143,7 +140,7 @@ public abstract class Downloader {
                         continue;
                     }
                     if (isDownloadMatchingDownloaderEntry(download, entry)) {
-                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Matched download {} with downloader entry {}");
+                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Found match between download and downloader entry with title", entry.getNzbName());
                         NzbDownloadStatus newStatus = getDownloadStatusFromDownloaderEntry(entry, statusCheckType);
                         if (newStatus == null) {
                             //Could be any status that we're not prepared for
@@ -192,7 +189,7 @@ public abstract class Downloader {
     @AllArgsConstructor
     @NoArgsConstructor
     protected class DownloaderEntry {
-        private int nzbId;
+        private String nzbId;
         private String nzbName;
         private String status;
         private Instant time;

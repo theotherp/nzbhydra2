@@ -29,13 +29,37 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class Sabnzbd extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Map<String, NzbDownloadStatus> SABNZBD_STATUS_TO_HYDRA_STATUS = new HashMap<>();
+
+    static {
+        //TODO Get feedback from Safihre how well mapping would work and how/if any NZBs would be reported which were rejected
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Grabbing", NzbDownloadStatus.REQUESTED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Queued", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Paused", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Checking", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Downloading", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("QuickCheck", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Verifying", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Repairing", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Fetching", NzbDownloadStatus.NZB_ADDED);// Fetching additional blocks
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Extracting", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Moving", NzbDownloadStatus.NZB_ADDED);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Running", NzbDownloadStatus.NZB_ADDED);// Running PP Script
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Completed", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        SABNZBD_STATUS_TO_HYDRA_STATUS.put("Failed", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
+    }
+
 
     @Autowired
     private RestTemplate restTemplate;
@@ -122,33 +146,48 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads, StatusCheckType statusCheckType) {
-        logger.warn("Missing implementation for status updates");
-        return downloads;
-    }
-
-    @Override
     public List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable {
-        logger.error("Missing implementation");
-        return null;
+        //TODO: Store and use last_history_update? See https://sabnzbd.org/wiki/advanced/api#history_main
+        UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history");
+        HistoryResponse queueResponse = restTemplate.getForObject(uriBuilder.build().toUri(), HistoryResponse.class);
+        List<DownloaderEntry> queueEntries = new ArrayList<>();
+        for (HistoryEntry slotEntry : queueResponse.getHistory().getSlots()) {
+            DownloaderEntry entry = new DownloaderEntry();
+            entry.setNzbId(slotEntry.getNzo_id());
+            entry.setNzbName(slotEntry.getName()); //nzbName ends with .nzb
+            entry.setStatus(slotEntry.getStatus());
+            queueEntries.add(entry);
+        }
+
+        return queueEntries;
     }
 
     @Override
     public List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable {
-        logger.error("Missing implementation");
-        return null;
+        UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "queue");
+        QueueResponse queueResponse = restTemplate.getForObject(uriBuilder.build().toUri(), QueueResponse.class);
+        List<DownloaderEntry> historyEntries = new ArrayList<>();
+        for (QueueEntry slotEntry : queueResponse.getQueue().getSlots()) {
+            DownloaderEntry entry = new DownloaderEntry();
+            entry.setNzbId(slotEntry.getNzo_id());
+            entry.setNzbName(slotEntry.getFilename()); //Does not end with NZB
+            entry.setStatus(slotEntry.getStatus());
+            historyEntries.add(entry);
+        }
+
+        return historyEntries;
     }
 
     @Override
     protected NzbDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
-        logger.error("Missing implementation");
-        return null;
+        return SABNZBD_STATUS_TO_HYDRA_STATUS.get(entry.getStatus());
     }
 
     @Override
     protected boolean isDownloadMatchingDownloaderEntry(NzbDownloadEntity download, DownloaderEntry entry) {
-        logger.error("Missing implementation");
-        return false;
+        boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
+        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
+        return idMatches || nameMatches;
     }
 
 

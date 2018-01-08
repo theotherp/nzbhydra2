@@ -3,8 +3,8 @@ package org.nzbhydra.downloading.sabnzbd;
 import lombok.Data;
 
 @Data
-public class SabnzbdQueueRoot {
+public class QueueResponse {
 
-    private SabnzbdQueue queue;
+    private Queue queue;
 
 }
