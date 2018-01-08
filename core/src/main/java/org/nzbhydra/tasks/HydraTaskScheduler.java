@@ -68,6 +68,7 @@ public class HydraTaskScheduler implements SchedulingConfigurer, BeanPostProcess
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        //TODO Check if works with transactional
         for (Entry<Method, Object> entry : tasks.entrySet()) {
             HydraTask task = entry.getKey().getAnnotation(HydraTask.class);
             logger.info("Scheduling task {} to be run every {}", task.value(), DurationFormatUtils.formatDurationWords(task.interval(), true, true));
