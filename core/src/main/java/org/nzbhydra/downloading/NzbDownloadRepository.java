@@ -16,8 +16,7 @@ public interface NzbDownloadRepository extends JpaRepository<NzbDownloadEntity, 
 
     List<NzbDownloadEntity> findBySearchResultTitleOrderByTimeDesc(String title);
 
-    List<NzbDownloadEntity> findByStatusInAndSearchResultNotNullOrderByTimeDesc(Collection<NzbDownloadStatus> status);
-    List<NzbDownloadEntity> findByStatusInAndSearchResultNotNullAndTimeAfterOrderByTimeDesc(Collection<NzbDownloadStatus> status, Instant minTime);
+    List<NzbDownloadEntity> findByStatusInAndTimeAfterOrderByTimeDesc(Collection<NzbDownloadStatus> status, Instant minTime);
 
     Page<NzbDownloadEntity> findBySearchResultIndexerOrderByTimeDesc(IndexerEntity indexerEntity, Pageable pageable);
 }

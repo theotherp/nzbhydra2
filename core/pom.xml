@@ -198,6 +198,11 @@
             <version>2.5</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.6</version>
+        </dependency>
+        <dependency>
             <!--Without groovy which would increase JAR size by 15MB-->
             <groupId>com.github.zhanhb</groupId>
             <artifactId>thymeleaf-layout-dialect</artifactId>
@@ -317,6 +322,7 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 </project>

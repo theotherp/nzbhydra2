@@ -56,6 +56,11 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         },
         {
             active: false,
+            state: 'root.system.tasks',
+            name: "Tasks"
+        },
+        {
+            active: false,
             state: 'root.system.backup',
             name: "Backup"
         },

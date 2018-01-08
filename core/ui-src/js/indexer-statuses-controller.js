@@ -41,9 +41,32 @@ angular
     .filter('reformatDate', reformatDate);
 
 function reformatDate() {
-    return function (date) {
+    return function (date, format) {
+        if (angular.isUndefined(formaz)) {
+            format = "YYYY-MM-DD HH:mm";
+        }
         //Date in database is saved as UTC without timezone information
-        return moment.unix(date).local().format("YYYY-MM-DD HH:mm");
+        return moment.unix(date).local().format(format);
+    }
+}
+angular
+    .module('nzbhydraApp')
+    .filter('reformatDateSeconds', reformatDateSeconds);
+
+function reformatDateSeconds() {
+    return function (date, format) {
+        return moment.unix(date).local().format("YYYY-MM-DD HH:mm:ss");
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .filter('humanizeDate', humanizeDate);
+
+function humanizeDate() {
+    return function (date) {
+        return moment().to(moment.unix(date));
 
     }
 }

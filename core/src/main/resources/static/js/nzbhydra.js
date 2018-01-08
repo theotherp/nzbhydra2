@@ -372,6 +372,29 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                 }
             }
         })
+        .state("root.system.tasks", {
+            url: "/tasks",
+            views: {
+                'container@': {
+                    templateUrl: "static/html/states/system.html",
+                    controller: "SystemController",
+                    resolve: {
+                        loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
+                            return loginRequired($q, $timeout, $state, HydraAuthService, "admin")
+                        }],
+                        safeConfig: ['loginRequired', 'ConfigService', function (loginRequired, ConfigService) {
+                            return ConfigService.getSafe();
+                        }],
+                        activeTab: [function () {
+                            return 3;
+                        }],
+                        $title: ["$stateParams", function ($stateParams) {
+                            return "System (Tasks)"
+                        }]
+                    }
+                }
+            }
+        })
         .state("root.system.backup", {
             url: "/backup",
             views: {
@@ -386,7 +409,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 3;
+                            return 4;
                         }],
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Backup)"
@@ -409,7 +432,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 4;
+                            return 5;
                         }],
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (Bug report)"
@@ -432,7 +455,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 5;
+                            return 6;
                         }],
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (News)"
@@ -455,7 +478,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return ConfigService.getSafe();
                         }],
                         activeTab: [function () {
-                            return 6;
+                            return 7;
                         }],
                         $title: ["$stateParams", function ($stateParams) {
                             return "System (About)"
@@ -789,6 +812,42 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
         });
     };
 }]);
+
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .directive('hydraTasks', hydraTasks);
+
+function hydraTasks() {
+    controller.$inject = ["$scope", "$http"];
+    return {
+        templateUrl: 'static/html/directives/tasks.html',
+        controller: controller
+    };
+
+    function controller($scope, $http) {
+
+        $http.get("internalapi/tasks").then(function (data) {
+            $scope.tasks = data.data;
+        });
+    }
+}
 
 
 angular
@@ -2702,6 +2761,11 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
             active: false,
             state: 'root.system.log',
             name: "Log"
+        },
+        {
+            active: false,
+            state: 'root.system.tasks',
+            name: "Tasks"
         },
         {
             active: false,
@@ -5325,9 +5389,32 @@ angular
     .filter('reformatDate', reformatDate);
 
 function reformatDate() {
-    return function (date) {
+    return function (date, format) {
+        if (angular.isUndefined(formaz)) {
+            format = "YYYY-MM-DD HH:mm";
+        }
         //Date in database is saved as UTC without timezone information
-        return moment.unix(date).local().format("YYYY-MM-DD HH:mm");
+        return moment.unix(date).local().format(format);
+    }
+}
+angular
+    .module('nzbhydraApp')
+    .filter('reformatDateSeconds', reformatDateSeconds);
+
+function reformatDateSeconds() {
+    return function (date, format) {
+        return moment.unix(date).local().format("YYYY-MM-DD HH:mm:ss");
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .filter('humanizeDate', humanizeDate);
+
+function humanizeDate() {
+    return function (date) {
+        return moment().to(moment.unix(date));
 
     }
 }
@@ -6601,6 +6688,7 @@ function reformatDateEpoch() {
 
     }
 }
+
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
  *

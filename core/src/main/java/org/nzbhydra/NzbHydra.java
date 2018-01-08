@@ -28,7 +28,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -42,7 +41,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
@@ -288,13 +286,6 @@ public class NzbHydra {
     public String getCats() {
         task.checkHistoryStatus();
         return "ok";
-
-    }
-
-    @RequestMapping("/test")
-    @Transactional
-    public String test() throws IOException, ExecutionException, InterruptedException {
-        return "Ok";
     }
 
 
