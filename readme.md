@@ -49,7 +49,7 @@ After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container:
 `docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>`. In the Hydra main config set the external URL correctly (i.e. which targets 
-the running instance) and disable "Use local address in API results". 
+the running instance) and disable "Use local address in API results". Note: This is the first docker container I've ever made. It works fine, I think, but apparently it doesn't meet some standards. You might want to wait for somebody else to provide a "proper" container.
 
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
