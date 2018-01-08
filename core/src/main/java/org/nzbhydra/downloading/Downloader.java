@@ -38,6 +38,11 @@ public abstract class Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
+    public enum StatusCheckType {
+        QUEUE,
+        HISTORY
+    }
+
     @Autowired
     private NzbHandler nzbHandler;
     @Autowired
@@ -117,7 +122,7 @@ public abstract class Downloader {
      */
     public abstract String addNzb(String content, String title, String category) throws DownloaderException;
 
-    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads) {
+    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads, StatusCheckType statusCheckType) {
         logger.debug("Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (downloads.isEmpty()) {
@@ -126,40 +131,53 @@ public abstract class Downloader {
         Instant earliestDownload = Iterables.getLast(downloads).getTime();
         List<NzbDownloadEntity> updatedDownloads = new ArrayList<>();
         try {
-            List<DownloaderHistoryEntry> history = getHistory(earliestDownload);
+            List<DownloaderEntry> downloaderEntries;
+            if (statusCheckType == StatusCheckType.HISTORY) {
+                downloaderEntries = getHistory(earliestDownload);
+            } else {
+                downloaderEntries = getQueue(earliestDownload);
+            }
             for (NzbDownloadEntity download : downloads) {
-                for (DownloaderHistoryEntry entry : history) {
+                for (DownloaderEntry entry : downloaderEntries) {
                     if (download.getSearchResult() == null) {
                         continue;
                     }
-                    if (isDownloadMatchingHistoryEntry(download, entry)) {
-                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Matched download {} with history entry {}");
-                        NzbDownloadStatus newStatus = getDownloadStatusFromHistoryEntry(entry);
+                    if (isDownloadMatchingDownloaderEntry(download, entry)) {
+                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Matched download {} with downloader entry {}");
+                        NzbDownloadStatus newStatus = getDownloadStatusFromDownloaderEntry(entry, statusCheckType);
                         if (newStatus == null) {
                             //Could be any status that we're not prepared for
-                            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to map NZBGet status {}", entry.getStatus());
+                            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to map downloader status {}", entry.getStatus());
                             continue;
+                        }
+                        if ((download.getStatus() == NzbDownloadStatus.NONE || download.getStatus() == NzbDownloadStatus.REQUESTED) && download.getExternalId() == null && statusCheckType == StatusCheckType.QUEUE) {
+                            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Current download status is {} and no downloader ID was set. Setting ID {} now", entry.getStatus(), entry.getNzbId());
+                            //Setting the external ID will make it better identifiable in the history later and make false positives less likely
+                            download.setExternalId(String.valueOf(entry.getNzbId()));
                         }
                         if (newStatus.canUpdate(download.getStatus())) {
                             download.setStatus(newStatus);
                             updatedDownloads.add(download);
-                            logger.info("Updating download status for {} to {}", entry.getName(), newStatus);
+                            logger.info("Updating download status for {} to {}", entry.getNzbName(), newStatus);
                         }
                     }
                 }
-
             }
 
-            logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} history", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), history.size(), downloaderConfig.getName());
+            logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} history", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName());
         } catch (Throwable throwable) {
             logger.error("Error while trying to update download statuses", throwable);
         }
         return updatedDownloads;
     }
 
-    public abstract List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable;
-    protected abstract NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry);
-    protected abstract boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry);
+    public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable;
+
+    public abstract List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable;
+
+    protected abstract NzbDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType);
+
+    protected abstract boolean isDownloadMatchingDownloaderEntry(NzbDownloadEntity download, DownloaderEntry entry);
 
     @Data
     @AllArgsConstructor
@@ -169,11 +187,11 @@ public abstract class Downloader {
         private Collection<Long> addedIds;
         private Collection<Long> missedIds;
     }
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    protected class DownloaderHistoryEntry {
-        private String name;
+    protected class DownloaderEntry {
         private int nzbId;
         private String nzbName;
         private String status;
@@ -183,9 +201,10 @@ public abstract class Downloader {
         public String toString() {
             return MoreObjects.toStringHelper(this)
                     .add("nzbId", nzbId)
-                    .add("name", name)
+                    .add("nzbName", nzbName)
                     .toString();
         }
     }
+
 
 }

@@ -122,24 +122,32 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads) {
+    public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads, StatusCheckType statusCheckType) {
         logger.warn("Missing implementation for status updates");
         return downloads;
     }
 
     @Override
-    public List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable {
+    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable {
         logger.error("Missing implementation");
         return null;
     }
 
     @Override
-    protected NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry) {
+    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable {
+        logger.error("Missing implementation");
         return null;
     }
 
     @Override
-    protected boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry) {
+    protected NzbDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
+        logger.error("Missing implementation");
+        return null;
+    }
+
+    @Override
+    protected boolean isDownloadMatchingDownloaderEntry(NzbDownloadEntity download, DownloaderEntry entry) {
+        logger.error("Missing implementation");
         return false;
     }
 

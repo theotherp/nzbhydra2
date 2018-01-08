@@ -6,7 +6,7 @@ import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.DownloadStatusUpdateTask;
+import org.nzbhydra.downloading.DownloadStatusUpdater;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.searching.CategoryProvider;
@@ -280,13 +280,13 @@ public class NzbHydra {
 
 
     @Autowired
-    private DownloadStatusUpdateTask task;
+    private DownloadStatusUpdater task;
 
 
 
     @RequestMapping(value = "/updatestatus")
     public String getCats() {
-        task.checkStatus();
+        task.checkHistoryStatus();
         return "ok";
 
     }

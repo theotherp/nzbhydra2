@@ -25,6 +25,7 @@ public class NzbGet extends Downloader {
     private static final Map<String, NzbDownloadStatus> NZBGET_STATUS_TO_HYDRA_STATUS = new HashMap<>();
 
     static {
+        //History statuses
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/ALL", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/UNPACK", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/PAR", NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
@@ -46,6 +47,7 @@ public class NzbGet extends Downloader {
         NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/BAD", NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR);
 
         NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/SCAN", NzbDownloadStatus.NZB_ADD_REJECTED);
+
     }
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
@@ -120,30 +122,30 @@ public class NzbGet extends Downloader {
     }
 
 
-    protected boolean isDownloadMatchingHistoryEntry(NzbDownloadEntity download, DownloaderHistoryEntry entry) {
+    protected boolean isDownloadMatchingDownloaderEntry(NzbDownloadEntity download, DownloaderEntry entry) {
         boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(String.valueOf(entry.getNzbId()));
         boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
         return idMatches || nameMatches;
     }
 
     @Override
-    protected NzbDownloadStatus getDownloadStatusFromHistoryEntry(DownloaderHistoryEntry entry) {
+    protected NzbDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
+        if (statusCheckType == StatusCheckType.QUEUE) {
+            //Any entry in the queue was obviously added successfully
+            return NzbDownloadStatus.NZB_ADDED;
+        }
         return NZBGET_STATUS_TO_HYDRA_STATUS.get(entry.getStatus());
     }
 
 
-    public List<DownloaderHistoryEntry> getHistory(Instant earliestDownload) throws Throwable {
+    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable {
         ArrayList<LinkedHashMap<String, Object>> history = client.invoke("history", new Object[]{false}, ArrayList.class);
-        List<DownloaderHistoryEntry> historyEntries = new ArrayList<>();
+        List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : history) {
             if (!map.get("Kind").equals("NZB")) {
                 continue;
             }
-            DownloaderHistoryEntry historyEntry = new DownloaderHistoryEntry();
-            historyEntry.setNzbId((Integer) map.get("NZBID"));
-            historyEntry.setName((String) map.get("Name"));
-            historyEntry.setNzbName((String) map.get("NZBName"));
-            historyEntry.setStatus((String) map.get("Status"));
+            DownloaderEntry historyEntry = getBasicDownloaderEntry(map);
             historyEntry.setTime(Instant.ofEpochSecond((Integer) map.get("HistoryTime")));
             historyEntries.add(historyEntry);
             if (historyEntry.getTime().isBefore(earliestDownload)) {
@@ -152,6 +154,29 @@ public class NzbGet extends Downloader {
         }
 
         return historyEntries;
+    }
+
+    @Override
+    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable {
+        ArrayList<LinkedHashMap<String, Object>> queue = client.invoke("listgroups", new Object[]{0}, ArrayList.class);
+        List<DownloaderEntry> queueEntries = new ArrayList<>();
+        for (LinkedHashMap<String, Object> map : queue) {
+            if (!map.get("Kind").equals("NZB")) {
+                continue;
+            }
+            DownloaderEntry entry = getBasicDownloaderEntry(map);
+            queueEntries.add(entry);
+        }
+
+        return queueEntries;
+    }
+
+    protected DownloaderEntry getBasicDownloaderEntry(LinkedHashMap<String, Object> map) {
+        DownloaderEntry entry = new DownloaderEntry();
+        entry.setNzbId((Integer) map.get("NZBID"));
+        entry.setNzbName((String) map.get("NZBName"));
+        entry.setStatus((String) map.get("Status"));
+        return entry;
     }
 
     private String callAppend(String contentOrLink, String title, String category) throws Throwable {
