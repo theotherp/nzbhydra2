@@ -1,3 +1,6 @@
+### v1.0.14
+Fix: Gracefully shutdown when restarting or quitting while search requests are handled
+
 ### v1.0.13
 Fix: NZBs proxied from indexers were returned with wrong / random seeming file name
 
