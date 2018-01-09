@@ -38,7 +38,7 @@ public class CleanupIndexerStatusesTask {
 
 
     //@Scheduled(initialDelay = HOUR, fixedRate = HOUR)
-    @HydraTask(value = "Clean up indexer statuses", interval = HOUR)
+    @HydraTask(configId = "cleanUpIndexerStatuses", name = "Clean up indexer statuses", interval = HOUR)
     public void cleanup() {
         logger.debug("Running task to clean up indexer statuses");
         for (IndexerStatusEntity entity : repository.findAll()) {

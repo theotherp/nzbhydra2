@@ -22,7 +22,7 @@ public class ShortIndexerApiAccessCleanup {
     private static final long TWELVE_HOURS = 1000 * 60 * 60 * 12;
 
     //@Scheduled(initialDelay = 1000 * 60, fixedRate = TWELVE_HOURS)
-    @HydraTask(value = "Delete short term storage results", interval = TWELVE_HOURS)
+    @HydraTask(configId = "deletShortTermStorageResults", name = "Delete short term storage results", interval = TWELVE_HOURS)
     @Transactional
     public void deleteOldResults() {
         int deletedResults = repository.deleteByTimeBefore(Instant.now().minus(2, ChronoUnit.DAYS));

@@ -19,22 +19,20 @@ package org.nzbhydra.tasks;
 import com.google.common.reflect.Invokable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTask;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.config.TriggerTask;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.ScheduledMethodRunnable;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -46,46 +44,76 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 
-@Configuration
-public class HydraTaskScheduler implements SchedulingConfigurer, BeanPostProcessor {
+@Component
+public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingSingleton {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraTaskScheduler.class);
 
-    @Bean
-    public Executor taskExecutor() {
-        return Executors.newScheduledThreadPool(100);
+    @Autowired
+    private ThreadPoolTaskScheduler scheduler;
+    @Autowired
+    private ConfigurableEnvironment environment;
+
+    private Map<String, TaskRuntimeInformation> runtimeInformationMap = new HashMap<>();
+    private ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
+    private Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
+
+
+    private void scheduleTasks() {
+        //TODO Check if works with transactional
+        for (TaskRuntimeInformation runtimeInformation : runtimeInformationMap.values()) {
+            scheduleTask(runtimeInformation, false);
+        }
     }
 
-    private Map<Method, Object> tasks = new HashMap<>();
-    private ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
-    private Map<HydraTask, ScheduledTask> taskSchedules = new HashMap<>(); //Later for cancelling / starting tasks
-
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        //TODO Check if works with transactional
-        for (Entry<Method, Object> entry : tasks.entrySet()) {
-            HydraTask task = entry.getKey().getAnnotation(HydraTask.class);
-            logger.info("Scheduling task {} to be run every {}", task.value(), DurationFormatUtils.formatDurationWords(task.interval(), true, true));
-            Runnable runnable = new ScheduledMethodRunnable(entry.getValue(), entry.getKey());
-            ScheduledTask scheduledTask = taskRegistrar.scheduleTriggerTask(new TriggerTask(runnable, new Trigger() {
-                @Override
-                public Date nextExecutionTime(TriggerContext triggerContext) {
-                    Calendar nextExecutionTime = new GregorianCalendar();
-                    Date lastActualExecutionTime = triggerContext.lastActualExecutionTime();
-                    nextExecutionTime.setTime(lastActualExecutionTime != null ? lastActualExecutionTime : new Date());
-                    nextExecutionTime.add(Calendar.MILLISECOND, (int) task.interval());
-                    taskInformations.put(task, new TaskInformation(task.value(), lastActualExecutionTime != null ? lastActualExecutionTime.toInstant(): null, nextExecutionTime.toInstant()));
-                    return nextExecutionTime.getTime();
-                }
-            }));
-            taskSchedules.put(task, scheduledTask);
+    private void scheduleTask(TaskRuntimeInformation runtimeInformation, boolean runNow) {
+        HydraTask task = runtimeInformation.getMethod().getAnnotation(HydraTask.class);
+        if (!taskSchedules.containsKey(task.name())) { //On startup
+            logger.info("Scheduling task \"{}\" to be run every {}", task.name(), DurationFormatUtils.formatDurationWords(getIntervalForTask(task), true, true));
         }
+        Runnable runnable = new ScheduledMethodRunnable(runtimeInformation.getBean(), runtimeInformation.getMethod());
+        if (runNow) {
+            scheduler.execute(runnable);
+        }
+        ScheduledFuture scheduledTask = scheduler.schedule(runnable, new Trigger() {
+            @Override
+            public Date nextExecutionTime(TriggerContext triggerContext) {
+                Calendar nextExecutionTime = new GregorianCalendar();
+                Date lastActualExecutionTime = runNow ? new Date() : triggerContext.lastActualExecutionTime();
+                nextExecutionTime.setTime(lastActualExecutionTime != null ? lastActualExecutionTime : new Date());
+                nextExecutionTime.add(Calendar.MILLISECOND, (int) getIntervalForTask(task));
+                taskInformations.put(task, new TaskInformation(task.name(), lastActualExecutionTime != null ? lastActualExecutionTime.toInstant() : null, nextExecutionTime.toInstant()));
+                return nextExecutionTime.getTime();
+            }
+        });
+        taskSchedules.put(task.name(), scheduledTask);
+    }
+
+    private long getIntervalForTask(HydraTask task) {
+        String configuredInterval = environment.getProperty("hydraTasks." + task.configId());
+        if (configuredInterval != null) {
+            logger.debug("Using configured interval of {}ms instead of hardcoded {}ms for task \"{}\"", configuredInterval, task.interval(), task.name());
+            return Long.valueOf(configuredInterval);
+        }
+        return task.interval();
+    }
+
+
+    public List<TaskInformation> getTasks() {
+        List<TaskInformation> information = new ArrayList<>(taskInformations.values());
+        information.sort(Comparator.comparingLong(x -> x.nextExecutionTime.getEpochSecond()));
+        return information;
+    }
+
+    public void runNow(String taskName) {
+        logger.info("Cancelling schedule for task {} and running it now", taskName);
+        ScheduledFuture scheduledFuture = taskSchedules.get(taskName);
+        scheduledFuture.cancel(false);
+        scheduleTask(runtimeInformationMap.get(taskName), true);
     }
 
     @Override
@@ -99,25 +127,30 @@ public class HydraTaskScheduler implements SchedulingConfigurer, BeanPostProcess
         for (Method method : targetClass.getMethods()) {
             HydraTask hydraTask = Invokable.from(method).getAnnotation(HydraTask.class);
             if (hydraTask != null) {
-                tasks.put(method, bean);
+                runtimeInformationMap.put(hydraTask.name(), new TaskRuntimeInformation(bean, method));
             }
         }
         return bean;
     }
 
-    public List<TaskInformation> getTasks() {
-        List<TaskInformation> information = new ArrayList<>(taskInformations.values());
-        information.sort(Comparator.comparing(x -> x.name));
-        return information;
+    @Override
+    public void afterSingletonsInstantiated() {
+        scheduleTasks();
     }
 
     @Data
     @AllArgsConstructor
-    @NoArgsConstructor
     public class TaskInformation {
         private String name;
         private Instant lastExecutionTime;
         private Instant nextExecutionTime;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class TaskRuntimeInformation {
+        private Object bean;
+        private Method method;
     }
 
 }

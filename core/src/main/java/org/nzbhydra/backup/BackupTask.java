@@ -31,7 +31,7 @@ public class BackupTask {
     protected Clock clock = Clock.systemUTC();
 
     //@Scheduled(fixedDelay = DAY)
-    @HydraTask(value="Backup", interval = HOUR)
+    @HydraTask(configId ="Backup", name = "Backup", interval = HOUR)
     public void createBackup() {
         boolean backupEnabled = configProvider.getBaseConfig().getMain().isBackupEverySunday();
         boolean itsSunday = LocalDateTime.now(clock).getDayOfWeek() == DayOfWeek.SUNDAY;

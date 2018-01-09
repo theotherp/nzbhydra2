@@ -27,7 +27,8 @@ import java.lang.annotation.Target;
 @Documented
 public @interface HydraTask {
 
-    String value();
+    String configId();
+    String name();
     long interval();
 
 }

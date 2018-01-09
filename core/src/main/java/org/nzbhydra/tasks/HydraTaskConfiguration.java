@@ -14,27 +14,20 @@
  *  limitations under the License.
  */
 
-angular
-    .module('nzbhydraApp')
-    .directive('hydraTasks', hydraTasks);
+package org.nzbhydra.tasks;
 
-function hydraTasks() {
-    return {
-        templateUrl: 'static/html/directives/tasks.html',
-        controller: controller
-    };
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-    function controller($scope, $http) {
+@Configuration
+public class HydraTaskConfiguration {
 
-        $http.get("internalapi/tasks").then(function (data) {
-            $scope.tasks = data.data;
-        });
-
-        $scope.runTask = function (taskName) {
-            $http.put("internalapi/tasks/" + taskName).then(function (data) {
-                $scope.tasks = data.data;
-            });
-        }
+    @Bean
+    public ThreadPoolTaskScheduler taskExecutor() {
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(5);
+        scheduler.setThreadNamePrefix("HydraTask");
+        return scheduler;
     }
 }
-

@@ -25,7 +25,7 @@ public class OldResultsCleanup {
     private static final long HOUR = 1000 * 60 * 60;
 
     //@Scheduled(initialDelay = HOUR, fixedRate = HOUR)
-    @HydraTask(value = "Delete old search results", interval = HOUR)
+    @HydraTask(configId = "deleteOldSearchResults", name = "Delete old search results", interval = HOUR)
     @Transactional
     public void deleteOldResults() {
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();

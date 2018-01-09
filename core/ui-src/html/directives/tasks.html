@@ -25,7 +25,7 @@
                 <th class="col-md-5" style="text-align: left">Next execution</th>
             </tr>
             <tr ng-repeat="task in tasks" class="row">
-                <td class="col-md-10" style="text-align: left">{{task.name}}</td>
+                <td class="col-md-10" style="text-align: left"><a ng-click="runTask(task.name)" class="glyph-link"><span class="glyphicon glyphicon-play-circle"></span> {{task.name}}</a></td>
                 <td class="col-md-5" style="text-align: left"><span ng-show="task.lastExecutionTime" uib-tooltip="{{task.lastExecutionTime | reformatDateSeconds}}">{{ task.lastExecutionTime | humanizeDate }}</span></td>
                 <td class="col-md-5" style="text-align: left" ><span uib-tooltip="{{task.nextExecutionTime | reformatDateSeconds}}">{{task.nextExecutionTime | humanizeDate}}</span></td>
             </tr>

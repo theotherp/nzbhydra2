@@ -846,6 +846,12 @@ function hydraTasks() {
         $http.get("internalapi/tasks").then(function (data) {
             $scope.tasks = data.data;
         });
+
+        $scope.runTask = function (taskName) {
+            $http.put("internalapi/tasks/" + taskName).then(function (data) {
+                $scope.tasks = data.data;
+            });
+        }
     }
 }
 
