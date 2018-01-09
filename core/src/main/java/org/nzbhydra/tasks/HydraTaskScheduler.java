@@ -110,7 +110,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     }
 
     public void runNow(String taskName) {
-        logger.info("Cancelling schedule for task {} and running it now", taskName);
+        logger.info("Running task \"{}\" now", taskName);
         ScheduledFuture scheduledFuture = taskSchedules.get(taskName);
         scheduledFuture.cancel(false);
         scheduleTask(runtimeInformationMap.get(taskName), true);

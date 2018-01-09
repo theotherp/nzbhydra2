@@ -44,9 +44,9 @@ public abstract class Downloader {
     }
 
     @Autowired
-    private NzbHandler nzbHandler;
+    protected NzbHandler nzbHandler;
     @Autowired
-    private SearchResultRepository searchResultRepository;
+    protected SearchResultRepository searchResultRepository;
 
     protected DownloaderConfig downloaderConfig;
 
@@ -191,7 +191,7 @@ public abstract class Downloader {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    protected class DownloaderEntry {
+    protected static class DownloaderEntry {
         private String nzbId;
         private String nzbName;
         private String status;

@@ -41,19 +41,19 @@ public class DownloadStatusUpdater {
     private static final long TEN_MINUTES_MS = 1000 * 60 * 10;
     private static final int MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES = 6 * 60 * 60; //No download should last longer than 6 hours
 
-    private Instant lastDownload = Instant.now();
-    private boolean isEnabled = true;
+    protected Instant lastDownload = Instant.now();
+    protected boolean isEnabled = false;
 
-    private static final Logger logger = LoggerFactory.getLogger(DownloadStatusUpdater.class);
+    protected static final Logger logger = LoggerFactory.getLogger(DownloadStatusUpdater.class);
 
     static {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Will not check for download statuses if last download was more than {} minutes ago", (MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES / 60));
     }
 
     @Autowired
-    private DownloaderProvider downloaderProvider;
+    protected DownloaderProvider downloaderProvider;
     @Autowired
-    private NzbDownloadRepository downloadRepository;
+    protected NzbDownloadRepository downloadRepository;
 
     @HydraTask(configId = "downloadHistoryCheck", name = "Download history check", interval = TEN_MINUTES_MS)
     @Transactional
@@ -77,16 +77,14 @@ public class DownloadStatusUpdater {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Received download event. Will enable status updates for the next {} minutes", (MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES / 60));
     }
 
-    protected void checkStatus(List<NzbDownloadStatus> nzbDownloadStatuses, long daySeconds, StatusCheckType history) {
+    protected void checkStatus(List<NzbDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
         if (!isEnabled) {
             return;
         }
         if (lastDownload.isBefore(Instant.now().minusSeconds(MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES))) {
             return;
         }
-        List<NzbDownloadStatus> statuses = nzbDownloadStatuses;
-        //TODO check query and add index if necessary
-        List<NzbDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(statuses, Instant.now().minusSeconds(daySeconds));
+        List<NzbDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
             isEnabled = false;
             return;
@@ -94,7 +92,7 @@ public class DownloadStatusUpdater {
         List<NzbDownloadEntity> updatedDownloads = new ArrayList<>();
         for (Downloader downloader : downloaderProvider.getAllDownloaders()) {
             if (downloader.isEnabled()) {
-                updatedDownloads.addAll(downloader.checkForStatusUpdates(downloadsWaitingForUpdate, history));
+                updatedDownloads.addAll(downloader.checkForStatusUpdates(downloadsWaitingForUpdate, statusCheckType));
             }
         }
         downloadRepository.save(updatedDownloads);
