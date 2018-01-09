@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -146,10 +147,10 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable {
+    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
         //TODO: Store and use last_history_update? See https://sabnzbd.org/wiki/advanced/api#history_main
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history");
-        HistoryResponse queueResponse = restTemplate.getForObject(uriBuilder.build().toUri(), HistoryResponse.class);
+        HistoryResponse queueResponse = callSabnzb(uriBuilder.build().toUri(), HistoryResponse.class);
         List<DownloaderEntry> queueEntries = new ArrayList<>();
         for (HistoryEntry slotEntry : queueResponse.getHistory().getSlots()) {
             DownloaderEntry entry = new DownloaderEntry();
@@ -163,9 +164,9 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable {
+    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException {
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "queue");
-        QueueResponse queueResponse = restTemplate.getForObject(uriBuilder.build().toUri(), QueueResponse.class);
+        QueueResponse queueResponse = callSabnzb(uriBuilder.build().toUri(), QueueResponse.class);
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (QueueEntry slotEntry : queueResponse.getQueue().getSlots()) {
             DownloaderEntry entry = new DownloaderEntry();
@@ -176,6 +177,14 @@ public class Sabnzbd extends Downloader {
         }
 
         return historyEntries;
+    }
+
+    protected <T> T callSabnzb(URI uri, Class<T> responseType) throws DownloaderException{
+        try {
+            return restTemplate.getForObject(uri, responseType);
+        } catch (RestClientException e) {
+            throw new DownloaderException("Error while calling sabNZBd", e);
+        }
     }
 
     @Override

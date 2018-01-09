@@ -18,10 +18,10 @@ package org.nzbhydra.searching;
 
 import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.indexers.IndexerStatusRepository;
+import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -37,7 +37,8 @@ public class CleanupIndexerStatusesTask {
     private IndexerStatusRepository repository;
 
 
-    @Scheduled(initialDelay = HOUR, fixedRate = HOUR)
+    //@Scheduled(initialDelay = HOUR, fixedRate = HOUR)
+    @HydraTask(value = "Clean up indexer statuses", interval = HOUR)
     public void cleanup() {
         logger.debug("Running task to clean up indexer statuses");
         for (IndexerStatusEntity entity : repository.findAll()) {

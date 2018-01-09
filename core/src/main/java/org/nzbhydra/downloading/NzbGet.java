@@ -89,11 +89,11 @@ public class NzbGet extends Downloader {
         logger.debug("Loading list of categories");
         List<String> categories = new ArrayList<>();
         try {
-            ArrayList<LinkedHashMap<String, String>> config = client.invoke("config", null, ArrayList.class);
+            ArrayList<LinkedHashMap<String, Object>> config = callNzbget("config", null);
             //Returned is a list of HashMaps with two entries: "Name" -> "<ConfigOptionName>" and "Value" -> "<ConfigOptionValue>"
             //For categories the name of the config option looks like "Category1.Name"
-            categories = config.stream().filter(pair -> pair.containsKey("Name") && pair.get("Name").contains("Category") && pair.get("Name").contains("Name")).map(pair -> pair.get("Value")).collect(Collectors.toList());
-        } catch (Throwable throwable) {
+            categories = config.stream().filter(pair -> pair.containsKey("Name") && pair.get("Name").toString().contains("Category") && pair.get("Name").toString().contains("Name")).map(pair -> pair.get("Value").toString()).collect(Collectors.toList());
+        } catch (DownloaderException throwable) {
             logger.error("Error while trying to get categories from NZBGet: {}", throwable.getMessage());
         }
         return categories;
@@ -138,8 +138,8 @@ public class NzbGet extends Downloader {
     }
 
 
-    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable {
-        ArrayList<LinkedHashMap<String, Object>> history = client.invoke("history", new Object[]{false}, ArrayList.class);
+    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
+        ArrayList<LinkedHashMap<String, Object>> history = callNzbget("history", new Object[]{false});
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : history) {
             if (!map.get("Kind").equals("NZB")) {
@@ -157,8 +157,8 @@ public class NzbGet extends Downloader {
     }
 
     @Override
-    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable {
-        ArrayList<LinkedHashMap<String, Object>> queue = client.invoke("listgroups", new Object[]{0}, ArrayList.class);
+    public List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException {
+        ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("queue", new Object[]{0});
         List<DownloaderEntry> queueEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : queue) {
             if (!map.get("Kind").equals("NZB")) {
@@ -169,6 +169,15 @@ public class NzbGet extends Downloader {
         }
 
         return queueEntries;
+    }
+
+    protected ArrayList<LinkedHashMap<String, Object>> callNzbget(String listgroups, Object[] argument) throws DownloaderException {
+        try {
+            //noinspection unchecked
+            return client.invoke(listgroups, argument, ArrayList.class);
+        } catch (Throwable e) {
+            throw new DownloaderException("Error while calling NZBGet", e);
+        }
     }
 
     protected DownloaderEntry getBasicDownloaderEntry(LinkedHashMap<String, Object> map) {

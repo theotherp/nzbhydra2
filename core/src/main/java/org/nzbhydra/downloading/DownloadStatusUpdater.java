@@ -41,7 +41,8 @@ public class DownloadStatusUpdater {
     private static final long TEN_MINUTES_MS = 1000 * 60 * 10;
     private static final int MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES = 6 * 60 * 60; //No download should last longer than 6 hours
 
-    Instant lastDownload = Instant.now();
+    private Instant lastDownload = Instant.now();
+    private boolean isEnabled = true;
 
     private static final Logger logger = LoggerFactory.getLogger(DownloadStatusUpdater.class);
 
@@ -54,7 +55,7 @@ public class DownloadStatusUpdater {
     @Autowired
     private NzbDownloadRepository downloadRepository;
 
-    @HydraTask(value = "Download history check", interval = TEN_SECONDS_MS)
+    @HydraTask(value = "Download history check", interval = TEN_MINUTES_MS)
     @Transactional
     public void checkHistoryStatus() {
         List<NzbDownloadStatus> statusesToCheck = Arrays.asList(NzbDownloadStatus.REQUESTED, NzbDownloadStatus.NZB_ADDED, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
@@ -70,12 +71,16 @@ public class DownloadStatusUpdater {
 
 
     @EventListener
-    public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent){
-       lastDownload = Instant.now();
+    public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent) {
+        lastDownload = Instant.now();
+        isEnabled = true;
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Received download event. Will enable status updates for the next {} minutes", (MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES / 60));
     }
 
     protected void checkStatus(List<NzbDownloadStatus> nzbDownloadStatuses, long daySeconds, StatusCheckType history) {
+        if (!isEnabled) {
+            return;
+        }
         if (lastDownload.isBefore(Instant.now().minusSeconds(MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES))) {
             return;
         }
@@ -83,6 +88,7 @@ public class DownloadStatusUpdater {
         //TODO check query and add index if necessary
         List<NzbDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(statuses, Instant.now().minusSeconds(daySeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
+            isEnabled = false;
             return;
         }
         List<NzbDownloadEntity> updatedDownloads = new ArrayList<>();

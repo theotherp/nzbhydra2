@@ -2,10 +2,10 @@ package org.nzbhydra.backup;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
@@ -19,7 +19,7 @@ public class BackupTask {
 
     private static final Logger logger = LoggerFactory.getLogger(BackupTask.class);
 
-    private static final long DAY = 1000 * 60 * 60 * 24;
+    private static final long HOUR = 1000 * 60 * 60 ;
     public static final String KEY = "BackupData";
 
     @Autowired
@@ -30,7 +30,8 @@ public class BackupTask {
     private ConfigProvider configProvider;
     protected Clock clock = Clock.systemUTC();
 
-    @Scheduled(fixedDelay = DAY)
+    //@Scheduled(fixedDelay = DAY)
+    @HydraTask(value="Backup", interval = HOUR)
     public void createBackup() {
         boolean backupEnabled = configProvider.getBaseConfig().getMain().isBackupEverySunday();
         boolean itsSunday = LocalDateTime.now(clock).getDayOfWeek() == DayOfWeek.SUNDAY;

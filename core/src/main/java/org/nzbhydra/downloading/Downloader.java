@@ -120,7 +120,7 @@ public abstract class Downloader {
     public abstract String addNzb(String content, String title, String category) throws DownloaderException;
 
     public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads, StatusCheckType statusCheckType) {
-        logger.debug("Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (downloads.isEmpty()) {
             return Collections.emptyList();
@@ -144,7 +144,7 @@ public abstract class Downloader {
                         NzbDownloadStatus newStatus = getDownloadStatusFromDownloaderEntry(entry, statusCheckType);
                         if (newStatus == null) {
                             //Could be any status that we're not prepared for
-                            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to map downloader status {}", entry.getStatus());
+                            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to map downloader status {}", entry.getStatus());
                             continue;
                         }
                         if ((download.getStatus() == NzbDownloadStatus.NONE || download.getStatus() == NzbDownloadStatus.REQUESTED) && download.getExternalId() == null && statusCheckType == StatusCheckType.QUEUE) {
@@ -162,15 +162,18 @@ public abstract class Downloader {
             }
 
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} history", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName());
-        } catch (Throwable throwable) {
+        } catch (DownloaderException e) {
+            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to contact downloader {}: ", downloaderConfig.getName(), e.getMessage());
+        }
+        catch (Throwable throwable) {
             logger.error("Error while trying to update download statuses", throwable);
         }
         return updatedDownloads;
     }
 
-    public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws Throwable;
+    public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException;
 
-    public abstract List<DownloaderEntry> getQueue(Instant earliestDownload) throws Throwable;
+    public abstract List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException;
 
     protected abstract NzbDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType);
 
