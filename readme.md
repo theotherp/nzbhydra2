@@ -40,8 +40,8 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 You need [Java Runtime Environment (>=8u101 but not 9.x)](https://www.java.com/en/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup> 
 
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
-* On windows you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window.
-* On linux start "nzbhydra2"
+* On windows (64bit) you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window.
+* On linux start "nzbhydra2" (currently working only on x64)
 * On Mac: No executable yet, see next point 
 * If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and run it
 
@@ -49,7 +49,7 @@ After a while your browser should open to http://127.0.0.1:5076
 
 Alternatively you can use a docker container:
 `docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>`. In the Hydra main config set the external URL correctly (i.e. which targets 
-the running instance) and disable "Use local address in API results". 
+the running instance) and disable "Use local address in API results". Note: This is the first docker container I've ever made. It works fine, I think, but apparently it doesn't meet some standards. You might want to wait for somebody else to provide a "proper" container.
 
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
