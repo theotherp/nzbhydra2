@@ -167,7 +167,7 @@ public class BaseConfig extends ValidatingConfig {
                     logger.warn("Unable to automatically determine host address. Error: {}", e.getMessage());
                 }
             }
-            if (host == null) {
+            if (Strings.isNullOrEmpty(host)) {
                 logger.warn("Unable to determine host, will use 127.0.0.1");
                 host = "127.0.0.1";
             } else {
