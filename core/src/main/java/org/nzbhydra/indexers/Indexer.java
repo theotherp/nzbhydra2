@@ -131,14 +131,19 @@ public abstract class Indexer<T> {
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Error while accessing indexer " + getName()));
         } catch (Exception e) {
-            logger.error("Unexpected error while searching", e);
-            eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
-            try {
-                handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
-            } catch (Exception e1) {
-                logger.error("Error while handling indexer failure. API access was not saved to database", e1);
+            if (e.getCause() instanceof InterruptedException) {
+                logger.debug("Hydra was shut down, ignoring InterruptedException");
+                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
+            } else {
+                logger.error("Unexpected error while searching", e);
+                eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while searching indexer " + getName()));
+                try {
+                    handleFailure(e.getMessage(), false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR); //LATER depending on type of error, perhaps not at all because it might be a bug
+                } catch (Exception e1) {
+                    logger.error("Error while handling indexer failure. API access was not saved to database", e1);
+                }
+                indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             }
-            indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
         }
         eventPublisher.publishEvent(new IndexerSearchFinishedEvent(searchRequest));
 

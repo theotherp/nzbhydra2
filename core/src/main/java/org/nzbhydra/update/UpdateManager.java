@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
@@ -72,6 +74,8 @@ public class UpdateManager implements InitializingBean {
     protected RestTemplate restTemplate;
     @Autowired
     protected WebAccess webAccess;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -287,6 +291,7 @@ public class UpdateManager implements InitializingBean {
             try {
                 //Wait just enough for the request to be completed
                 Thread.sleep(300);
+                applicationEventPublisher.publishEvent(new ShutdownEvent());
                 ((ConfigurableApplicationContext) NzbHydra.getApplicationContext()).close();
                 WindowsTrayIcon.remove();
                 System.exit(returnCode);

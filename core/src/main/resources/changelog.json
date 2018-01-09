@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.0.14",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Gracefully shutdown when restarting or quitting while search requests are handled"
+      }
+    ]
+  },{
     "version": "v1.0.13",
     "changes": [
       {
