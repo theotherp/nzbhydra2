@@ -42,7 +42,9 @@ public class NzbDownloadResult {
             headers.setLocation(URI.create(getUrl()));
             response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
-            response = new ResponseEntity<>(getNzbContent(), HttpStatus.OK);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + title+ ".nzb");
+            response = new ResponseEntity<>(getNzbContent(), headers, HttpStatus.OK);
         }
         return response;
     }

@@ -48,7 +48,7 @@ public class MockGithub {
 
         Release releasev1current = new Release();
         releasev1current.setBody("Changes in version 10.0");
-        releasev1current.setTagName("v1.0.0");
+        releasev1current.setTagName("v10.0.0");
 
         releases = Arrays.asList(releasev1current, releasev2);
     }
