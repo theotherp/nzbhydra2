@@ -1,3 +1,6 @@
+### v1.0.13
+Fix: NZBs proxied from indexers were returned with wrong / random seeming file name
+
 ### v1.0.12
 Feature: Allow migrating only the config, skipping the database migration
 
