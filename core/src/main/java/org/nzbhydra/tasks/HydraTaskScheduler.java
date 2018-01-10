@@ -20,6 +20,7 @@ import com.google.common.reflect.Invokable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.nzbhydra.ShutdownEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
@@ -27,6 +28,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
@@ -62,9 +64,13 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
     private ConcurrentMap<HydraTask, TaskInformation> taskInformations = new ConcurrentHashMap<>();
     private Map<String, ScheduledFuture> taskSchedules = new HashMap<>();
 
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        taskSchedules.values().forEach(x -> x.cancel(false));
+
+    }
 
     private void scheduleTasks() {
-        //TODO Check if works with transactional
         for (TaskRuntimeInformation runtimeInformation : runtimeInformationMap.values()) {
             scheduleTask(runtimeInformation, false);
         }

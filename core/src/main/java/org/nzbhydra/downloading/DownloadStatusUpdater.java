@@ -69,6 +69,7 @@ public class DownloadStatusUpdater {
         checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
     }
 
+    //TODO Handle shutdown event
 
     @EventListener
     public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent) {
