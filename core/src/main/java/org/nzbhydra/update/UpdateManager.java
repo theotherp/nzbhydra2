@@ -155,6 +155,9 @@ public class UpdateManager implements InitializingBean {
 
 
     public List<ChangelogVersionEntry> getChangesSinceCurrentVersion() throws UpdateException {
+        if (latestVersion == null) {
+            getLatestVersion();
+        }
         List<ChangelogVersionEntry> allChanges = getAllChanges();
         List<ChangelogVersionEntry> collectedVersionChanges = new ArrayList<>();
         for (ChangelogVersionEntry changelogVersionEntry : allChanges) {

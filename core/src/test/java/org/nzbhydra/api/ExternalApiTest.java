@@ -61,8 +61,6 @@ public class ExternalApiTest {
     private UserAgentMapper userAgentMapperMock;
     @Mock
     private Indexer indexerMock;
-    @Mock
-    private ConfigProvider providerMock;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
@@ -81,8 +79,6 @@ public class ExternalApiTest {
         when(searchResult.getNumberOfRejectedResults()).thenReturn(0);
         when(searchResult.getNumberOfRemovedDuplicates()).thenReturn(0);
         when(searchResult.getNumberOfTotalAvailableResults()).thenReturn(10);
-
-        when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
 
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
     }
