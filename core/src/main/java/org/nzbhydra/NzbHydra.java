@@ -5,9 +5,11 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.DownloadStatusUpdater;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.migration.FromPythonMigration;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -41,6 +44,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
@@ -276,16 +280,37 @@ public class NzbHydra {
         return guavaCacheManager;
     }
 
+    @RequestMapping(value = "/rss")
+    public RssRoot get() {
+        RssRoot rssRoot = restTemplate.getForObject("http://127.0.0.1:5000/api?apikey=a", RssRoot.class);
+
+        return rssRoot;
+    }
 
     @Autowired
-    private DownloadStatusUpdater task;
+    private FromPythonMigration migration;
+
+    @RequestMapping(value = "/migrate")
+    public String delete() throws Exception {
+        migration.migrateFromUrl("http://127.0.0.1:5075/", true);
+
+        return "Ok";
+    }
 
 
-
-    @RequestMapping(value = "/updatestatus")
-    public String getCats() {
-        task.checkHistoryStatus();
+    @Autowired
+    private WebAccess webAccess;
+    @RequestMapping(value = "/dltest")
+    public String dlTest() throws Exception{
+        webAccess.downloadToFile("https://github.com/theotherp/nzbhydra2/releases/download/v1.0.11/nzbhydra2-1.0.11-windows.zip", new File("c:\\temp\\nzbhydra2-1.0.11-windows.zip"));
         return "ok";
+
+    }
+
+    @RequestMapping("/test")
+    @Transactional
+    public String test() throws IOException, ExecutionException, InterruptedException {
+        return "Ok";
     }
 
 

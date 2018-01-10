@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import lombok.Getter;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerSearchEntity;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -27,10 +29,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -55,7 +60,29 @@ public class Searcher {
     private ApplicationEventPublisher eventPublisher;
     @Autowired
     private ConfigProvider configProvider;
+    private final Set<ExecutorService> executors = Collections.synchronizedSet(new HashSet<>());
+    private boolean shutdownRequested = false;
 
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        shutdownRequested = true;
+        synchronized (executors) {
+            if (executors.size() > 0) {
+                logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
+            }
+            Iterator<ExecutorService> iterator = executors.iterator();
+            while(iterator.hasNext()) {
+                ExecutorService executorService = iterator.next();
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    logger.warn("Waited too long for termination of task, interrupting");
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
 
     /**
      * Maps a search request's hash to its cache entry
@@ -79,7 +106,9 @@ public class Searcher {
         Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults = getIndexerSearchResultsToSearch(searchCacheEntry.getIndexerSearchResultsByIndexer());
         List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
         while (indexersToSearchAndTheirResults.size() > 0 && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll())) {
-
+            if (shutdownRequested) {
+                break;
+            }
             if (searchRequest.isLoadAll()) {
                 logger.debug("Going to call {} indexers because {} results were loaded yet but more results are available and all were requested", indexersToSearchAndTheirResults.size(), searchCacheEntry.getNumberOfFoundResults());
                 int maxResultsToLoad = searchRequest.getIndexers().orElse(Sets.newHashSet("")).size() * 1000;
@@ -244,6 +273,7 @@ public class Searcher {
         Map<Indexer, List<IndexerSearchResult>> indexerSearchResults = new HashMap<>(indexersToSearch);
 
         ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(indexersToSearch.size());
+        executors.add(executor);
 
         List<Callable<IndexerSearchResult>> callables = getCallables(searchRequest, indexersToSearch);
 
@@ -263,6 +293,7 @@ public class Searcher {
             logger.error("Unexpected error while searching", e);
         }
         executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
+        executors.remove(executor);
         indexerSearchResults = handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
         return indexerSearchResults;
     }

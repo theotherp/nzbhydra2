@@ -6,7 +6,7 @@
         <p>You are about to migrate from an installation of NZBHydra 1. This will overwrite your existing settings and database for v2. No automatic backup will be made before.</p>
 
         <p>The migration can take a couple of minutes for big databases. All enabled newznab indexers will be queried multiple times for a capabilities check.</p>
-        <p>For big databases I recommend temporarily starting NZBHydra with more memory (using the parameter <tt>--xmx 512</tt>). Otherwise the migration might fail.</p>
+        <p>For big databases I recommend temporarily starting NZBHydra with more memory (using the parameter <tt>--xmx 512</tt> (or even more)). Otherwise the migration might fail.</p>
 
         <p>The migration is easier if the older instance is callable from here and its files are on the same machine as v2 (and not containerized). Please select what applies:</p>
 
@@ -26,6 +26,9 @@
                 </div>
             </div>
         </uib-accordion>
+        <p>In some cases you might want to skip the migration of the database, e.g. when you don't want to take over the history or if the migration fails and the config is good enough.
+        Please select if the database should be migrated: <input type="checkbox" data-ng-model="doMigrateDatabase">
+        </p>
     </span>
     <span ng-show="foo.isMigrating" style="text-align: left">
 

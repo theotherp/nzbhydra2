@@ -2,11 +2,15 @@ package org.nzbhydra.okhttp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Okio;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,15 +85,22 @@ public class WebAccess {
     }
 
     public void downloadToFile(String url, File file) throws IOException {
+        logger.debug("Downloading file from {} to {}", url, file.getAbsolutePath());
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Request request = new Request.Builder().url(url).build();
         try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
+            long contentLength = response.body().contentLength();
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());
                 logger.error(error);
                 throw new IOException(error);
             }
-            Files.copy(response.body().byteStream(), file.toPath());
+            BufferedSink sink = Okio.buffer(Okio.sink(file));
+            sink.writeAll(response.body().source());
+            sink.flush();
+            sink.close();
             response.body().close();
+            logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to download file with {} bytes", stopwatch.elapsed(TimeUnit.MILLISECONDS), contentLength);
         }
     }
 

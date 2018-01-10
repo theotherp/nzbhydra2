@@ -28,6 +28,7 @@ import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -49,6 +50,10 @@ import org.springframework.web.multipart.support.MissingServletRequestPartExcept
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -77,7 +82,6 @@ public class ErrorHandler {
             NoHandlerFoundException.class,
             AsyncRequestTimeoutException.class
     );
-
 
     @ExceptionHandler(value = { HttpRequestMethodNotSupportedException.class,
             HttpMediaTypeNotSupportedException.class,
@@ -111,7 +115,13 @@ public class ErrorHandler {
             logger.warn("Unexpected error when client tried to access path " + requestURI + fullParametersString, ex);
         }
         Object bodyOfResponse;
-        if (MediaType.APPLICATION_JSON_VALUE.equals(request.getHeader(HttpHeaders.CONTENT_TYPE))) {
+        List<MediaType> mediaTypes = new ArrayList<>();
+        try {
+            mediaTypes = resolveMediaTypes(request);
+        } catch (HttpMediaTypeNotAcceptableException e) {
+            logger.error("Unable to parse Media Types of request", e);
+        }
+        if (mediaTypes.contains(MediaType.APPLICATION_JSON)) {
             bodyOfResponse = new JsonExceptionResponse(ExceptionUtils.getStackTrace(ex), requestURI, parametersString, status.value(), ex.getMessage());
         } else {
             bodyOfResponse = message;
@@ -164,6 +174,26 @@ public class ErrorHandler {
             status = HttpStatus.SERVICE_UNAVAILABLE;
         }
         return status;
+    }
+
+    private List<MediaType> resolveMediaTypes(HttpServletRequest request)
+            throws HttpMediaTypeNotAcceptableException {
+
+        Enumeration<String> headerValueArray = request.getHeaders(HttpHeaders.ACCEPT);
+        if (headerValueArray == null) {
+            return Collections.<MediaType>emptyList();
+        }
+
+        List<String> headerValues = Collections.list(headerValueArray);
+        try {
+            List<MediaType> mediaTypes = MediaType.parseMediaTypes(headerValues);
+            MediaType.sortBySpecificityAndQuality(mediaTypes);
+            return mediaTypes;
+        }
+        catch (InvalidMediaTypeException ex) {
+            throw new HttpMediaTypeNotAcceptableException(
+                    "Could not parse 'Accept' header " + headerValues + ": " + ex.getMessage());
+        }
     }
 
     @Data

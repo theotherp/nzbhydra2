@@ -1,7 +1,9 @@
 package org.nzbhydra.logging;
 
+import com.google.common.base.Objects;
 import org.slf4j.MDC;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -22,6 +24,7 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
 
     final private boolean useFixedContext;
     final private Map<String, String> fixedContext;
+    final Instant instantiationTime;
 
     /**
      * Pool where task threads take MDC from the submitting thread.
@@ -63,6 +66,7 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
         this.fixedContext = fixedContext;
         useFixedContext = (fixedContext != null);
+        this.instantiationTime = Instant.now();
     }
 
     @SuppressWarnings("unchecked")
@@ -77,6 +81,23 @@ public class MdcThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     public void execute(Runnable command) {
         super.execute(wrap(command, getContextForTask()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MdcThreadPoolExecutor)) {
+            return false;
+        }
+        MdcThreadPoolExecutor that = (MdcThreadPoolExecutor) o;
+        return Objects.equal(instantiationTime, that.instantiationTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(instantiationTime);
     }
 
     public static Runnable wrap(final Runnable runnable, final Map<String, String> context) {
