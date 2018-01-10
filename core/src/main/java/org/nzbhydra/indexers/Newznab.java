@@ -68,7 +68,7 @@ public class Newznab extends Indexer<Xml> {
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
     static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
-    static Map<String, IdType> paramValueToIdMap = new HashMap<>();
+    public static Map<String, IdType> paramValueToIdMap = new HashMap<>();
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");

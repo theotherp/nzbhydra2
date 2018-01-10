@@ -39,11 +39,11 @@ public class IndexerWebAccess {
 
 
     @SuppressWarnings("unchecked")
-    protected <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
+    public <T> T get(URI uri, IndexerConfig indexerConfig) throws IndexerAccessException {
         return get(uri, indexerConfig, null);
     }
 
-    protected <T> T get(URI uri, IndexerConfig indexerConfig, Class responseType) throws IndexerAccessException {
+    public <T> T get(URI uri, IndexerConfig indexerConfig, Class responseType) throws IndexerAccessException {
         int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         String userAgent = indexerConfig.getUserAgent().orElse(configProvider.getBaseConfig().getSearching().getUserAgent().orElse("NZBHydra2"));
 

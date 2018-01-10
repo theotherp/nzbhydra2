@@ -26,8 +26,8 @@ import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.config.ProxyType;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.indexers.CheckCapsRespone;
-import org.nzbhydra.indexers.NewznabChecker;
+import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
+import org.nzbhydra.indexers.capscheck.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
@@ -91,13 +91,13 @@ public class ConfigMigrationTest {
         when(this.baseConfig.getCategoriesConfig()).thenReturn(categoriesConfigMock);
         baseConfig.getCategoriesConfig().setCategories(Arrays.asList(animeCategory, audioCategory));
 
-        when(newznabCheckerMock.checkCaps(any())).thenAnswer(new Answer<CheckCapsRespone>() {
+        when(newznabCheckerMock.checkCaps(any(IndexerConfig.class))).thenAnswer(new Answer<CheckCapsResponse>() {
             @Override
-            public CheckCapsRespone answer(InvocationOnMock invocation) throws Throwable {
+            public CheckCapsResponse answer(InvocationOnMock invocation) throws Throwable {
                 IndexerConfig config = invocation.getArgument(0);
                 config.setConfigComplete(true);
                 config.setAllCapsChecked(true);
-                return new CheckCapsRespone(invocation.getArgument(0), true, true);
+                return new CheckCapsResponse(invocation.getArgument(0), true, true);
             }
         });
     }

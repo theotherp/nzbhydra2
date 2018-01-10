@@ -7,6 +7,10 @@
         "text": "Pull NZB download status from configured downloaders instead of relying on extension scripts"
       },
       {
+        "type": "feature",
+        "text": "Add button to check caps for all/all incomple (yellow) indexers"
+      },
+      {
         "type": "fix",
         "text": "Anonymize username:password pairs in URLs in logs"
       },

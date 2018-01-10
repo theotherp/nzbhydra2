@@ -5884,6 +5884,15 @@ angular
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
+        function updateIndexerModel(model, indexerConfig) {
+            model.supportedSearchIds = indexerConfig.supportedSearchIds;
+            model.supportedSearchTypes = indexerConfig.supportedSearchTypes;
+            model.categoryMapping = indexerConfig.categoryMapping;
+            model.configComplete = indexerConfig.configComplete;
+            model.allCapsChecked = indexerConfig.allCapsChecked;
+            model.enabled = indexerConfig.enabled;
+        }
+
         formlyConfigProvider.setType({
             //BUtton
             name: 'checkCaps',
@@ -5920,15 +5929,10 @@ angular
                 //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
-                    var url = "internalapi/indexer/checkCaps";
-                    ConfigBoxService.checkCaps(url, $scope.model).then(function (data) {
+                    ConfigBoxService.checkCaps({indexerConfig: $scope.model, checkType: "SINGLE"}).then(function (data) {
+                        data = data[0]; //We get a list of results (with one result because the check type is single)
                         //Formly doesn't allow replacing the model so we need to set all the relevant values ourselves
-                        $scope.model.supportedSearchIds = data.indexerConfig.supportedSearchIds;
-                        $scope.model.supportedSearchTypes = data.indexerConfig.supportedSearchTypes;
-                        $scope.model.categoryMapping = data.indexerConfig.categoryMapping;
-                        $scope.model.configComplete = data.indexerConfig.configComplete;
-                        $scope.model.allCapsChecked = data.indexerConfig.allCapsChecked;
-                        $scope.model.enabled = data.indexerConfig.enabled;
+                        updateIndexerModel($scope.model, data.indexerConfig);
                         if (data.indexerConfig.supportedSearchIds.length > 0) {
                             var message = "Supports " + data.indexerConfig.supportedSearchIds;
                             angular.element(testMessage).text(message);
@@ -6017,11 +6021,43 @@ angular
                 }
             },
             templateUrl: 'static/html/directives/formly-multiselect.html',
-            controller: function($scope) {
+            controller: function ($scope, $timeout) {
                 $scope.availableOptions = $scope.to.options;
                 $scope.selectedModel = _.map($scope.model[$scope.options.key], function (x) {
                     return {id: x, label: x}
                 });
+
+                var toggleWatch = function(fn) {
+                    var watchFn;
+                    return function() {
+                        if (watchFn) {
+                            watchFn();
+                            watchFn = undefined;
+                        } else {
+                            watchFn = $scope.$watch(fn);
+                        }
+                    };
+                };
+
+                //Super ugly hack because the widget doesn't update itself when the model is changed (because we set the selectedModel manually)
+                //Would be better to let formly formatter/parser do that or let the widget do the logic, but didn't work out
+                var toggleWatcher = toggleWatch(function($event) {
+                    if ($event.options.key === $scope.options.key) {
+                        var newModel = $event.model[$scope.options.key];
+                        if ($scope.selectedModel.length !== $scope.model[$scope.options.key].length) {
+                            toggleWatcher();
+                            $scope.selectedModel = _.map(newModel, function (x) {
+                                return {id: x, label: x}
+                            });
+                            $timeout(function () {
+                                toggleWatcher();
+                            }, 500);
+                        }
+                    }
+                });
+
+                toggleWatcher();
+
 
                 $scope.extraSettings = {
                     showCheckAll: true,
@@ -6030,7 +6066,7 @@ angular
                     buttonClasses: "btn btn-default multiselect-button"
                 };
                 $scope.events = {
-                    onSelectionChanged: function() {
+                    onSelectionChanged: function () {
                         $scope.model[$scope.options.key] = _.pluck($scope.selectedModel, "id");
                     }
                 };
@@ -6169,12 +6205,31 @@ angular
                     } else {
                         growl.error("That predefined indexer is already configured."); //For now this is the only case where adding is forbidden so we use this hardcoded message "for now"... (;-))
                     }
-
                 };
+            }
+        });
 
+        formlyConfigProvider.setType({
+            name: 'recheckAllCaps',
+            templateUrl: 'recheckAllCaps.html',
+            controller: function ($scope, $uibModal, growl, ConfigBoxService) {
+                $scope.recheck = function (checkType) {
+                    ConfigBoxService.checkCaps({checkType: checkType}).then(function (listOfResults) {
+                        //A bit ugly, but we have to update the current model with the new data from the list
+                        for (var i=0; i<$scope.model.length;i++) {
+                            for (var j = 0; j< listOfResults.length; j++) {
+                                if ($scope.model[i].name === listOfResults[j].indexerConfig.name) {
+                                    updateIndexerModel($scope.model[i], listOfResults[j].indexerConfig);
+                                    $scope.form.$setDirty(true);
+                                }
+                            }
+                        }
+                    });
+                }
             }
 
         });
+
 
     }]);
 
@@ -6256,7 +6311,7 @@ function ConfigBoxService($http, $q, $uibModal) {
         return deferred.promise;
     }
 
-    function checkCaps(url, model) {
+    function checkCaps(capsCheckRequest) {
         var deferred = $q.defer();
 
         var result = $uibModal.open({
@@ -6266,11 +6321,8 @@ function ConfigBoxService($http, $q, $uibModal) {
             backdrop: "static",
             backdropClass: "waiting-cursor",
             resolve: {
-                url: function () {
-                    return url;
-                },
-                model: function () {
-                    return model;
+                capsCheckRequest: function () {
+                    return capsCheckRequest;
                 }
             }
         });
@@ -6291,15 +6343,16 @@ angular
     .module('nzbhydraApp')
     .controller('CheckCapsModalInstanceCtrl', CheckCapsModalInstanceCtrl);
 
-function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, url, model) {
+function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, growl, capsCheckRequest) {
 
     var updateMessagesInterval = undefined;
 
     $scope.messages = undefined;
-
-    $http.post(url, model).success(function (data) {
-        //deferred.resolve(data, model);
-        $scope.$close([data, model]);
+    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).success(function (data) {
+        $scope.$close([data, capsCheckRequest.indexerConfig]);
+        if (data.length === 0) {
+            growl.info("No indexers were checked");
+        }
     }).error(function () {
         $scope.$dismiss("Unknown error")
     });
@@ -6307,8 +6360,23 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, url, mod
     $timeout(
         updateMessagesInterval = $interval(function () {
             $http.get("internalapi/indexer/checkCapsMessages").then(function (data) {
-                $scope.messages = data.data;
+                var map = data.data;
+                var messages = [];
+                for (var name in map) {
+                    if (map.hasOwnProperty(name)) {
+                        for (var i = 0; i < map[name].length; i++) {
+                            var message = "";
+                            if (capsCheckRequest.checkType !== "SINGLE") {
+                                message += name + ": ";
+                            }
+                            message += map[name][i];
+                            messages.push(message);
+                        }
+                    }
+                }
+                $scope.messages = messages;
             });
+
         }, 500),
         500);
 
@@ -6321,7 +6389,7 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, url, mod
 
 
 }
-CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "url", "model"];
+CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 
 
 
@@ -7951,7 +8019,6 @@ function ConfigFields($injector) {
                             preselect: true,
                             score: 0,
                             searchModuleType: 'NEWZNAB',
-                            searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
                             supportedSearchIds: undefined,
                             supportedSearchTypes: undefined,
@@ -7987,6 +8054,8 @@ function ConfigFields($injector) {
                             scope.options.resetModel();
                         }
                     }
+                }, {
+                type: 'recheckAllCaps'
                 }
             ],
             auth: [
@@ -8710,13 +8779,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
-                    buttonText: "None",
-                    getPlaceholder: function (model) {
-                        if (angular.isUndefined(model)) {
-                            return "Unknown";
-                        }
-                        return "None";
-                    }
+                    buttonText: "None"
                 }
             }
         );
@@ -9023,18 +9086,17 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
                 });
         }
         return deferred.promise;
-
     }
 
     //Called when the indexer dialog is closed
     function checkCapsWhenClosing(scope, model) {
         var deferred = $q.defer();
-        var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
-            ConfigBoxService.checkCaps(url, model).then(
+            ConfigBoxService.checkCaps({indexerConfig: model, checkType: "SINGLE"}).then(
                 function (data) {
+                    data = data[0]; //We get a list of results (with one result because the check type is single)
                     blockUI.reset();
                     scope.spinnerActive = false;
                     if (data.allCapsChecked && data.configComplete) {

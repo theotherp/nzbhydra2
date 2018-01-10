@@ -1,4 +1,20 @@
-package org.nzbhydra.indexers;
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.nzbhydra.indexers.capscheck;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -13,7 +29,9 @@ import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
+import org.nzbhydra.indexers.BinsearchTest;
 import org.nzbhydra.indexers.Indexer.BackendType;
+import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.RssRoot;
@@ -106,7 +124,7 @@ public class NewznabCheckerTest {
 
         capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
 
-        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVDB));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVRAGE));
@@ -169,7 +187,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
 
-        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(0, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
     }
@@ -191,7 +209,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenThrow(new IndexerAccessException("some error"));
 
-        CheckCapsRespone checkCapsRespone = testee.checkCaps(indexerConfig);
+        CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllCapsChecked());
         verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));

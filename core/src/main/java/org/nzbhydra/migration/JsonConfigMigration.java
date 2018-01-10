@@ -27,9 +27,9 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.UserAuthConfig;
-import org.nzbhydra.indexers.CheckCapsRespone;
 import org.nzbhydra.indexers.Indexer.BackendType;
-import org.nzbhydra.indexers.NewznabChecker;
+import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
+import org.nzbhydra.indexers.capscheck.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.FromPythonMigration.MigrationMessageEvent;
@@ -527,12 +527,12 @@ public class JsonConfigMigration {
         if (!enabledNewznabIndexers.isEmpty()) {
             logger.info("Checking caps and getting category mapping infos for all previously enabled newznab/torznab indexers");
             ExecutorService executor = Executors.newFixedThreadPool(enabledNewznabIndexers.size());
-            List<Callable<CheckCapsRespone>> callables = enabledNewznabIndexers.stream().<Callable<CheckCapsRespone>>map(indexerConfig -> () -> newznabChecker.checkCaps(indexerConfig)).collect(Collectors.toList());
+            List<Callable<CheckCapsResponse>> callables = enabledNewznabIndexers.stream().<Callable<CheckCapsResponse>>map(indexerConfig -> () -> newznabChecker.checkCaps(indexerConfig)).collect(Collectors.toList());
             try {
-                List<Future<CheckCapsRespone>> futures = executor.invokeAll(callables);
-                for (Future<CheckCapsRespone> future : futures) {
+                List<Future<CheckCapsResponse>> futures = executor.invokeAll(callables);
+                for (Future<CheckCapsResponse> future : futures) {
                     try {
-                        CheckCapsRespone checkCapsRespone = future.get();
+                        CheckCapsResponse checkCapsRespone = future.get();
                         IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
                         if (checkCapsRespone.isConfigComplete()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());

@@ -1111,7 +1111,6 @@ function ConfigFields($injector) {
                             preselect: true,
                             score: 0,
                             searchModuleType: 'NEWZNAB',
-                            searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
                             supportedSearchIds: undefined,
                             supportedSearchTypes: undefined,
@@ -1147,6 +1146,8 @@ function ConfigFields($injector) {
                             scope.options.resetModel();
                         }
                     }
+                }, {
+                type: 'recheckAllCaps'
                 }
             ],
             auth: [
@@ -1869,13 +1870,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
-                    buttonText: "None",
-                    getPlaceholder: function (model) {
-                        if (angular.isUndefined(model)) {
-                            return "Unknown";
-                        }
-                        return "None";
-                    }
+                    buttonText: "None"
                 }
             }
         );
@@ -2182,18 +2177,17 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
                 });
         }
         return deferred.promise;
-
     }
 
     //Called when the indexer dialog is closed
     function checkCapsWhenClosing(scope, model) {
         var deferred = $q.defer();
-        var url = "internalapi/indexer/checkCaps";
         if (angular.isUndefined(model.supportedSearchIds) || angular.isUndefined(model.supportedSearchTypes)) {
 
             blockUI.start("New indexer found. Testing its capabilities. This may take a bit...");
-            ConfigBoxService.checkCaps(url, model).then(
+            ConfigBoxService.checkCaps({indexerConfig: model, checkType: "SINGLE"}).then(
                 function (data) {
+                    data = data[0]; //We get a list of results (with one result because the check type is single)
                     blockUI.reset();
                     scope.spinnerActive = false;
                     if (data.allCapsChecked && data.configComplete) {
