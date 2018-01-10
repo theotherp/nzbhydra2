@@ -6,14 +6,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
+import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
+import org.nzbhydra.searching.DownloadType;
 import org.nzbhydra.searching.SearchResult;
+import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -24,6 +30,7 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
@@ -52,6 +59,11 @@ public class ExternalApiTest {
     private SearchResult searchResult;
     @Mock
     private UserAgentMapper userAgentMapperMock;
+    @Mock
+    private Indexer indexerMock;
+    @Mock
+    private ConfigProvider providerMock;
+    IndexerConfig indexerConfig = new IndexerConfig();
 
 
     @Before
@@ -69,6 +81,10 @@ public class ExternalApiTest {
         when(searchResult.getNumberOfRejectedResults()).thenReturn(0);
         when(searchResult.getNumberOfRemovedDuplicates()).thenReturn(0);
         when(searchResult.getNumberOfTotalAvailableResults()).thenReturn(10);
+
+        when(configProvider.getBaseConfig()).thenReturn(new BaseConfig());
+
+        when(indexerMock.getConfig()).thenReturn(indexerConfig);
     }
 
     @Test
@@ -138,6 +154,23 @@ public class ExternalApiTest {
         //Not cached anymore, will do another search
         testee.api(getNewznabParameters("q1"));
         verify(searcher, times(7)).search(any());
+    }
+
+    @Test
+    public void shouldUseCorrectApplicationType() {
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        SearchResultItem searchResultItem = new SearchResultItem();
+        searchResultItem.setIndexer(indexerMock);
+        searchResultItem.setCategory(new Category());
+
+        searchRequest.setDownloadType(DownloadType.NZB);
+        RssItem item = testee.buildRssItem(searchResultItem, searchRequest);
+        assertThat(item.getEnclosure().getType()).isEqualTo("application/x-nzb");
+
+        searchRequest.setDownloadType(DownloadType.TORRENT);
+        item = testee.buildRssItem(searchResultItem, searchRequest);
+        assertThat(item.getEnclosure().getType()).isEqualTo("application/x-bittorrent");
+
     }
 
     protected NewznabParameters getNewznabParameters(String q1) {

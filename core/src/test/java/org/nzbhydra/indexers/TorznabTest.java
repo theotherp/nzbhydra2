@@ -124,7 +124,7 @@ public class TorznabTest {
         rssItem.setLink("http://indexer.com/123");
         rssItem.setRssGuid(new RssGuid("http://indexer.com/123", false));
         rssItem.setTitle("title");
-        rssItem.setEnclosure(new Enclosure("http://indexer.com/123", 456L));
+        rssItem.setEnclosure(new Enclosure("http://indexer.com/123", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
         rssItem.setDescription("description");
         rssItem.setComments("http://indexer.com/123/details#comments");

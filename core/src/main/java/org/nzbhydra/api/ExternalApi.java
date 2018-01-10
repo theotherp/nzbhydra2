@@ -75,8 +75,12 @@ public class ExternalApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
+    private static final String APPLICATION_TYPE_NZB = "application/x-nzb";
+    private static final String APPLICATION_TYPE_TORRENT = "application/x-bittorrent";
+
     @Value("${nzbhydra.dev.noApiKey:false}")
     private boolean noApiKeyNeeded = false;
+
 
     @Autowired
     protected Searcher searcher;
@@ -275,12 +279,16 @@ public class ExternalApi {
         newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
         newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
         newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
-        if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
+        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
+        String resultType;
+        if (isNzb) {
             rssItem.setNewznabAttributes(newznabAttributes);
+            resultType = APPLICATION_TYPE_NZB;
         } else {
             rssItem.setTorznabAttributes(newznabAttributes);
+            resultType = APPLICATION_TYPE_TORRENT;
         }
-        rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize()));
+        rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize(), resultType));
         rssItem.setComments(searchResultItem.getCommentsLink());
         rssItem.setDescription(searchResultItem.getDescription());
         rssItem.setCategory(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());

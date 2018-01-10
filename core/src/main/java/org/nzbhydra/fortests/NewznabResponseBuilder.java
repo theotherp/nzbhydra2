@@ -41,7 +41,7 @@ public class NewznabResponseBuilder {
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle(itemTitleBase + i);
             item.setPubDate(Instant.now().minus(i * 1000, ChronoUnit.HOURS));
-            item.setEnclosure(new Enclosure("enclosureUrl", 5L));
+            item.setEnclosure(new Enclosure("enclosureUrl", 5L, "application/x-nzb"));
             item.setComments("http://www.comments.com/" + i);
             item.setLink("http://www.link.com/" + i);
             item.setCategory("category");

@@ -153,7 +153,7 @@ public final class RssItemBuilder {
 
         newznabAttributes.add(new NewznabAttribute("size", String.valueOf(size)));
         if (enclosure == null) {
-            rssItem.setEnclosure(new Enclosure(link, size));
+            rssItem.setEnclosure(new Enclosure(link, size, "application/x-nzb"));
         } else {
             rssItem.setEnclosure(enclosure);
         }

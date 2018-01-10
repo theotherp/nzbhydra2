@@ -1,5 +1,21 @@
 [
   {
+    "version": "v1.0.15",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Pull NZB download status from configured downloaders instead of relying on extension scripts"
+      },
+      {
+        "type": "fix",
+        "text": "Anonymize username:password pairs in URLs in logs"
+      },
+      {
+        "type": "fix",
+        "text": "Torznab results were returned wrong, preventing Hydra from being added to radarr"
+      }
+    ]
+  },{
     "version": "v1.0.14",
     "changes": [
       {
@@ -7,7 +23,8 @@
         "text": "Gracefully shutdown when restarting or quitting while search requests are handled"
       }
     ]
-  },{
+  },
+  {
     "version": "v1.0.13",
     "changes": [
       {

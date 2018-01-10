@@ -52,7 +52,7 @@ public class NzbIndexTest {
                                 .category("alt.binaries.hdtv.x264")
                                 .pubDate(now)
                                 .rssGuid(new RssGuid(link, true))
-                                .enclosure(new Enclosure(enclosureUrl, 1089197181L))
+                                .enclosure(new Enclosure(enclosureUrl, 1089197181L, "application/x-nzb"))
                                 .build())).build();
         List<SearchResultItem> items = testee.getSearchResultItems(root);
         assertThat(items.size(), is(1));

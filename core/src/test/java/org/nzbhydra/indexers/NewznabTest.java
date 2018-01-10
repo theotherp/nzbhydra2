@@ -517,7 +517,7 @@ public class NewznabTest {
         rssItem.setLink("http://indexer.com/nzb/123");
         rssItem.setRssGuid(new RssGuid("http://indexer.com/details/123", true));
         rssItem.setTitle("title");
-        rssItem.setEnclosure(new Enclosure("http://indexer.com/nzb/123", 456L));
+        rssItem.setEnclosure(new Enclosure("http://indexer.com/nzb/123", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
         rssItem.setDescription("description");
         rssItem.setComments("http://indexer.com/details/123x#comments");

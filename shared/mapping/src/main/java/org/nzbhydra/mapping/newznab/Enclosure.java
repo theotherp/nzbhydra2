@@ -15,10 +15,10 @@ public class Enclosure {
     public Enclosure() {
     }
 
-    public Enclosure(String url, Long length) {
+    public Enclosure(String url, Long length, String type) {
         this.url = url;
         this.length = length;
-        this.type = "application/x-nzb";
+        this.type = type;
     }
 
     @XmlAttribute

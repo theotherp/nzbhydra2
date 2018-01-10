@@ -69,7 +69,7 @@ public class NewznabMockBuilder {
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle(title);
             item.setPubDate(pubDate);
-            item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size)));
+            item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size), "application/x-nzb"));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
             String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
             item.setLink(guid);

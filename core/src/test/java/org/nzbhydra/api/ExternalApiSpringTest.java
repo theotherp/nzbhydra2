@@ -61,7 +61,7 @@ public class ExternalApiSpringTest {
         item.setDescription("itemDescription");
         item.setTitle("itemTitle");
         item.setPubDate(Instant.ofEpochSecond(1000));
-        item.setEnclosure(new Enclosure("enclosureUrl", 5L));
+        item.setEnclosure(new Enclosure("enclosureUrl", 5L, "application/x-nzb"));
         item.setComments("comments");
         item.setLink("link");
         item.setCategory("category");
