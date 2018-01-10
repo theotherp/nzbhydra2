@@ -110,11 +110,13 @@ public class UpdateManagerTest {
 
     @Test
     public void shouldGetChangesSince() throws Exception {
+        testee.latestVersion = new SemanticVersion(2,0,0);
+
         List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
 
-        assertEquals(2, changesSince.size());
-        assertEquals("3.0.0", changesSince.get(0).getVersion());
-        assertEquals("2.0.0", changesSince.get(1).getVersion());
+        assertEquals(1, changesSince.size());
+        //Skip 1.0.0 because it's older and skip 3.0.0 because it's not yet released
+        assertEquals("2.0.0", changesSince.get(0).getVersion());
     }
 
     @Test

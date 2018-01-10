@@ -80,6 +80,7 @@ public class UpdateManager implements InitializingBean {
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
     protected SemanticVersion currentVersion;
+    protected SemanticVersion latestVersion;
 
     private ObjectMapper objectMapper;
     protected Supplier<Release> latestReleaseCache = Suppliers.memoizeWithExpiration(getLatestReleaseSupplier(), 15, TimeUnit.MINUTES);
@@ -93,7 +94,8 @@ public class UpdateManager implements InitializingBean {
 
     private SemanticVersion getLatestVersion() throws UpdateException {
         Release latestRelease = latestReleaseCache.get();
-        return new SemanticVersion(latestRelease.getTagName());
+        latestVersion = new SemanticVersion(latestRelease.getTagName());
+        return latestVersion;
     }
 
     public boolean isUpdateAvailable() {
@@ -159,6 +161,9 @@ public class UpdateManager implements InitializingBean {
             SemanticVersion version = new SemanticVersion(changelogVersionEntry.getVersion());
             if (currentVersion.isSameOrNewer(version)) {
                 break;
+            }
+            if (version.isUpdateFor(latestVersion)) { //Don't show changes for version not yet released
+                continue;
             }
             collectedVersionChanges.add(changelogVersionEntry);
         }
