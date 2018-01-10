@@ -1,3 +1,9 @@
+### v1.0.15
+Feature: Pull NZB download status from configured downloaders instead of relying on extension scripts
+Feature: Add button to check caps for all/all incomple (yellow) indexers
+Fix: Anonymize username:password pairs in URLs in logs
+Fix: Torznab results were returned wrong, preventing Hydra from being added to radarr
+
 ### v1.0.14
 Fix: Gracefully shutdown when restarting or quitting while search requests are handled
 
