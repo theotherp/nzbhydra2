@@ -1,5 +1,18 @@
 [
   {
+    "version": "v1.0.16",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Make sure users don't enter an insane download limit value"
+      },
+      {
+        "type": "feature",
+        "text": "Add option to disable CSRF protection and disable it by default"
+      }
+    ]
+  },
+  {
     "version": "v1.0.15",
     "changes": [
       {
@@ -19,7 +32,8 @@
         "text": "Torznab results were returned wrong, preventing Hydra from being added to radarr"
       }
     ]
-  },{
+  },
+  {
     "version": "v1.0.14",
     "changes": [
       {
