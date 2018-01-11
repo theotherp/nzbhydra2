@@ -228,15 +228,21 @@ public class ResultAcceptor {
     }
 
     protected boolean checkRegexes(SearchResultItem item, Multiset<String> reasonsForRejection, String requiredRegex, String forbiddenRegex) {
-        if (!Strings.isNullOrEmpty(requiredRegex) && !Pattern.compile(requiredRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required regex in {}", item.getTitle());
-            reasonsForRejection.add("Required regex doesn't match");
-            return false;
+        if (!Strings.isNullOrEmpty(requiredRegex)) {
+            Pattern requiredPattern = Pattern.compile(requiredRegex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            if (!requiredPattern.matcher(item.getTitle()).find()) {
+                logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Did not find required regex in {}", item.getTitle());
+                reasonsForRejection.add("Required regex doesn't match");
+                return false;
+            }
         }
-        if (!Strings.isNullOrEmpty(forbiddenRegex) && Pattern.compile(forbiddenRegex).matcher(item.getTitle().toLowerCase()).find()) {
-            logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden regex in {}", item.getTitle());
-            reasonsForRejection.add("Forbidden regex matches");
-            return false;
+        if (!Strings.isNullOrEmpty(forbiddenRegex)) {
+            Pattern forbiddenPattern = Pattern.compile(forbiddenRegex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+            if (forbiddenPattern.matcher(item.getTitle()).find()) {
+                logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden regex in {}", item.getTitle());
+                reasonsForRejection.add("Forbidden regex matches");
+                return false;
+            }
         }
 
         return true;

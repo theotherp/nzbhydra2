@@ -290,6 +290,22 @@ public class ResultAcceptorTest {
         assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", ""));
         assertFalse(testee.checkRegexes(item, HashMultiset.create(), "a+b", "c+d"));
         assertFalse(testee.checkRegexes(item, HashMultiset.create(), "", "c+d"));
+
+        item.setTitle("My.favorite.Show.s01e03.720p.HDTV.mkv");
+        assertTrue(testee.checkRegexes(item, HashMultiset.create(), "720p.HDTV", ""));
+        assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", "SDTV"));
+        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "", "720p.HDTV"));
+        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "Show", "720p.HDTV"));
+
+        item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.mkv");
+        assertTrue(testee.checkRegexes(item, HashMultiset.create(), "", "\\.(SDTV|CAM)\\."));
+        assertTrue(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
+        item.setTitle("My.favorite.camera.Show.s01e03.720p.HDTV.avi");
+        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "(720p|1080p).*.mkv$", ""));
+        item.setTitle("My.movie.about.mkv.avi");
+        assertFalse(testee.checkRegexes(item, HashMultiset.create(), "\\.mkv$", ""));
+
+
     }
 
 

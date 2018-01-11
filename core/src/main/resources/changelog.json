@@ -7,6 +7,10 @@
         "text": "Make sure users don't enter an insane download limit value"
       },
       {
+        "type": "fix",
+        "text": "Would let results forbidden by regexes through"
+      },
+      {
         "type": "feature",
         "text": "Add option to disable CSRF protection and disable it by default"
       }
