@@ -16,6 +16,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * Compatible with Sonarr, Radarr, nzbget, sabnzbd, NZB 360, CouchPotato, Mylar, LL, Sickbeard, Jackett/Cardigann, Watcher, etc.
 * Search and download history and extensive stats, e.g. indexer response times, download shares, NZB age, etc.
 * Authentication and multi-user support
+* Automatic update of NZB download status by querying configured downloaders
 * RSS support with configurable cache times
 * Torrent support:
   * For GUI searches, allowing you to download torrents to a blackhole folder
@@ -33,7 +34,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * RSS support which will cache the results for a given time
 * Proper filtering of displayed results on the search results page
 * Extended statistics, e.g. share of downloads / searches per user, age distribution of downloaded NZBs and download failures per indexer
-* Downloader scripts to inform Hydra about the actual download result of an NZB
+* Query configured downloaders for updates of NZB download content for history and stats
 * Extended configurability of categories and improved mapping of categories between Hydra and indexers
 * Improved config validation
 * Save torrents in a black hole folder; torznab API endpoint
