@@ -278,6 +278,14 @@ function ConfigFields($injector) {
                                 label: 'Disable SNI',
                                 help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
                             }
+                        },
+                        {
+                            key: 'useCsrf',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                label: 'Use CSRF protection',
+                                help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>'
+                            }
                         }
                     ]
                 },

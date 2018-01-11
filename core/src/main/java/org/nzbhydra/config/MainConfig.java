@@ -61,7 +61,7 @@ public class MainConfig extends ValidatingConfig {
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
     @RestartRequired
-    private boolean useCsrf = true;
+    private boolean useCsrf = false;
     private boolean useLocalUrlForApiAccess = true;
     @RestartRequired
     private boolean verifySsl = true;
