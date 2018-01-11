@@ -1,6 +1,11 @@
+### v1.0.16
+Fix: Make sure users don't enter an insane download limit value
+Fix: Would let results forbidden by regexes through
+Feature: Add option to disable CSRF protection and disable it by default
+
 ### v1.0.15
 Feature: Pull NZB download status from configured downloaders instead of relying on extension scripts
-Feature: Add button to check caps for all/all incomple (yellow) indexers
+Feature: Add button to check caps for all/all incomplete (yellow) indexers
 Fix: Anonymize username:password pairs in URLs in logs
 Fix: Torznab results were returned wrong, preventing Hydra from being added to radarr
 
