@@ -1857,6 +1857,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                     label: 'Categories',
                     help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
                     options: options,
+                    settings: {showSelectedValues: false},
                     buttonText: "All"
                 }
             }

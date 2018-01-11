@@ -292,64 +292,17 @@ angular
                     ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
                 }
             },
-            templateUrl: 'static/html/directives/formly-multiselect.html',
+            template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings"></span>',
             controller: function ($scope, $timeout) {
-                $scope.availableOptions = $scope.to.options;
-                $scope.selectedModel = _.map($scope.model[$scope.options.key], function (x) {
-                    return {id: x, label: x}
-                });
-
-                var toggleWatch = function(fn) {
-                    var watchFn;
-                    return function() {
-                        if (watchFn) {
-                            watchFn();
-                            watchFn = undefined;
-                        } else {
-                            watchFn = $scope.$watch(fn);
-                        }
-                    };
-                };
-
-                //Super ugly hack because the widget doesn't update itself when the model is changed (because we set the selectedModel manually)
-                //Would be better to let formly formatter/parser do that or let the widget do the logic, but didn't work out
-                var toggleWatcher = toggleWatch(function($event) {
-                    if ($event.options.key === $scope.options.key) {
-                        var newModel = $event.model[$scope.options.key];
-                        if ($scope.selectedModel.length !== $scope.model[$scope.options.key].length) {
-                            toggleWatcher();
-                            $scope.selectedModel = _.map(newModel, function (x) {
-                                return {id: x, label: x}
-                            });
-                            $timeout(function () {
-                                toggleWatcher();
-                            }, 500);
-                        }
-                    }
-                });
-
-                toggleWatcher();
-
-
-                $scope.extraSettings = {
-                    showCheckAll: true,
-                    showUncheckAll: true,
-                    dynamicTitle: true,
-                    buttonClasses: "btn btn-default multiselect-button"
-                };
-                $scope.events = {
-                    onSelectionChanged: function () {
-                        $scope.model[$scope.options.key] = _.pluck($scope.selectedModel, "id");
-                    }
-                };
-                $scope.texts = {
-                    buttonDefaultText: $scope.to.buttonText,
-                    dynamicButtonTextSuffix: "selected"
-                }
-
+                var settings = $scope.to.settings || [];
+                settings.classes = settings.classes || [];
+                angular.extend(settings.classes, ["form-control"]);
+                $scope.settings = settings;
             },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
+
+
 
 
         formlyConfigProvider.setType({

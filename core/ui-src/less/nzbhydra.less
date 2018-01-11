@@ -1115,3 +1115,22 @@ select.form-control {
 a.glyph-link, a.glyph-link:hover {
   text-decoration: none;
 }
+
+.dropdown-multiselect {
+
+  &.form-control {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+  }
+  .dropdown-toggle {
+    width: 100%;
+    overflow: hidden;
+    -ms-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+  }
+
+  a:focus {
+    outline: none;
+  }
+}
