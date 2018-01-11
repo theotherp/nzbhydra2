@@ -10,7 +10,6 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         sql: ""
     };
 
-
     $scope.shutdown = function () {
         NzbHydraControlService.shutdown().then(function () {
                 growl.info("Shutdown initiated. Cya!");

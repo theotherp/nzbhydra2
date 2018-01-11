@@ -2,23 +2,23 @@
 
 <div class="multiselect-parent btn-group dropdown-multiselect dropdown ng-class:settings.classes" ng-class="{open: open}" >
     <div ng-transclude=toggleDropdown ng-click=toggleDropdown()>
-        <button ng-disabled=disabled type=button class="btn btn-default dropdown-toggle">{{buttonText}}&nbsp;<span class=caret></span></button>
+        <button ng-disabled=disabled type=button class="btn btn-default dropdown-toggle">{{buttonText}}&nbsp;<span class=caret style="float: right; margin-top: 8px"></span></button>
     </div>
     <ul class="dropdown-menu dropdown-menu-form" ng-if=open ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
-        <li>
-            <a ng-keydown=keyDownLink($event) data-ng-click=selectAll() tabindex=-1 id=selectAll>
+        <li ng-if="settings.showSelectAll">
+            <a data-ng-click=selectAll() tabindex=-1 id=selectAll>
                 <span class="glyphicon glyphicon-ok"></span>
                 Select all
             </a>
         </li>
-        <li>
-            <a ng-keydown=keyDownLink($event) data-ng-click=deselectAll(); tabindex=-1 id=deselectAll>
+        <li ng-if="settings.showDeselectAll">
+            <a data-ng-click=deselectAll(); tabindex=-1 id=deselectAll>
                 <span class="glyphicon glyphicon-remove"></span>
                 Deselect all
             </a>
         </li>
 
-        <li class=divider></li>
+        <li class=divider ng-if="settings.showSelectAll || settings.showDeselectAll"></li>
         <li ng-class="{'active': isChecked(option) && settings.styleActive}" role=presentation
             ng-repeat="option in options">
             <a role=menuitem class=option tabindex=-1 ng-click="toggleItem(option)">

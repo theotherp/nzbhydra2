@@ -19,20 +19,31 @@ function dropdownMultiselectDirective() {
         },
         templateUrl: 'static/html/directives/multiselect-dropdown.html',
         controller: function dropdownMultiselectController($scope, $element, $filter, $document) {
+            console.log($scope.options);
+            console.log($scope.selectedModel);
             var $dropdownTrigger = $element.children()[0];
 
             var settings = {
-                showSelectedValues: true
+                showSelectedValues: true,
+                showSelectAll: true,
+                showDeselectAll: true
             };
+            var events = {
+                onToggleItem: angular.noop
+            };
+            angular.extend(events, $scope.events || []);
             angular.extend(settings, $scope.settings || []);
-            angular.extend($scope, {settings: settings});
+            angular.extend($scope, {settings: settings, events: events});
 
             $scope.buttonText = "";
+            if (settings.buttonText) {
+                $scope.buttonText = settings.buttonText;
+            } else {
                 $scope.$watch("selectedModel", function () {
                     if (settings.showSelectedValues) {
-                        if ($scope.selectedModel.length === 0){
+                        if ($scope.selectedModel.length === 0) {
                             $scope.buttonText = "None selected";
-                        }else if ($scope.selectedModel.length === $scope.options.length){
+                        } else if ($scope.selectedModel.length === $scope.options.length) {
                             $scope.buttonText = "All selected";
                         } else {
                             $scope.buttonText = $scope.selectedModel.join(", ");
@@ -41,13 +52,14 @@ function dropdownMultiselectDirective() {
                         $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
                     }
                 }, true);
+            }
             $scope.open = false;
 
-            $scope.toggleDropdown = function() {
+            $scope.toggleDropdown = function () {
                 $scope.open = !$scope.open;
             };
 
-            $scope.toggleItem = function(option) {
+            $scope.toggleItem = function (option) {
                 var index = $scope.selectedModel.indexOf(option.id);
                 var oldValue = index > -1;
                 if (oldValue) {
@@ -55,13 +67,14 @@ function dropdownMultiselectDirective() {
                 } else {
                     $scope.selectedModel.push(option.id);
                 }
+                $scope.events.onToggleItem(option, !oldValue);
             };
 
-            $scope.selectAll = function() {
+            $scope.selectAll = function () {
                 $scope.selectedModel = _.pluck($scope.options, "id");
             };
 
-            $scope.deselectAll = function() {
+            $scope.deselectAll = function () {
                 $scope.selectedModel.splice(0, $scope.selectedModel.length);
             };
 

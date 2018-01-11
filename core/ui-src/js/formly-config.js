@@ -293,7 +293,7 @@ angular
                 }
             },
             template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings"></span>',
-            controller: function ($scope, $timeout) {
+            controller: function ($scope) {
                 var settings = $scope.to.settings || [];
                 settings.classes = settings.classes || [];
                 angular.extend(settings.classes, ["form-control"]);
@@ -301,9 +301,6 @@ angular
             },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
-
-
-
 
         formlyConfigProvider.setType({
             name: 'label',

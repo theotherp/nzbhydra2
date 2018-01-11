@@ -38,7 +38,5 @@ function addableNzb(DebugService) {
                 growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
             })
         };
-
-
     }
 }

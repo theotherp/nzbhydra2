@@ -1,7 +1,7 @@
 // For caching HTML templates, see http://paulsalaets.com/pre-caching-angular-templates-with-gulp
 angular.module('templates', []);
 
-var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64', 'angularjs-dropdown-multiselect', 'duScroll']);
+var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64','duScroll']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(true);
@@ -1240,20 +1240,31 @@ function dropdownMultiselectDirective() {
         },
         templateUrl: 'static/html/directives/multiselect-dropdown.html',
         controller: ["$scope", "$element", "$filter", "$document", function dropdownMultiselectController($scope, $element, $filter, $document) {
+            console.log($scope.options);
+            console.log($scope.selectedModel);
             var $dropdownTrigger = $element.children()[0];
 
             var settings = {
-                showSelectedValues: true
+                showSelectedValues: true,
+                showSelectAll: true,
+                showDeselectAll: true
             };
+            var events = {
+                onToggleItem: angular.noop
+            };
+            angular.extend(events, $scope.events || []);
             angular.extend(settings, $scope.settings || []);
-            angular.extend($scope, {settings: settings});
+            angular.extend($scope, {settings: settings, events: events});
 
             $scope.buttonText = "";
+            if (settings.buttonText) {
+                $scope.buttonText = settings.buttonText;
+            } else {
                 $scope.$watch("selectedModel", function () {
                     if (settings.showSelectedValues) {
-                        if ($scope.selectedModel.length === 0){
+                        if ($scope.selectedModel.length === 0) {
                             $scope.buttonText = "None selected";
-                        }else if ($scope.selectedModel.length === $scope.options.length){
+                        } else if ($scope.selectedModel.length === $scope.options.length) {
                             $scope.buttonText = "All selected";
                         } else {
                             $scope.buttonText = $scope.selectedModel.join(", ");
@@ -1262,13 +1273,14 @@ function dropdownMultiselectDirective() {
                         $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
                     }
                 }, true);
+            }
             $scope.open = false;
 
-            $scope.toggleDropdown = function() {
+            $scope.toggleDropdown = function () {
                 $scope.open = !$scope.open;
             };
 
-            $scope.toggleItem = function(option) {
+            $scope.toggleItem = function (option) {
                 var index = $scope.selectedModel.indexOf(option.id);
                 var oldValue = index > -1;
                 if (oldValue) {
@@ -1276,13 +1288,14 @@ function dropdownMultiselectDirective() {
                 } else {
                     $scope.selectedModel.push(option.id);
                 }
+                $scope.events.onToggleItem(option, !oldValue);
             };
 
-            $scope.selectAll = function() {
+            $scope.selectAll = function () {
                 $scope.selectedModel = _.pluck($scope.options, "id");
             };
 
-            $scope.deselectAll = function() {
+            $scope.deselectAll = function () {
                 $scope.selectedModel.splice(0, $scope.selectedModel.length);
             };
 
@@ -2600,8 +2613,6 @@ function addableNzb(DebugService) {
                 growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
             })
         };
-
-
     }
 }
 addableNzb.$inject = ["DebugService"];
@@ -2831,7 +2842,6 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         csv: "",
         sql: ""
     };
-
 
     $scope.shutdown = function () {
         NzbHydraControlService.shutdown().then(function () {
@@ -3616,38 +3626,28 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
         if ($scope.foo[$scope.optionsOptions[key]["id"]]) {
-            $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
+            $scope.optionsSelectedModel.push($scope.optionsOptions[key].id);
         }
     }
 
     $scope.optionsExtraSettings = {
-        showCheckAll: false,
-        showUncheckAll: false,
-        dynamicTitle: false
+        showSelectAll: false,
+        showDeselectAll: false,
+        buttonText: "Display options"
     };
 
-    //TODO: This probably could be done better...
+
     $scope.optionsEvents = {
-        onItemSelect: function (item) {
+        onToggleItem: function (item, newValue) {
+            console.log(item.id + ": " + newValue);
             if (item.id === "duplicatesDisplayed") {
-                toggleDuplicatesDisplayed(true);
+                toggleDuplicatesDisplayed(newValue);
             } else if (item.id === "groupTorrentAndNewznabResults") {
-                toggleGroupTorrentAndNewznabResults(true);
+                toggleGroupTorrentAndNewznabResults(newValue);
             } else if (item.id === "sumGrabs") {
-                toggleSumGrabs(true);
+                toggleSumGrabs(newValue);
             } else if (item.id === "scrollToResults") {
-                toggleScrollToResults(true);
-            }
-        },
-        onItemDeselect: function (item) {
-            if (item.id === "duplicatesDisplayed") {
-                toggleDuplicatesDisplayed(false);
-            } else if (item.id === "groupTorrentAndNewznabResults") {
-                toggleGroupTorrentAndNewznabResults(false);
-            } else if (item.id === "sumGrabs") {
-                toggleSumGrabs(false);
-            } else if (item.id === "scrollToResults") {
-                toggleScrollToResults(false);
+                toggleScrollToResults(newValue);
             }
         }
     };
@@ -6129,7 +6129,7 @@ angular
                 }
             },
             template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings"></span>',
-            controller: function ($scope, $timeout) {
+            controller: function ($scope) {
                 var settings = $scope.to.settings || [];
                 settings.classes = settings.classes || [];
                 angular.extend(settings.classes, ["form-control"]);
@@ -6137,9 +6137,6 @@ angular
             },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
-
-
-
 
         formlyConfigProvider.setType({
             name: 'label',

@@ -85,38 +85,28 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
         if ($scope.foo[$scope.optionsOptions[key]["id"]]) {
-            $scope.optionsSelectedModel.push($scope.optionsOptions[key]);
+            $scope.optionsSelectedModel.push($scope.optionsOptions[key].id);
         }
     }
 
     $scope.optionsExtraSettings = {
-        showCheckAll: false,
-        showUncheckAll: false,
-        dynamicTitle: false
+        showSelectAll: false,
+        showDeselectAll: false,
+        buttonText: "Display options"
     };
 
-    //TODO: This probably could be done better...
+
     $scope.optionsEvents = {
-        onItemSelect: function (item) {
+        onToggleItem: function (item, newValue) {
+            console.log(item.id + ": " + newValue);
             if (item.id === "duplicatesDisplayed") {
-                toggleDuplicatesDisplayed(true);
+                toggleDuplicatesDisplayed(newValue);
             } else if (item.id === "groupTorrentAndNewznabResults") {
-                toggleGroupTorrentAndNewznabResults(true);
+                toggleGroupTorrentAndNewznabResults(newValue);
             } else if (item.id === "sumGrabs") {
-                toggleSumGrabs(true);
+                toggleSumGrabs(newValue);
             } else if (item.id === "scrollToResults") {
-                toggleScrollToResults(true);
-            }
-        },
-        onItemDeselect: function (item) {
-            if (item.id === "duplicatesDisplayed") {
-                toggleDuplicatesDisplayed(false);
-            } else if (item.id === "groupTorrentAndNewznabResults") {
-                toggleGroupTorrentAndNewznabResults(false);
-            } else if (item.id === "sumGrabs") {
-                toggleSumGrabs(false);
-            } else if (item.id === "scrollToResults") {
-                toggleScrollToResults(false);
+                toggleScrollToResults(newValue);
             }
         }
     };
