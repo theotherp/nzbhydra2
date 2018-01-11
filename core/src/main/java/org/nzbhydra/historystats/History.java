@@ -140,7 +140,7 @@ public class History {
         for (IndexerSearchEntity entity : entities) {
             details.add(new IndexerSearchTO(entity.getIndexerEntity().getName(), entity.getSuccessful(), entity.getResultsCount()));
         }
-        return new SearchDetails(search.getUsername(), search.getIp(), search.getSource().name(), details);
+        return new SearchDetails(search.getUsername(), search.getIp(), search.getUserAgent(), search.getSource().name(), details);
     }
 
 
@@ -149,6 +149,7 @@ public class History {
     public class SearchDetails {
         String username;
         String ip;
+        String userAgent;
         String source;
         List<IndexerSearchTO> indexerSearches;
     }
