@@ -8,7 +8,7 @@
       },
       {
         "type": "fix",
-        "text": "Would let results forbidden by regexes through"
+        "text": "Fix forbidden regexes which might've let some results through"
       },
       {
         "type": "feature",
