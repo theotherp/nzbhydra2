@@ -44,12 +44,9 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 * On linux start "nzbhydra2" (currently working only on x64)
 * On Mac: No executable yet, see next point 
 * If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and run it
+* Alternatively you can use docker. You might want to use [binhex' container](https://hub.docker.com/r/binhex/arch-nzbhydra2/). A container by popular maintainers linuxserver.io is [in the works](https://github.com/linuxserver/docker-hydra2).
 
 After a while your browser should open to http://127.0.0.1:5076
-
-Alternatively you can use a docker container:
-`docker run -p <localport>:5076 -v <localdatafolder>:/data -v <localtorrentsfolder>:/torrents theotherp/nzbhydra2 <arguments>`. In the Hydra main config set the external URL correctly (i.e. which targets 
-the running instance) and disable "Use local address in API results". Note: This is the first docker container I've ever made. It works fine, I think, but apparently it doesn't meet some standards. You might want to wait for somebody else to provide a "proper" container.
 
 The java executable is expected to be in the PATH. If it's not and you can't/won't put it there then you need to provide the full path using the <tt>--java</tt> paramater
 
