@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.0.17",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Don't require restart for change of log level"
+      }
+    ]
+  },  {
     "version": "v1.0.16",
     "changes": [
       {

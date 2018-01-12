@@ -35,9 +35,6 @@
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>${logging.level.console}</level>
-        </filter>
     </appender>
 
     <appender name="FILE"
@@ -45,9 +42,6 @@
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>${logging.level.file}</level>
-        </filter>
         <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>

@@ -664,7 +664,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Forbidden regex',
-                                help: 'Must not be present in a title (title is converted to lowercase before)'
+                                help: 'Must not be present in a title (case is ignored)'
                             }
                         },
                         {
@@ -682,7 +682,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Required regex',
-                                help: 'Must be present in a title (title is converted to lowercase before)'
+                                help: 'Must be present in a title (case is ignored)'
                             }
                         },
 
@@ -924,7 +924,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Required regex',
-                                    help: 'Must be present in a title which is converted to lowercase before'
+                                    help: 'Must be present in a title (case is ignored)'
                                 }
                             },
                             {
@@ -942,7 +942,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Forbidden regex',
-                                    help: 'Must not be present in a title which is converted to lowercase before'
+                                    help: 'Must not be present in a title (case is ignored)'
                                 }
                             },
                             {

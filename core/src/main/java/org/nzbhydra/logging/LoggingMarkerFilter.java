@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct;
 import java.util.Iterator;
 
 @Component
-public class MarkerFilter extends Filter<ILoggingEvent> {
+public class LoggingMarkerFilter extends Filter<ILoggingEvent> {
 
     @Autowired
     private ConfigProvider configProvider;
@@ -35,7 +35,7 @@ public class MarkerFilter extends Filter<ILoggingEvent> {
         if (event.getMarker() == null || configProvider == null) {
             return FilterReply.NEUTRAL;
         }
-        if (event.getLevel() != Level.DEBUG) {
+        if (event.getLevel() != Level.DEBUG) { //Log messages with markers only ever on level debug
             return FilterReply.DENY;
         }
         return (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(event.getMarker().getName())) ? FilterReply.ACCEPT : FilterReply.DENY;
