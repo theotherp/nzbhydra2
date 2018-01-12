@@ -292,12 +292,17 @@ angular
                     ngOptions: 'option[to.valueProp] as option in to.options | filter: $select.search'
                 }
             },
-            template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings"></span>',
+            template: '<span multiselect-dropdown options="to.options" selected-model="model[options.key]" settings="settings" events="events"></span>',
             controller: function ($scope) {
                 var settings = $scope.to.settings || [];
                 settings.classes = settings.classes || [];
                 angular.extend(settings.classes, ["form-control"]);
                 $scope.settings = settings;
+                $scope.events = {
+                    onToggleItem: function (item, newValue) {
+                        $scope.form.$setDirty(true);
+                    }
+                }
             },
             wrapper: ['settingWrapper', 'bootstrapHasError']
         });
