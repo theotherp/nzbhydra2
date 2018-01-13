@@ -1,3 +1,6 @@
+### v1.0.18
+Fix: Remove test data left in by mistake
+
 ### v1.0.17
 Feature: Don't require restart for change of log level
 Feature: Show status updates during update
