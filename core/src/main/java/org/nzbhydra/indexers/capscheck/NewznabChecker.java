@@ -89,7 +89,7 @@ public class NewznabChecker {
             xmlResponse = indexerWebAccess.get(uri, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof NewznabXmlError) {
-                logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
+                logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
                 return GenericResponse.notOk("Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription());
             }
             NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
@@ -101,7 +101,7 @@ public class NewznabChecker {
                 return GenericResponse.notOk("Indexer did not return any results");
             }
         } catch (IndexerAccessException e) {
-            logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), e.getMessage());
+            logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), e.getMessage());
             return GenericResponse.notOk(e.getMessage());
         }
     }
