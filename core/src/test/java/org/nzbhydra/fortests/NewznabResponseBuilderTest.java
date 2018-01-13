@@ -1,7 +1,7 @@
 package org.nzbhydra.fortests;
 
 import org.junit.Test;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 
 import static org.junit.Assert.assertEquals;
 
@@ -12,7 +12,7 @@ public class NewznabResponseBuilderTest {
 
     @Test
     public void shouldBuild() {
-        RssRoot root = testee.getTestResult(1, 2, "itemTitle", null, null);
+        NewznabXmlRoot root = testee.getTestResult(1, 2, "itemTitle", null, null);
         assertEquals(2, root.getRssChannel().getItems().size());
         assertEquals("itemTitle1", root.getRssChannel().getItems().get(0).getTitle());
 
@@ -23,7 +23,7 @@ public class NewznabResponseBuilderTest {
 
     @Test
     public void shouldInsertOffsetAndTotal() {
-        RssRoot root = testee.getTestResult(1, 2, "itemTitle", null, null);
+        NewznabXmlRoot root = testee.getTestResult(1, 2, "itemTitle", null, null);
         assertEquals(0, root.getRssChannel().getNewznabResponse().getOffset().intValue());
         assertEquals(2, root.getRssChannel().getNewznabResponse().getTotal().intValue());
 

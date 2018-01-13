@@ -34,11 +34,11 @@ import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.web.WebConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
@@ -107,7 +107,7 @@ public class NewznabCheckerTest {
     @Test
     public void shouldCheckCaps() throws Exception {
         NewznabResponseBuilder builder = new NewznabResponseBuilder();
-        RssRoot thronesResult = builder.getTestResult(1, 100, "Thrones", 0, 100);
+        NewznabXmlRoot thronesResult = builder.getTestResult(1, 100, "Thrones", 0, 100);
         thronesResult.getRssChannel().setGenerator("nzedb");
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvdbid=121361"), indexerConfig))
                 .thenReturn(thronesResult);

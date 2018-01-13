@@ -328,6 +328,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
 
+
         var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
 
@@ -670,6 +671,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
     }, 100);
-
+console.log("end");
 }
 

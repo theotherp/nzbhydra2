@@ -1,10 +1,10 @@
 package org.nzbhydra.mapping.newznab.builder;
 
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -19,13 +19,13 @@ public final class RssItemBuilder {
     private String category = "category";
     private String comments = "http://some.comments";
     private String description = "A description";
-    private Enclosure enclosure = null;
+    private NewznabXmlEnclosure enclosure = null;
     private Integer grabs = 10;
     private String link = "http://some.link";
     private List<NewznabAttribute> newznabAttributes = new ArrayList<>();
     private List<NewznabAttribute> torznabAttributes = new ArrayList<>();
     private Instant pubDate = Instant.now().minus(random.nextInt(500), ChronoUnit.DAYS);
-    private RssGuid rssGuid = new RssGuid("guid" + random.nextInt(), false);
+    private NewznabXmlGuid rssGuid = new NewznabXmlGuid("guid" + random.nextInt(), false);
     private String title = "title-rnd" + random.nextInt();
     private long size = random.nextLong();
 
@@ -64,7 +64,7 @@ public final class RssItemBuilder {
         return this;
     }
 
-    public RssItemBuilder rssGuid(RssGuid rssGuid) {
+    public RssItemBuilder rssGuid(NewznabXmlGuid rssGuid) {
         this.rssGuid = rssGuid;
         return this;
     }
@@ -99,7 +99,7 @@ public final class RssItemBuilder {
         return this;
     }
 
-    public RssItemBuilder enclosure(Enclosure enclosure) {
+    public RssItemBuilder enclosure(NewznabXmlEnclosure enclosure) {
         this.enclosure = enclosure;
         return this;
     }
@@ -133,8 +133,8 @@ public final class RssItemBuilder {
     }
 
 
-    public RssItem build() {
-        RssItem rssItem = new RssItem();
+    public NewznabXmlItem build() {
+        NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setTitle(title);
         rssItem.setLink(link);
         rssItem.setPubDate(pubDate);
@@ -146,14 +146,14 @@ public final class RssItemBuilder {
         rssItem.setTorznabAttributes(torznabAttributes);
 
         if (rssGuid == null) {
-            rssItem.setRssGuid(new RssGuid(title + "-guid", false));
+            rssItem.setRssGuid(new NewznabXmlGuid(title + "-guid", false));
         } else {
             rssItem.setRssGuid(rssGuid);
         }
 
         newznabAttributes.add(new NewznabAttribute("size", String.valueOf(size)));
         if (enclosure == null) {
-            rssItem.setEnclosure(new Enclosure(link, size, "application/x-nzb"));
+            rssItem.setEnclosure(new NewznabXmlEnclosure(link, size, "application/x-nzb"));
         } else {
             rssItem.setEnclosure(enclosure);
         }

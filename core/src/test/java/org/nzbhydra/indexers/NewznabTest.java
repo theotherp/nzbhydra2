@@ -26,18 +26,18 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssError;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mapping.newznab.builder.RssBuilder;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
+import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
@@ -174,7 +174,7 @@ public class NewznabTest {
 
     @Test
     public void shouldReturnCorrectSearchResults() throws Exception {
-        RssRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
+        NewznabXmlRoot root = RssBuilder.builder().items(Arrays.asList(RssItemBuilder.builder("title").build())).newznabResponse(0, 1).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
 
         IndexerSearchResult indexerSearchResult = testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
@@ -187,14 +187,14 @@ public class NewznabTest {
 
     @Test
     public void shouldAccountForRejectedResults() throws Exception {
-        List<RssItem> items = Arrays.asList(
+        List<NewznabXmlItem> items = Arrays.asList(
                 RssItemBuilder.builder("title1").build(),
                 RssItemBuilder.builder("title2").build(),
                 RssItemBuilder.builder("title3").build(),
                 RssItemBuilder.builder("title4").build(),
                 RssItemBuilder.builder("title5").build()
         );
-        RssRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
+        NewznabXmlRoot root = RssBuilder.builder().items(items).newznabResponse(100, 105).build();
         when(indexerWebAccessMock.get(any(), eq(testee.config), any())).thenReturn(root);
 
         //Two items will be rejected
@@ -341,7 +341,7 @@ public class NewznabTest {
 
     @Test(expected = IndexerAuthException.class)
     public void shouldThrowAuthException() throws Exception {
-        doReturn(new RssError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new NewznabXmlError("101", "Wrong API key")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
@@ -349,7 +349,7 @@ public class NewznabTest {
 
     @Test(expected = IndexerProgramErrorException.class)
     public void shouldThrowProgramErrorCodeException() throws Exception {
-        doReturn(new RssError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new NewznabXmlError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
@@ -357,7 +357,7 @@ public class NewznabTest {
 
     @Test(expected = IndexerErrorCodeException.class)
     public void shouldThrowErrorCodeThatsNotMyFaultException() throws Exception {
-        doReturn(new RssError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doReturn(new NewznabXmlError("123", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
         doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
 
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
@@ -453,7 +453,7 @@ public class NewznabTest {
 
     @Test
     public void shouldCreateSearchResultItem() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "0"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "group"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("poster", "poster"));
@@ -484,7 +484,7 @@ public class NewznabTest {
         assertThat(item.getCommentsCount(), is(30));
         verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050), naCategory);
 
-        rssItem.setRssGuid(new RssGuid("123", false));
+        rssItem.setRssGuid(new NewznabXmlGuid("123", false));
         rssItem.getNewznabAttributes().clear();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("password", "1"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("nfo", "1"));
@@ -497,7 +497,7 @@ public class NewznabTest {
     @Test
     public void shouldUseIndexersCategoryMappingToBuildOriginalCategoryName() throws Exception {
         testee.config.getCategoryMapping().setCategories(Arrays.asList(new MainCategory(5000, "TV", Arrays.asList(new SubCategory(5040, "HD")))));
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5040"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
         SearchResultItem searchResultItem = new SearchResultItem();
@@ -512,12 +512,12 @@ public class NewznabTest {
 
     }
 
-    private RssItem buildBasicRssItem() {
-        RssItem rssItem = new RssItem();
+    private NewznabXmlItem buildBasicRssItem() {
+        NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setLink("http://indexer.com/nzb/123");
-        rssItem.setRssGuid(new RssGuid("http://indexer.com/details/123", true));
+        rssItem.setRssGuid(new NewznabXmlGuid("http://indexer.com/details/123", true));
         rssItem.setTitle("title");
-        rssItem.setEnclosure(new Enclosure("http://indexer.com/nzb/123", 456L, "application/x-nzb"));
+        rssItem.setEnclosure(new NewznabXmlEnclosure("http://indexer.com/nzb/123", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
         rssItem.setDescription("description");
         rssItem.setComments("http://indexer.com/details/123x#comments");
@@ -527,8 +527,8 @@ public class NewznabTest {
 
     @Test
     public void shouldGetDetailsLinkFromRssGuidIfPermalink() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
-        rssItem.setRssGuid(new RssGuid("detailsLink", true));
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setRssGuid(new NewznabXmlGuid("detailsLink", true));
         rssItem.setComments("http://indexer.com/123/detailsfromcomments#comments");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
@@ -538,8 +538,8 @@ public class NewznabTest {
 
     @Test
     public void shouldGetDetailsLinkFromCommentsIfNotSetFromRssGuid() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
-        rssItem.setRssGuid(new RssGuid("someguid", false));
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setRssGuid(new NewznabXmlGuid("someguid", false));
         rssItem.setComments("http://indexer.com/123/detailsfromcomments#comments");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
@@ -549,7 +549,7 @@ public class NewznabTest {
 
     @Test
     public void shouldNotSetGroupOrPosterIfNotAvailable() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getNewznabAttributes().clear();
         rssItem.getNewznabAttributes().add(new NewznabAttribute("group", "not available"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("poster", "not available"));
@@ -562,7 +562,7 @@ public class NewznabTest {
 
     @Test
     public void shouldReadGroupFromDescription() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.setDescription("<b>Group:</b> alt.binaries.tun<br />");
 
         assertThat(testee.createSearchResultItem(rssItem).getGroup().get(), is("alt.binaries.tun"));
@@ -571,7 +571,7 @@ public class NewznabTest {
     @Test
     public void shouldRemoveTrailingWords() throws Exception {
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("English", "-Obfuscated", " spanish"));
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
 
         rssItem.setTitle("Some title English");
         assertThat(testee.createSearchResultItem(rssItem).getTitle(), is("Some title"));
@@ -598,13 +598,13 @@ public class NewznabTest {
     @Test
     public void shouldParseXml() throws Exception {
         doReturn("<?xml foobar").when(testee).getAndStoreResultToDatabase(any(), eq(String.class), eq(IndexerApiAccessType.NFO));
-        RssItem nfoItem = new RssItem();
+        NewznabXmlItem nfoItem = new NewznabXmlItem();
         nfoItem.setDescription("nfoInXml");
-        RssChannel rssChannel = new RssChannel();
+        NewznabXmlChannel rssChannel = new NewznabXmlChannel();
         rssChannel.getItems().add(nfoItem);
-        RssRoot rssRoot = new RssRoot();
+        NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         rssRoot.setRssChannel(rssChannel);
-        rssChannel.setNewznabResponse(new NewznabResponse(0, 1));
+        rssChannel.setNewznabResponse(new NewznabXmlResponse(0, 1));
         when(unmarshallerMock.unmarshal(any())).thenReturn(rssRoot);
 
         NfoResult nfo = testee.getNfo("guid");
@@ -613,7 +613,7 @@ public class NewznabTest {
         assertThat(nfo.isSuccessful(), is(true));
         assertThat(nfo.isHasNfo(), is(true));
 
-        rssChannel.setNewznabResponse(new NewznabResponse(0, 0));
+        rssChannel.setNewznabResponse(new NewznabXmlResponse(0, 0));
         nfo = testee.getNfo("guid");
         assertThat(nfo.isHasNfo(), is(false));
         assertThat(nfo.isSuccessful(), is(true));

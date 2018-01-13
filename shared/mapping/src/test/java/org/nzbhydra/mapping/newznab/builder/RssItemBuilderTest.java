@@ -2,8 +2,8 @@ package org.nzbhydra.mapping.newznab.builder;
 
 
 import org.junit.Test;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ public class RssItemBuilderTest {
 
     @Test
     public void testBuilder() {
-        RssItem item = RssItemBuilder.builder("title")
+        NewznabXmlItem item = RssItemBuilder.builder("title")
                 .group("group")
                 .poster("poster")
                 .size(1000L)

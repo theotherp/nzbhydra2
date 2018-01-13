@@ -17,6 +17,10 @@
       {
         "type": "fix",
         "text": "In some cases duplicate detection would throw an exception"
+      },
+      {
+        "type": "feature",
+        "text": "Support JSON output for API searches"
       }
     ]
   },  {

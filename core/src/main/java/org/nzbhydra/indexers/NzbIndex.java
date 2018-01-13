@@ -6,8 +6,8 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -29,14 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class NzbIndex extends Indexer<RssRoot> {
+public class NzbIndex extends Indexer<NewznabXmlRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbIndex.class);
     private static final Pattern GUID_PATTERN = Pattern.compile(".*/release/(\\d+).*", Pattern.DOTALL);
     private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
-    protected void completeIndexerSearchResult(RssRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(NewznabXmlRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
         //Never provide more than the first 250 results, RSS doesn't allow paging
         indexerSearchResult.setTotalResultsKnown(true);
         indexerSearchResult.setTotalResults(acceptorResult.getNumberOfRejectedResults() + indexerSearchResult.getSearchResultItems().size());
@@ -46,13 +46,13 @@ public class NzbIndex extends Indexer<RssRoot> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) {
+    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot) {
         if (rssRoot.getRssChannel().getItems() == null || rssRoot.getRssChannel().getItems().isEmpty()) {
             debug("No results found");
             return Collections.emptyList();
         }
         List<SearchResultItem> items = new ArrayList<>();
-        for (RssItem rssItem : rssRoot.getRssChannel().getItems()) {
+        for (NewznabXmlItem rssItem : rssRoot.getRssChannel().getItems()) {
             SearchResultItem item = new SearchResultItem();
             item.setPubDate(rssItem.getPubDate());
             String nzbIndexLink = rssItem.getLink();
@@ -155,8 +155,8 @@ public class NzbIndex extends Indexer<RssRoot> {
     }
 
     @Override
-    protected RssRoot getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
-        return getAndStoreResultToDatabase(uri, RssRoot.class, apiAccessType);
+    protected NewznabXmlRoot getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+        return getAndStoreResultToDatabase(uri, NewznabXmlRoot.class, apiAccessType);
     }
 
     @Override

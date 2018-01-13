@@ -32,11 +32,11 @@ import org.nzbhydra.indexers.capscheck.CapsCheckRequest.CheckType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.RssError;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,11 +88,11 @@ public class NewznabChecker {
             URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
             xmlResponse = indexerWebAccess.get(uri, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
-            if (xmlResponse instanceof RssError) {
-                logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), ((RssError) xmlResponse).getDescription());
-                return GenericResponse.notOk("Indexer returned message: " + ((RssError) xmlResponse).getDescription());
+            if (xmlResponse instanceof NewznabXmlError) {
+                logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), ((NewznabXmlError) xmlResponse).getDescription());
+                return GenericResponse.notOk("Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription());
             }
-            RssRoot rssRoot = (RssRoot) xmlResponse;
+            NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
                 logger.info("Connection to indexer {} successful", indexerConfig.getName());
                 return GenericResponse.ok();
@@ -101,7 +101,7 @@ public class NewznabChecker {
                 return GenericResponse.notOk("Indexer did not return any results");
             }
         } catch (IndexerAccessException e) {
-            logger.warn("Connection check with indexer {} failed with message: ", indexerConfig.getName(), e.getMessage());
+            logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), e.getMessage());
             return GenericResponse.notOk(e.getMessage());
         }
     }
@@ -304,8 +304,8 @@ public class NewznabChecker {
         logger.debug("Calling URL {}", uri);
         Xml response = indexerWebAccess.get(uri, indexerConfig);
 
-        if (response instanceof RssError) {
-            String errorDescription = ((RssError) response).getDescription();
+        if (response instanceof NewznabXmlError) {
+            String errorDescription = ((NewznabXmlError) response).getDescription();
             if (errorDescription.toLowerCase().contains("function not available")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getKey());
                 eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Doesn't support " + request.getKey()));
@@ -315,7 +315,7 @@ public class NewznabChecker {
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"RSS error from indexer: " + errorDescription));
             throw new IndexerAccessException("RSS error from indexer: " + errorDescription);
         }
-        RssRoot rssRoot = (RssRoot) response;
+        NewznabXmlRoot rssRoot = (NewznabXmlRoot) response;
 
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());

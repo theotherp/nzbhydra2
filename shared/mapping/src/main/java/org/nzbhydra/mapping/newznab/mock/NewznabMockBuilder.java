@@ -1,12 +1,5 @@
 package org.nzbhydra.mapping.newznab.mock;
 
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsCategories;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
@@ -14,6 +7,13 @@ import org.nzbhydra.mapping.newznab.caps.CapsRetention;
 import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -44,11 +44,11 @@ public class NewznabMockBuilder {
         return capsRoot;
     }
 
-    public static RssRoot generateResponse(NewznabMockRequest request) {
-        List<RssItem> items = new ArrayList<>();
+    public static NewznabXmlRoot generateResponse(NewznabMockRequest request) {
+        List<NewznabXmlItem> items = new ArrayList<>();
         for (int i = request.getOffset()+1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
 
-            RssItem item = new RssItem();
+            NewznabXmlItem item = new NewznabXmlItem();
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));
             String poster = "poster";
             String group = "group";
@@ -69,12 +69,12 @@ public class NewznabMockBuilder {
             item.setDescription("Some longer itemDescription that whatever" + i);
             item.setTitle(title);
             item.setPubDate(pubDate);
-            item.setEnclosure(new Enclosure("enclosureUrl", Long.valueOf(size), "application/x-nzb"));
+            item.setEnclosure(new NewznabXmlEnclosure("enclosureUrl", Long.valueOf(size), "application/x-nzb"));
             item.setComments("http://127.0.0.1:5080/comments/" + i);
             String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
             item.setLink(guid);
             item.setCategory("TV > HD");
-            item.setRssGuid(new RssGuid(guid, true));
+            item.setRssGuid(new NewznabXmlGuid(guid, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
             attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
@@ -99,27 +99,27 @@ public class NewznabMockBuilder {
             items.add(item);
         }
 
-        RssRoot rssRoot = getRssRoot(items, request.getOffset(), request.getTotal());
+        NewznabXmlRoot rssRoot = getRssRoot(items, request.getOffset(), request.getTotal());
         return rssRoot;
     }
 
-    public static RssRoot getRssRoot(List<RssItem> items, int offset, int total) {
-        RssRoot rssRoot = new RssRoot();
+    public static NewznabXmlRoot getRssRoot(List<NewznabXmlItem> items, int offset, int total) {
+        NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         rssRoot.setVersion("2.0");
-        RssChannel channel = new RssChannel();
+        NewznabXmlChannel channel = new NewznabXmlChannel();
         channel.setTitle("channelTitle");
         channel.setDescription("channelDescription");
         channel.setLanguage("en-gb");
         channel.setWebMaster("webmaster@master.com");
         channel.setLink("http://127.0.0.1:5080");
-        channel.setNewznabResponse(new NewznabResponse(offset, total));
+        channel.setNewznabResponse(new NewznabXmlResponse(offset, total));
         channel.setItems(items);
         rssRoot.setRssChannel(channel);
         return rssRoot;
     }
 
 
-    public static RssRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords) {
+    public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords) {
         return generateResponse(
                 NewznabMockRequest.builder()
                         .numberOfResults(endIndex - startIndex)

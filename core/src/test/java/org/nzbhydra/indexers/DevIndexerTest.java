@@ -18,8 +18,8 @@ package org.nzbhydra.indexers;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 
 import java.net.URI;
 
@@ -31,7 +31,7 @@ public class DevIndexerTest {
     @Test
     public void testGeneration() throws Exception {
         Xml xml = testee.getAndStoreResultToDatabase(URI.create("http://127.0.01/duplicatesandtitlegroups"), null);
-        RssRoot root = (RssRoot) xml;
+        NewznabXmlRoot root = (NewznabXmlRoot) xml;
         System.out.println(root);
     }
 

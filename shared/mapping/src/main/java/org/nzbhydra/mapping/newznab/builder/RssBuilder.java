@@ -1,9 +1,9 @@
 package org.nzbhydra.mapping.newznab.builder;
 
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Random;
 
 public final class RssBuilder {
-    private RssChannel rssChannel = RssChannelBuilder.builder().build();
-    private List<RssItem> items = new ArrayList<>();
+    private NewznabXmlChannel rssChannel = RssChannelBuilder.builder().build();
+    private List<NewznabXmlItem> items = new ArrayList<>();
 
 
     private RssBuilder() {
@@ -23,12 +23,12 @@ public final class RssBuilder {
         return new RssBuilder();
     }
 
-    public RssBuilder rssChannel(RssChannel rssChannel) {
+    public RssBuilder rssChannel(NewznabXmlChannel rssChannel) {
         this.rssChannel = rssChannel;
         return this;
     }
 
-    public RssBuilder items(List<RssItem> items) {
+    public RssBuilder items(List<NewznabXmlItem> items) {
         this.items = items;
         return this;
     }
@@ -40,8 +40,8 @@ public final class RssBuilder {
         return this;
     }
 
-    public List<RssItem> createDuplicates(int count) {
-        List<RssItem> duplicates = new ArrayList<>();
+    public List<NewznabXmlItem> createDuplicates(int count) {
+        List<NewznabXmlItem> duplicates = new ArrayList<>();
         Random random = new Random();
         int rnd = random.nextInt();
         long size = random.nextLong();
@@ -54,13 +54,13 @@ public final class RssBuilder {
 
 
     public RssBuilder newznabResponse(int offset, int total) {
-        this.rssChannel.setNewznabResponse(new NewznabResponse(offset, total));
+        this.rssChannel.setNewznabResponse(new NewznabXmlResponse(offset, total));
         return this;
     }
 
 
-    public RssRoot build() {
-        RssRoot rssRoot = new RssRoot();
+    public NewznabXmlRoot build() {
+        NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         rssChannel.getItems().addAll(items);
         rssRoot.setRssChannel(rssChannel);
 

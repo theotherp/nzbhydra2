@@ -5,12 +5,12 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -34,25 +34,25 @@ public class TorznabMappingTest {
 
     @Test
     public void testMappingFromXml() throws Exception {
-        RssRoot rssRoot = getRssRootFromXml("cardigann.xml");
-        RssChannel channel = rssRoot.getRssChannel();
+        NewznabXmlRoot rssRoot = getRssRootFromXml("cardigann.xml");
+        NewznabXmlChannel channel = rssRoot.getRssChannel();
         assertThat(channel.getTitle(), is("some-torrents"));
         assertThat(channel.getLink(), is("https://some-torrents.com/"));
         assertThat(channel.getLanguage(), is("en-us"));
 
 
-        List<RssItem> items = channel.getItems();
+        List<NewznabXmlItem> items = channel.getItems();
         assertThat(items.size(), is(2));
 
-        RssItem item = items.get(0);
+        NewznabXmlItem item = items.get(0);
         assertThat(item.getLink(), is("http://127.0.0.1:5060/download/111.torrent"));
         assertThat(item.getPubDate(), is(Instant.ofEpochSecond(1493900064)));
         assertThat(item.getComments(), is("https://some-torrents.com/details.php?id=111&page=0#startcomments"));
 
-        RssGuid rssGuid = item.getRssGuid();
+        NewznabXmlGuid rssGuid = item.getRssGuid();
         assertThat(rssGuid.getGuid(), is("https://some-torrents.com/details.php?id=111"));
 
-        Enclosure enclosure = item.getEnclosure();
+        NewznabXmlEnclosure enclosure = item.getEnclosure();
         assertThat(enclosure.getUrl(), is("http://127.0.0.1:5060/download/111.torrent"));
 
         List<NewznabAttribute> attributes = item.getTorznabAttributes();
@@ -64,12 +64,12 @@ public class TorznabMappingTest {
     }
 
 
-    private RssRoot getRssRootFromXml(String xmlFileName) throws IOException {
+    private NewznabXmlRoot getRssRootFromXml(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
         mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(TorznabMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
 
-        return restTemplate.getForObject("/api", RssRoot.class);
+        return restTemplate.getForObject("/api", NewznabXmlRoot.class);
     }
 
 

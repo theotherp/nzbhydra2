@@ -3,6 +3,7 @@ Feature: Don't require restart for change of log level
 Feature: Show status updates during update
 Fix: In some cases restarting resulted in shutdown. If you are affected by this you will to manually update the wrapper from this release
 Fix: In some cases duplicate detection would throw an exception
+Feature: Support JSON output for API searches
 
 ### v1.0.16
 Fix: Make sure users don't enter an insane download limit value

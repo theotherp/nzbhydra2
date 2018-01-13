@@ -7,8 +7,8 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
@@ -26,12 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class Anizb extends Indexer<RssRoot> {
+public class Anizb extends Indexer<NewznabXmlRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(Anizb.class);
 
     @Override
-    protected void completeIndexerSearchResult(RssRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(NewznabXmlRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
 
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
@@ -41,9 +41,9 @@ public class Anizb extends Indexer<RssRoot> {
     }
 
     @Override
-    protected List<SearchResultItem> getSearchResultItems(RssRoot rssRoot) throws IndexerParsingException {
+    protected List<SearchResultItem> getSearchResultItems(NewznabXmlRoot rssRoot) throws IndexerParsingException {
         List<SearchResultItem> items = new ArrayList<>();
-        for (RssItem rssItem : rssRoot.getRssChannel().getItems()) {
+        for (NewznabXmlItem rssItem : rssRoot.getRssChannel().getItems()) {
             SearchResultItem item = new SearchResultItem();
             item.setOriginalCategory("Anime");
             item.setTitle(rssItem.getTitle());
@@ -96,8 +96,8 @@ public class Anizb extends Indexer<RssRoot> {
     }
 
     @Override
-    protected RssRoot getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
-        return getAndStoreResultToDatabase(uri, RssRoot.class, apiAccessType);
+    protected NewznabXmlRoot getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+        return getAndStoreResultToDatabase(uri, NewznabXmlRoot.class, apiAccessType);
     }
 
     @Override

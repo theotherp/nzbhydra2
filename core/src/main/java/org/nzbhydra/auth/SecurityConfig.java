@@ -71,9 +71,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         } else if (baseConfig.getAuth().getAuthType() == AuthType.FORM) {
             http = http
                     .authorizeRequests()
-//                    .antMatchers("/").permitAll()
                     .antMatchers("/internalapi/userinfos").permitAll()
-                    //.anyRequest().authenticated()
                     .and()
                     .formLogin().loginPage("/login.html").loginProcessingUrl("/login").permitAll()
                     .authenticationDetailsSource(new WebAuthenticationDetailsSource() {

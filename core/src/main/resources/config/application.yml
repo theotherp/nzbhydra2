@@ -263,6 +263,7 @@ main:
   apiKey: null
   configVersion: 1
   backupEverySunday: true
+  backupBeforeUpdate: true
   dereferer: "http://www.dereferer.org/?$s"
   externalUrl: null
   host: "0.0.0.0"

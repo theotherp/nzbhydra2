@@ -1,0 +1,189 @@
+{
+  "@attributes": {
+    "version": "2.0"
+  },
+  "channel": {
+    "title": "NZBs(dot)ORG API TV Search",
+    "description": "NZBs(dot)ORG Feed",
+    "link": "http:\/\/nzbs.org\/",
+    "language": "en-gb",
+    "webMaster": "admin@nzbs.org (NZBs(dot)ORG)",
+    "category": {},
+    "image": {
+      "url": "http:\/\/nzbs.org\/\/templates\/default\/images\/banner.jpg",
+      "title": "NZBs(dot)ORG",
+      "link": "http:\/\/nzbs.org\/",
+      "description": "Visit NZBs(dot)ORG - Home of the NZB Harvester"
+    },
+    "response": {
+      "@attributes": {
+        "offset": "0",
+        "total": "80"
+      }
+    },
+    "item": [
+      {
+        "title": "Northanger.Abbey.2007.720p.BluRay.DD2.0x264-DON",
+        "guid": "b171b4c06d345560df8e90d1b99a7189",
+        "link": "http:\/\/nzbs.org\/getnzb\/b171b4c06d345560df8e90d1b99a7189.nzb&i=1692&r=APIKEY",
+        "comments": "http:\/\/nzbs.org\/details\/b171b4c06d345560df8e90d1b99a7189#comments",
+        "pubDate": "Thu, 11 Jan 2018 10:35:56 +0000",
+        "category": "TV-HD",
+        "description": "Northanger.Abbey.2007.720p.BluRay.DD2.0x264-DON",
+        "enclosure": {
+          "@attributes": {
+            "url": "http:\/\/nzbs.org\/getnzb\/b171b4c06d345560df8e90d1b99a7189.nzb&i=1692&r=APIKEY",
+            "length": "8499724123",
+            "type": "application\/x-nzb"
+          }
+        },
+        "attr": [
+          {
+            "@attributes": {
+              "name": "guid",
+              "value": "b171b4c06d345560df8e90d1b99a7189"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "details",
+              "value": "http:\/\/nzbs.org\/api?t=d&id=b171b4c06d345560df8e90d1b99a7189&apikey=APIKEY"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "nfo",
+              "value": "0"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5000"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5040"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "size",
+              "value": "8499724123"
+            }
+          }
+        ]
+      },
+      {
+        "title": "Silent.Witness.S15.HDTV.720p.x264-Fov.and.Tla silent.witness.s15e02.720p.hdtv.x264-tla",
+        "guid": "b68d18f3cd1ecd9eaf5584ef49713462",
+        "link": "http:\/\/nzbs.org\/getnzb\/b68d18f3cd1ecd9eaf5584ef49713462.nzb&i=1692&r=APIKEY",
+        "comments": "http:\/\/nzbs.org\/details\/b68d18f3cd1ecd9eaf5584ef49713462#comments",
+        "pubDate": "Sun, 07 Jan 2018 16:43:37 +0000",
+        "category": "TV-HD",
+        "description": "Silent.Witness.S15.HDTV.720p.x264-Fov.and.Tla silent.witness.s15e02.720p.hdtv.x264-tla",
+        "enclosure": {
+          "@attributes": {
+            "url": "http:\/\/nzbs.org\/getnzb\/b68d18f3cd1ecd9eaf5584ef49713462.nzb&i=1692&r=APIKEY",
+            "length": "12494938671",
+            "type": "application\/x-nzb"
+          }
+        },
+        "attr": [
+          {
+            "@attributes": {
+              "name": "guid",
+              "value": "b68d18f3cd1ecd9eaf5584ef49713462"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "details",
+              "value": "http:\/\/nzbs.org\/api?t=d&id=b68d18f3cd1ecd9eaf5584ef49713462&apikey=APIKEY"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "nfo",
+              "value": "0"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5000"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5040"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "size",
+              "value": "12494938671"
+            }
+          }
+        ]
+      },
+      {
+        "title": "Romancing.the.Stone.1984.720p.BluRay.DD5.1x264-SbR",
+        "guid": "b2fea9572fb75b80ad2fe612b209bb42",
+        "link": "http:\/\/nzbs.org\/getnzb\/b2fea9572fb75b80ad2fe612b209bb42.nzb&i=1692&r=APIKEY",
+        "comments": "http:\/\/nzbs.org\/details\/b2fea9572fb75b80ad2fe612b209bb42#comments",
+        "pubDate": "Wed, 03 Jan 2018 16:47:27 +0000",
+        "category": "TV-HD",
+        "description": "Romancing.the.Stone.1984.720p.BluRay.DD5.1x264-SbR",
+        "enclosure": {
+          "@attributes": {
+            "url": "http:\/\/nzbs.org\/getnzb\/b2fea9572fb75b80ad2fe612b209bb42.nzb&i=1692&r=APIKEY",
+            "length": "6373039192",
+            "type": "application\/x-nzb"
+          }
+        },
+        "attr": [
+          {
+            "@attributes": {
+              "name": "guid",
+              "value": "b2fea9572fb75b80ad2fe612b209bb42"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "details",
+              "value": "http:\/\/nzbs.org\/api?t=d&id=b2fea9572fb75b80ad2fe612b209bb42&apikey=APIKEY"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "nfo",
+              "value": "0"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5000"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "category",
+              "value": "5040"
+            }
+          },
+          {
+            "@attributes": {
+              "name": "size",
+              "value": "6373039192"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

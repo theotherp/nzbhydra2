@@ -11,7 +11,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.okhttp.WebAccess;
 import org.springframework.oxm.Unmarshaller;
 
@@ -58,7 +58,7 @@ public class IndexerWebAccessTest {
         when(searchingConfigMock.getTimeout()).thenReturn(100);
         indexerConfig.setTimeout(10);
         indexerConfig.setUserAgent("indexerUa");
-        when(unmarshallerMock.unmarshal(any())).thenReturn(new RssRoot());
+        when(unmarshallerMock.unmarshal(any())).thenReturn(new NewznabXmlRoot());
     }
 
     @Test

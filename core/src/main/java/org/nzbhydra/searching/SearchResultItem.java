@@ -26,7 +26,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         NZB,
         TORRENT
     }
-
+    //Note: Validation annotations relate to the needed state after the item was created by an indexer
     private boolean agePrecise;
     private Map<String, String> attributes = new HashMap<>();
     private Category category;
@@ -55,7 +55,6 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private Integer peers;
     private String poster = null;
     private Instant pubDate = null;
-    @NotNull
     private Long searchResultId;
     private Integer seeders;
     private Long size;

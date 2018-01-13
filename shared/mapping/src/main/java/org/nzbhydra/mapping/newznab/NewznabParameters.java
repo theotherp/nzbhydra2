@@ -35,7 +35,9 @@ public class NewznabParameters {
     private String author;
     private String title;
 
+    @Builder.Default
     private Integer offset = 0;
+    @Builder.Default
     private Integer limit = 100;
     private Integer minage;
     private Integer maxage;
@@ -45,7 +47,8 @@ public class NewznabParameters {
     private String id;
 
     private boolean raw;
-    private OutputType o;
+    @Builder.Default
+    private OutputType o = OutputType.XML;
 
     private Integer cachetime;
 
