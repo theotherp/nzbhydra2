@@ -237,10 +237,10 @@ public class ExternalApi {
         Stopwatch stopwatch = Stopwatch.createStarted();
         NewznabResponse response;
         int total = searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults() - searchResult.getNumberOfRemovedDuplicates();
-        if (params.getO() == OutputType.XML) {
-            response = newznabXmlTransformer.getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
-        } else {
+        if (params.getO() == OutputType.JSON) {
             response = newznabJsonTransformer.transformToRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+        } else {
+            response = newznabXmlTransformer.getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
         }
         logger.debug(LoggingMarkers.PERFORMANCE, "Transforming results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return response;
