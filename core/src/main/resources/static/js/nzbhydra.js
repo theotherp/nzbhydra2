@@ -1247,7 +1247,8 @@ function dropdownMultiselectDirective() {
             var settings = {
                 showSelectedValues: true,
                 showSelectAll: true,
-                showDeselectAll: true
+                showDeselectAll: true,
+                noSelectedText: null
             };
             var events = {
                 onToggleItem: angular.noop
@@ -1263,14 +1264,22 @@ function dropdownMultiselectDirective() {
                 $scope.$watch("selectedModel", function () {
                     if (settings.showSelectedValues) {
                         if ($scope.selectedModel.length === 0) {
-                            $scope.buttonText = "None selected";
+                            if ($scope.settings.noSelectedText) {
+                                $scope.buttonText = $scope.settings.noSelectedText;
+                            } else {
+                                $scope.buttonText = "None selected";
+                            }
                         } else if ($scope.selectedModel.length === $scope.options.length) {
                             $scope.buttonText = "All selected";
                         } else {
                             $scope.buttonText = $scope.selectedModel.join(", ");
                         }
                     } else {
-                        $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
+                        if ($scope.settings.noSelectedText && $scope.selectedModel.length === 0) {
+                            $scope.buttonText = $scope.settings.noSelectedText;
+                        } else {
+                            $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
+                        }
                     }
                 }, true);
             }
@@ -8844,8 +8853,10 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                     label: 'Categories',
                     help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
                     options: options,
-                    settings: {showSelectedValues: false},
-                    buttonText: "All"
+                    settings: {
+                        showSelectedValues: false,
+                        noSelectedText: "None/All"
+                    }
                 }
             }
         );
@@ -8866,7 +8877,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
-                    buttonText: "None"
+                    noSelectedText: "None"
                 }
             }
         );

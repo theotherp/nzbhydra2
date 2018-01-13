@@ -1872,8 +1872,10 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                     label: 'Categories',
                     help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
                     options: options,
-                    settings: {showSelectedValues: false},
-                    buttonText: "All"
+                    settings: {
+                        showSelectedValues: false,
+                        noSelectedText: "None/All"
+                    }
                 }
             }
         );
@@ -1894,7 +1896,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         {label: 'TVMaze', id: 'TVMAZE'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
-                    buttonText: "None"
+                    noSelectedText: "None"
                 }
             }
         );
