@@ -14,6 +14,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.DownloaderConfig;
 import org.nzbhydra.config.DownloaderType;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.downloading.AddNzbsRequest;
@@ -29,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,6 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DataJpaTest
 
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/downloadingTests.properties")
+@DirtiesContext
 public class NzbDownloadingTests {
 
     @Autowired
@@ -82,6 +85,7 @@ public class NzbDownloadingTests {
     @Before
     public void setup() throws Exception {
         System.setProperty("nzbhydra.dev.noApiKey", "true");
+        System.setProperty("server.host", "127.0.0.1");
 
         mockServer = startClientAndServer(7070);
         proxy = startClientAndProxy(7072);
@@ -106,6 +110,11 @@ public class NzbDownloadingTests {
         searchResult = searchResultRepository.save(searchResult);
         searchResultId = searchResult.getId();
 
+        IndexerConfig indexerConfig = new IndexerConfig();
+        indexerConfig.setName("indexer");
+        indexerConfig.setHost("http://127.0.0.1:7070");
+        baseConfig.getIndexers().add(indexerConfig);
+
         DownloaderConfig downloaderConfig = new DownloaderConfig();
         downloaderConfig.setDownloaderType(DownloaderType.SABNZBD);
         downloaderConfig.setName("sabnzbd");
@@ -115,6 +124,7 @@ public class NzbDownloadingTests {
         downloaderConfig.setApiKey("apikey");
         baseConfig.getDownloading().getDownloaders().clear();
         baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
+        baseConfig.getSearching().setNzbAccessType(NzbAccessType.REDIRECT);
         downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
@@ -149,6 +159,7 @@ public class NzbDownloadingTests {
     public void shouldSendUrlToDownloader() throws Exception {
         baseConfig.getDownloading().getDownloaders().get(0).setNzbAddingType(NzbAddingType.SEND_LINK);
         //http://127.0.0.1:7070/sabnzbd/api?apikey=apikey&output=json&mode=addurl&name=http://127.0.0.1:5076/getnzb/api/5293954792479313301?apikey&nzbname=someNzb.nzb
+        //http://192.168.1.111:5077/getnzb/api/-338204003302262369?apikey
         HttpRequest expectedRequest = HttpRequest
                 .request("/sabnzbd/api")
                 .withQueryStringParameter("mode", "addurl")
