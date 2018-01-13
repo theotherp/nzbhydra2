@@ -1,6 +1,12 @@
+### v1.0.17
+Feature: Don't require restart for change of log level
+Feature: Show status updates during update
+Fix: In some cases restarting resulted in shutdown. If you are affected by this you will to manually update the wrapper from this release
+Fix: In some cases duplicate detection would throw an exception
+
 ### v1.0.16
 Fix: Make sure users don't enter an insane download limit value
-Fix: Would let results forbidden by regexes through
+Fix: Fix forbidden regexes which might've let some results through
 Feature: Add option to disable CSRF protection and disable it by default
 
 ### v1.0.15
