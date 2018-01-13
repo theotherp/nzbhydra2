@@ -15,12 +15,12 @@ import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssError;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
@@ -281,10 +281,10 @@ public class Newznab extends Indexer<Xml> {
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
         Xml response = getAndStoreResultToDatabase(uri, Xml.class, apiAccessType);
-        if (response instanceof RssError) {
+        if (response instanceof NewznabXmlError) {
             //Base class doesn't know any RssErrors so we must handle this case specially
-            handleRssError((RssError) response, uri.toString());
-        } else if (!(response instanceof RssRoot)) {
+            handleRssError((NewznabXmlError) response, uri.toString());
+        } else if (!(response instanceof NewznabXmlRoot)) {
             throw new UnknownResponseException("Indexer returned unknown response");
         }
         return response;
@@ -310,10 +310,10 @@ public class Newznab extends Indexer<Xml> {
         }
         try {
             Xml xml = (Xml) unmarshaller.unmarshal(new StreamSource(new StringReader(result)));
-            if (xml instanceof RssError) {
-                handleRssError((RssError) xml, baseUri.toUriString());
+            if (xml instanceof NewznabXmlError) {
+                handleRssError((NewznabXmlError) xml, baseUri.toUriString());
             }
-            RssRoot rssRoot = (RssRoot) xml;
+            NewznabXmlRoot rssRoot = (NewznabXmlRoot) xml;
             if (rssRoot.getRssChannel().getNewznabResponse() == null || rssRoot.getRssChannel().getNewznabResponse().getTotal() == 0) {
                 return NfoResult.withoutNfo();
             }
@@ -324,7 +324,7 @@ public class Newznab extends Indexer<Xml> {
         }
     }
 
-    protected void handleRssError(RssError response, String url) throws IndexerAccessException {
+    protected void handleRssError(NewznabXmlError response, String url) throws IndexerAccessException {
         if (Stream.of("100", "101", "102").anyMatch(x -> x.equals(response.getCode()))) {
             throw new IndexerAuthException(String.format("Indexer refused authentication. Error code: %s. Description: %s", response.getCode(), response.getDescription()));
         }
@@ -338,7 +338,7 @@ public class Newznab extends Indexer<Xml> {
     protected List<SearchResultItem> getSearchResultItems(Xml rssRoot) {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
-        for (RssItem item : ((RssRoot) rssRoot).getRssChannel().getItems()) {
+        for (NewznabXmlItem item : ((NewznabXmlRoot) rssRoot).getRssChannel().getItems()) {
             SearchResultItem searchResultItem = createSearchResultItem(item);
             searchResultItems.add(searchResultItem);
         }
@@ -347,7 +347,7 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
-        NewznabResponse newznabResponse = ((RssRoot) response).getRssChannel().getNewznabResponse();
+        NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             indexerSearchResult.setTotalResults(newznabResponse.getTotal());
@@ -362,7 +362,7 @@ public class Newznab extends Indexer<Xml> {
         }
     }
 
-    protected SearchResultItem createSearchResultItem(RssItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
         SearchResultItem searchResultItem = new SearchResultItem();
         searchResultItem.setLink(item.getLink());
 
@@ -401,7 +401,7 @@ public class Newznab extends Indexer<Xml> {
         return searchResultItem;
     }
 
-    protected void parseAttributes(RssItem item, SearchResultItem searchResultItem) {
+    protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
         List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> {
             return x.getName().equals("category") && !"None".equals(x.getValue());

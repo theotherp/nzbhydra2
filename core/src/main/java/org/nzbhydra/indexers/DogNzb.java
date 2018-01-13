@@ -2,9 +2,9 @@ package org.nzbhydra.indexers;
 
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -19,7 +19,7 @@ public class DogNzb extends Newznab {
     private static final Logger logger = LoggerFactory.getLogger(DogNzb.class);
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
-        NewznabResponse newznabResponse = ((RssRoot) response).getRssChannel().getNewznabResponse();
+        NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
 
         //DogNZB does not return a reliable total number. It's always 100 if there are more results, less if it's the last page
         indexerSearchResult.setTotalResultsKnown(false);

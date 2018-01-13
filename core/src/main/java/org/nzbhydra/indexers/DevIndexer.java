@@ -5,12 +5,12 @@ import lombok.Setter;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.searching.SearchResultItem;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import java.util.Collections;
 public class DevIndexer extends Newznab {
 
     protected Xml getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
-        RssRoot rssRoot = new RssRoot();
+        NewznabXmlRoot rssRoot = new NewznabXmlRoot();
         if (uri.toString().contains("oneduplicate")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();
             rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
@@ -43,7 +43,7 @@ public class DevIndexer extends Newznab {
 
             //Another duplicate in the same title group
             mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").titleWords(Collections.emptyList()).total(1).build();
-            RssRoot rssRoot3 = NewznabMockBuilder.generateResponse(mockRequest);
+            NewznabXmlRoot rssRoot3 = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot3.getRssChannel().getItems().get(0).getEnclosure().setLength(200000L);
             rssRoot3.getRssChannel().getItems().get(0).getNewznabAttributes().clear();
             rssRoot3.getRssChannel().getItems().get(0).getTorznabAttributes().clear();
@@ -53,7 +53,7 @@ public class DevIndexer extends Newznab {
 
             //Will be a grouped title but have no duplicates
             mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("anotherresult").titleWords(Collections.emptyList()).total(1).build();
-            RssRoot rssRoot2 = NewznabMockBuilder.generateResponse(mockRequest);
+            NewznabXmlRoot rssRoot2 = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot.getRssChannel().getItems().add(rssRoot2.getRssChannel().getItems().get(0));
 
             rssRoot.getRssChannel().getNewznabResponse().setTotal(3);
@@ -63,7 +63,7 @@ public class DevIndexer extends Newznab {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(10).titleBase("duplicates").titleWords(Collections.emptyList()).total(10).build();
             rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10);
-            for (RssItem rssItem : rssRoot.getRssChannel().getItems()) {
+            for (NewznabXmlItem rssItem : rssRoot.getRssChannel().getItems()) {
                 rssItem.getEnclosure().setLength(100000L);
                 rssItem.getNewznabAttributes().clear();
                 rssItem.setPubDate(Instant.now());
@@ -88,7 +88,7 @@ public class DevIndexer extends Newznab {
     }
 
     @Override
-    protected SearchResultItem createSearchResultItem(RssItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
         SearchResultItem resultItem = super.createSearchResultItem(item);
         return resultItem;
     }

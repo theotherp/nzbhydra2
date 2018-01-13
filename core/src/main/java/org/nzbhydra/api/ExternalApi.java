@@ -11,15 +11,9 @@ import org.nzbhydra.downloading.NzbDownloadResult;
 import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssError;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.caps.CapsCategories;
 import org.nzbhydra.mapping.newznab.caps.CapsCategory;
 import org.nzbhydra.mapping.newznab.caps.CapsLimits;
@@ -28,11 +22,10 @@ import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.caps.CapsSearch;
 import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 import org.nzbhydra.mapping.newznab.caps.CapsServer;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -43,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -53,7 +47,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -75,9 +68,6 @@ public class ExternalApi {
 
     private static final Logger logger = LoggerFactory.getLogger(ExternalApi.class);
 
-    private static final String APPLICATION_TYPE_NZB = "application/x-nzb";
-    private static final String APPLICATION_TYPE_TORRENT = "application/x-bittorrent";
-
     @Value("${nzbhydra.dev.noApiKey:false}")
     private boolean noApiKeyNeeded = false;
 
@@ -91,6 +81,10 @@ public class ExternalApi {
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
+    private NewznabXmlTransformer newznabXmlTransformer;
+    @Autowired
+    private NewznabJsonTransformer newznabJsonTransformer;
+    @Autowired
     private CategoryProvider categoryProvider;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
@@ -98,7 +92,7 @@ public class ExternalApi {
     private ConcurrentMap<Integer, CacheEntryValue> cache = new ConcurrentHashMap<>();
 
 
-    @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, produces = MediaType.APPLICATION_RSS_XML_VALUE, consumes = MediaType.ALL_VALUE)
+    @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
         logger.info("Received external {}API call: {}", (isTorznabCall() ? "torznab " : ""), params);
 
@@ -111,8 +105,10 @@ public class ExternalApi {
             if (params.getCachetime() != null) {
                 return handleCachingSearch(params);
             }
-            RssRoot searchResult = search(params);
-            return new ResponseEntity<>(searchResult, HttpStatus.OK);
+            NewznabResponse searchResult = search(params);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
+            return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
         }
 
         if (params.getT() == ActionAttribute.GET) {
@@ -124,7 +120,7 @@ public class ExternalApi {
         }
 
         logger.error("Incorrect API request: {}", params);
-        RssError error = new RssError("200", "Unknown or incorrect parameter");
+        NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
 
@@ -152,7 +148,7 @@ public class ExternalApi {
             keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
         }
 
-        RssRoot searchResult = search(params);
+        NewznabResponse searchResult = search(params);
         logger.info("Putting search result into cache");
         cache.put(params.cacheKey(), new CacheEntryValue(params, clock.instant(), searchResult));
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
@@ -199,7 +195,7 @@ public class ExternalApi {
         return downloadResult.getAsResponseEntity();
     }
 
-    protected RssRoot search(NewznabParameters params) {
+    protected NewznabResponse search(NewznabParameters params) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         if (isTorznabCall()) {
@@ -209,8 +205,8 @@ public class ExternalApi {
         }
         SearchResult searchResult = searcher.search(searchRequest);
 
-        RssRoot transformedResults = transformResults(searchResult, params, searchRequest);
-        logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), transformedResults.getRssChannel().getItems().size());
+        NewznabResponse transformedResults = transformResults(searchResult, params, searchRequest);
+        logger.info("Search took {}ms. Returning {} results", stopwatch.elapsed(TimeUnit.MILLISECONDS), searchResult.getSearchResultItems().size());
         return transformedResults;
     }
 
@@ -219,8 +215,8 @@ public class ExternalApi {
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
-    public RssError handler(ExternalApiException e) {
-        RssError error = new RssError(e.getStatusCode(), e.getMessage());
+    public NewznabXmlError handler(ExternalApiException e) {
+        NewznabXmlError error = new NewznabXmlError(e.getStatusCode(), e.getMessage());
         return error;
     }
 
@@ -229,75 +225,28 @@ public class ExternalApi {
         logger.error("Unexpected error while handling API request", e);
         if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
             logger.debug("Wrapping error in empty search result");
-            return ResponseEntity.status(200).body(getRssRoot(Collections.emptyList(), 0, 0, null));
+            return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, null));
         } else {
-            RssError error = new RssError("900", e.getMessage());
+            NewznabXmlError error = new NewznabXmlError("900", e.getMessage());
             return ResponseEntity.status(200).body(error);
         }
     }
 
 
-    protected RssRoot transformResults(SearchResult searchResult, NewznabParameters params, SearchRequest searchRequest) {
+    protected NewznabResponse transformResults(SearchResult searchResult, NewznabParameters params, SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-
+        NewznabResponse response;
         int total = searchResult.getNumberOfTotalAvailableResults() - searchResult.getNumberOfRejectedResults() - searchResult.getNumberOfRemovedDuplicates();
-        RssRoot rssRoot = getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+        if (params.getO() == OutputType.XML) {
+            response = newznabXmlTransformer.getRssRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+        } else {
+            response = newznabJsonTransformer.transformToRoot(searchResult.getSearchResultItems(), params.getOffset(), total, searchRequest);
+        }
         logger.debug(LoggingMarkers.PERFORMANCE, "Transforming results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        return rssRoot;
+        return response;
     }
 
-    private RssRoot getRssRoot(List<SearchResultItem> searchResultItems, Integer offset, int total, SearchRequest searchRequest) {
-        RssRoot rssRoot = new RssRoot();
 
-        RssChannel rssChannel = new RssChannel();
-        rssChannel.setTitle("NZBHydra 2");
-        rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
-        rssChannel.setWebMaster("theotherp@gmx.de");
-        rssChannel.setNewznabResponse(new NewznabResponse(offset, total));
-        rssChannel.setGenerator("NZBHydra2");
-
-        rssRoot.setRssChannel(rssChannel);
-        List<RssItem> items = new ArrayList<>();
-        for (SearchResultItem searchResultItem : searchResultItems) {
-            RssItem rssItem = buildRssItem(searchResultItem, searchRequest);
-            items.add(rssItem);
-        }
-
-        rssChannel.setItems(items);
-        return rssRoot;
-    }
-
-    protected RssItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
-        RssItem rssItem = new RssItem();
-        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
-        rssItem.setLink(link);
-        rssItem.setTitle(searchResultItem.getTitle());
-        rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
-        if (searchResultItem.getPubDate() != null) {
-            rssItem.setPubDate(searchResultItem.getPubDate());
-        } else {
-            rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
-        }
-        searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
-        List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
-        String resultType;
-        if (isNzb) {
-            rssItem.setNewznabAttributes(newznabAttributes);
-            resultType = APPLICATION_TYPE_NZB;
-        } else {
-            rssItem.setTorznabAttributes(newznabAttributes);
-            resultType = APPLICATION_TYPE_TORRENT;
-        }
-        rssItem.setEnclosure(new Enclosure(link, searchResultItem.getSize(), resultType));
-        rssItem.setComments(searchResultItem.getCommentsLink());
-        rssItem.setDescription(searchResultItem.getDescription());
-        rssItem.setCategory(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());
-        return rssItem;
-    }
 
 
     private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
@@ -345,7 +294,7 @@ public class ExternalApi {
     private static class CacheEntryValue {
         private final NewznabParameters params;
         private final Instant lastUpdate;
-        private final RssRoot searchResult;
+        private final NewznabResponse searchResult;
 
         @Override
         public boolean equals(Object o) {

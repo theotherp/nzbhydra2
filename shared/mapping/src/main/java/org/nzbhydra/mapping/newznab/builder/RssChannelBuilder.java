@@ -1,8 +1,8 @@
 package org.nzbhydra.mapping.newznab.builder;
 
-import org.nzbhydra.mapping.newznab.NewznabResponse;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +10,10 @@ import java.util.List;
 public final class RssChannelBuilder {
     private String description = "A description";
     private String generator = "newznab";
-    private List<RssItem> items = new ArrayList<>();
+    private List<NewznabXmlItem> items = new ArrayList<>();
     private String language = "en_US";
     private String link = "http://some.indexer";
-    private NewznabResponse newznabResponse = new NewznabResponse(0, 200);
+    private NewznabXmlResponse newznabResponse = new NewznabXmlResponse(0, 200);
     private String title = "Title";
     private String webMaster = "Webmaster";
 
@@ -55,17 +55,17 @@ public final class RssChannelBuilder {
     }
 
     public RssChannelBuilder newznabResponse(int offset, int total) {
-        this.newznabResponse = new NewznabResponse(offset, total);
+        this.newznabResponse = new NewznabXmlResponse(offset, total);
         return this;
     }
 
-    public RssChannelBuilder items(List<RssItem> items) {
+    public RssChannelBuilder items(List<NewznabXmlItem> items) {
         this.items = items;
         return this;
     }
 
-    public RssChannel build() {
-        RssChannel rssChannel = new RssChannel();
+    public NewznabXmlChannel build() {
+        NewznabXmlChannel rssChannel = new NewznabXmlChannel();
         rssChannel.setTitle(title);
         rssChannel.setDescription(description);
         rssChannel.setLink(link);

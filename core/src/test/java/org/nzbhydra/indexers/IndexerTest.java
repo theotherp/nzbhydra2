@@ -20,7 +20,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAuthException;
 import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
-import org.nzbhydra.mapping.newznab.RssError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
@@ -261,7 +261,7 @@ public class IndexerTest {
         testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
         verify(testee).handleFailure("error", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.CONNECTION_ERROR);
 
-        exception = new IndexerErrorCodeException(new RssError("101", "errorMessage"));
+        exception = new IndexerErrorCodeException(new NewznabXmlError("101", "errorMessage"));
         testee.handleIndexerAccessException(exception, IndexerApiAccessType.SEARCH);
         verify(testee).handleFailure("Indexer returned with error code 101 and description errorMessage", false, IndexerApiAccessType.SEARCH, null, IndexerAccessResult.API_ERROR);
     }

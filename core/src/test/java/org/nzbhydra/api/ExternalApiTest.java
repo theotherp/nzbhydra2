@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.Category;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.MainConfig;
@@ -14,17 +13,19 @@ import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
-import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.OutputType;
+import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.DownloadType;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import java.time.Clock;
 import java.time.ZoneId;
@@ -32,6 +33,7 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,6 +63,10 @@ public class ExternalApiTest {
     private UserAgentMapper userAgentMapperMock;
     @Mock
     private Indexer indexerMock;
+    @Mock
+    private NewznabXmlTransformer newznabXmlTransformerMock;
+    @Mock
+    private NewznabJsonTransformer newznabJsonTransformerMock;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
@@ -153,21 +159,26 @@ public class ExternalApiTest {
     }
 
     @Test
-    public void shouldUseCorrectApplicationType() {
-        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        SearchResultItem searchResultItem = new SearchResultItem();
-        searchResultItem.setIndexer(indexerMock);
-        searchResultItem.setCategory(new Category());
+    public void shouldUseCorrectHeaders() throws Exception {
+        NewznabJsonRoot jsonRoot = new NewznabJsonRoot();
+        when(newznabJsonTransformerMock.transformToRoot(any(), any(), anyInt(), any())).thenReturn(jsonRoot);
+        NewznabParameters parameters = new NewznabParameters();
+        parameters.setQ("q1");
+        parameters.setApikey("apikey");
+        parameters.setT(ActionAttribute.SEARCH);
+        parameters.setO(OutputType.JSON);
 
-        searchRequest.setDownloadType(DownloadType.NZB);
-        RssItem item = testee.buildRssItem(searchResultItem, searchRequest);
-        assertThat(item.getEnclosure().getType()).isEqualTo("application/x-nzb");
+        ResponseEntity<?> responseEntity = testee.api(parameters);
+        assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_JSON_UTF8);
 
-        searchRequest.setDownloadType(DownloadType.TORRENT);
-        item = testee.buildRssItem(searchResultItem, searchRequest);
-        assertThat(item.getEnclosure().getType()).isEqualTo("application/x-bittorrent");
+        NewznabXmlRoot xmlRoot = new NewznabXmlRoot();
+        when(newznabXmlTransformerMock.getRssRoot(any(), any(), anyInt(), any())).thenReturn(xmlRoot);
 
+        parameters.setO(OutputType.XML);
+        responseEntity = testee.api(parameters);
+        assertThat(responseEntity.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_XML);
     }
+
 
     protected NewznabParameters getNewznabParameters(String q1) {
         NewznabParameters parameters = new NewznabParameters();

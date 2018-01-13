@@ -5,11 +5,12 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssRoot;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.mapping.newznab.builder.RssBuilder;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -34,6 +35,7 @@ public class NzbIndexTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        testee.config = new IndexerConfig();
     }
 
     @Test
@@ -41,7 +43,7 @@ public class NzbIndexTest {
         Instant now = Instant.now();
         String enclosureUrl = "http://nzbindex.com/download/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb";
         String link = "http://nzbindex.com/release/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb";
-        RssRoot root = RssBuilder.builder().items(
+        NewznabXmlRoot root = RssBuilder.builder().items(
                 Arrays.asList(
                         RssItemBuilder
                                 .builder("[ Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN ] - [00/30] - \"Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN.nzb\" yEnc\n")
@@ -51,8 +53,8 @@ public class NzbIndexTest {
                                         "]]>")
                                 .category("alt.binaries.hdtv.x264")
                                 .pubDate(now)
-                                .rssGuid(new RssGuid(link, true))
-                                .enclosure(new Enclosure(enclosureUrl, 1089197181L, "application/x-nzb"))
+                                .rssGuid(new NewznabXmlGuid(link, true))
+                                .enclosure(new NewznabXmlEnclosure(enclosureUrl, 1089197181L, "application/x-nzb"))
                                 .build())).build();
         List<SearchResultItem> items = testee.getSearchResultItems(root);
         assertThat(items.size(), is(1));

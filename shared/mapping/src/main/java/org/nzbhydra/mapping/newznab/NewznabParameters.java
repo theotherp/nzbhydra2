@@ -45,7 +45,7 @@ public class NewznabParameters {
     private String id;
 
     private boolean raw;
-    private OutputType o;
+    private OutputType o = OutputType.XML;
 
     private Integer cachetime;
 

@@ -4,11 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssChannel;
-import org.nzbhydra.mapping.newznab.RssItem;
-import org.nzbhydra.mapping.newznab.RssRoot;
-import org.nzbhydra.mapping.newznab.Xml;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -30,7 +30,7 @@ public class Torznab extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
 
-    protected SearchResultItem createSearchResultItem(RssItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
         if (item.getCategory() != null) {
@@ -67,7 +67,7 @@ public class Torznab extends Newznab {
 
     @Override
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
-        RssChannel rssChannel = ((RssRoot) response).getRssChannel();
+        NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
         super.completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest);
         indexerSearchResult.setTotalResultsKnown(true);
         indexerSearchResult.setHasMoreResults(false);

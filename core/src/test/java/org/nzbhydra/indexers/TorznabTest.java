@@ -13,11 +13,11 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.mapping.newznab.Enclosure;
-import org.nzbhydra.mapping.newznab.JaxbPubdateAdapter;
-import org.nzbhydra.mapping.newznab.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.RssGuid;
-import org.nzbhydra.mapping.newznab.RssItem;
+import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -97,7 +97,7 @@ public class TorznabTest {
 
     @Test
     public void shouldCreateSearchResultItem() throws Exception {
-        RssItem rssItem = buildBasicRssItem();
+        NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getTorznabAttributes().add(new NewznabAttribute("password", "0"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("group", "group"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("poster", "poster"));
@@ -119,12 +119,12 @@ public class TorznabTest {
         assertThat(item.getDownloadType(), is(DownloadType.TORRENT));
     }
 
-    private RssItem buildBasicRssItem() {
-        RssItem rssItem = new RssItem();
+    private NewznabXmlItem buildBasicRssItem() {
+        NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setLink("http://indexer.com/123");
-        rssItem.setRssGuid(new RssGuid("http://indexer.com/123", false));
+        rssItem.setRssGuid(new NewznabXmlGuid("http://indexer.com/123", false));
         rssItem.setTitle("title");
-        rssItem.setEnclosure(new Enclosure("http://indexer.com/123", 456L, "application/x-nzb"));
+        rssItem.setEnclosure(new NewznabXmlEnclosure("http://indexer.com/123", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
         rssItem.setDescription("description");
         rssItem.setComments("http://indexer.com/123/details#comments");
