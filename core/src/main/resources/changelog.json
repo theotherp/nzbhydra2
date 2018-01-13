@@ -7,6 +7,10 @@
         "text": "Don't require restart for change of log level"
       },
       {
+        "type": "feature",
+        "text": "Show status updates during update"
+      },
+      {
         "type": "fix",
         "text": "In some cases restarting resulted in shutdown. If you are affected by this you will to manually update the wrapper from this release"
       },

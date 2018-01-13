@@ -8,10 +8,12 @@ import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
+import org.nzbhydra.update.UpdateManager.UpdateEvent;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 public class UpdatesWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(UpdatesWeb.class);
+
+    private List<String> updateMessages = new ArrayList<>();
 
     @Autowired
     private UpdateManager updateManager;
@@ -85,8 +90,15 @@ public class UpdatesWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/installUpdate", method = RequestMethod.PUT)
     public GenericResponse installUpdate() throws Exception {
+        updateMessages.clear();
         updateManager.installUpdate();
         return new GenericResponse(true, null);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/messages", method = RequestMethod.GET)
+    public List<String> getUpdateMessages() throws Exception {
+        return updateMessages;
     }
 
     @ExceptionHandler(value = {UpdateException.class})
@@ -96,6 +108,10 @@ public class UpdatesWeb {
         return new ResponseEntity<>(new ExceptionInfo(500, error, ex.getClass().getName(), error, SessionStorage.requestUrl.get()), HttpStatus.valueOf(500));
     }
 
+    @EventListener
+    public void handleUpdateEvent(UpdateEvent updateEvent) {
+        updateMessages.add(updateEvent.getMessage());
+    }
 
     @Data
     @AllArgsConstructor

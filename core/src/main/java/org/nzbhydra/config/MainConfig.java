@@ -25,6 +25,7 @@ public class MainConfig extends ValidatingConfig {
     private String apiKey = null;
     private Integer configVersion = 1;
     private boolean backupEverySunday = true;
+    private boolean backupBeforeUpdate = true;
     private String dereferer = null;
     @SensitiveData
     private String externalUrl = null;

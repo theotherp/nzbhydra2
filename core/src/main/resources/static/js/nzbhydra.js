@@ -2630,13 +2630,14 @@ angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
-function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler, $uibModal) {
+function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler, $uibModal, $timeout) {
 
     var currentVersion;
     var latestVersion;
     var updateAvailable;
     var latestVersionIgnored;
-    var versionHistory;
+    var versionHistory
+    ;
 
 
     return {
@@ -2660,6 +2661,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             );
         });
     }
+
 
     function ignore(version) {
         return $http.put("internalapi/updates/ignore?version=" + version).then(function (data) {
@@ -2700,19 +2702,54 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
 
     function update() {
-        blockUI.start("Downloading update. Please stand by...");
+        var modalInstance = $uibModal.open({
+            templateUrl: 'static/html/update-modal.html',
+            controller: 'UpdateModalInstanceCtrl',
+            size: "md",
+            backdrop: 'static',
+            keyboard: false
+        });
         $http.put("internalapi/updates/installUpdate").then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                RestartService.startCountdown("Downloaded update. Shutting down Hydra for wrapper to execute update.");
+                $timeout(function() {
+                    //Give user some time to read the last message
+                    RestartService.startCountdown("");
+                    modalInstance.close();
+                }, 2000);
             },
             function () {
-                blockUI.reset();
                 growl.info("An error occurred while updating. Please check the logs.");
+                modalInstance.close();
             });
     }
 }
-UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal"];
+UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal", "$timeout"];
+
+angular
+    .module('nzbhydraApp')
+    .controller('UpdateModalInstanceCtrl', UpdateModalInstanceCtrl);
+
+function UpdateModalInstanceCtrl($scope, $http, $interval) {
+    $scope.messages = [];
+
+    var interval = $interval(function () {
+            $http.get("internalapi/updates/messages").then(
+                function (data) {
+                    $scope.messages = data.data;
+                }
+            );
+        },
+        200);
+
+    $scope.$on('$destroy', function () {
+        if (interval !== null) {
+            $interval.cancel(interval);
+        }
+    });
+
+}
+UpdateModalInstanceCtrl.$inject = ["$scope", "$http", "$interval"];
 angular
     .module('nzbhydraApp')
     .controller('UpdateFooterController', UpdateFooterController);
@@ -5052,7 +5089,11 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
                 $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
                         $scope.message = "Reloading page...";
-                        $window.location.href = $scope.baseUrl;
+                        if (angular.isDefined($scope.baseUrl)) {
+                            $window.location.href = $scope.baseUrl;
+                        } else {
+                            $window.location.reload();
+                        }
                     }, 500);
                 }, function () {
                     $scope.internalCaR(message, timer + 1);
@@ -5066,7 +5107,6 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
     $timeout(function () {
         $scope.internalCaR(message, 0);
     }, 3000)
-
 }
 RestartModalInstanceCtrl.$inject = ["$scope", "$timeout", "$http", "$window", "message", "baseUrl"];
 
@@ -7382,6 +7422,14 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Backup every sunday'
+                            }
+                        },
+                        {
+                            key: 'backupBeforeUpdate',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Backup before update'
                             }
                         },
                         {

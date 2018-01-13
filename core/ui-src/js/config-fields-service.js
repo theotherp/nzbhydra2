@@ -405,6 +405,14 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'backupBeforeUpdate',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Backup before update'
+                            }
+                        },
+                        {
                             key: 'showNews',
                             type: 'horizontalSwitch',
                             templateOptions: {

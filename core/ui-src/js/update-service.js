@@ -2,13 +2,14 @@ angular
     .module('nzbhydraApp')
     .factory('UpdateService', UpdateService);
 
-function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler, $uibModal) {
+function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandler, $uibModal, $timeout) {
 
     var currentVersion;
     var latestVersion;
     var updateAvailable;
     var latestVersionIgnored;
-    var versionHistory;
+    var versionHistory
+    ;
 
 
     return {
@@ -32,6 +33,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
             );
         });
     }
+
 
     function ignore(version) {
         return $http.put("internalapi/updates/ignore?version=" + version).then(function (data) {
@@ -72,15 +74,49 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
 
     function update() {
-        blockUI.start("Downloading update. Please stand by...");
+        var modalInstance = $uibModal.open({
+            templateUrl: 'static/html/update-modal.html',
+            controller: 'UpdateModalInstanceCtrl',
+            size: "md",
+            backdrop: 'static',
+            keyboard: false
+        });
         $http.put("internalapi/updates/installUpdate").then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                RestartService.startCountdown("Downloaded update. Shutting down Hydra for wrapper to execute update.");
+                $timeout(function() {
+                    //Give user some time to read the last message
+                    RestartService.startCountdown("");
+                    modalInstance.close();
+                }, 2000);
             },
             function () {
-                blockUI.reset();
                 growl.info("An error occurred while updating. Please check the logs.");
+                modalInstance.close();
             });
     }
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('UpdateModalInstanceCtrl', UpdateModalInstanceCtrl);
+
+function UpdateModalInstanceCtrl($scope, $http, $interval) {
+    $scope.messages = [];
+
+    var interval = $interval(function () {
+            $http.get("internalapi/updates/messages").then(
+                function (data) {
+                    $scope.messages = data.data;
+                }
+            );
+        },
+        200);
+
+    $scope.$on('$destroy', function () {
+        if (interval !== null) {
+            $interval.cancel(interval);
+        }
+    });
+
 }

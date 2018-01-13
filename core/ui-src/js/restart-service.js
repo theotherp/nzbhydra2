@@ -57,7 +57,11 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
                 $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(function () {
                     $timeout(function () {
                         $scope.message = "Reloading page...";
-                        $window.location.href = $scope.baseUrl;
+                        if (angular.isDefined($scope.baseUrl)) {
+                            $window.location.href = $scope.baseUrl;
+                        } else {
+                            $window.location.reload();
+                        }
                     }, 500);
                 }, function () {
                     $scope.internalCaR(message, timer + 1);
@@ -71,5 +75,4 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
     $timeout(function () {
         $scope.internalCaR(message, 0);
     }, 3000)
-
 }

@@ -15,6 +15,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.WindowsTrayIcon;
 import org.nzbhydra.backup.BackupAndRestore;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
@@ -74,6 +75,8 @@ public class UpdateManager implements InitializingBean {
     protected RestTemplate restTemplate;
     @Autowired
     protected WebAccess webAccess;
+    @Autowired
+    private ConfigProvider configProvider;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
@@ -228,20 +231,25 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
+            applicationEventPublisher.publishEvent(new UpdateEvent("Downloading update file"));
             webAccess.downloadToFile(url, updateZip);
         } catch (RestClientException | IOException e) {
             logger.error("Error while download or saving ZIP", e);
             throw new UpdateException("Error while downloading, saving or extracting update ZIP", e);
         }
 
-        try {
-            logger.info("Creating backup before shutting down");
-            backupAndRestore.backup();
-        } catch (Exception e) {
-            throw new UpdateException("Unable to create backup before update", e);
+        if (configProvider.getBaseConfig().getMain().isBackupBeforeUpdate()) {
+            try {
+                logger.info("Creating backup before shutting down");
+                applicationEventPublisher.publishEvent(new UpdateEvent("Creating backup before update"));
+                backupAndRestore.backup();
+            } catch (Exception e) {
+                throw new UpdateException("Unable to create backup before update", e);
+            }
         }
 
         logger.info("Shutting down to let wrapper execute the update");
+        applicationEventPublisher.publishEvent(new UpdateEvent("Shutting down to let wrapper execute update"));
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 
@@ -323,6 +331,12 @@ public class UpdateManager implements InitializingBean {
             logger.warn("Version string not found. Using 1.0.0");
         }
         currentVersion = new SemanticVersion(currentVersionString);
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class UpdateEvent {
+        private String message;
     }
 
     @Data
