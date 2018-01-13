@@ -1,4 +1,12 @@
-[
+[{
+  "version": "v1.0.18",
+  "changes": [
+    {
+      "type": "fix",
+      "text": "Remove test data left in by mistake"
+    }
+  ]
+},
   {
     "version": "v1.0.17",
     "changes": [
