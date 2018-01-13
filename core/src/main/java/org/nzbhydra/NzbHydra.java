@@ -8,7 +8,6 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
-import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
@@ -42,34 +40,6 @@ import java.util.Arrays;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
-//@Import({
-//
-//        BootGlobalAuthenticationConfiguration.class,
-//        DataSourceConfiguration.class,
-//        DataSourceTransactionManagerAutoConfiguration.class,
-//        DispatcherServletAutoConfiguration.class,
-//        EmbeddedServletContainerAutoConfiguration.class,
-//        EmbeddedServletContainerAutoConfiguration.EmbeddedTomcat.class,
-//        ErrorMvcAutoConfiguration.class,
-//        FlywayAutoConfiguration.class,
-//        GsonAutoConfiguration.class,
-//        HibernateJpaAutoConfiguration.class,
-//        HttpMessageConvertersAutoConfiguration.class,
-//
-//        JacksonAutoConfiguration.class,
-//
-//        JtaAutoConfiguration.class,
-//        MultipartAutoConfiguration.class,
-//        PersistenceExceptionTranslationAutoConfiguration.class,
-//        SecurityAutoConfiguration.class,
-//        SecurityFilterAutoConfiguration.class,
-//        ServerPropertiesAutoConfiguration.class,
-//        SpringDataWebAutoConfiguration.class,
-//        ThymeleafAutoConfiguration.class,
-//        TransactionAutoConfiguration.class,
-//        ValidationAutoConfiguration.class,
-//        WebClientAutoConfiguration.RestTemplateConfiguration.class,
-//        })
 @ComponentScan
 @RestController
 @EnableCaching
@@ -93,17 +63,14 @@ public class NzbHydra {
     @Autowired
     private BrowserOpener browserOpener;
     @Autowired
-    private CategoryProvider categoryProvider;
-    @Autowired
     private GenericStorage genericStorage;
-    @Autowired
-    private RestTemplate restTemplate;
 
     private static boolean anySettingsOverwritten = false;
 
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
+        String version = NzbHydra.class.getPackage().getImplementationVersion();
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
@@ -127,7 +94,7 @@ public class NzbHydra {
         } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            logger.info("NZBHydra 2 version: " + NzbHydra.class.getPackage().getImplementationVersion());
+            logger.info("NZBHydra 2 version: " + version);
         } else if (options.has("repairdb")) {
             String databaseFilePath = (String) options.valueOf("repairdb");
             repairDb(databaseFilePath);
@@ -225,7 +192,6 @@ public class NzbHydra {
 
     public static String getDataFolder() {
         return dataFolder;
-        //return Strings.isNullOrEmpty(dataFolder) ? "data" : dataFolder;
     }
 
     @EventListener

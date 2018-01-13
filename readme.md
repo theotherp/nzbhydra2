@@ -72,7 +72,11 @@ This is still in early development. Don't run in on the machine where the nuclea
 ## Development and how you can help
 Generally testing and any bug reports are very welcome.
 
-I haven't been able to get the wrapper to run in docker. If you have found a way or want to help please let me know.
+The backend is written in Java and uses Spring Boot with an H2 file database. Maven is used for dependency management und build. The main code is in project "core". 
+"other" contains artifacts not needed during runtime and a proxy-patched version of sockslib. "releases" is self explanatory, "shared" is shared code between modules and "tests" contains
+integration tests.
+
+The frontend uses AngularJS 1.x, uses bower for dependency management and gulp for build.
 
 If you plan on doing any frontend work (JS, CSS, HTML): Please contact me first and don't just create a PR for changes on the merged CSS / JS files.
 

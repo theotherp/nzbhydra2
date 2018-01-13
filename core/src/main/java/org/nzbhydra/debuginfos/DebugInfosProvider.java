@@ -37,6 +37,18 @@ public class DebugInfosProvider {
 
     public byte[] getDebugInfosAsZip() throws IOException {
         logger.info("Creating debug infos");
+        logger.info("NZBHydra2 version: {}", NzbHydra.class.getPackage().getImplementationVersion());
+        logger.info("Java command line: {}", System.getProperty("sun.java.command"));
+        logger.info("Java runtime name: {}", System.getProperty("java.runtime.name"));
+        logger.info("Java runtime version: {}", System.getProperty("java.runtime.version"));
+        logger.info("OS name: {}", System.getProperty("os.name"));
+        logger.info("OS architecture: {}", System.getProperty("os.arch"));
+        logger.info("User country: {}", System.getProperty("user.country"));
+        logger.info("File encoding: {}", System.getProperty("file.encoding"));
+        if( new File("/.dockerenv").exists()) {
+            logger.info("Apparently run in docker");
+        }
+
         String anonymizedConfig = getAnonymizedConfig();
         String anonymizedLog = logAnonymizer.getAnonymizedLog();
         File tempFile = File.createTempFile("nzbhydradebuginfos", "zip");
