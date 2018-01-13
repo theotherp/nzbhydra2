@@ -10,7 +10,7 @@ import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
@@ -51,6 +51,7 @@ public class Anizb extends Indexer<RssRoot> {
             item.setIndexerGuid(rssItem.getRssGuid().getGuid());
             item.setSize(rssItem.getEnclosure().getLength());
             item.setPubDate(rssItem.getPubDate());
+            item.setIndexerScore(config.getScore().orElse(0));
             item.setHasNfo(HasNfo.NO);
             item.setAgePrecise(true);
             item.setCategory(categoryProvider.getByInternalName("Anime"));

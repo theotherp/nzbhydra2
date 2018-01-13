@@ -43,8 +43,8 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
@@ -111,7 +111,7 @@ public class NewznabTest {
     @Mock
     private UriComponentsBuilder uriComponentsBuilderMock;
     @Mock
-    private ResultAcceptor resultAcceptorMock;
+    private SearchResultAcceptor resultAcceptorMock;
     @Mock
     private Unmarshaller unmarshallerMock;
     @Captor

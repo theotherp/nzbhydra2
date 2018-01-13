@@ -27,8 +27,8 @@ import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultRepository;
@@ -96,7 +96,7 @@ public class IndexerTest {
     @Mock
     private ConfigProvider configProviderMock;
     @Mock
-    private ResultAcceptor resultAcceptor;
+    private SearchResultAcceptor resultAcceptor;
     @Mock
     private ApplicationEventPublisher eventPublisherMock;
     @Mock

@@ -12,7 +12,7 @@ import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerParsingException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
@@ -186,6 +186,7 @@ public class Binsearch extends Indexer<String> {
         item.setCategory(categoryProvider.getNotAvailable());
         item.setIndexer(this);
         item.setDownloadType(DownloadType.NZB);
+        item.setIndexerScore(config.getScore().orElse(0));
         return item;
     }
 

@@ -6,6 +6,7 @@ import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.indexers.Indexer;
 
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -41,18 +42,24 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     private String group = null;
     private Long guid;
     private HasNfo hasNfo = HasNfo.MAYBE;
+    @NotNull
     private Indexer indexer;
+    @NotNull
     private String indexerGuid;
+    @NotNull
     private Integer indexerScore;
+    @NotNull
     private String link;
     private String originalCategory;
     private boolean passworded;
     private Integer peers;
     private String poster = null;
     private Instant pubDate = null;
+    @NotNull
     private Long searchResultId;
     private Integer seeders;
     private Long size;
+    @NotNull
     private String title;
     private Instant usenetDate = null;
 
@@ -69,9 +76,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
     }
 
     public long getAgeInDays() {
-        Instant date = getUsenetDate().orElse(getPubDate());
-        long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
-        return ageInDays;
+        return getBestDate().until(Instant.now(), ChronoUnit.DAYS);
     }
 
     public Instant getBestDate() {
@@ -92,7 +97,7 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         if (pubDate == null) {
             return 0;
         }
-        return getPubDate().compareTo(o.getPubDate());
+        return getBestDate().compareTo(o.getBestDate());
     }
 
     @Override

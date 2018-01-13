@@ -46,7 +46,7 @@ public class ResultAcceptorTest {
     private Category category = new Category();
 
     @InjectMocks
-    private ResultAcceptor testee = new ResultAcceptor();
+    private SearchResultAcceptor testee = new SearchResultAcceptor();
 
     @Before
     public void setUp() throws Exception {

@@ -41,7 +41,7 @@ public class DuplicateDetector {
         //In each list of searchResults with the same title we want to find the duplicates
         int countDetectedDuplicates = 0;
         for (List<SearchResultItem> titleGroup : groupedByTitle.values()) {
-            titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getPubDate).reversed()).collect(Collectors.toList());
+            titleGroup = titleGroup.stream().sorted(Comparator.comparing(SearchResultItem::getBestDate).reversed()).collect(Collectors.toList());
             //So we start with a bucket with the first (later we have a list of buckets where all searchResults in a bucket are duplicates)
             List<LinkedHashSet<SearchResultItem>> listOfBuckets = new ArrayList<>();
             listOfBuckets.add(new LinkedHashSet<>(newArrayList(titleGroup.get(0))));
@@ -128,8 +128,8 @@ public class DuplicateDetector {
     }
 
     protected boolean testForDuplicateAge(SearchResultItem result1, SearchResultItem result2, float duplicateAgeThreshold) {
-        Instant date1 = result1.getUsenetDate().orElse(result1.getPubDate());
-        Instant date2 = result2.getUsenetDate().orElse(result2.getPubDate());
+        Instant date1 = result1.getBestDate();
+        Instant date2 = result2.getBestDate();
         if (date1 == null || date2 == null) {
             logger.debug(LoggingMarkers.DUPLICATES, "At least one result has no usenet date and no pub date");
             return false;

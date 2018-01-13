@@ -288,6 +288,10 @@ public class UpdateManager implements InitializingBean {
 
 
     public void exitWithReturnCode(final int returnCode) {
+        if (Boolean.parseBoolean(environment.getProperty("hydradontshutdown", "false"))) {
+            logger.warn("Not shutting down because property hydradontshutdown is set");
+            return;
+        }
         new Thread(() -> {
             try {
                 Path controlIdFilePath = new File(NzbHydra.getDataFolder(), "control.id").toPath();

@@ -111,7 +111,7 @@ public class InternalSearchResultProcessor {
 
 
     protected SearchResultWebTOBuilder setSearchResultDateRelatedValues(SearchResultWebTOBuilder builder, SearchResultItem item) {
-        Instant date = item.getUsenetDate().orElse(item.getPubDate());
+        Instant date = item.getBestDate();
         long ageInDays = date.until(Instant.now(), ChronoUnit.DAYS);
         if (ageInDays > 0) {
             builder.age(ageInDays + "d");

@@ -71,7 +71,7 @@ public class Searcher {
                 logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
             }
             Iterator<ExecutorService> iterator = executors.iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 ExecutorService executorService = iterator.next();
                 executorService.shutdown();
                 try {
@@ -201,9 +201,19 @@ public class Searcher {
     }
 
     protected List<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<LinkedHashSet<SearchResultItem>> duplicateGroups) {
-        return duplicateGroups.stream().map(x -> {
-            return x.stream().sorted(Comparator.comparingInt(SearchResultItem::getIndexerScore).reversed().thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getPubDate().getEpochSecond()).reversed())).iterator().next();
-        }).sorted(Comparator.comparingLong((SearchResultItem x) -> x.getPubDate().getEpochSecond()).reversed()).collect(Collectors.toList());
+        //Sort duplicate groups internally, map to list, sort the results
+        return duplicateGroups.stream().map(x -> x.stream()
+                .sorted(Comparator.comparingInt((SearchResultItem searchResultItem) -> searchResultItem.getIndexerScore() == null ? 0 : searchResultItem.getIndexerScore())
+                        .reversed()
+                        .thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getBestDate().getEpochSecond())
+                                .reversed())
+                )
+                .iterator().next()
+        ).
+                sorted(Comparator.comparingLong((SearchResultItem x) -> x.getBestDate().getEpochSecond())
+                        .reversed()
+                )
+                .collect(Collectors.toList());
     }
 
     private void createOrUpdateIndexerSearchEntity(SearchCacheEntry searchCacheEntry, Map<Indexer, List<IndexerSearchResult>> indexersToSearchAndTheirResults, DuplicateDetectionResult duplicateDetectionResult) {

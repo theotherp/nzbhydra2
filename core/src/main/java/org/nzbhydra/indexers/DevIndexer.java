@@ -11,6 +11,7 @@ import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
+import org.nzbhydra.searching.SearchResultItem;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -84,6 +85,12 @@ public class DevIndexer extends Newznab {
             rssRoot.getRssChannel().getItems().get(2).setTitle("a.c");
         }
         return rssRoot;
+    }
+
+    @Override
+    protected SearchResultItem createSearchResultItem(RssItem item) {
+        SearchResultItem resultItem = super.createSearchResultItem(item);
+        return resultItem;
     }
 
     @Component

@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -18,23 +19,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Component
-public class ResultAcceptor {
+public class SearchResultAcceptor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ResultAcceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(SearchResultAcceptor.class);
 
     private static final Pattern TITLE_PATTERN = Pattern.compile("(\\w[\\w']*\\w|\\w)");
 
     private Map<String, List<String>> titleWordCache = new HashMap<>();
+
+    private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    private Validator validator = factory.getValidator();
+
 
     @Autowired
     private ConfigProvider configProvider;
@@ -122,17 +134,20 @@ public class ResultAcceptor {
 
     protected boolean checkForNeededAttributesSuccessfullyMapped(Multiset<String> reasonsForRejection, SearchResultItem item) {
         boolean accepted = true;
-        if (item.getTitle() == null) {
-            logger.debug("Title could not be found or parsed");
-            accepted = false;
-        } else if (item.getIndexerGuid() == null) {
-            logger.debug("GUID could not be found or parsed");
-            accepted = false;
-        } else if (item.getLink() == null) {
-            logger.debug("Link could not be found or parsed");
-            accepted = false;
-        } else if ((item.getPubDate() == null && !item.getUsenetDate().isPresent())) {
-            logger.debug("Neither pubdate nor usenet date could be found or parsed");
+        Set<ConstraintViolation<SearchResultItem>> constraintViolations = validator.validate(item);
+        if (!constraintViolations.isEmpty()) {
+
+            Set<String> messages = new HashSet<>(constraintViolations.size());
+            messages.addAll(constraintViolations.stream()
+                    .map(constraintViolation -> String.format("%s value '%s' %s", constraintViolation.getPropertyPath(),
+                            constraintViolation.getInvalidValue(), constraintViolation.getMessage()))
+                    .collect(Collectors.toList()));
+            logger.error("Coding error: SearchResultItem validation messages: {}", Joiner.on(" ").join(messages));
+            reasonsForRejection.add("Important data could not be mapped from the indexers returned response");
+            return false;
+        }
+        if (item.getBestDate() == null) {
+            logger.error("Coding error: Neither pubdate nor usenet date could be found or parsed");
             accepted = false;
         }
         if (!accepted) {

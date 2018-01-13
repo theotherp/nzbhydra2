@@ -273,7 +273,11 @@ public class ExternalApi {
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new RssGuid(String.valueOf(searchResultItem.getGuid()), false));
-        rssItem.setPubDate(searchResultItem.getPubDate());
+        if (searchResultItem.getPubDate() != null) {
+            rssItem.setPubDate(searchResultItem.getPubDate());
+        } else {
+            rssItem.setPubDate(searchResultItem.getBestDate()); //Contain usenet date because results with neither should've been
+        }
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));

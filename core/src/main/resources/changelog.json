@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "In some cases restarting resulted in shutdown. If you are affected by this you will to manually update the wrapper from this release"
+      },
+      {
+        "type": "fix",
+        "text": "In some cases duplicate detection would throw an exception"
       }
     ]
   },  {

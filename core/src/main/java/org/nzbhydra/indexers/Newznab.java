@@ -25,7 +25,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -389,7 +389,7 @@ public class Newznab extends Indexer<Xml> {
         searchResultItem.setTitle(cleanUpTitle(item.getTitle()));
         searchResultItem.setSize(item.getEnclosure().getLength());
         searchResultItem.setPubDate(item.getPubDate());
-        searchResultItem.setIndexerScore(config.getScore().orElse(null));
+        searchResultItem.setIndexerScore(config.getScore().orElse(0));
         searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
         searchResultItem.setAgePrecise(true);
         searchResultItem.setDescription(item.getDescription());

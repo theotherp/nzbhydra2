@@ -9,7 +9,7 @@ import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
@@ -70,6 +70,7 @@ public class NzbIndex extends Indexer<RssRoot> {
             item.setIndexerGuid(matcher.group(1));
             item.setCategory(categoryProvider.getNotAvailable());
             item.setOriginalCategory("N/A");
+            item.setIndexerScore(config.getScore().orElse(0));
             item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
             item.setIndexer(this);
             item.setDownloadType(DownloadType.NZB);

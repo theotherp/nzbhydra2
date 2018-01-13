@@ -10,7 +10,7 @@ import org.nzbhydra.mapping.newznab.RssItem;
 import org.nzbhydra.mapping.newznab.RssRoot;
 import org.nzbhydra.mapping.newznab.Xml;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -54,6 +54,7 @@ public class Torznab extends Newznab {
             }
         }
         searchResultItem.setHasNfo(HasNfo.NO);
+        searchResultItem.setIndexerScore(config.getScore().orElse(0));
         searchResultItem.setDownloadType(DownloadType.TORRENT);
         searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
         return searchResultItem;

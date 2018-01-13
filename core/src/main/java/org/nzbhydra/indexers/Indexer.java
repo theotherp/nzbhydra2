@@ -21,9 +21,9 @@ import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.FallbackSearchInitiatedEvent;
 import org.nzbhydra.searching.IndexerSearchFinishedEvent;
 import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.ResultAcceptor;
-import org.nzbhydra.searching.ResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchMessageEvent;
+import org.nzbhydra.searching.SearchResultAcceptor;
+import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.SearchResultItem;
@@ -69,7 +69,6 @@ public abstract class Indexer<T> {
 
     List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
-
     protected IndexerEntity indexer;
     protected IndexerConfig config;
 
@@ -86,7 +85,7 @@ public abstract class Indexer<T> {
     @Autowired
     protected IndexerWebAccess indexerWebAccess;
     @Autowired
-    protected ResultAcceptor resultAcceptor;
+    protected SearchResultAcceptor resultAcceptor;
     @Autowired
     protected CategoryProvider categoryProvider;
     @Autowired
