@@ -1,5 +1,9 @@
 # NZBHydra 2 
-[![CircleCI](https://circleci.com/gh/theotherp/nzbhydra2.svg?style=svg&circle-token=20568f733a8f77b2f168d7d6f463aa198951949a)](https://circleci.com/gh/theotherp/nzbhydra2) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Percentage of issues still open")
+[![CircleCI](https://circleci.com/gh/theotherp/nzbhydra2.svg?style=svg&circle-token=20568f733a8f77b2f168d7d6f463aa198951949a)](https://circleci.com/gh/theotherp/nzbhydra2) 
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Average time to resolve an issue") 
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Percentage of issues still open")
+[![Github latest release downloads](https://img.shields.io/github/downloads/theotherp/nzbhydra2/latest/total.svg)](https://github.com/theotherp/nzbhydra2/releases)
+[![Latest version](https://img.shields.io/github/release/theotherp/nzbhydra2.svg)](https://github.com/theotherp/nzbhydra2/releases/latest)
 NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a number of raw and newznab based indexers. You can search all your indexers from one place and use it as indexer source for tools like Sonarr or CouchPotato.
 
 It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Alpha. 
@@ -12,6 +16,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * Compatible with Sonarr, Radarr, nzbget, sabnzbd, NZB 360, CouchPotato, Mylar, LL, Sickbeard, Jackett/Cardigann, Watcher, etc.
 * Search and download history and extensive stats, e.g. indexer response times, download shares, NZB age, etc.
 * Authentication and multi-user support
+* Automatic update of NZB download status by querying configured downloaders
 * RSS support with configurable cache times
 * Torrent support:
   * For GUI searches, allowing you to download torrents to a blackhole folder
@@ -29,7 +34,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 * RSS support which will cache the results for a given time
 * Proper filtering of displayed results on the search results page
 * Extended statistics, e.g. share of downloads / searches per user, age distribution of downloaded NZBs and download failures per indexer
-* Downloader scripts to inform Hydra about the actual download result of an NZB
+* Query configured downloaders for updates of NZB download content for history and stats
 * Extended configurability of categories and improved mapping of categories between Hydra and indexers
 * Improved config validation
 * Save torrents in a black hole folder; torznab API endpoint
