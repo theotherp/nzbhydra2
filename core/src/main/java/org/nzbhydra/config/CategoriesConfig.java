@@ -31,6 +31,7 @@ public class CategoriesConfig extends ValidatingConfig {
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         ArrayList<String> errors = new ArrayList<>();
+        ArrayList<String> warnings = new ArrayList<>();
         for (Category category : categories) {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
                 errors.add("Category " + category.getName() + " does not have any newznab categories configured");
@@ -41,6 +42,14 @@ public class CategoriesConfig extends ValidatingConfig {
             if (category.getForbiddenRegex().isPresent()) {
                 checkRegex(errors, category.getForbiddenRegex().get(), "Category " + category.getName() + " uses an invalid forbidden regex");
             }
+            if (category.getApplyRestrictionsType() == SearchSourceRestriction.NONE) {
+                if (!category.getRequiredWords().isEmpty() || !category.getForbiddenWords().isEmpty()) {
+                    warnings.add("You selected not to apply any word restrictions on category " + category.getName() + " but supplied forbidden or required words");
+                }
+                if (category.getRequiredRegex().isPresent() || category.getForbiddenRegex().isPresent()) {
+                    warnings.add("You selected not to apply any word restrictions on category " + category.getName() + " but supplied a forbidden or required regex");
+                }
+            }
         }
         List<Integer> allNewznabCategories = categories.stream().flatMap(x -> x.getNewznabCategories().stream()).collect(Collectors.toList());
         List<Integer> duplicateNewznabCategories = allNewznabCategories.stream().filter(x -> Collections.frequency(allNewznabCategories, 1) > 1).collect(Collectors.toList());
@@ -48,7 +57,7 @@ public class CategoriesConfig extends ValidatingConfig {
             errors.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
         }
 
-        return new ConfigValidationResult(errors.isEmpty(), false, errors, Collections.emptyList());
+        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }
 
     public List<Category> withoutAll() {

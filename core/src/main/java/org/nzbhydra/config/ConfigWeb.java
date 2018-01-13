@@ -45,7 +45,7 @@ public class ConfigWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ConfigValidationResult setConfig(@RequestBody BaseConfig config) throws IOException {
+    public ConfigValidationResult setConfig(@RequestBody BaseConfig newConfig) throws IOException {
 
         for (PropertySource<?> source : environment.getPropertySources()) {
             Set propertyNames = new HashSet();
@@ -61,9 +61,9 @@ public class ConfigWeb {
         }
 
         logger.info("Received new config");
-        ConfigValidationResult result = config.validateConfig(configProvider.getBaseConfig());
+        ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig());
         if (result.isOk()) {
-            configProvider.getBaseConfig().replace(config);
+            configProvider.getBaseConfig().replace(newConfig);
             configProvider.getBaseConfig().save();
         }
         return result;

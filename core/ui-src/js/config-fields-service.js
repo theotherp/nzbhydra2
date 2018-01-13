@@ -641,9 +641,9 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 label: 'Apply word filters',
                                 options: [
+                                    {name: 'All searches', value: 'BOTH'},
                                     {name: 'Internal searches', value: 'INTERNAL'},
                                     {name: 'API searches', value: 'API'},
-                                    {name: 'All searches', value: 'BOTH'},
                                     {name: 'Never', value: 'NONE'}
                                 ],
                                 help: "For which type of search word/regex filters will be applied"
@@ -656,6 +656,9 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Forbidden words',
                                 help: "Results with any of these words in the title will be ignored. Title is converted to lowercase before. Apply words with return key."
+                            },
+                            hideExpression: function () {
+                                return rootModel.searching.applyRestrictions === "NONE";
                             }
                         },
                         {
@@ -665,6 +668,9 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Forbidden regex',
                                 help: 'Must not be present in a title (case is ignored)'
+                            },
+                            hideExpression: function () {
+                                return rootModel.searching.applyRestrictions === "NONE";
                             }
                         },
                         {
@@ -674,6 +680,9 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Required words',
                                 help: "Only results with titles that contain *all* words will be used. Title is converted to lowercase before. Apply words with return key."
+                            },
+                            hideExpression: function () {
+                                return rootModel.searching.applyRestrictions === "NONE";
                             }
                         },
                         {
@@ -683,6 +692,9 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Required regex',
                                 help: 'Must be present in a title (case is ignored)'
+                            },
+                            hideExpression: function () {
+                                return rootModel.searching.applyRestrictions === "NONE";
                             }
                         },
 
@@ -693,6 +705,9 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'Forbidden groups',
                                 help: 'Posts from any groups containing any of these words will be ignored. Apply words with return key.'
+                            },
+                            hideExpression: function () {
+                                return rootModel.searching.applyRestrictions === "NONE";
                             }
                         },
                         {
@@ -910,6 +925,20 @@ function ConfigFields($injector) {
                                 }
                             },
                             {
+                                key: 'applyRestrictionsType',
+                                type: 'horizontalSelect',
+                                templateOptions: {
+                                    label: 'Apply restrictions',
+                                    options: [
+                                        {name: 'All searches', value: 'BOTH'},
+                                        {name: 'Internal searches', value: 'INTERNAL'},
+                                        {name: 'API searches', value: 'API'},
+                                        {name: 'Never', value: 'NONE'}
+                                    ],
+                                    help: "For which type of search word restrictions will be applied"
+                                }
+                            },
+                            {
                                 key: 'requiredWords',
                                 type: 'horizontalChips',
                                 templateOptions: {
@@ -943,20 +972,6 @@ function ConfigFields($injector) {
                                     type: 'text',
                                     label: 'Forbidden regex',
                                     help: 'Must not be present in a title (case is ignored)'
-                                }
-                            },
-                            {
-                                key: 'applyRestrictionsType',
-                                type: 'horizontalSelect',
-                                templateOptions: {
-                                    label: 'Apply restrictions',
-                                    options: [
-                                        {name: 'Internal searches', value: 'INTERNAL'},
-                                        {name: 'API searches', value: 'API'},
-                                        {name: 'All searches', value: 'BOTH'},
-                                        {name: 'Never', value: 'NONE'}
-                                    ],
-                                    help: "For which type of search word restrictions will be applied"
                                 }
                             },
                             {
@@ -1009,9 +1024,9 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     label: 'Ignore results',
                                     options: [
+                                        {name: 'For all searches', value: 'BOTH'},
                                         {name: 'For internal searches', value: 'INTERNAL'},
                                         {name: 'For API searches', value: 'API'},
-                                        {name: 'For all searches', value: 'BOTH'},
                                         {name: 'Never', value: 'NONE'}
                                     ],
                                     help: "Ignore results from this category"

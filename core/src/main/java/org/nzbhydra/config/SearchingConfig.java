@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,8 +74,19 @@ public class SearchingConfig extends ValidatingConfig {
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
         List<String> errors = new ArrayList<>();
+        List<String> warnings = new ArrayList<>();
         checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");
         checkRegex(errors, forbiddenRegex, "The forbidden in \"Searching\" is invalid");
-        return new ConfigValidationResult(errors.isEmpty(), false, errors, Collections.emptyList());
+
+        if (applyRestrictions == SearchSourceRestriction.NONE) {
+            if (!getRequiredWords().isEmpty() || !getForbiddenWords().isEmpty()) {
+                warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied forbidden or required words there");
+            }
+            if (getRequiredRegex().isPresent() || getForbiddenRegex().isPresent()) {
+                warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
+            }
+        }
+
+        return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }
 };

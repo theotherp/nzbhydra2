@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-
 @Component
 @EnableConfigurationProperties
 @Data
@@ -101,11 +99,6 @@ public class BaseConfig extends ValidatingConfig {
 
     public void save(File targetFile) throws IOException {
         logger.debug("Writing config to file {}", targetFile.getCanonicalPath());
-        try {
-            Files.copy(targetFile.toPath(), new File(targetFile.getCanonicalPath() + ".backup").toPath(), REPLACE_EXISTING);
-        } catch (IOException e) {
-            logger.warn("Unable to make backup of file {}", targetFile.getAbsolutePath());
-        }
         try {
             String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
             if (Strings.isNullOrEmpty(asString)) {
