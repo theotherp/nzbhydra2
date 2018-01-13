@@ -64,7 +64,7 @@ public class IndexerWebAccess {
                 return (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
             });
         } catch (RejectedExecutionException e) {
-            logger.error("Unexpected execution exception while executing call for indexer {}. This will hopefully be fixed soon", indexerConfig.getName());
+            logger.error("Unexpected execution exception while executing call for indexer "+indexerConfig.getName()+". This will hopefully be fixed soon", e);
             throw new RuntimeException("Unexpected error in hydra code. Sorry...");
         }
         try {
