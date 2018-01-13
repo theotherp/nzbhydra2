@@ -423,7 +423,7 @@ if __name__ == '__main__':
         logger.info("Data folder path is not absolute. Will assume " + args.datafolder + " was meant")
 
     # Delete old control id file if it exists. Shouldn't ever exist or if it does it should be overwritten by main process, but who knows
-    controlIdFilePath = os.path.join(getBasePath(), "data", "control.id")
+    controlIdFilePath = os.path.join(args.datafolder, "control.id")
     if os.path.exists(controlIdFilePath):
         os.remove(controlIdFilePath)
     doStart = True
