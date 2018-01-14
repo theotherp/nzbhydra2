@@ -17,6 +17,8 @@ import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
+import org.nzbhydra.web.SessionStorage;
+import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,8 @@ public class NzbHandler {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
+    @Autowired
+    private UrlCalculator urlCalculator;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory clientHttpRequestFactory;
     @Autowired
@@ -177,7 +181,7 @@ public class NzbHandler {
         UriComponentsBuilder builder;
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
-            builder = configProvider.getBaseConfig().getBaseUriBuilder();
+            builder = SessionStorage.urlBuilder.get();
             builder.path("/" + getName + "/user");
             builder.path("/" + String.valueOf(searchResultId));
         } else {
@@ -185,7 +189,7 @@ public class NzbHandler {
             if (main.getExternalUrl().isPresent() && !main.isUseLocalUrlForApiAccess()) {
                 builder = UriComponentsBuilder.fromHttpUrl(main.getExternalUrl().get());
             } else {
-                builder = configProvider.getBaseConfig().getBaseUriBuilder();
+                builder = SessionStorage.urlBuilder.get();
             }
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));
@@ -212,60 +216,6 @@ public class NzbHandler {
         return true;
     }
 
-    public boolean updateStatusByExternalIdOrTitle(String externalId, String title, NzbDownloadStatus status) {
-        Collection<NzbDownloadEntity> foundEntities = downloadRepository.findByExternalId(externalId);
-        if (foundEntities.isEmpty()) {
-            return updateStatusByNzbTitle(title, status);
-        } else {
-            return updateStatusByExternalId(externalId, status);
-        }
-    }
-
-    public boolean updateStatusByExternalId(String externalId, NzbDownloadStatus status) {
-        Collection<NzbDownloadEntity> foundEntities = downloadRepository.findByExternalId(externalId);
-        if (foundEntities.size() == 0) {
-            logger.error("Did not find any download identified by \"{}\"", externalId);
-            return false;
-        }
-        if (foundEntities.size() > 1) {
-            logger.error("Find multiple downloads identified by \"{}\"", externalId);
-            return false;
-        }
-        NzbDownloadEntity entity = foundEntities.iterator().next();
-        entity.setStatus(status);
-        downloadRepository.save(entity);
-        logger.info("Updated download status of NZB \"{}\" to {}", entity.getSearchResult().getTitle(), status);
-        return true;
-    }
-
-    public boolean updateStatusByNzbTitle(String title, NzbDownloadStatus status) {
-        List<NzbDownloadEntity> foundEntities = downloadRepository.findBySearchResultTitleOrderByTimeDesc(title);
-        NzbDownloadEntity entity = null;
-        if (foundEntities.size() == 0) {
-            logger.debug("Did not find any download for an NZB with the title \"{}\". Skipping this", title);
-            return false;
-        } else if (foundEntities.size() > 1) {
-            logger.info("Found multiple downloads identified by \"{}\" and will try to find the newest that can be updated by the new status {}", title, status);
-            for (NzbDownloadEntity foundEntity : foundEntities) {
-                if (status.canUpdate(foundEntity.getStatus())) {
-                    entity = foundEntity;
-                    logger.info("Will update status of download initiated at {}", entity.getTime());
-                    break;
-                }
-            }
-            if (entity == null) {
-                logger.error("Found multiple downloads identified by \"{}\" and didn't find one which could be updated by the new status {}", title, status);
-                return false;
-            }
-        } else {
-            entity = foundEntities.iterator().next();
-        }
-        NzbDownloadStatus oldStatus = entity.getStatus();
-        entity.setStatus(status);
-        downloadRepository.save(entity);
-        logger.info("Updated download status of NZB \"{}\" from {} to {}", title, oldStatus, status);
-        return true;
-    }
 
 
     private String downloadNzb(SearchResultEntity result) throws IOException {

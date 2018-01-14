@@ -9,20 +9,10 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.NzbDownloadEntity;
 import org.nzbhydra.downloading.NzbDownloadRepository;
-import org.nzbhydra.downloading.NzbDownloadStatus;
 import org.nzbhydra.downloading.NzbHandler;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 
-import java.util.Arrays;
-import java.util.Collections;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class NzbHandlerTest {
@@ -61,45 +51,4 @@ public class NzbHandlerTest {
         nzbDownloadLink = testee.getNzbDownloadLink(123L, true, DownloadType.NZB).replaceAll("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}", "");
         assertEquals("http://:1234/getnzb/user/123", nzbDownloadLink);
     }
-
-    @Test
-    public void shouldUpdateStatusByTitleIfFoundOne() {
-        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(entityMock));
-
-        boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.REQUESTED);
-
-        assertTrue(updated);
-        verify(entityMock).setStatus(NzbDownloadStatus.REQUESTED);
-        verify(nzbDownloadRepositoryMock).save(entityMock);
     }
-
-    @Test
-    public void shouldNotUpdateStatusByTitleIfNotFound() {
-        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Collections.emptyList());
-
-        boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.REQUESTED);
-
-        assertFalse(updated);
-        verify(entityMock, never()).setStatus(NzbDownloadStatus.REQUESTED);
-        verify(nzbDownloadRepositoryMock, never()).save(entityMock);
-    }
-
-    @Test
-    public void shouldUpdateLatestUpdatable() {
-        NzbDownloadEntity olderMockNotUpdatable = mock(NzbDownloadEntity.class);
-        when(olderMockNotUpdatable.getStatus()).thenReturn(NzbDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
-        NzbDownloadEntity olderMockUpdatable = mock(NzbDownloadEntity.class);
-        when(olderMockUpdatable.getStatus()).thenReturn(NzbDownloadStatus.REQUESTED);
-        when(nzbDownloadRepositoryMock.findBySearchResultTitleOrderByTimeDesc(anyString())).thenReturn(Arrays.asList(olderMockNotUpdatable, olderMockUpdatable));
-
-        boolean updated = testee.updateStatusByNzbTitle("title", NzbDownloadStatus.NZB_ADDED);
-
-        assertTrue(updated);
-        verify(olderMockUpdatable).setStatus(NzbDownloadStatus.NZB_ADDED);
-        verify(nzbDownloadRepositoryMock).save(olderMockUpdatable);
-        verify(olderMockNotUpdatable, never()).setStatus(NzbDownloadStatus.NZB_ADDED);
-        verify(nzbDownloadRepositoryMock, never()).save(olderMockNotUpdatable);
-
-    }
-
-}

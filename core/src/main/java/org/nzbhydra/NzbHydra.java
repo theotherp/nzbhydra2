@@ -196,30 +196,34 @@ public class NzbHydra {
 
     @EventListener
     protected void startupDone(ApplicationReadyEvent event) {
-        if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
-            logger.info("First start of NZBHydra detected");
-            genericStorage.save("FirstStart", LocalDateTime.now());
-            try {
-                configProvider.getBaseConfig().save();
-            } catch (IOException e) {
-                logger.error("Unable to save config", e);
+        try {
+            if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
+                logger.info("First start of NZBHydra detected");
+                genericStorage.save("FirstStart", LocalDateTime.now());
+                try {
+                    configProvider.getBaseConfig().save();
+                } catch (IOException e) {
+                    logger.error("Unable to save config", e);
+                }
             }
-        }
 
-        if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
-            if (wasRestarted) {
-                logger.info("Not opening browser after restart");
-                return;
-            }
-            browserOpener.openBrowser();
-        } else {
-            URI uri;
-            if(configProvider.getBaseConfig().getMain().getExternalUrl().isPresent()) {
-                uri = UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getMain().getExternalUrl().get()).build().toUri();
+            if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+                if (wasRestarted) {
+                    logger.info("Not opening browser after restart");
+                    return;
+                }
+                browserOpener.openBrowser();
             } else {
-                uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
+                URI uri;
+                if(configProvider.getBaseConfig().getMain().getExternalUrl().isPresent()) {
+                    uri = UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getMain().getExternalUrl().get()).build().toUri();
+                } else {
+                    uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
+                }
+                logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }
-            logger.info("You can access NZBHydra 2 in your browser via {}", uri);
+        } catch (Exception e) {
+            logger.error("Unable to complete startup initialization", e);
         }
     }
 

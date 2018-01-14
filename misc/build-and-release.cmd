@@ -112,7 +112,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Pushing to repo ***********************************************************************
-call git push develop
+call git push origin master
 if not "%ERRORLEVEL%" == "0" (
     echo Error pushing to repo
     goto error

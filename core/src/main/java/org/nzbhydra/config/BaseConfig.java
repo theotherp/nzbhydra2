@@ -15,9 +15,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
@@ -55,6 +57,13 @@ public class BaseConfig extends ValidatingConfig {
     @Setter(AccessLevel.NONE)
     @JsonIgnore
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Value("${server.address}")
+    private String serverAddress;
+    @Value("${server.port}")
+    private Integer serverPort;
+    @Value("${server.contextPath}")
+    private String serverContextPath;
 
     private AuthConfig auth = new AuthConfig();
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
@@ -151,22 +160,21 @@ public class BaseConfig extends ValidatingConfig {
         return objectMapper.writeValueAsString(this);
     }
 
-
-    @JsonIgnore
-    public String getBaseUrl() {
-        return getBaseUriBuilder().toUriString();
-    }
-
+    /**
+     * Attempts to find the bext address to the current instance without having any request data to work on
+     */
     @JsonIgnore
     public UriComponentsBuilder getBaseUriBuilder() {
         if (host == null) {
-            host = main.getHost();
-            if (!Strings.isNullOrEmpty(System.getProperty("server.address"))) {
-                host = System.getProperty("server.address");
-            }
+
+
+            host = serverAddress;
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host {}", host);
             if (host.equals("0.0.0.0")) {
                 try {
+                    logger.debug(LoggingMarkers.URL_CALCULATION, "Configured host 0.0.0.0 binds to all addresses. Attempting to find network address");
                     host = getLocalHostLANAddress().getHostAddress();
+                    logger.debug(LoggingMarkers.URL_CALCULATION, "Found network address {}", host);
                 } catch (UnknownHostException e) {
                     logger.warn("Unable to automatically determine host address. Error: {}", e.getMessage());
                 }
@@ -178,24 +186,22 @@ public class BaseConfig extends ValidatingConfig {
                 logger.info("Using base host {}", host);
             }
         }
-        int port = main.getPort();
-        if (!Strings.isNullOrEmpty(System.getProperty("server.port"))) {
-            port = Integer.valueOf(System.getProperty("server.port"));
-        }
+        int port = serverPort;
+        logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port", port);
+
         UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
                 .host(host)
                 .scheme(main.isSsl() ? "https" : "http")
                 .port(port);
-        String baseUrl = null;
-        if (!Strings.isNullOrEmpty(System.getProperty("server.contextPath"))) {
-            baseUrl = System.getProperty("server.contextPath");
-        } else if (main.getUrlBase().isPresent() && !main.getUrlBase().get().equals("/")) {
-            baseUrl = main.getUrlBase().get();
-        }
-        if (baseUrl != null) {
-            builder.path(baseUrl);
+        logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme {}", main.isSsl() ? "https" : "http");
+        String urlBase = serverContextPath;
+
+        if (urlBase != null) {
+            builder.path(urlBase);
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL path {}", urlBase);
         }
         if (builder.build().getHost().equals("::")) {
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host [::]. Using [::1] as host");
             builder = builder.host("[::1]");
         }
         return builder;

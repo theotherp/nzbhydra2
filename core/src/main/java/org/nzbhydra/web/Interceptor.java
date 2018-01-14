@@ -17,6 +17,8 @@ public class Interceptor extends HandlerInterceptorAdapter {
     private ConfigProvider configProvider;
     @Autowired
     private UserAgentMapper userAgentMapper;
+    @Autowired
+    private UrlCalculator urlCalculator;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -36,6 +38,7 @@ public class Interceptor extends HandlerInterceptorAdapter {
         SessionStorage.username.set(request.getRemoteUser());
         SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
+        SessionStorage.urlBuilder.set(urlCalculator.getBaseUriBuilder(request));
 
         return true;
     }

@@ -6,6 +6,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,8 @@ public class MainWeb {
 
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private ConfigurableEnvironment environment;
     @Autowired
     private UserInfosProvider userInfos;
     private SafeConfig safeConfig = null;
@@ -76,7 +79,7 @@ public class MainWeb {
         BootstrappedDataTO bootstrappedData = userInfos.getUserInfos(principal);
         bootstrappedData.setSafeConfig(getSafeConfig());
 
-        String urlBase = configProvider.getBaseConfig().getBaseUriBuilder().build().getPath();
+        String urlBase = environment.getProperty("server.contextPath");
         if (urlBase == null) {
             urlBase = "";
         }
