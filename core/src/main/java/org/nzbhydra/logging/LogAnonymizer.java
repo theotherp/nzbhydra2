@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Removes all sensitive data from the log that was not already filtered out by the log encoder
@@ -33,11 +32,6 @@ public class LogAnonymizer {
     public String getAnonymizedLog() throws IOException {
         //LATER chunk up so it can handle big files
         String log = logContentProvider.getLog();
-        Optional<String> externalUrlOptional = configProvider.getBaseConfig().getMain().getExternalUrl();
-        if (externalUrlOptional.isPresent()) {
-            logger.debug("Removing external URL from log");
-            log = log.replaceAll("(?i)" + externalUrlOptional.get(), "<EXTERNALURL>");
-        }
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             logger.debug("Removing username from log");
             log = log.replaceAll("(?i)User[=:]" + userAuthConfig.getUsername(), "User=<USERNAME>");

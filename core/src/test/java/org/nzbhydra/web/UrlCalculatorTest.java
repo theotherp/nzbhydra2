@@ -50,7 +50,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/");
         prepareHeaders("127.0.0.1:5076", null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("127.0.0.1");
@@ -63,7 +63,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1:5076", null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/nzbhydra2");
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("127.0.0.1");
@@ -77,7 +77,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, true, "/");
         prepareHeaders("127.0.0.1:5076", null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("127.0.0.1");
@@ -90,7 +90,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, true, "/");
         prepareHeaders("192.168.1.111:5076", null, null);
         prepareServlet("http://192.168.1.111:5076", "192.168.1.111", 5076, "http", "/");
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("192.168.1.111");
@@ -104,7 +104,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1", "127.0.0.1:4001", null); //nginx doesn't include the port in the "host" header
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("127.0.0.1");
@@ -117,7 +117,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("192.168.1.111", "192.168.1.111:4001", null); //nginx doesn't include the port in the "host" header
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("http");
         assertThat(builder.build().getHost()).isEqualTo("192.168.1.111");
@@ -130,7 +130,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("127.0.0.1:4001", "127.0.0.1:4001", "https");
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme http in the servlet
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("https");
         assertThat(builder.build().getHost()).isEqualTo("127.0.0.1");
@@ -145,7 +145,7 @@ public class UrlCalculatorTest {
         prepareConfig(false, false, "/nzbhydra2");
         prepareHeaders("192.168.1.111:4001", "192.168.1.111:4001", "https");
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme in the servlet
-        UriComponentsBuilder builder = testee.getBaseUriBuilder(requestMock);
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("https");
         assertThat(builder.build().getHost()).isEqualTo("192.168.1.111");

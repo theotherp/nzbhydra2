@@ -37,7 +37,7 @@ public class DebugWeb {
 
     @RequestMapping(value = "/fortests/showCalculatedUrl", method = RequestMethod.GET)
     public String testHostSTuff(HttpServletRequest request) throws Exception {
-        return urlCalculator.getBaseUriBuilder(request).toUriString();
+        return urlCalculator.getLocalBaseUriBuilder(request).toUriString();
     }
 
     @RequestMapping(value = "/fortests/getHostData", method = RequestMethod.GET)

@@ -192,8 +192,6 @@ public class ConfigMigrationTest {
         verify(newznabCheckerMock, times(1)).checkCaps(indexerConfigsCaptor.capture());
         assertThat(indexerConfigsCaptor.getValue().getName(), is("Drunken Slug"));
 
-        assertThat(result.getMigratedConfig().getMain().getApiKey(), is("apikey"));
-        assertThat("External URL should not be migrated because the old one wouldn't match", result.getMigratedConfig().getMain().getExternalUrl().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getMain().getHost(), is("127.0.0.1"));
         assertThat(result.getMigratedConfig().getMain().getProxyType(), is(ProxyType.SOCKS));
         assertThat(result.getMigratedConfig().getMain().getProxyHost(), is("proxydomain.com"));
@@ -206,7 +204,6 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getMain().isStartupBrowser(), is(true));
         assertThat(result.getMigratedConfig().getMain().getTheme(), is("grey"));
         assertThat(result.getMigratedConfig().getMain().getUrlBase().isPresent(), is(false));
-        assertThat(result.getMigratedConfig().getMain().isUseLocalUrlForApiAccess(), is(true));
 
         assertThat(result.getMigratedConfig().getSearching().getApplyRestrictions(), is(SearchSourceRestriction.BOTH));
         assertThat(result.getMigratedConfig().getSearching().getDuplicateAgeThreshold(), is(2.0F));

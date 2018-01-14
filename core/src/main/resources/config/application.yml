@@ -265,7 +265,6 @@ main:
   backupEverySunday: true
   backupBeforeUpdate: true
   dereferer: "http://www.dereferer.org/?$s"
-  externalUrl: null
   host: "0.0.0.0"
   logging:
     consolelevel: "INFO"
@@ -295,7 +294,6 @@ main:
   updateCheckEnabled: true
   urlBase: null
   useCsrf: true
-  useLocalUrlForApiAccess: true
   verifySsl: true
   welcomeShown: false
   xmx: 128

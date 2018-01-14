@@ -27,8 +27,6 @@ public class MainConfig extends ValidatingConfig {
     private boolean backupEverySunday = true;
     private boolean backupBeforeUpdate = true;
     private String dereferer = null;
-    @SensitiveData
-    private String externalUrl = null;
     @RestartRequired
     private String host = "0.0.0.0";
     private LoggingConfig logging = new LoggingConfig();
@@ -63,16 +61,11 @@ public class MainConfig extends ValidatingConfig {
     private boolean updateCheckEnabled = true;
     @RestartRequired
     private boolean useCsrf = false;
-    private boolean useLocalUrlForApiAccess = true;
     @RestartRequired
     private boolean verifySsl = true;
     private boolean welcomeShown = false;
     @RestartRequired
     private int xmx;
-
-    public Optional<String> getExternalUrl() {
-        return Optional.ofNullable(Strings.emptyToNull(externalUrl));
-    }
 
     public Optional<String> getUrlBase() {
         return Optional.ofNullable(Strings.emptyToNull(urlBase));

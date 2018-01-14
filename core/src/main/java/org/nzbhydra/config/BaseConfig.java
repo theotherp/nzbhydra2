@@ -15,16 +15,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
@@ -32,13 +29,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -58,13 +51,6 @@ public class BaseConfig extends ValidatingConfig {
     @JsonIgnore
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @Value("${server.address}")
-    private String serverAddress;
-    @Value("${server.port}")
-    private Integer serverPort;
-    @Value("${server.contextPath}")
-    private String serverContextPath;
-
     private AuthConfig auth = new AuthConfig();
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
     private DownloadingConfig downloading = new DownloadingConfig();
@@ -73,8 +59,6 @@ public class BaseConfig extends ValidatingConfig {
     private SearchingConfig searching = new SearchingConfig();
     @JsonIgnore
     private final DefaultPrettyPrinter defaultPrettyPrinter;
-    @JsonIgnore
-    private UriComponentsBuilder baseBuilder;
     private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
 
@@ -160,51 +144,7 @@ public class BaseConfig extends ValidatingConfig {
         return objectMapper.writeValueAsString(this);
     }
 
-    /**
-     * Attempts to find the bext address to the current instance without having any request data to work on
-     */
-    @JsonIgnore
-    public UriComponentsBuilder getBaseUriBuilder() {
-        if (baseBuilder == null) {
-            String host = serverAddress;
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host {}", host);
-            if (host.equals("0.0.0.0")) {
-                try {
-                    logger.debug(LoggingMarkers.URL_CALCULATION, "Configured host 0.0.0.0 binds to all addresses. Attempting to find network address");
-                    host = getLocalHostLANAddress().getHostAddress();
-                    logger.debug(LoggingMarkers.URL_CALCULATION, "Found network address {}", host);
-                } catch (UnknownHostException e) {
-                    logger.warn("Unable to automatically determine host address. Error: {}", e.getMessage());
-                }
-            }
-            if (Strings.isNullOrEmpty(host)) {
-                logger.warn("Unable to determine host, will use 127.0.0.1");
-                host = "127.0.0.1";
-            } else {
-                logger.info("Using base host {}", host);
-            }
 
-            int port = serverPort;
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port", port);
-
-            baseBuilder = UriComponentsBuilder.newInstance()
-                    .host(host)
-                    .scheme(main.isSsl() ? "https" : "http")
-                    .port(port);
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme {}", main.isSsl() ? "https" : "http");
-            String urlBase = serverContextPath;
-
-            if (urlBase != null) {
-                baseBuilder.path(urlBase);
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL path {}", urlBase);
-            }
-            if (host.equals("::")) {
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host [::]. Using [::1] as host");
-                baseBuilder = baseBuilder.host("[::1]");
-            }
-        }
-        return baseBuilder.cloneBuilder();
-    }
 
     /**
      * Returns the original config as it was deployed
@@ -279,54 +219,6 @@ public class BaseConfig extends ValidatingConfig {
         configValidationResult.setOk(configValidationResult.getErrorMessages().isEmpty());
 
         return configValidationResult;
-    }
-
-    protected static InetAddress getLocalHostLANAddress() throws UnknownHostException {
-        try {
-            InetAddress candidateAddress = null;
-            // Iterate all NICs (network interface cards)...
-            for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
-                NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
-                // Iterate all IP addresses assigned to each card...
-                if (iface.getDisplayName() != null && iface.getDisplayName().contains("VirtualBox")) {
-                    continue;
-                }
-                for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
-                    InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
-                    if (!inetAddr.isLoopbackAddress()) {
-
-                        if (inetAddr.isSiteLocalAddress()) {
-                            // Found non-loopback site-local address. Return it immediately...
-                            return inetAddr;
-                        } else if (candidateAddress == null) {
-                            // Found non-loopback address, but not necessarily site-local.
-                            // Store it as a candidate to be returned if site-local address is not subsequently found...
-                            candidateAddress = inetAddr;
-                            // Note that we don't repeatedly assign non-loopback non-site-local addresses as candidates,
-                            // only the first. For subsequent iterations, candidate will be non-null.
-                        }
-                    }
-                }
-            }
-            if (candidateAddress != null) {
-                // We did not find a site-local address, but we found some other non-loopback address.
-                // Server might have a non-site-local address assigned to its NIC (or it might be running
-                // IPv6 which deprecates the "site-local" concept).
-                // Return this non-loopback candidate address...
-                return candidateAddress;
-            }
-            // At this point, we did not find a non-loopback address.
-            // Fall back to returning whatever InetAddress.getLocalHost() returns...
-            InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
-            if (jdkSuppliedAddress == null) {
-                throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
-            }
-            return jdkSuppliedAddress;
-        } catch (Exception e) {
-            UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN address: " + e);
-            unknownHostException.initCause(e);
-            throw unknownHostException;
-        }
     }
 
 

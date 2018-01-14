@@ -188,11 +188,7 @@ public class NzbHandler {
             builder.path("/" + String.valueOf(searchResultId));
         } else {
             MainConfig main = configProvider.getBaseConfig().getMain();
-            if (main.getExternalUrl().isPresent() && !main.isUseLocalUrlForApiAccess()) {
-                builder = UriComponentsBuilder.fromHttpUrl(main.getExternalUrl().get());
-            } else {
-                builder = SessionStorage.getUrlBuilder();
-            }
+            builder = SessionStorage.getUrlBuilder();
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));
             builder.queryParam("apikey", main.getApiKey());

@@ -45,7 +45,7 @@ public class DebugInfosProvider {
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
-        if( new File("/.dockerenv").exists()) {
+        if(isRunInDocker()) {
             logger.info("Apparently run in docker");
         }
 
@@ -63,6 +63,10 @@ public class DebugInfosProvider {
             }
         }
         return Files.readAllBytes(tempFile.toPath());
+    }
+
+    public static boolean isRunInDocker() {
+        return new File("/.dockerenv").exists();
     }
 
     @Transactional

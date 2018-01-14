@@ -7109,7 +7109,7 @@ function ConfigFields($injector) {
                                 type: 'text',
                                 label: 'External URL',
                                 placeholder: 'https://www.somedomain.com/nzbhydra/',
-                                help: 'Set to the full external URL so machines outside can use the generated NZB links.'
+                                help: 'Set to the full external if the address is different outside the machine Hydra is running on'
                             }
                         },
                         {

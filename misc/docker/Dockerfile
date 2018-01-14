@@ -1,4 +1,4 @@
-#Run like this: docker run -p 5076:5076 -v /home/ubuntu/dockertest/data/:/data -v /home/ubuntu/dockertest/torrents:/torrents nzbhydra2
+#Run like this: docker run -p <hostport>:5076 -v /home/ubuntu/dockertest/data/:/data -v /home/ubuntu/dockertest/torrents:/torrents nzbhydra2
 #TODO: Automatically download latest release (see http://www.starkandwayne.com/blog/how-to-download-the-latest-release-from-github/) and use that
 
 FROM alpine:edge

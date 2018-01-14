@@ -8,6 +8,7 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
+import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -59,7 +59,8 @@ public class NzbHydra {
     private static String dataFolder = null;
     private static boolean wasRestarted = false;
 
-
+    @Autowired
+    private UrlCalculator urlCalculator;
     @Autowired
     private BrowserOpener browserOpener;
     @Autowired
@@ -214,12 +215,7 @@ public class NzbHydra {
                 }
                 browserOpener.openBrowser();
             } else {
-                URI uri;
-                if(configProvider.getBaseConfig().getMain().getExternalUrl().isPresent()) {
-                    uri = UriComponentsBuilder.fromUriString(configProvider.getBaseConfig().getMain().getExternalUrl().get()).build().toUri();
-                } else {
-                    uri = configProvider.getBaseConfig().getBaseUriBuilder().build().toUri();
-                }
+                URI uri = urlCalculator.getLocalBaseUriBuilder().build().toUri();
                 logger.info("You can access NZBHydra 2 in your browser via {}", uri);
             }
         } catch (Exception e) {
@@ -243,7 +239,6 @@ public class NzbHydra {
         GuavaCacheManager guavaCacheManager = new GuavaCacheManager("infos", "titles", "updates", "dev");
         return guavaCacheManager;
     }
-
 
 
 }
