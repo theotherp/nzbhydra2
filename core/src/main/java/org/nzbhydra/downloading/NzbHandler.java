@@ -1,11 +1,13 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.NzbAccessType;
@@ -62,7 +64,7 @@ public class NzbHandler {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
-    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource) throws InvalidSearchResultIdException{
+    public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         SearchResultEntity result = searchResultRepository.findOne(guid);
         if (result == null) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
@@ -217,13 +219,20 @@ public class NzbHandler {
     }
 
 
-
     private String downloadNzb(SearchResultEntity result) throws IOException {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).build().newCall(request).execute()) {
-            return response.body().string();
+            if (!response.isSuccessful()) {
+                throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Message: " + response.message());
+            }
+            ResponseBody body = response.body();
+            if (body == null || Strings.isNullOrEmpty(body.string())) {
+                throw new IOException("NZB downloaded from " + result.getLink() + " is empty");
+            }
+            String content = body.string();
+            return content;
         }
     }
 
