@@ -12,7 +12,15 @@ public class SessionStorage {
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> requestUrl =
             ThreadLocal.withInitial(() -> null);
-    public static final ThreadLocal<UriComponentsBuilder> urlBuilder =
+    private static ThreadLocal<UriComponentsBuilder> urlBuilder =
             ThreadLocal.withInitial(() -> null);
+
+    public static UriComponentsBuilder getUrlBuilder() {
+        return urlBuilder.get().cloneBuilder();
+    }
+
+    public static void setUrlBuilder(UriComponentsBuilder builder) {
+        urlBuilder.set(builder);
+    }
 
 }

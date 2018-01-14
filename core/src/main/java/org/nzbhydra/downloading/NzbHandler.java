@@ -183,7 +183,7 @@ public class NzbHandler {
         UriComponentsBuilder builder;
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
-            builder = SessionStorage.urlBuilder.get();
+            builder = SessionStorage.getUrlBuilder();
             builder.path("/" + getName + "/user");
             builder.path("/" + String.valueOf(searchResultId));
         } else {
@@ -191,7 +191,7 @@ public class NzbHandler {
             if (main.getExternalUrl().isPresent() && !main.isUseLocalUrlForApiAccess()) {
                 builder = UriComponentsBuilder.fromHttpUrl(main.getExternalUrl().get());
             } else {
-                builder = SessionStorage.urlBuilder.get();
+                builder = SessionStorage.getUrlBuilder();
             }
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));

@@ -74,7 +74,7 @@ public class BaseConfig extends ValidatingConfig {
     @JsonIgnore
     private final DefaultPrettyPrinter defaultPrettyPrinter;
     @JsonIgnore
-    private String host;
+    private UriComponentsBuilder baseBuilder;
     private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
 
@@ -165,10 +165,8 @@ public class BaseConfig extends ValidatingConfig {
      */
     @JsonIgnore
     public UriComponentsBuilder getBaseUriBuilder() {
-        if (host == null) {
-
-
-            host = serverAddress;
+        if (baseBuilder == null) {
+            String host = serverAddress;
             logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host {}", host);
             if (host.equals("0.0.0.0")) {
                 try {
@@ -185,26 +183,27 @@ public class BaseConfig extends ValidatingConfig {
             } else {
                 logger.info("Using base host {}", host);
             }
-        }
-        int port = serverPort;
-        logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port", port);
 
-        UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
-                .host(host)
-                .scheme(main.isSsl() ? "https" : "http")
-                .port(port);
-        logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme {}", main.isSsl() ? "https" : "http");
-        String urlBase = serverContextPath;
+            int port = serverPort;
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port", port);
 
-        if (urlBase != null) {
-            builder.path(urlBase);
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL path {}", urlBase);
+            baseBuilder = UriComponentsBuilder.newInstance()
+                    .host(host)
+                    .scheme(main.isSsl() ? "https" : "http")
+                    .port(port);
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme {}", main.isSsl() ? "https" : "http");
+            String urlBase = serverContextPath;
+
+            if (urlBase != null) {
+                baseBuilder.path(urlBase);
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using URL path {}", urlBase);
+            }
+            if (host.equals("::")) {
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host [::]. Using [::1] as host");
+                baseBuilder = baseBuilder.host("[::1]");
+            }
         }
-        if (builder.build().getHost().equals("::")) {
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Found configured host [::]. Using [::1] as host");
-            builder = builder.host("[::1]");
-        }
-        return builder;
+        return baseBuilder.cloneBuilder();
     }
 
     /**
@@ -289,6 +288,9 @@ public class BaseConfig extends ValidatingConfig {
             for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
                 NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
                 // Iterate all IP addresses assigned to each card...
+                if (iface.getDisplayName() != null && iface.getDisplayName().contains("VirtualBox")) {
+                    continue;
+                }
                 for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
                     InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
                     if (!inetAddr.isLoopbackAddress()) {

@@ -128,7 +128,7 @@ public class Sabnzbd extends Downloader {
         OkHttpClient client = requestFactory.getOkHttpClientBuilder(urlBuilder.build().encode().toUri()).build();
         try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             if (!response.isSuccessful()) {
-                throw new DownloaderException("Downloader returned status code " + response.code());
+                throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());
             }
             AddNzbResponse addNzbResponse = objectMapper.readValue(body.string(), AddNzbResponse.class);
             if (addNzbResponse.getNzoIds().isEmpty()) {

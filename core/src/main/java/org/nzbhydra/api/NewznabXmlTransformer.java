@@ -28,9 +28,13 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,6 +42,8 @@ import java.util.stream.Collectors;
 
 @Component
 public class NewznabXmlTransformer {
+
+    private static final Logger logger = LoggerFactory.getLogger(NewznabXmlTransformer.class);
 
     private static final String APPLICATION_TYPE_NZB = "application/x-nzb";
     private static final String APPLICATION_TYPE_TORRENT = "application/x-bittorrent";
@@ -82,7 +88,7 @@ public class NewznabXmlTransformer {
         searchResultItem.getAttributes().put("guid", String.valueOf(searchResultItem.getSearchResultId()));
         List<NewznabAttribute> newznabAttributes = searchResultItem.getAttributes().entrySet().stream().map(attribute -> new NewznabAttribute(attribute.getKey(), attribute.getValue())).sorted(Comparator.comparing(NewznabAttribute::getName)).collect(Collectors.toList());
         newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
-        newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
+        newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));
         newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
         boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
         String resultType;
@@ -98,5 +104,14 @@ public class NewznabXmlTransformer {
         rssItem.setDescription(searchResultItem.getDescription());
         rssItem.setCategory(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? searchResultItem.getOriginalCategory() : searchResultItem.getCategory().getName());
         return rssItem;
+    }
+
+    private String getIndexerHost(SearchResultItem searchResultItem) {
+        try {
+            return String.valueOf(new URI(searchResultItem.getIndexer().getConfig().getHost()).getHost());
+        } catch (URISyntaxException e) {
+            //Should never happen
+            return null;
+        }
     }
 }

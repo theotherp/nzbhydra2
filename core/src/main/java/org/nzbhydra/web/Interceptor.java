@@ -38,7 +38,7 @@ public class Interceptor extends HandlerInterceptorAdapter {
         SessionStorage.username.set(request.getRemoteUser());
         SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
-        SessionStorage.urlBuilder.set(urlCalculator.getBaseUriBuilder(request));
+        SessionStorage.setUrlBuilder(urlCalculator.getBaseUriBuilder(request));
 
         return true;
     }

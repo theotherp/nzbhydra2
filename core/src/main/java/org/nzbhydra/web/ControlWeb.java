@@ -34,7 +34,7 @@ public class ControlWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/control/restart", method = RequestMethod.GET)
     public GenericResponse restart() throws Exception {
-        String baseUrl = SessionStorage.urlBuilder.get().toUriString();
+        String baseUrl = SessionStorage.getUrlBuilder().toUriString();
         logger.info("Shutting down due to external request. Restart will be handled by wrapper. Web interface will reload to URL {}", baseUrl);
         updateManager.exitWithReturnCode(UpdateManager.RESTART_RETURN_CODE);
         logger.debug("Returning restart OK");
