@@ -2,8 +2,10 @@ package org.nzbhydra.api;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.catalina.connector.ClientAbortException;
 import org.nzbhydra.config.CategoriesConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
@@ -222,13 +224,21 @@ public class ExternalApi {
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity handleUnexpectedError(Exception e) {
-        logger.error("Unexpected error while handling API request", e);
-        if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
-            logger.debug("Wrapping error in empty search result");
-            return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, null));
-        } else {
-            NewznabXmlError error = new NewznabXmlError("900", e.getMessage());
-            return ResponseEntity.status(200).body(error);
+        if (e instanceof ClientAbortException || Throwables.getCausalChain(e).stream().anyMatch(x -> x instanceof ClientAbortException)) {
+            logger.warn("Calling tool closed the connection before getting the results");
+            return null; //Can't return anything because the connection is closed, obviously
+        }
+        try {
+            logger.error("Unexpected error while handling API request", e);
+            if (configProvider.getBaseConfig().getSearching().isWrapApiErrors()) {
+                logger.debug("Wrapping error in empty search result");
+                return ResponseEntity.status(200).body(newznabXmlTransformer.getRssRoot(Collections.emptyList(), 0, 0, null));
+            } else {
+                NewznabXmlError error = new NewznabXmlError("900", e.getMessage());
+                return ResponseEntity.status(200).body(error);
+            }
+        } catch (Exception e1) {
+            return ResponseEntity.status(200).body("<error code=\"900\" description=\"" + e.getMessage() + "\"");
         }
     }
 
