@@ -119,7 +119,6 @@ public class Sabnzbd extends Downloader {
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
         }
-
         RequestBody formBody = new MultipartBody.Builder().addFormDataPart("name", title, RequestBody.create(MediaType.parse(org.springframework.http.MediaType.APPLICATION_XML_VALUE), fileContent)).build();
         Request request = new Request.Builder()
                 .url(urlBuilder.toUriString())

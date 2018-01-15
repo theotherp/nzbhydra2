@@ -184,11 +184,6 @@ public class JsonConfigMigration {
                 logAsWarningAndAdd(messages, "Unable to migrate NZB adding type for downloader '" + oldDownloader.getName() + "'. Setting it to 'Send link'.");
                 newDownloader.setNzbAddingType(NzbAddingType.SEND_LINK);
             }
-            if (oldDownloader.getNzbaccesstype().equals("serve")) {
-                newDownloader.setNzbAccessType(NzbAccessType.PROXY);
-            } else {
-                newDownloader.setNzbAccessType(NzbAccessType.REDIRECT);
-            }
             newDownloader.setIconCssClass(oldDownloader.getIconCssClass());
             newDownloader.setDefaultCategory(oldDownloader.getDefaultCategory());
             newDownloader.setDownloadType(DownloadType.NZB);

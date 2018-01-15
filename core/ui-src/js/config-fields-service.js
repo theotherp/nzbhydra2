@@ -2074,19 +2074,6 @@ function getDownloaderBoxFields(model, parentModel, isInitial) {
             }
         },
         {
-            key: 'nzbAccessType',
-            type: 'horizontalSelect',
-            templateOptions: {
-                type: 'select',
-                label: 'NZB access type',
-                options: [
-                    {name: 'Proxy NZBs from indexer', value: 'PROXY'},
-                    {name: 'Redirect to the indexer', value: 'REDIRECT'}
-                ],
-                help: "How external access to NZBs is provided. Redirecting is recommended."
-            }
-        },
-        {
             key: 'nzbAddingType',
             type: 'horizontalSelect',
             templateOptions: {

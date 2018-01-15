@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.config.NzbAccessType;
 import org.nzbhydra.config.NzbAddingType;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -67,7 +68,7 @@ public abstract class Downloader {
                 Long guid = Long.valueOf(entry.getSearchResultId());
                 String categoryToSend = Strings.isNullOrEmpty(category) ? entry.getOriginalCategory() : category;
                 if (addingType == NzbAddingType.UPLOAD) {
-                    NzbDownloadResult result = nzbHandler.getNzbByGuid(guid, downloaderConfig.getNzbAccessType(), SearchSource.INTERNAL);
+                    NzbDownloadResult result = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
                     String externalId = addNzb(result.getNzbContent(), result.getTitle(), categoryToSend);
                     result.getDownloadEntity().setExternalId(externalId);
                     nzbHandler.updateStatusByEntity(result.getDownloadEntity(), NzbDownloadStatus.NZB_ADDED);

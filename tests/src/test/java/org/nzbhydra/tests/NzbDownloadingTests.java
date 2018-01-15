@@ -119,7 +119,6 @@ public class NzbDownloadingTests {
         downloaderConfig.setDownloaderType(DownloaderType.SABNZBD);
         downloaderConfig.setName("sabnzbd");
         downloaderConfig.setUrl("http://127.0.0.1:7070/sabnzbd/");
-        downloaderConfig.setNzbAccessType(NzbAccessType.REDIRECT);
         downloaderConfig.setNzbAddingType(NzbAddingType.SEND_LINK);
         downloaderConfig.setApiKey("apikey");
         baseConfig.getDownloading().getDownloaders().clear();

@@ -20,7 +20,6 @@ import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.SessionStorage;
-import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,8 +56,6 @@ public class NzbHandler {
     private NzbDownloadRepository downloadRepository;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
-    @Autowired
-    private UrlCalculator urlCalculator;
     @Autowired
     private HydraOkHttp3ClientHttpRequestFactory clientHttpRequestFactory;
     @Autowired
