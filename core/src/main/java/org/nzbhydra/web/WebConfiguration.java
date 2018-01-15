@@ -1,5 +1,7 @@
 package org.nzbhydra.web;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +27,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private Interceptor interceptor;
+
+    private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

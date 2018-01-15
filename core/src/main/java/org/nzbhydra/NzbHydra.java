@@ -6,6 +6,7 @@ import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.web.UrlCalculator;
@@ -208,7 +209,9 @@ public class NzbHydra {
                 }
             }
 
-            if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
+            if (DebugInfosProvider.isRunInDocker()) {
+                logger.info("You seem to be running NZBHydra 2 in docker. You can access Hydra using your local address and the IP you provided");
+            } else if (configProvider.getBaseConfig().getMain().isStartupBrowser() && !"true".equals(System.getProperty(BROWSER_DISABLED))) {
                 if (wasRestarted) {
                     logger.info("Not opening browser after restart");
                     return;

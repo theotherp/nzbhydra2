@@ -23,6 +23,9 @@ public class Interceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null) {
+            ip = request.getHeader("X-Real-IP");
+        }
         if (ip != null) {
             ip = ip.split(",")[0];
         } else {

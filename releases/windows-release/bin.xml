@@ -21,11 +21,6 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
         <fileSet>
-            <directory>../../misc/downloaderScripts</directory>
-            <outputDirectory>./downloaderScripts</outputDirectory>
-            <lineEnding>keep</lineEnding>
-        </fileSet>
-        <fileSet>
             <directory>../../</directory>
             <outputDirectory>./</outputDirectory>
             <includes>

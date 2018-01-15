@@ -19,6 +19,9 @@ public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
     public HydraWebAuthenticationDetails(HttpServletRequest request) {
         super(request);
         String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null) {
+            ip = request.getHeader("X-Real-IP");
+        }
         if (ip != null) {
             ip = ip.split(",")[0];
         } else {

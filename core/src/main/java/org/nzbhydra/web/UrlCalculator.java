@@ -81,8 +81,8 @@ public class UrlCalculator {
         } else {
             host = request.getHeader("host");
             if (host == null) {
-                logger.warn("Header host not set. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information");
                 host = request.getServerName();
+                logger.warn("Header host not set Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
             } else {
                 int colonIndex = host.indexOf(":"); //Apache includes the port in the host header
                 if (colonIndex >-1) {
@@ -92,7 +92,7 @@ public class UrlCalculator {
             }
         }
 
-        if (port == null) { //No x-forwarded-host header found, use server port (configured port should also work)
+        if (port == null) { //No x-forwarded-host header found (may be 80 and not provided), use server port
             port = request.getServerPort();
             logger.debug(LoggingMarkers.URL_CALCULATION, "Header x-forwarded-host not set. Using port {} from server", port);
         }

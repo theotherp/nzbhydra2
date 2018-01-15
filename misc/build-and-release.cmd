@@ -30,6 +30,20 @@ if not "%ERRORLEVEL%" == "0" (
     goto error
 )
 
+echo Checking if all needed files exist
+if not exist ..\releases\linux-release\include\nzbhydra2 (
+    echo ..\releases\linux-release\include\nzbhydra2 does not exist
+    got error
+)
+if not exist ..\releases\linux-release\include\nzbhydra2.exe (
+    echo ..\releases\windows-release\include\nzbhydra2.exe does not exist
+    got error
+)
+if not exist ""..\releases\linux-release\include\nzbhydra2 console.exe" (
+    echo ..\releases\windows-release\include\nzbhydra2 console.exe does not exist
+    got error
+)
+
 echo Generating changelog
 call mvn github-release:generate-changelog
 if not "%ERRORLEVEL%" == "0" (
