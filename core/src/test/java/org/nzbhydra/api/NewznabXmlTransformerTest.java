@@ -68,6 +68,7 @@ public class NewznabXmlTransformerTest {
         when(searchResult.getNumberOfTotalAvailableResults()).thenReturn(10);
 
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
+        indexerConfig.setHost("http://127.0.0.1");
     }
 
     @InjectMocks

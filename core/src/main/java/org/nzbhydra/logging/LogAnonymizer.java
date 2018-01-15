@@ -34,13 +34,13 @@ public class LogAnonymizer {
         String log = logContentProvider.getLog();
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             logger.debug("Removing username from log");
-            log = log.replaceAll("(?i)User[=:]" + userAuthConfig.getUsername(), "User=<USERNAME>");
+            log = log.replaceAll("(?i)(user|username)([=:])" + userAuthConfig.getUsername(), "$1$2<USERNAME>");
         }
         logger.debug("Removing IPs from log");
         log = log.replaceAll("\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b", "<IP>");
         log = log.replaceAll("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))", "<IP>");
         logger.debug("Removing URL username/password from log");
-        log = log.replaceAll("(https?):\\/\\/((.+?)(:(.+?)|)@)", "$1://username:password@");
+        log = log.replaceAll("(https?):\\/\\/((.+?)(:(.+?)|)@)", "$1://<USERNAME>:<PASSWORD>@");
 
 
         logger.debug("Removing base path from log");
