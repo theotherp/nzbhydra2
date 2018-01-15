@@ -258,14 +258,14 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
         //Test deselection of results when hiding or downloading them
         searchResultsPage.searchResultSelectionButton().deselectAll();
-        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).describedAs("Deselected").isEqualTo(0L);
         Actions shiftClick = new Actions(webDriver);
         shiftClick.click(searchResultsPage.indexerSelectionCheckboxes().get(0).getWebelement()).keyDown(Keys.SHIFT).click(searchResultsPage.indexerSelectionCheckboxes().get(4).getWebelement()).keyUp(Keys.SHIFT).perform();
         Sleep.sleep(100);
         assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(5L);
         searchResultsPage.downloadSelectedAsZipButton().click();
         Sleep.sleep(1000);
-        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).isEqualTo(0L);
+        assertThat(searchResultsPage.indexerSelectionCheckboxes().stream().filter(ICheckbox::ischecked).count()).describedAs("After download as zip").isEqualTo(0L);
         searchResultsPage.searchResultSelectionButton().selectAll();
         searchResultsPage.tableHeader().indexerFilter().filterBy(Arrays.asList("mock1"));
         searchResultsPage.tableHeader().indexerFilter().filterBy(Arrays.asList("mock1"));
