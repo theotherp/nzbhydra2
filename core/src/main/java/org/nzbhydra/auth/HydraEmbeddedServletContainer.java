@@ -41,6 +41,9 @@ public class HydraEmbeddedServletContainer implements EmbeddedServletContainerCu
 
     @Override
     public void customize(ConfigurableEmbeddedServletContainer container) {
+        if (!(container instanceof TomcatEmbeddedServletContainerFactory)) {
+            return; //Is the case in tests
+        }
         TomcatEmbeddedServletContainerFactory containerFactory = (TomcatEmbeddedServletContainerFactory) container;
 
         containerFactory.addContextValves(new ValveBase() {

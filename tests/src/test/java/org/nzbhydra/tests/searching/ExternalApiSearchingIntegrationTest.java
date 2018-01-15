@@ -49,6 +49,8 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = NzbHydra.class)
 public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacingTest {
 
+
+
     @Autowired
     private ExternalApi externalApi;
     @Autowired
