@@ -18,7 +18,6 @@ public class DownloaderConfig extends ValidatingConfig {
     private boolean enabled;
     private String iconCssClass;
     private String name;
-    private NzbAccessType nzbAccessType;
     private NzbAddingType nzbAddingType;
     private DownloaderType downloaderType;
     @SensitiveData
