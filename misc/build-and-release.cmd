@@ -33,15 +33,15 @@ if not "%ERRORLEVEL%" == "0" (
 echo Checking if all needed files exist
 if not exist ..\releases\linux-release\include\nzbhydra2 (
     echo ..\releases\linux-release\include\nzbhydra2 does not exist
-    got error
+    goto error
 )
-if not exist ..\releases\linux-release\include\nzbhydra2.exe (
+if not exist "..\releases\linux-release\include\nzbhydra2.exe (
     echo ..\releases\windows-release\include\nzbhydra2.exe does not exist
-    got error
+    goto error
 )
-if not exist ""..\releases\linux-release\include\nzbhydra2 console.exe" (
+if not exist "..\releases\linux-release\include\nzbhydra2 console.exe" (
     echo ..\releases\windows-release\include\nzbhydra2 console.exe does not exist
-    got error
+    goto error
 )
 
 echo Generating changelog
