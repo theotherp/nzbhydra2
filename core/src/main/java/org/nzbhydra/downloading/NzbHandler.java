@@ -1,7 +1,6 @@
 package org.nzbhydra.downloading;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -221,7 +220,7 @@ public class NzbHandler {
                 throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Message: " + response.message());
             }
             ResponseBody body = response.body();
-            if (body == null || Strings.isNullOrEmpty(body.string())) {
+            if (body == null ) {
                 throw new IOException("NZB downloaded from " + result.getLink() + " is empty");
             }
             String content = body.string();
