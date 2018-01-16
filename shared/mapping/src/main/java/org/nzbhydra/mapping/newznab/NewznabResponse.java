@@ -16,8 +16,21 @@
 
 package org.nzbhydra.mapping.newznab;
 
+import javax.xml.bind.JAXB;
+import java.io.IOException;
+import java.io.StringWriter;
+
 public abstract class NewznabResponse {
 
     public abstract String getContentHeader();
+
+    public String toXmlString() {
+        try (StringWriter writer = new StringWriter()) {
+            JAXB.marshal(this, writer);
+            return writer.toString();
+        } catch (IOException e) {
+            return null;
+        }
+    }
 
 }

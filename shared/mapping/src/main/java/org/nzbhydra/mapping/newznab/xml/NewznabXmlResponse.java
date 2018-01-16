@@ -32,7 +32,7 @@ public class NewznabXmlResponse {
     }
 
     public NewznabXmlResponse(Integer offset, Integer total) {
-        this.offset = offset;
+        this.offset = offset == null ? 0 : offset;
         this.total = total;
     }
 

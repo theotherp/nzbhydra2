@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 @XmlRootElement(name = "rss")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -40,4 +41,7 @@ public class NewznabXmlRoot extends Xml {
     @XmlElement(name = "error")
     @JsonProperty("error")
     private NewznabXmlError error;
+
+    @XmlTransient
+    private boolean isNewznab;
 }

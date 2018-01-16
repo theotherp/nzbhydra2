@@ -93,7 +93,11 @@ public class MainConfig extends ValidatingConfig {
             if ("/".equals(urlBase) || "".equals(urlBase)) {
                 urlBase = null;
             }
-            result.getWarningMessages().add("Changed URL base to " + urlBase);
+            if (urlBase != null) {
+                result.getWarningMessages().add("Changed URL base to " + urlBase);
+            } else {
+                result.getWarningMessages().add("Removed URL base");
+            }
         }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig);

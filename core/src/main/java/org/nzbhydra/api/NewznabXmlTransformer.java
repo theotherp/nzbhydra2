@@ -60,7 +60,10 @@ public class NewznabXmlTransformer {
         rssChannel.setTitle("NZBHydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
-        rssChannel.setNewznabResponse(new NewznabXmlResponse(offset, total));
+        if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
+            //Torznab doesn't have such a response
+            rssChannel.setNewznabResponse(new NewznabXmlResponse(offset, total));
+        }
         rssChannel.setGenerator("NZBHydra2");
 
         rssRoot.setRssChannel(rssChannel);
@@ -68,6 +71,12 @@ public class NewznabXmlTransformer {
         for (SearchResultItem searchResultItem : searchResultItems) {
             NewznabXmlItem rssItem = buildRssItem(searchResultItem, searchRequest);
             items.add(rssItem);
+        }
+
+        if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
+            rssRoot.setNewznab(true);
+        } else {
+            rssRoot.setNewznab(false);
         }
 
         rssChannel.setItems(items);
