@@ -16,6 +16,20 @@ if not exist readme.md (
     goto error
 )
 
+echo Checking if all needed files exist
+if not exist "%~dp0..\releases\linux-release\include\nzbhydra2" (
+    echo %~dp0..\releases\linux-release\include\nzbhydra2 does not exist
+    goto error
+)
+if not exist "%~dp0..\releases\windows-release\include\nzbhydra2.exe" (
+    echo %~dp0..\releases\windows-release\include\nzbhydra2.exe does not exist
+    goto error
+)
+if not exist "%~dp0..\releases\windows-release\include\nzbhydra2 console.exe" (
+    echo %~dp0..\releases\windows-release\include\nzbhydra2 console.exe does not exist
+    goto error
+)
+
 echo Setting release version
 call mvn versions:set -DnewVersion=%1
 if not "%ERRORLEVEL%" == "0" (
@@ -27,20 +41,6 @@ echo Checking preconditions
 call mvn github-release:precheck
 if not "%ERRORLEVEL%" == "0" (
     echo Error during release precheck
-    goto error
-)
-
-echo Checking if all needed files exist
-if not exist ..\releases\linux-release\include\nzbhydra2 (
-    echo ..\releases\linux-release\include\nzbhydra2 does not exist
-    goto error
-)
-if not exist "..\releases\linux-release\include\nzbhydra2.exe (
-    echo ..\releases\windows-release\include\nzbhydra2.exe does not exist
-    goto error
-)
-if not exist "..\releases\linux-release\include\nzbhydra2 console.exe" (
-    echo ..\releases\windows-release\include\nzbhydra2 console.exe does not exist
     goto error
 )
 

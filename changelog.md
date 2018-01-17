@@ -1,3 +1,6 @@
+### v1.1.1
+Fix: Fix results not being recognized by SickRage. But I don't understand why anyone wouldn't use rather Sonar...
+
 ### v1.1.0
 Feature: Completely rewrote handling of scheme, port, host and context path. Should solve some issues and prevent others from happening where reverse proxies are involved. Also extended the <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies">Wiki</a>. There's no need to set an external URL anymore. Please report back if this causes any issues
 Note: I'll remove the option to send links to downloaders in one of the coming versions. Only upload of NZBs to downloaders will be supported. v2 is capable of handling it without issues and it allows for better control and upload status recognition
