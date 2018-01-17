@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.1.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "SickRage didn't find any results. The fix is somewhat hacky and will hopefully be improved soon but for now it seems to work"
+      }
+    ]
+  },  {
     "version": "v1.1.0",
     "changes": [
       {
