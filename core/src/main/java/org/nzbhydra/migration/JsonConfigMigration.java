@@ -241,7 +241,8 @@ public class JsonConfigMigration {
             newAuth.setAuthType(AuthType.NONE);
         }
         newAuth.setRememberUsers(oldAuth.isRestrictAdmin());
-        newAuth.setRememberMeValidityDays(oldAuth.getRememberUsersExpiry());
+        int oldAuthRememberUsersExpiry = oldAuth.getRememberUsersExpiry();
+        newAuth.setRememberMeValidityDays(oldAuthRememberUsersExpiry  < 1 ? 14 : oldAuthRememberUsersExpiry);
         newAuth.getUsers().clear();
         List<UserAuthConfig> newUserConfigs = new ArrayList<>();
         for (User user : oldAuth.getUsers()) {
