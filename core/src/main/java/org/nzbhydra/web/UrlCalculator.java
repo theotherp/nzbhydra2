@@ -51,7 +51,7 @@ public class UrlCalculator {
 
     public UriComponentsBuilder getLocalBaseUriBuilder(HttpServletRequest request) {
         String scheme;
-        String host = null;
+        String host;
         Integer port = null;
         String path;
 
@@ -67,25 +67,30 @@ public class UrlCalculator {
             scheme = "http";
         }
 
-        String forwardedHost = request.getHeader("x-forwarded-host"); //Looks like this: mydomain.com:4000
+        String forwardedHost = request.getHeader("x-forwarded-host"); //May look like this: mydomain.com:4000 or like this: mydomain.com
         if (forwardedHost != null) {
             int colonIndex = forwardedHost.indexOf(":");
             if (colonIndex > -1) {
                 host = forwardedHost.substring(0, colonIndex);
                 port = Integer.valueOf(forwardedHost.substring(colonIndex + 1));
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from header x-forwarded-proto {}", host, port, forwardedHost);
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from header x-forwarded-host {}", host, port, forwardedHost);
             } else {
-                //Asuming port 80 is meant but the header should always also contain the port!
-                logger.warn("Header x-forwarded-host does not contain port. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information");
+                host = forwardedHost;
+                String forwardedPort = request.getHeader("x-forwarded-port");
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host ", host);
+                if (forwardedPort != null) {
+                    port = Integer.valueOf(forwardedPort);
+                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} from header x-forwarded-port ", port);
+                }
             }
         } else {
             host = request.getHeader("host");
             if (host == null) {
                 host = request.getServerName();
-                logger.warn("Header host not set Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
+                logger.warn("Header host not set. Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
             } else {
                 int colonIndex = host.indexOf(":"); //Apache includes the port in the host header
-                if (colonIndex >-1) {
+                if (colonIndex > -1) {
                     host = host.substring(0, colonIndex);
                 }
                 logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", host);
@@ -94,7 +99,7 @@ public class UrlCalculator {
 
         if (port == null) { //No x-forwarded-host header found (may be 80 and not provided), use server port
             port = request.getServerPort();
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Header x-forwarded-host not set. Using port {} from server", port);
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Using port {} from server", port);
         }
 
         path = request.getContextPath();

@@ -42,13 +42,12 @@ public class UrlCalculatorTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-
     }
 
     @Test
     public void shouldBuildCorrectlyForLocalAccessWithHttp() {
         prepareConfig(false, false, "/");
-        prepareHeaders("127.0.0.1:5076", null, null);
+        prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -61,7 +60,7 @@ public class UrlCalculatorTest {
     @Test
     public void shouldBuildCorrectlyForLocalAccessWithContextPath() {
         prepareConfig(false, false, "/nzbhydra2");
-        prepareHeaders("127.0.0.1:5076", null, null);
+        prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/nzbhydra2");
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -75,7 +74,7 @@ public class UrlCalculatorTest {
     @Test
     public void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaLocalhost() {
         prepareConfig(false, true, "/");
-        prepareHeaders("127.0.0.1:5076", null, null);
+        prepareHeaders("127.0.0.1:5076", null, null, null);
         prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -88,7 +87,7 @@ public class UrlCalculatorTest {
     @Test
     public void shouldBuildCorrectlyForLocalAccessWithBindAllAccessedViaNetworkAddress() {
         prepareConfig(false, true, "/");
-        prepareHeaders("192.168.1.111:5076", null, null);
+        prepareHeaders("192.168.1.111:5076", null, null, null);
         prepareServlet("http://192.168.1.111:5076", "192.168.1.111", 5076, "http", "/");
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -99,10 +98,11 @@ public class UrlCalculatorTest {
     }
 
 
+
     @Test
     public void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaLocalhost() {
         prepareConfig(false, false, "/nzbhydra2");
-        prepareHeaders("127.0.0.1", "127.0.0.1:4001", null); //nginx doesn't include the port in the "host" header
+        prepareHeaders("127.0.0.1", "127.0.0.1:4001", null, null); //nginx doesn't include the port in the "host" header
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -115,7 +115,20 @@ public class UrlCalculatorTest {
     @Test
     public void shouldBuildCorrectlyForReverseProxyWithHttpAccessedViaNetworkAddress() {
         prepareConfig(false, false, "/nzbhydra2");
-        prepareHeaders("192.168.1.111", "192.168.1.111:4001", null); //nginx doesn't include the port in the "host" header
+        prepareHeaders("192.168.1.111", "192.168.1.111:4001", null, null); //nginx doesn't include the port in the "host" header
+        prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
+
+        assertThat(builder.build().getScheme()).isEqualTo("http");
+        assertThat(builder.build().getHost()).isEqualTo("192.168.1.111");
+        assertThat(builder.build().getPort()).isEqualTo(4001);
+        assertThat(builder.build().getPath()).isEqualTo("/nzbhydra2");
+    }
+
+    @Test
+    public void shouldBuildCorrectlyForReverseProxySendingForwardedPort() {
+        prepareConfig(false, false, "/nzbhydra2");
+        prepareHeaders("192.168.1.111", "192.168.1.111", null, "4001"); //x-forwarded-host may not contain the port
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 in the servlet
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -128,7 +141,7 @@ public class UrlCalculatorTest {
     @Test
     public void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaLocalhost() {
         prepareConfig(false, false, "/nzbhydra2");
-        prepareHeaders("127.0.0.1:4001", "127.0.0.1:4001", "https");
+        prepareHeaders("127.0.0.1:4001", "127.0.0.1:4001", "https", null);
         prepareServlet("http://127.0.0.1:4001", "127.0.0.1", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme http in the servlet
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
@@ -138,18 +151,29 @@ public class UrlCalculatorTest {
         assertThat(builder.build().getPath()).isEqualTo("/nzbhydra2");
     }
 
-
-
     @Test
     public void shouldBuildCorrectlyForReverseProxyWithHttpsAccessedViaNetworkAddress() {
         prepareConfig(false, false, "/nzbhydra2");
-        prepareHeaders("192.168.1.111:4001", "192.168.1.111:4001", "https");
+        prepareHeaders("192.168.1.111:4001", "192.168.1.111:4001", "https", null);
         prepareServlet("192.168.1.111:4001", "192.168.1.111", 80, "http", "/nzbhydra2"); //nginx reports port 80 and scheme in the servlet
         UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
 
         assertThat(builder.build().getScheme()).isEqualTo("https");
         assertThat(builder.build().getHost()).isEqualTo("192.168.1.111");
         assertThat(builder.build().getPort()).isEqualTo(4001);
+        assertThat(builder.build().getPath()).isEqualTo("/nzbhydra2");
+    }
+
+    @Test
+    public void shouldBuildCorrectlyForReverseProxyWithHttpsOnPort443() {
+        prepareConfig(false, false, "/nzbhydra2");
+        prepareHeaders("localhost", "localhost", "https", null);
+        prepareServlet("localhost", "localhost", 443, "http", "/nzbhydra2"); //nginx reports port 80 and scheme in the servlet
+        UriComponentsBuilder builder = testee.getLocalBaseUriBuilder(requestMock);
+
+        assertThat(builder.build().getScheme()).isEqualTo("https");
+        assertThat(builder.build().getHost()).isEqualTo("localhost");
+        assertThat(builder.build().getPort()).isEqualTo(443);
         assertThat(builder.build().getPath()).isEqualTo("/nzbhydra2");
     }
 
@@ -161,10 +185,11 @@ public class UrlCalculatorTest {
         when(requestMock.getContextPath()).thenReturn(contextPath);
     }
 
-    protected void prepareHeaders(String host, String forwardedHost, String forwardedProto) {
+    protected void prepareHeaders(String host, String forwardedHost, String forwardedProto, String forwardedPort) {
         when(requestMock.getHeader("x-forwarded-for")).thenReturn("8.8.8.8"); //Calling IP which can be anything. Should not be used for host building
         when(requestMock.getHeader("x-forwarded-host")).thenReturn(forwardedHost);
         when(requestMock.getHeader("x-forwarded-proto")).thenReturn(forwardedProto);
+        when(requestMock.getHeader("x-forwarded-port")).thenReturn(forwardedPort);
         when(requestMock.getHeader("host")).thenReturn(host);
     }
 
