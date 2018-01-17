@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "fix",
-        "text": "SickRage didn't find any results. The fix is somewhat hacky and will hopefully be improved soon but for now it seems to work"
+        "text": "Fix results not being recognized by SickRage. But I don't understand why anyone wouldn't use rather Sonar..."
       }
     ]
   },  {
@@ -19,7 +19,8 @@
         "text": "I'll remove the option to send links to downloaders in one of the coming versions. Only upload of NZBs to downloaders will be supported. v2 is capable of handling it without issues and it allows for better control and upload status recognition"
       }
     ]
-  },{
+  },
+  {
     "version": "v1.0.18",
     "changes": [
       {

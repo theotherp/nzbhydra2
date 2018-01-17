@@ -42,10 +42,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -73,7 +76,6 @@ public class ExternalApi {
     @Value("${nzbhydra.dev.noApiKey:false}")
     private boolean noApiKeyNeeded = false;
 
-
     @Autowired
     protected Searcher searcher;
     @Autowired
@@ -88,6 +90,8 @@ public class ExternalApi {
     private NewznabJsonTransformer newznabJsonTransformer;
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private Jaxb2Marshaller jaxb2Marshaller;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 
@@ -110,7 +114,20 @@ public class ExternalApi {
             NewznabResponse searchResult = search(params);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
-            return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            if (params.getO() != OutputType.JSON) {
+                jaxb2Marshaller.marshal(searchResult, new StreamResult(bos));
+                String searchResultString = bos.toString();
+                if (isTorznabCall()) {
+                    searchResultString = searchResultString.replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
+                } else {
+                    searchResultString = searchResultString.replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
+                }
+                return new ResponseEntity<>(searchResultString, httpHeaders, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
+            }
+
         }
 
         if (params.getT() == ActionAttribute.GET) {
@@ -255,8 +272,6 @@ public class ExternalApi {
         logger.debug(LoggingMarkers.PERFORMANCE, "Transforming results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return response;
     }
-
-
 
 
     private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
