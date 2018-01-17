@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
@@ -26,7 +28,9 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
+import javax.xml.transform.stream.StreamResult;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -35,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,6 +72,8 @@ public class ExternalApiTest {
     private NewznabXmlTransformer newznabXmlTransformerMock;
     @Mock
     private NewznabJsonTransformer newznabJsonTransformerMock;
+    @Mock
+    private Jaxb2Marshaller jaxb2MarshallerMock;
     IndexerConfig indexerConfig = new IndexerConfig();
 
 
@@ -85,7 +92,14 @@ public class ExternalApiTest {
         when(searchResult.getNumberOfRejectedResults()).thenReturn(0);
         when(searchResult.getNumberOfRemovedDuplicates()).thenReturn(0);
         when(searchResult.getNumberOfTotalAvailableResults()).thenReturn(10);
-
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                StreamResult streamResult = (StreamResult) invocation.getArguments()[1];
+                streamResult.getOutputStream().write("".getBytes(), 0, "".getBytes().length);
+                return null;
+            }
+        }).when(jaxb2MarshallerMock).marshal(any(), any());
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
     }
 

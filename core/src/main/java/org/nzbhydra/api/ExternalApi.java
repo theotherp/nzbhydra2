@@ -116,8 +116,7 @@ public class ExternalApi {
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             if (params.getO() != OutputType.JSON) {
-                jaxb2Marshaller.marshal(searchResult, new StreamResult(bos));
-                String searchResultString = bos.toString();
+                String searchResultString = marshalSearchResult(searchResult, bos);
                 if (isTorznabCall()) {
                     searchResultString = searchResultString.replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
                 } else {
@@ -141,6 +140,11 @@ public class ExternalApi {
         logger.error("Incorrect API request: {}", params);
         NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
         return new ResponseEntity<Object>(error, HttpStatus.OK);
+    }
+
+    protected String marshalSearchResult(NewznabResponse searchResult, ByteArrayOutputStream bos) {
+        jaxb2Marshaller.marshal(searchResult, new StreamResult(bos));
+        return bos.toString();
     }
 
 
