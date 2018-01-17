@@ -6,13 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.oxm.mime.MimeContainer;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -21,8 +18,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.xml.bind.Marshaller;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,50 +76,13 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
      */
     @Bean
     public Jaxb2Marshaller marshaller() {
-        Jaxb2Marshaller marshaller = new Jaxb2Marshaller() {
-            @Override
-            public void setSchema(Resource schemaResource) {
-                super.setSchema(schemaResource);
-            }
-
-            @Override
-            public void marshal(Object graph, Result result) throws XmlMappingException {
-                super.marshal(graph, result);
-            }
-
-            @Override
-            public void marshal(Object graph, Result result, MimeContainer mimeContainer) throws XmlMappingException {
-                super.marshal(graph, result, mimeContainer);
-            }
-
-            @Override
-            public void setUnmarshallerProperties(Map<String, ?> properties) {
-                super.setUnmarshallerProperties(properties);
-            }
-
-            @Override
-            protected Marshaller createMarshaller() {
-                return super.createMarshaller();
-            }
-
-            @Override
-            public Object unmarshal(Source source) throws XmlMappingException {
-                return super.unmarshal(source);
-            }
-
-            @Override
-            public Object unmarshal(Source source, MimeContainer mimeContainer) throws XmlMappingException {
-                return super.unmarshal(source, mimeContainer);
-            }
-        };
+        Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
         Map<String, Boolean> map = new HashMap<>();
         map.put(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         marshaller.setMarshallerProperties(map);
         marshaller.setPackagesToScan("org.nzbhydra");
         return marshaller;
     }
-
-
 
     /**
      * Enable pretty printing of returned JSON
