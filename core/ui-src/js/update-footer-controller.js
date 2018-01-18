@@ -66,25 +66,26 @@ function UpdateFooterController($scope, UpdateService, RequestsErrorHandler, Hyd
         });
     }
 
-
     function checkAndShowWelcome() {
-        $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
-            if (!wasWelcomeShown) {
-                $http.put("internalapi/welcomeshown");
-                var promise = $uibModal.open({
-                    templateUrl: 'static/html/welcome-modal.html',
-                    controller: WelcomeModalInstanceCtrl,
-                    size: "md"
-                });
-                promise.opened.then(function () {
-                    welcomeIsBeingShown = true;
-                });
-                promise.closed.then(function () {
-                    welcomeIsBeingShown = false;
-                });
-            } else {
-                _.defer(checkAndShowNews);
-            }
+        RequestsErrorHandler.specificallyHandled(function () {
+            $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
+                if (!wasWelcomeShown) {
+                    $http.put("internalapi/welcomeshown");
+                    var promise = $uibModal.open({
+                        templateUrl: 'static/html/welcome-modal.html',
+                        controller: WelcomeModalInstanceCtrl,
+                        size: "md"
+                    });
+                    promise.opened.then(function () {
+                        welcomeIsBeingShown = true;
+                    });
+                    promise.closed.then(function () {
+                        welcomeIsBeingShown = false;
+                    });
+                } else {
+                    _.defer(checkAndShowNews);
+                }
+            });
         });
     }
 
