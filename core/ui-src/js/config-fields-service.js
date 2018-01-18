@@ -82,26 +82,6 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'externalUrl',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'External URL',
-                                placeholder: 'https://www.somedomain.com/nzbhydra/',
-                                help: 'Set to the full external if the address is different outside the machine Hydra is running on'
-                            }
-                        },
-                        {
-                            key: 'useLocalUrlForApiAccess',
-                            type: 'horizontalSwitch',
-                            hideExpression: '!model.externalUrl',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Use local address in API results',
-                                help: 'Disable to make API results use the external URL in NZB links.'
-                            }
-                        },
-                        {
                             key: 'ssl',
                             type: 'horizontalSwitch',
                             templateOptions: {
