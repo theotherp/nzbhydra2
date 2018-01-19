@@ -23,6 +23,8 @@ import java.io.StringWriter;
 public abstract class NewznabResponse {
 
     public abstract String getContentHeader();
+    public abstract String getSearchType();
+    public abstract void setSearchType(String searchType);
 
     public String toXmlString() {
         try (StringWriter writer = new StringWriter()) {

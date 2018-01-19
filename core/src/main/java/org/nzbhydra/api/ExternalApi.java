@@ -47,8 +47,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.xml.transform.stream.StreamResult;
-import java.io.ByteArrayOutputStream;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -114,18 +112,10 @@ public class ExternalApi {
             NewznabResponse searchResult = search(params);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
             if (params.getO() != OutputType.JSON) {
-                String searchResultString = marshalSearchResult(searchResult, bos);
-                if (isTorznabCall()) {
-                    searchResultString = searchResultString.replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
-                } else {
-                    searchResultString = searchResultString.replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
-                }
-                return new ResponseEntity<>(searchResultString, httpHeaders, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
+                searchResult.setSearchType(isTorznabCall() ? "torznab" : "newznab");
             }
+            return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
 
         }
 
@@ -141,12 +131,6 @@ public class ExternalApi {
         NewznabXmlError error = new NewznabXmlError("200", "Unknown or incorrect parameter");
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
-
-    protected String marshalSearchResult(NewznabResponse searchResult, ByteArrayOutputStream bos) {
-        jaxb2Marshaller.marshal(searchResult, new StreamResult(bos));
-        return bos.toString();
-    }
-
 
     protected ResponseEntity<?> handleCachingSearch(NewznabParameters params) {
         //Remove old entries

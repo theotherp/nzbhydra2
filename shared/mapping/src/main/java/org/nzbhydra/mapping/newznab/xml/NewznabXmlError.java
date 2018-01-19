@@ -37,4 +37,6 @@ public class NewznabXmlError extends Xml {
 
     @XmlAttribute
     private String description;
+
+
 }

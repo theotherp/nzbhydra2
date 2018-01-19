@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Data
 public class NewznabXmlRoot extends Xml {
 
+
     @XmlAttribute
     private String version = "2.0";
 

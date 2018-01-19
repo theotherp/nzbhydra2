@@ -1,5 +1,6 @@
 package org.nzbhydra.web;
 
+import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,12 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -18,6 +24,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +37,8 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private Interceptor interceptor;
+    @Autowired
+    private Jaxb2Marshaller jaxb2Marshaller;
 
     private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
@@ -95,6 +107,56 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 jacksonConverter.setPrettyPrint(true);
             }
         }
+        converters.add(0, new NewznabAndTorznabResponseNamespaceFixer());
+    }
+
+
+    private class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
+
+        private MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+
+        @Override
+        public boolean canRead(Class<?> clazz, MediaType mediaType) {
+            return false;
+        }
+
+        @Override
+        public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+            return NewznabResponse.class.isAssignableFrom(clazz);
+        }
+
+        @Override
+        public List<MediaType> getSupportedMediaTypes() {
+            return Arrays.asList(MediaType.APPLICATION_XML, MediaType.APPLICATION_RSS_XML, MediaType.APPLICATION_ATOM_XML);
+        }
+
+        @Override
+        public Object read(Class<?> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+            logger.error("Didn't expect to have to read anything. Implementation error");
+            return null;
+        }
+
+        @Override
+        public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+            NewznabResponse newznabResponse = (NewznabResponse) o;
+            if ("json".equalsIgnoreCase(((NewznabResponse) o).getSearchType())) {
+                jacksonConverter.setPrettyPrint(true);
+                jacksonConverter.write(o, MediaType.APPLICATION_JSON_UTF8, outputMessage);
+            } else {
+                outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                jaxb2Marshaller.marshal(newznabResponse, new StreamResult(bos));
+                String result;
+                if (newznabResponse.getSearchType().equalsIgnoreCase("newznab")) {
+                    result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
+                } else {
+                    result = bos.toString().replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
+                }
+                outputMessage.getBody().write(result.getBytes());
+            }
+        }
+
+
     }
 
 

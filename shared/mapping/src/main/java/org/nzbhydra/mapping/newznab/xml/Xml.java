@@ -23,17 +23,31 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 import java.io.IOException;
 import java.io.StringWriter;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({NewznabXmlError.class, NewznabXmlRoot.class})
-public abstract class Xml extends NewznabResponse{
+public abstract class Xml extends NewznabResponse {
+
+    @XmlTransient
+    private String searchType;
 
     @Override
     public String getContentHeader() {
         return "application/xml";
+    }
+
+    @Override
+    public String getSearchType() {
+        return searchType;
+    }
+
+    @Override
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
     }
 
     public String toXmlString() {
@@ -44,5 +58,6 @@ public abstract class Xml extends NewznabResponse{
             return null;
         }
     }
+
 
 }
