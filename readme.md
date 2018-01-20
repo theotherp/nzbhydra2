@@ -6,7 +6,7 @@
 [![Latest version](https://img.shields.io/github/release/theotherp/nzbhydra2.svg)](https://github.com/theotherp/nzbhydra2/releases/latest)
 NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a number of raw and newznab based indexers. You can search all your indexers from one place and use it as indexer source for tools like Sonarr or CouchPotato.
 
-It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Alpha. 
+It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Beta. It works mostly fine but some functions might not be completely done and incompatibilities with some tools might still exist.
 
 ## Major features
 * Searches Anizb, BinSearch, NzbIndex and any newznab compatible indexers. Merges all results, filters them by a number of configurable restrictions, recognizes duplicates and returns them all in one place
