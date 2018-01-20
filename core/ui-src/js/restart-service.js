@@ -41,7 +41,7 @@ angular
     .module('nzbhydraApp')
     .controller('RestartModalInstanceCtrl', RestartModalInstanceCtrl);
 
-function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, baseUrl) {
+function RestartModalInstanceCtrl($scope, $timeout, $http, $window, RequestsErrorHandler, message, baseUrl) {
 
     message = (angular.isDefined(message) ? message : "");
     $scope.message = message + "Will reload page when NZBHydra is back";
@@ -54,17 +54,20 @@ function RestartModalInstanceCtrl($scope, $timeout, $http, $window, message, bas
         } else {
             $scope.message = message + " Will reload page when NZBHydra is back.";
             $timeout(function () {
-                $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(function () {
-                    $timeout(function () {
-                        $scope.message = "Reloading page...";
-                        if (angular.isDefined($scope.baseUrl)) {
-                            $window.location.href = $scope.baseUrl;
-                        } else {
-                            $window.location.reload();
-                        }
-                    }, 500);
-                }, function () {
-                    $scope.internalCaR(message, timer + 1);
+                RequestsErrorHandler.specificallyHandled(function () {
+                    $http.get($scope.pingUrl, {ignoreLoadingBar: true}).then(
+                        function () {
+                            $timeout(function () {
+                                $scope.message = "Reloading page...";
+                                if (angular.isDefined($scope.baseUrl)) {
+                                    $window.location.href = $scope.baseUrl;
+                                } else {
+                                    $window.location.reload();
+                                }
+                            }, 2000); //Give Hydra some time to load in the background, it might return the ping but not be completely up yet
+                        }, function () {
+                            $scope.internalCaR(message, timer + 1);
+                        });
                 });
             }, 1000);
             $scope.message = message + " Will reload page when NZBHydra is back.";

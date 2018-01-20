@@ -84,7 +84,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         $http.put("internalapi/updates/installUpdate").then(function () {
                 //Handle like restart, ping application and wait
                 //Perhaps save the version to which we want to update, ask later and see if they're equal. If not updating apparently failed...
-                $timeout(function() {
+                $timeout(function () {
                     //Give user some time to read the last message
                     RestartService.startCountdown("");
                     modalInstance.close();
@@ -101,15 +101,17 @@ angular
     .module('nzbhydraApp')
     .controller('UpdateModalInstanceCtrl', UpdateModalInstanceCtrl);
 
-function UpdateModalInstanceCtrl($scope, $http, $interval) {
+function UpdateModalInstanceCtrl($scope, $http, $interval, RequestsErrorHandler) {
     $scope.messages = [];
 
     var interval = $interval(function () {
-            $http.get("internalapi/updates/messages").then(
-                function (data) {
-                    $scope.messages = data.data;
-                }
-            );
+            RequestsErrorHandler.specificallyHandled(function () {
+                $http.get("internalapi/updates/messages").then(
+                    function (data) {
+                        $scope.messages = data.data;
+                    }
+                );
+            });
         },
         200);
 

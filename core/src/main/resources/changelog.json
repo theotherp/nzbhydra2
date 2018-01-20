@@ -18,6 +18,9 @@
         "type": "fix",
         "text": "NZB filenames were not sanitized before being written to ZIP, resulting in an error"
       }
+        "type": "fix",
+        "text": "Improved dialog during update installation (no more error messages when everything is fine, hopefully)"
+      }
     ]
   },
   {

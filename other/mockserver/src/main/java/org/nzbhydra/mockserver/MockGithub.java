@@ -37,11 +37,11 @@ public class MockGithub {
         releasev2.setBody("Changes in version 2.0.0");
         releasev2.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
         releasev2.setTagName("v2.0.0");
-        windowsAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
+        windowsAsset.setBrowserDownloadUrl("http://127.0.0.1:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
         windowsAsset.setSize(163L);
         Asset linuxAsset = new Asset();
-        linuxAsset.setBrowserDownloadUrl("http://192.168.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
+        linuxAsset.setBrowserDownloadUrl("http://127.0.0.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
         linuxAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
         linuxAsset.setSize(163L);
         releasev2.setAssets(Arrays.asList(windowsAsset, linuxAsset));
