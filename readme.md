@@ -1,4 +1,5 @@
-# NZBHydra 2 
+<img src="https://github.com/theotherp/nzbhydra2/raw/master/core/ui-src/img/banner-bright.png" width="50%"/>
+
 [![CircleCI](https://circleci.com/gh/theotherp/nzbhydra2.svg?style=svg&circle-token=20568f733a8f77b2f168d7d6f463aa198951949a)](https://circleci.com/gh/theotherp/nzbhydra2) 
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Average time to resolve an issue") 
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/theotherp/nzbhydra2.svg)](http://isitmaintained.com/project/theotherp/nzbhydra2 "Percentage of issues still open")
