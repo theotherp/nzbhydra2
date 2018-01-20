@@ -111,6 +111,12 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().equals("slash")) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("/").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getQ() != null && params.getQ().equals("oneresult")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").offset(params.getOffset()).titleWords(Collections.emptyList()).total(1).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);

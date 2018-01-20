@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Sending NZBs from the download history to downloaders didn't work. You'll have to manually choose a category because the original category isn't available in the download history anymore"
+      },
+      {
+        "type": "fix",
+        "text": "NZB filenames were not sanitized before being written to ZIP, resulting in an error"
       }
     ]
   },

@@ -115,7 +115,8 @@ public class NzbHandler {
             }
             try {
                 tempDirectory = Files.createTempDirectory("nzbhydra");
-                File tempFile = new File(tempDirectory.toFile(), result.getTitle() + ".nzb");
+                String title = result.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_");;
+                File tempFile = new File(tempDirectory.toFile(), title + ".nzb");
                 logger.debug("Writing NZB to temp file {}", tempFile.getAbsolutePath());
                 Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
                 nzbFiles.add(tempFile);
