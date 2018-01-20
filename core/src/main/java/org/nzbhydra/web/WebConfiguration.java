@@ -145,12 +145,12 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             } else {
                 outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                jaxb2Marshaller.marshal(newznabResponse, new StreamResult(bos));
+                marshaller().marshal(newznabResponse, new StreamResult(bos));
                 String result;
-                if (newznabResponse.getSearchType().equalsIgnoreCase("newznab")) {
-                    result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
-                } else {
+                if ("torznab".equalsIgnoreCase(newznabResponse.getSearchType())) {
                     result = bos.toString().replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
+                } else {
+                    result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
                 }
                 outputMessage.getBody().write(result.getBytes());
             }
