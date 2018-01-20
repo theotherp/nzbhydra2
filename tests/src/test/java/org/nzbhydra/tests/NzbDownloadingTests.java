@@ -168,7 +168,7 @@ public class NzbDownloadingTests {
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("/internalapi/downloader/addNzbs");
         SearchResultWebTO item = SearchResultWebTO.builder().searchResultId(String.valueOf(searchResultId)).build();
-        AddNzbsRequest addNzbsRequest = new AddNzbsRequest("sabnzbd", Collections.singletonList(item), "");
+        AddNzbsRequest addNzbsRequest = new AddNzbsRequest("sabnzbd", Collections.singletonList(new AddNzbsRequest.SearchResult(item.getSearchResultId(), item.getOriginalCategory())), "");
         request.contentType(MediaType.APPLICATION_JSON_VALUE);
         request.content(new ObjectMapper().writeValueAsString(addNzbsRequest));
         request.with(csrf());

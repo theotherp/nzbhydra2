@@ -1,5 +1,22 @@
 [
   {
+    "version": "v1.1.2",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Improved handling of XML generation for newznab/torznab API calls. Should improve compatibility with calling tools"
+      },
+      {
+        "type": "fix",
+        "text": "The URL code change introduced with 1.1.0 might've caused some problems and should be fixed now"
+      },
+      {
+        "type": "fix",
+        "text": "Sending NZBs from the download history to downloaders didn't work. You'll have to manually choose a category because the original category isn't available in the download history anymore"
+      }
+    ]
+  },
+  {
     "version": "v1.1.1",
     "changes": [
       {
@@ -11,7 +28,8 @@
         "text": "The URL code change introduced with 1.1.0 might've caused some problems and should be fixed now"
       }
     ]
-  },  {
+  },
+  {
     "version": "v1.1.0",
     "changes": [
       {

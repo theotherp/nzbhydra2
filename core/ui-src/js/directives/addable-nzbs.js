@@ -7,12 +7,15 @@ function addableNzbs(DebugService) {
         templateUrl: 'static/html/directives/addable-nzbs.html',
         require: [],
         scope: {
-            searchresult: "<"
+            searchresult: "<",
+            alwaysAsk: "<"
         },
         controller: controller
     };
 
     function controller($scope, NzbDownloadService) {
+        $scope.alwaysAsk = $scope.alwaysAsk === "true";
+        console.log($scope.alwaysAsk);
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
             if ($scope.searchresult.downloadType !== "NZB") {
                 return downloader.downloadType === $scope.searchresult.downloadType

@@ -18,7 +18,16 @@ var angularTemplateCache = require('gulp-angular-templatecache');
 
 gulp.task('vendor-scripts', function () {
     var dest = 'src/main/resources/static/js';
-    return gulp.src(wiredep().js)
+    //Jquery must be loaded before angular for the bootstrap-switch to work
+    return gulp.src(wiredep(
+        {overrides: {
+                "angular": {
+                    "dependencies": {
+                        "jquery": "1.x"
+                    }
+                }
+            }}
+    ).js)
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.js'))
@@ -37,7 +46,7 @@ gulp.task('vendor-css', function () {
             .pipe(sort())
             .pipe(cached("vendor-less"))
             .pipe(less())
-        )
+    )
         .pipe(cached("vendor-less-and-css"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.css'))
@@ -59,11 +68,11 @@ gulp.task('scripts', function () {
     var dest = 'src/main/resources/static/js';
     return gulp.src("ui-src/js/**/*.js")
         .pipe(ngAnnotate())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(angularFilesort())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(sourcemaps.init())
-        .on('error', swallowError)
+        //.on('error', swallowError)
         .pipe(concat('nzbhydra.js'))
         //.pipe(uglify()) //Will cause errors
         .pipe(sourcemaps.write('./'))

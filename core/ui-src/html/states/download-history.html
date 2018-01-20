@@ -71,22 +71,22 @@
             <span ng-style="{'visibility':!nzbDownload.searchResult.indexerGuid ? 'hidden' : 'initial'}">
                 <span ng-switch on="::nzbDownload.searchResult.downloadType">
                     <span ng-switch-when="TORRENT">
-                        <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                        <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
                            class="no-underline result-torrent-download-link"
                            uib-tooltip="Download torrent"
                            tooltip-placement="top"
                            tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
                         </a>
-                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.searchResultId"></send-torrent-to-blackhole>
+                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id"></send-torrent-to-blackhole>
                     </span>
                     <span ng-switch-default>
-                        <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.searchResultId }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                        <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
                            class="no-underline result-nzb-download-link"
                            uib-tooltip="Download NZB"
                            tooltip-placement="top"
                            tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
                         </a>
-                        <addable-nzbs searchresult="::nzbDownload.searchResult"></addable-nzbs>
+                        <addable-nzbs searchresult="::nzbDownload.searchResult" always-ask="true"></addable-nzbs>
                     </span>
                 </span>
                 <a target="_blank" href="{{ ::nzbDownload.searchResult.details | dereferer }}" ng-if="nzbDownload.searchResult.details">{{ ::nzbDownload.searchResult.title }}</a><span
@@ -103,4 +103,5 @@
     </tr>
     </tbody>
 </table>
+
 <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="downloads"></dir-pagination-controls>

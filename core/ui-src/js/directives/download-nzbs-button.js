@@ -45,7 +45,11 @@ function downloadNzbsButton() {
                     growl.info("Some the selected results are torrent results which were skipped");
                 }
 
-                NzbDownloadService.download(downloader, searchResults).then(function (response) {
+                var tos = _.map(searchResults, function(entry) {
+                    return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
+                });
+
+                NzbDownloadService.download(downloader, tos).then(function (response) {
                     if (angular.isDefined(response.data)) {
                         if (response !== "dismissed") {
                             if (response.data.successful) {

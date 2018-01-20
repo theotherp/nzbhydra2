@@ -16,11 +16,9 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
-    function download(downloader, searchResults) {
-
+    function download(downloader, searchResults, alwaysAsk) {
         var category = downloader.defaultCategory;
-
-        if ((_.isUndefined(category) || category === "" || category === null) && category !== "No category") {
+        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "No category")) {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {

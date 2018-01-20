@@ -3,7 +3,6 @@ package org.nzbhydra.downloading;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.searching.SearchResultWebTO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +13,17 @@ import java.util.List;
 public class AddNzbsRequest {
 
     private String downloaderName;
-    private List<SearchResultWebTO> searchResults = new ArrayList<>();
+    private List<SearchResult> searchResults = new ArrayList<>();
     private String category;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SearchResult {
+
+        private String searchResultId;
+        private String originalCategory;
+
+    }
 
 }

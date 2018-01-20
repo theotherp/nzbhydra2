@@ -101,7 +101,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public String addLink(String link, String title, String category) throws DownloaderException {
-        logger.debug("Adding link to NZB");
+        logger.debug("Adding link for {} to NZB with category {}", title, category);
         try {
             return callAppend(link, title, category);
         } catch (Throwable throwable) {
@@ -112,7 +112,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public String addNzb(String content, String title, String category) throws DownloaderException {
-        logger.debug("Adding NZB");
+        logger.debug("Adding NZB for {} to NZB with category {}", title, category);
         try {
             return callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
         } catch (Throwable throwable) {
@@ -200,7 +200,7 @@ public class NzbGet extends Downloader {
         if (nzbId <= 0) {
             throw new DownloaderException("NZBGet returned error code. Check its logs");
         }
-        logger.info("Successfully added NZB \"{}\" to NZBGet queue with ID {}", title, nzbId);
+        logger.info("Successfully added NZB \"{}\" to NZBGet queue with ID {} in category {}", title, nzbId, category);
         return String.valueOf(nzbId);
     }
 

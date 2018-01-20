@@ -17,7 +17,6 @@ import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
-import org.nzbhydra.searching.SearchResultWebTO;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,13 +60,18 @@ public abstract class Downloader {
     }
 
     @Transactional
-    public AddNzbsResponse addBySearchResultIds(List<SearchResultWebTO> searchResults, String category) {
+    public AddNzbsResponse addBySearchResultIds(List<AddNzbsRequest.SearchResult> searchResults, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
         List<Long> addedNzbs = new ArrayList<>();
         try {
-            for (SearchResultWebTO entry : searchResults) {
+            for (AddNzbsRequest.SearchResult entry : searchResults) {
                 Long guid = Long.valueOf(entry.getSearchResultId());
-                String categoryToSend = Strings.isNullOrEmpty(category) ? entry.getOriginalCategory() : category;
+                String categoryToSend;
+                if (Strings.isNullOrEmpty(category) && !"N/A".equals(entry.getOriginalCategory())) {
+                    categoryToSend = entry.getOriginalCategory();
+                } else {
+                    categoryToSend = category;
+                }
                 if (addingType == NzbAddingType.UPLOAD) {
                     NzbDownloadResult result = nzbHandler.getNzbByGuid(guid, NzbAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
                     String externalId = addNzb(result.getNzbContent(), result.getTitle(), categoryToSend);
@@ -79,11 +84,13 @@ public abstract class Downloader {
                 addedNzbs.add(guid);
             }
 
-        } catch (InvalidSearchResultIdException | DownloaderException e) {
+        } catch (InvalidSearchResultIdException | DownloaderException |EntityNotFoundException e) {
             String message;
             if (e instanceof DownloaderException) {
                 message = "Error while adding NZB(s) to downloader: " + e.getMessage();
-            } else {
+            } else if (e instanceof EntityNotFoundException) {
+                message = "Unable to find the search result in the database. Unable to download";
+            }else {
                 message = e.getMessage();
             }
             logger.error(message);

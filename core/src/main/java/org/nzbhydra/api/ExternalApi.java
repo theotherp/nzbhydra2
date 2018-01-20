@@ -42,7 +42,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -88,8 +87,6 @@ public class ExternalApi {
     private NewznabJsonTransformer newznabJsonTransformer;
     @Autowired
     private CategoryProvider categoryProvider;
-    @Autowired
-    private Jaxb2Marshaller jaxb2Marshaller;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 

@@ -68,7 +68,8 @@ public class TestPerformance {
         getOrCreateTestH2Database();
 
         Class.forName("org.h2.Driver");
-        String url = "jdbc:h2:file:C:\\Users\\strat\\IdeaProjects\\NzbHydra2\\main\\core\\data\\database\\nzbhydra;DEFRAG_ALWAYS=TRUE";
+        String url = "jdbc:h2:file:.\\..\\..\\..\\..\\..\\core\\data\\database\\nzbhydra;DEFRAG_ALWAYS=TRUE";
+
         Connection conn = DriverManager.getConnection(url, "SA", "");
 
         Statement statement = conn.createStatement();

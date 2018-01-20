@@ -37,24 +37,6 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
     }
 
 
-    public void dontTestActual() throws Exception {
-        //Here the magic happens
-        File pom = getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithToken.xml");
-        assertTrue(pom.exists());
-        ReleaseMojo releaseMojo = new ReleaseMojo();
-        releaseMojo = (ReleaseMojo) configureMojo(releaseMojo, extractPluginConfiguration("github-release-plugin", pom
-        ));
-        releaseMojo.githubReleasesUrl = "https://api.github.com/repos/theotherp/nzbhydra2/releases";
-        releaseMojo.githubTokenFile = new File("c:\\Users\\strat\\IdeaProjects\\NzbHydra2\\main\\token.txt");
-        releaseMojo.windowsAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/windowsAsset.txt");
-        releaseMojo.linuxAsset = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/linuxAsset.txt");
-        releaseMojo.changelogJsonFile = getTestFile("src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog-001.json");
-        releaseMojo.tagName = "v0.0.1";
-        releaseMojo.commitish = "master";
-
-        releaseMojo.execute();
-    }
-
     public void testExecuteWithMissingChangelogEntry() throws Exception {
         File pom = getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/pomWithChangelogWrongLatestEntry.xml");
         assertTrue(pom.exists());

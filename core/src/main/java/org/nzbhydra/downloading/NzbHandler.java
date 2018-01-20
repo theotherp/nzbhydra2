@@ -68,7 +68,7 @@ public class NzbHandler {
         }
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         int ageInDays = (int) (Duration.between(result.getPubDate(), result.getFirstFound()).get(ChronoUnit.SECONDS) / (24 * 60 * 60));
-        logger.info("{} download request for {} from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
+        logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
 
         if (nzbAccessType == NzbAccessType.REDIRECT) {
             logger.debug("Redirecting to " + result.getLink());

@@ -1,5 +1,7 @@
 package org.nzbhydra.searching;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
@@ -40,6 +42,7 @@ public class SearchResultEntity {
     )
     @Id
     @GeneratedValue(generator = "search-result-sequence", strategy = GenerationType.SEQUENCE)
+    @JsonSerialize(using = ToStringSerializer.class) //JS cannot handle long. We don't need to calculate with this so string is fine to not lose any digits
     protected long id;
 
     @ManyToOne
