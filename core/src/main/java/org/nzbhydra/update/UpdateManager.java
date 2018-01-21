@@ -38,11 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -151,7 +147,9 @@ public class UpdateManager implements InitializingBean {
     public void ignore(String version) {
         SemanticVersion semanticVersion = new SemanticVersion(version);
         UpdateData updateData = updateDataGenericStorage.get(KEY, UpdateData.class).orElse(new UpdateData());
-        updateData.getIgnoreVersions().add(semanticVersion);
+        if (!updateData.getIgnoreVersions().contains(semanticVersion)) {
+            updateData.getIgnoreVersions().add(semanticVersion);
+        }
         updateDataGenericStorage.save(KEY, updateData);
         logger.info("Version {} ignored. Will not show update notices for this version.", semanticVersion);
     }
@@ -320,8 +318,6 @@ public class UpdateManager implements InitializingBean {
             }
         }).start();
     }
-
-    
 
 
     @Override
