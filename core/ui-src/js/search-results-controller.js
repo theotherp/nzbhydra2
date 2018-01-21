@@ -152,6 +152,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     if (!SearchService.getLastResults().searchResults || SearchService.getLastResults().searchResults.length === 0) {
         //Close modal instance because no search results will be rendered that could trigger the closing
         SearchService.getModalInstance().close();
+        $scope.doShowResults = true;
     }
     //stopBlocking();
 
@@ -443,6 +444,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("calculateDisplayState");
 
         // console.timeEnd("sortAndFilter");
+        console.log("1");
         return filteredResults;
     }
 
@@ -458,7 +460,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        // console.time("setDataFromSearchResult");
+        console.log("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
@@ -495,7 +497,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 $scope.categoriesForFiltering.push({label: category.name, id: category.name})
             }
         });
-        // console.timeEnd("setDataFromSearchResult");
+        console.log("end setDataFromSearchResult");
     }
 
     function uniq(searchResults) {
@@ -671,6 +673,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
     }, 100);
-console.log("end");
+
 }
 
