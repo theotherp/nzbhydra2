@@ -1,5 +1,16 @@
+### v1.1.2
+Feature: Improved handling of XML generation for newznab/torznab API calls. Should improve compatibility with calling tools
+Feature: Hydra attempts to recognize if it's running inside docker. It will not allow you call the internal update mechanism from the main page. You may still call it from the Updates page but a warning will be shown. Let me know if this works
+Fix: The URL code change introduced with 1.1.0 might've caused some problems and should be fixed now
+Fix: Sending NZBs from the download history to downloaders didn't work. You'll have to manually choose a category because the original category isn't available in the download history anymore
+Fix: NZB filenames were not sanitized before being written to ZIP, resulting in an error
+Fix: Improved dialog during update installation (no more error messages when everything is fine, hopefully)
+Fix: Download history was not filterable by indexer
+Fix: SickBeard/-rage/Medusa did not find all relevant categories. I've changed the way Hydra reports itscategories to calling tools. It follows the <a href="http://newznab.readthedocs.io/en/latest/misc/api/#predefined-categories">predefined categories of the newznab standard</a>.
+
 ### v1.1.1
-Fix: Fix results not being recognized by SickRage.
+Fix: Fix results not being recognized by SickRage
+Fix: The URL code change introduced with 1.1.0 might've caused some problems and should be fixed now
 
 ### v1.1.0
 Feature: Completely rewrote handling of scheme, port, host and context path. Should solve some issues and prevent others from happening where reverse proxies are involved. Also extended the <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies">Wiki</a>. There's no need to set an external URL anymore. Please report back if this causes any issues
