@@ -64,7 +64,7 @@ public class UrlCalculator {
 
     public UriComponentsBuilder getRequestBasedUriBuilder() {
         return builderCache.get(((ServletRequestAttributes) RequestContextHolder
-                .getRequestAttributes()).getRequest());
+                .getRequestAttributes()).getRequest()).cloneBuilder();
     }
 
     protected UriComponentsBuilder buildLocalBaseUriBuilder(HttpServletRequest request) {
