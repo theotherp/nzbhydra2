@@ -24,7 +24,8 @@
                     <span class="label label-warning" ng-switch-when="fix">Fix</span>
                     <span class="label label-success" ng-switch-when="feature">Feature</span>
                 </span>
-                    {{change.text}}
+                    <span ng-bind-html="change.text  | unsafe"></span>
+
                 </div>
             </li>
         </div>

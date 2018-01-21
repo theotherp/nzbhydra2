@@ -25,6 +25,10 @@
       {
         "type": "fix",
         "text": "Download history was not filterable by indexer"
+      },
+      {
+        "type": "fix",
+        "text": "SickBeard/-rage/Medusa did not find all relevant categories. I've changed the way Hydra reports itscategories to calling tools. It follows the <a href=\"http://newznab.readthedocs.io/en/latest/misc/api/#predefined-categories\">predefined categories of the newznab standard</a>."
       }
     ]
   },
