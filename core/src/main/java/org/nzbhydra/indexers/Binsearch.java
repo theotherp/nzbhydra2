@@ -57,20 +57,26 @@ public class Binsearch extends Indexer<String> {
     @Override
     protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
         Document doc = Jsoup.parse(response);
-        Element navigationTable = doc.select("table.xMenuT").get(1);
-        Elements pageLinks = navigationTable.select("a");
-        boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
-        boolean totalKnown = false;
-        indexerSearchResult.setOffset(searchRequest.getOffset().orElse(0));
-        int total = searchRequest.getOffset().orElse(0) + 100; //Must be at least as many as already loaded
-        if (!hasMore) { //Parsed page contains all the available results
-            total = searchRequest.getOffset().orElse(0) + indexerSearchResult.getSearchResultItems().size();
-            totalKnown = true;
-        }
+        if (doc.select("table.xMenuT").size() > 0) {
+            Element navigationTable = doc.select("table.xMenuT").get(1);
+            Elements pageLinks = navigationTable.select("a");
+            boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
+            boolean totalKnown = false;
+            indexerSearchResult.setOffset(searchRequest.getOffset().orElse(0));
+            int total = searchRequest.getOffset().orElse(0) + 100; //Must be at least as many as already loaded
+            if (!hasMore) { //Parsed page contains all the available results
+                total = searchRequest.getOffset().orElse(0) + indexerSearchResult.getSearchResultItems().size();
+                totalKnown = true;
+            }
         indexerSearchResult.setHasMoreResults(hasMore);
         indexerSearchResult.setTotalResults(total);
-        indexerSearchResult.setLimit(100);
         indexerSearchResult.setTotalResultsKnown(totalKnown);
+        } else {
+            indexerSearchResult.setHasMoreResults(false);
+            indexerSearchResult.setTotalResults(0);
+            indexerSearchResult.setTotalResultsKnown(true);
+        }
+        indexerSearchResult.setLimit(100);
     }
 
 
