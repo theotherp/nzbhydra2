@@ -7,6 +7,7 @@ import lombok.Data;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.update.UpdateManager.UpdateEvent;
 import org.nzbhydra.web.SessionStorage;
@@ -14,15 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,12 +37,17 @@ public class UpdatesWeb {
     private UpdateManager updateManager;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private ConfigurableEnvironment environment;
 
     protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/infos", method = RequestMethod.GET)
     public VersionsInfo getVersions() throws Exception {
+        if (Boolean.parseBoolean(environment.getProperty("alwayscheckforupdates", "false"))) {
+            versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
+        }
         return versionsInfoCache.get();
     }
 
@@ -53,13 +56,14 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false);
+                    return new VersionsInfo("", "", false, false, false);
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
                 boolean isUpdateAvailable = updateManager.isUpdateAvailable();
                 boolean latestVersionIgnored = updateManager.latestVersionIgnored();
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored);
+                boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker);
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -120,6 +124,7 @@ public class UpdatesWeb {
         private String latestVersion;
         private boolean updateAvailable;
         private boolean latestVersionIgnored;
+        private boolean runInDocker;
     }
 
 

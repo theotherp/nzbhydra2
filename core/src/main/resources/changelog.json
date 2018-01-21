@@ -5,6 +5,9 @@
       {
         "type": "feature",
         "text": "Improved handling of XML generation for newznab/torznab API calls. Should improve compatibility with calling tools"
+      },{
+        "type": "feature",
+        "text": "Hydra attempts to recognize if it's running inside docker. It will not allow you call the internal update mechanism from the main page. You may still call it from the Updates page but a warning will be shown. Let me know if this works"
       },
       {
         "type": "fix",

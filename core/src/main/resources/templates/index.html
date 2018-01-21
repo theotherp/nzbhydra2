@@ -19,7 +19,6 @@
 
     <div ui-view="header"></div>
 
-
     <div style="margin: auto; max-width: 1400px;">
         <div id="banner"></div>
         <div class="container-fluid"  ui-view="container"  th:classappend="${session.disableBlockUi} ? '' : 'block-ui-main'">
@@ -28,16 +27,7 @@
     <div id="push"></div>
 </div>
 
-<span ng-controller="UpdateFooterController">
-    <div id="footer" ng-if="updateAvailable" ng-cloak="">
-        <div class="container">
-            Yay, there's an update available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="latestVersion"></span>.
-            <button class="btn btn-info" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!</button>
-            <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update</button>
-            <button class="btn btn-success" type="button" ng-click="update()" style="margin-top: 5px;">Update now!</button>
-        </div>
-
-    </div>
+<span hydra-updates-footer>
 </span>
 
 </body>

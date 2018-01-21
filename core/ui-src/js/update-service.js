@@ -8,8 +8,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     var latestVersion;
     var updateAvailable;
     var latestVersionIgnored;
-    var versionHistory
-    ;
+    var versionHistory;
+    var runInDocker;
 
 
     return {
@@ -28,6 +28,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     latestVersion = data.data.latestVersion;
                     updateAvailable = data.data.updateAvailable;
                     latestVersionIgnored = data.data.latestVersionIgnored;
+                    runInDocker = data.data.runInDocker;
                     return data;
                 }
             );
