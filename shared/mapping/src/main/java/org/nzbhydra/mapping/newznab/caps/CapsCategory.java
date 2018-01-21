@@ -4,11 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @XmlRootElement(name = "category")
@@ -23,12 +20,13 @@ public class CapsCategory {
         this.name = name;
     }
 
+
     @XmlAttribute
     private int id;
     @XmlAttribute
     private String name;
     @XmlElement(name = "subcat")
-    private List<CapsCategory> subCategories;
+    private List<CapsCategory> subCategories = new ArrayList<>();
 
 
 }

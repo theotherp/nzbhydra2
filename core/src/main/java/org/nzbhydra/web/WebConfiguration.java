@@ -37,8 +37,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private Interceptor interceptor;
-    @Autowired
-    private Jaxb2Marshaller jaxb2Marshaller;
 
     private static final Logger logger = LoggerFactory.getLogger(WebConfiguration.class);
 
@@ -47,13 +45,12 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/")
                 .setCacheControl(CacheControl.noCache())
-                .resourceChain(false)
-        //.addResolver(new VersionResourceResolver().addContentVersionStrategy("/static/js/**", "/static/css/**"))
-        ;
-
+                .resourceChain(false);
 
         registry.setOrder(0);
     }
+
+
 
     @Override
     protected void addCorsMappings(CorsRegistry registry) {

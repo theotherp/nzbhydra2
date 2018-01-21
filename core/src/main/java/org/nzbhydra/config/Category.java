@@ -27,12 +27,10 @@ public class Category {
         MAGAZINE
     }
 
-
     /**
      * Internal name
      */
     protected String name;
-
     protected boolean mayBeSelected = true;
     protected SearchType searchType;
 
@@ -49,7 +47,7 @@ public class Category {
     protected Integer maxSizePreset;
     protected Integer minSizePreset;
     protected boolean applySizeLimitsToApi;
-
+    private String description;
     private boolean preselect;
     private Subtype subtype = Subtype.NONE;
 
@@ -110,6 +108,5 @@ public class Category {
     public int hashCode() {
         return Objects.hash(super.hashCode(), name);
     }
-
 
 }

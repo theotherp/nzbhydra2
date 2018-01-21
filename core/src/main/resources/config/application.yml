@@ -174,7 +174,7 @@ categoriesConfig:
           minSizePreset: 1
           applySizeLimitsToApi: false
           newznabCategories:
-          - 3000
+          - 3010
           requiredRegex:
           requiredWords:
           preselect: true

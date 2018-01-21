@@ -2257,5 +2257,4 @@ function DownloaderCheckBeforeCloseService($q, ConfigBoxService, growl, ModalSer
         }
         return deferred.promise;
     }
-
 }

@@ -76,12 +76,7 @@ public class UrlCalculator {
                 logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from header x-forwarded-host {}", host, port, forwardedHost);
             } else {
                 host = forwardedHost;
-                String forwardedPort = request.getHeader("x-forwarded-port");
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host ", host);
-                if (forwardedPort != null) {
-                    port = Integer.valueOf(forwardedPort);
-                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} from header x-forwarded-port ", port);
-                }
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} header x-forwarded-host {}", host, forwardedHost);
             }
         } else {
             host = request.getHeader("host");
@@ -96,8 +91,15 @@ public class UrlCalculator {
                 logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", host);
             }
         }
-
-        if (port == null) { //No x-forwarded-host header found (may be 80 and not provided), use server port
+        if (port == null) {
+            String forwardedPort = request.getHeader("x-forwarded-port");
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host ", host);
+            if (forwardedPort != null) {
+                port = Integer.valueOf(forwardedPort);
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} from header x-forwarded-port ", port);
+            }
+        }
+        if (port == null) { //No x-forwarded-host or x-forwarded-port header found (may be 80 and not provided), use server port
             port = request.getServerPort();
             logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Using port {} from server", port);
         }

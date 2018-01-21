@@ -1,19 +1,7 @@
 package org.nzbhydra.mapping.newznab.mock;
 
-import org.nzbhydra.mapping.newznab.caps.CapsCategories;
-import org.nzbhydra.mapping.newznab.caps.CapsCategory;
-import org.nzbhydra.mapping.newznab.caps.CapsLimits;
-import org.nzbhydra.mapping.newznab.caps.CapsRetention;
-import org.nzbhydra.mapping.newznab.caps.CapsRoot;
-import org.nzbhydra.mapping.newznab.caps.CapsSearch;
-import org.nzbhydra.mapping.newznab.caps.CapsSearching;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.caps.*;
+import org.nzbhydra.mapping.newznab.xml.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -37,8 +25,8 @@ public class NewznabMockBuilder {
         capsRoot.setSearching(searching);
         CapsCategories capsCategories = new CapsCategories(Arrays.asList(
                 new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD"))),
-                new CapsCategory(7000, "Other", Arrays.asList(new CapsCategory(7020, "EBook"))),
-                new CapsCategory(9000, "Misc", Arrays.asList(new CapsCategory(9090, "Anime")))
+                new CapsCategory(7000, "Other",Arrays.asList(new CapsCategory(7020, "EBook"))),
+                new CapsCategory(9000, "Misc",  Arrays.asList(new CapsCategory(9090, "Anime")))
         ));
         capsRoot.setCategories(capsCategories);
         return capsRoot;

@@ -15,12 +15,8 @@ import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
 public class HydraYamlPropertySourceLoader extends YamlPropertySourceLoader {
@@ -35,7 +31,12 @@ public class HydraYamlPropertySourceLoader extends YamlPropertySourceLoader {
             throws IOException {
         if (ClassUtils.isPresent("org.yaml.snakeyaml.Yaml", null)) {
             Processor processor = new Processor(resource, profile);
-            Map<String, Object> source = processor.process();
+            Map<String, Object> source = null;
+            try {
+                source = processor.process();
+            } catch (Exception e) {
+                e.printStackTrace(); //Logger not yet initialized
+            }
             if (!source.isEmpty()) {
                 return new MapPropertySource(name, source);
             }

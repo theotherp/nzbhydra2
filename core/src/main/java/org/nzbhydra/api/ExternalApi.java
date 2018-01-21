@@ -16,14 +16,7 @@ import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
-import org.nzbhydra.mapping.newznab.caps.CapsCategories;
-import org.nzbhydra.mapping.newznab.caps.CapsCategory;
-import org.nzbhydra.mapping.newznab.caps.CapsLimits;
-import org.nzbhydra.mapping.newznab.caps.CapsRetention;
-import org.nzbhydra.mapping.newznab.caps.CapsRoot;
-import org.nzbhydra.mapping.newznab.caps.CapsSearch;
-import org.nzbhydra.mapping.newznab.caps.CapsSearching;
-import org.nzbhydra.mapping.newznab.caps.CapsServer;
+import org.nzbhydra.mapping.newznab.caps.*;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -49,17 +42,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
@@ -177,9 +164,73 @@ public class ExternalApi {
         capsSearching.setAudioSearch(new CapsSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
-        List<CapsCategory> capsCategories = configProvider.getBaseConfig().getCategoriesConfig().withoutAll().stream().map(x -> new CapsCategory(x.getNewznabCategories().get(0), x.getName())).collect(Collectors.toList());
-        capsRoot.setCategories(new CapsCategories(capsCategories));
-        return new ResponseEntity<>(capsRoot, HttpStatus.OK);
+        List<CapsCategory> mainCategories = new ArrayList<>();
+        mainCategories.add(new CapsCategory(1000, "Console", Arrays.asList(
+                new CapsCategory(1010, "NDS"),
+                new CapsCategory(1020, "PSP"),
+                new CapsCategory(1030, "Wii"),
+                new CapsCategory(1040, "XBox"),
+                new CapsCategory(1050, "Xbox 360"),
+                new CapsCategory(1060, "Wiiware"),
+                new CapsCategory(1070, "Xbox 360 DLC")
+        )));
+        mainCategories.add(new CapsCategory(2000, "Movies", Arrays.asList(
+                new CapsCategory(2010, "Foreign"),
+                new CapsCategory(2020, "Other"),
+                new CapsCategory(2030, "SD"),
+                new CapsCategory(2040, "HD"),
+                new CapsCategory(2045, "UHD"),
+                new CapsCategory(2050, "Bluray"),
+                new CapsCategory(2060, "3D")
+        )));
+        mainCategories.add(new CapsCategory(3000, "Audio", Arrays.asList(
+                new CapsCategory(3010, "MP3"),
+                new CapsCategory(3020, "Video"),
+                new CapsCategory(3030, "Audiobook"),
+                new CapsCategory(3040, "Lossless")
+        )));
+        mainCategories.add(new CapsCategory(4000, "PC", Arrays.asList(
+                new CapsCategory(4010, "0day"),
+                new CapsCategory(4020, "ISO"),
+                new CapsCategory(4030, "Mac"),
+                new CapsCategory(4040, "Mobile Oher"),
+                new CapsCategory(4050, "Games"),
+                new CapsCategory(4060, "Mobile IOS"),
+                new CapsCategory(4070, "Mobile Android")
+        )));
+        mainCategories.add(new CapsCategory(5000, "TV", Arrays.asList(
+                new CapsCategory(5020, "Foreign"),
+                new CapsCategory(5030, "SD"),
+                new CapsCategory(5040, "HD"),
+                new CapsCategory(5045, "UHD"),
+                new CapsCategory(5050, "Other"),
+                new CapsCategory(5060, "Sport"),
+                new CapsCategory(5070, "Anime"),
+                new CapsCategory(5080, "Documentary")
+        )));
+        mainCategories.add(new CapsCategory(6000, "XXX", Arrays.asList(
+                new CapsCategory(6010, "DVD"),
+                new CapsCategory(6020, "WMV"),
+                new CapsCategory(6030, "XviD"),
+                new CapsCategory(6040, "x264"),
+                new CapsCategory(6050, "Pack"),
+                new CapsCategory(6060, "Imgset"),
+                new CapsCategory(6070, "Other")
+        )));
+        mainCategories.add(new CapsCategory(7000, "Books", Arrays.asList(
+                new CapsCategory(7010, "Mags"),
+                new CapsCategory(7020, "Ebook"),
+                new CapsCategory(7030, "COmics")
+        )));
+        mainCategories.add(new CapsCategory(8000, "Other", Arrays.asList(
+                new CapsCategory(8010, "Misc")
+        )));
+
+
+        capsRoot.setCategories(new CapsCategories(mainCategories));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+        return new ResponseEntity<>(capsRoot, headers, HttpStatus.OK);
     }
 
     protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
