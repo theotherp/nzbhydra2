@@ -38,14 +38,14 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Checking preconditions
-call mvn github-release:precheck
+call mvn org.nzbhydra:github-release-plugin:1.0.0:precheck
 if not "%ERRORLEVEL%" == "0" (
     echo Error during release precheck
     goto error
 )
 
 echo Generating changelog
-call mvn github-release:generate-changelog
+call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-changelog
 if not "%ERRORLEVEL%" == "0" (
     echo Error generating changelog
     goto error
@@ -53,9 +53,9 @@ if not "%ERRORLEVEL%" == "0" (
 
 echo Running clean install
 if "%3" == "skiptests" (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install -DskipTests=true
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:org.nzbhydra:github-release-plugin:1.0.0-plugin" clean install -DskipTests=true
 ) else (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:org.nzbhydra:github-release-plugin:1.0.0-plugin" clean install
 )
 if not "%ERRORLEVEL%" == "0" (
     echo Error during clean install
@@ -91,7 +91,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Releasing to GitHub ***********************************************************************
-call mvn github-release:release
+call mvn org.nzbhydra:github-release-plugin:1.0.0:release
 if not "%ERRORLEVEL%" == "0" (
     echo Error releasing to github
     goto error
@@ -112,7 +112,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Building new versions ***********************************************************************
-call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:org.nzbhydra:github-release-plugin:1.0.0-plugin" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" (
     echo Error building new versions
     goto error
