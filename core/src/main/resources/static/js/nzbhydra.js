@@ -1600,6 +1600,7 @@ function hydraUpdatesFooter() {
 
         $scope.ignore = function () {
             UpdateService.ignore($scope.latestVersion);
+            $scope.updateAvailable = false;
         };
 
         $scope.showChangelog = function () {
