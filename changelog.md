@@ -1,3 +1,6 @@
+### v1.1.3
+Fix: Fix NZB links not being constructed correctly. Sorry about that
+
 ### v1.1.2
 Feature: Improved handling of XML generation for newznab/torznab API calls. Should improve compatibility with calling tools
 Feature: Hydra attempts to recognize if it's running inside docker. It will not allow you call the internal update mechanism from the main page. You may still call it from the Updates page but a warning will be shown. Let me know if this works
