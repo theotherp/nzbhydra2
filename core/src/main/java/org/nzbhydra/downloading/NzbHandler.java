@@ -18,7 +18,7 @@ import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
-import org.nzbhydra.web.SessionStorage;
+import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +59,8 @@ public class NzbHandler {
     private HydraOkHttp3ClientHttpRequestFactory clientHttpRequestFactory;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private UrlCalculator urlCalculator;
 
     public NzbDownloadResult getNzbByGuid(long guid, NzbAccessType nzbAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         SearchResultEntity result = searchResultRepository.findOne(guid);
@@ -177,15 +179,13 @@ public class NzbHandler {
 
 
     public String getNzbDownloadLink(Long searchResultId, boolean internal, DownloadType downloadType) {
-        UriComponentsBuilder builder;
+        UriComponentsBuilder builder = urlCalculator.getRequestBasedUriBuilder();
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
-            builder = SessionStorage.getUrlBuilder();
             builder.path("/" + getName + "/user");
             builder.path("/" + String.valueOf(searchResultId));
         } else {
             MainConfig main = configProvider.getBaseConfig().getMain();
-            builder = SessionStorage.getUrlBuilder();
             builder.path("/" + getName + "/api");
             builder.path("/" + String.valueOf(searchResultId));
             builder.queryParam("apikey", main.getApiKey());

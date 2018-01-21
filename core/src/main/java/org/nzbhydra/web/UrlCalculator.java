@@ -18,6 +18,8 @@ package org.nzbhydra.web;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -26,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +37,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class UrlCalculator {
@@ -49,11 +55,23 @@ public class UrlCalculator {
     @Autowired
     private ConfigurableEnvironment environment;
 
-    public UriComponentsBuilder getLocalBaseUriBuilder(HttpServletRequest request) {
+    private final Map<HttpServletRequest, UriComponentsBuilder> builderCache = ExpiringMap.builder()
+            .maxSize(50)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expiration(1, TimeUnit.MINUTES)
+            .entryLoader(request -> buildLocalBaseUriBuilder((HttpServletRequest) request))
+            .build();
+
+    public UriComponentsBuilder getRequestBasedUriBuilder() {
+        return builderCache.get(((ServletRequestAttributes) RequestContextHolder
+                .getRequestAttributes()).getRequest());
+    }
+
+    protected UriComponentsBuilder buildLocalBaseUriBuilder(HttpServletRequest request) {
         String scheme;
         String host;
-        Integer port = null;
-        String path;
+         int port = -1;
+        String path = null;
 
         //Reverse proxies send the x-forwarded-proto header when HTTPS is enabled
         if ("https".equalsIgnoreCase(request.getHeader("x-forwarded-proto"))) {
@@ -69,47 +87,56 @@ public class UrlCalculator {
 
         String forwardedHost = request.getHeader("x-forwarded-host"); //May look like this: mydomain.com:4000 or like this: mydomain.com
         if (forwardedHost != null) {
-            int colonIndex = forwardedHost.indexOf(":");
-            if (colonIndex > -1) {
-                host = forwardedHost.substring(0, colonIndex);
-                port = Integer.valueOf(forwardedHost.substring(colonIndex + 1));
+            String[] split = forwardedHost.split(":");
+            host = split[0];
+            if (split.length > 1) {
+                port = Integer.valueOf(split[1]);
                 logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from header x-forwarded-host {}", host, port, forwardedHost);
             } else {
-                host = forwardedHost;
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} header x-forwarded-host {}", host, forwardedHost);
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host {}", host, forwardedHost);
             }
         } else {
-            host = request.getHeader("host");
-            if (host == null) {
+            String hostHeader = request.getHeader("host");
+            if (hostHeader == null) {
                 host = request.getServerName();
                 logger.warn("Header host not set. Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
             } else {
-                int colonIndex = host.indexOf(":"); //Apache includes the port in the host header
-                if (colonIndex > -1) {
-                    host = host.substring(0, colonIndex);
+                String[] split = hostHeader.split(":");
+                host = split[0];
+                if (split.length > 1) {
+                    port = Integer.valueOf(split[1]);
+                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from host header {}", host, port, hostHeader);
+                } else {
+                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", hostHeader);
                 }
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", host);
             }
         }
-        if (port == null) {
+        if (port == -1) {
             String forwardedPort = request.getHeader("x-forwarded-port");
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host ", host);
             if (forwardedPort != null) {
                 port = Integer.valueOf(forwardedPort);
                 logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} from header x-forwarded-port ", port);
             }
         }
-        if (port == null) { //No x-forwarded-host or x-forwarded-port header found (may be 80 and not provided), use server port
-            port = request.getServerPort();
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Using port {} from server", port);
+        if (port == -1) { //No x-forwarded-host or x-forwarded-port header found, use server port
+            if (request.getServerPort() != 80 && request.getServerPort() != 443) {
+                port = request.getServerPort();
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Using port {} from server", port);
+            } else {
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Not explicitly setting port because it's {}", request.getServerPort());
+            }
         }
 
         path = request.getContextPath();
-        logger.debug(LoggingMarkers.URL_CALCULATION, "Using context path {} as path", path);
+        if (!Strings.isNullOrEmpty(path)) {
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using context path {} as path", path);
+        } else {
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Not using any context path");
+        }
 
         return UriComponentsBuilder.newInstance()
-                .host(host)
                 .scheme(scheme)
+                .host(host)
                 .port(port)
                 .path(path);
     }
