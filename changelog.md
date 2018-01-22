@@ -1,3 +1,7 @@
+### v1.1.4
+Fix: Hide torrent black hole buttons for magnet links
+Fix: Torrents were sometimes not correctly downloaded and would have extension .nzb
+
 ### v1.1.3
 Fix: Fix NZB links not being constructed correctly. Sorry about that
 
