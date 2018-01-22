@@ -18,13 +18,7 @@ package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.NzbHandler;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -78,7 +72,8 @@ public class NewznabXmlTransformer {
 
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
+        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));
@@ -92,7 +87,6 @@ public class NewznabXmlTransformer {
         newznabAttributes.add(new NewznabAttribute("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
         newznabAttributes.add(new NewznabAttribute("hydraIndexerHost", getIndexerHost(searchResultItem)));
         newznabAttributes.add(new NewznabAttribute("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
         String resultType;
         if (isNzb) {
             rssItem.setNewznabAttributes(newznabAttributes);
