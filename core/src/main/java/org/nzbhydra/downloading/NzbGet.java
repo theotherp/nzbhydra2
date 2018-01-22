@@ -12,11 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -111,10 +107,10 @@ public class NzbGet extends Downloader {
     }
 
     @Override
-    public String addNzb(String content, String title, String category) throws DownloaderException {
+    public String addNzb(byte[] content, String title, String category) throws DownloaderException {
         logger.debug("Adding NZB for {} to NZB with category {}", title, category);
         try {
-            return callAppend(BaseEncoding.base64().encode(content.getBytes()), title, category);
+            return callAppend(BaseEncoding.base64().encode(content), title, category);
         } catch (Throwable throwable) {
             logger.info("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
             throw new DownloaderException("Error while adding NZB to NZBGet: " + throwable.getMessage());

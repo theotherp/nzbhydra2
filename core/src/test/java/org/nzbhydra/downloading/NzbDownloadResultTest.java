@@ -17,6 +17,8 @@
 package org.nzbhydra.downloading;
 
 import org.junit.Test;
+import org.nzbhydra.searching.SearchResultEntity;
+import org.nzbhydra.searching.SearchResultItem;
 import org.springframework.http.HttpHeaders;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,8 +26,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class NzbDownloadResultTest {
 
     @Test
-    public void getDownloadEntity() {
-        NzbDownloadResult testee = NzbDownloadResult.createSuccessfulDownloadResult("title", "content", new NzbDownloadEntity());
+    public void shouldBuildFilenameCorrectly() {
+        SearchResultEntity searchResultEntity = new SearchResultEntity();
+        searchResultEntity.setDownloadType(SearchResultItem.DownloadType.NZB);
+        NzbDownloadEntity nzbDownloadEntity = new NzbDownloadEntity();
+        nzbDownloadEntity.setSearchResult(searchResultEntity);
+
+        NzbDownloadResult testee = NzbDownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
         assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=title.nzb");
+
+        searchResultEntity.setDownloadType(SearchResultItem.DownloadType.TORRENT);
+        testee = NzbDownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
+        assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=title.torrent");
     }
 }

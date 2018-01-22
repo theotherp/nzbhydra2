@@ -1,6 +1,7 @@
 package org.nzbhydra.downloading;
 
 import lombok.Data;
+import org.nzbhydra.searching.SearchResultItem;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,7 @@ import java.net.URI;
 
 @Data
 public class NzbDownloadResult {
-    private String nzbContent;
+    private byte[] nzbContent;
     private String url;
     private String title;
     private boolean successful;
@@ -17,7 +18,7 @@ public class NzbDownloadResult {
     private NzbDownloadEntity downloadEntity;
     private int statusCode;
 
-    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error, NzbDownloadEntity downloadEntity) {
+    private NzbDownloadResult(String title, byte[] nzbContent, String url, boolean successful, String error, NzbDownloadEntity downloadEntity) {
         this.nzbContent = nzbContent;
         this.title = title;
         this.url = url;
@@ -26,7 +27,7 @@ public class NzbDownloadResult {
         this.downloadEntity = downloadEntity;
     }
 
-    private NzbDownloadResult(String title, String nzbContent, String url, boolean successful, String error, int statusCode, NzbDownloadEntity downloadEntity) {
+    private NzbDownloadResult(String title, byte[] nzbContent, String url, boolean successful, String error, int statusCode, NzbDownloadEntity downloadEntity) {
         this(title, nzbContent, url, successful, error, downloadEntity);
         this.statusCode = statusCode;
     }
@@ -43,13 +44,19 @@ public class NzbDownloadResult {
             response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + title+ ".nzb");
+            String filename = title;
+            if (downloadEntity.getSearchResult().getDownloadType() == SearchResultItem.DownloadType.NZB) {
+                filename  += ".nzb";
+            } else {
+                filename  += ".torrent";
+            }
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename);
             response = new ResponseEntity<>(getNzbContent(), headers, HttpStatus.OK);
         }
         return response;
     }
 
-    public static NzbDownloadResult createSuccessfulDownloadResult(String title, String nzbContent, NzbDownloadEntity entity) {
+    public static NzbDownloadResult createSuccessfulDownloadResult(String title, byte[] nzbContent, NzbDownloadEntity entity) {
         return new NzbDownloadResult(title, nzbContent, null, true, null, entity);
     }
 
@@ -60,8 +67,9 @@ public class NzbDownloadResult {
     public static NzbDownloadResult createErrorResult(String error, NzbDownloadEntity entity) {
         return new NzbDownloadResult(null, null, null, false, error, entity);
     }
+
     public static NzbDownloadResult createErrorResult(String error, int statusCode, NzbDownloadEntity entity) {
-        return new NzbDownloadResult(null, null, null, false, error, statusCode,entity);
+        return new NzbDownloadResult(null, null, null, false, error, statusCode, entity);
     }
 
 

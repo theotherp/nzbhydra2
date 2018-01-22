@@ -2,13 +2,7 @@ package org.nzbhydra.downloading.sabnzbd;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import okhttp3.*;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.downloading.Downloader;
 import org.nzbhydra.downloading.NzbDownloadEntity;
@@ -111,7 +105,7 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public String addNzb(String fileContent, String title, String category) throws DownloaderException {
+    public String addNzb(byte[] fileContent, String title, String category) throws DownloaderException {
         //Using OKHTTP here because RestTemplate wouldn't work
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();

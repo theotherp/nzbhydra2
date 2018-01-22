@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Hide torrent black hole buttons for magnet links"
+      },
+      {
+        "type": "fix",
+        "text": "Torrents were sometimes not correctly downloaded and would have extension .nzb"
       }
     ]
   },

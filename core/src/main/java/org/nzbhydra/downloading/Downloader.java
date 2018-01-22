@@ -26,11 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -125,7 +121,7 @@ public abstract class Downloader {
      * @return ID returned by the downloader
      * @throws DownloaderException
      */
-    public abstract String addNzb(String content, String title, String category) throws DownloaderException;
+    public abstract String addNzb(byte[] content, String title, String category) throws DownloaderException;
 
     public List<NzbDownloadEntity> checkForStatusUpdates(List<NzbDownloadEntity> downloads, StatusCheckType statusCheckType) {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Checking {} history for updates to downloaded statuses", downloaderConfig.getName());

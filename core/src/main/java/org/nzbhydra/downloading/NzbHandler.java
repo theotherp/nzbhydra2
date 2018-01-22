@@ -79,7 +79,7 @@ public class NzbHandler {
             eventPublisher.publishEvent(new NzbDownloadEvent(downloadEntity));
             return NzbDownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
         } else {
-            String nzbContent;
+            byte[] nzbContent;
             Stopwatch stopwatch = Stopwatch.createStarted();
             try {
                 nzbContent = downloadNzb(result);
@@ -120,7 +120,7 @@ public class NzbHandler {
                 String title = result.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_");;
                 File tempFile = new File(tempDirectory.toFile(), title + ".nzb");
                 logger.debug("Writing NZB to temp file {}", tempFile.getAbsolutePath());
-                Files.write(tempFile.toPath(), result.getNzbContent().getBytes());
+                Files.write(tempFile.toPath(), result.getNzbContent());
                 nzbFiles.add(tempFile);
                 foundNzbIds.add(guid);
             } catch (IOException e) {
@@ -212,7 +212,7 @@ public class NzbHandler {
     }
 
 
-    private String downloadNzb(SearchResultEntity result) throws IOException {
+    private byte[] downloadNzb(SearchResultEntity result) throws IOException {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
@@ -224,8 +224,7 @@ public class NzbHandler {
             if (body == null ) {
                 throw new IOException("NZB downloaded from " + result.getLink() + " is empty");
             }
-            String content = body.string();
-            return content;
+            return body.bytes();
         }
     }
 
