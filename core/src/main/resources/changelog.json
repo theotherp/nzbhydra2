@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.1.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Hide torrent black hole buttons for magnet links"
+      }
+    ]
+  },
+  {
     "version": "v1.1.3",
     "changes": [
       {
