@@ -133,7 +133,7 @@ public class ExternalApi {
         }
         //Remove oldest entry when max size is reached
         if (cache.size() == MAX_CACHE_SIZE) {
-            Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().sorted(Comparator.comparing(o -> o.getValue().getLastUpdate())).findFirst();
+            Optional<Entry<Integer, CacheEntryValue>> keyToEvict = cache.entrySet().stream().min(Comparator.comparing(o -> o.getValue().getLastUpdate()));
             //Should always be the case anyway
             logger.info("Removing oldest entry from cache because its limit of {} is reached", MAX_CACHE_SIZE);
             keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));

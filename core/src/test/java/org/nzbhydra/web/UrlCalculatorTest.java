@@ -27,7 +27,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UrlCalculatorTest {
 
@@ -43,6 +43,22 @@ public class UrlCalculatorTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
     }
+
+    @Test
+    public void shouldReturnNewBuilderEachTime() {
+        prepareConfig(false, false, "/");
+        prepareHeaders("127.0.0.1:5076", null, null, null);
+        prepareServlet("http://127.0.0.1:5076", "127.0.0.1", 5076, "http", "/");
+        testee = spy(testee);
+        doReturn(requestMock).when(testee).getCurrentRequest();
+        UriComponentsBuilder builder1 = testee.getRequestBasedUriBuilder();
+        UriComponentsBuilder builder2 = testee.getRequestBasedUriBuilder();
+        assertThat(builder1).isNotSameAs(builder2);
+        builder1.path("path1");
+        builder2.path("path2");
+        assertThat(builder2.build().toUriString()).doesNotContain("path1");
+    }
+
 
     @Test
     public void shouldBuildCorrectlyForLocalAccessWithHttp() {

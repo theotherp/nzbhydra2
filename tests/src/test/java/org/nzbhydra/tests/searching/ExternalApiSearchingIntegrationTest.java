@@ -40,9 +40,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -156,7 +154,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
         apiCallParameters.setT(ActionAttribute.SEARCH);
         NewznabXmlRoot apiSearchResult = (NewznabXmlRoot) externalApi.api(apiCallParameters).getBody();
 
-        org.assertj.core.api.Assertions.assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(100);
+        assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(100);
 
         apiCallParameters.setLimit(100);
         apiCallParameters.setOffset(100);
@@ -165,6 +163,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
 
         assertThat(apiSearchResult.getRssChannel().getItems().size()).isEqualTo(50);
     }
+
 
     @Test
     public void shouldUseProvidedIdentifiers() throws Exception{
