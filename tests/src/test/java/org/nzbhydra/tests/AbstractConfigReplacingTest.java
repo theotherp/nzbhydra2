@@ -3,10 +3,12 @@ package org.nzbhydra.tests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 public class AbstractConfigReplacingTest {
 
@@ -19,6 +21,16 @@ public class AbstractConfigReplacingTest {
         ObjectReader updater = objectMapper.readerForUpdating(baseConfig);
         BaseConfig updatedConfig = updater.readValue(resource);
         baseConfig.replace(updatedConfig);
+    }
+
+    public void replaceConfig(BaseConfig replacingConfig) throws IOException {
+        baseConfig.replace(replacingConfig);
+    }
+
+ public void replaceIndexers(List<IndexerConfig> indexerConfigs) throws IOException {
+        baseConfig.getIndexers().clear();
+        baseConfig.getIndexers().addAll(indexerConfigs);
+        baseConfig.replace(baseConfig);
     }
 
 }

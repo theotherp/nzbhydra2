@@ -17,7 +17,7 @@ public interface SearchPO {
     public  void open();
 
     @Locator(id = "searchCategoryDropdownButton")
-    public  IButton categoryToggleButton();
+    public  IButton categoryDropdownButton();
 
     @Locator(cssSelector = ".search-category-option")
     public  List<ILink> categoryOptions();

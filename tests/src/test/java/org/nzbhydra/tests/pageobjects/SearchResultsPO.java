@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 @Page
 public abstract class SearchResultsPO {
 
+    @Locator(id="no-search-results")
+    public abstract ILabel noSearchResultsWarning();
+
     @Locator(id = "display-options")
     public abstract IDropdownCheckboxButton displayOptions();
 

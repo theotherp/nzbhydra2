@@ -10,6 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nzbhydra.config.IndexerConfigBuilder;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.NzbHandler.NzbsZipResponse;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
@@ -22,28 +24,7 @@ import org.nzbhydra.searching.SearchRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.nzbhydra.tests.NzbhydraMockMvcTest;
-import org.nzbhydra.tests.pageobjects.CheckBox;
-import org.nzbhydra.tests.pageobjects.CheckboxFilter;
-import org.nzbhydra.tests.pageobjects.ColumnSortable;
-import org.nzbhydra.tests.pageobjects.DropdownCheckboxButton;
-import org.nzbhydra.tests.pageobjects.FreetextFilter;
-import org.nzbhydra.tests.pageobjects.ICheckBox;
-import org.nzbhydra.tests.pageobjects.ICheckboxFilter;
-import org.nzbhydra.tests.pageobjects.IColumnSortable;
-import org.nzbhydra.tests.pageobjects.IDropdownCheckboxButton;
-import org.nzbhydra.tests.pageobjects.IFreetextFilter;
-import org.nzbhydra.tests.pageobjects.IIndexerSelectionButton;
-import org.nzbhydra.tests.pageobjects.ILink;
-import org.nzbhydra.tests.pageobjects.INumberRangeFilter;
-import org.nzbhydra.tests.pageobjects.ISelectionButton;
-import org.nzbhydra.tests.pageobjects.IToggle;
-import org.nzbhydra.tests.pageobjects.IndexerSelectionButton;
-import org.nzbhydra.tests.pageobjects.Link;
-import org.nzbhydra.tests.pageobjects.NumberRangeFilter;
-import org.nzbhydra.tests.pageobjects.SearchPO;
-import org.nzbhydra.tests.pageobjects.SearchResultsPO;
-import org.nzbhydra.tests.pageobjects.SelectionButton;
-import org.nzbhydra.tests.pageobjects.Toggle;
+import org.nzbhydra.tests.pageobjects.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -164,10 +145,11 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchPage.indexerSelectionCheckboxes().get(1).ischecked()).isFalse();
         assertThat(searchPage.indexerSelectionCheckboxes().get(2).ischecked()).isTrue();
 
-        searchPage.categoryToggleButton().click();
+        searchPage.categoryDropdownButton().click();
         searchPage.categoryOptions().stream().filter(x -> x.text().equals("Anime")).findFirst().get().click();
+        assertThat(searchPage.categoryDropdownButton().text()).isEqualTo("Anime");
         assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).as("Should've removed mock2 because it's not enabled for Anime category").containsExactly("mock1", "mock3");
-        searchPage.categoryToggleButton().click();
+        searchPage.categoryDropdownButton().click();
         searchPage.categoryOptions().stream().filter(x -> x.text().equals("Movies")).findFirst().get().click();
         assertThat(searchPage.indexerSelectionCheckboxes().stream().map(x -> x.getAttribute("indexer-name")).collect(Collectors.toList())).containsExactly("mock1", "mock2", "mock3");
     }
@@ -388,6 +370,54 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.ages()).containsExactly("3d", "2d", "1d").as("Title groups should be sorted internally as well");
         searchResultsPage.tableHeader().ageHeader().sortAscending();
         assertThat(searchResultsPage.ages()).containsExactly("1d", "2d", "3d").as("Title groups should be sorted internally as well");
+    }
+
+    @Test
+    public void testMessageIfNoResults() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(), 0, 0);
+        mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webDriver.get(url + "/?category=All&query=uitest&mode=search");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("no-search-results")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("No results were found for this search");
+        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+    }
+
+    @Test
+    public void testMessageIfNoIndexerSuccessful() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(400));
+        webDriver.get(url + "/?category=All&query=uitest&mode=search");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("no-search-results")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("Unable to search any indexer successfully; no results available");
+        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+    }
+
+    @Test
+    public void testMessageIfAllResultsRejected() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
+        baseConfig.getSearching().setRequiredWords(Collections.singletonList("not in there"));
+        baseConfig.getSearching().setApplyRestrictions(SearchSourceRestriction.INTERNAL);
+        replaceConfig(baseConfig);
+
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(RssItemBuilder.builder("someresult").build()), 0, 1);
+        mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        webDriver.get(url + "/?category=All&query=uitest&mode=search");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("no-search-results")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("No (non-rejected) results were found for this search");
+        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
     }
 
 

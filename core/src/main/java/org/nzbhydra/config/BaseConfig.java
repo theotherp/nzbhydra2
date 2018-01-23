@@ -9,11 +9,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +69,7 @@ public class BaseConfig extends ValidatingConfig {
     public void replace(BaseConfig newConfig) {
         BaseConfig oldBaseConfig = null;
         try {
+            //Easy way of cloning old config
             oldBaseConfig = objectMapper.readValue(objectMapper.writeValueAsString(this), BaseConfig.class);
         } catch (IOException e) {
             logger.error("Error while creating copy of old config", e);
@@ -84,7 +81,6 @@ public class BaseConfig extends ValidatingConfig {
         downloading = newConfig.getDownloading();
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
-
 
         ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
         applicationEventPublisher.publishEvent(configChangedEvent);
