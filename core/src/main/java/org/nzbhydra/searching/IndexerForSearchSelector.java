@@ -12,8 +12,8 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.downloading.NzbDownloadEntity;
-import org.nzbhydra.downloading.NzbDownloadRepository;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -32,19 +32,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +53,7 @@ public class IndexerForSearchSelector {
     @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
-    private NzbDownloadRepository nzbDownloadRepository;
+    private FileDownloadRepository nzbDownloadRepository;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -256,7 +247,7 @@ public class IndexerForSearchSelector {
                 }
             }
             if (indexerConfig.getDownloadLimit().isPresent()) {
-                Page<NzbDownloadEntity> page = nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
+                Page<FileDownloadEntity> page = nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
                 if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
                     LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
 

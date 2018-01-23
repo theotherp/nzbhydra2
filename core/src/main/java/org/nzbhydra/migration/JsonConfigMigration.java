@@ -7,41 +7,15 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.nzbhydra.config.AuthConfig;
-import org.nzbhydra.config.AuthType;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.CategoriesConfig;
+import org.nzbhydra.config.*;
 import org.nzbhydra.config.Category;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.DownloadType;
-import org.nzbhydra.config.DownloaderConfig;
-import org.nzbhydra.config.DownloaderType;
-import org.nzbhydra.config.IndexerCategoryConfig;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.LoggingConfig;
-import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.config.NzbAddingType;
-import org.nzbhydra.config.ProxyType;
-import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.config.UserAuthConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.FromPythonMigration.MigrationMessageEvent;
-import org.nzbhydra.migration.configmapping.Auth;
-import org.nzbhydra.migration.configmapping.Categories;
-import org.nzbhydra.migration.configmapping.Downloader;
-import org.nzbhydra.migration.configmapping.Indexer;
-import org.nzbhydra.migration.configmapping.Logging;
-import org.nzbhydra.migration.configmapping.Main;
-import org.nzbhydra.migration.configmapping.OldConfig;
-import org.nzbhydra.migration.configmapping.Searching;
-import org.nzbhydra.migration.configmapping.User;
+import org.nzbhydra.migration.configmapping.*;
 import org.nzbhydra.searching.CategoryProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,17 +26,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -299,9 +264,9 @@ public class JsonConfigMigration {
         newSearching.setForbiddenWords(oldSearching.getForbiddenWords() == null ? new ArrayList<>(): oldSearching.getForbiddenWords());
         newSearching.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
-            newSearching.setNzbAccessType(NzbAccessType.PROXY);
+            newSearching.setNzbAccessType(FileDownloadAccessType.PROXY);
         } else {
-            newSearching.setNzbAccessType(NzbAccessType.REDIRECT);
+            newSearching.setNzbAccessType(FileDownloadAccessType.REDIRECT);
         }
         newSearching.setRemoveTrailing(oldSearching.getRemoveTrailing() == null ? new ArrayList<>(): oldSearching.getRemoveTrailing());
         if (oldSearching.getRequiredWords() != null && !oldSearching.getRequiredWords().isEmpty()) {

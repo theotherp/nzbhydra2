@@ -3,7 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchResultWebTO.SearchResultWebTOBuilder;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class InternalSearchResultProcessor {
     private static final Logger logger = LoggerFactory.getLogger(InternalSearchResultProcessor.class);
 
     @Autowired
-    private NzbHandler nzbHandler;
+    private FileHandler nzbHandler;
     @Autowired
     private ConfigProvider configProvider;
 
@@ -93,7 +93,7 @@ public class InternalSearchResultProcessor {
                     .indexer(item.getIndexer().getName())
                     .indexerguid(item.getIndexerGuid())
                     .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                    .link(nzbHandler.getNzbDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
+                    .link(nzbHandler.getDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
                     .originalCategory(item.getOriginalCategory())
                     .searchResultId(item.getSearchResultId().toString())
                     .size(item.getSize())

@@ -16,8 +16,9 @@
 
 package org.nzbhydra.downloading;
 
-import org.nzbhydra.downloading.Downloader.StatusCheckType;
-import org.nzbhydra.downloading.NzbHandler.NzbDownloadEvent;
+import org.nzbhydra.downloading.downloaders.Downloader;
+import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
+import org.nzbhydra.downloading.downloaders.DownloaderProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
@@ -53,44 +54,44 @@ public class DownloadStatusUpdater {
     @Autowired
     protected DownloaderProvider downloaderProvider;
     @Autowired
-    protected NzbDownloadRepository downloadRepository;
+    protected FileDownloadRepository downloadRepository;
 
     @HydraTask(configId = "downloadHistoryCheck", name = "Download history check", interval = TEN_MINUTES_MS)
     @Transactional
     public void checkHistoryStatus() {
-        List<NzbDownloadStatus> statusesToCheck = Arrays.asList(NzbDownloadStatus.REQUESTED, NzbDownloadStatus.NZB_ADDED, NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
+        List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED, FileDownloadStatus.NZB_ADDED, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
         checkStatus(statusesToCheck, DAY_SECONDS, StatusCheckType.HISTORY);
     }
 
     @HydraTask(configId = "downloadQueueCheck", name = "Download queue check", interval = TEN_SECONDS_MS)
     @Transactional
     public void checkQueueStatus() {
-        List<NzbDownloadStatus> statusesToCheck = Arrays.asList(NzbDownloadStatus.REQUESTED);
+        List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED);
         checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
     }
 
     //TODO Handle shutdown event
 
     @EventListener
-    public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent) {
+    public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         lastDownload = Instant.now();
         isEnabled = true;
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Received download event. Will enable status updates for the next {} minutes", (MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES / 60));
     }
 
-    protected void checkStatus(List<NzbDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
+    protected void checkStatus(List<FileDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
         if (!isEnabled) {
             return;
         }
         if (lastDownload.isBefore(Instant.now().minusSeconds(MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES))) {
             return;
         }
-        List<NzbDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
+        List<FileDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
             isEnabled = false;
             return;
         }
-        List<NzbDownloadEntity> updatedDownloads = new ArrayList<>();
+        List<FileDownloadEntity> updatedDownloads = new ArrayList<>();
         for (Downloader downloader : downloaderProvider.getAllDownloaders()) {
             if (downloader.isEnabled()) {
                 updatedDownloads.addAll(downloader.checkForStatusUpdates(downloadsWaitingForUpdate, statusCheckType));

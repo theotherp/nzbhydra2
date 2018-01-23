@@ -5,27 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.Category;
-import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.downloading.NzbDownloadEntity;
-import org.nzbhydra.downloading.NzbDownloadRepository;
-import org.nzbhydra.downloading.NzbDownloadStatus;
-import org.nzbhydra.indexers.IndexerAccessResult;
-import org.nzbhydra.indexers.IndexerApiAccessEntity;
-import org.nzbhydra.indexers.IndexerApiAccessType;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerRepository;
-import org.nzbhydra.indexers.IndexerSearchEntity;
-import org.nzbhydra.indexers.IndexerStatusEntity;
+import org.nzbhydra.config.FileDownloadAccessType;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadRepository;
+import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.indexers.*;
 import org.nzbhydra.logging.ProgressLogger;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.migration.FromPythonMigration.MigrationMessageEvent;
-import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.IdentifierKeyValuePair;
-import org.nzbhydra.searching.SearchEntity;
-import org.nzbhydra.searching.SearchRepository;
-import org.nzbhydra.searching.SearchResultEntity;
-import org.nzbhydra.searching.SearchResultRepository;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,22 +25,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -74,7 +53,7 @@ public class SqliteMigration {
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
-    private NzbDownloadRepository downloadRepository;
+    private FileDownloadRepository downloadRepository;
     @Autowired
     private CategoryProvider categoryProvider;
     @PersistenceContext
@@ -137,10 +116,10 @@ public class SqliteMigration {
         logger.info("Migrating {} downloads from old database", countDownloads);
         eventPublisher.publishEvent(new MigrationMessageEvent("Migrating " + countDownloads + " NZB download entries"));
         ResultSet oldDownloads = statement.executeQuery("SELECT * FROM indexernzbdownload LEFT JOIN indexerapiaccess ON indexernzbdownload.apiAccess_id = indexerapiaccess.id");
-        List<NzbDownloadEntity> downloadEntities = new ArrayList<>();
+        List<FileDownloadEntity> downloadEntities = new ArrayList<>();
         List<SearchResultEntity> dummySearchResultEntities = new ArrayList<>();
         while (oldDownloads.next()) {
-            NzbDownloadEntity entity = new NzbDownloadEntity();
+            FileDownloadEntity entity = new FileDownloadEntity();
             entity.setTime(timestampToInstant(oldDownloads.getString("time")));
             IndexerEntity indexerEntity = oldIdToIndexersMap.get(oldDownloads.getInt("indexer_id"));
             if (indexerEntity == null) {
@@ -150,8 +129,8 @@ public class SqliteMigration {
             entity.setError(oldDownloads.getString("error"));
             entity.setUsername(oldDownloads.getString("username"));
             entity.setAccessSource(oldDownloads.getBoolean("internal") ? SearchSource.INTERNAL : SearchSource.API);
-            entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? NzbAccessType.REDIRECT : NzbAccessType.PROXY);
-            entity.setStatus(NzbDownloadStatus.NONE);
+            entity.setNzbAccessType(oldDownloads.getString("mode").equals("redirect") ? FileDownloadAccessType.REDIRECT : FileDownloadAccessType.PROXY);
+            entity.setStatus(FileDownloadStatus.NONE);
             //long hash = hash64((result.getIndexer().getName() + result.getIndexerGuid() + result.getTitle() + result.getLink()));
             Instant dummyTime = Instant.now().minus(10000, ChronoUnit.DAYS);
             String title = oldDownloads.getString("title");

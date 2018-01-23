@@ -7,7 +7,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.nzbhydra.downloading.NzbHandler.NzbDownloadEvent;
+import org.nzbhydra.downloading.FileDownloadEvent;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.searching.Searcher.SearchEvent;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -52,7 +52,7 @@ public class WebHooks {
 
     @Async
     @EventListener
-    public void onNzbDownloadEvent(NzbDownloadEvent downloadEvent) throws IOException {
+    public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) throws IOException {
         String downloadHook = System.getProperty("nzbhydra.hooks.download");
         if (!Strings.isNullOrEmpty(downloadHook)) {
             if (downloadEvent.getDownloadEntity().getAccessSource() == SearchSource.INTERNAL) {

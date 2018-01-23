@@ -17,16 +17,8 @@
 package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.NzbHandler;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonChannel;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonChannelResponse;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonEnclosure;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonEnclosureAttributes;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonItem;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonItemAttr;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonItemAttributes;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonResponseAttributes;
-import org.nzbhydra.mapping.newznab.json.NewznabJsonRoot;
+import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.mapping.newznab.json.*;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -45,7 +37,7 @@ public class NewznabJsonTransformer {
     private static final String APPLICATION_TYPE_TORRENT = "application/x-bittorrent";
 
     @Autowired
-    protected NzbHandler nzbHandler;
+    protected FileHandler nzbHandler;
     @Autowired
     protected ConfigProvider configProvider;
 
@@ -73,7 +65,7 @@ public class NewznabJsonTransformer {
 
     NewznabJsonItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
         NewznabJsonItem rssItem = new NewznabJsonItem();
-        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
+        String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, DownloadType.NZB);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setGuid(String.valueOf(searchResultItem.getGuid()));

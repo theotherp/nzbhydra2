@@ -21,8 +21,9 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.downloading.Downloader.StatusCheckType;
-import org.nzbhydra.downloading.NzbHandler.NzbDownloadEvent;
+import org.nzbhydra.downloading.downloaders.Downloader;
+import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
+import org.nzbhydra.downloading.downloaders.DownloaderProvider;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -31,16 +32,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class DownloadStatusUpdaterTest {
 
     @Mock
     private DownloaderProvider downloaderProvider;
     @Mock
-    private NzbDownloadRepository downloadRepository;
+    private FileDownloadRepository downloadRepository;
     @Mock
     private Downloader downloaderMock;
 
@@ -58,7 +57,7 @@ public class DownloadStatusUpdaterTest {
     public void shouldNotRunWhenNotEnabled() {
         testee.isEnabled = false;
         testee.lastDownload = Instant.now();
-        testee.checkStatus(Collections.singletonList(NzbDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
+        testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
         verifyNoMoreInteractions(downloadRepository);
     }
 
@@ -66,7 +65,7 @@ public class DownloadStatusUpdaterTest {
     public void shouldNotRunWhenLastDownloadTooLongGone() {
         testee.isEnabled = true;
         testee.lastDownload = Instant.ofEpochSecond(1L);
-        testee.checkStatus(Collections.singletonList(NzbDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
+        testee.checkStatus(Collections.singletonList(FileDownloadStatus.REQUESTED), 10000, StatusCheckType.HISTORY);
         verifyNoMoreInteractions(downloadRepository);
     }
 
@@ -74,7 +73,7 @@ public class DownloadStatusUpdaterTest {
     public void shouldSetDisabledAndNotRunIfNoDownloadsInDatabase() {
         testee.isEnabled = true;
         testee.lastDownload = Instant.now();
-        List<NzbDownloadStatus> statuses = Collections.singletonList(NzbDownloadStatus.REQUESTED);
+        List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
         when(downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(eq(statuses), any())).thenReturn(Collections.emptyList());
 
         testee.checkStatus(statuses, 10000, StatusCheckType.HISTORY);
@@ -85,10 +84,10 @@ public class DownloadStatusUpdaterTest {
     public void shouldCallDownloader() {
         testee.isEnabled = true;
         testee.lastDownload = Instant.now();
-        List<NzbDownloadStatus> statuses = Collections.singletonList(NzbDownloadStatus.REQUESTED);
-        List<NzbDownloadEntity> downloadsWaitingForUpdate = Collections.singletonList(new NzbDownloadEntity());
+        List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
+        List<FileDownloadEntity> downloadsWaitingForUpdate = Collections.singletonList(new FileDownloadEntity());
         when(downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(eq(statuses), any())).thenReturn(downloadsWaitingForUpdate);
-        List<NzbDownloadEntity> downloadsReturnedFromDownloader = Collections.singletonList(new NzbDownloadEntity());
+        List<FileDownloadEntity> downloadsReturnedFromDownloader = Collections.singletonList(new FileDownloadEntity());
         when(downloaderMock.checkForStatusUpdates(any(),eq(StatusCheckType.HISTORY))).thenReturn(downloadsReturnedFromDownloader);
 
         testee.checkStatus(statuses, 10000, StatusCheckType.HISTORY);
@@ -102,7 +101,7 @@ public class DownloadStatusUpdaterTest {
         testee.isEnabled = false;
         testee.lastDownload = null;
 
-        testee.onNzbDownloadEvent(new NzbDownloadEvent(null));
+        testee.onNzbDownloadEvent(new FileDownloadEvent(null));
 
         assertThat(testee.isEnabled).isTrue();
         assertThat(testee.lastDownload).isNotNull();

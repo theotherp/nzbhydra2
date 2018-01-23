@@ -17,7 +17,7 @@
 package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
@@ -43,7 +43,7 @@ public class NewznabXmlTransformer {
     private static final String APPLICATION_TYPE_TORRENT = "application/x-bittorrent";
 
     @Autowired
-    protected NzbHandler nzbHandler;
+    protected FileHandler nzbHandler;
     @Autowired
     protected ConfigProvider configProvider;
 
@@ -73,7 +73,7 @@ public class NewznabXmlTransformer {
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
         boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
-        String link = nzbHandler.getNzbDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
+        String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));

@@ -11,7 +11,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
@@ -54,7 +54,7 @@ public class ExternalApiTest {
     @Mock
     protected SearchRequestFactory searchRequestFactory;
     @Mock
-    protected NzbHandler nzbHandler;
+    protected FileHandler nzbHandler;
     @Mock
     protected ConfigProvider configProvider;
     @Mock

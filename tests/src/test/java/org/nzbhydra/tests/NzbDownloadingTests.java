@@ -10,15 +10,9 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.ConfigChangedEvent;
-import org.nzbhydra.config.DownloaderConfig;
-import org.nzbhydra.config.DownloaderType;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.config.NzbAddingType;
-import org.nzbhydra.downloading.AddNzbsRequest;
-import org.nzbhydra.downloading.DownloaderProvider;
+import org.nzbhydra.config.*;
+import org.nzbhydra.downloading.AddFilesRequest;
+import org.nzbhydra.downloading.downloaders.DownloaderProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.searching.SearchResultEntity;
@@ -46,9 +40,7 @@ import java.util.Collections;
 import static org.mockserver.integration.ClientAndProxy.startClientAndProxy;
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
@@ -123,20 +115,20 @@ public class NzbDownloadingTests {
         downloaderConfig.setApiKey("apikey");
         baseConfig.getDownloading().getDownloaders().clear();
         baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
-        baseConfig.getSearching().setNzbAccessType(NzbAccessType.REDIRECT);
+        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.REDIRECT);
         downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
     @Test
     public void shouldRedirectToIndexer() throws Exception {
-        baseConfig.getSearching().setNzbAccessType(NzbAccessType.REDIRECT);
+        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.REDIRECT);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(status().is(HttpStatus.FOUND.value())).andExpect(header().string("Location", "http://127.0.0.1:7070/getnzb?id=123"));
     }
 
     @Test
     public void shouldDownloadNzbFromIndexer() throws Exception {
         mockServer.when(HttpRequest.request()).respond(HttpResponse.response().withBody("NZBContent"));
-        baseConfig.getSearching().setNzbAccessType(NzbAccessType.PROXY);
+        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.PROXY);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/" + searchResultId).with(csrf())).andExpect(result -> {
             result.getResponse().getStatus();
         }).andExpect(content().string("NZBContent"));
@@ -144,7 +136,7 @@ public class NzbDownloadingTests {
 
     @Test
     public void shouldReturnErrorCodeWhenNzbNotFound() throws Exception {
-        baseConfig.getSearching().setNzbAccessType(NzbAccessType.PROXY);
+        baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.PROXY);
         mvc.perform(MockMvcRequestBuilders.get("/getnzb/api/123").with(csrf())).andExpect(result -> {
             result.getResponse().getStatus();
         }).andExpect(content().string("<error code=\"300\" description=\"Invalid or outdated search result ID\"/>"));
@@ -168,7 +160,7 @@ public class NzbDownloadingTests {
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders.put("/internalapi/downloader/addNzbs");
         SearchResultWebTO item = SearchResultWebTO.builder().searchResultId(String.valueOf(searchResultId)).build();
-        AddNzbsRequest addNzbsRequest = new AddNzbsRequest("sabnzbd", Collections.singletonList(new AddNzbsRequest.SearchResult(item.getSearchResultId(), item.getOriginalCategory())), "");
+        AddFilesRequest addNzbsRequest = new AddFilesRequest("sabnzbd", Collections.singletonList(new AddFilesRequest.SearchResult(item.getSearchResultId(), item.getOriginalCategory())), "");
         request.contentType(MediaType.APPLICATION_JSON_VALUE);
         request.content(new ObjectMapper().writeValueAsString(addNzbsRequest));
         request.with(csrf());

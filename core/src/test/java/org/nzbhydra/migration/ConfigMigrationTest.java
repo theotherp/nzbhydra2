@@ -4,28 +4,10 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.nzbhydra.config.AuthConfig;
-import org.nzbhydra.config.AuthType;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.CategoriesConfig;
-import org.nzbhydra.config.Category;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.DownloadType;
-import org.nzbhydra.config.DownloaderType;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.NzbAccessType;
-import org.nzbhydra.config.NzbAddingType;
-import org.nzbhydra.config.ProxyType;
-import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.*;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -37,14 +19,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import java.util.Arrays;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ConfigMigrationTest {
 
@@ -216,7 +194,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getSearching().isIgnorePassworded(), is(true));
         assertThat(result.getMigratedConfig().getSearching().isIgnoreTemporarilyDisabled(), is(true));
         assertThat(result.getMigratedConfig().getSearching().getMaxAge().get(), is(2000));
-        assertThat(result.getMigratedConfig().getSearching().getNzbAccessType(), is(NzbAccessType.REDIRECT));
+        assertThat(result.getMigratedConfig().getSearching().getNzbAccessType(), is(FileDownloadAccessType.REDIRECT));
         assertThat(result.getMigratedConfig().getSearching().getRemoveTrailing(), hasItems("Spanish", "-German", ".rar"));
         assertThat(result.getMigratedConfig().getSearching().getRequiredRegex().isPresent(), is(false));
         assertThat(result.getMigratedConfig().getSearching().getRequiredWords(), is(empty()));

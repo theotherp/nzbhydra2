@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.downloading.NzbHandler.NzbsZipResponse;
+import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
@@ -447,7 +447,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
                     try {
                         List<Long> ids = objectMapper.readValue(body, new TypeReference<List<Long>>() {
                         });
-                        NzbsZipResponse response = new NzbsZipResponse(true, "bla", null, ids, Collections.emptyList());
+                        FileZipResponse response = new FileZipResponse(true, "bla", null, ids, Collections.emptyList());
                         return new MockResponse().setBody(objectMapper.writeValueAsString(response)).setHeader("Content-Type", "application/xml; charset=utf-8");
                     } catch (IOException e) {
 

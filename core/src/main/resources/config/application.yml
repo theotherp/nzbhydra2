@@ -258,6 +258,7 @@ categoriesConfig:
 downloading:
     downloaders: []
     saveTorrentsTo: null
+    sendMagnetLinks: true
 indexers: []
 main:
   apiKey: null

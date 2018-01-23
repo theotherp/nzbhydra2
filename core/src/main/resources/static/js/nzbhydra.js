@@ -879,40 +879,6 @@ function tabOrChart() {
 
 angular
     .module('nzbhydraApp')
-    .directive('sendTorrentToBlackhole', sendTorrentToBlackhole);
-
-function sendTorrentToBlackhole() {
-    controller.$inject = ["$scope", "$http", "growl", "ConfigService", "DebugService"];
-    return {
-        templateUrl: 'static/html/directives/send-torrent-to-blackhole.html',
-        scope: {
-            searchResultId: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, $http, growl, ConfigService, DebugService) {
-        $scope.useBlackhole = ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "";
-        $scope.cssClass = "glyphicon-save-file";
-        $scope.add = function () {
-            $scope.cssClass = "nzb-spinning";
-            $http.put("internalapi/saveTorrent", [$scope.searchResultId]).then(function (response) {
-                if (response.data.successful) {
-                    $scope.cssClass = "glyphicon-ok";
-                } else {
-                    $scope.cssClass = "glyphicon-remove";
-                    growl.error(response.data.message);
-                }
-            });
-
-        };
-        DebugService.log("blackhole");
-
-    }
-}
-
-angular
-    .module('nzbhydraApp')
     .directive('selectionButton', selectionButton);
 
 function selectionButton() {
@@ -1196,6 +1162,38 @@ angular
             return number;
         }
     });
+angular
+    .module('nzbhydraApp')
+    .directive('saveOrSendTorrent', saveOrSendTorrent);
+
+function saveOrSendTorrent() {
+    controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
+    return {
+        templateUrl: 'static/html/directives/save-or-send-torrent.html',
+        scope: {
+            searchResultId: "<",
+            isFile: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, $http, growl, ConfigService) {
+        $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
+        $scope.cssClass = "glyphicon-save-file";
+        $scope.add = function () {
+            $scope.cssClass = "nzb-spinning";
+            $http.put("internalapi/saveOrSendTorrent", [$scope.searchResultId]).then(function (response) {
+                if (response.data.successful) {
+                    $scope.cssClass = "glyphicon-ok";
+                } else {
+                    $scope.cssClass = "glyphicon-remove";
+                    growl.error(response.data.message);
+                }
+            });
+        };
+    }
+}
+
 //Can be used in an ng-repeat directive to call a function when the last element was rendered
 //We use it to mark the end of sorting / filtering so we can stop blocking the UI
 
@@ -8121,6 +8119,15 @@ function ConfigFields($injector) {
                                 label: 'Torrent black hole',
                                 help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
                                 type: "folder"
+                            }
+                        },
+                        {
+                            key: 'sendMagnetLinks',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Send magnet links',
+                                help: "Enable to send magnet links to the associated program on the server machine"
                             }
                         }
                     ]

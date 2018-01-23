@@ -8,17 +8,17 @@ public class NzbDownloadStatusTest {
 
     @Test
     public void testCanUpdate() {
-        assertTrue(NzbDownloadStatus.NZB_ADDED.canUpdate(NzbDownloadStatus.NONE));
-        assertTrue(NzbDownloadStatus.NZB_ADDED.canUpdate(NzbDownloadStatus.REQUESTED));
-        assertTrue(NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL.canUpdate(NzbDownloadStatus.REQUESTED));
-        assertTrue(NzbDownloadStatus.NZB_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.NONE));
-        assertTrue(NzbDownloadStatus.NZB_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.REQUESTED));
-        assertTrue(NzbDownloadStatus.NZB_ADD_REJECTED.canUpdate(NzbDownloadStatus.REQUESTED));
-        assertTrue(NzbDownloadStatus.NZB_ADD_REJECTED.canUpdate(NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
-        assertTrue(NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.NONE));
-        assertTrue(NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
-        assertTrue(NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.NZB_ADDED));
-        assertTrue(NzbDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(NzbDownloadStatus.REQUESTED));
+        assertTrue(FileDownloadStatus.NZB_ADDED.canUpdate(FileDownloadStatus.NONE));
+        assertTrue(FileDownloadStatus.NZB_ADDED.canUpdate(FileDownloadStatus.REQUESTED));
+        assertTrue(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL.canUpdate(FileDownloadStatus.REQUESTED));
+        assertTrue(FileDownloadStatus.NZB_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.NONE));
+        assertTrue(FileDownloadStatus.NZB_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.REQUESTED));
+        assertTrue(FileDownloadStatus.NZB_ADD_REJECTED.canUpdate(FileDownloadStatus.REQUESTED));
+        assertTrue(FileDownloadStatus.NZB_ADD_REJECTED.canUpdate(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
+        assertTrue(FileDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.NONE));
+        assertTrue(FileDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL));
+        assertTrue(FileDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.NZB_ADDED));
+        assertTrue(FileDownloadStatus.CONTENT_DOWNLOAD_ERROR.canUpdate(FileDownloadStatus.REQUESTED));
     }
 
 

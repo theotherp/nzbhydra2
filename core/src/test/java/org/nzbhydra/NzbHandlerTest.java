@@ -6,22 +6,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.NzbDownloadEntity;
-import org.nzbhydra.downloading.NzbDownloadRepository;
-import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadRepository;
+import org.nzbhydra.downloading.FileHandler;
 
 import static org.mockito.Mockito.when;
 
 public class NzbHandlerTest {
 
     @InjectMocks
-    private NzbHandler testee = new NzbHandler();
+    private FileHandler testee = new FileHandler();
     @Mock
-    private NzbDownloadRepository nzbDownloadRepositoryMock;
+    private FileDownloadRepository nzbDownloadRepositoryMock;
     @Mock
     private ConfigProvider configProviderMock;
     @Mock
-    private NzbDownloadEntity entityMock;
+    private FileDownloadEntity entityMock;
     private BaseConfig baseConfig = new BaseConfig();
 
     @Before
@@ -29,6 +29,8 @@ public class NzbHandlerTest {
         MockitoAnnotations.initMocks(this);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
     }
+
+
 
 
 }

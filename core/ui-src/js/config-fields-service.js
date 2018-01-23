@@ -1056,6 +1056,15 @@ function ConfigFields($injector) {
                                 help: 'When the "Torrent" button is clicked torrents will be saved to this folder on the server. Ignored if not set.',
                                 type: "folder"
                             }
+                        },
+                        {
+                            key: 'sendMagnetLinks',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Send magnet links',
+                                help: "Enable to send magnet links to the associated program on the server machine"
+                            }
                         }
                     ]
 

@@ -34,7 +34,7 @@ public class SearchingConfig extends ValidatingConfig {
     private boolean loadAllCachedOnInternal;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
-    private NzbAccessType nzbAccessType = NzbAccessType.REDIRECT;
+    private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();

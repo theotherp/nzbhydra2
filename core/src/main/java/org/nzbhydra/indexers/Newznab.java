@@ -9,29 +9,16 @@ import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.IndexerCategoryConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.indexers.exceptions.IndexerAuthException;
-import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
-import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
-import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
-import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
-import org.nzbhydra.searching.IndexerSearchResult;
+import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
-import org.nzbhydra.searching.SearchResultIdCalculator;
-import org.nzbhydra.searching.SearchResultItem;
 import org.nzbhydra.searching.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.SearchResultItem.HasNfo;
-import org.nzbhydra.searching.SearchType;
-import org.nzbhydra.searching.UnknownResponseException;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,14 +33,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -420,7 +400,7 @@ public class Newznab extends Indexer<Xml> {
                     searchResultItem.setPassworded(true);
                 }
             } catch (NumberFormatException e) {
-                error("Unable to parse password value "+ passwordValue);
+                error("Unable to parse password value " + passwordValue);
             }
         }
         if (attributes.containsKey("nfo")) {
@@ -471,24 +451,30 @@ public class Newznab extends Indexer<Xml> {
         if (!newznabCategories.isEmpty()) {
             Integer mostSpecific = newznabCategories.stream().max(Integer::compareTo).get();
             IndexerCategoryConfig mapping = config.getCategoryMapping();
-            Category category = idToCategory.computeIfAbsent(mostSpecific, x -> {
-                Optional<Category> categoryOptional = Optional.empty();
-                if (mapping.getAnime().isPresent() && Objects.equals(mapping.getAnime().get(), mostSpecific)) {
-                    categoryOptional = categoryProvider.fromSubtype(Subtype.ANIME);
-                } else if (mapping.getAudiobook().isPresent() && Objects.equals(mapping.getAudiobook().get(), mostSpecific)) {
-                    categoryOptional = categoryProvider.fromSubtype(Subtype.AUDIOBOOK);
-                } else if (mapping.getEbook().isPresent() && Objects.equals(mapping.getEbook().get(), mostSpecific)) {
-                    categoryOptional = categoryProvider.fromSubtype(Subtype.EBOOK);
-                } else if (mapping.getComic().isPresent() && Objects.equals(mapping.getComic().get(), mostSpecific)) {
-                    categoryOptional = categoryProvider.fromSubtype(Subtype.COMIC);
-                } else if (mapping.getMagazine().isPresent() && Objects.equals(mapping.getMagazine().get(), mostSpecific)) {
-                    categoryOptional = categoryProvider.fromSubtype(Subtype.MAGAZINE);
-                }
-                return categoryOptional.orElse(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
-            });
-            searchResultItem.setCategory(category);
+            Category category;
+            if (mapping == null) { //May be the case in some corner cases
+                category = categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
+                searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
+            } else {
+                category = idToCategory.computeIfAbsent(mostSpecific, x -> {
+                    Optional<Category> categoryOptional = Optional.empty();
+                    if (mapping.getAnime().isPresent() && Objects.equals(mapping.getAnime().get(), mostSpecific)) {
+                        categoryOptional = categoryProvider.fromSubtype(Subtype.ANIME);
+                    } else if (mapping.getAudiobook().isPresent() && Objects.equals(mapping.getAudiobook().get(), mostSpecific)) {
+                        categoryOptional = categoryProvider.fromSubtype(Subtype.AUDIOBOOK);
+                    } else if (mapping.getEbook().isPresent() && Objects.equals(mapping.getEbook().get(), mostSpecific)) {
+                        categoryOptional = categoryProvider.fromSubtype(Subtype.EBOOK);
+                    } else if (mapping.getComic().isPresent() && Objects.equals(mapping.getComic().get(), mostSpecific)) {
+                        categoryOptional = categoryProvider.fromSubtype(Subtype.COMIC);
+                    } else if (mapping.getMagazine().isPresent() && Objects.equals(mapping.getMagazine().get(), mostSpecific)) {
+                        categoryOptional = categoryProvider.fromSubtype(Subtype.MAGAZINE);
+                    }
+                    return categoryOptional.orElse(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
+                });
             //Use the indexer's own category mapping to build the category name
             searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
+            }
+            searchResultItem.setCategory(category);
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }

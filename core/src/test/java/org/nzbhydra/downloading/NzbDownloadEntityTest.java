@@ -25,7 +25,7 @@ public class NzbDownloadEntityTest {
 
     @Test
     public void shouldTruncatLongError() {
-        NzbDownloadEntity testee = new NzbDownloadEntity();
+        FileDownloadEntity testee = new FileDownloadEntity();
         StringBuilder builder = new StringBuilder();
         for (int i = 1; i<=799;i++) {
             builder.append("12345");

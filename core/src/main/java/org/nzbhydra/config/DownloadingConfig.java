@@ -16,6 +16,7 @@ public class DownloadingConfig extends ValidatingConfig {
 
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;
+    private boolean sendMagnetLinks;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
@@ -39,9 +40,7 @@ public class DownloadingConfig extends ValidatingConfig {
         List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(List::stream).collect(Collectors.toList());
         errors.addAll(downloaderErrors);
 
-        List<String> warnings = new ArrayList<>();
-        List<String> downloaderWarnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(List::stream).collect(Collectors.toList());
-        warnings.addAll(downloaderWarnings);
+        List<String> warnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(List::stream).collect(Collectors.toList());
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }

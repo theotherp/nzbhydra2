@@ -6,15 +6,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.util.collections.Sets;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.*;
 import org.nzbhydra.config.Category.Subtype;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.downloading.NzbDownloadRepository;
+import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -30,38 +24,24 @@ import org.springframework.data.domain.PageImpl;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class IndexerForSearchSelectorTest {
 
     @Mock
     private IndexerApiAccessRepository indexerApiAccessRepository;
     @Mock
-    private NzbDownloadRepository nzbDownloadRepository;
+    private FileDownloadRepository nzbDownloadRepository;
     @Mock
     private SearchModuleProvider searchModuleProviderMock;
     @Mock

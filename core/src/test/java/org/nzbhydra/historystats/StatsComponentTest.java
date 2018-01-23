@@ -7,30 +7,11 @@ import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.downloading.NzbDownloadEntity;
-import org.nzbhydra.downloading.NzbDownloadRepository;
-import org.nzbhydra.historystats.stats.AverageResponseTime;
-import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
-import org.nzbhydra.historystats.stats.CountPerHourOfDay;
-import org.nzbhydra.historystats.stats.DownloadPerAge;
-import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
-import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
-import org.nzbhydra.historystats.stats.IndexerDownloadShare;
-import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
-import org.nzbhydra.historystats.stats.StatsRequest;
-import org.nzbhydra.indexers.IndexerAccessResult;
-import org.nzbhydra.indexers.IndexerApiAccessEntity;
-import org.nzbhydra.indexers.IndexerApiAccessRepository;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerRepository;
-import org.nzbhydra.indexers.IndexerSearchEntity;
-import org.nzbhydra.indexers.IndexerSearchRepository;
-import org.nzbhydra.searching.SearchEntity;
-import org.nzbhydra.searching.SearchModuleConfigProvider;
-import org.nzbhydra.searching.SearchModuleProvider;
-import org.nzbhydra.searching.SearchRepository;
-import org.nzbhydra.searching.SearchResultEntity;
-import org.nzbhydra.searching.SearchResultRepository;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadRepository;
+import org.nzbhydra.historystats.stats.*;
+import org.nzbhydra.indexers.*;
+import org.nzbhydra.searching.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,9 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringRunner.class)
@@ -69,7 +48,7 @@ public class StatsComponentTest {
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
-    private NzbDownloadRepository downloadRepository;
+    private FileDownloadRepository downloadRepository;
     @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
@@ -158,17 +137,17 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateDownloadsPerDayOfWeek() throws Exception {
 
-        NzbDownloadEntity downloadFriday = new NzbDownloadEntity();
+        FileDownloadEntity downloadFriday = new FileDownloadEntity();
         downloadFriday.setTime(Instant.ofEpochSecond(1490945310L)); //Friday
 
-        NzbDownloadEntity downloadThursday1 = new NzbDownloadEntity();
+        FileDownloadEntity downloadThursday1 = new FileDownloadEntity();
         downloadThursday1.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
 
-        NzbDownloadEntity downloadThursday2 = new NzbDownloadEntity();
+        FileDownloadEntity downloadThursday2 = new FileDownloadEntity();
         downloadThursday2.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
 
 
-        NzbDownloadEntity downloadSunday = new NzbDownloadEntity();
+        FileDownloadEntity downloadSunday = new FileDownloadEntity();
         downloadSunday.setTime(Instant.ofEpochSecond(1490513310L)); //Sunday
 
         downloadRepository.save(Arrays.asList(downloadFriday, downloadSunday, downloadThursday1, downloadThursday2));
@@ -190,17 +169,17 @@ public class StatsComponentTest {
     @Test
     public void shouldCalculateDownloadsAges() throws Exception {
 
-        NzbDownloadEntity download1 = new NzbDownloadEntity();
+        FileDownloadEntity download1 = new FileDownloadEntity();
         download1.setAge(10);
-        NzbDownloadEntity download2 = new NzbDownloadEntity();
+        FileDownloadEntity download2 = new FileDownloadEntity();
         download2.setAge(1000);
-        NzbDownloadEntity download3 = new NzbDownloadEntity();
+        FileDownloadEntity download3 = new FileDownloadEntity();
         download3.setAge(1500);
-        NzbDownloadEntity download4 = new NzbDownloadEntity();
+        FileDownloadEntity download4 = new FileDownloadEntity();
         download4.setAge(2001);
-        NzbDownloadEntity download5 = new NzbDownloadEntity();
+        FileDownloadEntity download5 = new FileDownloadEntity();
         download5.setAge(3499);
-        NzbDownloadEntity download6 = new NzbDownloadEntity();
+        FileDownloadEntity download6 = new FileDownloadEntity();
         download6.setAge(3400);
 
         downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
@@ -218,27 +197,27 @@ public class StatsComponentTest {
 
     @Test
     public void shouldCalculateIndexerDownloadShares() throws Exception {
-        NzbDownloadEntity download1 = new NzbDownloadEntity();
+        FileDownloadEntity download1 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity1 = getSearchResultEntity(indexer1, "1");
         download1.setSearchResult(searchResultEntity1);
         
-        NzbDownloadEntity download2 = new NzbDownloadEntity();
+        FileDownloadEntity download2 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity2 = getSearchResultEntity(indexer1, "2");
         download2.setSearchResult(searchResultEntity2);
         
-        NzbDownloadEntity download3 = new NzbDownloadEntity();
+        FileDownloadEntity download3 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity3 = getSearchResultEntity(indexer1, "3");
         download3.setSearchResult(searchResultEntity3);
         
-        NzbDownloadEntity download4 = new NzbDownloadEntity();
+        FileDownloadEntity download4 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity4 = getSearchResultEntity(indexer1, "4");
         download4.setSearchResult(searchResultEntity4);
         
-        NzbDownloadEntity download5 = new NzbDownloadEntity();
+        FileDownloadEntity download5 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity5 = getSearchResultEntity(indexer2, "5");
         download5.setSearchResult(searchResultEntity5);
         
-        NzbDownloadEntity download6 = new NzbDownloadEntity();
+        FileDownloadEntity download6 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity6 = getSearchResultEntity(indexer2, "6");
         download6.setSearchResult(searchResultEntity6);
 

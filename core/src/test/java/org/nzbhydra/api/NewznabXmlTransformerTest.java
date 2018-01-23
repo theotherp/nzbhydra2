@@ -21,12 +21,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.Category;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.downloading.NzbHandler;
+import org.nzbhydra.config.*;
+import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.searching.DownloadType;
@@ -42,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class NewznabXmlTransformerTest {
 
     @Mock
-    protected NzbHandler nzbHandler;
+    protected FileHandler nzbHandler;
     @Mock
     protected ConfigProvider configProvider;
     @Mock
