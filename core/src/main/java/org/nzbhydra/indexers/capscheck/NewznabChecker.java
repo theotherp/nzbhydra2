@@ -46,20 +46,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -85,7 +73,7 @@ public class NewznabChecker {
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {
         Xml xmlResponse;
         try {
-            URI uri = getBaseUri(indexerConfig).queryParam("t", "tvsearch").build().toUri();
+            URI uri = getBaseUri(indexerConfig).queryParam("t", "search").build().toUri();
             xmlResponse = indexerWebAccess.get(uri, indexerConfig);
             logger.debug("Checking connection to indexer {} using URI {}", indexerConfig.getName(), uri);
             if (xmlResponse instanceof NewznabXmlError) {
