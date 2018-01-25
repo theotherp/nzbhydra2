@@ -23,14 +23,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -169,7 +162,7 @@ public class SearchResultAcceptor {
 
     protected boolean checkForCategoryDisabledForIndexer(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         List<String> enabledCategories = item.getIndexer().getConfig().getEnabledCategories();
-        if (!enabledCategories.isEmpty() && !enabledCategories.contains(item.getCategory().getName())) {
+        if (!item.getCategory().equals(CategoryProvider.naCategory) && !enabledCategories.isEmpty() && !enabledCategories.contains(item.getCategory().getName())) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in category disabled for indexer", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;

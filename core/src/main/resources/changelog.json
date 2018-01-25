@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.1.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Results without recognizable category were rejected"
+      }
+    ]
+  },  {
     "version": "v1.1.4",
     "changes": [
       {

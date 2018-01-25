@@ -1,11 +1,7 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.CategoriesConfig;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.*;
 import org.nzbhydra.config.Category.Subtype;
-import org.nzbhydra.config.ConfigChangedEvent;
-import org.nzbhydra.config.SearchSourceRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,12 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,7 +37,7 @@ public class CategoryProvider implements InitializingBean {
     @Autowired
     protected BaseConfig baseConfig;
 
-    private final Category naCategory = new Category("N/A");
+    public static final Category naCategory = new Category("N/A");
 
     public CategoryProvider() {
         naCategory.setApplyRestrictionsType(SearchSourceRestriction.NONE);
