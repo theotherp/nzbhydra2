@@ -1,3 +1,7 @@
+### v1.2.0
+Feature: Send torrent magnet links to associated program
+Fix: Results without recognizable category were rejected
+
 ### v1.1.4
 Fix: Hide torrent black hole buttons for magnet links
 Fix: Torrents were sometimes not correctly downloaded and would have extension .nzb
