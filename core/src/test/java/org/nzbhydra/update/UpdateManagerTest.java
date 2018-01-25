@@ -15,9 +15,6 @@ import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
 import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager.BlockedVersion;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,9 +22,7 @@ import java.util.List;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
@@ -35,8 +30,6 @@ public class UpdateManagerTest {
 
     @Mock
     private GenericStorage updateDataGenericStorageMock;
-    @Mock
-    private RestTemplate restTemplateMock;
     @Mock
     private WebAccess webAccessMock;
 
@@ -67,15 +60,14 @@ public class UpdateManagerTest {
                 "* a\n" +
                 "* b");
 
-        when(restTemplateMock.getForEntity(startsWith("http:/127.0.0.1:7070/repos/theotherp/apitests/releases/latest"), any())).thenReturn(
-                new ResponseEntity<>(latestRelease, HttpStatus.OK)
+        when(webAccessMock.callUrl(startsWith("http:/127.0.0.1:7070/repos/theotherp/apitests/releases/latest"), any(), any())).thenReturn(
+                latestRelease
         );
 
         //Return in wrong order to test sorting of releases by version
-        when(restTemplateMock.getForEntity(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any())).thenReturn(
-                new ResponseEntity<>(
-                        Arrays.asList(previousRelease, latestRelease), HttpStatus.OK)
-        );
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(), any())).thenReturn(
+                        Arrays.asList(previousRelease, latestRelease));
+
 
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"), any(TypeReference.class))).thenReturn(
