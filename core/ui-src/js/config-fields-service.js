@@ -1063,7 +1063,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Send magnet links',
-                                help: "Enable to send magnet links to the associated program on the server machine"
+                                help: "Enable to send magnet links to the associated program on the server machine. Won't work with docker"
                             }
                         }
                     ]

@@ -39,4 +39,12 @@ public class DownloadResultTest {
         testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
         assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=title.torrent");
     }
+
+    @Test
+    public void shouldCleanMagnetLink() {
+        FileDownloadEntity nzbDownloadEntity = new FileDownloadEntity();
+        DownloadResult testee = DownloadResult.createSuccessfulRedirectResult("title","magnet:?xt=urn:btih:738c4612aefe678bf76aa8e2e4fbacf8bd541&dn=Some Guy S06E35.Title.WEB.h264-GROUP" , nzbDownloadEntity);
+        String cleanedUrl = testee.getCleanedUrl();
+        assertThat(cleanedUrl).contains("Some+Guy+S06E35.Title.WEB.h264-GROUP");
+    }
 }

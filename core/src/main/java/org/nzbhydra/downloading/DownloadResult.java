@@ -16,7 +16,6 @@
 
 package org.nzbhydra.downloading;
 
-import com.google.common.base.Splitter;
 import lombok.Data;
 import org.nzbhydra.searching.SearchResultItem;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +24,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 public class DownloadResult {
@@ -36,6 +36,8 @@ public class DownloadResult {
     private String error;
     private FileDownloadEntity downloadEntity;
     private int statusCode;
+
+    private static final Pattern URL_PARAM_PATTERN = Pattern.compile("dn=([^&$]+)");
 
     protected DownloadResult(String title, byte[] content, String url, boolean successful, String error, FileDownloadEntity downloadEntity) {
         this.content = content;
@@ -82,10 +84,15 @@ public class DownloadResult {
     }
 
     public String getCleanedUrl() {
-        Map<String, String> map = Splitter.on('&').trimResults().withKeyValueSeparator("=").split(url);
-        if (map.containsKey("dn")) {
-            url = url.replace(map.get("dn"), URLEncoder.encode(map.get("dn")));
+        if (!url.contains("magnet:")) {
+            return url;
         }
+        Matcher matcher = URL_PARAM_PATTERN.matcher(url);
+        if (!matcher.find()) {
+            return url;
+        }
+        String dn = matcher.group(1);
+        url = url.replace("dn="+dn, URLEncoder.encode(dn));
         return url;
     }
 
