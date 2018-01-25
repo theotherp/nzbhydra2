@@ -3,11 +3,16 @@
     "version": "v1.1.5",
     "changes": [
       {
+        "type": "feature",
+        "text": "Send torrent magnet links to associated program"
+      },
+      {
         "type": "fix",
         "text": "Results without recognizable category were rejected"
       }
     ]
-  },  {
+  },
+  {
     "version": "v1.1.4",
     "changes": [
       {

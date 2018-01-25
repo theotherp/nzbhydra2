@@ -73,6 +73,10 @@ public class FileHandler {
     }
 
     public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result, String downloadType) {
+        if (result.getLink().contains("magnet:")) {
+            logger.warn("Unable to download magnet link as file");
+            return DownloadResult.createErrorResult("Unable to download magnet link as file");
+        }
         byte[] fileContent;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {

@@ -108,6 +108,10 @@ public class DownloadResult {
         return new DownloadResult(null, null, null, false, error, entity);
     }
 
+    public static DownloadResult createErrorResult(String error) {
+        return new DownloadResult(null, null, null, false, error, null);
+    }
+
     public static DownloadResult createErrorResult(String error, int statusCode, FileDownloadEntity entity) {
         return new DownloadResult(null, null, null, false, error, statusCode, entity);
     }
