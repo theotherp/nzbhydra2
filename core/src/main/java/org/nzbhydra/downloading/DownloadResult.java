@@ -92,7 +92,7 @@ public class DownloadResult {
             return url;
         }
         String dn = matcher.group(1);
-        url = url.replace("dn="+dn, URLEncoder.encode(dn));
+        url = url.replace("dn="+dn, "dn="+URLEncoder.encode(dn));
         return url;
     }
 

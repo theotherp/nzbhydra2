@@ -18,6 +18,7 @@ package org.nzbhydra.tests.searching;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -26,6 +27,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nzbhydra.config.IndexerConfigBuilder;
+import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
@@ -89,7 +92,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
     }
 
     @Test
-    public void shouldBuildCorrectLinks() throws Exception {
+    public void shouldBuildCorrectLinksAndAllowNzbDownload() throws Exception {
         prepareFiveResultsFromOneIndexer();
         String body = getStringFromUrl("http://127.0.0.1:5077/api?apikey=apikey&t=search&q=whatever");
         //Extract link
@@ -116,6 +119,46 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
         assertThat(nzbContent).isEqualTo("nzbcontent1");
     }
 
+    @Test
+    public void shouldAllowTorrentFileDownload() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().searchModuleType(SearchModuleType.TORZNAB).apiKey("apikey").build()));
+        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").link(getMockServerBaseUrl() + "torrentlink").build();
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result), 0, 1);
+        mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        mockWebServer.enqueue(new MockResponse().setBody("torrentcontent").setHeader("Content-Type", "application/xml; charset=utf-8"));
+
+        String body = getStringFromUrl("http://127.0.0.1:5077/torznab/api?apikey=apikey&t=search&q=whatever");
+
+        //Extract link
+        Matcher matcher = Pattern.compile("enclosure url=\"([^\"]+)\"").matcher(body);
+        assertThat(matcher.find()).isTrue();
+        String link = matcher.group(1);
+
+        //Download torrent using link
+        String torrentContent = getStringFromUrl(link);
+        assertThat(torrentContent).isEqualTo("torrentcontent");
+    }
+
+    @Test
+    public void shouldAllowMagnetLinkDownload() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().searchModuleType(SearchModuleType.TORZNAB).apiKey("apikey").build()));
+        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").link("magnet:x&dn=y").build();
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result), 0, 1);
+        mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
+        mockWebServer.enqueue(new MockResponse().setBody("torrentcontent").setHeader("Content-Type", "application/xml; charset=utf-8"));
+
+        String body = getStringFromUrl("http://127.0.0.1:5077/torznab/api?apikey=apikey&t=search&q=whatever");
+
+        //Extract link
+        Matcher matcher = Pattern.compile("enclosure url=\"([^\"]+)\"").matcher(body);
+        assertThat(matcher.find()).isTrue();
+        String link = matcher.group(1);
+
+        Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url(link).build()).execute();
+        assertThat(response.code()).isEqualTo(302);
+        assertThat(response.header("Location")).isEqualTo("magnet:x&dn=y");
+    }
+
     protected String getStringFromUrl(String s) throws IOException {
         return new OkHttpClient.Builder().build().newCall(new Request.Builder().url(s).build()).execute().body().string();
     }
@@ -127,8 +170,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
         mockWebServer.setDispatcher(new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest request) throws InterruptedException {
-                int mockServerPort = mockWebServer.getPort();
-                String mockServerBaseUrl = "http://127.0.0.1:" + mockServerPort + "/";
+                String mockServerBaseUrl = getMockServerBaseUrl();
                 if (request.getRequestUrl().toString().contains("t=search")) {
                     NewznabXmlItem result1 = RssItemBuilder.builder("result1").pubDate(Instant.now().minus(1, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink1").hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
                     NewznabXmlItem result2 = RssItemBuilder.builder("result2").pubDate(Instant.now().minus(2, ChronoUnit.DAYS)).link(mockServerBaseUrl + "nzblink2").hasNfo(false).grabs(1).size(mbToBytes(1)).newznabAttributes(new ArrayList<>(Arrays.asList(new NewznabAttribute("category", "5000")))).category("TV").build();
@@ -145,6 +187,11 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
             }
 
         });
+    }
+
+    protected String getMockServerBaseUrl() {
+        int mockServerPort = mockWebServer.getPort();
+        return "http://127.0.0.1:" + mockServerPort + "/";
     }
 
     protected void prepareDuplicateAndTitleGroupedResults() throws IOException {
