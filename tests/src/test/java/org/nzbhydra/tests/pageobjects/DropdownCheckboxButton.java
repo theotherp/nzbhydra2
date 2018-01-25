@@ -89,6 +89,7 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     public void select(String caption) {
         ensureOpen();
         setValue(caption, true);
+        ensureClosed();
     }
 
     protected void setValue(String caption, boolean value) {
@@ -111,7 +112,7 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     public void deselect(String caption) {
         ensureOpen();
         setValue(caption, false);
-
+        ensureClosed();
     }
 
 

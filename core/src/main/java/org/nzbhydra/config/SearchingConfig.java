@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 @Data
+@ConfigurationProperties
 public class SearchingConfig extends ValidatingConfig {
 
     @JsonFormat(shape = Shape.STRING)

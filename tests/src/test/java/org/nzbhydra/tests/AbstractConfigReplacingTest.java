@@ -6,6 +6,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -14,6 +15,12 @@ public class AbstractConfigReplacingTest {
 
     @Autowired
     protected BaseConfig baseConfig;
+
+
+    @PostConstruct
+    protected void init() {
+        baseConfig.getSearching().setIgnoreTemporarilyDisabled(true);
+    }
 
     public void replaceConfig(URL resource) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.FileZipResponse;
+import org.nzbhydra.indexers.IndexerStatusRepository;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
@@ -65,6 +66,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     WebDriver webDriver;
     @Autowired
     SearchRepository searchRepository;
+    @Autowired
+    private IndexerStatusRepository indexerStatusRepository;
     String url = null;
 
 
@@ -98,6 +101,8 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         context.getDefaultElementFactory().addImplClassForElement(IToggle.class, Toggle.class);
         factory = context.getFactory();
     }
+
+
 
 
     @After
@@ -388,20 +393,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
     @Test
-    public void testMessageIfNoIndexerSuccessful() throws Exception {
-        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
-        mockWebServer.enqueue(new MockResponse().setResponseCode(400));
-        webDriver.get(url + "/?category=All&query=uitest&mode=search");
-
-        WebDriverWait wait = new WebDriverWait(webDriver, 10);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("no-search-results")));
-
-        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
-        assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("Unable to search any indexer successfully; no results available");
-        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
-    }
-
-    @Test
     public void testMessageIfAllResultsRejected() throws Exception {
         replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
         baseConfig.getSearching().setRequiredWords(Collections.singletonList("not in there"));
@@ -419,6 +410,21 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("No (non-rejected) results were found for this search");
         assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
     }
+
+    @Test
+    public void testMessageIfNoIndexerSuccessful() throws Exception {
+        replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().build()));
+        mockWebServer.enqueue(new MockResponse().setResponseCode(400));
+        webDriver.get(url + "/?category=All&query=uitest&mode=search");
+
+        WebDriverWait wait = new WebDriverWait(webDriver, 10);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("no-search-results")));
+
+        SearchResultsPO searchResultsPage = factory.createPage(SearchResultsPO.class);
+        assertThat(searchResultsPage.noSearchResultsWarning().text()).isEqualTo("Unable to search any indexer successfully; no results available");
+        assertThat(webDriver.findElements(By.className("search-results-table")).isEmpty()).isTrue();
+    }
+
 
 
     protected void prepareFiveResultsFromTwoIndexers() throws Exception {
@@ -465,6 +471,7 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     }
 
     protected void prepareDuplicateAndTitleGroupedResults() throws IOException {
+
         replaceConfig(getClass().getResource("twoIndexers.json"));
 
         mockWebServer.setDispatcher(new Dispatcher() {
