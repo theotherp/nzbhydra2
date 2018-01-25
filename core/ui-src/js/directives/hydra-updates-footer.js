@@ -109,6 +109,8 @@ function hydraUpdatesFooter() {
                     } else {
                         _.defer(checkAndShowNews);
                     }
+                }, function() {
+                    console.log("Error while checking for welcome")
                 });
             });
         }

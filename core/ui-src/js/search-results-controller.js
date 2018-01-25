@@ -444,7 +444,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("calculateDisplayState");
 
         // console.timeEnd("sortAndFilter");
-        console.log("1");
         return filteredResults;
     }
 
@@ -460,7 +459,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        console.log("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
@@ -497,7 +495,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 $scope.categoriesForFiltering.push({label: category.name, id: category.name})
             }
         });
-        console.log("end setDataFromSearchResult");
     }
 
     function uniq(searchResults) {

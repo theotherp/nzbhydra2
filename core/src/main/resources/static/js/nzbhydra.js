@@ -1238,8 +1238,6 @@ function dropdownMultiselectDirective() {
         },
         templateUrl: 'static/html/directives/multiselect-dropdown.html',
         controller: ["$scope", "$element", "$filter", "$document", function dropdownMultiselectController($scope, $element, $filter, $document) {
-            console.log($scope.options);
-            console.log($scope.selectedModel);
             var $dropdownTrigger = $element.children()[0];
 
             var settings = {
@@ -1646,6 +1644,8 @@ function hydraUpdatesFooter() {
                     } else {
                         _.defer(checkAndShowNews);
                     }
+                }, function() {
+                    console.log("Error while checking for welcome")
                 });
             });
         }
@@ -2727,15 +2727,12 @@ function addableNzbs(DebugService) {
 
     function controller($scope, NzbDownloadService) {
         $scope.alwaysAsk = $scope.alwaysAsk === "true";
-        console.log($scope.alwaysAsk);
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
             if ($scope.searchresult.downloadType !== "NZB") {
                 return downloader.downloadType === $scope.searchresult.downloadType
             }
             return true;
         });
-
-        DebugService.log("addable-nzbs");
     }
 }
 
@@ -4069,7 +4066,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("calculateDisplayState");
 
         // console.timeEnd("sortAndFilter");
-        console.log("1");
         return filteredResults;
     }
 
@@ -4085,7 +4081,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function setDataFromSearchResult(data, previousSearchResults) {
-        console.log("setDataFromSearchResult");
         allSearchResults = previousSearchResults.concat(data.searchResults);
         allSearchResults = uniq(allSearchResults);
         $scope.filteredResults = sortAndFilter(allSearchResults);
@@ -4122,7 +4117,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 $scope.categoriesForFiltering.push({label: category.name, id: category.name})
             }
         });
-        console.log("end setDataFromSearchResult");
     }
 
     function uniq(searchResults) {

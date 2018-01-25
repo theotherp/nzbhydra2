@@ -19,8 +19,6 @@ function dropdownMultiselectDirective() {
         },
         templateUrl: 'static/html/directives/multiselect-dropdown.html',
         controller: function dropdownMultiselectController($scope, $element, $filter, $document) {
-            console.log($scope.options);
-            console.log($scope.selectedModel);
             var $dropdownTrigger = $element.children()[0];
 
             var settings = {

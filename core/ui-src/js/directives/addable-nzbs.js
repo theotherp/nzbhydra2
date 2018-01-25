@@ -15,14 +15,11 @@ function addableNzbs(DebugService) {
 
     function controller($scope, NzbDownloadService) {
         $scope.alwaysAsk = $scope.alwaysAsk === "true";
-        console.log($scope.alwaysAsk);
         $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
             if ($scope.searchresult.downloadType !== "NZB") {
                 return downloader.downloadType === $scope.searchresult.downloadType
             }
             return true;
         });
-
-        DebugService.log("addable-nzbs");
     }
 }
