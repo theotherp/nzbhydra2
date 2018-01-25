@@ -32,7 +32,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,8 +66,6 @@ public class UpdateManager implements InitializingBean {
     private BackupAndRestore backupAndRestore;
     @Autowired
     private GenericStorage updateDataGenericStorage;
-    @Autowired
-    protected RestTemplate restTemplate;
     @Autowired
     protected WebAccess webAccess;
     @Autowired
@@ -273,8 +270,8 @@ public class UpdateManager implements InitializingBean {
             //LATER support prereleases
             String url = repositoryBaseUrl + "/releases/latest";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
-            return restTemplate.getForEntity(url, Release.class).getBody();
-        } catch (RestClientException e) {
+            return webAccess.callUrl(url, new HashMap<>(), Release.class);
+        } catch (IOException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }
     }
