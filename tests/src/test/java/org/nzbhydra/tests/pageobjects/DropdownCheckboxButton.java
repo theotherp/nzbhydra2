@@ -18,6 +18,7 @@ package org.nzbhydra.tests.pageobjects;
 
 import org.nzbhydra.misc.Sleep;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.popper.fw.webdriver.elements.impl.AbstractWebElement;
 import org.popper.fw.webdriver.elements.impl.WebElementReference;
@@ -58,7 +59,11 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     }
 
     private boolean isOpen() {
-        return getWebelement().findElement(By.tagName("div")).getAttribute("class").contains("open");
+        try {
+            return getWebelement().findElement(By.tagName("ul")).getAttribute("style").contains("block");
+        } catch (NoSuchElementException e) {
+            return false;
+        }
     }
 
     protected void ensureClosed() {
@@ -79,9 +84,12 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
         List<WebElement> elements = getAllOptions();
         for (WebElement element : elements) {
             if (element.getText().contains(caption)) {
-                return isElementSelected(element);
+                boolean elementSelected = isElementSelected(element);
+                ensureClosed();
+                return elementSelected;
             }
         }
+        ensureClosed();
         throw new RuntimeException("Unable to find option with caption " + caption);
     }
 
@@ -89,7 +97,6 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     public void select(String caption) {
         ensureOpen();
         setValue(caption, true);
-        ensureClosed();
     }
 
     protected void setValue(String caption, boolean value) {
@@ -112,7 +119,6 @@ public class DropdownCheckboxButton extends AbstractWebElement implements IDropd
     public void deselect(String caption) {
         ensureOpen();
         setValue(caption, false);
-        ensureClosed();
     }
 
 
