@@ -13,4 +13,5 @@ public class LoggingMarkers {
     public static final Marker SCHEDULER = MarkerFactory.getMarker("SCHEDULER");
     public static final Marker DOWNLOAD_STATUS_UPDATE = MarkerFactory.getMarker("DOWNLOAD_STATUS_UPDATE");
     public static final Marker URL_CALCULATION = MarkerFactory.getMarker("URL_CALCULATION");
+    public static final Marker HTTP = MarkerFactory.getMarker("HTTP");
 }

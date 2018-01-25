@@ -19,12 +19,7 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Component
 public class IndexerWebAccess {
@@ -68,7 +63,7 @@ public class IndexerWebAccess {
             throw new RuntimeException("Unexpected error in hydra code. Sorry...");
         }
         try {
-            return future.get(timeout, TimeUnit.SECONDS);
+            return future.get(timeout +1, TimeUnit.SECONDS); //Give it one second more than the actual timeout
         } catch (ExecutionException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
                 throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());

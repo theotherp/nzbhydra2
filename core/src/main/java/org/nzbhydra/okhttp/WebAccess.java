@@ -3,7 +3,6 @@ package org.nzbhydra.okhttp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
 @Component
@@ -36,8 +35,6 @@ public class WebAccess {
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
     ObjectMapper objectMapper = new ObjectMapper();
-    @Autowired
-    private ConfigurableEnvironment environment;
 
     public String callUrl(String url) throws IOException {
         return callUrl(url, new HashMap<>());
@@ -52,23 +49,19 @@ public class WebAccess {
         for (Entry<String, String> entry : headers.entrySet()) {
             builder.addHeader(entry.getKey(), entry.getValue());
         }
-        if (url.toLowerCase().contains("github.com")) {
-            String token = environment.getProperty("githubToken");
-            if (!Strings.isNullOrEmpty(token)) {
-                builder.addHeader("Authorization", "token " + token);
-            }
-        }
 
         Request request = builder.build();
 
         OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
+        logger.debug(LoggingMarkers.HTTP, "Calling URL {} with headers {} and timeout{}", url, headers.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining(", ")), timeout);
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());
+                String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
                 logger.error(error);
                 throw new IOException(error);
             }
             String body = response.body().string();
+            logger.debug(LoggingMarkers.HTTP, "Call to {} successful with content length {} and headers {}", url, body.length(), response.headers());
             response.body().close();
             return body;
         }

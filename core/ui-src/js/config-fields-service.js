@@ -357,7 +357,8 @@ function ConfigFields($injector) {
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
                                     {label: 'User agent mapping', id: 'USER_AGENT'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
-                                    {label: 'URL calculation', id: 'URL_CALCULATION'}
+                                    {label: 'URL calculation', id: 'URL_CALCULATION'},
+                                    {label: 'HTTP', id: 'HTTP'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"
