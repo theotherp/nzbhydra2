@@ -26,6 +26,7 @@ public class MainConfig extends ValidatingConfig {
     private Integer configVersion = 1;
     private boolean backupEverySunday = true;
     private boolean backupBeforeUpdate = true;
+    private Integer deleteBackupsAfterWeeks = 4;
     private String dereferer = null;
     @RestartRequired
     private String host = "0.0.0.0";
@@ -69,6 +70,10 @@ public class MainConfig extends ValidatingConfig {
 
     public Optional<String> getUrlBase() {
         return Optional.ofNullable(Strings.emptyToNull(urlBase));
+    }
+
+    public Optional<Integer> getDeleteBackupsAfterWeeks() {
+        return Optional.ofNullable(deleteBackupsAfterWeeks);
     }
 
     public Optional<String> getDereferer() {

@@ -265,6 +265,7 @@ main:
   configVersion: 1
   backupEverySunday: true
   backupBeforeUpdate: true
+  deleteBackupsAfterWeeks: 4
   dereferer: "http://www.dereferer.org/?$s"
   host: "0.0.0.0"
   logging:

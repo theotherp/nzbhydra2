@@ -393,6 +393,16 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Backup before update'
                             }
+                        },{
+                            key: 'deleteBackupsAfterWeeks',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Delete backups after...',
+                                addonRight: {
+                                    text: 'weeks'
+                                }
+                            }
                         },
                         {
                             key: 'showNews',
