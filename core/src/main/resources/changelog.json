@@ -8,11 +8,15 @@
       },
       {
         "type": "feature",
-        "text": "Option to delete backups after x weeks"
+        "text": "Option to delete backups after x weeks. 4 is the default"
       },
       {
         "type": "fix",
         "text": "Improve layout on mobile devices. Thanks nemchik"
+      },
+      {
+        "type": "fix",
+        "text": "Updated the wrapper to delete older JAR files which previously caused some trouble. Any existing installations will have to update this manually. Docker containers must be updated."
       }
     ]
   },

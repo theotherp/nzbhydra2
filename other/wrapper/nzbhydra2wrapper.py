@@ -12,6 +12,7 @@ import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
 
+
 jarFile = None
 basepath = None
 args = []
@@ -184,8 +185,8 @@ def update():
             if filesInLibFolder[0] == os.path.basename(jarFile):
                 logger.warning("New JAR file in lib folder is the same as the old one. The update may not have found a newer version or failed for some reason")
         else:
-            logger.critical("Expected the number of JAR files in folder %s to be 2 but it's %d", libFolder, len(filesInLibFolder))
-            sys.exit(-2)
+            logger.warning("Expected the number of JAR files in folder %s to be 2 but it's %d. This will be fixed with the next start", libFolder, len(filesInLibFolder))
+
     except zipfile.BadZipfile:
         logger.critical("File is not a ZIP")
         sys.exit(-2)
@@ -236,7 +237,11 @@ def subprocess_args(include_stdout=True):
         # when run from Pyinstaller with the ``--noconsole`` option. Avoid this
         # distraction.
         si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        try:
+            import _subprocess
+            si.dwFlags |= _subprocess.STARTF_USESHOWWINDOW
+        except:
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         # Windows doesn't search the path by default. Pass it an environment so
         # it will.
         env = os.environ.copy()
@@ -281,17 +286,20 @@ def startup():
     if not os.path.exists(libFolder):
         logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
         sys.exit(-1)
-    jarFiles = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
+    jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
     if len(jarFiles) == 0:
         logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
         sys.exit(-1)
-    if len(jarFiles) > 1:
-        logger.critical("Error: Multiple JAR files found in folder %s. An update might've failed. Please delete all but the latest version and try again", libFolder)
+    if len(jarFiles) == 1:
+        jarFile = jarFiles[0]
+    else:
+        latestFile = max(jarFiles, key=os.path.getmtime)
+        logger.warning("Expected the number of JAR files in folder %s to be 1 but it's %d. Will remove all JARs except the one last changed: %s", libFolder, len(jarFiles), latestFile)
         for file in jarFiles:
-            logger.critical("Error: Found file: %s", file)
-        sys.exit(-1)
-    jarFile = os.path.join(libFolder, jarFiles[0])
-
+            if file is not latestFile:
+                logger.info("Deleting file %s", file)
+                os.remove(file)
+        jarFile = latestFile
     if args.repairdb:
         arguments = ["--repairdb", args.repairdb]
     elif args.version:
@@ -342,7 +350,11 @@ def startup():
     logger.info("Starting NZBHydra main process with command line: %s in folder %s", commandLine, basePath)
     if hasattr(subprocess, 'STARTUPINFO'):
         si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        try:
+            import _subprocess
+            si.dwFlags |= _subprocess.STARTF_USESHOWWINDOW
+        except:
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     else:
         si = None
     # todo check shell=True/False for linux and windows
