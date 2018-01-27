@@ -1,3 +1,9 @@
+### v1.2.1
+Note: I've changed how some data is kept in the database. Deleting an indexer will remove it completely from the database, also deleting all related stats, search results and downloads. This might take a while on the next startup or whenever you delete an indexer with many related entries
+Feature: Option to delete backups after x weeks. 4 is the default
+Fix: Improve layout on mobile devices. Thanks nemchik
+Fix: Updated the wrapper to delete older JAR files which previously caused some trouble. Any existing installations will have to update this manually. Docker containers must be updated.
+
 ### v1.2.0
 Feature: Send torrent magnet links to associated program
 Fix: Results without recognizable category were rejected
