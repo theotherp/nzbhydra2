@@ -228,10 +228,15 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        try {
-            WindowsTrayIcon.remove();
-        } catch (Exception e) {
-            //An exception might be thrown while shutting down, ignore this
+        String osName = System.getProperty("os.name");
+        boolean isOsWindows = osName.toLowerCase().contains("windows");
+        if (isOsWindows) {
+            logger.debug("Initiating removal of windows tray icon (if it exists)");
+            try {
+                WindowsTrayIcon.remove();
+            } catch (Throwable e) {
+                //An exception might be thrown while shutting down, ignore this
+            }
         }
         logger.info("Shutting down");
     }

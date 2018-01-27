@@ -72,6 +72,7 @@ public class WindowsTrayIcon extends TrayIcon {
 
     public static void remove() {
         if (tray != null && instance != null) {
+            logger.info("Removing tray icon");
             tray.remove(instance);
         }
     }
