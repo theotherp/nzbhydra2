@@ -2,28 +2,13 @@ package org.nzbhydra.migration;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.CategoriesConfig;
-import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.ProxyType;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.migration.configmapping.Categories;
+import org.nzbhydra.config.*;
+import org.nzbhydra.migration.configmapping.*;
 import org.nzbhydra.migration.configmapping.Category;
-import org.nzbhydra.migration.configmapping.Indexer;
-import org.nzbhydra.migration.configmapping.Main;
-import org.nzbhydra.migration.configmapping.OldConfig;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class JsonConfigMigrationTest {
@@ -139,8 +124,35 @@ public class JsonConfigMigrationTest {
         assertThat(newConfig.getIndexers().get(1).isAllCapsChecked(), is(true));
         assertThat(newConfig.getIndexers().get(2).isConfigComplete(), is(true));
         assertThat(newConfig.getIndexers().get(2).isAllCapsChecked(), is(true));
+    }
+
+    @Test
+    public void shouldCorrectWrongIndexerLimits() {
+        Indexer newznab = new Indexer();
+        newznab.setType("NEWZNAB");
+        newznab.setHitLimit(0);
+        newznab.setDownloadLimit(0);
+        newznab.setEnabled(true);
+        OldConfig oldConfig = new OldConfig();
+        oldConfig.setIndexers(Arrays.asList(newznab));
+
+        BaseConfig newConfig = new BaseConfig();
+        testee.migrateIndexers(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().size(), is(1));
+        assertThat(newConfig.getIndexers().get(0).getDownloadLimit().isPresent(), is(false));
+        assertThat(newConfig.getIndexers().get(0).getHitLimit().isPresent(), is(false));
+
+        newznab.setHitLimit(-1);
+        newznab.setDownloadLimit(-99);
+        testee.migrateIndexers(oldConfig, newConfig);
+
+        assertThat(newConfig.getIndexers().size(), is(1));
+        assertThat(newConfig.getIndexers().get(0).getDownloadLimit().isPresent(), is(false));
+        assertThat(newConfig.getIndexers().get(0).getHitLimit().isPresent(), is(false));
 
     }
+
 
 
 }

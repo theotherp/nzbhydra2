@@ -207,7 +207,7 @@ public class JsonConfigMigration {
         }
         newAuth.setRememberUsers(oldAuth.isRestrictAdmin());
         int oldAuthRememberUsersExpiry = oldAuth.getRememberUsersExpiry();
-        newAuth.setRememberMeValidityDays(oldAuthRememberUsersExpiry  < 1 ? 14 : oldAuthRememberUsersExpiry);
+        newAuth.setRememberMeValidityDays(oldAuthRememberUsersExpiry < 1 ? 14 : oldAuthRememberUsersExpiry);
         newAuth.getUsers().clear();
         List<UserAuthConfig> newUserConfigs = new ArrayList<>();
         for (User user : oldAuth.getUsers()) {
@@ -261,14 +261,14 @@ public class JsonConfigMigration {
         }
         newSearching.setIgnorePassworded(oldSearching.isIgnorePassworded());
         newSearching.setIgnoreTemporarilyDisabled(oldSearching.isIgnoreTemporarilyDisabled());
-        newSearching.setForbiddenWords(oldSearching.getForbiddenWords() == null ? new ArrayList<>(): oldSearching.getForbiddenWords());
+        newSearching.setForbiddenWords(oldSearching.getForbiddenWords() == null ? new ArrayList<>() : oldSearching.getForbiddenWords());
         newSearching.setMaxAge(oldSearching.getMaxAge());
         if (oldSearching.getNzbAccessType().equals("serve")) {
             newSearching.setNzbAccessType(FileDownloadAccessType.PROXY);
         } else {
             newSearching.setNzbAccessType(FileDownloadAccessType.REDIRECT);
         }
-        newSearching.setRemoveTrailing(oldSearching.getRemoveTrailing() == null ? new ArrayList<>(): oldSearching.getRemoveTrailing());
+        newSearching.setRemoveTrailing(oldSearching.getRemoveTrailing() == null ? new ArrayList<>() : oldSearching.getRemoveTrailing());
         if (oldSearching.getRequiredWords() != null && !oldSearching.getRequiredWords().isEmpty()) {
             newSearching.setRequiredWords(oldSearching.getRequiredWords());
             logAsWarningAndAdd(messages, "Behavior for required words changed: Now *all* words must be present");
@@ -279,8 +279,8 @@ public class JsonConfigMigration {
         newSearching.setUserAgent(oldSearching.getUserAgent());
         newSearching.setRequiredRegex(oldSearching.getRequiredRegex());
         newSearching.setForbiddenRegex(oldSearching.getForbiddenRegex());
-        newSearching.setForbiddenGroups(oldSearching.getForbiddenGroups() == null ? new ArrayList<>(): oldSearching.getForbiddenGroups());
-        newSearching.setForbiddenPosters(oldSearching.getForbiddenPosters() == null ? new ArrayList<>(): oldSearching.getForbiddenPosters());
+        newSearching.setForbiddenGroups(oldSearching.getForbiddenGroups() == null ? new ArrayList<>() : oldSearching.getForbiddenGroups());
+        newSearching.setForbiddenPosters(oldSearching.getForbiddenPosters() == null ? new ArrayList<>() : oldSearching.getForbiddenPosters());
         newSearching.setKeepSearchResultsForDays(oldConfig.getMain().getKeepSearchResultsForDays());
         if (newSearching.getKeepSearchResultsForDays() == 7) {
             logger.info("Increasing age of results to keep to 14 days");
@@ -364,8 +364,8 @@ public class JsonConfigMigration {
                 originalEnabledState.put(oldIndexer.getName(), oldIndexer.isEnabled());
                 newIndexer.setHost(oldIndexer.getHost());
                 newIndexer.setTimeout(oldIndexer.getTimeout());
-                newIndexer.setDownloadLimit(oldIndexer.getDownloadLimit());
-                newIndexer.setHitLimit((oldIndexer.getHitLimit() != null && oldIndexer.getHitLimit()== 0) ? null : oldIndexer.getHitLimit());
+                newIndexer.setDownloadLimit((oldIndexer.getDownloadLimit() != null && oldIndexer.getDownloadLimit() <= 0) ? null : oldIndexer.getDownloadLimit());
+                newIndexer.setHitLimit((oldIndexer.getHitLimit() != null && oldIndexer.getHitLimit() <= 0) ? null : oldIndexer.getHitLimit());
                 newIndexer.setHitLimitResetTime(oldIndexer.getHitLimitResetTime());
                 newIndexer.setName(oldIndexer.getName());
                 newIndexer.setApiKey(oldIndexer.getApikey());
