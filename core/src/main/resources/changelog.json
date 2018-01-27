@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.2.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Improve layout on mobile devices. Thanks nemchik"
+      }
+    ]
+  },
+  {
     "version": "v1.2.0",
     "changes": [
       {
