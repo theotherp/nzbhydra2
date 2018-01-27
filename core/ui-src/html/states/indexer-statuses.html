@@ -5,27 +5,28 @@
         <th class="col-md-1">Indexer</th>
         <th class="col-md-2">Last failure</th>
         <th class="col-md-2">Disabled until</th>
-        <th class="col-md-15">Reason</th>
+        <th class="col-md-1">Reenable</th>
+        <th class="col-md-14">Reason</th>
     </tr>
     </thead>
     <tbody>
     <tr ng-repeat="indexerStatus in statuses">
-        <td >{{ indexerStatus.indexer.name }}</td>
-        <td ><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
+        <td>{{ indexerStatus.indexer.name }}</td>
+        <td><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
         <td>
-            <span ng-if="indexerStatus.disabledUntil">
-                <a href="" ng-click="enable(indexerStatus.indexer.name)"
-                   uib-tooltip="Click to enable the indexer again"
-                   tooltip-placement="right"
-                   tooltip-trigger="mouseenter">
-                    <span ng-if="!isInPast(indexerStatus.disabledUntil)||indexerStatus.disabledPermanently" class="glyphicon glyphicon-ok">
-                    </span>
-                </a>
-            </span>
-
             <span ng-if="indexerStatus.disabledUntil">{{ indexerStatus.disabledUntil | reformatDate}}</span>
             <span ng-if="indexerStatus.disabledPermanently">Permanently</span>
-
+        </td>
+        <td>
+             <span ng-if="indexerStatus.disabledUntil && (!isInPast(indexerStatus.disabledUntil)||indexerStatus.disabledPermanently)">
+                <button class="btn btn-default" ng-click="enable(indexerStatus.indexer.name)"
+                        uib-tooltip="Click to enable the indexer again"
+                        tooltip-placement="right"
+                        tooltip-trigger="mouseenter" style="padding: 0 3px 0 3px">
+                    <span class="glyphicon glyphicon-ok">
+                    </span>
+                </button>
+            </span>
         </td>
         <td style="word-break: break-all;">{{ indexerStatus.reason }}</td>
     </tr>

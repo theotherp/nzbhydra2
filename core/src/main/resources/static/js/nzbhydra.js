@@ -6389,6 +6389,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', ["$scope
     $scope.fields = fields;
     $scope.isInitial = isInitial;
     $scope.allowDelete = data.allowDeleteFunction(model);
+    $scope.deleteTooltip = data.deleteTooltip;
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
 
@@ -8216,6 +8217,7 @@ function ConfigFields($injector) {
                         allowDeleteFunction: function (model) {
                             return true;
                         },
+                        deleteTooltip: "Deleting an indexer will remove its stats and related downloads and search results from the database",
                         checkBeforeClose: function (scope, model) {
                             var IndexerCheckBeforeCloseService = $injector.get("IndexerCheckBeforeCloseService");
                             return IndexerCheckBeforeCloseService.check(scope, model);

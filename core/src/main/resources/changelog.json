@@ -3,6 +3,10 @@
     "version": "v1.2.1",
     "changes": [
       {
+        "type": "note",
+        "text": "I've changed how some data is kept in the database. Deleting an indexer will remove it completely from the database, also deleting all related stats, search results and downloads. This might take a while on the next startup or whenever you delete an indexer with many related entries"
+      },
+      {
         "type": "fix",
         "text": "Improve layout on mobile devices. Thanks nemchik"
       }

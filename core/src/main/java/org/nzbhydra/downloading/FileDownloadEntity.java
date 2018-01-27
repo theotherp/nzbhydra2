@@ -1,6 +1,8 @@
 package org.nzbhydra.downloading;
 
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.config.FileDownloadAccessType;
 import org.nzbhydra.searching.SearchResultEntity;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -20,6 +22,7 @@ public class FileDownloadEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private SearchResultEntity searchResult;
     @Enumerated(EnumType.STRING)
     private FileDownloadAccessType nzbAccessType;

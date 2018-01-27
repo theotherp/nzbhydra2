@@ -1,22 +1,15 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerHandlingStrategy;
-import org.nzbhydra.indexers.IndexerRepository;
-import org.nzbhydra.indexers.IndexerStatusEntity;
+import org.nzbhydra.indexers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,6 +22,10 @@ public class SearchModuleProvider {
 
     @Autowired
     private IndexerRepository indexerRepository;
+    @Autowired
+    private IndexerSearchRepository indexerSearchRepository;
+    @Autowired
+    private IndexerApiAccessRepository indexerApiAccessRepository;
 
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
 
@@ -56,6 +53,7 @@ public class SearchModuleProvider {
     /**
      * Must be called by <tt>{@link SearchModuleConfigProvider}</tt> when config is loaded.
      */
+    @Transactional
     public void loadIndexers(List<IndexerConfig> indexers) {
         if (indexers == null) {
             logger.error("Indexers not set. Check your configuration");
@@ -90,6 +88,10 @@ public class SearchModuleProvider {
                 logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType(), e);
             }
         }
+        List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).collect(Collectors.toList());
+        Collection<IndexerEntity> byNameNotIn = indexerRepository.findByNameNotIn(indexerNames);
+        logger.info("Found {} indexers in database which are not configured. Will delete them and any related database entries. This may take some time", byNameNotIn.size());
+        indexerRepository.delete(byNameNotIn);
         if (searchModuleInstances.isEmpty()) {
             logger.warn("No indexers configured");
         }

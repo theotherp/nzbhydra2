@@ -10,4 +10,5 @@ public interface IndexerSearchRepository extends JpaRepository<IndexerSearchEnti
 
     IndexerSearchEntity findByIndexerEntityAndSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity);
     Collection<IndexerSearchEntity> findBySearchEntity(SearchEntity searchEntity);
+    void deleteAllByIndexerEntityIn(Collection<IndexerEntity> searchEntity);
 }

@@ -467,6 +467,7 @@ angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function
     $scope.fields = fields;
     $scope.isInitial = isInitial;
     $scope.allowDelete = data.allowDeleteFunction(model);
+    $scope.deleteTooltip = data.deleteTooltip;
     $scope.spinnerActive = false;
     $scope.needsConnectionTest = false;
 

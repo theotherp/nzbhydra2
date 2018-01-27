@@ -1158,6 +1158,7 @@ function ConfigFields($injector) {
                         allowDeleteFunction: function (model) {
                             return true;
                         },
+                        deleteTooltip: "Deleting an indexer will remove its stats and related downloads and search results from the database",
                         checkBeforeClose: function (scope, model) {
                             var IndexerCheckBeforeCloseService = $injector.get("IndexerCheckBeforeCloseService");
                             return IndexerCheckBeforeCloseService.check(scope, model);
