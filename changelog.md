@@ -1,3 +1,9 @@
+### v1.2.2
+Note: I've added debug logging to the wrapper for better, well, debugging of problems related to updating. To enable debug logging create a file DEBUG in the data folder and restart the program. As before, any non-docker installations will need to update the wrapper files manually. I'm working on a better solution.
+Fix: Adding binsearch/NZBIndex/anizb would fail the connection check
+Fix: Periodic check of downloader status was not executed as expected, resulting in incomplete status NZB reports in the history
+Fix: Logger sometimes swallowed information when anonymizing data
+
 ### v1.2.1
 Note: I've changed how some data is kept in the database. Deleting an indexer will remove it completely from the database, also deleting all related stats, search results and downloads. This might take a while on the next startup or whenever you delete an indexer with many related entries
 Feature: Option to delete backups after x weeks. 4 is the default
