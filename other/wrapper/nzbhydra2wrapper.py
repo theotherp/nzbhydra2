@@ -105,7 +105,6 @@ def daemonize(pidfile, nopidfile):
         pid = str(os.getpid())
         try:
             file(pidfile, 'w').write("%s\n" % pid)
-            print(pidfile)
         except IOError as e:
             sys.stderr.write(u"Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
             sys.exit(1)
