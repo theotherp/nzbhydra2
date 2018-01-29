@@ -9,6 +9,7 @@ import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,20 +141,25 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
-    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
+    public List<DownloaderEntry> getHistory(Instant earliestDownloadTime) throws DownloaderException {
         //TODO: Store and use last_history_update? See https://sabnzbd.org/wiki/advanced/api#history_main
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history");
         HistoryResponse queueResponse = callSabnzb(uriBuilder.build().toUri(), HistoryResponse.class);
-        List<DownloaderEntry> queueEntries = new ArrayList<>();
-        for (HistoryEntry slotEntry : queueResponse.getHistory().getSlots()) {
+        List<DownloaderEntry> historyEntries = new ArrayList<>();
+        for (HistoryEntry historyEntry : queueResponse.getHistory().getSlots()) {
             DownloaderEntry entry = new DownloaderEntry();
-            entry.setNzbId(slotEntry.getNzo_id());
-            entry.setNzbName(slotEntry.getName()); //nzbName ends with .nzb
-            entry.setStatus(slotEntry.getStatus());
-            queueEntries.add(entry);
+            entry.setNzbId(historyEntry.getNzo_id());
+            entry.setNzbName(historyEntry.getName()); //nzbName ends with .nzb
+            entry.setStatus(historyEntry.getStatus());
+            entry.setTime(Instant.ofEpochSecond(historyEntry.getCompleted()));
+            if (entry.getTime().isBefore(earliestDownloadTime)) {
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Stopping transforming history entries because the current history entry is from {} which is before earliest download to check which is from {}", entry.getTime(), earliestDownloadTime);
+                return historyEntries;
+            }
+            historyEntries.add(entry);
         }
 
-        return queueEntries;
+        return historyEntries;
     }
 
     @Override

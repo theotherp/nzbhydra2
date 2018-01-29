@@ -24,6 +24,7 @@ import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -153,7 +154,7 @@ public class NzbGet extends Downloader {
     }
 
 
-    public List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException {
+    public List<DownloaderEntry> getHistory(Instant earliestDownloadTime) throws DownloaderException {
         ArrayList<LinkedHashMap<String, Object>> history = callNzbget("history", new Object[]{false});
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : history) {
@@ -162,10 +163,11 @@ public class NzbGet extends Downloader {
             }
             DownloaderEntry historyEntry = getBasicDownloaderEntry(map);
             historyEntry.setTime(Instant.ofEpochSecond((Integer) map.get("HistoryTime")));
-            historyEntries.add(historyEntry);
-            if (historyEntry.getTime().isBefore(earliestDownload)) {
+            if (historyEntry.getTime().isBefore(earliestDownloadTime)) {
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Stopping transforming history entries because the current history entry is from {} which is before earliest download to check which is from {}", historyEntry.getTime(), earliestDownloadTime);
                 return historyEntries;
             }
+            historyEntries.add(historyEntry);
         }
 
         return historyEntries;
@@ -173,7 +175,7 @@ public class NzbGet extends Downloader {
 
     @Override
     public List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException {
-        ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("queue", new Object[]{0});
+        ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("listgroups", new Object[]{0});
         List<DownloaderEntry> queueEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : queue) {
             if (!map.get("Kind").equals("NZB")) {

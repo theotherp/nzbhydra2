@@ -43,7 +43,8 @@ public class DownloadStatusUpdater {
     private static final int MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES = 6 * 60 * 60; //No download should last longer than 6 hours
 
     protected Instant lastDownload = Instant.now();
-    protected boolean isEnabled = false;
+    protected boolean queueCheckEnabled = false;
+    protected boolean historyCheckEnabled = false;
 
     protected static final Logger logger = LoggerFactory.getLogger(DownloadStatusUpdater.class);
 
@@ -75,12 +76,13 @@ public class DownloadStatusUpdater {
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         lastDownload = Instant.now();
-        isEnabled = true;
+        queueCheckEnabled = true;
+        historyCheckEnabled = true;
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Received download event. Will enable status updates for the next {} minutes", (MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES / 60));
     }
 
     protected void checkStatus(List<FileDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
-        if (!isEnabled) {
+        if ((!queueCheckEnabled && statusCheckType == StatusCheckType.QUEUE) || (!historyCheckEnabled && statusCheckType == StatusCheckType.HISTORY)) {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Not executing {} status update because it's disabled", statusCheckType);
             return;
         }
@@ -90,8 +92,12 @@ public class DownloadStatusUpdater {
         }
         List<FileDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
-            isEnabled = false;
-            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Returning and setting {] status update disabled because no current downloads are waiting for updates", statusCheckType);
+            if (statusCheckType == StatusCheckType.QUEUE) {
+                queueCheckEnabled = false;
+            } else {
+                historyCheckEnabled = false;
+            }
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Returning and setting {} status update disabled because no current downloads are waiting for updates", statusCheckType);
             return;
         }
         List<FileDownloadEntity> updatedDownloads = new ArrayList<>();

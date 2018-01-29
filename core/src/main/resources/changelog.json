@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Adding binsearch/NZBIndex/anizb would fail the connection check"
+      },
+      {
+        "type": "fix",
+        "text": "Periodic check of downloader status was not executed as expected, resulting in incomplete status NZB reports in the history"
       }
     ]
   },
