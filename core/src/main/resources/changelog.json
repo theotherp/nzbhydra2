@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.2.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Adding binsearch/NZBIndex/anizb would fail the connection check"
+      }
+    ]
+  },
+  {
     "version": "v1.2.1",
     "changes": [
       {

@@ -81,14 +81,17 @@ public class DownloadStatusUpdater {
 
     protected void checkStatus(List<FileDownloadStatus> nzbDownloadStatuses, long maxAgeDownloadEntitiesInSeconds, StatusCheckType statusCheckType) {
         if (!isEnabled) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Not executing {} status update because it's disabled", statusCheckType);
             return;
         }
         if (lastDownload.isBefore(Instant.now().minusSeconds(MIN_SECONDS_SINCE_LAST_DOWNLOAD_TO_CHECK_STATUSES))) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Not executing {} status update because last download was {}", statusCheckType, lastDownload);
             return;
         }
         List<FileDownloadEntity> downloadsWaitingForUpdate = downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(nzbDownloadStatuses, Instant.now().minusSeconds(maxAgeDownloadEntitiesInSeconds));
         if (downloadsWaitingForUpdate.isEmpty()) {
             isEnabled = false;
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Returning and setting {] status update disabled because no current downloads are waiting for updates", statusCheckType);
             return;
         }
         List<FileDownloadEntity> updatedDownloads = new ArrayList<>();
