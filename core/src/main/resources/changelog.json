@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Periodic check of downloader status was not executed as expected, resulting in incomplete status NZB reports in the history"
+      },
+      {
+        "type": "fix",
+        "text": "Logger sometimes swallowed information when anonymizing data"
       }
     ]
   },
