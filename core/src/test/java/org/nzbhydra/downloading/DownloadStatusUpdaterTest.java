@@ -71,18 +71,18 @@ public class DownloadStatusUpdaterTest {
 
     @Test
     public void shouldSetDisabledAndNotRunIfNoDownloadsInDatabase() {
-        testee.queueCheckEnabled = true;
+        testee.historyCheckEnabled = true;
         testee.lastDownload = Instant.now();
         List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
         when(downloadRepository.findByStatusInAndTimeAfterOrderByTimeDesc(eq(statuses), any())).thenReturn(Collections.emptyList());
 
         testee.checkStatus(statuses, 10000, StatusCheckType.HISTORY);
-        assertThat(testee.queueCheckEnabled).isFalse();
+        assertThat(testee.historyCheckEnabled).isFalse();
     }
 
     @Test
     public void shouldCallDownloader() {
-        testee.queueCheckEnabled = true;
+        testee.historyCheckEnabled = true;
         testee.lastDownload = Instant.now();
         List<FileDownloadStatus> statuses = Collections.singletonList(FileDownloadStatus.REQUESTED);
         List<FileDownloadEntity> downloadsWaitingForUpdate = Collections.singletonList(new FileDownloadEntity());
