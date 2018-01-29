@@ -31,11 +31,8 @@ public class SensitiveDataRemovingPatternLayoutEncoder extends PatternLayoutEnco
         return convertToBytes(txt);
     }
 
-    private String removeSensitiveData(String txt) {
-        txt = txt.replaceAll("(?i)(apikey)([=:])\\S+", "apikey=<APIKEY>");
-        txt = txt.replaceAll("(?i)password=\\S", "password=<PASSWORD>");
-        txt = txt.replaceAll("(?i)username=\\S", "username=<USERNAME>");
-        return txt;
+    protected String removeSensitiveData(String txt) {
+        return txt.replaceAll("(?i)(username|apikey|password)[=:]([^&\\s]+)", "$1=<$1>");
     }
 
 
