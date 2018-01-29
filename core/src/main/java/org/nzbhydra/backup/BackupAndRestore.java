@@ -76,8 +76,8 @@ public class BackupAndRestore {
     }
 
     protected void deleteOldBackupFiles(File backupFolder) {
-        logger.info("Deleting old backups");
         if (configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().isPresent()) {
+            logger.info("Deleting old backups if any exist");
             Integer backupMaxAgeInWeeks = configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().get();
             File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.toLowerCase().endsWith("zip"));
 

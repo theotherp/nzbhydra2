@@ -12,7 +12,6 @@ import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
 
-
 jarFile = None
 basepath = None
 args = []
@@ -26,7 +25,7 @@ console_logger = logging.StreamHandler(sys.stdout)
 console_logger.setFormatter(logging.Formatter(LOGGER_DEFAULT_FORMAT))
 console_logger.setLevel(LOGGER_DEFAULT_LEVEL)
 logger.addHandler(console_logger)
-
+file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 
 if sys.version_info >= (3, 0):
@@ -137,6 +136,7 @@ def setupLogger():
         console_logger.setLevel("INFO")
     else:
         console_logger.setLevel("CRITICAL")
+    global file_logger
     file_logger = RotatingFileHandler(filename=logfilename, maxBytes=100000, backupCount=1)
     file_logger.setFormatter(logging.Formatter(LOGGER_DEFAULT_FORMAT))
     file_logger.setLevel("INFO")
@@ -161,17 +161,16 @@ def update():
     updateZip = os.path.join(updateFolder, onlyfiles[0])
 
     try:
-        # if isWindows:
-        #     logger.info("Renaming old EXE files to be updated")
-        #     shutil.move("NZBHydra2.exe", "NZBHydra2.old")
-        #     shutil.move("NZBHydra2 Console.exe", "NZBHydra2 Console.old")
-        #     sleep(1)  # Give time for file operation to be completed, otherwise access to EXE files may still be restricted
         with zipfile.ZipFile(updateZip, "r") as zf:
             logger.info("Extracting updated files to %s", basePath)
             for member in zf.namelist():
                 if not member.lower() == "nzbhydra2" and not member.lower().endswith(".exe"):
                     logger.debug("Extracting %s to %s", member, basePath)
-                    zf.extract(member, basePath)
+                    try:
+                        zf.extract(member, basePath)
+                    except IOError as ex:
+                        logger.critical("Unable to extract file %s to path %s: %s", member, basePath, ex)
+                        sys.exit(-2)
         logger.info("Removing update ZIP %s", updateZip)
         os.remove(updateZip)
         filesInLibFolder = [f for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
@@ -271,21 +270,33 @@ def subprocess_args(include_stdout=True):
     ret.update({'stdin': subprocess.PIPE,
                 'stderr': subprocess.STDOUT,
                 'startupinfo': si,
-                'env': env })
+                'env': env})
     return ret
+
 
 def startup():
     global jarFile, process, args, unknownArgs
     basePath = getBasePath()
+
     readme = os.path.join(basePath, "readme.md")
     if not os.path.exists(readme):
         logger.critical("Unable to determine base path correctly. Please make sure to run NZBHydra in the folder where its binary is located. Current base path: " + basePath)
         sys.exit(-1)
+
+    debugSwitchFile = os.path.join(args.datafolder, "DEBUG")
+    if os.path.exists(debugSwitchFile):
+        logger.setLevel("DEBUG")
+        global file_logger, console_logger
+        file_logger.setLevel("DEBUG")
+        console_logger.setLevel("DEBUG")
+        logger.info("Setting wrapper log level to DEBUG")
+
     isWindows = platform.system().lower() == "windows"
     libFolder = os.path.join(basePath, "lib")
     if not os.path.exists(libFolder):
         logger.critical("Error: Lib folder %s not found. An update might've failed or the installation folder is corrupt", libFolder)
         sys.exit(-1)
+
     jarFiles = [os.path.join(libFolder, f) for f in os.listdir(libFolder) if os.path.isfile(os.path.join(libFolder, f)) and f.endswith(".jar")]
     if len(jarFiles) == 0:
         logger.critical("Error: No JAR files found in folder %s. An update might've failed or the installation folder is corrupt", libFolder)
@@ -300,6 +311,8 @@ def startup():
                 logger.info("Deleting file %s", file)
                 os.remove(file)
         jarFile = latestFile
+    logger.debug("Using JAR file " + jarFile)
+
     if args.repairdb:
         arguments = ["--repairdb", args.repairdb]
     elif args.version:
@@ -378,7 +391,6 @@ def startup():
         logger.error("Unable to start process; make sure Java is installed and callable. Error message: " + str(e))
 
 
-
 def escape_parameter(is_windows, parameter):
     return parameter  # TODO FInd out when to actually escape with windows, I think when shell=True is used
     # return '"' + parameter + '"' if is_windows else parameter
@@ -428,6 +440,7 @@ if __name__ == '__main__':
     if len(oldFiles) > 0:
         logger.info("Deleting .old files from last update")
         for f in oldFiles:
+            logger.debug("Deleting file %s", f)
             os.remove(f)
 
     if not (os.path.isabs(args.datafolder)):
@@ -448,7 +461,7 @@ if __name__ == '__main__':
         curpath = os.path.dirname(os.path.realpath(__file__))
         if not os.path.isabs(path):
             path = os.path.join(curpath, path)
-        logger.info("Listing files in " + str(path))
+        logger.info("Listing files in %s", path)
         list_files(os.path.dirname(path))
     else:
         if args.daemon:
@@ -484,6 +497,7 @@ if __name__ == '__main__':
                     logger.warn("Unable to read control ID from %s: %s. Falling back to process return code %d", controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
+                    logger.debug("Deleting old control ID file %s", controlIdFilePath)
                     os.remove(controlIdFilePath)
                 except Exception as e:
                     logger.error("Unable to delete control ID file %s: %s", controlIdFilePath, e)

@@ -45,7 +45,7 @@ public class DebugInfosProvider {
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
-        if(isRunInDocker()) {
+        if (isRunInDocker()) {
             logger.info("Apparently run in docker");
         }
 
@@ -58,7 +58,11 @@ public class DebugInfosProvider {
                 writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes("UTF-8"));
                 File traceFile = new File(new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
                 if (traceFile.exists()) {
-                    writeFileToZip(zos,"nzbhydra.trace.db",traceFile);
+                    writeFileToZip(zos, "nzbhydra.trace.db", traceFile);
+                }
+                File wrapperLog = new File(new File(NzbHydra.getDataFolder(), "logs"), "wrapper.log");
+                if (wrapperLog.exists()) {
+                    writeFileToZip(zos, "wrapper.log", wrapperLog);
                 }
             }
         }

@@ -218,6 +218,7 @@ public class UpdateManager implements InitializingBean {
 
             File updateFolder = new File(NzbHydra.getDataFolder(), "update");
             if (!updateFolder.exists()) {
+                logger.debug("Creating update folder {}", updateFolder);
                 Files.createDirectory(updateFolder.toPath());
             } else {
                 logger.debug("Cleaning update folder {}", updateFolder.getAbsolutePath());
