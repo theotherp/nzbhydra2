@@ -1,3 +1,6 @@
+### v1.2.3
+Fix: Prevent session timeout
+
 ### v1.2.2
 Note: I've added debug logging to the wrapper for better, well, debugging of problems related to updating. To enable debug logging create a file DEBUG in the data folder and restart the program. As before, any non-docker installations will need to update the wrapper files manually. I'm working on a better solution.
 Fix: Adding binsearch/NZBIndex/anizb would fail the connection check
