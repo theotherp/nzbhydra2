@@ -345,6 +345,10 @@ def startup():
                 index = line.find("xmx:")
                 if index > -1:
                     xmx = line[index + 5:].rstrip("\n\r ")
+                    break
+            else:
+                logger.warn("Didn't find XMX in YAML file, using default of 128")
+                xmx = 128
     else:
         logger.info("No file nzbhydra.yml found. Using 128M XMX")
         xmx = 128

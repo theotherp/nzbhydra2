@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.2.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Prevent session timeout"
+      }
+    ]
+  },
+  {
     "version": "v1.2.2",
     "changes": [
       {
