@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.2.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Help headphones parse Hydra's results"
+      }
+    ]
+  },
+  {
     "version": "v1.2.3",
     "changes": [
       {

@@ -18,10 +18,7 @@ package org.nzbhydra.mapping.newznab.xml;
 
 import lombok.Data;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,16 +27,18 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "item")
 @Data
+//Link must be before enclosure for HeadPhones to work
+@XmlType(propOrder = {"title", "link", "enclosure", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "newznabAttributes", "torznabAttributes"})
 public class NewznabXmlItem {
 
     @XmlElement(name = "title")
     private String title;
 
-    @XmlElement(name = "enclosure")
-    private NewznabXmlEnclosure enclosure;
-
     @XmlElement(name = "link")
     private String link;
+
+    @XmlElement(name = "enclosure")
+    private NewznabXmlEnclosure enclosure;
 
     @XmlElement(name = "pubDate")
     @XmlJavaTypeAdapter(JaxbPubdateAdapter.class)
