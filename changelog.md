@@ -1,3 +1,6 @@
+### v1.2.5
+Fix: Completely fix spotweb support...
+
 ### v1.2.4
 Fix: Help headphones parse Hydra's results
 Fix: Indexer connection check used empty API key parameter, preventing check to spotweb to work
