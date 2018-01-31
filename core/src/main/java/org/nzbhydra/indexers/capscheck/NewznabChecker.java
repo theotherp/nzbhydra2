@@ -16,6 +16,7 @@
 
 package org.nzbhydra.indexers.capscheck;
 
+import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.nzbhydra.GenericResponse;
@@ -66,8 +67,11 @@ public class NewznabChecker {
 
 
     protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost());
-        return builder.path("/api").queryParam("apikey", indexerConfig.getApiKey());
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path("/api");
+        if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
+            builder.queryParam("apikey", indexerConfig.getApiKey());
+        }
+        return builder;
     }
 
     public GenericResponse checkConnection(IndexerConfig indexerConfig) {

@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Help headphones parse Hydra's results"
+      },
+      {
+        "type": "fix",
+        "text": "Indexer connection check used empty API key parameter, preventing check to spotweb to work"
       }
     ]
   },
