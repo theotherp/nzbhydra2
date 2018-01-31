@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.2.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Completely fix spotweb support..."
+      }
+    ]
+  },{
     "version": "v1.2.4",
     "changes": [
       {
