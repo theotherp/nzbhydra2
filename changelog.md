@@ -1,3 +1,6 @@
+### v1.2.6
+Fix: Sabnzbd history could not be properly parsed, preventing download status updates
+
 ### v1.2.5
 Fix: Completely fix spotweb support...
 
