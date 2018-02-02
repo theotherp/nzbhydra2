@@ -16,24 +16,20 @@
 
 package org.nzbhydra.downloading.downloaders.sabnzbd;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class History {
+public class QueueResponseTest {
 
-    private Integer noofslots;
-    private String day_size;
-    private String week_size;
-    private String month_size;
-    private String total_size;
-    private Long last_history_update;
-    private List<HistoryEntry> slots = new ArrayList<>();
+    @Test
+    public void shouldParseQueueResponseWithoutErrors() throws IOException {
+        String json = Resources.toString(Resources.getResource(QueueResponseTest.class, "queueResponse.json"), Charsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+        QueueResponse response = objectMapper.readValue(json, QueueResponse.class);
+    }
 
 }

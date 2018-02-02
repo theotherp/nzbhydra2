@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.2.6",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Sabnzbd history could not be properly parsed, preventing download status updates"
+      }
+    ]
+  },
+  {
     "version": "v1.2.5",
     "changes": [
       {
@@ -7,7 +16,8 @@
         "text": "Completely fix spotweb support..."
       }
     ]
-  },{
+  },
+  {
     "version": "v1.2.4",
     "changes": [
       {

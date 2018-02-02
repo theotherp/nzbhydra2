@@ -34,7 +34,7 @@ public class HistoryEntry {
     private Object meta;
     private String fail_message;
     private Boolean loaded;
-    private Integer id;
+    private Long id;
     private String size;
     private String category;
     private String pp;
@@ -47,17 +47,17 @@ public class HistoryEntry {
     private Boolean has_rating;
     private String status;
     private String script_line;
-    private Integer completed;
+    private Long completed;
     private String nzo_id;
-    private Integer downloaded;
+    private Long downloaded;
     private String report;
     private String password;
     private String path;
-    private Integer postproc_time;
+    private Long postproc_time;
     private String name;
     private String url;
     private String md5sum;
-    private Integer bytes;
+    private Long bytes;
     private String url_info;
     private List<StageLogEntry> stage_log = new ArrayList<>();
 

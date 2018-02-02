@@ -60,7 +60,7 @@ public class Queue {
     private String left_quota;
     private String refresh_rate;
     private String version;
-    private Integer finish;
+    private Long finish;
     private String cache_art;
     private String cache_size;
     private String cache_max;
