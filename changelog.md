@@ -1,3 +1,9 @@
+### v1.3.0
+Feature: Experimental feature to use a packaged CA certs file. This probably doesn't concern you but it may solve some SSL related issues with some newer or different JREs
+Fix: Sort indexer download shares by share
+Fix: Made the migration process a tiny bit more robust wrt wrong input
+Fix: Display caps check button for indexers without API key (e.g. spotweb instances). Hide button and search type and ID fields for new indexer. The check is done automatically
+
 ### v1.2.6
 Fix: Sabnzbd history could not be properly parsed, preventing download status updates
 
