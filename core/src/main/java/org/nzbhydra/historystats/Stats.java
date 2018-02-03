@@ -2,18 +2,7 @@ package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.historystats.stats.AverageResponseTime;
-import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
-import org.nzbhydra.historystats.stats.CountPerHourOfDay;
-import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
-import org.nzbhydra.historystats.stats.DownloadPerAge;
-import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
-import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
-import org.nzbhydra.historystats.stats.IndexerDownloadShare;
-import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
-import org.nzbhydra.historystats.stats.StatsRequest;
-import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
-import org.nzbhydra.historystats.stats.UserAgentShare;
+import org.nzbhydra.historystats.stats.*;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;
 import org.nzbhydra.indexers.IndexerEntity;
@@ -30,21 +19,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.OptionalDouble;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -214,6 +191,7 @@ public class Stats {
             float share = total > 0 ? (100F / ((float) countAll / total)) : 0F;
             indexerDownloadShares.add(new IndexerDownloadShare(indexerName, total, share));
         }
+        indexerDownloadShares.sort((IndexerDownloadShare a, IndexerDownloadShare b) -> Float.compare(b.getShare(), a.getShare()));
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer download shares. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerDownloadShares;
     }

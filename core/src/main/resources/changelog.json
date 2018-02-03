@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.3.0",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Sort indexer download shares by share"
+      }
+    ]
+  },
+  {
     "version": "v1.2.6",
     "changes": [
       {
