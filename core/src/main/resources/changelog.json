@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Made the migration process a tiny bit more robust wrt wrong input"
+      },
+      {
+        "type": "fix",
+        "text": "Display caps check for indexers without API key (e.g. spotweb instances)"
       }
     ]
   },

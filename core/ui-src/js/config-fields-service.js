@@ -1934,7 +1934,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
         fieldset.push(
             {
                 type: 'horizontalCheckCaps',
-                hideExpression: '!model.host || (!model.apiKey && model.host.toLowerCase().indexOf("sickbeard")===-1) || !model.name',
+                hideExpression: '!model.host || !model.name',
                 templateOptions: {
                     label: 'Check capabilities',
                     help: 'Find out what search types and IDs the indexer supports. Done automatically for new indexers.'
