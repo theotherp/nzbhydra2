@@ -61,7 +61,9 @@ public class MainConfig extends ValidatingConfig {
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
     @RestartRequired
-    private boolean useCsrf = false;
+    private boolean useCsrf = true;
+    @RestartRequired
+    private boolean usePackagedCaCerts = true;
     @RestartRequired
     private boolean verifySsl = true;
     private boolean welcomeShown = false;

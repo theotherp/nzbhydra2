@@ -266,6 +266,14 @@ function ConfigFields($injector) {
                                 label: 'Use CSRF protection',
                                 help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>'
                             }
+                        },
+                        {
+                            key: 'usePackagedCaCerts',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                label: 'Use packaged CA certs',
+                                help: 'Disable if you want to use the CA certs file of the JRE instead of the packaged one'
+                            }
                         }
                     ]
                 },

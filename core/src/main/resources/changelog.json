@@ -3,6 +3,10 @@
     "version": "v1.3.0",
     "changes": [
       {
+        "type": "feature",
+        "text": "Experimental feature to use a packaged CA certs file. This probably doesn't concern you but it may solve some SSL related issues with some newer or different JREs"
+      },
+      {
         "type": "fix",
         "text": "Sort indexer download shares by share"
       },
