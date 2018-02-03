@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Sort indexer download shares by share"
+      },
+      {
+        "type": "fix",
+        "text": "Made the migration process a tiny bit more robust wrt wrong input"
       }
     ]
   },
