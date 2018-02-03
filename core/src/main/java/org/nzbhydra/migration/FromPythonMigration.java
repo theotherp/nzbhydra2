@@ -6,13 +6,9 @@ import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import okhttp3.Authenticator;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import okhttp3.*;
 import okhttp3.Request.Builder;
-import okhttp3.Response;
-import okhttp3.Route;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
@@ -45,20 +41,29 @@ public class FromPythonMigration {
     };
 
     @Transactional
-    public MigrationResult migrateFromFiles(String settingsFile, String databaseFile, boolean doMigrateDatabase) {
-        logger.info("Received request to migrate from settings file {} and database file {}", settingsFile, databaseFile);
-        if (doMigrateDatabase && databaseFile == null) {
+    public MigrationResult migrateFromFiles(String settingsFilePath, String databaseFilePath, boolean doMigrateDatabase) {
+        logger.info("Received request to migrate from settings file {} and database file {}", settingsFilePath, databaseFilePath);
+        if (doMigrateDatabase && databaseFilePath == null) {
             return MigrationResult.requirementsNotMet("Database file not provided and database migration not selected to be skipped");
         }
-        if (settingsFile == null) {
+        if (settingsFilePath == null) {
             return MigrationResult.requirementsNotMet("Config file not provided");
         }
 
+        File settingsFile = new File(settingsFilePath);
+        File databaseFile = new File(databaseFilePath);
+        if (doMigrateDatabase && (!databaseFile.exists() || databaseFile.isDirectory())) {
+            return MigrationResult.requirementsNotMet("Database file does not exist or is a folder");
+        }
+        if (!settingsFile.exists() || settingsFile.isDirectory()) {
+            return MigrationResult.requirementsNotMet("Config file does not exist or is a folder");
+        }
+
         Map<String, String> migrationData = new HashMap<>();
-        migrationData.put("databaseFile", databaseFile);
+        migrationData.put("databaseFile", databaseFilePath);
         migrationData.put("doMigrateDatabase", String.valueOf(doMigrateDatabase));
         try {
-            migrationData.put("config", new String(Files.readAllBytes(new File(settingsFile).toPath())));
+            migrationData.put("config", new String(Files.readAllBytes(settingsFile.toPath())));
         } catch (IOException e) {
             logger.error("Error while reading old settings file", e);
             return MigrationResult.requirementsNotMet("Error while reading old settings file: " + e);
@@ -66,17 +71,16 @@ public class FromPythonMigration {
         MigrationResult migrationResult = new MigrationResult();
         migrationResult.setConfigMigrated(false);
         migrationResult.setDatabaseMigrated(false);
-        if (doMigrateDatabase && !new File(databaseFile).exists()) {
-            return MigrationResult.requirementsNotMet("Database file does not exist");
-        } else if (!new File(settingsFile).exists()) {
-            return MigrationResult.requirementsNotMet("Config file does not exist");
-        }
         return startMigration(migrationData);
     }
 
     @Transactional
     public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl, boolean doMigrateDatabase) {
         logger.info("Received request to migrate from URL " + nzbhydra1BaseUrl);
+
+        if (DebugInfosProvider.isRunInDocker()) {
+            return MigrationResult.requirementsNotMet("You seem to be running NZBHydra2 in a docker container. Please copy the files from your v1 data folder to the v2 data folder and provide the correct file paths in the file based migration");
+        }
 
         OkHttpResponse versionsResponse = callHydraUrl(nzbhydra1BaseUrl, "get_versions");
         if (!versionsResponse.isSuccessful()) {
