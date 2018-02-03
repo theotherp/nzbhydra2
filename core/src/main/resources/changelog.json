@@ -12,7 +12,7 @@
       },
       {
         "type": "fix",
-        "text": "Display caps check for indexers without API key (e.g. spotweb instances)"
+        "text": "Display caps check button for indexers without API key (e.g. spotweb instances). Hide button and search type and ID fields for new indexer. The check is done automatically"
       }
     ]
   },

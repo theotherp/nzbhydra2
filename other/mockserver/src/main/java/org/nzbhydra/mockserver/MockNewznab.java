@@ -6,11 +6,7 @@ import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,11 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 @SuppressWarnings("ALL")
 @RestController
@@ -190,7 +182,7 @@ public class MockNewznab {
         }
 
         if (params.getTmdbid() != null) {
-            if (itemTitleBase.equals("tmdberror")) {
+            if (itemTitleBase.equals("tmdberror") || "capscheckerror".equals(params.getApikey())) {
                 NewznabXmlError rssError = new NewznabXmlError("123", "description");
                 return new ResponseEntity<Object>(rssError, HttpStatus.OK);
             }
@@ -221,7 +213,10 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), itemTitleBase, doGenerateDuplicates, Collections.emptyList());
+            if (params.getOffset() != null && params.getLimit() != null) {
+                endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
+            }
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

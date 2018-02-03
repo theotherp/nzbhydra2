@@ -25,7 +25,7 @@ function dropdownMultiselectDirective() {
                 showSelectedValues: true,
                 showSelectAll: true,
                 showDeselectAll: true,
-                noSelectedText: null
+                noSelectedText: 'None selected'
             };
             var events = {
                 onToggleItem: angular.noop
@@ -39,7 +39,7 @@ function dropdownMultiselectDirective() {
                 $scope.buttonText = settings.buttonText;
             } else {
                 $scope.$watch("selectedModel", function () {
-                    if (settings.showSelectedValues) {
+                    if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
                         if ($scope.selectedModel.length === 0) {
                             if ($scope.settings.noSelectedText) {
                                 $scope.buttonText = $scope.settings.noSelectedText;
@@ -52,7 +52,7 @@ function dropdownMultiselectDirective() {
                             $scope.buttonText = $scope.selectedModel.join(", ");
                         }
                     } else {
-                        if ($scope.settings.noSelectedText && $scope.selectedModel.length === 0) {
+                        if (angular.isUndefined($scope.selectedModel) ||($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
                             $scope.buttonText = $scope.settings.noSelectedText;
                         } else {
                             $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
