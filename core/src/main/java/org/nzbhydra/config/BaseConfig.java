@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @EnableConfigurationProperties
 @Data
 @ConfigurationProperties
-@EqualsAndHashCode(exclude = {"applicationEventPublisher"})
+@EqualsAndHashCode(exclude = {"applicationEventPublisher"}, callSuper = false)
 public class BaseConfig extends ValidatingConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
@@ -57,6 +57,7 @@ public class BaseConfig extends ValidatingConfig {
     @JsonIgnore
     private final DefaultPrettyPrinter defaultPrettyPrinter;
     private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    private static boolean initialized = false;
 
 
     public BaseConfig() {
@@ -112,8 +113,15 @@ public class BaseConfig extends ValidatingConfig {
         save(file);
     }
 
+
     @PostConstruct
     public void init() throws IOException {
+        if (initialized) {
+        //In some cases a call to the server will attempt to restart everything, trying to initialize beans. This
+        //method is called a second time and an empty / initial config is written
+            logger.warn("Init method called again. This can only happen during a faulty shutdown");
+            return;
+        }
         logger.info("Using data folder {}", NzbHydra.getDataFolder());
         File file = buildConfigFileFile();
         if (!file.exists()) {
@@ -123,9 +131,10 @@ public class BaseConfig extends ValidatingConfig {
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         save();
+        initialized = true;
     }
 
-    public static File buildConfigFileFile() throws IOException {
+    public static File buildConfigFileFile() {
         return new File(NzbHydra.getDataFolder(), "nzbhydra.yml");
     }
 
@@ -146,8 +155,6 @@ public class BaseConfig extends ValidatingConfig {
     public String getAsYamlString() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
     }
-
-
 
     /**
      * Returns the original config as it was deployed
