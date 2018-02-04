@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -91,9 +92,15 @@ public class BaseConfig extends ValidatingConfig {
         try {
             String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
             if (Strings.isNullOrEmpty(asString)) {
-                logger.debug("Not writing empty config to file");
+                logger.warn("Not writing empty config to file");
             } else {
-                Files.write(targetFile.toPath(), asString.getBytes());
+                try {
+                    File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
+                    Files.write(tempFile.toPath(), asString.getBytes());
+                    Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                } catch (IOException e) {
+                    logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());
+                }
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error while saving config data. Fatal error");

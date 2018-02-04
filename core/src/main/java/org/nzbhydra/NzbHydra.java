@@ -51,24 +51,19 @@ public class NzbHydra {
     public static final String BROWSER_DISABLED = "browser.disabled";
 
     public static String[] originalArgs;
-
     private static ConfigurableApplicationContext applicationContext;
-
+    private static String dataFolder = null;
+    private static boolean wasRestarted = false;
+    private static boolean anySettingsOverwritten = false;
 
     @Autowired
     private ConfigProvider configProvider;
-    private static String dataFolder = null;
-    private static boolean wasRestarted = false;
-
     @Autowired
     private UrlCalculator urlCalculator;
     @Autowired
     private BrowserOpener browserOpener;
     @Autowired
     private GenericStorage genericStorage;
-
-    private static boolean anySettingsOverwritten = false;
-
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
@@ -101,37 +96,49 @@ public class NzbHydra {
             String databaseFilePath = (String) options.valueOf("repairdb");
             repairDb(databaseFilePath);
         } else {
-            if (options.has("datafolder")) {
-                dataFolder = (String) options.valueOf("datafolder");
-            } else {
-                dataFolder = "./data";
-            }
-            File dataFolderFile = new File(dataFolder);
-            dataFolder = dataFolderFile.getCanonicalPath();
-            //Check if we can write in the data folder. If not we can just quit now
-            if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
-                logger.error("Unable to read or write data folder {}", dataFolder);
-                System.exit(1);
-            }
-
-
-            System.setProperty("nzbhydra.dataFolder", dataFolder);
-            System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
-            useIfSet(options, "host", "server.address");
-            useIfSet(options, "port", "server.port");
-            useIfSet(options, "baseurl", "server.contextPath");
-            useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
-
-            SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-            NzbHydra.originalArgs = args;
-            wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
-            if (!options.has("quiet") && !options.has("nobrowser")) {
-                hydraApplication.setHeadless(false);
-            }
-
-            applicationContext = hydraApplication.run(args);
+            startup(args, options);
 
         }
+    }
+
+    protected static void startup(String[] args, OptionSet options) throws IOException {
+        if (options.has("datafolder")) {
+            dataFolder = (String) options.valueOf("datafolder");
+        } else {
+            dataFolder = "./data";
+        }
+        File dataFolderFile = new File(dataFolder);
+        dataFolder = dataFolderFile.getCanonicalPath();
+        //Check if we can write in the data folder. If not we can just quit now
+        if (!dataFolderFile.exists() && !dataFolderFile.mkdirs()) {
+            logger.error("Unable to read or write data folder {}", dataFolder);
+            System.exit(1);
+        }
+        if (isOsWindows()) {
+            //It may happen that the yaml file is written empty due to some weird write right constraints in c:\program files or c:\program files (x86)
+            if (dataFolderFile.getAbsolutePath().toLowerCase().contains(":\\program files")) {
+                String[] split = dataFolderFile.getAbsolutePath().split("\\\\");
+                logger.error("NZBHydra 2 may not work properly when run in {}\\\\{}. Please put it somewhere else", split[0], split[1]);
+                System.exit(1);
+            }
+        }
+
+
+        System.setProperty("nzbhydra.dataFolder", dataFolder);
+        System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
+        useIfSet(options, "host", "server.address");
+        useIfSet(options, "port", "server.port");
+        useIfSet(options, "baseurl", "server.contextPath");
+        useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
+
+        SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+        NzbHydra.originalArgs = args;
+        wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
+        if (!options.has("quiet") && !options.has("nobrowser")) {
+            hydraApplication.setHeadless(false);
+        }
+
+        applicationContext = hydraApplication.run(args);
     }
 
     protected static void repairDb(String databaseFilePath) throws ClassNotFoundException {
@@ -156,8 +163,7 @@ public class NzbHydra {
 
     @PostConstruct
     private void addTrayIconIfApplicable() {
-        String osName = System.getProperty("os.name");
-        boolean isOsWindows = osName.toLowerCase().contains("windows");
+        boolean isOsWindows = isOsWindows();
         if (isOsWindows) {
             logger.info("Adding windows system tray icon");
             try {
@@ -166,6 +172,11 @@ public class NzbHydra {
                 logger.error("Can't add a windows tray icon because running headless");
             }
         }
+    }
+
+    private static boolean isOsWindows() {
+        String osName = System.getProperty("os.name");
+        return osName.toLowerCase().contains("windows");
     }
 
     @PostConstruct
@@ -228,8 +239,7 @@ public class NzbHydra {
 
     @PreDestroy
     public void destroy() {
-        String osName = System.getProperty("os.name");
-        boolean isOsWindows = osName.toLowerCase().contains("windows");
+        boolean isOsWindows = isOsWindows();
         if (isOsWindows) {
             logger.debug("Initiating removal of windows tray icon (if it exists)");
             try {
