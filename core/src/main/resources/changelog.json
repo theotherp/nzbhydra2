@@ -3,6 +3,10 @@
     "version": "v1.3.1",
     "changes": [
       {
+        "type": "feature",
+        "text": "Display serious errors on windows in message box"
+      },
+      {
         "type": "fix",
         "text": "Hopefully reduced chance of empty config files being written"
       },

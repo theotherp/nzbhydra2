@@ -17,6 +17,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
+import org.springframework.boot.context.embedded.tomcat.ConnectorStartFailedException;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -29,9 +30,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RestController;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -101,7 +104,7 @@ public class NzbHydra {
         }
     }
 
-    protected static void startup(String[] args, OptionSet options) throws IOException {
+    protected static void startup(String[] args, OptionSet options) throws Exception {
         if (options.has("datafolder")) {
             dataFolder = (String) options.valueOf("datafolder");
         } else {
@@ -125,7 +128,8 @@ public class NzbHydra {
 
 
         System.setProperty("nzbhydra.dataFolder", dataFolder);
-        System.setProperty("spring.config.location", new File(dataFolder, "nzbhydra.yml").getAbsolutePath());
+        File yamlFile = new File(dataFolder, "nzbhydra.yml");
+        System.setProperty("spring.config.location", yamlFile.getAbsolutePath());
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
         useIfSet(options, "baseurl", "server.contextPath");
@@ -137,8 +141,31 @@ public class NzbHydra {
         if (!options.has("quiet") && !options.has("nobrowser")) {
             hydraApplication.setHeadless(false);
         }
+        try {
+            applicationContext = hydraApplication.run(args);
+        } catch (Exception e) {
+            handleException(e);
+        }
+    }
 
-        applicationContext = hydraApplication.run(args);
+    private static void handleException(Exception e) throws Exception {
+        String msg;
+        if (e instanceof YAMLException) {
+            msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
+            logger.error(msg);
+        }
+        if (e instanceof ConnectorStartFailedException) {
+            msg = "The selected port is already in use. Either shut the other application down or select another port";
+            logger.error(msg);
+        } else {
+            msg = "An unexpected error occurred during startup: " + e;
+            logger.error("An unexpected error occurred during startup", e);
+        }
+        if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
+            JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
+        }
+        //Rethrow so that spring exception handlers can handle this
+        throw e;
     }
 
     protected static void repairDb(String databaseFilePath) throws ClassNotFoundException {
@@ -207,6 +234,7 @@ public class NzbHydra {
         return dataFolder;
     }
 
+    @SuppressWarnings("unused")
     @EventListener
     protected void startupDone(ApplicationReadyEvent event) {
         try {

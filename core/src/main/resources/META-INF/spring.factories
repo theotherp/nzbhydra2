@@ -1,3 +1,5 @@
 org.springframework.boot.env.PropertySourceLoader=\
-org.springframework.boot.env.PropertiesPropertySourceLoader,\
-org.nzbhydra.config.HydraYamlPropertySourceLoader
+    org.springframework.boot.env.PropertiesPropertySourceLoader,\
+    org.nzbhydra.config.HydraYamlPropertySourceLoader
+
+org.springframework.boot.diagnostics.FailureAnalyzer=org.nzbhydra.exceptionanalyzers.YAMLExceptionAnalyzer
