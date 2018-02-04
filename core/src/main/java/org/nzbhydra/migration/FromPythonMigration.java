@@ -75,10 +75,10 @@ public class FromPythonMigration {
     }
 
     @Transactional
-    public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl, boolean doMigrateDatabase) {
+    public MigrationResult migrateFromUrl(String nzbhydra1BaseUrl, boolean doMigrateDatabase, boolean checkForDocker) {
         logger.info("Received request to migrate from URL " + nzbhydra1BaseUrl);
 
-        if (DebugInfosProvider.isRunInDocker()) {
+        if (checkForDocker && DebugInfosProvider.isRunInDocker()) {
             return MigrationResult.requirementsNotMet("You seem to be running NZBHydra2 in a docker container. Please copy the files from your v1 data folder to the v2 data folder and provide the correct file paths in the file based migration");
         }
 

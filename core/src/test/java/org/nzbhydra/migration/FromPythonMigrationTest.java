@@ -20,9 +20,7 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 public class FromPythonMigrationTest {
@@ -56,7 +54,7 @@ public class FromPythonMigrationTest {
     public void shouldCatchUnsuccessfulConnection() throws Exception {
         doReturn(new OkHttpResponse("", false, "message")).when(testee).callHydraUrl(anyString(), anyString());
 
-        MigrationResult result = testee.migrateFromUrl("xyz", true);
+        MigrationResult result = testee.migrateFromUrl("xyz", true, false);
 
         assertThat(result.isRequirementsMet(), is(false));
         assertThat(result.getError(), is("Unable to connect to NZBHydra 1: message"));
@@ -69,7 +67,7 @@ public class FromPythonMigrationTest {
     public void shouldCatchWrongVersion() throws Exception {
         doReturn(new OkHttpResponse(oldVersion, true, "message")).when(testee).callHydraUrl(anyString(), eq("get_versions"));
 
-        MigrationResult result = testee.migrateFromUrl("xyz", true);
+        MigrationResult result = testee.migrateFromUrl("xyz", true, false);
 
         assertThat(result.isRequirementsMet(), is(false));
         assertThat(result.getError(), is("Unable to migrate from NZBHydra 1 version 0.2.100. Must be at least 0.2.220"));
@@ -86,7 +84,7 @@ public class FromPythonMigrationTest {
         when(configMigration.migrate(anyString())).thenReturn(configMigrationResult);
         when(configMigrationResult.getMessages()).thenReturn(Arrays.asList("aWarningMessage"));
 
-        MigrationResult result = testee.migrateFromUrl("xyz", true);
+        MigrationResult result = testee.migrateFromUrl("xyz", true, false);
 
         assertThat(result.isRequirementsMet(), is(true));
         assertThat(result.isConfigMigrated(), is(true));
