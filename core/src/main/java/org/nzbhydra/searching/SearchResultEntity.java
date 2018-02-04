@@ -2,6 +2,7 @@ package org.nzbhydra.searching;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import lombok.Getter;
 import org.hibernate.annotations.GenericGenerator;
@@ -130,5 +131,16 @@ public class SearchResultEntity {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("indexer", indexer.getName())
+                .add("title", title)
+                .add("link", link)
+                .add("details", details)
+                .add("pubDate", pubDate)
+                .toString();
     }
 }

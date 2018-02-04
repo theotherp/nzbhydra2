@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.persistence.EntityExistsException;
 import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -216,7 +217,11 @@ public abstract class Indexer<T> {
                 item.setGuid(guid);
                 item.setSearchResultId(guid);
             }
-            searchResultRepository.save(searchResultEntities);
+            try {
+                searchResultRepository.save(searchResultEntities);
+            } catch (EntityExistsException e) {
+                logger.error("Unable to save the search results to the database", e);
+            }
         }
 
         getLogger().debug(LoggingMarkers.PERFORMANCE, "Handling of {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));

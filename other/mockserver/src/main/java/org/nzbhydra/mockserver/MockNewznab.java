@@ -109,6 +109,16 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().equals("actualduplicates")) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(10).titleBase("actualduplicates").offset(params.getOffset()).titleWords(Collections.emptyList()).total(10).build();
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setTitle(rssRoot.getRssChannel().getItems().get(0).getTitle()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setLink(rssRoot.getRssChannel().getItems().get(0).getLink()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setRssGuid(rssRoot.getRssChannel().getItems().get(0).getRssGuid()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setNewznabAttributes(rssRoot.getRssChannel().getItems().get(0).getNewznabAttributes()));
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getQ() != null && params.getQ().equals("oneresult")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").offset(params.getOffset()).titleWords(Collections.emptyList()).total(1).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);

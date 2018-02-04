@@ -7,6 +7,10 @@
         "text": "Hopefully reduced chance of empty config files being written"
       },
       {
+        "type": "fix",
+        "text": "Handle duplicate results from indexers better (should rarely happen)"
+      },
+      {
         "type": "note",
         "text": "NZBHydra will recognize if it's running on windows and in folder like c:\\program files or c:\\program files (x86) and refuse to start. Those folders have special read/write rights which might cause some problems. I recommend putting any programs that are not installed by a setup in a \"regular\" folder"
       }
