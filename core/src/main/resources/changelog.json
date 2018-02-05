@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.3.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Settings file was sometimes corrupted (wrong charset) and could not be loaded anymore"
+      }
+    ]
+  },  {
     "version": "v1.3.1",
     "changes": [
       {

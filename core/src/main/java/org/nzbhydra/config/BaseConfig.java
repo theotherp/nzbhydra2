@@ -97,7 +97,7 @@ public class BaseConfig extends ValidatingConfig {
             } else {
                 try {
                     File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
-                    Files.write(tempFile.toPath(), asString.getBytes());
+                    Files.write(tempFile.toPath(), asString.getBytes("UTF-8"));
                     Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                 } catch (IOException e) {
                     logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());

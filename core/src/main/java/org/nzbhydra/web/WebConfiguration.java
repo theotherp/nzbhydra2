@@ -149,7 +149,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 } else {
                     result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
                 }
-                outputMessage.getBody().write(result.getBytes());
+                outputMessage.getBody().write(result.getBytes("UTF-8"));
             }
         }
 

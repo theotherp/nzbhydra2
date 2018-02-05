@@ -16,15 +16,26 @@
 
 package org.nzbhydra;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import lombok.Data;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.IndexerCategoryConfig;
+import org.nzbhydra.config.IndexerConfig;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Experiments {
+
     @Test
     @Ignore
     public void bla() throws IOException, InterruptedException {
@@ -34,5 +45,59 @@ public class Experiments {
             Thread.sleep(100);
         }
     }
+
+    @Test
+    @Ignore
+    public void createSimpleYaml() throws IOException, InterruptedException {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+        objectMapper.registerModule(new Jdk8Module());
+
+        IndexerConfig indexerConfig = new IndexerConfig();
+        indexerConfig.setCategoryMapping(new IndexerCategoryConfig());
+
+        BaseConfig baseConfig = new BaseConfig();
+        baseConfig.setIndexers(Arrays.asList(indexerConfig));
+        String s = objectMapper.writeValueAsString(baseConfig);
+        System.out.println(s);
+
+        objectMapper.readValue(s, BaseConfig.class);
+    }
+
+    @Test
+    @Ignore
+    public void createTestYaml() throws IOException, InterruptedException {
+        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+
+        MainClass mainClass = new MainClass();
+        MainClass.SubEntry subEntry = new MainClass.SubEntry();
+        subEntry.setSubSubentry(new MainClass.SubEntry.SubSubentry());
+        mainClass.setSubEntries(Arrays.asList(subEntry));
+        String s = objectMapper.writeValueAsString(mainClass);
+        System.out.println(s);
+
+        objectMapper.readValue(s, MainClass.class);
+    }
+
+
+
+    @Data
+    public static class MainClass {
+        private List<SubEntry> subEntries = new ArrayList<>();
+
+        @Data
+        public static class SubEntry {
+            private SubSubentry subSubentry;
+
+            @Data
+            public static class SubSubentry {
+                private Integer entry1 = null;
+                private Integer entry2 = null;
+                private Integer entry3 = null;
+            }
+
+        }
+    }
+
+
 
 }
