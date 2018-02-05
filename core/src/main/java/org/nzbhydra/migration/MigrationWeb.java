@@ -27,7 +27,7 @@ public class MigrationWeb {
     @RequestMapping(value = "/internalapi/migration/url", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public MigrationResult migrateFromUrl(@RequestParam(name = "baseurl") String oldHydraBaseUrl, @RequestParam(name = "doMigrateDatabase") boolean doMigrateDatabase) throws IOException {
         messages.clear();
-        return migration.migrateFromUrl(oldHydraBaseUrl, doMigrateDatabase);
+        return migration.migrateFromUrl(oldHydraBaseUrl, doMigrateDatabase, true);
     }
 
     @Secured({"ROLE_ADMIN"})

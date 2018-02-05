@@ -1,5 +1,47 @@
 [
   {
+    "version": "v1.3.1",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Display serious errors on windows in message box"
+      },
+      {
+        "type": "fix",
+        "text": "Hopefully reduced chance of empty config files being written"
+      },
+      {
+        "type": "fix",
+        "text": "Handle duplicate results from indexers better (should rarely happen)"
+      },
+      {
+        "type": "note",
+        "text": "NZBHydra will recognize if it's running on windows and in folder like c:\\program files or c:\\program files (x86) and refuse to start. Those folders have special read/write rights which might cause some problems. I recommend putting any programs that are not installed by a setup in a \"regular\" folder"
+      }
+    ]
+  },
+  {
+    "version": "v1.3.0",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Experimental feature to use a packaged CA certs file. This probably doesn't concern you but it may solve some SSL related issues with some newer or different JREs"
+      },
+      {
+        "type": "fix",
+        "text": "Sort indexer download shares by share"
+      },
+      {
+        "type": "fix",
+        "text": "Made the migration process a tiny bit more robust wrt wrong input"
+      },
+      {
+        "type": "fix",
+        "text": "Display caps check button for indexers without API key (e.g. spotweb instances). Hide button and search type and ID fields for new indexer. The check is done automatically"
+      }
+    ]
+  },
+  {
     "version": "v1.2.6",
     "changes": [
       {

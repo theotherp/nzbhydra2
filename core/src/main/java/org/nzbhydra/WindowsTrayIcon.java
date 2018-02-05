@@ -61,8 +61,8 @@ public class WindowsTrayIcon extends TrayIcon {
                 logger.error("Error while closing application context, will shut down hard");
             } finally {
                 remove();
-                System.exit(UpdateManager.SHUTDOWN_RETURN_CODE);
             }
+            System.exit(UpdateManager.SHUTDOWN_RETURN_CODE);
         });
 
 
@@ -74,6 +74,7 @@ public class WindowsTrayIcon extends TrayIcon {
         if (tray != null && instance != null) {
             logger.info("Removing tray icon");
             tray.remove(instance);
+            tray = null;
         }
     }
 

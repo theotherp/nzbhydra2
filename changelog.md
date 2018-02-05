@@ -1,3 +1,15 @@
+### v1.3.1
+Feature: Display serious errors on windows in message box
+Fix: Hopefully reduced chance of empty config files being written
+Fix: Handle duplicate results from indexers better (should rarely happen)
+Note: NZBHydra will recognize if it's running on windows and in folder like c:\program files or c:\program files (x86) and refuse to start. Those folders have special read/write rights which might cause some problems. I recommend putting any programs that are not installed by a setup in a "regular" folder
+
+### v1.3.0
+Feature: Experimental feature to use a packaged CA certs file. This probably doesn't concern you but it may solve some SSL related issues with some newer or different JREs
+Fix: Sort indexer download shares by share
+Fix: Made the migration process a tiny bit more robust wrt wrong input
+Fix: Display caps check button for indexers without API key (e.g. spotweb instances). Hide button and search type and ID fields for new indexer. The check is done automatically
+
 ### v1.2.6
 Fix: Sabnzbd history could not be properly parsed, preventing download status updates
 

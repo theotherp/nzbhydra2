@@ -18,7 +18,7 @@ public class SqliteMigrationComponentTest {
 
     @Test
     public void shouldMigrate() throws Exception {
-        testee.migrateFromUrl("http://127.0.0.1:5075/", true);
+        testee.migrateFromUrl("http://127.0.0.1:5075/", true, false);
     }
 
 

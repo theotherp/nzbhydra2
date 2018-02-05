@@ -49,8 +49,13 @@ public class SearchResultAcceptor {
         titleWordCache = new HashMap<>();
         List<SearchResultItem> acceptedResults = new ArrayList<>();
         Multiset<String> reasonsForRejection = HashMultiset.create();
-        for (SearchResultItem item : items) {
-
+        HashSet<SearchResultItem> itemsWithoutActualDuplicates = new HashSet<>(items);
+        if (itemsWithoutActualDuplicates.size() < items.size()) {
+            int removedDuplicates = items.size() - itemsWithoutActualDuplicates.size();
+            logger.warn("Removed {} actual duplicates from the results returned by {}. This is likely an error in their code base", removedDuplicates, indexerConfig.getName());
+            reasonsForRejection.add("Duplicate results from indexer", removedDuplicates);
+        }
+        for (SearchResultItem item : itemsWithoutActualDuplicates) {
             if (!checkForNeededAttributesSuccessfullyMapped(reasonsForRejection, item)) {
                 continue;
             }

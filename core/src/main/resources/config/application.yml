@@ -296,6 +296,7 @@ main:
   updateCheckEnabled: true
   urlBase: null
   useCsrf: true
+  usePackagedCaCerts: true
   verifySsl: true
   welcomeShown: false
   xmx: 128

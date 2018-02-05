@@ -151,7 +151,7 @@ public class NewznabChecker {
                     responses.add(response);
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof IndexerAccessException) {
-                        logger.error("Error while communicating with indexer", e);
+                        logger.error("Error while communicating with indexer: "+ e.getMessage());
                     } else {
                         logger.error("Unexpected error while checking caps", e);
                     }

@@ -41,13 +41,32 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
         if ($scope.foo.baseUrl && $scope.foo.isFileBasedOpen) {
             $scope.foo.baseUrl = null;
         }
-        //blockUI.start("Starting migration. This may take a while...");
+
+
         if ($scope.foo.isUrlBasedOpen) {
             url = "internalapi/migration/url";
             params = {baseurl: $scope.foo.baseUrl, doMigrateDatabase: $scope.doMigrateDatabase};
+            if (!params.baseurl) {
+                $scope.foo.isMigrating = false;
+                ModalService.open("Requirements not met", "You did not enter a URL", {
+                    yes: {
+                        text: "OK"
+                    }
+                });
+                return;
+            }
         } else {
             url = "internalapi/migration/files";
             params = {settingsCfgFile: $scope.foo.settingsCfgFile, dbFile: $scope.foo.nzbhydraDbFile, doMigrateDatabase: $scope.doMigrateDatabase};
+            if (!params.settingsCfgFile || (!params.dbFile && params.doMigrateDatabase)) {
+                $scope.foo.isMigrating = false;
+                ModalService.open("Requirements not met", "You did not enter all required valued", {
+                    yes: {
+                        text: "OK"
+                    }
+                });
+                return;
+            }
         }
 
         $scope.foo.isMigrating = true;

@@ -6,11 +6,7 @@ import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,11 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 @SuppressWarnings("ALL")
 @RestController
@@ -117,6 +109,16 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().equals("actualduplicates")) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(10).titleBase("actualduplicates").offset(params.getOffset()).titleWords(Collections.emptyList()).total(10).build();
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setTitle(rssRoot.getRssChannel().getItems().get(0).getTitle()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setLink(rssRoot.getRssChannel().getItems().get(0).getLink()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setRssGuid(rssRoot.getRssChannel().getItems().get(0).getRssGuid()));
+            rssRoot.getRssChannel().getItems().forEach(x -> x.setNewznabAttributes(rssRoot.getRssChannel().getItems().get(0).getNewznabAttributes()));
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getQ() != null && params.getQ().equals("oneresult")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1).titleBase("oneresult").offset(params.getOffset()).titleWords(Collections.emptyList()).total(1).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
@@ -190,7 +192,7 @@ public class MockNewznab {
         }
 
         if (params.getTmdbid() != null) {
-            if (itemTitleBase.equals("tmdberror")) {
+            if (itemTitleBase.equals("tmdberror") || "capscheckerror".equals(params.getApikey())) {
                 NewznabXmlError rssError = new NewznabXmlError("123", "description");
                 return new ResponseEntity<Object>(rssError, HttpStatus.OK);
             }
@@ -221,7 +223,10 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, Math.min(params.getOffset() + params.getLimit(), endIndex), itemTitleBase, doGenerateDuplicates, Collections.emptyList());
+            if (params.getOffset() != null && params.getLimit() != null) {
+                endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
+            }
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

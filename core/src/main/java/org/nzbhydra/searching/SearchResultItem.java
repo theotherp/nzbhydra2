@@ -9,12 +9,13 @@ import org.nzbhydra.indexers.Indexer;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @Data
-public class SearchResultItem implements Comparable<SearchResultItem> {
+public class SearchResultItem  {
 
     public enum HasNfo {
         NO,
@@ -82,21 +83,23 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
         return getUsenetDate().orElse(getPubDate());
     }
 
-    @Override
-    public int compareTo(SearchResultItem o) {
-        if (o == null) {
-            return 1;
-        }
-        if (o.pubDate == null && pubDate != null) {
-            return 1;
-        }
-        if (pubDate == null && o.pubDate != null) {
-            return -1;
-        }
-        if (pubDate == null) {
-            return 0;
-        }
-        return getBestDate().compareTo(o.getBestDate());
+
+    public static Comparator<SearchResultItem> comparator() {
+        return (o1, o2) -> {
+            if (o2 == null) {
+                return 1;
+            }
+            if (o2.pubDate == null && o1.pubDate != null) {
+                return 1;
+            }
+            if (o1.pubDate == null && o2.pubDate != null) {
+                return -1;
+            }
+            if (o1.pubDate == null) {
+                return 0;
+            }
+            return o1.getBestDate().compareTo(o2.getBestDate());
+        };
     }
 
     @Override
@@ -105,9 +108,6 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
             return true;
         }
         if (!(o instanceof SearchResultItem)) {
-            return false;
-        }
-        if (!super.equals(o)) {
             return false;
         }
         SearchResultItem item = (SearchResultItem) o;
@@ -119,14 +119,14 @@ public class SearchResultItem implements Comparable<SearchResultItem> {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(super.hashCode(), indexer, indexerGuid, link, title);
+        return Objects.hashCode(indexer, indexerGuid, link, title);
     }
 
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("guid", guid)
                 .add("indexerName", indexer.getName())
+                .add("guid", guid)
                 .add("title", title)
                 .add("pubDate", pubDate)
                 .add("size", size)
