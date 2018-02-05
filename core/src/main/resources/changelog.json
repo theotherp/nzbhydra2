@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Delete error column in indexer status page when indexer is reenabled"
+      },
+      {
+        "type": "fix",
+        "text": "Button to browse file system for selecting torrent folder would fail on some systems (e.g. docker)"
       }
     ]
   },  {

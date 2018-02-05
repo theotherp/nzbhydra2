@@ -150,6 +150,9 @@ public class NzbHydra {
 
     private static void handleException(Exception e) throws Exception {
         String msg;
+        if (e.getClass().getName().contains("SilentExitException")) { //Sometimes thrown by spring boot devtools
+            return;
+        }
         if (e instanceof YAMLException) {
             msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
             logger.error(msg);
@@ -161,8 +164,12 @@ public class NzbHydra {
             msg = "An unexpected error occurred during startup: " + e;
             logger.error("An unexpected error occurred during startup", e);
         }
-        if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
-            JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
+        try {
+            if (!GraphicsEnvironment.isHeadless() && isOsWindows()) {
+                JOptionPane.showMessageDialog(null, msg, "NZBHydra 2 error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (HeadlessException e1) {
+            logger.warn("Unable to show exception in message dialog: {}", e1.getMessage());
         }
         //Rethrow so that spring exception handlers can handle this
         throw e;
