@@ -152,12 +152,10 @@
 
 <script type="text/ng-template" id="setting-wrapper.html">
     <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}">
-        <div style="text-align:right;">
+      <div class="col-md-6 config-content">
             <label for="{{::id}}" class="col-md-7 control-label config-label">
                 {{ to.label }} {{ to.required ? "*" : ""}}
             </label>
-        </div>
-        <div class="col-md-6 config-content">
             <formly-transclude></formly-transclude>
             <div class="my-messages" ng-messages="fc.$error" ng-if="options.formControl.$touched || form.$submitted" ng-messages-multiple>
                 <div class="some-message has-error control-label" ng-message="{{::name}}" ng-repeat="(name, message) in ::options.validation.messages">
