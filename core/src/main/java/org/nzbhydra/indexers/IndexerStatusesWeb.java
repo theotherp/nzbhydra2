@@ -35,6 +35,7 @@ public class IndexerStatusesWeb {
         statusEntity.setDisabledPermanently(false);
         statusEntity.setDisabledUntil(null);
         statusEntity.setLevel(0);
+        statusEntity.setReason(null);
         indexerStatusRepository.save(statusEntity);
 
         logger.info("Reenable indexer {}", indexerName);

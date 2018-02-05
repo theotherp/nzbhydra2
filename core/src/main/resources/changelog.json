@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Settings file was sometimes corrupted (wrong charset) and could not be loaded anymore"
+      },
+      {
+        "type": "fix",
+        "text": "Delete error column in indexer status page when indexer is reenabled"
       }
     ]
   },  {
