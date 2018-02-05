@@ -1,3 +1,8 @@
+### v1.3.2
+Fix: Settings file was sometimes corrupted (wrong charset) and could not be loaded anymore
+Fix: Delete error column in indexer status page when indexer is reenabled
+Fix: Button to browse file system for selecting torrent folder would fail on some systems (e.g. docker)
+
 ### v1.3.1
 Feature: Display serious errors on windows in message box
 Fix: Hopefully reduced chance of empty config files being written
