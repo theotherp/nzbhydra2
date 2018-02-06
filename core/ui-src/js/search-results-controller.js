@@ -84,7 +84,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
-        if ($scope.foo[$scope.optionsOptions[key]["id"]]) {
+        if ($scope.foo[$scope.optionsOptions[key].id]) {
             $scope.optionsSelectedModel.push($scope.optionsOptions[key].id);
         }
     }
@@ -137,11 +137,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     $scope.indexersForFiltering = [];
     _.forEach($scope.indexersearches, function (indexer) {
-        $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName})
+        $scope.indexersForFiltering.push({label: indexer.indexerName, id: indexer.indexerName});
     });
     $scope.categoriesForFiltering = [];
     _.forEach(CategoriesService.getWithoutAll(), function (category) {
-        $scope.categoriesForFiltering.push({label: category.name, id: category.name})
+        $scope.categoriesForFiltering.push({label: category.name, id: category.name});
     });
     _.forEach($scope.indexersearches, function (ps) {
         $scope.indexerResultsInfo[ps.indexerName.toLowerCase()] = {loadedResults: ps.loaded_results};
@@ -156,7 +156,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
     //stopBlocking();
 
-    //Returns the content of the property (defined by the current sortPredicate) of the first group element 
+    //Returns the content of the property (defined by the current sortPredicate) of the first group element
     $scope.firstResultPredicate = firstResultPredicate;
 
     function firstResultPredicate(item) {
@@ -306,7 +306,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 });
                 if (mustContain.length > 0) {
                     var containsAtLeastOne = _.any(mustContain, function (word) {
-                        return item.title.toLowerCase().indexOf(word) > -1
+                        return item.title.toLowerCase().indexOf(word) > -1;
                     });
                     if (!containsAtLeastOne) {
                         return false;
@@ -336,17 +336,17 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         function getSortPredicateValue(containgObject) {
             var sortPredicateValue;
             if (sortPredicateKey === "grabs") {
-                if (containgObject["seeders"] !== null) {
-                    sortPredicateValue = containgObject["seeders"];
-                } else if (containgObject["grabs"] !== null) {
-                    sortPredicateValue = containgObject["grabs"];
+                if (containgObject.seeders !== null) {
+                    sortPredicateValue = containgObject.seeders;
+                } else if (containgObject.grabs !== null) {
+                    sortPredicateValue = containgObject.grabs;
                 } else {
                     sortPredicateValue = 0;
                 }
             } else if (sortPredicateKey === "title") {
                 sortPredicateValue = getCleanedTitle(containgObject);
             } else if (sortPredicateKey === "indexer") {
-                sortPredicateValue = containgObject["indexer"].toLowerCase();
+                sortPredicateValue = containgObject.indexer.toLowerCase();
             } else {
                 sortPredicateValue = containgObject[sortPredicateKey];
             }
@@ -370,7 +370,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 if (sortPredicateKey === "title") {
                     //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
-                    return hashGroup[0]["epoch"] * -1;
+                    return hashGroup[0].epoch * -1;
                 }
                 var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortPredicateValue;
@@ -393,14 +393,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 _.each(titleGroup, function (element1) {
                     _.each(element1, function (element2) {
                         sumOfGrabs += getSortPredicateValue(element2);
-                    })
+                    });
                 });
 
                 sortPredicateValue = sumOfGrabs;
             } else {
                 sortPredicateValue = getSortPredicateValue(titleGroup[0][0]);
             }
-            return sortPredicateValue
+            return sortPredicateValue;
         }
 
         var filtered = _.filter(results, filter);
@@ -485,14 +485,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
                 return !x.wasSuccessful;
             })) {
-            growl.info("Errors occurred during searching, Check indexer statuses")
+            growl.info("Errors occurred during searching, Check indexer statuses");
         }
         //Only show those categories in filter that are actually present in the results
         $scope.categoriesForFiltering = [];
         var allUsedCategories = _.uniq(_.pluck(allSearchResults, "category"));
         _.forEach(CategoriesService.getWithoutAll(), function (category) {
             if (allUsedCategories.indexOf(category.name) > -1) {
-                $scope.categoriesForFiltering.push({label: category.name, id: category.name})
+                $scope.categoriesForFiltering.push({label: category.name, id: category.name});
             }
         });
     }
@@ -608,7 +608,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     $scope.filterRejectedZero = function () {
         return function (entry) {
             return entry[1] > 0;
-        }
+        };
     };
 
     $scope.$on("onFinishRender", function () {
@@ -672,4 +672,3 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }, 100);
 
 }
-

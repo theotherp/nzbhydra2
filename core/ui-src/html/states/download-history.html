@@ -1,107 +1,107 @@
 <div class="row" style="margin-top: 30px; margin-bottom: 20px">
-    <div class="col-md-5"></div>
-    <div class="col-md-10" style="text-align: center">
-        <dir-pagination-controls on-page-change="update()" pagination-id="downloads"></dir-pagination-controls>
-    </div>
+  <div class="col-md-5"></div>
+  <div class="col-md-10" style="text-align: center">
+    <dir-pagination-controls on-page-change="update()" pagination-id="downloads"></dir-pagination-controls>
+  </div>
 </div>
 <table class="table">
-    <thead>
+  <thead>
     <tr>
-        <th class="col-md-2" style="width: {{columnSizes.time}}%;">
-            <column-sortable column="time" start-mode="2">Time
-            </column-sortable>
-            <column-filter-wrapper>
-                <time-filter column="time" selected="preselectedTimeInterval"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-2" style="width: {{columnSizes.indexer}}%;">
-            <column-sortable column="name">Indexer
-            </column-sortable>
-            <column-filter-wrapper>
-                <checkboxes-filter column="name" entries="indexersForFiltering" preselect="true" show-invert="true"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-8" style="width: {{columnSizes.title}}%;">
-            <column-sortable column="title">Title
-            </column-sortable>
-            <column-filter-wrapper>
-                <freetext-filter column="title"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-1" style="width: {{columnSizes.result}}%;">
-            <column-sortable column="status">Result <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                                          uib-tooltip="Actual download result only available if Hydra's downloader user scripts are used"></span></div>
-            </column-sortable>
-            <column-filter-wrapper>
-                <checkboxes-filter column="status" entries="statusesForFiltering" preselect="true" show-invert="false"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-1" style="width: {{columnSizes.source}}%;">
-            <column-sortable column="access_source">Source
-            </column-sortable>
-            <column-filter-wrapper>
-                <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-1" style="width: {{columnSizes.age}}%;">
-            <column-sortable column="age">Age</column-sortable>
-            <column-filter-wrapper>
-                <freetext-filter column="age"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-2" style="width: {{columnSizes.username}}%;" ng-if="columnSizes.username > 0">
-            <column-sortable column="username">Username</column-sortable>
-            <column-filter-wrapper>
-                <freetext-filter column="username"/>
-            </column-filter-wrapper>
-        </th>
-        <th class="col-md-2" style="width: {{columnSizes.ip}}%" ng-if="columnSizes.ip > 0">
-            <column-sortable column="ip" reversed="false" start-mode="1">IP</column-sortable>
-            <column-filter-wrapper>
-                <freetext-filter column="ip"/>
-            </column-filter-wrapper>
-        </th>
+      <th class="col-md-2" style="width: {{columnSizes.time}}%;">
+        <column-sortable column="time" start-mode="2">Time
+        </column-sortable>
+        <column-filter-wrapper>
+          <time-filter column="time" selected="preselectedTimeInterval" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-2" style="width: {{columnSizes.indexer}}%;">
+        <column-sortable column="name">Indexer
+        </column-sortable>
+        <column-filter-wrapper>
+          <checkboxes-filter column="name" entries="indexersForFiltering" preselect="true" show-invert="true" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-8" style="width: {{columnSizes.title}}%;">
+        <column-sortable column="title">Title
+        </column-sortable>
+        <column-filter-wrapper>
+          <freetext-filter column="title" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-1" style="width: {{columnSizes.result}}%;">
+        <column-sortable column="status">Result <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top" uib-tooltip="Actual download result only available if Hydra's downloader user scripts are used"></span>
+        </column-sortable>
+        <column-filter-wrapper>
+          <checkboxes-filter column="status" entries="statusesForFiltering" preselect="true" show-invert="false" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-1" style="width: {{columnSizes.source}}%;">
+        <column-sortable column="access_source">Source
+        </column-sortable>
+        <column-filter-wrapper>
+          <boolean-filter column="access_source" options="accessOptionsForFiltering" preselect="0" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-1" style="width: {{columnSizes.age}}%;">
+        <column-sortable column="age">Age</column-sortable>
+        <column-filter-wrapper>
+          <freetext-filter column="age" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-2" style="width: {{columnSizes.username}}%;" ng-if="columnSizes.username > 0">
+        <column-sortable column="username">Username</column-sortable>
+        <column-filter-wrapper>
+          <freetext-filter column="username" />
+        </column-filter-wrapper>
+      </th>
+      <th class="col-md-2" style="width: {{columnSizes.ip}}%" ng-if="columnSizes.ip > 0">
+        <column-sortable column="ip" reversed="false" start-mode="1">IP</column-sortable>
+        <column-filter-wrapper>
+          <freetext-filter column="ip" />
+        </column-filter-wrapper>
+      </th>
     </tr>
-    </thead>
-    <tbody>
+  </thead>
+  <tbody>
     <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage:limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
-        <td class="narrow-row">{{ ::nzbDownload.time | reformatDate }}</td>
-        <td class="narrow-row">{{ ::nzbDownload.searchResult.indexer.name }}</td>
-        <td class="narrow-row">
-            <span ng-style="{'visibility':!nzbDownload.searchResult.indexerGuid ? 'hidden' : 'initial'}">
-                <span ng-switch on="::nzbDownload.searchResult.downloadType">
-                    <span ng-switch-when="TORRENT">
-                        <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-                           class="no-underline result-torrent-download-link"
-                           uib-tooltip="Download torrent"
-                           tooltip-placement="top"
-                           tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
-                        </a>
-                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id" ng-if="::result.link.indexOf('magnet:') > -1"></send-torrent-to-blackhole>
-                    </span>
-                    <span ng-switch-default>
-                        <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
-                           class="no-underline result-nzb-download-link"
-                           uib-tooltip="Download NZB"
-                           tooltip-placement="top"
-                           tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
-                        </a>
-                        <addable-nzbs searchresult="::nzbDownload.searchResult" always-ask="true"></addable-nzbs>
-                    </span>
-                </span>
-                <a target="_blank" href="{{ ::nzbDownload.searchResult.details | dereferer }}" ng-if="nzbDownload.searchResult.details">{{ ::nzbDownload.searchResult.title }}</a><span
-                    ng-if="!nzbDownload.searchResult.details">{{ nzbDownload.searchResult.title }}</span>
+      <td class="narrow-row">{{ ::nzbDownload.time | reformatDate }}</td>
+      <td class="narrow-row">{{ ::nzbDownload.searchResult.indexer.name }}</td>
+      <td class="narrow-row">
+        <span ng-style="{'visibility':!nzbDownload.searchResult.indexerGuid ? 'hidden' : 'initial'}">
+          <span ng-switch on="::nzbDownload.searchResult.downloadType">
+            <span ng-switch-when="TORRENT">
+              <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+              class="no-underline result-torrent-download-link"
+              uib-tooltip="Download torrent"
+              tooltip-placement="top"
+              tooltip-trigger="mouseenter">
+                <span class="glyphicon glyphicon-save"></span>
+              </a>
+              <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id" ng-if="::result.link.indexOf('magnet:') > -1"></send-torrent-to-blackhole>
             </span>
-        </td>
-        <td class="narrow-row">
-            <span ng-bind-html="getStatusIcon(nzbDownload.status)" uib-tooltip="{{nzbDownload.status}}"></span>
-        </td>
-        <td class="narrow-row">{{ ::nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
-        <td class="narrow-row">{{ ::nzbDownload.age }}</td>
-        <td class="narrow-row" ng-if="columnSizes.username > 0">{{ ::nzbDownload.username }}</td>
-        <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ ::nzbDownload.ip }}</td>
+            <span ng-switch-default>
+              <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+              class="no-underline result-nzb-download-link"
+              uib-tooltip="Download NZB"
+              tooltip-placement="top"
+              tooltip-trigger="mouseenter">
+                <span class="glyphicon glyphicon-save"></span>
+              </a>
+              <addable-nzbs searchresult="::nzbDownload.searchResult" always-ask="true"></addable-nzbs>
+            </span>
+          </span>
+          <a target="_blank" href="{{ ::nzbDownload.searchResult.details | dereferer }}" ng-if="nzbDownload.searchResult.details">{{ ::nzbDownload.searchResult.title }}</a><span ng-if="!nzbDownload.searchResult.details">{{ nzbDownload.searchResult.title }}</span>
+        </span>
+      </td>
+      <td class="narrow-row">
+        <span ng-bind-html="getStatusIcon(nzbDownload.status)" uib-tooltip="{{nzbDownload.status}}"></span>
+      </td>
+      <td class="narrow-row">{{ ::nzbDownload.accessSource === "INTERNAL" ? "Internal" : "API"}}</td>
+      <td class="narrow-row">{{ ::nzbDownload.age }}</td>
+      <td class="narrow-row" ng-if="columnSizes.username > 0">{{ ::nzbDownload.username }}</td>
+      <td class="narrow-row" ng-if="columnSizes.ip > 0">{{ ::nzbDownload.ip }}</td>
     </tr>
-    </tbody>
+  </tbody>
 </table>
 
 <dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="downloads"></dir-pagination-controls>

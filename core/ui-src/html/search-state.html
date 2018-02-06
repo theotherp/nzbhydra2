@@ -1,35 +1,31 @@
 <div class="modal-header">
-    <h3 class="modal-title">Searching... Please wait</h3>
+  <h3 class="modal-title">Searching... Please wait</h3>
 </div>
 <div class="modal-body" style="text-align: left;">
-    <img src="static/img/spinner.gif" ng-if="!messages && !indexerSelectionFinished"/>
+  <img src="static/img/spinner.gif" ng-if="!messages && !indexerSelectionFinished" />
 
-    <div ng-if="messages" style="text-align: left">
+  <div ng-if="messages" style="text-align: left">
 
-        <ul style="padding-left: 0">
-            <li ng-repeat="message in messages" style="list-style-type: none">
-                {{message}}
-            </li>
+    <ul style="padding-left: 0">
+      <li ng-repeat="message in messages" style="list-style-type: none">
+        {{message}}
+      </li>
 
-        </ul>
-        <img src="static/img/spinner.gif"/>
+    </ul>
+    <img src="static/img/spinner.gif" />
 
+  </div>
+  <div style="margin-top: 15px; margin-bottom: -20px">
+    <div ng-if="indexerSelectionFinished">
+      Indexers finished:
+      <uib-progressbar max="indexersSelected" class="progress-striped active" value="indexersFinished">{{indexersFinished}} / {{progressMax}}</uib-progressbar>
     </div>
-    <div style="margin-top: 15px; margin-bottom: -20px">
-        <div ng-if="indexerSelectionFinished">
-            Indexers finished:
-            <uib-progressbar max="indexersSelected" class="progress-striped active" value="indexersFinished">{{indexersFinished}} / {{progressMax}}</uib-progressbar>
-        </div>
-    </div>
+  </div>
 </div>
 <div class="modal-footer">
-    <span style="float: left; margin-top: 5px">
+  <span style="float: left; margin-top: 5px">
         This window will close automatically when searching is finished
     </span>
-    <button class="btn btn-danger" type="button" ng-click="cancelSearch()"
-            uib-tooltip="Will not actually cancel the search but just go back to the search page. Any remaining indexer calls will be continued in the background"
-            tooltip-placement="top"
-            tooltip-trigger="mouseenter"
-    >Cancel
+  <button class="btn btn-danger" type="button" ng-click="cancelSearch()" uib-tooltip="Will not actually cancel the search but just go back to the search page. Any remaining indexer calls will be continued in the background" tooltip-placement="top" tooltip-trigger="mouseenter">Cancel
     </button>
 </div>

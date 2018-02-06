@@ -1,7 +1,5 @@
 @import "nzbhydra.less";
-
 @banner-url: url("../img/banner-grey-dark.png");
-
 @gray-base: rgb(0, 0, 0);
 @gray-darker: rgb(38, 44, 46);
 @gray-dark: rgb(58, 63, 68);
@@ -147,7 +145,7 @@
 @state-danger-border: darken(spin(@state-danger-bg, -10), 3%);
 @tooltip-color: rgb(255, 255, 255);
 @tooltip-bg: rgba(0, 0, 0, 0.9);
-@tooltip-opacity: .9;
+@tooltip-opacity: 0.9;
 @tooltip-arrow-color: @tooltip-bg;
 @popover-bg: lighten(@body-bg, 3%);
 @popover-border-color: rgba(0, 0, 0, 0.2);
@@ -232,7 +230,7 @@
 @breadcrumb-active-color: @gray-light;
 @carousel-text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
 @carousel-control-color: rgb(255, 255, 255);
-@carousel-control-opacity: .5;
+@carousel-control-opacity: 0.5;
 @carousel-indicator-active-bg: rgb(255, 255, 255);
 @carousel-indicator-border-color: rgb(255, 255, 255);
 @carousel-caption-color: rgb(255, 255, 255);
@@ -245,15 +243,13 @@
 @pre-bg: @gray-dark;
 @pre-color: rgb(245, 245, 245);
 @pre-border-color: rgb(204, 204, 204);
-
 @modal-content-bg: lighten(@body-bg, 3%);
 @modal-content-border-color: rgba(0, 0, 0, 0.2);
 @modal-content-fallback-border-color: rgb(153, 153, 153);
 @modal-backdrop-bg: rgb(0, 0, 0);
-@modal-backdrop-opacity: .5;
+@modal-backdrop-opacity: 0.5;
 @modal-header-border-color: darken(@gray-darker, 5%);
 @modal-footer-border-color: @modal-header-border-color;
-
 @text-muted: @gray-light;
 @abbr-border-color: @gray-light;
 @headings-small-color: @gray-light;
@@ -261,20 +257,15 @@
 @blockquote-border-color: @gray-light;
 @page-header-border-color: darken(@gray-darker, 5%);
 @hr-border: darken(@gray-darker, 5%);
-
 @block-overlay-bg: rgb(0, 0, 0);
 @block-message-bg: @gray-lighter;
 @block-message-color: darken(white, 10%);
-
 @input-group-addon-color: #fff;
 @switch-color: @gray-dark;
-
 @chart-text-color: @text-color;
 @chart-bar-color: #1d3f1d;
-@chart-bar-color-alt: lighten(@chart-bar-color, 10%);
-//@chart-bar-color: darken(@gray-light, 10%);
+@chart-bar-color-alt: lighten(@chart-bar-color, 10%); //@chart-bar-color: darken(@gray-light, 10%);
 //@chart-bar-color-alt: lighten(@gray-light, 10%);
-
 @pie-color-1: #7f7400;
 @pie-color-2: #7f4d06;
 @pie-color-3: #7f2f25;
@@ -453,11 +444,6 @@ g.nv-pieChart > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(17) > circle 
 .nv-pie > .nv-slice:nth-child(17) {
   fill: @pie-color-17;
 }
-
 .generate-multibar-colors(40);
-
 .generate-week-colors(7);
-
 .generate-day-colors(24);
-
-

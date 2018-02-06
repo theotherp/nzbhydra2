@@ -2,21 +2,21 @@
 //We use it to mark the end of sorting / filtering so we can stop blocking the UI
 
 angular
-    .module('nzbhydraApp')
-    .directive('onFinishRender', onFinishRender);
+  .module('nzbhydraApp')
+  .directive('onFinishRender', onFinishRender);
 
 function onFinishRender($timeout) {
-    function linkFunction(scope, element, attr) {
+  function linkFunction(scope, element, attr) {
 
-        if (scope.$last === true) {
-            // console.log("Render finished");
-            // console.timeEnd("Presenting");
-            // console.timeEnd("searchall");
-            scope.$emit("onFinishRender")
-        }
+    if (scope.$last === true) {
+      // console.log("Render finished");
+      // console.timeEnd("Presenting");
+      // console.timeEnd("searchall");
+      scope.$emit("onFinishRender");
     }
+  }
 
-    return {
-        link: linkFunction
-    }
+  return {
+    link: linkFunction
+  };
 }

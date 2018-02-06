@@ -20,7 +20,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     //Filter options
     $scope.indexersForFiltering = [];
     _.forEach(ConfigService.getSafe().indexers, function (indexer) {
-        $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name})
+        $scope.indexersForFiltering.push({label: indexer.name, id: indexer.name});
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
     $scope.statusesForFiltering = [
@@ -105,13 +105,13 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
     $scope.getStatusIcon = function (result) {
         var spans;
         if (result === "NONE" || result === "REQUESTED") {
-            spans = '<span class="glyphicon glyphicon-question-sign"></span>'
+            spans = '<span class="glyphicon glyphicon-question-sign"></span>';
         }
         if (result === "INTERNAL_ERROR") {
-            spans = '<span class="glyphicon glyphicon-remove"></span>'
+            spans = '<span class="glyphicon glyphicon-remove"></span>';
         }
         if (result === "INTERNAL_ERROR") {
-            spans = '<span class="glyphicon glyphicon-remove"></span>'
+            spans = '<span class="glyphicon glyphicon-remove"></span>';
         }
         if (result === 'NZB_DOWNLOAD_SUCCESSFUL') {
             spans = '<span class="glyphicon glyphicon-ok"></span>';
@@ -143,7 +143,7 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
             delete $scope.filterModel[column];
         }
         $scope.update();
-    })
+    });
 
 }
 
@@ -155,5 +155,5 @@ function reformatDateEpoch() {
     return function (date) {
         return moment.unix(date).local().format("YYYY-MM-DD HH:mm");
 
-    }
+    };
 }

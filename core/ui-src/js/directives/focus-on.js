@@ -1,14 +1,14 @@
 angular
-    .module('nzbhydraApp').directive('focusOn', focusOn);
+  .module('nzbhydraApp').directive('focusOn', focusOn);
 
 function focusOn() {
-    return directive;
+  return directive;
 
-    function directive(scope, elem, attr) {
-        scope.$on('focusOn', function (e, name) {
-            if (name === attr.focusOn) {
-                elem[0].focus();
-            }
-        });
-    }
+  function directive(scope, elem, attr) {
+    scope.$on('focusOn', function(e, name) {
+      if (name === attr.focusOn) {
+        elem[0].focus();
+      }
+    });
+  }
 }

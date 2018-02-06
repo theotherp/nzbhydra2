@@ -1,30 +1,29 @@
 angular
-    .module('nzbhydraApp')
-    .directive('indexerInput', indexerInput);
+  .module('nzbhydraApp')
+  .directive('indexerInput', indexerInput);
 
 function indexerInput() {
-    return {
-        templateUrl: 'static/html/directives/indexer-input.html',
-        scope: {
-            indexer: "=",
-            model: "=",
-            onClick: "="
-        },
-        replace: true,
-        controller: controller
+  return {
+    templateUrl: 'static/html/directives/indexer-input.html',
+    scope: {
+      indexer: "=",
+      model: "=",
+      onClick: "="
+    },
+    replace: true,
+    controller: controller
+  };
+
+  function controller($scope) {
+    $scope.isFocused = false;
+
+    $scope.onFocus = function() {
+      $scope.isFocused = true;
     };
 
-    function controller($scope) {
-        $scope.isFocused = false;
+    $scope.onBlur = function() {
+      $scope.isFocused = false;
+    };
 
-        $scope.onFocus = function () {
-            $scope.isFocused = true;
-        };
-
-        $scope.onBlur = function () {
-            $scope.isFocused = false;
-        };
-
-    }
+  }
 }
-
