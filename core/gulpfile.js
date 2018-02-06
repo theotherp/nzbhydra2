@@ -15,6 +15,8 @@ var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
 var angularTemplateCache = require('gulp-angular-templatecache');
 var argv = require('yargs').argv;
+var log = require('fancy-log');
+
 
 var staticFolder = argv.static === undefined ? 'src/main/resources/static' : argv.static;
 
@@ -178,6 +180,7 @@ function swallowError(error) {
 
 gulp.task('default', function () {
     //livereload.listen();
+    log("Will build files into folder '" + staticFolder + "'");
     gulp.watch(['ui-src/less/nzbhydra.less'], ['delMainLessCache']);
     gulp.watch(['ui-src/**/*'], ['index']);
 });
