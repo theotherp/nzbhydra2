@@ -7,7 +7,8 @@
         "text": "Exception in migration when providing no database file even when migration of database was requested"
       }
     ]
-  }, {
+  },
+  {
     "version": "v1.3.2",
     "changes": [
       {

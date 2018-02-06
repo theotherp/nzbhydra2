@@ -14,10 +14,12 @@ var runSequence = require('run-sequence');
 var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
 var angularTemplateCache = require('gulp-angular-templatecache');
+var argv = require('yargs').argv;
 
+var staticFolder = argv.static === undefined ? 'src/main/resources/static' : argv.static;
 
 gulp.task('vendor-scripts', function () {
-    var dest = 'src/main/resources/static/js';
+    var dest = staticFolder + '/js';
     //Jquery must be loaded before angular for the bootstrap-switch to work
     return gulp.src(wiredep(
         {overrides: {
@@ -37,7 +39,7 @@ gulp.task('vendor-scripts', function () {
 });
 
 gulp.task('vendor-css', function () {
-    var dest = 'src/main/resources/static/css';
+    var dest = staticFolder + '/css';
     return merge(
         gulp.src(wiredep().css)
             .pipe(sort())
@@ -61,11 +63,11 @@ gulp.task('templates', function () {
     //.pipe(cached("templates")) //Doesn't work properly, will only contain last updated file
         .pipe(angularTemplateCache("templates.js", {root: "static/html/"}))
         .pipe(concat('templates.js'))
-        .pipe(gulp.dest('src/main/resources/static/js'));
+        .pipe(gulp.dest(staticFolder + '/js'));
 });
 
 gulp.task('scripts', function () {
-    var dest = 'src/main/resources/static/js';
+    var dest = staticFolder + '/js';
     return gulp.src("ui-src/js/**/*.js")
         .pipe(angularFilesort())
         .on('error', swallowError)
@@ -81,7 +83,7 @@ gulp.task('scripts', function () {
 });
 
 gulp.task('less', function () {
-    var dest = 'src/main/resources/static/css';
+    var dest = staticFolder + '/css';
     var brightTheme = gulp.src('ui-src/less/bright.less')
         .pipe(cached("bright"))
         .on('error', swallowError)
@@ -116,7 +118,7 @@ gulp.task('less', function () {
 });
 
 gulp.task('copy-assets', function () {
-    var fontDest = 'src/main/resources/static/fonts';
+    var fontDest = staticFolder + '/fonts';
     var fonts1 = gulp.src("bower_components/bootstrap/fonts/*")
         .pipe(cached("fonts1"))
         .pipe(gulp.dest(fontDest));
@@ -125,22 +127,21 @@ gulp.task('copy-assets', function () {
         .pipe(cached("fonts2"))
         .pipe(gulp.dest(fontDest));
 
-    var imgDest = 'src/main/resources/static/img';
+    var imgDest = staticFolder + '/img';
     var img = gulp.src("ui-src/img/**/*")
         .pipe(cached("images"))
         .pipe(gulp.dest(imgDest));
 
-    var favIconDest = 'src/main/resources/static';
     var favIcon = gulp.src("ui-src/img/**/favicon.ico")
         .pipe(cached("favicon"))
-        .pipe(gulp.dest(favIconDest));
+        .pipe(gulp.dest(staticFolder));
 
     return merge(img, fonts1, fonts2, favIcon);
 });
 
 
 gulp.task('add', function () {
-    return gulp.src('src/main/resources/static/*')
+    return gulp.src(staticFolder + '/*')
         .pipe(cached("add"))
         .pipe(git.add({args: '--all'}));
 });
@@ -157,7 +158,7 @@ gulp.task('delMainLessCache', function () {
 });
 
 gulp.task('copyStaticToClasses', function () {
-    return gulp.src('src/main/resources/static/**/*')
+    return gulp.src(staticFolder + '/**/*')
         .pipe(cached("copyStatic"))
         .pipe(gulp.dest('target/classes/static'));
 });

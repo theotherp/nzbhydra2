@@ -8,7 +8,6 @@ function ConfigFields($injector) {
         getFields: getFields
     };
 
-
     function ipValidator() {
         return {
             expression: function ($viewValue, $modelValue) {
@@ -2356,7 +2355,6 @@ function IndexerCheckBeforeCloseService($q, ModalService, ConfigBoxService, grow
 
     }
 }
-
 
 angular
     .module('nzbhydraApp')

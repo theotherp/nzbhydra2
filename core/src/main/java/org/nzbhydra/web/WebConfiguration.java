@@ -1,5 +1,6 @@
 package org.nzbhydra.web;
 
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamResult;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,14 +45,20 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String fileStatic = null;
+        try {
+            fileStatic = new File(new File(NzbHydra.getDataFolder()).getParentFile(), "static").toURI().toURL().toString();
+        } catch (MalformedURLException e) {
+            logger.error("Unable to build path for local static files");
+        }
+        String[] locations = fileStatic != null ? new String[]{fileStatic, "classpath:/static/"} : new String[]{"classpath:/static/"};
         registry.addResourceHandler("/static/**")
-                .addResourceLocations("classpath:/static/")
+                .addResourceLocations(locations)
                 .setCacheControl(CacheControl.noCache())
                 .resourceChain(false);
 
         registry.setOrder(0);
     }
-
 
 
     @Override

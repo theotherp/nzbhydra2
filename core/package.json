@@ -42,9 +42,9 @@
     "merge-stream": "^1.0.0",
     "run-sequence": "^2.2.1",
     "wiredep": "^4.0.0",
-    "wiredep-cli": "^0.1.0"
+    "wiredep-cli": "^0.1.0",
+    "yargs": "^11.0.0"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
