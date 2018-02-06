@@ -69,5 +69,11 @@
     "font-awesome": "~4.7.0",
     "angular-chips": "~1.0.11",
     "angular-base64": "2.0.5"
+  },
+  "resolutions": {
+    "angular": "1.6.9",
+    "objectpath": "~1.2.1",
+    "tv4": "~1.2.7",
+    "angular-ui-select": "^0.18.0"
   }
 }
