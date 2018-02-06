@@ -1,18 +1,18 @@
 <div class="row">
-    <div class="col-md-5"></div>
-    <div class="col-md-10">
-        <div class="panel panel-default " ng-repeat="entry in news">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    {{entry.version}}
-                    <span style="font-size: smaller">
-                        <span ng-if="entry.forCurrentVersion">(This version)</span>
-                        <span ng-if="entry.forNewerVersion">(Newer version)</span>
-                    </span>
-                </h3>
-            </div>
-            <div class="panel-body" ng-bind-html="entry.news">
-            </div>
-        </div>
+  <div class="col-md-5"></div>
+  <div class="col-md-10">
+    <div class="panel panel-default " ng-repeat="entry in news">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          {{entry.version}}
+          <span style="font-size: smaller">
+            <span ng-if="entry.forCurrentVersion">(This version)</span>
+            <span ng-if="entry.forNewerVersion">(Newer version)</span>
+          </span>
+        </h3>
+      </div>
+      <div class="panel-body" ng-bind-html="entry.news">
+      </div>
     </div>
+  </div>
 </div>

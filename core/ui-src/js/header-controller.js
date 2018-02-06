@@ -2,7 +2,7 @@ angular
     .module('nzbhydraApp')
     .controller('HeaderController', HeaderController);
 
-function HeaderController($scope, $state, growl, HydraAuthService, $state) {
+function HeaderController($scope, $state, growl, HydraAuthService, $state) { // um... $state twice?
 
 
     $scope.showLoginout = false;
@@ -66,14 +66,14 @@ function HeaderController($scope, $state, growl, HydraAuthService, $state) {
                 if ($scope.oldUserName) {
                     params = {
                         old_username: $scope.oldUserName
-                    }
+                    };
                 }
                 HydraAuthService.askForPassword(params).then(function () {
                     growl.info("Login successful!");
                     $scope.oldUserName = null;
                     update("loggedIn");
                     $state.go("root.search");
-                })
+                });
             } else if ($scope.userInfos.authType === "FORM") {
                 $state.go("root.login");
             } else {

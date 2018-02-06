@@ -1,56 +1,55 @@
 <!--
-  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
-  ~
-  ~  Licensed under the Apache License, Version 2.0 (the "License");
-  ~  you may not use this file except in compliance with the License.
-  ~  You may obtain a copy of the License at
-  ~
-  ~      http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~  Unless required by applicable law or agreed to in writing, software
-  ~  distributed under the License is distributed on an "AS IS" BASIS,
-  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~  See the License for the specific language governing permissions and
-  ~  limitations under the License.
-  -->
+~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+~
+~  Licensed under the Apache License, Version 2.0 (the "License");
+~  you may not use this file except in compliance with the License.
+~  You may obtain a copy of the License at
+~
+~      http://www.apache.org/licenses/LICENSE-2.0
+~
+~  Unless required by applicable law or agreed to in writing, software
+~  distributed under the License is distributed on an "AS IS" BASIS,
+~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~  See the License for the specific language governing permissions and
+~  limitations under the License.
+-->
 
 <div class="modal-body" style="text-align: left">
-   <span ng-show="!details">
-   <img src="static/img/spinner.gif">
-      Loading...
-   </span>
-    <table class="table" ng-if="details">
-        <caption>Details</caption>
-        <thead>
-        <tr>
-            <th>IP</th>
-            <th>User agent</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>{{details.ip}}</td>
-            <td>{{details.userAgent}}</td>
-        </tr>
-        </tbody>
-    </table>
+  <span ng-show="!details">
+    <img src="static/img/spinner.gif">
+    Loading...
+  </span>
+  <table class="table" ng-if="details">
+    <caption>Details</caption>
+    <thead>
+      <tr>
+        <th>IP</th>
+        <th>User agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{details.ip}}</td>
+        <td>{{details.userAgent}}</td>
+      </tr>
+    </tbody>
+  </table>
 
-    <table class="table" ng-if="details">
-        <caption>Related indexer searches</caption>
-        <thead>
-        <tr>
-            <th>Indexer</th>
-            <th>Successful</th>
-            <th>Results</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="entry in details.indexerSearches">
-            <td>{{entry.indexerName}}</td>
-            <td>{{entry.successful}}</td>
-            <td>{{entry.resultsCount}}</td>
-        </tr>
-        </tbody>
-    </table>
+  <table class="table" ng-if="details">
+    <caption>Related indexer searches</caption>
+    <thead>
+      <tr>
+        <th>Indexer</th>
+        <th>Successful</th>
+        <th>Results</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="entry in details.indexerSearches">
+        <td>{{entry.indexerName}}</td>
+        <td>{{entry.successful}}</td>
+        <td>{{entry.resultsCount}}</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
-

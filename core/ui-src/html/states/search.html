@@ -1,172 +1,139 @@
 <script type="text/ng-template" id="autocompleteTemplate.html">
-    <a>
-        <img src="{{ match.model.posterUrl }}" ng-if="match.model.posterUrl" style="width: 50px"> {{ match.model.title }} <span ng-if="match.model.year">( {{ match.model.year }} )</span>
-    </a>
+  <a>
+    <img src="{{ match.model.posterUrl }}" ng-if="match.model.posterUrl" style="width: 50px"> {{ match.model.title }} <span ng-if="match.model.year">( {{ match.model.year }} )</span>
+  </a>
 </script>
 <div ng-if="::availableIndexers.length == 0">
-    <div class="row">
-        <div class="col-md-5"></div>
-        <div class="col-md-10 alert alert-info" role="alert">
-            No indexers are configured or enabled. Please go to the <a ui-sref="root.config.indexers" style="text-decoration: underline">indexer configuration</a> and add or enable some.
-        </div>
-        <div class="col-md-5"></div>
+  <div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-10 alert alert-info" role="alert">
+      No indexers are configured or enabled. Please go to the <a ui-sref="root.config.indexers" style="text-decoration: underline">indexer configuration</a> and add or enable some.
     </div>
+    <div class="col-md-5"></div>
+  </div>
 </div>
-
 <div ng-show="::availableIndexers.length > 0">
-    <div class="row">
-        <div class="col-md-3"></div>
-
-        <div class="">
-            <form class="form-horizontal">
-                <div class="form-group">
-
-                    <label class="col-sm-2 control-label">Search</label>
-
-                    <div class="col-sm-10">
-                        <div class="input-group">
-                        <span class="input-group-btn input-group-btn2">
-                              <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton"
-                                      ng-cloak>
-                                  {{ category.name }} <span class="caret"></span>
-                              </button>
-                                <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
-                                    
-                                    <li ng-repeat="category in categories">
-                                        <a href="" class="searchCategoryButton search-category-option" ng-click="toggleCategory(category)">{{ category.name }}</a>
-                                    </li>
-                                </ul>
-                              
-                            </span>
-
-                            <span class="input-group-addon by-id-checkbox" ng-if="isAskById"
-                                  uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top"
-                                  tooltip-trigger="mouseenter"
-                                  style="border-right-width: 0; width: 40px">
-                                <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
-                            </span>
-
-                            <div class="input-group-addon" style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis" ng-show="selectedItem">
-                                <button style="position: relative; top: -11px; right:-12px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset" ng-click="clearAutocomplete()" id="clear-autocomplete-button">
-                                    <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
-                                </button>
-                                <span id="selected-item-title">
-                              {{selectedItem.title}}
-                                    </span>
-                            </div>
-
-                            <script type="text/ng-template" id="movieAutocompleteEntry">
-                                <a>{{ match.label }}</a>
-                            </script>
-                            <input id="searchfield" type="search" ngtype="search" ng-model="query" ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"
-                                   uib-typeahead="item as item.label for item in getAutocomplete($viewValue)" typeahead-template-url="autocompleteTemplate.html"
-                                   ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems"
-                                   typeahead-on-select="selectAutocompleteItem($item)" class="form-control"
-                                   focus-on="focus-query-box"
-                                   uib-tooltip="{{searchBoxTooltip}}"
-                                   tooltip-placement="top"
-                                   tooltip-trigger="mouseenter"
-                            >
-                            <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
-                              <input type="text" class="form-control season-input" placeholder="S" name="season" id="seriesSearchS" style="width:40px; " ng-model="season"
-                                     ng-enter="initiateSearch()"
-                                     uib-tooltip="Enter a season to search for."
-                                     tooltip-placement="top"
-                                     tooltip-trigger="mouseenter">
-                            </span>
-                            <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
-                              <input type="text" class="form-control episode-input" placeholder="E" name="episode" id="seriesSearchE" style="width:40px;" ng-model="episode"
-                                     ng-enter="initiateSearch()"
-                                     uib-tooltip="Enter an episode to search for."
-                                     tooltip-placement="top"
-                                     tooltip-trigger="mouseenter">
-                            </span>
-                            <span class="input-group-btn input-group-btn1">
-                            <div class="btn-group" uib-dropdown is-open="status.isopen">
-                              <button id="history-dropdown-button" type="button" class="btn btn-default" uib-dropdown-toggle
-                                      ng-enter="initiateSearch()"
-                                      uib-tooltip="Search history"
-                                      tooltip-placement="top"
-                                      tooltip-trigger="mouseenter"
-                              >
-                                <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span class="caret"></span>
-                                </button>
-                                    <ul class="dropdown-menu" uib-dropdown-menu template-url="static/html/search-searchhistory-dropdown.html" aria-labelledby="button-template-url">
-                                    </ul>
-                                </div>
-                            </span>
-
-                            <span class="input-group-btn input-group-btn2" style="width:51px;">
-                                <button class="btn btn-default" type="button" id="startsearch" ng-click="initiateSearch()">Go!</button>
-                            </span>
-                        </div>
-                    </div>
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="">
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Search</label>
+          <div class="col-sm-10">
+            <div class="input-group">
+              <span class="input-group-btn input-group-btn2">
+                <button type="button" class="btn btn-default dropdown-toggle search-category-button" data-toggle="dropdown" aria-expanded="false" id="searchCategoryDropdownButton" ng-cloak>
+                  {{ category.name }} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right" role="menu" style="right: auto; top:initial; margin:0px;">
+                  <li ng-repeat="category in categories">
+                    <a href="" class="searchCategoryButton search-category-option" ng-click="toggleCategory(category)">{{ category.name }}</a>
+                  </li>
+                </ul>
+              </span>
+              <span class="input-group-addon by-id-checkbox" ng-if="isAskById" uib-tooltip="If enabled the search is done using an ID from TheTVDB or IMDB. The ID is retrieved using autocomplete." tooltip-placement="top" tooltip-trigger="mouseenter" style="border-right-width: 0; width: 40px">
+                <input type="checkbox" name="by-id" id="by-id" ng-model="isById.value" style="margin-top:0;">
+              </span>
+              <div class="input-group-addon" style="border-right-style: none; max-width: 250px; overflow: hidden; text-overflow: ellipsis" ng-show="selectedItem">
+                <button style="position: relative; top: -11px; right:-12px; font-size: xx-small; float: right; z-index: 1000; margin: 0; padding: 0; border: none; background-color: unset" ng-click="clearAutocomplete()" id="clear-autocomplete-button">
+                  <span class="glyphicon glyphicon-remove" style="font-size: xx-small;"></span>
+                </button>
+                <span id="selected-item-title">
+                  {{selectedItem.title}}
+                </span>
+              </div>
+              <script type="text/ng-template" id="movieAutocompleteEntry">
+                <a>{{ match.label }}</a>
+              </script>
+              <input id="searchfield" type="search" ngtype="search" ng-model="query" ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2" typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)" uib-typeahead="item as item.label for item in getAutocomplete($viewValue)"
+              typeahead-template-url="autocompleteTemplate.html" ng-class="{'autocompleteLoading': (loadingItems && autocompleteActive), 'search-border': !seriesSelected}" typeahead-loading="loadingItems" typeahead-on-select="selectAutocompleteItem($item)"
+              class="form-control" focus-on="focus-query-box" uib-tooltip="{{searchBoxTooltip}}" tooltip-placement="top" tooltip-trigger="mouseenter">
+              <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                <input type="text" class="form-control season-input" placeholder="S" name="season" id="seriesSearchS" style="width:40px; " ng-model="season"
+                ng-enter="initiateSearch()"
+                uib-tooltip="Enter a season to search for."
+                tooltip-placement="top"
+                tooltip-trigger="mouseenter">
+              </span>
+              <span class="input-group-btn" style="width:40px;" ng-show="seriesSelected()">
+                <input type="text" class="form-control episode-input" placeholder="E" name="episode" id="seriesSearchE" style="width:40px;" ng-model="episode"
+                ng-enter="initiateSearch()"
+                uib-tooltip="Enter an episode to search for."
+                tooltip-placement="top"
+                tooltip-trigger="mouseenter">
+              </span>
+              <span class="input-group-btn input-group-btn1">
+                <div class="btn-group" uib-dropdown is-open="status.isopen">
+                  <button id="history-dropdown-button" type="button" class="btn btn-default" uib-dropdown-toggle
+                  ng-enter="initiateSearch()"
+                  uib-tooltip="Search history"
+                  tooltip-placement="top"
+                  tooltip-trigger="mouseenter">
+                    <span class="glyphicon glyphicon-time" style="margin-right: 3px"></span><span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" uib-dropdown-menu template-url="static/html/search-searchhistory-dropdown.html" aria-labelledby="button-template-url">
+                  </ul>
                 </div>
-            </form>
-
-            <span ng-if="::showIndexerSelection">
-            <div class="col-md-3"></div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Indexers</label>
-
-                    <div class="col-md-10">
-                        <div class="input-group" style="padding-top: 10px;">
-                            <span indexer-selection-button available-indexers="availableIndexers" selected-indexers="selectedIndexers" class="indexer-selection-button">
-                            </span>
-                            <span style="margin-right: 10px;"></span>
-                            <label ng-repeat="indexer in availableIndexers">
-                                <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
-                            </label>
-
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </span>
-
-            <div class="col-md-3"></div>
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Age</label>
-
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Min</span>
-                            <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px" ng-enter="startSearch()"
-                                   ng-model-options='{ debounce: 500 }'>
-                        </div>
-                    </div>
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Max</span>
-                            <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px" ng-enter="startSearch()"
-                                   ng-model-options='{ debounce: 500 }'>
-                        </div>
-                    </div>
-                    <label class="col-sm-5 control-label" style="width:5%">Size</label>
-
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Min</span>
-                            <input type="number" class="form-control" id="minsize" ng-model="minsize" style="width: 90px" ng-enter="startSearch()"
-                                   ng-model-options='{ debounce: 500 }'>
-                        </div>
-                    </div>
-                    <div class="col-sm-3" style="width: 11%">
-                        <div class="input-group">
-                            <span class="input-group-addon">Max</span>
-                            <input type="number" class="form-control" id="maxsize" ng-model="maxsize" style="width: 90px" ng-enter="startSearch()"
-                                   ng-model-options='{ debounce: 500 }'>
-                        </div>
-                    </div>
-                </div>
-            </form>
-
+              </span>
+              <span class="input-group-btn input-group-btn2" style="width:51px;">
+                <button class="btn btn-default" type="button" id="startsearch" ng-click="initiateSearch()">Go!</button>
+              </span>
+            </div>
+          </div>
         </div>
-
+      </form>
+      <span ng-if="::showIndexerSelection">
         <div class="col-md-3"></div>
+        <form class="form-horizontal">
+          <div class="form-group">
+            <label class="col-sm-2 control-label">Indexers</label>
+            <div class="col-md-10">
+              <div class="input-group" style="padding-top: 10px;">
+                <span indexer-selection-button available-indexers="availableIndexers" selected-indexers="selectedIndexers" class="indexer-selection-button">
+                </span>
+                <span style="margin-right: 10px;"></span>
+                <label ng-repeat="indexer in availableIndexers">
+                  <input type="checkbox" ng-class="{'indexer-checkbox': $index > 0}" class="indexer-selection-checkbox" data-checklist-model="selectedIndexers" data-checklist-value="indexer.name" indexer-name="{{indexer.name}}"> {{ indexer.name }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </span>
+      <div class="col-md-3"></div>
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Age</label>
+          <div class="col-sm-3" style="width: 11%">
+            <div class="input-group">
+              <span class="input-group-addon">Min</span>
+              <input type="number" class="form-control" id="minage" ng-model="minage" style="width: 90px" ng-enter="startSearch()" ng-model-options="{ debounce: 500 }">
+            </div>
+          </div>
+          <div class="col-sm-3" style="width: 11%">
+            <div class="input-group">
+              <span class="input-group-addon">Max</span>
+              <input type="number" class="form-control" id="maxage" ng-model="maxage" style="width: 90px" ng-enter="startSearch()" ng-model-options="{ debounce: 500 }">
+            </div>
+          </div>
+          <label class="col-sm-5 control-label" style="width:5%">Size</label>
+          <div class="col-sm-3" style="width: 11%">
+            <div class="input-group">
+              <span class="input-group-addon">Min</span>
+              <input type="number" class="form-control" id="minsize" ng-model="minsize" style="width: 90px" ng-enter="startSearch()" ng-model-options="{ debounce: 500 }">
+            </div>
+          </div>
+          <div class="col-sm-3" style="width: 11%">
+            <div class="input-group">
+              <span class="input-group-addon">Max</span>
+              <input type="number" class="form-control" id="maxsize" ng-model="maxsize" style="width: 90px" ng-enter="startSearch()" ng-model-options="{ debounce: 500 }">
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
-
-    <!-- Search results go here -->
-    <div ui-view="results"></div>
+    <div class="col-md-3"></div>
+  </div>
+</div>
+<!-- Search results go here -->
+<div ui-view="results"></div>

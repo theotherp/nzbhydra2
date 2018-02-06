@@ -1,21 +1,21 @@
 <div class="modal-header">
-    <h3 class="modal-title">Change log</h3>
+  <h3 class="modal-title">Change log</h3>
 </div>
 <div class="modal-body" style="text-align: left">
-    <div class="list-group">
-        <li ng-repeat="entry in versionHistory" class="list-group-item" style="padding-top: 20px; padding-bottom: 20px;">
-            <h3 style="margin-top: 0">{{::entry.version}}</h3>
-            <div ng-repeat="change in entry.changes" style="margin-bottom: 5px">
-                <span ng-switch="change.type" style="margin-right: 5px">
-                    <span class="label label-primary" ng-switch-when="note">Note</span>
-                    <span class="label label-warning" ng-switch-when="fix">Fix</span>
-                    <span class="label label-success" ng-switch-when="feature">Feature</span>
-                </span>
-                {{change.text}}
-            </div>
-        </li>
-    </div>
+  <div class="list-group">
+    <li ng-repeat="entry in versionHistory" class="list-group-item" style="padding-top: 20px; padding-bottom: 20px;">
+      <h3 style="margin-top: 0">{{::entry.version}}</h3>
+      <div ng-repeat="change in entry.changes" style="margin-bottom: 5px">
+        <span ng-switch="change.type" style="margin-right: 5px">
+          <span class="label label-primary" ng-switch-when="note">Note</span>
+          <span class="label label-warning" ng-switch-when="fix">Fix</span>
+          <span class="label label-success" ng-switch-when="feature">Feature</span>
+        </span>
+        {{change.text}}
+      </div>
+    </li>
+  </div>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-primary" type="button" ng-click="ok()">Great!</button>
+  <button class="btn btn-primary" type="button" ng-click="ok()">Great!</button>
 </div>

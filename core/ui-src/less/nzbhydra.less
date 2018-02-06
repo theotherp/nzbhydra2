@@ -1,9 +1,6 @@
 @import "../../bower_components/bootstrap-less/less/bootstrap.less";
-@import "../../bower_components/bootstrap-switch/src/less/bootstrap3/bootstrap-switch.less";
-//@import "../../bower_components/font-awesome/less/font-awesome.less";
-
+@import "../../bower_components/bootstrap-switch/src/less/bootstrap3/bootstrap-switch.less"; //@import "../../bower_components/font-awesome/less/font-awesome.less";
 @grid-columns: 20;
-
 @font-family-sans-serif: "Roboto", "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 @headings-font-weight: 400;
 @line-height-large: 1.33;
@@ -16,15 +13,13 @@
 @container-large-desktop: ((1140px + @grid-gutter-width));
 @modal-inner-padding: 20px;
 @badge-font-weight: normal;
-@breadcrumb-separator: ">";
-
-//Will be redefined by theme later
+@breadcrumb-separator: ">"; //Will be redefined by theme later
 @chart-bar-color: pink;
 @chart-bar-color-alt: pink;
 @chart-text-color: pink;
 
-html,
-body {
+body,
+html {
   height: 100%;
   background: @body-bg;
 }
@@ -36,10 +31,10 @@ body {
   /* Negative indent footer by it's height */
   margin: 0 auto -75px;
 }
-
 /* Set the fixed height of the footer here */
-#push,
-#footer {
+
+#footer,
+#push {
   height: 70px;
 }
 
@@ -47,12 +42,13 @@ body {
   //background-color: @brand-primary;
   //color: @body-bg;
 }
-
 /* ------ featurette */
+
 .featurette {
   display: table;
   width: 100%;
-  height: 10%; /* set a pixel height and then remove the body,html height */
+  height: 10%;
+  /* set a pixel height and then remove the body,html height */
   vertical-align: middle;
   color: @body-bg;
 }
@@ -64,15 +60,16 @@ body {
 
 .featurette .search {
   padding: 3%;
-  max-width: 980px; /*max width of search*/
+  max-width: 980px;
+  /*max width of search*/
   margin: 0 auto;
 }
 
 .no-margin-top {
-  margin-top: 0
+  margin-top: 0;
 }
-
 /* ------ form-control-lg */
+
 .form-control-lg {
   min-height: 46px;
   border-radius: 6px;
@@ -105,8 +102,8 @@ a.expand-collapse:focus {
 }
 
 .episode-input {
-  border-left-width: 0px !important;
-  border-right-width: 0px !important;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
   border-radius: 0;
 }
 
@@ -126,19 +123,15 @@ a.expand-collapse:focus {
 }
 
 .by-id-checkbox {
-
   font-size: @font-size-base;
-
   color: @input-color;
   background-color: @input-bg;
   background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border: 1px solid @input-border;
-  border-right: 0px;
-
+  border-right: 0;
   border-radius: @input-border-radius; // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
-
   // Reset height for `textarea`s
-  textarea& {
+  textarea & {
     height: auto;
   }
 }
@@ -152,7 +145,7 @@ a.expand-collapse:focus {
 }
 
 .nzb-spinning {
-  background-image: url('../img/spinner.gif');
+  background-image: url("../img/spinner.gif");
 }
 
 .addable-nzb {
@@ -160,27 +153,27 @@ a.expand-collapse:focus {
 }
 
 .sabnzbd {
-  background-image: url('../img/sab.png');
+  background-image: url("../img/sab.png");
 }
 
 .sabnzbd-success {
-  background-image: url('../img/sabsuccess.png');
+  background-image: url("../img/sabsuccess.png");
 }
 
 .sabnzbd-error {
-  background-image: url('../img/saberror.png');
+  background-image: url("../img/saberror.png");
 }
 
 .nzbget {
-  background-image: url('../img/nzbget.png');
+  background-image: url("../img/nzbget.png");
 }
 
 .nzbget-success {
-  background-image: url('../img/nzbgetsuccess.png');
+  background-image: url("../img/nzbgetsuccess.png");
 }
 
 .nzbget-error {
-  background-image: url('../img/nzbgeterror.png');
+  background-image: url("../img/nzbgeterror.png");
 }
 
 .icon {
@@ -201,7 +194,6 @@ a.expand-collapse:focus {
 .config-select {
   margin: 30px;
   text-align: left;
-
 }
 
 .config-field-container {
@@ -209,9 +201,7 @@ a.expand-collapse:focus {
   text-align: left;
 }
 
-.control-label {
-
-}
+.control-label {}
 
 .config-select-field > button {
   background-color: @gray-darker;
@@ -226,8 +216,10 @@ a.expand-collapse:focus {
 .navbar .nav > li {
   float: none;
   display: inline-block;
-  *display: inline; /* ie7 fix */
-  *zoom: 1; /* hasLayout ie7 trigger */
+  *display: inline;
+  /* ie7 fix */
+  *zoom: 1;
+  /* hasLayout ie7 trigger */
   vertical-align: top;
 }
 
@@ -269,7 +261,6 @@ a.disabled:hover {
 
 .search-results-row {
   //display: table-row;
-
 }
 
 .other-duplicate-toggle {
@@ -277,7 +268,7 @@ a.disabled:hover {
 }
 
 .toggle-placeholder {
-  margin-left: 36px
+  margin-left: 36px;
 }
 
 .search-results-cell {
@@ -286,14 +277,18 @@ a.disabled:hover {
   border-top-width: 1px;
 }
 
-.nav-tabs > li, .nav-pills > li {
+.nav-pills > li,
+.nav-tabs > li {
   float: none;
   display: inline-block;
-  *display: inline; /* ie7 fix */
-  zoom: 1; /* hasLayout ie7 trigger */
+  *display: inline;
+  /* ie7 fix */
+  zoom: 1;
+  /* hasLayout ie7 trigger */
 }
 
-.nav-tabs, .nav-pills {
+.nav-pills,
+.nav-tabs {
   text-align: center;
 }
 
@@ -314,51 +309,52 @@ a.disabled:hover {
 }
 
 .glyphicon-refresh-animate {
-  -webkit-animation: spinw .7s infinite linear;
-  -moz-animation: spinm .7s infinite linear;
+  -webkit-animation: spinw 0.7s infinite linear;
+  -moz-animation: spinm 0.7s infinite linear;
 }
-
 @-webkit-keyframes spinw {
   from {
     -webkit-transform: rotate(0deg);
   }
+
   to {
     -webkit-transform: rotate(360deg);
   }
 }
-
 @-moz-keyframes spinm {
   from {
     -moz-transform: rotate(0deg);
   }
+
   to {
     -moz-transform: rotate(360deg);
   }
 }
-
 /*
  * Pulse animation
 */
-
 @-webkit-keyframes pulsew {
   0% {
     -webkit-transform: scale(1);
   }
+
   50% {
     -webkit-transform: scale(1.1);
   }
+
   100% {
     -webkit-transform: scale(1);
   }
 }
-
 @-moz-keyframes pulsem {
   0% {
     -moz-transform: scale(1);
   }
+
   50% {
     -moz-transform: scale(1.1);
   }
+
   100% {
     -moz-transform: scale(1);
   }
@@ -373,8 +369,7 @@ a.disabled:hover {
   border: 1px solid #1c1e22;
   border-bottom-color: transparent;
   border-radius: @border-radius-base @border-radius-base 0 0;
-  margin-top: 7px
-
+  margin-top: 7px;
 }
 
 .config-help-button {
@@ -385,21 +380,18 @@ a.disabled:hover {
   animation: pulse2 1s linear infinite;
   animation-direction: alternate-reverse;
 }
-
 @keyframes pulse2 {
   0% {
-
     transform: scale(1);
   }
-  50% {
 
+  50% {
     transform: scale(1.1);
   }
-  100% {
 
+  100% {
     transform: scale(1.2);
   }
-
 }
 
 .fuzzy-nfo {
@@ -426,6 +418,7 @@ a.disabled:hover {
 
 .dropdown-menu {
   background-color: @input-bg;
+
   #freetext-filter-input {
     color: black;
   }
@@ -477,7 +470,6 @@ a.disabled:hover {
 .search-results-cell:focus {
   outline: none;
 }
-
 @font-size-result-title: 13px;
 @font-size-result-non-title: 12px;
 
@@ -572,12 +564,14 @@ input[type='number'] {
   -moz-appearance: textfield;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
+input::-webkit-inner-spin-button,
+input::-webkit-outer-spin-button {
   -webkit-appearance: none;
 }
 
-[ng\:cloak], [ng-cloak], .ng-cloak {
+.ng-cloak,
+[ng-cloak],
+[ng\:cloak] {
   display: none !important;
 }
 
@@ -596,6 +590,7 @@ pre {
 
 .panel-default > .panel-heading {
   background-color: @navbar-default-bg;
+
   h3 {
     color: @navbar-inverse-bg;
   }
@@ -603,6 +598,7 @@ pre {
 
 .help-block {
   text-align: left;
+
   a {
     text-decoration: underline;
   }
@@ -612,7 +608,7 @@ input:focus + .input-group-addon {
   @color-rgba: rgba(red(@input-border-focus), green(@input-border-focus), blue(@input-border-focus), .6);
   border-color: @input-border-focus;
   outline: 0;
-  .box-shadow(~"inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}");
+  .box-shadow(~ "inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px @{color-rgba}"))
 }
 
 .input-group-addon {
@@ -623,11 +619,10 @@ input:focus + .input-group-addon {
   background: @banner-url no-repeat center;
   background-size: contain;
   height: 150px;
-  margin: 0 auto 25px auto;
+  margin: 0 auto 25px;
   display: block;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-
 }
 
 .input-group-addon {
@@ -658,14 +653,12 @@ input:focus + .input-group-addon {
     background-color: @brand-warning;
     border-color: @brand-warning;
   }
-
 }
 
 .spinner {
   display: inline-block;
   opacity: 0;
   width: 0;
-
   -webkit-transition: opacity 0.25s, width 0.25s;
   -moz-transition: opacity 0.25s, width 0.25s;
   -o-transition: opacity 0.25s, width 0.25s;
@@ -682,7 +675,8 @@ input:focus + .input-group-addon {
 
 .has-spinner.active .spinner {
   opacity: 1;
-  width: auto; /* This doesn't work, just fix for unkown width elements */
+  width: auto;
+  /* This doesn't work, just fix for unkown width elements */
 }
 
 .has-spinner.btn-mini.active .spinner {
@@ -702,8 +696,8 @@ input:focus + .input-group-addon {
 }
 
 .indexer-score-input {
-  border-left-width: 0px !important;
-  border-right-width: 0px !important;
+  border-left-width: 0 !important;
+  border-right-width: 0 !important;
   border-radius: 0;
 }
 
@@ -723,8 +717,7 @@ input:focus + .input-group-addon {
   border-color: @btn-default-border;
 }
 
-.indexer-score-addon-disabled {
-}
+.indexer-score-addon-disabled {}
 
 .btn:focus {
   outline: none;
@@ -733,13 +726,12 @@ input:focus + .input-group-addon {
 .btn-default:active {
   background-color: @btn-default-bg;
 }
-
-.filter-button.btn-default:focus
-  //.filter-button.active
-{
+//.filter-button.active
+.filter-button.btn-default:focus {
   background-color: @btn-default-bg !important;
   border-color: @btn-default-bg !important;
   color: @btn-default-color !important;
+
   &.active {
     background-color: @btn-default-active-bg !important;
     color: @btn-default-color !important;
@@ -779,9 +771,7 @@ input:focus + .input-group-addon {
   color: @brand-primary;
   text-align: left;
 }
-
 //Charts
-
 .nv-axis text {
   fill: @chart-text-color;
 }
@@ -801,8 +791,8 @@ input:focus + .input-group-addon {
 .nv-groups .nv-series-0 rect {
   fill: @chart-bar-color !important;
 }
-
 //Legend
+
 g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(1) > circle {
   //.nv-series:nth-child(1) > circle {
   fill: @chart-bar-color !important;
@@ -812,8 +802,8 @@ g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(1) 
 .nv-groups .nv-series-1 rect {
   fill: @chart-bar-color-alt !important;
 }
-
 //Legend
+
 g.nv-multiBarWithLegend > g > g.nv-legendWrap.nvd3-svg > g > g > g:nth-child(2) > circle {
   fill: @chart-bar-color-alt !important;
   stroke: @chart-bar-color-alt !important;
@@ -848,7 +838,6 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   .nvd3 .nv-multibar > g > g.nv-groups > g:nth-child(1) > rect:nth-child(@{i}) {
     fill: lighten(@chart-bar-color-alt, (@i * 2%)) !important;
   }
-
   .generate-multibar-colors(@n, (@i + 1));
 }
 
@@ -856,7 +845,6 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   .weeklyChart .nvd3 .nv-discretebar > g > g.nv-groups > g > g:nth-child(@{i}) > rect {
     fill: lighten(@chart-bar-color, (@i * 7%)) !important;
   }
-
   .generate-week-colors(@n, (@i + 1));
 }
 
@@ -864,7 +852,6 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   .dailyChart .nvd3 .nv-discretebar > g > g.nv-groups > g > g:nth-child(@{i}) > rect {
     fill: lighten(@chart-bar-color, (@i * 2%)) !important;
   }
-
   .generate-day-colors(@n, (@i + 1));
 }
 
@@ -909,7 +896,6 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 .help-block {
   margin-top: 0;
   margin-bottom: 0;
-
 }
 
 .rejected-tooltip {
@@ -928,13 +914,11 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
 .error {
   color: @brand-danger;
 }
-
 @media (min-width: 1000px) {
   .modal-xl {
     width: 950px;
   }
 }
-
 @media (min-width: 1500px) {
   .modal-xl {
     width: 1400px;
@@ -951,7 +935,7 @@ g.nv-multiBarHorizontalChart > g > g > g > g > g > text {
   border-radius: 5px;
   background: @input-bg;
   color: @input-color;
-  padding: 0 2px 0 2px;
+  padding: 0 2px;
 }
 
 .chip-tmpl:focus {
@@ -1040,7 +1024,6 @@ select.form-control {
 }
 
 .setting-wrapper {
-
   .config-label {
     width: 20%;
   }
@@ -1079,9 +1062,7 @@ select.form-control {
   margin-left: 292px;
 }
 
-.config-tab-content {
-
-}
+.config-tab-content {}
 
 .formly > .formly-field-group {
   position: relative;
@@ -1111,17 +1092,18 @@ select.form-control {
   }
 }
 
-a.glyph-link, a.glyph-link:hover {
+a.glyph-link,
+a.glyph-link:hover {
   text-decoration: none;
 }
 
 .dropdown-multiselect {
-
   &.form-control {
     background-color: transparent;
     border: none;
     padding: 0;
   }
+
   .dropdown-toggle {
     width: 100%;
     overflow: hidden;

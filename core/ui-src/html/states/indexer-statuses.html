@@ -1,34 +1,34 @@
 <table class="table">
-    <caption>Indexer statuses</caption>
-    <thead>
+  <caption>Indexer statuses</caption>
+  <thead>
     <tr>
-        <th class="col-md-1">Indexer</th>
-        <th class="col-md-2">Last failure</th>
-        <th class="col-md-2">Disabled until</th>
-        <th class="col-md-1">Reenable</th>
-        <th class="col-md-14">Reason</th>
+      <th class="col-md-1">Indexer</th>
+      <th class="col-md-2">Last failure</th>
+      <th class="col-md-2">Disabled until</th>
+      <th class="col-md-1">Reenable</th>
+      <th class="col-md-14">Reason</th>
     </tr>
-    </thead>
-    <tbody>
+  </thead>
+  <tbody>
     <tr ng-repeat="indexerStatus in statuses">
-        <td>{{ indexerStatus.indexer.name }}</td>
-        <td><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
-        <td>
-            <span ng-if="indexerStatus.disabledUntil">{{ indexerStatus.disabledUntil | reformatDate}}</span>
-            <span ng-if="indexerStatus.disabledPermanently">Permanently</span>
-        </td>
-        <td>
-             <span ng-if="indexerStatus.disabledUntil && (!isInPast(indexerStatus.disabledUntil)||indexerStatus.disabledPermanently)">
-                <button class="btn btn-default" ng-click="enable(indexerStatus.indexer.name)"
-                        uib-tooltip="Click to enable the indexer again"
-                        tooltip-placement="right"
-                        tooltip-trigger="mouseenter" style="padding: 0 3px 0 3px">
-                    <span class="glyphicon glyphicon-ok">
-                    </span>
-                </button>
+      <td>{{ indexerStatus.indexer.name }}</td>
+      <td><span ng-if="indexerStatus.lastFailure">{{ indexerStatus.lastFailure | reformatDate}}</span></td>
+      <td>
+        <span ng-if="indexerStatus.disabledUntil">{{ indexerStatus.disabledUntil | reformatDate}}</span>
+        <span ng-if="indexerStatus.disabledPermanently">Permanently</span>
+      </td>
+      <td>
+        <span ng-if="indexerStatus.disabledUntil && (!isInPast(indexerStatus.disabledUntil)||indexerStatus.disabledPermanently)">
+          <button class="btn btn-default" ng-click="enable(indexerStatus.indexer.name)"
+          uib-tooltip="Click to enable the indexer again"
+          tooltip-placement="right"
+          tooltip-trigger="mouseenter" style="padding: 0 3px 0 3px">
+          <span class="glyphicon glyphicon-ok">
             </span>
-        </td>
-        <td style="word-break: break-all;">{{ indexerStatus.reason }}</td>
+          </button>
+        </span>
+      </td>
+      <td style="word-break: break-all;">{{ indexerStatus.reason }}</td>
     </tr>
-    </tbody>
+  </tbody>
 </table>

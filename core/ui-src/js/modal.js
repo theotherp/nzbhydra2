@@ -1,121 +1,121 @@
 angular
-    .module('nzbhydraApp')
-    .factory('ModalService', ModalService);
+  .module('nzbhydraApp')
+  .factory('ModalService', ModalService);
 
 function ModalService($uibModal) {
 
-    return {
-        open: open
-    };
+  return {
+    open: open
+  };
 
-    function open(headline, message, params, size, textAlign) {
-        //params example:
-        /*
-         var p =
-         {
-         yes: {
-         text: "Yes",    //default: Ok
-         onYes: function() {}
-         },
-         no: {               //default: Empty
-         text: "No",
-         onNo: function () {
-         }
-         },
-         cancel: {
-         text: "Cancel", //default: Cancel
-         onCancel: function () {
-         }
-         }
-         };
-         */
-        if (angular.isUndefined(textAlign)) {
-            textAlign = "center";
-        }
-        var modalInstance = $uibModal.open({
-            templateUrl: 'static/html/modal.html',
-            controller: 'ModalInstanceCtrl',
-            size: angular.isDefined(size) ? size : "md",
-            resolve: {
-                headline: function () {
-                    return headline;
-                },
-                message: function () {
-                    return message;
-                },
-                params: function () {
-                    return params;
-                },
-                textAlign: function () {
-                    return textAlign;
-                }
-            }
-        });
-
-        modalInstance.result.then(function () {
-
-        }, function () {
-
-        });
+  function open(headline, message, params, size, textAlign) {
+    //params example:
+    /*
+     var p =
+     {
+     yes: {
+     text: "Yes",    //default: Ok
+     onYes: function() {}
+     },
+     no: {               //default: Empty
+     text: "No",
+     onNo: function () {
+     }
+     },
+     cancel: {
+     text: "Cancel", //default: Cancel
+     onCancel: function () {
+     }
+     }
+     };
+     */
+    if (angular.isUndefined(textAlign)) {
+      textAlign = "center";
     }
+    var modalInstance = $uibModal.open({
+      templateUrl: 'static/html/modal.html',
+      controller: 'ModalInstanceCtrl',
+      size: angular.isDefined(size) ? size : "md",
+      resolve: {
+        headline: function() {
+          return headline;
+        },
+        message: function() {
+          return message;
+        },
+        params: function() {
+          return params;
+        },
+        textAlign: function() {
+          return textAlign;
+        }
+      }
+    });
+
+    modalInstance.result.then(function() {
+
+    }, function() {
+
+    });
+  }
 
 }
 
 angular
-    .module('nzbhydraApp')
-    .controller('ModalInstanceCtrl', ModalInstanceCtrl);
+  .module('nzbhydraApp')
+  .controller('ModalInstanceCtrl', ModalInstanceCtrl);
 
 function ModalInstanceCtrl($scope, $uibModalInstance, headline, message, params, textAlign) {
 
-    $scope.message = message;
-    $scope.headline = headline;
-    $scope.params = params;
-    $scope.showCancel = angular.isDefined(params) && angular.isDefined(params.cancel);
-    $scope.showNo = angular.isDefined(params) && angular.isDefined(params.no);
-    $scope.textAlign = textAlign;
+  $scope.message = message;
+  $scope.headline = headline;
+  $scope.params = params;
+  $scope.showCancel = angular.isDefined(params) && angular.isDefined(params.cancel);
+  $scope.showNo = angular.isDefined(params) && angular.isDefined(params.no);
+  $scope.textAlign = textAlign;
 
-    if (angular.isUndefined(params) || angular.isUndefined(params.yes)) {
-        $scope.params = {
-            yes: {
-                text: "Ok"
-            }
-        }
-    } else if (angular.isUndefined(params.yes.text)) {
-        params.yes.text = "Yes";
-    }
-
-    if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isUndefined($scope.params.no.text)) {
-        $scope.params.no.text = "No";
-    }
-
-    if (angular.isDefined(params) && angular.isDefined(params.cancel) && angular.isUndefined($scope.params.cancel.text)) {
-        $scope.params.cancel.text = "Cancel";
-    }
-
-    $scope.yes = function () {
-        $uibModalInstance.close();
-        if (angular.isDefined(params) && angular.isDefined(params.yes) && angular.isDefined($scope.params.yes.onYes)) {
-            $scope.params.yes.onYes();
-        }
+  if (angular.isUndefined(params) || angular.isUndefined(params.yes)) {
+    $scope.params = {
+      yes: {
+        text: "Ok"
+      }
     };
+  } else if (angular.isUndefined(params.yes.text)) {
+    params.yes.text = "Yes";
+  }
 
-    $scope.no = function () {
-        $uibModalInstance.close();
-        if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isDefined($scope.params.no.onNo)) {
-            $scope.params.no.onNo($uibModalInstance);
-        }
-    };
+  if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isUndefined($scope.params.no.text)) {
+    $scope.params.no.text = "No";
+  }
 
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss();
-        if (angular.isDefined(params.cancel) && angular.isDefined($scope.params.cancel.onCancel)) {
-            $scope.params.cancel.onCancel();
-        }
-    };
+  if (angular.isDefined(params) && angular.isDefined(params.cancel) && angular.isUndefined($scope.params.cancel.text)) {
+    $scope.params.cancel.text = "Cancel";
+  }
 
-    $scope.$on("modal.closing", function (targetScope, reason, c) {
-        if (reason == "backdrop click") {
-            $scope.cancel();
-        }
-    });
+  $scope.yes = function() {
+    $uibModalInstance.close();
+    if (angular.isDefined(params) && angular.isDefined(params.yes) && angular.isDefined($scope.params.yes.onYes)) {
+      $scope.params.yes.onYes();
+    }
+  };
+
+  $scope.no = function() {
+    $uibModalInstance.close();
+    if (angular.isDefined(params) && angular.isDefined(params.no) && angular.isDefined($scope.params.no.onNo)) {
+      $scope.params.no.onNo($uibModalInstance);
+    }
+  };
+
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss();
+    if (angular.isDefined(params.cancel) && angular.isDefined($scope.params.cancel.onCancel)) {
+      $scope.params.cancel.onCancel();
+    }
+  };
+
+  $scope.$on("modal.closing", function(targetScope, reason, c) {
+    if (reason == "backdrop click") {
+      $scope.cancel();
+    }
+  });
 }

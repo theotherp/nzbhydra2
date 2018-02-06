@@ -1,210 +1,214 @@
 <div class="row">
-    <form name="form" name="ctrl.myform" novalidate>
-        <ul class="nav nav-tabs" role="tablist">
-            <li ng-repeat="tab in allTabs" ng-class="{'active': $index == activeTab}">
-                <a href="" ng-click="goToConfigState($index)">{{ tab.name }}</a>
-            </li>
-            <li style="float: right">
-                <button ng-click="help()" class="btn config-button config-help-button btn-default">Help</button>
-                <button ng-click="submit()" class="btn config-button" ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">Save</button>
-            </li>
-        </ul>
+  <form name="ctrl.myform" novalidate>
+    <ul class="nav nav-tabs" role="tablist">
+      <li ng-repeat="tab in allTabs" ng-class="{'active': $index == activeTab}">
+        <a href="" ng-click="goToConfigState($index)">{{ tab.name }}</a>
+      </li>
+      <li style="float: right">
+        <button ng-click="help()" class="btn config-button config-help-button btn-default">Help</button>
+        <button ng-click="submit()" class="btn config-button" ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">Save</button>
+      </li>
+    </ul>
 
-        <div class="tab-content config">
-            <div ng-repeat="tab in allTabs">
-                <div class="row config-tab-content">
-                    <div class="config-left-space"></div>
-                    <div class="config-center-space  ">
-                    <formly-form model="tab.model" fields="tab.fields" ng-if="$index == activeTab" options="tab.options" class="modal-content">
-                    </formly-form>
-                        </div>
-                    <div class="config-right-space"></div>
-                </div>
-            </div>
+    <div class="tab-content config">
+      <div ng-repeat="tab in allTabs">
+        <div class="row config-tab-content">
+          <div class="config-left-space"></div>
+          <div class="config-center-space  ">
+            <formly-form model="tab.model" fields="tab.fields" ng-if="$index == activeTab" options="tab.options" class="modal-content">
+            </formly-form>
+          </div>
+          <div class="config-right-space"></div>
         </div>
-    </form>
+      </div>
+    </div>
+  </form>
 </div>
 
 
 <script type="text/ng-template" id="ui-select-multiple.html">
-    <ui-select multiple data-ng-model="model[options.key]" data-required="{{ to.required }}" data-disabled="{{ to.disabled }}" theme="bootstrap">
-        <ui-select-match class="ui-select-match" placeholder="{{ to.getPlaceholder(model[options.key]) }}">{{$item[to.labelProp]}}</ui-select-match>
-        <ui-select-choices class="ui-select-choices" data-repeat="{{ to.ngOptions }}">
-            <div ng-bind-html="option[to.labelProp] | highlight: $select.search"></div>
-        </ui-select-choices>
-    </ui-select>
+  <ui-select multiple data-ng-model="model[options.key]" data-required="{{ to.required }}" data-disabled="{{ to.disabled }}" theme="bootstrap">
+    <ui-select-match class="ui-select-match" placeholder="{{ to.getPlaceholder(model[options.key]) }}">{{$item[to.labelProp]}}</ui-select-match>
+    <ui-select-choices class="ui-select-choices" data-repeat="{{ to.ngOptions }}">
+      <div ng-bind-html="option[to.labelProp] | highlight: $select.search"></div>
+    </ui-select-choices>
+  </ui-select>
 </script>
 
 <script type="text/ng-template" id="button-test-connection.html">
-    <span style="text-align: left;"><button class="btn btn-default" id="button-test-connection-{{ uniqueId }}" type="button" ng-click="testConnection()"><span
-            class="glyphicon glyphicon-refresh"></span></button> <span id="message-test-connection-{{ uniqueId }}"></span></span>
+  <span style="text-align: left;">
+    <button class="btn btn-default" id="button-test-connection-{{ uniqueId }}" type="button" ng-click="testConnection()">
+      <span class="glyphicon glyphicon-refresh"></span>
+    </button> <span id="message-test-connection-{{ uniqueId }}"></span>
+  </span>
 </script>
 
 
 <script type="text/ng-template" id="button-check-caps.html">
-    <span style="text-align: left; float: left"><button class="btn btn-default" id="button-check-caps-{{ uniqueId }}" type="button" ng-click="checkCaps()"><span
-            class="glyphicon glyphicon-refresh"></span></button> <span id="message-check-caps-{{ uniqueId }}"></span></span>
+  <span style="text-align: left; float: left">
+    <button class="btn btn-default" id="button-check-caps-{{ uniqueId }}" type="button" ng-click="checkCaps()">
+      <span class="glyphicon glyphicon-refresh"></span>
+    </button> <span id="message-check-caps-{{ uniqueId }}"></span>
+  </span>
 </script>
 
 
 <script type="text/ng-template" id="newznab-preset.html">
-    <ui-select ng-model="selectedpreset" theme="bootstrap" on-select="selectPreset($item, $model)" search-enabled="false">
-        <ui-select-match class="ui-select-match" allow-clear="true">{{ display }}</ui-select-match>
-        <ui-select-choices class="ui-select-choices" repeat="preset in presets">
-            <div ng-bind-html="preset.name"></div>
-        </ui-select-choices>
-    </ui-select>
+  <ui-select ng-model="selectedpreset" theme="bootstrap" on-select="selectPreset($item, $model)" search-enabled="false">
+    <ui-select-match class="ui-select-match" allow-clear="true">{{ display }}</ui-select-match>
+    <ui-select-choices class="ui-select-choices" repeat="preset in presets">
+      <div ng-bind-html="preset.name"></div>
+    </ui-select-choices>
+  </ui-select>
 </script>
 
 <script type="text/ng-template" id="repeatSection.html">
-    <!--loop through each element in model array-->
-    <div class="{{ hideRepeat }}">
-        <div class="repeatsection modal-content" ng-repeat="element in model[options.key]" ng-init="fields = copyFields(to.fields)">
-            <fieldset>
-                <legend>{{ element.name ? element.name : (element.username ? element.username : to.altLegendText)}}</legend>
-                <formly-form fields="fields"
-                             model="element"
-                             form="form">
-                </formly-form>
-                <div style="margin-bottom:20px;">
-                    <button type="button" class="btn btn-sm btn-danger" ng-click="remove($index)">
-                        Remove {{ element.name }}
-                    </button>
-                </div>
-
-            </fieldset>
+  <!--loop through each element in model array-->
+  <div class="{{ hideRepeat }}">
+    <div class="repeatsection modal-content" ng-repeat="element in model[options.key]" ng-init="fields = copyFields(to.fields)">
+      <fieldset>
+        <legend>{{ element.name ? element.name : (element.username ? element.username : to.altLegendText)}}</legend>
+        <formly-form fields="fields" model="element" form="form">
+        </formly-form>
+        <div style="margin-bottom:20px;">
+          <button type="button" class="btn btn-sm btn-danger" ng-click="remove($index)">
+            Remove {{ element.name }}
+          </button>
         </div>
-        <hr>
-        <p class="AddNewButton">
-            <button type="button" class="btn btn-primary" ng-click="addNew()">{{ to.btnText }}</button>
-        </p>
+
+      </fieldset>
     </div>
+    <hr>
+    <p class="AddNewButton">
+      <button type="button" class="btn btn-primary" ng-click="addNew()">{{ to.btnText }}</button>
+    </p>
+  </div>
 </script>
 
 
 <script type="text/ng-template" id="arrayConfig.html">
+  <div class="row">
+
+    <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
+      <button ng-if="!options.data.presetsOnly" class="btn btn-info" ng-click="addEntry(model)"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>
+        {{ options.data.addNewText }}
+      </button>
+      <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span ng-if="options.data.presetsOnly"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{ options.data.addNewText }}</span>
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu">
+        <li ng-repeat="preset in presets[0]">
+          <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+        </li>
+        <li ng-if="presets.length > 1" role="separator" class="divider"></li>
+        <li ng-repeat="preset in presets[1]">
+          <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+        </li>
+        <li ng-if="presets.length > 2" role="separator" class="divider"></li>
+        <li ng-repeat="preset in presets[2]">
+          <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
     <div class="row">
-
-        <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
-            <button ng-if="!options.data.presetsOnly" class="btn btn-info" ng-click="addEntry(model)"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{
-                options.data.addNewText }}
-            </button>
-            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span ng-if="options.data.presetsOnly"><span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>{{ options.data.addNewText }}</span>
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li ng-repeat="preset in presets[0]">
-                    <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
-                </li>
-                <li ng-if="presets.length > 1" role="separator" class="divider"></li>
-                <li ng-repeat="preset in presets[1]">
-                    <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
-                </li>
-                <li ng-if="presets.length > 2" role="separator" class="divider"></li>
-                <li ng-repeat="preset in presets[2]">
-                    <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
-                </li>
-            </ul>
-        </div>
+      <div style="margin-left: auto; margin-right: auto; float:none !important;">
+        <div ng-include="options.data.entryTemplateUrl"></div>
+      </div>
     </div>
-
-
-    <div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
-        <div class="row">
-            <div style="margin-left: auto; margin-right: auto; float:none !important;">
-                <div ng-include="options.data.entryTemplateUrl"></div>
-            </div>
-        </div>
-    </div>
+  </div>
 </script>
 
 
 <script type="text/ng-template" id="recheckAllCaps.html">
+  <div class="row">
+
+    <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
+      <button class="btn btn-info" ng-click="recheck('INCOMPLETE')">Recheck caps for incomplete indexers
+      </button>
+      <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a ng-click="recheck('ALL')">Recheck caps for all indexers</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
     <div class="row">
-
-        <div class="btn-group" style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
-            <button class="btn btn-info" ng-click="recheck('INCOMPLETE')">Recheck caps for incomplete indexers
-            </button>
-            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <a ng-click="recheck('ALL')">Recheck caps for all indexers</a>
-                </li>
-            </ul>
-        </div>
+      <div style="margin-left: auto; margin-right: auto; float:none !important;">
+        <div ng-include="options.data.entryTemplateUrl"></div>
+      </div>
     </div>
-
-
-    <div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
-        <div class="row">
-            <div style="margin-left: auto; margin-right: auto; float:none !important;">
-                <div ng-include="options.data.entryTemplateUrl"></div>
-            </div>
-        </div>
-    </div>
+  </div>
 </script>
 
 
 <script type="text/ng-template" id="setting-wrapper.html">
-    <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}">
-      <div class="col-md-6 config-content">
-            <label for="{{::id}}" class="col-md-7 control-label config-label">
-                {{ to.label }} {{ to.required ? "*" : ""}}
-            </label>
-            <formly-transclude></formly-transclude>
-            <div class="my-messages" ng-messages="fc.$error" ng-if="options.formControl.$touched || form.$submitted" ng-messages-multiple>
-                <div class="some-message has-error control-label" ng-message="{{::name}}" ng-repeat="(name, message) in ::options.validation.messages">
-                    {{ message(fc.$viewValue, fc.$modelValue, this)}}
-                </div>
-            </div>
+  <div class="form-group form-horizontal setting-wrapper" ng-class="{'row': !options.templateOptions.noRow}">
+    <div class="col-md-6 config-content">
+      <label for="{{::id}}" class="col-md-7 control-label config-label">
+        {{ to.label }} {{ to.required ? "*" : ""}}
+      </label>
+      <formly-transclude></formly-transclude>
+      <div class="my-messages" ng-messages="fc.$error" ng-if="options.formControl.$touched || form.$submitted" ng-messages-multiple>
+        <div class="some-message has-error control-label" ng-message="{{::name}}" ng-repeat="(name, message) in ::options.validation.messages">
+          {{ message(fc.$viewValue, fc.$modelValue, this)}}
         </div>
-        <span class="col-md-7 config-help help-block" ng-bind-html="to.help | unsafe">{{ to.help | unsafe }}</span>
+      </div>
     </div>
+    <span class="col-md-7 config-help help-block" ng-bind-html="to.help | unsafe">{{ to.help | unsafe }}</span>
+  </div>
 
 </script>
 
 <script type="text/ng-template" id="indexerEntry.html">
-    <indexer-input indexer="entry" model="model" on-click="showBox"></indexer-input>
+  <indexer-input indexer="entry" model="model" on-click="showBox"></indexer-input>
 </script>
 
 <script type="text/ng-template" id="downloaderEntry.html">
-    <div style="margin-bottom: 30px;">
-        <form class="form-inline">
-            <button ng-click="showBox(entry, model)" class="btn btn-secondary indexer-button indexer-input btn-default" style="margin-right: 10px;">{{ entry.name }}</button>
-            <input bs-switch type="checkbox" ng-model="entry.enabled"/>
-        </form>
-    </div>
+  <div style="margin-bottom: 30px;">
+    <form class="form-inline">
+      <button ng-click="showBox(entry, model)" class="btn btn-secondary indexer-button indexer-input btn-default" style="margin-right: 10px;">{{ entry.name }}</button>
+      <input bs-switch type="checkbox" ng-model="entry.enabled" />
+    </form>
+  </div>
 </script>
 
 <script type="text/ng-template" id="configBox.html">
-    <span class="config-box">
+  <span class="config-box">
     <div class="modal-header" ng-show="model.name">
-        <h3 class="modal-title">{{ model.name }}</h3>
+      <h3 class="modal-title">{{ model.name }}</h3>
     </div>
     <div class="modal-body">
-        <formly-form fields="fields"
-                     model="model"
-                     form="form"
-                     options="options"
-        >
-        </formly-form>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial && allowDelete" uib-tooltip="{{deleteTooltip}}" tooltip-placement="top" tooltip-trigger="mouseenter">Delete</button>
-        <button class="btn btn-warning" ng-click="reset()">Reset</button>
-        <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()"><span class="spinner"><i class="icon-spin icon-refresh"></i></span>Submit</button>
-    </div>
-    </span>
+      <formly-form fields="fields"
+      model="model"
+      form="form"
+      options="options"
+      >
+    </formly-form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial && allowDelete" uib-tooltip="{{deleteTooltip}}" tooltip-placement="top" tooltip-trigger="mouseenter">Delete</button>
+    <button class="btn btn-warning" ng-click="reset()">Reset</button>
+    <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()"><span class="spinner"><i class="icon-spin icon-refresh"></i></span>Submit</button>
+  </div>
+</span>
 </script>
 
 <script type="text/ng-template" id="tab-template.html">
-    <div>
-        Hallo
-    </div>
+  <div>
+    Hallo
+  </div>
 
 </script>

@@ -1,107 +1,108 @@
 <uib-tabset active="active">
-    <uib-tab index="0" heading="Formatted" ng-click="select(0)">
-        <div cg-busy="{promise:logPromise,message:'Loading log file'}">
-            <div style="margin-bottom: 15px">
-                <button class="btn btn-default" ng-click="update()">Update</button>
-            </div>
+  <uib-tab index="0" heading="Formatted" ng-click="select(0)">
+    <div cg-busy="{promise:logPromise,message:'Loading log file'}">
+      <div style="margin-bottom: 15px">
+        <button class="btn btn-default" ng-click="update()">Update</button>
+      </div>
 
-            <!--<pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>-->
-            <div style="margin-bottom: 10px">
-                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
-                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
-            </div>
-            <table class="table table-hover" style="margin-bottom: 10px">
-                <thead class="search-results-header">
-                <tr>
-                    <th style="width: 11%">Time (newest first)</th>
-                    <th style="width: 3%">Level</th>
-                    <th style="width: 15%">Logger</th>
-                    <th style="width: 71%; overflow: hidden">Message</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="line in jsonLogLines" ng-click="openModal(line)">
-                    <td>{{::line["@timestamp"] | formatTimestamp}}</td>
-                    <td>
-                        <div ng-switch on="line.level">
-                            <div class="fa fa-info-circle" ng-switch-when="INFO"></div>
-                            <div class="fa fa-warning warning" ng-switch-when="WARN"></div>
-                            <div class="fa fa-times-circle error" ng-switch-when="ERROR"></div>
-                        </div>
-                    </td>
-                    <td>{{line.logger_name | formatClassname}}</td>
-                    <td>
-                        <div style="width: 945px; overflow: hidden; text-overflow: ellipsis"> <!--Hacky but works :-(-->
-                        {{::line.message}}
+      <!--<pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>-->
+      <div style="margin-bottom: 10px">
+        <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
+        <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
+      </div>
+      <table class="table table-hover" style="margin-bottom: 10px">
+        <thead class="search-results-header">
+          <tr>
+            <th style="width: 11%">Time (newest first)</th>
+            <th style="width: 3%">Level</th>
+            <th style="width: 15%">Logger</th>
+            <th style="width: 71%; overflow: hidden">Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="line in jsonLogLines" ng-click="openModal(line)">
+            <td>{{::line["@timestamp"] | formatTimestamp}}</td>
+            <td>
+              <div ng-switch on="line.level">
+                <div class="fa fa-info-circle" ng-switch-when="INFO"></div>
+                <div class="fa fa-warning warning" ng-switch-when="WARN"></div>
+                <div class="fa fa-times-circle error" ng-switch-when="ERROR"></div>
+              </div>
+            </td>
+            <td>{{line.logger_name | formatClassname}}</td>
+            <td>
+              <div style="width: 945px; overflow: hidden; text-overflow: ellipsis">
+                <!--Hacky but works :-(-->
+                {{::line.message}}
 
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-            <div style="margin-bottom: 20px">
-                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
-                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
-            </div>
-        </div>
-    </uib-tab>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-bottom: 20px">
+        <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
+        <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
+      </div>
+    </div>
+  </uib-tab>
 
 
-    <uib-tab index="1" heading="Raw" ng-click="select(1)">
-        <div cg-busy="{promise:logPromise,message:'Loading log file'}">
-            <div style="margin-bottom: 15px">
-                <button class="btn btn-default" ng-click="update()">Update</button>
-                <button class="btn btn-default" ng-click="scrollToBottom()">Scroll to bottom</button>
-                <label>
-                    <input type="checkbox" ng-model="doUpdateLog" ng-change="toggleUpdate(doUpdateLog)">
-                    Update every five seconds...
-                </label>
-                <label>
-                    <input type="checkbox" ng-model="doTailLog" ng-change="toggleTailLog()">
-                    and scroll to end
-                </label>
-            </div>
+  <uib-tab index="1" heading="Raw" ng-click="select(1)">
+    <div cg-busy="{promise:logPromise,message:'Loading log file'}">
+      <div style="margin-bottom: 15px">
+        <button class="btn btn-default" ng-click="update()">Update</button>
+        <button class="btn btn-default" ng-click="scrollToBottom()">Scroll to bottom</button>
+        <label>
+          <input type="checkbox" ng-model="doUpdateLog" ng-change="toggleUpdate(doUpdateLog)">
+          Update every five seconds...
+        </label>
+        <label>
+          <input type="checkbox" ng-model="doTailLog" ng-change="toggleTailLog()">
+          and scroll to end
+        </label>
+      </div>
 
-            <pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>
-        </div>
-    </uib-tab>
+      <pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>
+    </div>
+  </uib-tab>
 
-    <uib-tab index="2" heading="Files" ng-click="select(2)">
-        <div class="row">
-            <div class="col-md-6"></div>
-            <div class="col-md-8" style="text-align: left">
-                <ul>
-                    <li ng-repeat="filename in logfilenames">
-                        <a href="internalapi/debuginfos/downloadlog?logfilename={{filename}}" target="_blank">{{filename}}</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+  <uib-tab index="2" heading="Files" ng-click="select(2)">
+    <div class="row">
+      <div class="col-md-6"></div>
+      <div class="col-md-8" style="text-align: left">
+        <ul>
+          <li ng-repeat="filename in logfilenames">
+            <a href="internalapi/debuginfos/downloadlog?logfilename={{filename}}" target="_blank">{{filename}}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
 
-    </uib-tab>
+  </uib-tab>
 
 </uib-tabset>
 
 
 <script type="text/ng-template" id="log-entry.html">
-    <div class="modal-header">
-        <h3 class="modal-title">Log entry details</h3>
-    </div>
-    <div class="modal-body" style="text-align: left;">
-        Message
-        <pre ng-bind-html="::entry.message"></pre>
+  <div class="modal-header">
+    <h3 class="modal-title">Log entry details</h3>
+  </div>
+  <div class="modal-body" style="text-align: left;">
+    Message
+    <pre ng-bind-html="::entry.message"></pre>
 
-        <div ng-if="entry.IPADDRESS || entry.USERNAME" style="margin-bottom: 10px; margin-top: 15px">
-            <div ng-if="entry.IPADDRESS">Accessing IP address: {{entry.IPADDRESS}}</div>
-            <div ng-if="entry.USERNAME">Accessing Username: {{entry.USERNAME}}</div>
-        </div>
+    <div ng-if="entry.IPADDRESS || entry.USERNAME" style="margin-bottom: 10px; margin-top: 15px">
+      <div ng-if="entry.IPADDRESS">Accessing IP address: {{entry.IPADDRESS}}</div>
+      <div ng-if="entry.USERNAME">Accessing Username: {{entry.USERNAME}}</div>
+    </div>
 
-        <span ng-if="entry.stack_trace">
-            Stacktrace
-            <pre ng-bind-html="::entry.stack_trace" style="overflow-y: scroll; width: 100%; max-height: 600px"></pre>
-        </span>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-primary" type="button" ng-click="ok()">Close</button>
-    </div>
+    <span ng-if="entry.stack_trace">
+      Stacktrace
+      <pre ng-bind-html="::entry.stack_trace" style="overflow-y: scroll; width: 100%; max-height: 600px"></pre>
+    </span>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()">Close</button>
+  </div>
 </script>
