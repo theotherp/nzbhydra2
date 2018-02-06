@@ -44,6 +44,7 @@ public class CleanupIndexerStatusesTask {
         for (IndexerStatusEntity entity : repository.findAll()) {
             if (!entity.getDisabledPermanently() && entity.getDisabledUntil() != null && entity.getDisabledUntil().isBefore(Instant.now())) {
                 entity.setDisabledUntil(null);
+                entity.setReason(null);
                 repository.save(entity);
             }
         }
