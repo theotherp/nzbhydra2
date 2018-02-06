@@ -35,7 +35,7 @@ gulp.task('vendor-scripts', function () {
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.js'))
-        .pipe(uglify())
+        //.pipe(uglify())
         .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(dest));
 });

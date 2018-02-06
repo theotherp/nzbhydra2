@@ -424,5 +424,3 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         };
     }
 }
-
-

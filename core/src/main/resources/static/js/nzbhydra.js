@@ -3510,9 +3510,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         };
     }
 }
-
-
-
 //
 SearchService.$inject = ["$http"];
 angular

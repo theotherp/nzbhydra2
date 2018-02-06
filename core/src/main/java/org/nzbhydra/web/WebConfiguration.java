@@ -45,13 +45,14 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        File staticFolderFile = new File(new File(NzbHydra.getDataFolder()).getParentFile(), "static");
         String fileStatic = null;
         try {
-            fileStatic = new File(new File(NzbHydra.getDataFolder()).getParentFile(), "static").toURI().toURL().toString();
+            fileStatic = staticFolderFile.toURI().toURL().toString();
         } catch (MalformedURLException e) {
             logger.error("Unable to build path for local static files");
         }
-        String[] locations = fileStatic != null ? new String[]{fileStatic, "classpath:/static/"} : new String[]{"classpath:/static/"};
+        String[] locations = (fileStatic != null && staticFolderFile.exists()) ? new String[]{fileStatic, "classpath:/static/"} : new String[]{"classpath:/static/"};
         registry.addResourceHandler("/static/**")
                 .addResourceLocations(locations)
                 .setCacheControl(CacheControl.noCache())

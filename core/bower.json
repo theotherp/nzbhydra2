@@ -71,7 +71,7 @@
     "angular-base64": "2.0.5"
   },
   "resolutions": {
-    "angular": "1.6.9",
+    "angular": "~1.4.7",
     "objectpath": "~1.2.1",
     "tv4": "~1.2.7",
     "angular-ui-select": "^0.18.0"
