@@ -51,9 +51,11 @@ public class FromPythonMigration {
         }
 
         File settingsFile = new File(settingsFilePath);
-        File databaseFile = new File(databaseFilePath);
-        if (doMigrateDatabase && (!databaseFile.exists() || databaseFile.isDirectory())) {
-            return MigrationResult.requirementsNotMet("Database file does not exist or is a folder");
+        if (doMigrateDatabase) {
+            File databaseFile = new File(databaseFilePath);
+            if (!databaseFile.exists() || databaseFile.isDirectory()) {
+                return MigrationResult.requirementsNotMet("Database file does not exist or is a folder");
+            }
         }
         if (!settingsFile.exists() || settingsFile.isDirectory()) {
             return MigrationResult.requirementsNotMet("Config file does not exist or is a folder");

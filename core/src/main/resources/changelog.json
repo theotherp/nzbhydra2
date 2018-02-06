@@ -1,5 +1,13 @@
 [
   {
+    "version": "v1.3.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Exception in migration when providing no database file even when migration of database was requested"
+      }
+    ]
+  }, {
     "version": "v1.3.2",
     "changes": [
       {
@@ -15,7 +23,8 @@
         "text": "Button to browse file system for selecting torrent folder would fail on some systems (e.g. docker)"
       }
     ]
-  },  {
+  },
+  {
     "version": "v1.3.1",
     "changes": [
       {

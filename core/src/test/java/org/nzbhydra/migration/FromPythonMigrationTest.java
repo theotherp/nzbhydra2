@@ -11,6 +11,7 @@ import org.nzbhydra.migration.FromPythonMigration.MigrationResult;
 import org.nzbhydra.migration.FromPythonMigration.OkHttpResponse;
 import org.nzbhydra.migration.JsonConfigMigration.ConfigMigrationResult;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,6 +75,31 @@ public class FromPythonMigrationTest {
         assertThat(result.isDatabaseMigrated(), is(false));
         assertThat(result.isConfigMigrated(), is(false));
         assertThat(result.getWarningMessages().size(), is(0));
+    }
+
+    @Test
+    public void shouldWorkWithoutDatabase() throws Exception {
+        File temp = File.createTempFile("nzbhydra", "tmp");
+        MigrationResult expected = new MigrationResult();
+        doReturn(expected).when(testee).startMigration(anyMap());
+        MigrationResult returned = testee.migrateFromFiles(temp.getAbsolutePath(), null, false);
+
+        assertThat(returned, is(expected));
+    }
+
+    @Test
+    public void shouldReturnWhenSettingsFileDoesNotExist() throws Exception {
+        MigrationResult returned = testee.migrateFromFiles("doesnotexist", null, false);
+
+        assertThat(returned.getError(), is("Config file does not exist or is a folder"));
+    }
+
+    @Test
+    public void shouldReturnWhenDatabaseFileDoesNotExistAndDatabaseMigrationIsRequested() throws Exception {
+        File temp = File.createTempFile("nzbhydra", "tmp");
+        MigrationResult returned = testee.migrateFromFiles(temp.getAbsolutePath(), "doesnotexist", true);
+
+        assertThat(returned.getError(), is("Database file does not exist or is a folder"));
     }
 
 
