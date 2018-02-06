@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Exception in migration when providing no database file even when migration of database was requested"
+      },
+      {
+        "type": "feature",
+        "text": "Allow loading of UI files from local folder to allow proper development of UI"
       }
     ]
   },
