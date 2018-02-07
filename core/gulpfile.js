@@ -9,7 +9,6 @@ var livereload = require('gulp-livereload');
 var concat = require('gulp-concat');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
-var git = require('gulp-git');
 var runSequence = require('run-sequence');
 var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
@@ -35,7 +34,7 @@ gulp.task('vendor-scripts', function () {
         .pipe(cached("vendor-scripts"))
         .pipe(sourcemaps.init())
         .pipe(concat('alllibs.js'))
-        //.pipe(uglify())
+        .pipe(uglify())
         .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(dest));
 });
@@ -142,13 +141,6 @@ gulp.task('copy-assets', function () {
 });
 
 
-gulp.task('add', function () {
-    return gulp.src(staticFolder + '/*')
-        .pipe(cached("add"))
-        .pipe(git.add({args: '--all'}));
-});
-
-
 gulp.task('reload', function () {
     livereload();
 });
@@ -168,7 +160,7 @@ gulp.task('copyStaticToClasses', function () {
 gulp.task('index', function () {
     runSequence(
         ['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets'],
-        ['copyStaticToClasses', 'add']
+        ['copyStaticToClasses']
     );
 });
 
