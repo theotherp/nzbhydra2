@@ -2826,7 +2826,6 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         });
     }
 
-
     function ignore(version) {
         return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
             return response;
@@ -6820,7 +6819,6 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         label: "Internal",
         value: 'INTERNAL'
     }];
-
 
     //Preloaded data
     $scope.nzbDownloads = downloads.nzbDownloads;
