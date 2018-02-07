@@ -35,16 +35,16 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     }
 
     function reloadConfig() {
-        return $http.get('internalapi/config/reload').then(function (data) {
-            return data.data;
+        return $http.get('internalapi/config/reload').then(function (response) {
+            return response.data;
         });
     }
 
     function get() {
         var config = cache.get("config");
         if (angular.isUndefined(config)) {
-            config = $http.get('internalapi/config').then(function (data) {
-                return data.data;
+            config = $http.get('internalapi/config').then(function (response) {
+                return response.data;
             });
             cache.put("config", config);
         }
@@ -57,8 +57,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     }
 
     function invalidateSafe() {
-        $http.get('internalapi/config/safe').then(function (data) {
-            safeConfig = data.data;
+        $http.get('internalapi/config/safe').then(function (response) {
+            safeConfig = response.data;
         });
     }
 

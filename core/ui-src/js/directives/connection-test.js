@@ -59,20 +59,21 @@ function connectionTest() {
                     params["password"] = $scope.data.password;
                 }
             }
-            $http.get(url, {params: params}).success(function (result) {
-                //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-                if (result.successful) {
-                    angular.element(testMessage).text("");
-                    showSuccess();
-                } else {
+            $http.get(url, {params: params}).then(function (result) {
+                    //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click
+                    if (result.successful) {
+                        angular.element(testMessage).text("");
+                        showSuccess();
+                    } else {
+                        angular.element(testMessage).text(result.message);
+                        showError();
+                    }
+
+                }, function () {
                     angular.element(testMessage).text(result.message);
                     showError();
                 }
-
-            }).error(function () {
-                angular.element(testMessage).text(result.message);
-                showError();
-            }).finally(function () {
+            ).finally(function () {
                 angular.element(testButton).removeClass("glyphicon-refresh-animate");
             })
         }

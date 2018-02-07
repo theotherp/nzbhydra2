@@ -11,8 +11,8 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
 
 
     function restart(message) {
-        NzbHydraControlService.restart().then(function (data) {
-            startCountdown(message, data.data.message);
+        NzbHydraControlService.restart().then(function (response) {
+            startCountdown(message, response.data.message);
         }, function () {
             growl.info("Unable to send restart command.");
         })

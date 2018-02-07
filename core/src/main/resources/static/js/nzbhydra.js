@@ -1,7 +1,7 @@
 // For caching HTML templates, see http://paulsalaets.com/pre-caching-angular-templates-with-gulp
 angular.module('templates', []);
 
-var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64','duScroll']);
+var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64', 'duScroll']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(true);
@@ -244,7 +244,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: ["$http", function ($http) {
-                            return $http.get("internalapi/indexerstatuses").success(function (response) {
+                            return $http.get("internalapi/indexerstatuses").then(function (response) {
                                 return response;
                             });
                         }],
@@ -843,13 +843,13 @@ function hydraTasks() {
 
     function controller($scope, $http) {
 
-        $http.get("internalapi/tasks").then(function (data) {
-            $scope.tasks = data.data;
+        $http.get("internalapi/tasks").then(function (response) {
+            $scope.tasks = response.data;
         });
 
         $scope.runTask = function (taskName) {
-            $http.put("internalapi/tasks/" + taskName).then(function (data) {
-                $scope.tasks = data.data;
+            $http.put("internalapi/tasks/" + taskName).then(function (response) {
+                $scope.tasks = response.data;
             });
         }
     }
@@ -1502,17 +1502,17 @@ function hydraupdates() {
 
     function controller($scope, UpdateService) {
 
-        $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
-            $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.latestVersion;
-            $scope.updateAvailable = data.data.updateAvailable;
-            $scope.latestVersionIgnored = data.data.latestVersionIgnored;
-            $scope.changelog = data.data.changelog;
-            $scope.runInDocker = data.data.runInDocker;
+        $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
+            $scope.currentVersion = response.data.currentVersion;
+            $scope.repVersion = response.data.latestVersion;
+            $scope.updateAvailable = response.data.updateAvailable;
+            $scope.latestVersionIgnored = response.data.latestVersionIgnored;
+            $scope.changelog = response.data.changelog;
+            $scope.runInDocker = response.data.runInDocker;
         });
 
-        UpdateService.getVersionHistory().then(function (data) {
-            $scope.versionHistory = data.data;
+        UpdateService.getVersionHistory().then(function (response) {
+            $scope.versionHistory = response.data;
         });
 
         $scope.update = function () {
@@ -1580,12 +1580,12 @@ function hydraUpdatesFooter() {
 
         function retrieveUpdateInfos() {
             $scope.checked = true;
-            UpdateService.getInfos().then(function (data) {
-                $scope.currentVersion = data.data.currentVersion;
-                $scope.latestVersion = data.data.latestVersion;
-                $scope.updateAvailable = data.data.updateAvailable;
-                $scope.changelog = data.data.changelog;
-                $scope.runInDocker = data.data.runInDocker;
+            UpdateService.getInfos().then(function (response) {
+                $scope.currentVersion = response.data.currentVersion;
+                $scope.latestVersion = response.data.latestVersion;
+                $scope.updateAvailable = response.data.updateAvailable;
+                $scope.changelog = response.data.changelog;
+                $scope.runInDocker = response.data.runInDocker;
             });
         }
 
@@ -1606,7 +1606,8 @@ function hydraUpdatesFooter() {
         function checkAndShowNews() {
             RequestsErrorHandler.specificallyHandled(function () {
                 if (ConfigService.getSafe().showNews) {
-                    $http.get("internalapi/news/forcurrentversion").then(function (data) {
+                    $http.get("internalapi/news/forcurrentversion").then(function (response) {
+                        var data = response.data;
                         if (data && data.length > 0) {
                             $uibModal.open({
                                 templateUrl: 'static/html/news-modal.html',
@@ -1627,8 +1628,8 @@ function hydraUpdatesFooter() {
 
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
-                $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
-                    if (!wasWelcomeShown) {
+                $http.get("internalapi/welcomeshown") .then(function (response) {
+                    if (!response.data) {
                         $http.put("internalapi/welcomeshown");
                         var promise = $uibModal.open({
                             templateUrl: 'static/html/welcome-modal.html',
@@ -1697,8 +1698,8 @@ function hydraNews() {
 
     function controller($scope, $http) {
 
-        return $http.get("internalapi/news").success(function (data) {
-            $scope.news = data;
+        return $http.get("internalapi/news") .then(function (response) {
+            $scope.news = response.data;
         });
 
 
@@ -1730,12 +1731,14 @@ function hydralog() {
 
         function getLog(index) {
             if ($scope.active === 0) {
-                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).success(function (data) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).then(function (response) {
+                    var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
                     $scope.hasMoreJsonLines = data.hasMore;
                 });
             } else if ($scope.active === 1) {
-                return $http.get("internalapi/debuginfos/currentlogfile").success(function (data) {
+                return $http.get("internalapi/debuginfos/currentlogfile").then(function (response) {
+                    var data = response.data;
                     $scope.log = $sce.trustAsHtml(data.replace(/&/g, "&amp;")
                         .replace(/</g, "&lt;")
                         .replace(/>/g, "&gt;")
@@ -1745,8 +1748,8 @@ function hydralog() {
                     growl.error(data)
                 });
             } else if ($scope.active === 2) {
-                return $http.get("internalapi/debuginfos/logfilenames").success(function (data) {
-                    $scope.logfilenames = data;
+                return $http.get("internalapi/debuginfos/logfilenames").then(function (response) {
+                    $scope.logfilenames = response.data;
                 });
             }
         }
@@ -1916,7 +1919,6 @@ function downloadNzbzipButton() {
     };
 
     function controller($scope, growl, $http, FileDownloadService) {
-
         $scope.download = function () {
             if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
@@ -1933,21 +1935,21 @@ function downloadNzbzipButton() {
                     searchTitle = "";
                 }
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                $http({method: "post", url: link, data: values}).success(function (response) {
-                    if (response.successful && response.zip !== null) {
+                $http({method: "post", url: link, data: values}).then(function (response) {
+                    if (response.data.successful && response.data.zip !== null) {
                         //FileDownloadService.sendFile($base64.decode(response.zip), filename);
                         link = "internalapi/nzbzipDownload";
-                        FileDownloadService.downloadFile(link, filename, "POST", response.zipFilepath);
+                        FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.addedIds});
+                            $scope.callback({result:response.data.addedIds});
                         }
-                        if (response.missedIds.length > 0) {
+                        if (response.data.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
                         }
                     } else {
-                        growl.error(response.message);
+                        growl.error(response.data.message);
                     }
-                }).error(function (data, status, headers, config) {
+                },function (data, status, headers, config) {
                     growl.error(status);
                 });
             }
@@ -2464,20 +2466,21 @@ function connectionTest() {
                     params["password"] = $scope.data.password;
                 }
             }
-            $http.get(url, {params: params}).success(function (result) {
-                //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-                if (result.successful) {
-                    angular.element(testMessage).text("");
-                    showSuccess();
-                } else {
+            $http.get(url, {params: params}).then(function (result) {
+                    //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click
+                    if (result.successful) {
+                        angular.element(testMessage).text("");
+                        showSuccess();
+                    } else {
+                        angular.element(testMessage).text(result.message);
+                        showError();
+                    }
+
+                }, function () {
                     angular.element(testMessage).text(result.message);
                     showError();
                 }
-
-            }).error(function () {
-                angular.element(testMessage).text(result.message);
-                showError();
-            }).finally(function () {
+            ).finally(function () {
                 angular.element(testButton).removeClass("glyphicon-refresh-animate");
             })
         }
@@ -2811,13 +2814,13 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     function getInfos() {
         return RequestsErrorHandler.specificallyHandled(function () {
             return $http.get("internalapi/updates/infos").then(
-                function (data) {
-                    currentVersion = data.data.currentVersion;
-                    latestVersion = data.data.latestVersion;
-                    updateAvailable = data.data.updateAvailable;
-                    latestVersionIgnored = data.data.latestVersionIgnored;
-                    runInDocker = data.data.runInDocker;
-                    return data;
+                function (response) {
+                    currentVersion = response.data.currentVersion;
+                    latestVersion = response.data.latestVersion;
+                    updateAvailable = response.data.updateAvailable;
+                    latestVersionIgnored = response.data.latestVersionIgnored;
+                    runInDocker = response.data.runInDocker;
+                    return response;
                 }
             );
         });
@@ -2825,15 +2828,15 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore?version=" + version).then(function (data) {
-            return data;
+        return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
+            return response;
         });
     }
 
     function getVersionHistory() {
-        return $http.get("internalapi/updates/versionHistory").then(function (data) {
-            versionHistory = data.data;
-            return data;
+        return $http.get("internalapi/updates/versionHistory").then(function (response) {
+            versionHistory = response.data;
+            return response;
         });
     }
 
@@ -3000,9 +3003,9 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}) .then(function (response, status, headers, config) {
             var a = document.createElement('a');
-            var blob = new Blob([data], {'type': "application/octet-stream"});
+            var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
             a.download = "nzbhydra-debuginfos-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
 
@@ -3013,21 +3016,21 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.executeSqlQuery = function () {
-        $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).success(function (data) {
-            if (data.successful) {
-                $scope.foo.csv = data.message;
+        $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).then(function (response) {
+            if (response.data.successful) {
+                $scope.foo.csv = response.data.message;
             } else {
-                growl.error(data.message);
+                growl.error(response.data.message);
             }
         });
     };
 
     $scope.executeSqlUpdate = function () {
-        $http.post('internalapi/debuginfos/executesqlupdate', $scope.foo.sql).success(function (data) {
-            if (data.successful) {
-                $scope.foo.csv = data.message + " rows affected";
+        $http.post('internalapi/debuginfos/executesqlupdate', $scope.foo.sql).then(function (response) {
+            if (response.data.successful) {
+                $scope.foo.csv = response.data.message + " rows affected";
             } else {
-                growl.error(data.message);
+                growl.error(response.data.message);
             }
         });
     };
@@ -3049,7 +3052,7 @@ function StatsService($http) {
     function getStats(after, before, includeDisabled, switchState) {
         var requestBody = {after: after, before: before, includeDisabled: includeDisabled};
         requestBody = _.extend(requestBody, switchState);
-        return $http.post("internalapi/stats", requestBody).success(function (response) {
+        return $http.post("internalapi/stats", requestBody).then(function (response) {
             return response.data;
         });
     }
@@ -3073,10 +3076,10 @@ function StatsService($http) {
                 sortMode: 2
             };
         }
-        return $http.post("internalapi/history/downloads", params).success(function (response) {
+        return $http.post("internalapi/history/downloads", params).then(function (response) {
             return {
-                nzbDownloads: response.content,
-                totalDownloads: response.totalElements
+                nzbDownloads: response.data.content,
+                totalDownloads: response.data.totalElements
             };
 
         });
@@ -4308,9 +4311,9 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/history/searches/forsearching").success(function (response) {
+        return $http.post("internalapi/history/searches/forsearching").then(function (response) {
             return {
-                searchRequests: response
+                searchRequests: response.data
             }
         });
     }
@@ -4340,10 +4343,10 @@ function SearchHistoryService($filter, $http) {
                 sortMode: 2
             };
         }
-        return $http.post("internalapi/history/searches", params).success(function (response) {
+        return $http.post("internalapi/history/searches", params).then(function (response) {
             return {
-                searchRequests: response.content,
-                totalRequests: response.totalElements
+                searchRequests: response.data.content,
+                totalRequests: response.data.totalElements
             }
         });
     }
@@ -4419,8 +4422,8 @@ function SearchHistoryService($filter, $http) {
             stateParams.episode = request.episode;
         }
 
-        _.each(request.identifiers, function(entry) {
-            switch(entry.identifierKey) {
+        _.each(request.identifiers, function (entry) {
+            switch (entry.identifierKey) {
                 case "TMDB":
                     stateParams.tmdbid = entry.identifierValue;
                     break;
@@ -4486,8 +4489,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
     //Preloaded data
-    $scope.searchRequests = history.data.content;
-    $scope.totalRequests = history.data.totalElements;
+    $scope.searchRequests = history.searchRequests;
+    $scope.totalRequests = history.totalRequests;
 
     var anyUsername = false;
     var anyIp = false;
@@ -4637,8 +4640,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
         ModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$http", "searchId"];
         function ModalInstanceCtrl($scope, $uibModalInstance, $http, searchId) {
-            $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
-                $scope.details = data.data;
+            $http.get("internalapi/history/searches/details/" + searchId).then(function (response) {
+                $scope.details = response.data;
             });
         }
 
@@ -4990,8 +4993,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.availableIndexers = getAvailableIndexers();
 
     function getAndSetSearchRequests() {
-        SearchHistoryService.getSearchHistoryForSearching().success(function (data) {
-            $scope.searchHistory = data;
+        SearchHistoryService.getSearchHistoryForSearching().then(function (response) {
+            $scope.searchHistory = response.data;
         });
     }
 
@@ -5022,17 +5025,17 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexersFinished = 0;
 
     updateSearchMessagesInterval = $interval(function () {
-        SearchService.getSearchState(searchRequestId).then(function (data) {
-                $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
-                $scope.searchFinished = data.data.searchFinished;
-                $scope.indexersSelected = data.data.indexersSelected;
-                $scope.indexersFinished = data.data.indexersFinished;
-                $scope.progressMax = data.data.indexersSelected;
-                if ($scope.progressMax > data.data.indexersSelected) {
-                    $scope.progressMax = ">=" + data.data.indexersSelected;
+        SearchService.getSearchState(searchRequestId).then(function (response) {
+                $scope.indexerSelectionFinished = response.data.indexerSelectionFinished;
+                $scope.searchFinished = response.data.searchFinished;
+                $scope.indexersSelected = response.data.indexersSelected;
+                $scope.indexersFinished = response.data.indexersFinished;
+                $scope.progressMax = response.data.indexersSelected;
+                if ($scope.progressMax > response.data.indexersSelected) {
+                    $scope.progressMax = ">=" + response.data.indexersSelected;
                 }
-                if (data.data.messages) {
-                    $scope.messages = data.data.messages;
+                if (response.data.messages) {
+                    $scope.messages = response.data.messages;
                 }
                 if ($scope.searchFinished && !loggedSearchFinished) {
                     $scope.messages.push("Finished searching. Preparing results...");
@@ -5076,8 +5079,8 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
 
 
     function restart(message) {
-        NzbHydraControlService.restart().then(function (data) {
-            startCountdown(message, data.data.message);
+        NzbHydraControlService.restart().then(function (response) {
+            startCountdown(message, response.data.message);
         }, function () {
             growl.info("Unable to send restart command.");
         })
@@ -5445,8 +5448,8 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
         $scope.foo.isMigrating = true;
 
         var updateMigrationMessagesInterval = $interval(function () {
-            $http.get("internalapi/migration/messages").then(function (data) {
-                    $scope.foo.messages = data.data;
+            $http.get("internalapi/migration/messages").then(function (response) {
+                    $scope.foo.messages = response.data;
                 },
                 function () {
                     $interval.cancel(updateMigrationMessagesInterval);
@@ -5521,10 +5524,10 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 }
-            }, function (data) {
+            }, function (response) {
                 $interval.cancel(updateMigrationMessagesInterval);
                 //$scope.foo.isMigrating = false;
-                $scope.foo.messages = [data.data.message];
+                $scope.foo.messages = [response.data.message];
             }
         );
 
@@ -6139,7 +6142,10 @@ angular
                 //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
-                    ConfigBoxService.checkCaps({indexerConfig: $scope.model, checkType: "SINGLE"}).then(function (data) {
+                    ConfigBoxService.checkCaps({
+                        indexerConfig: $scope.model,
+                        checkType: "SINGLE"
+                    }).then(function (data) {
                         data = data[0]; //We get a list of results (with one result because the check type is single)
                         //Formly doesn't allow replacing the model so we need to set all the relevant values ourselves
                         updateIndexerModel($scope.model, data.indexerConfig);
@@ -6381,8 +6387,8 @@ angular
                 $scope.recheck = function (checkType) {
                     ConfigBoxService.checkCaps({checkType: checkType}).then(function (listOfResults) {
                         //A bit ugly, but we have to update the current model with the new data from the list
-                        for (var i=0; i<$scope.model.length;i++) {
-                            for (var j = 0; j< listOfResults.length; j++) {
+                        for (var i = 0; i < $scope.model.length; i++) {
+                            for (var j = 0; j < listOfResults.length; j++) {
                                 if ($scope.model[i].name === listOfResults[j].indexerConfig.name) {
                                     updateIndexerModel($scope.model[i], listOfResults[j].indexerConfig);
                                     $scope.form.$setDirty(true);
@@ -6463,15 +6469,15 @@ function ConfigBoxService($http, $q, $uibModal) {
     function checkConnection(url, settings) {
         var deferred = $q.defer();
 
-        $http.post(url, settings).success(function (result) {
+        $http.post(url, settings).then(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (result.successful) {
-                deferred.resolve({checked: true, message: null, model: result});
+            if (result.data.successful) {
+                deferred.resolve({checked: true, message: null, model: result.data});
             } else {
-                deferred.reject({checked: true, message: result.message});
+                deferred.reject({checked: true, message: result.data.message});
             }
-        }).error(function (result) {
-            deferred.reject({checked: false, message: result.message});
+        }, function (result) {
+            deferred.reject({checked: false, message: result.data.message});
         });
 
         return deferred.promise;
@@ -6513,19 +6519,19 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, growl, c
     var updateMessagesInterval = undefined;
 
     $scope.messages = undefined;
-    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).success(function (data) {
-        $scope.$close([data, capsCheckRequest.indexerConfig]);
-        if (data.length === 0) {
+    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).then(function (response) {
+        $scope.$close([response.data, capsCheckRequest.indexerConfig]);
+        if (response.data.length === 0) {
             growl.info("No indexers were checked");
         }
-    }).error(function () {
+    }, function () {
         $scope.$dismiss("Unknown error")
     });
 
     $timeout(
         updateMessagesInterval = $interval(function () {
-            $http.get("internalapi/indexer/checkCapsMessages").then(function (data) {
-                var map = data.data;
+            $http.get("internalapi/indexer/checkCapsMessages").then(function (response) {
+                var map = response.data;
                 var messages = [];
                 for (var name in map) {
                     if (map.hasOwnProperty(name)) {
@@ -6663,16 +6669,16 @@ function FileDownloadService($http, growl) {
     return service;
 
     function downloadFile(link, filename, method, data) {
-        return $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        return $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).then(function (response, status, headers, config) {
             var a = document.createElement('a');
-            var blob = new Blob([data], {'type': "application/octet-stream"});
+            var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
             a.download = filename;
 
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }).error(function (data, status, headers, config) {
+        },function (data, status, headers, config) {
             growl.error(status);
         });
 
@@ -6809,13 +6815,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         {label: "Content download successful", id: 'CONTENT_DOWNLOAD_SUCCESSFUL'},
         {label: "Content download warning", id: 'CONTENT_DOWNLOAD_WARNING'},
         {label: "Content download error", id: 'CONTENT_DOWNLOAD_ERROR'}
-        ];
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
+    ];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {
+        label: "Internal",
+        value: 'INTERNAL'
+    }];
 
 
     //Preloaded data
-    $scope.nzbDownloads = downloads.data.content;
-    $scope.totalDownloads = downloads.data.totalElements;
+    $scope.nzbDownloads = downloads.nzbDownloads;
+    $scope.totalDownloads = downloads.totalDownloads;
 
     $scope.columnSizes = {
         time: 10,
@@ -7021,16 +7030,16 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     }
 
     function reloadConfig() {
-        return $http.get('internalapi/config/reload').then(function (data) {
-            return data.data;
+        return $http.get('internalapi/config/reload').then(function (response) {
+            return response.data;
         });
     }
 
     function get() {
         var config = cache.get("config");
         if (angular.isUndefined(config)) {
-            config = $http.get('internalapi/config').then(function (data) {
-                return data.data;
+            config = $http.get('internalapi/config').then(function (response) {
+                return response.data;
             });
             cache.put("config", config);
         }
@@ -7043,8 +7052,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
     }
 
     function invalidateSafe() {
-        $http.get('internalapi/config/safe').then(function (data) {
-            safeConfig = data.data;
+        $http.get('internalapi/config/safe').then(function (response) {
+            safeConfig = response.data;
         });
     }
 
@@ -9795,8 +9804,8 @@ function BackupService($http) {
 
 
     function getBackupsList() {
-        return $http.get('internalapi/backup/list').then(function (data) {
-            return data.data;
+        return $http.get('internalapi/backup/list').then(function (response) {
+            return response.data;
         });
     }
 

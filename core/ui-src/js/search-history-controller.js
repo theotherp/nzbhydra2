@@ -26,8 +26,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
 
     //Preloaded data
-    $scope.searchRequests = history.data.content;
-    $scope.totalRequests = history.data.totalElements;
+    $scope.searchRequests = history.searchRequests;
+    $scope.totalRequests = history.totalRequests;
 
     var anyUsername = false;
     var anyIp = false;
@@ -176,8 +176,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
     $scope.showDetails = function (searchId) {
 
         function ModalInstanceCtrl($scope, $uibModalInstance, $http, searchId) {
-            $http.get("internalapi/history/searches/details/" + searchId).then(function (data) {
-                $scope.details = data.data;
+            $http.get("internalapi/history/searches/details/" + searchId).then(function (response) {
+                $scope.details = response.data;
             });
         }
 

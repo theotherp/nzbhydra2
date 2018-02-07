@@ -72,8 +72,8 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
         $scope.foo.isMigrating = true;
 
         var updateMigrationMessagesInterval = $interval(function () {
-            $http.get("internalapi/migration/messages").then(function (data) {
-                    $scope.foo.messages = data.data;
+            $http.get("internalapi/migration/messages").then(function (response) {
+                    $scope.foo.messages = response.data;
                 },
                 function () {
                     $interval.cancel(updateMigrationMessagesInterval);
@@ -148,10 +148,10 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                         }
                     });
                 }
-            }, function (data) {
+            }, function (response) {
                 $interval.cancel(updateMigrationMessagesInterval);
                 //$scope.foo.isMigrating = false;
-                $scope.foo.messages = [data.data.message];
+                $scope.foo.messages = [response.data.message];
             }
         );
 

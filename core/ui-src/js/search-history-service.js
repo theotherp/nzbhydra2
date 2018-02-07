@@ -12,9 +12,9 @@ function SearchHistoryService($filter, $http) {
     };
 
     function getSearchHistoryForSearching() {
-        return $http.post("internalapi/history/searches/forsearching").success(function (response) {
+        return $http.post("internalapi/history/searches/forsearching").then(function (response) {
             return {
-                searchRequests: response
+                searchRequests: response.data
             }
         });
     }
@@ -44,10 +44,10 @@ function SearchHistoryService($filter, $http) {
                 sortMode: 2
             };
         }
-        return $http.post("internalapi/history/searches", params).success(function (response) {
+        return $http.post("internalapi/history/searches", params).then(function (response) {
             return {
-                searchRequests: response.content,
-                totalRequests: response.totalElements
+                searchRequests: response.data.content,
+                totalRequests: response.data.totalElements
             }
         });
     }
@@ -123,8 +123,8 @@ function SearchHistoryService($filter, $http) {
             stateParams.episode = request.episode;
         }
 
-        _.each(request.identifiers, function(entry) {
-            switch(entry.identifierKey) {
+        _.each(request.identifiers, function (entry) {
+            switch (entry.identifierKey) {
                 case "TMDB":
                     stateParams.tmdbid = entry.identifierValue;
                     break;

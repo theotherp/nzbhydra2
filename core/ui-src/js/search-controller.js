@@ -327,8 +327,8 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.availableIndexers = getAvailableIndexers();
 
     function getAndSetSearchRequests() {
-        SearchHistoryService.getSearchHistoryForSearching().success(function (data) {
-            $scope.searchHistory = data;
+        SearchHistoryService.getSearchHistoryForSearching().then(function (response) {
+            $scope.searchHistory = response.data;
         });
     }
 
@@ -359,17 +359,17 @@ function SearchUpdateModalInstanceCtrl($scope, $interval, SearchService, $uibMod
     $scope.indexersFinished = 0;
 
     updateSearchMessagesInterval = $interval(function () {
-        SearchService.getSearchState(searchRequestId).then(function (data) {
-                $scope.indexerSelectionFinished = data.data.indexerSelectionFinished;
-                $scope.searchFinished = data.data.searchFinished;
-                $scope.indexersSelected = data.data.indexersSelected;
-                $scope.indexersFinished = data.data.indexersFinished;
-                $scope.progressMax = data.data.indexersSelected;
-                if ($scope.progressMax > data.data.indexersSelected) {
-                    $scope.progressMax = ">=" + data.data.indexersSelected;
+        SearchService.getSearchState(searchRequestId).then(function (response) {
+                $scope.indexerSelectionFinished = response.data.indexerSelectionFinished;
+                $scope.searchFinished = response.data.searchFinished;
+                $scope.indexersSelected = response.data.indexersSelected;
+                $scope.indexersFinished = response.data.indexersFinished;
+                $scope.progressMax = response.data.indexersSelected;
+                if ($scope.progressMax > response.data.indexersSelected) {
+                    $scope.progressMax = ">=" + response.data.indexersSelected;
                 }
-                if (data.data.messages) {
-                    $scope.messages = data.data.messages;
+                if (response.data.messages) {
+                    $scope.messages = response.data.messages;
                 }
                 if ($scope.searchFinished && !loggedSearchFinished) {
                     $scope.messages.push("Finished searching. Preparing results...");

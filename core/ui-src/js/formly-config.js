@@ -201,7 +201,10 @@ angular
                 //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
-                    ConfigBoxService.checkCaps({indexerConfig: $scope.model, checkType: "SINGLE"}).then(function (data) {
+                    ConfigBoxService.checkCaps({
+                        indexerConfig: $scope.model,
+                        checkType: "SINGLE"
+                    }).then(function (data) {
                         data = data[0]; //We get a list of results (with one result because the check type is single)
                         //Formly doesn't allow replacing the model so we need to set all the relevant values ourselves
                         updateIndexerModel($scope.model, data.indexerConfig);
@@ -443,8 +446,8 @@ angular
                 $scope.recheck = function (checkType) {
                     ConfigBoxService.checkCaps({checkType: checkType}).then(function (listOfResults) {
                         //A bit ugly, but we have to update the current model with the new data from the list
-                        for (var i=0; i<$scope.model.length;i++) {
-                            for (var j = 0; j< listOfResults.length; j++) {
+                        for (var i = 0; i < $scope.model.length; i++) {
+                            for (var j = 0; j < listOfResults.length; j++) {
                                 if ($scope.model[i].name === listOfResults[j].indexerConfig.name) {
                                     updateIndexerModel($scope.model[i], listOfResults[j].indexerConfig);
                                     $scope.form.$setDirty(true);
@@ -525,15 +528,15 @@ function ConfigBoxService($http, $q, $uibModal) {
     function checkConnection(url, settings) {
         var deferred = $q.defer();
 
-        $http.post(url, settings).success(function (result) {
+        $http.post(url, settings).then(function (result) {
             //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (result.successful) {
-                deferred.resolve({checked: true, message: null, model: result});
+            if (result.data.successful) {
+                deferred.resolve({checked: true, message: null, model: result.data});
             } else {
-                deferred.reject({checked: true, message: result.message});
+                deferred.reject({checked: true, message: result.data.message});
             }
-        }).error(function (result) {
-            deferred.reject({checked: false, message: result.message});
+        }, function (result) {
+            deferred.reject({checked: false, message: result.data.message});
         });
 
         return deferred.promise;
@@ -575,19 +578,19 @@ function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, growl, c
     var updateMessagesInterval = undefined;
 
     $scope.messages = undefined;
-    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).success(function (data) {
-        $scope.$close([data, capsCheckRequest.indexerConfig]);
-        if (data.length === 0) {
+    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).then(function (response) {
+        $scope.$close([response.data, capsCheckRequest.indexerConfig]);
+        if (response.data.length === 0) {
             growl.info("No indexers were checked");
         }
-    }).error(function () {
+    }, function () {
         $scope.$dismiss("Unknown error")
     });
 
     $timeout(
         updateMessagesInterval = $interval(function () {
-            $http.get("internalapi/indexer/checkCapsMessages").then(function (data) {
-                var map = data.data;
+            $http.get("internalapi/indexer/checkCapsMessages").then(function (response) {
+                var map = response.data;
                 var messages = [];
                 for (var name in map) {
                     if (map.hasOwnProperty(name)) {

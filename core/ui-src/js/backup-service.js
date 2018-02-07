@@ -11,8 +11,8 @@ function BackupService($http) {
 
 
     function getBackupsList() {
-        return $http.get('internalapi/backup/list').then(function (data) {
-            return data.data;
+        return $http.get('internalapi/backup/list').then(function (response) {
+            return response.data;
         });
     }
 

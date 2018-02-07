@@ -1,7 +1,7 @@
 // For caching HTML templates, see http://paulsalaets.com/pre-caching-angular-templates-with-gulp
 angular.module('templates', []);
 
-var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64','duScroll']);
+var nzbhydraapp = angular.module('nzbhydraApp', ['angular-loading-bar', 'cgBusy', 'ui.bootstrap', 'ipCookie', 'angular-growl', 'angular.filter', 'filters', 'ui.router', 'blockUI', 'mgcrea.ngStrap', 'angularUtils.directives.dirPagination', 'nvd3', 'formly', 'formlyBootstrap', 'frapontillo.bootstrap-switch', 'ui.select', 'ngSanitize', 'checklist-model', 'ngAria', 'ngMessages', 'ui.router.title', 'LocalStorageModule', 'angular.filter', 'ngFileUpload', 'ngCookies', 'angular.chips', 'templates', 'base64', 'duScroll']);
 
 nzbhydraapp.config(['$compileProvider', function ($compileProvider) {
     $compileProvider.debugInfoEnabled(true);
@@ -244,7 +244,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                             return loginRequired($q, $timeout, $state, HydraAuthService, "stats")
                         }],
                         statuses: function ($http) {
-                            return $http.get("internalapi/indexerstatuses").success(function (response) {
+                            return $http.get("internalapi/indexerstatuses").then(function (response) {
                                 return response;
                             });
                         },

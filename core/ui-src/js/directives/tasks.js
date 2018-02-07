@@ -26,13 +26,13 @@ function hydraTasks() {
 
     function controller($scope, $http) {
 
-        $http.get("internalapi/tasks").then(function (data) {
-            $scope.tasks = data.data;
+        $http.get("internalapi/tasks").then(function (response) {
+            $scope.tasks = response.data;
         });
 
         $scope.runTask = function (taskName) {
-            $http.put("internalapi/tasks/" + taskName).then(function (data) {
-                $scope.tasks = data.data;
+            $http.put("internalapi/tasks/" + taskName).then(function (response) {
+                $scope.tasks = response.data;
             });
         }
     }

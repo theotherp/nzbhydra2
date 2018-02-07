@@ -12,7 +12,7 @@ function StatsService($http) {
     function getStats(after, before, includeDisabled, switchState) {
         var requestBody = {after: after, before: before, includeDisabled: includeDisabled};
         requestBody = _.extend(requestBody, switchState);
-        return $http.post("internalapi/stats", requestBody).success(function (response) {
+        return $http.post("internalapi/stats", requestBody).then(function (response) {
             return response.data;
         });
     }
@@ -36,10 +36,10 @@ function StatsService($http) {
                 sortMode: 2
             };
         }
-        return $http.post("internalapi/history/downloads", params).success(function (response) {
+        return $http.post("internalapi/history/downloads", params).then(function (response) {
             return {
-                nzbDownloads: response.content,
-                totalDownloads: response.totalElements
+                nzbDownloads: response.data.content,
+                totalDownloads: response.data.totalElements
             };
 
         });

@@ -19,12 +19,14 @@ function hydralog() {
 
         function getLog(index) {
             if ($scope.active === 0) {
-                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).success(function (data) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).then(function (response) {
+                    var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
                     $scope.hasMoreJsonLines = data.hasMore;
                 });
             } else if ($scope.active === 1) {
-                return $http.get("internalapi/debuginfos/currentlogfile").success(function (data) {
+                return $http.get("internalapi/debuginfos/currentlogfile").then(function (response) {
+                    var data = response.data;
                     $scope.log = $sce.trustAsHtml(data.replace(/&/g, "&amp;")
                         .replace(/</g, "&lt;")
                         .replace(/>/g, "&gt;")
@@ -34,8 +36,8 @@ function hydralog() {
                     growl.error(data)
                 });
             } else if ($scope.active === 2) {
-                return $http.get("internalapi/debuginfos/logfilenames").success(function (data) {
-                    $scope.logfilenames = data;
+                return $http.get("internalapi/debuginfos/logfilenames").then(function (response) {
+                    $scope.logfilenames = response.data;
                 });
             }
         }

@@ -10,17 +10,17 @@ function hydraupdates() {
 
     function controller($scope, UpdateService) {
 
-        $scope.loadingPromise = UpdateService.getInfos().then(function (data) {
-            $scope.currentVersion = data.data.currentVersion;
-            $scope.repVersion = data.data.latestVersion;
-            $scope.updateAvailable = data.data.updateAvailable;
-            $scope.latestVersionIgnored = data.data.latestVersionIgnored;
-            $scope.changelog = data.data.changelog;
-            $scope.runInDocker = data.data.runInDocker;
+        $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
+            $scope.currentVersion = response.data.currentVersion;
+            $scope.repVersion = response.data.latestVersion;
+            $scope.updateAvailable = response.data.updateAvailable;
+            $scope.latestVersionIgnored = response.data.latestVersionIgnored;
+            $scope.changelog = response.data.changelog;
+            $scope.runInDocker = response.data.runInDocker;
         });
 
-        UpdateService.getVersionHistory().then(function (data) {
-            $scope.versionHistory = data.data;
+        UpdateService.getVersionHistory().then(function (response) {
+            $scope.versionHistory = response.data;
         });
 
         $scope.update = function () {

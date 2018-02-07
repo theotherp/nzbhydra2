@@ -36,13 +36,16 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         {label: "Content download successful", id: 'CONTENT_DOWNLOAD_SUCCESSFUL'},
         {label: "Content download warning", id: 'CONTENT_DOWNLOAD_WARNING'},
         {label: "Content download error", id: 'CONTENT_DOWNLOAD_ERROR'}
-        ];
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
+    ];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {
+        label: "Internal",
+        value: 'INTERNAL'
+    }];
 
 
     //Preloaded data
-    $scope.nzbDownloads = downloads.data.content;
-    $scope.totalDownloads = downloads.data.totalElements;
+    $scope.nzbDownloads = downloads.nzbDownloads;
+    $scope.totalDownloads = downloads.totalDownloads;
 
     $scope.columnSizes = {
         time: 10,

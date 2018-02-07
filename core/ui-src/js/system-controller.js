@@ -86,9 +86,9 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}).success(function (data, status, headers, config) {
+        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}) .then(function (response, status, headers, config) {
             var a = document.createElement('a');
-            var blob = new Blob([data], {'type': "application/octet-stream"});
+            var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
             a.download = "nzbhydra-debuginfos-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip";
 
@@ -99,21 +99,21 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.executeSqlQuery = function () {
-        $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).success(function (data) {
-            if (data.successful) {
-                $scope.foo.csv = data.message;
+        $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).then(function (response) {
+            if (response.data.successful) {
+                $scope.foo.csv = response.data.message;
             } else {
-                growl.error(data.message);
+                growl.error(response.data.message);
             }
         });
     };
 
     $scope.executeSqlUpdate = function () {
-        $http.post('internalapi/debuginfos/executesqlupdate', $scope.foo.sql).success(function (data) {
-            if (data.successful) {
-                $scope.foo.csv = data.message + " rows affected";
+        $http.post('internalapi/debuginfos/executesqlupdate', $scope.foo.sql).then(function (response) {
+            if (response.data.successful) {
+                $scope.foo.csv = response.data.message + " rows affected";
             } else {
-                growl.error(data.message);
+                growl.error(response.data.message);
             }
         });
     };

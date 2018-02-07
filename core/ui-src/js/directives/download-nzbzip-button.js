@@ -15,7 +15,6 @@ function downloadNzbzipButton() {
     };
 
     function controller($scope, growl, $http, FileDownloadService) {
-
         $scope.download = function () {
             if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
                 growl.info("You should select at least one result...");
@@ -32,21 +31,21 @@ function downloadNzbzipButton() {
                     searchTitle = "";
                 }
                 var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                $http({method: "post", url: link, data: values}).success(function (response) {
-                    if (response.successful && response.zip !== null) {
+                $http({method: "post", url: link, data: values}).then(function (response) {
+                    if (response.data.successful && response.data.zip !== null) {
                         //FileDownloadService.sendFile($base64.decode(response.zip), filename);
                         link = "internalapi/nzbzipDownload";
-                        FileDownloadService.downloadFile(link, filename, "POST", response.zipFilepath);
+                        FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.addedIds});
+                            $scope.callback({result:response.data.addedIds});
                         }
-                        if (response.missedIds.length > 0) {
+                        if (response.data.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
                         }
                     } else {
-                        growl.error(response.message);
+                        growl.error(response.data.message);
                     }
-                }).error(function (data, status, headers, config) {
+                },function (data, status, headers, config) {
                     growl.error(status);
                 });
             }

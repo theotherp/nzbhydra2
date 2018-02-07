@@ -23,13 +23,13 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
     function getInfos() {
         return RequestsErrorHandler.specificallyHandled(function () {
             return $http.get("internalapi/updates/infos").then(
-                function (data) {
-                    currentVersion = data.data.currentVersion;
-                    latestVersion = data.data.latestVersion;
-                    updateAvailable = data.data.updateAvailable;
-                    latestVersionIgnored = data.data.latestVersionIgnored;
-                    runInDocker = data.data.runInDocker;
-                    return data;
+                function (response) {
+                    currentVersion = response.data.currentVersion;
+                    latestVersion = response.data.latestVersion;
+                    updateAvailable = response.data.updateAvailable;
+                    latestVersionIgnored = response.data.latestVersionIgnored;
+                    runInDocker = response.data.runInDocker;
+                    return response;
                 }
             );
         });
@@ -37,15 +37,15 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
 
     function ignore(version) {
-        return $http.put("internalapi/updates/ignore?version=" + version).then(function (data) {
-            return data;
+        return $http.put("internalapi/updates/ignore?version=" + version).then(function (response) {
+            return response;
         });
     }
 
     function getVersionHistory() {
-        return $http.get("internalapi/updates/versionHistory").then(function (data) {
-            versionHistory = data.data;
-            return data;
+        return $http.get("internalapi/updates/versionHistory").then(function (response) {
+            versionHistory = response.data;
+            return response;
         });
     }
 

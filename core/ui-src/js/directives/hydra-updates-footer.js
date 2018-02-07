@@ -45,12 +45,12 @@ function hydraUpdatesFooter() {
 
         function retrieveUpdateInfos() {
             $scope.checked = true;
-            UpdateService.getInfos().then(function (data) {
-                $scope.currentVersion = data.data.currentVersion;
-                $scope.latestVersion = data.data.latestVersion;
-                $scope.updateAvailable = data.data.updateAvailable;
-                $scope.changelog = data.data.changelog;
-                $scope.runInDocker = data.data.runInDocker;
+            UpdateService.getInfos().then(function (response) {
+                $scope.currentVersion = response.data.currentVersion;
+                $scope.latestVersion = response.data.latestVersion;
+                $scope.updateAvailable = response.data.updateAvailable;
+                $scope.changelog = response.data.changelog;
+                $scope.runInDocker = response.data.runInDocker;
             });
         }
 
@@ -71,7 +71,8 @@ function hydraUpdatesFooter() {
         function checkAndShowNews() {
             RequestsErrorHandler.specificallyHandled(function () {
                 if (ConfigService.getSafe().showNews) {
-                    $http.get("internalapi/news/forcurrentversion").then(function (data) {
+                    $http.get("internalapi/news/forcurrentversion").then(function (response) {
+                        var data = response.data;
                         if (data && data.length > 0) {
                             $uibModal.open({
                                 templateUrl: 'static/html/news-modal.html',
@@ -92,8 +93,8 @@ function hydraUpdatesFooter() {
 
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
-                $http.get("internalapi/welcomeshown").success(function (wasWelcomeShown) {
-                    if (!wasWelcomeShown) {
+                $http.get("internalapi/welcomeshown") .then(function (response) {
+                    if (!response.data) {
                         $http.put("internalapi/welcomeshown");
                         var promise = $uibModal.open({
                             templateUrl: 'static/html/welcome-modal.html',
