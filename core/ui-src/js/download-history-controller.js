@@ -42,7 +42,6 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
         value: 'INTERNAL'
     }];
 
-
     //Preloaded data
     $scope.nzbDownloads = downloads.nzbDownloads;
     $scope.totalDownloads = downloads.totalDownloads;
