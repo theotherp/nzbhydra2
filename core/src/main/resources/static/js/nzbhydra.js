@@ -3160,7 +3160,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
 
     };
 
-    $scope.refresh = function() {
+    $scope.refresh = function () {
         updateStats();
     };
 
@@ -3214,15 +3214,12 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
     $scope.altInputFormats = ['M!/d!/yyyy'];
 
     $scope.setStats = function (stats) {
-        stats = stats.data;
-
         //Only update those stats that were calculated (because this might be an update when one stat has just been enabled)
         _.forEach(stats, function (value, key) {
             if (value !== null) {
                 $scope.stats[key] = value;
             }
         });
-
 
         if ($scope.stats.avgResponseTimes) {
             $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.stats.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
@@ -3242,7 +3239,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.resultsSharesChart.options.chart.xAxis.rotateLabels = rotation;
             $scope.resultsSharesChart.options.chart.height = 350;
         }
-
 
         if ($scope.stats.downloadsPerHourOfDay) {
             $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
@@ -3280,6 +3276,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                 return $filter('number')(d, 0);
             };
             $scope.successfulDownloadsPerIndexerChart.options.chart.showValues = true;
+            $scope.successfulDownloadsPerIndexerChart.options.chart.margin.left = 80;
         }
 
         if ($scope.stats.indexerDownloadShares) {
