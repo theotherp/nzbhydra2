@@ -597,7 +597,7 @@ public class NewznabTest {
 
     @Test
     public void shouldComputeCategory() throws Exception {
-        when(categoryProviderMock.fromSearchNewznabCategories(any(), any())).thenReturn(otherCategory);
+        when(categoryProviderMock.fromResultNewznabCategories(any())).thenReturn(otherCategory);
         testee.config.getCategoryMapping().setAnime(1010);
         SearchResultItem item = new SearchResultItem();
 
