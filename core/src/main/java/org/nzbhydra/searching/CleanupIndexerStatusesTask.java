@@ -42,10 +42,15 @@ public class CleanupIndexerStatusesTask {
     public void cleanup() {
         logger.debug("Running task to clean up indexer statuses");
         for (IndexerStatusEntity entity : repository.findAll()) {
-            if (!entity.getDisabledPermanently() && entity.getDisabledUntil() != null && entity.getDisabledUntil().isBefore(Instant.now())) {
-                entity.setDisabledUntil(null);
-                entity.setReason(null);
-                repository.save(entity);
+            if (!entity.getDisabledPermanently()) {
+                if (entity.getDisabledUntil() != null && entity.getDisabledUntil().isBefore(Instant.now())) {
+                    entity.setDisabledUntil(null);
+                    entity.setReason(null);
+                    repository.save(entity);
+                } else if (entity.getDisabledUntil() == null && entity.getReason() != null) {
+                    entity.setReason(null);
+                    repository.save(entity);
+                }
             }
         }
     }
