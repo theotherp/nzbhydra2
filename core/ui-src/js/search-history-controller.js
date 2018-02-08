@@ -68,8 +68,8 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
     $scope.update = function () {
         SearchHistoryService.getSearchHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (history) {
-            $scope.searchRequests = history.data.content;
-            $scope.totalRequests = history.data.totalElements;
+            $scope.searchRequests = history.searchRequests;
+            $scope.totalRequests = history.totalRequests;
         });
     };
 

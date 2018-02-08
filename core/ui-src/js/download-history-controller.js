@@ -85,8 +85,8 @@ function DownloadHistoryController($scope, StatsService, downloads, ConfigServic
 
     $scope.update = function () {
         StatsService.getDownloadHistory($scope.pagination.current, $scope.limit, $scope.filterModel, sortModel).then(function (downloads) {
-            $scope.nzbDownloads = downloads.data.content;
-            $scope.totalDownloads = downloads.data.totalElements;
+            $scope.nzbDownloads = downloads.nzbDownloads;
+            $scope.totalDownloads = downloads.totalDownloads;
         });
     };
 
