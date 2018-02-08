@@ -235,14 +235,7 @@ public abstract class Indexer<T> {
         status.setDisabledUntil(null);
         indexerRepository.save(indexer);
 
-        IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(indexer);
-        apiAccess.setAccessType(accessType);
-        apiAccess.setResponseTime(responseTime);
-        apiAccess.setResult(IndexerAccessResult.SUCCESSFUL);
-        apiAccess.setTime(Instant.now());
-        indexerApiAccessRepository.save(apiAccess);
-
-        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, true));
+        saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
@@ -263,6 +256,10 @@ public abstract class Indexer<T> {
             getLogger().warn("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
         }
 
+        saveApiAccess(accessType, responseTime, accessResult, false);
+    }
+
+    private void saveApiAccess(IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult, boolean successful) {
         IndexerApiAccessEntity apiAccess = new IndexerApiAccessEntity(indexer);
         apiAccess.setAccessType(accessType);
         apiAccess.setResponseTime(responseTime);
@@ -270,7 +267,7 @@ public abstract class Indexer<T> {
         apiAccess.setTime(Instant.now());
         indexerApiAccessRepository.save(apiAccess);
 
-        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, false));
+        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, successful));
     }
 
     protected void handleIndexerAccessException(IndexerAccessException e, IndexerApiAccessType accessType) {
@@ -289,8 +286,9 @@ public abstract class Indexer<T> {
             error(message);
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
-            error(message, e);
-            apiAccessResult = IndexerAccessResult.HYDRA_ERROR;
+            //Anything else is probably a coding error, don't disable indexer
+            saveApiAccess(accessType, null, IndexerAccessResult.HYDRA_ERROR, false);
+            return;
         }
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult);
     }

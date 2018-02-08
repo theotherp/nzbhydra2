@@ -4,6 +4,7 @@ import com.google.common.io.BaseEncoding;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.web.WebConfiguration;
@@ -50,8 +51,9 @@ public class IndexerWebAccess {
         }
 
         Future<T> future;
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
-            future = Executors.newSingleThreadExecutor().submit(() -> {
+            future = executorService.submit(() -> {
                 String response = webAccess.callUrl(uri.toString(), headers, timeout);
                 if (responseType == String.class) {
                     return (T) response;
@@ -60,10 +62,12 @@ public class IndexerWebAccess {
             });
         } catch (RejectedExecutionException e) {
             logger.error("Unexpected execution exception while executing call for indexer " + indexerConfig.getName() + ". This will hopefully be fixed soon", e);
-            throw new RuntimeException("Unexpected error in hydra code. Sorry...");
+            throw new IndexerProgramErrorException("Unexpected error in hydra code. Sorry...");
+        } finally {
+            executorService.shutdown();
         }
         try {
-            return future.get(timeout +1, TimeUnit.SECONDS); //Give it one second more than the actual timeout
+            return future.get(timeout + 1, TimeUnit.SECONDS); //Give it one second more than the actual timeout
         } catch (ExecutionException e) {
             if (e.getCause() instanceof SocketTimeoutException) {
                 throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());

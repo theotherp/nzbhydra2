@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.3.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Prevent weird 'Unexpected error in hydra code. Sorry...'"
+      }
+    ]
+  },
+  {
     "version": "v1.3.3",
     "changes": [
       {
