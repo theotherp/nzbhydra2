@@ -132,7 +132,7 @@ public class NewznabTest {
         });
         animeCategory.setSubtype(Subtype.ANIME);
         when(categoryProviderMock.fromSubtype(Subtype.ANIME)).thenReturn(Optional.of(animeCategory));
-        when(categoryProviderMock.fromNewznabCategories(any(), any())).thenAnswer(x -> x.getArgument(1));
+        when(categoryProviderMock.fromSearchNewznabCategories(any(), any())).thenAnswer(x -> x.getArgument(1));
         when(categoryProviderMock.getNotAvailable()).thenReturn(naCategory);
     }
 
@@ -446,7 +446,7 @@ public class NewznabTest {
         assertThat(item.getFiles(), is(10));
         assertThat(item.getGrabs(), is(20));
         assertThat(item.getCommentsCount(), is(30));
-        verify(categoryProviderMock, times(1)).fromNewznabCategories(Arrays.asList(5000, 5050), naCategory);
+        verify(categoryProviderMock, times(1)).fromSearchNewznabCategories(Arrays.asList(5000, 5050), naCategory);
 
         rssItem.setRssGuid(new NewznabXmlGuid("123", false));
         rssItem.getNewznabAttributes().clear();
@@ -597,7 +597,7 @@ public class NewznabTest {
 
     @Test
     public void shouldComputeCategory() throws Exception {
-        when(categoryProviderMock.fromNewznabCategories(any(), any())).thenReturn(otherCategory);
+        when(categoryProviderMock.fromSearchNewznabCategories(any(), any())).thenReturn(otherCategory);
         testee.config.getCategoryMapping().setAnime(1010);
         SearchResultItem item = new SearchResultItem();
 

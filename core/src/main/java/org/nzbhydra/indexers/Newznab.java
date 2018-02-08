@@ -456,7 +456,7 @@ public class Newznab extends Indexer<Xml> {
             IndexerCategoryConfig mapping = config.getCategoryMapping();
             Category category;
             if (mapping == null) { //May be the case in some corner cases
-                category = categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
+                category = categoryProvider.fromSearchNewznabCategories(newznabCategories, categoryProvider.getNotAvailable());
                 searchResultItem.setOriginalCategory(categoryProvider.getNotAvailable().getName());
             } else {
                 category = idToCategory.computeIfAbsent(mostSpecific, x -> {
@@ -472,7 +472,7 @@ public class Newznab extends Indexer<Xml> {
                     } else if (mapping.getMagazine().isPresent() && Objects.equals(mapping.getMagazine().get(), mostSpecific)) {
                         categoryOptional = categoryProvider.fromSubtype(Subtype.MAGAZINE);
                     }
-                    return categoryOptional.orElse(categoryProvider.fromNewznabCategories(newznabCategories, categoryProvider.getNotAvailable()));
+                    return categoryOptional.orElse(categoryProvider.fromResultNewznabCategories(newznabCategories));
                 });
             //Use the indexer's own category mapping to build the category name
             searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));

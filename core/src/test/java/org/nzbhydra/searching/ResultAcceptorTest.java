@@ -6,12 +6,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.Category;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.*;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.Newznab;
@@ -244,23 +239,23 @@ public class ResultAcceptorTest {
         category.setIgnoreResultsFrom(SearchSourceRestriction.BOTH);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
 
         category.setIgnoreResultsFrom(SearchSourceRestriction.API);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertTrue(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertTrue(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
 
         category.setIgnoreResultsFrom(SearchSourceRestriction.INTERNAL);
 
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        assertFalse(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertFalse(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkForCategory(searchRequest, HashMultiset.create(), item));
+        assertTrue(testee.checkForCategoryShouldBeIgnored(searchRequest, HashMultiset.create(), item));
     }
 
     @Test

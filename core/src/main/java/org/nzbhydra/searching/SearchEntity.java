@@ -6,16 +6,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.web.SessionStorage;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Objects;
@@ -42,6 +33,7 @@ public class SearchEntity {
     @LazyCollection(LazyCollectionOption.FALSE)
     private Set<IdentifierKeyValuePair> identifiers = new HashSet<>();
     private String categoryName;
+
     private String query;
     private Integer season;
     private String episode;

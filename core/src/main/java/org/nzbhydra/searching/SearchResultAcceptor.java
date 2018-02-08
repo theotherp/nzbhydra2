@@ -74,7 +74,7 @@ public class SearchResultAcceptor {
             if (!checkForAge(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
-            if (!checkForCategory(searchRequest, reasonsForRejection, item)) {
+            if (!checkForCategoryShouldBeIgnored(searchRequest, reasonsForRejection, item)) {
                 continue;
             }
             if (!checkForCategoryDisabledForIndexer(searchRequest, reasonsForRejection, item)) {
@@ -156,7 +156,7 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    protected boolean checkForCategory(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
+    protected boolean checkForCategoryShouldBeIgnored(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
         if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");

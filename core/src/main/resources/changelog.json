@@ -3,6 +3,10 @@
     "version": "v1.3.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Improve conversion of newznab categories to internal categories"
+      },
+      {
         "type": "fix",
         "text": "Exception in migration when providing no database file even when migration of database was requested"
       },
