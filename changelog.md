@@ -1,3 +1,8 @@
+### v1.3.3
+Feature: Improve conversion of newznab categories to internal categories
+Fix: Exception in migration when providing no database file even when migration of database was requested
+Feature: Allow loading of UI files from local folder to allow proper development of UI
+
 ### v1.3.2
 Fix: Settings file was sometimes corrupted (wrong charset) and could not be loaded anymore
 Fix: Delete error column in indexer status page when indexer is reenabled
