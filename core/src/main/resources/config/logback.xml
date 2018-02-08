@@ -1,8 +1,10 @@
 <configuration>
     <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
-    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel"
+                    defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logging.logMaxHistory" defaultValue="30"/>
+    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logging.logMaxHistory"
+                    defaultValue="30"/>
     <!--
     consolelevel: "DEBUG"
     keepLogFiles: 25
@@ -17,8 +19,10 @@
 
     <!--<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>-->
     <conversionRule conversionWord="clr" converterClass="org.nzbhydra.logging.ColorConverter"/>
-    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
-    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wex"
+                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx"
+                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
     <conversionRule conversionWord="mdc" converterClass="org.nzbhydra.logging.MdcLogConverter"/>
 
     <property name="CONSOLE_LOG_PATTERN"
