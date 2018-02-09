@@ -12,7 +12,6 @@ function columnFilterWrapper() {
         controller: controller,
         link: function (scope, element, attr) {
             scope.element = element;
-
         }
     };
 
@@ -35,13 +34,12 @@ function columnFilterWrapper() {
             }
         };
 
-        $scope.$on("filter", function (event, column, filterModel, isActive) {
-            vm.open = false;
+        $scope.$on("filter", function (event, column, filterModel, isActive, open) {
+            vm.open = open || false;
             vm.isActive = isActive;
         });
 
         DebugService.log("filter-wrapper");
-
     }
 
 }
@@ -56,7 +54,8 @@ function freetextFilter(DebugService) {
         require: "^columnFilterWrapper",
         controllerAs: 'innerController',
         scope: {
-            column: "@"
+            column: "@",
+            onKey: "@"
         },
         controller: controller
     };
@@ -68,9 +67,22 @@ function freetextFilter(DebugService) {
             focus("freetext-filter-input");
         });
 
-        $scope.onKeypress = function (keyEvent) {
-            if (keyEvent.which === 13) {
-                $scope.$emit("filter", $scope.column, {filterValue: $scope.data.filter, filterType: "freetext"}, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0);
+        function emitFilterEvent(isOpen) {
+            isOpen = isOpen || false;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.data.filter,
+                filterType: "freetext"
+            }, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0, isOpen);
+        }
+
+        $scope.$on("clear", function () {
+            //Don't clear but close window (event is fired when clicked outside)
+            emitFilterEvent(false);
+        });
+
+        $scope.onKeyUp = function (keyEvent) {
+            if (keyEvent.which === 13 || $scope.onKey) {
+                emitFilterEvent($scope.onKey && keyEvent.which !== 13); //Keep open if triggered by key, close always when enter pressed
             }
         };
         DebugService.log("filter-freetext");
@@ -121,7 +133,6 @@ function checkboxesFilter() {
             $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
         };
         $scope.clear = function () {
-
             $scope.selectAll();
             $scope.active = false;
             $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)

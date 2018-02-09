@@ -3,6 +3,10 @@
     "version": "v1.3.4",
     "changes": [
       {
+        "type": "feature",
+        "text": "Trigger search results title filter while typing"
+      },
+      {
         "type": "fix",
         "text": "Prevent weird 'Unexpected error in hydra code. Sorry...'"
       }
