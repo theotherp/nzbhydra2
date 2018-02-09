@@ -45,7 +45,7 @@ public class AuthConfig extends ValidatingConfig {
         } else if (authType != AuthType.NONE && restrictAdmin && users.stream().noneMatch(UserAuthConfig::isMaySeeAdmin)) {
             errors.add("You've restricted admin access but no user has admin rights");
         } else if (authType != AuthType.NONE && !restrictSearch && !restrictAdmin) {
-            warnings.add("You haven't enabled any access restrictions. Auth will not take any effect");
+            errors.add("You haven't enabled any access restrictions. Auth will not take any effect");
         }
         Set<String> usernames = new HashSet<>();
         List<String> duplicateUsernames = new ArrayList<>();
