@@ -76,7 +76,7 @@ public abstract class SearchResultsPO {
         @Locator(cssSelector = ".column-sortable-title")
         IColumnSortable titleHeader();
 
-        @Locator(cssSelector = ".search-results-header-row .result-title .filter-wrapper")
+        @Locator(id = "title-filter")
         IFreetextFilter titleFilter();
 
         @Locator(cssSelector = ".column-sortable-indexer")

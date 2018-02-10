@@ -2,7 +2,7 @@
   "indexers": [
     {
       "apiKey": "apikey1",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo1",
@@ -12,7 +12,7 @@
     },
     {
       "apiKey": "apikey2",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo2",
@@ -22,7 +22,7 @@
     },
     {
       "apiKey": "apikey3",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo3",
@@ -32,7 +32,7 @@
     },
     {
       "apiKey": "apikey4",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo4",
@@ -42,7 +42,7 @@
     },
     {
       "apiKey": "apikey5",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo5",

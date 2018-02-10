@@ -2,7 +2,7 @@
   "indexers": [
     {
       "apiKey": "apikey1",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "mock1",
@@ -12,7 +12,7 @@
     },
     {
       "apiKey": "apikey2",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "mock2",

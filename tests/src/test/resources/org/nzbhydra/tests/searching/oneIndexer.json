@@ -2,7 +2,7 @@
   "indexers": [
     {
       "apiKey": "apikey",
-      "enabled": true,
+      "state": "ENABLED",
       "enabledForSearchSource": "BOTH",
       "host": "http://127.0.0.1:7070",
       "name": "hallo1",

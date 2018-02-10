@@ -154,7 +154,7 @@ public class NzbDownloadingTests {
         HttpRequest expectedRequest = HttpRequest
                 .request("/sabnzbd/api")
                 .withQueryStringParameter("mode", "addurl")
-                .withQueryStringParameter("name", "http://127.0.0.1:5077/getnzb/api/" + searchResultId + "?apikey")
+                .withQueryStringParameter("name", "http://localhost/getnzb/api/" + searchResultId + "?apikey=apikey")
                 .withMethod("POST");
         mockServer.when(expectedRequest).respond(HttpResponse.response().withStatusCode(200).withBody("{\"isStatus\":true}"));
 
