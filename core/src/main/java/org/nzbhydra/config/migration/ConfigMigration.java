@@ -31,13 +31,17 @@ public class ConfigMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);
 
+    protected List<ConfigMigrationStep> steps;
+    protected int expectedConfigVersion;
+
+    public ConfigMigration() {
+        steps = getMigrationSteps();
+        expectedConfigVersion = new MainConfig().getConfigVersion();
+    }
 
     public Map<String, Object> migrate(Map<String, Object> map) {
+        int configVersion = getConfigVersionFromConfigMap(map);
 
-        int configVersion;
-        configVersion = getConfigVersionFromConfigMap(map);
-
-        List<ConfigMigrationStep> steps = getMigrationSteps();
         for (ConfigMigrationStep step : steps) {
             if (configVersion <= step.forVersion()) {
                 logger.info("Migrating config from version {}", step.forVersion());
@@ -45,9 +49,8 @@ public class ConfigMigration {
                 configVersion = getConfigVersionFromConfigMap(map);
             }
         }
-        Integer expectedConfigVersion = new MainConfig().getConfigVersion();
         if (configVersion != expectedConfigVersion) {
-            logger.error("Expected the config to be at version {} but it's at version {}", expectedConfigVersion, configVersion);
+            throw new RuntimeException(String.format("Expected the config after migration to be at version %d but it's at version %d", expectedConfigVersion, configVersion));
         }
 
         return map;
@@ -64,7 +67,7 @@ public class ConfigMigration {
         return configVersion;
     }
 
-    protected List<ConfigMigrationStep> getMigrationSteps() {
+    protected static List<ConfigMigrationStep> getMigrationSteps() {
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new AssignableTypeFilter(ConfigMigrationStep.class));
         Set<BeanDefinition> candidates = provider.findCandidateComponents(ConfigMigrationStep.class.getPackage().getName());
