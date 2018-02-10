@@ -3,7 +3,7 @@
             ng-class="{'config-incomplete': !indexer.configComplete, 'not-all-checked': (indexer.configComplete && !indexer.allCapsChecked)}"
     >{{ indexer.name }}
     </button>
-    <indexer-state-switch indexer="indexer"/>
+    <indexer-state-switch indexer="indexer" handle-width="135px"/>
     <div class="form-group" style="margin-left: 10px">
         <div class="input-group">
             <input type="number" keep-focus ng-model="indexer.score" class="form-control"

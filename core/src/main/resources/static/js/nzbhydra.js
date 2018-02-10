@@ -1403,12 +1403,12 @@ function indexerStateSwitch() {
 
     function controller($scope) {
         $scope.value = $scope.indexer.state === "ENABLED";
-        $scope.handleWidth = $scope.handleWidth || "125px";
+        $scope.handleWidth = $scope.handleWidth || "130px";
         var initialized = false;
 
         function calculateTextAndColor() {
             if ($scope.indexer.state === "DISABLED_USER") {
-                $scope.offText = "User disabled";
+                $scope.offText = "Disabled by user";
                 $scope.offColor = "default";
             } else if ($scope.indexer.state === "DISABLED_SYSTEM_TEMPORARY") {
                 $scope.offText = "Temporary disabled";
