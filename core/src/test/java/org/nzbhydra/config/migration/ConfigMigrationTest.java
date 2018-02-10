@@ -24,9 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.MainConfig;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,18 +54,17 @@ public class ConfigMigrationTest {
         testee.steps = Arrays.asList(configMigrationStepMock);
         testee.expectedConfigVersion = 2;
 
-        testee.migrate(input);
+        Map<String, Object> result = testee.migrate(input);
 
         verify(configMigrationStepMock).migrate(input);
+        assertThat((int) ((Map<String, Object>) result.get("main")).get("configVersion")).isEqualTo(2);
     }
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfWrongConfigVersionAfterMigration() {
         HashMap<String, Object> input = new HashMap<>(ImmutableMap.of("main", new HashMap<>(ImmutableMap.of("configVersion", 1))));
 
-        when(configMigrationStepMock.forVersion()).thenReturn(1);
-        when(configMigrationStepMock.migrate(any())).thenReturn(input);
-        testee.steps = Arrays.asList(configMigrationStepMock);
+        testee.steps = Collections.emptyList(); //Just don't call any steps, this will skip the loop, not increasing the version
         testee.expectedConfigVersion = 2;
 
         testee.migrate(input);

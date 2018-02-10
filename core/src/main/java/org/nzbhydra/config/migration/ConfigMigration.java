@@ -46,9 +46,11 @@ public class ConfigMigration {
             if (configVersion <= step.forVersion()) {
                 logger.info("Migrating config from version {}", step.forVersion());
                 map = step.migrate(map);
-                configVersion = getConfigVersionFromConfigMap(map);
             }
+            configVersion = step.forVersion() + 1;
+            ((Map<String, Object>) map.get("main")).put("configVersion", step.forVersion() + 1);
         }
+
         if (configVersion != expectedConfigVersion) {
             throw new RuntimeException(String.format("Expected the config after migration to be at version %d but it's at version %d", expectedConfigVersion, configVersion));
         }
