@@ -336,7 +336,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
 
     function getAndSetSearchRequests() {
         SearchHistoryService.getSearchHistoryForSearching().then(function (response) {
-            $scope.searchHistory = response.data;
+            $scope.searchHistory = response.searchRequests;
         });
     }
 
@@ -350,7 +350,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     $scope.$on("searchResultsShown", function () {
         _.defer(getAndSetSearchRequests); //Defer because otherwise the results are only shown when this returns which may take a while with big databases
     });
-
 }
 
 angular
