@@ -7,8 +7,12 @@
 
             <!--<pre ng-bind-html="log" style="text-align: left; height: 65vh; overflow-y: scroll" id="logfile"></pre>-->
             <div style="margin-bottom: 10px">
-                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
-                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
+                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get
+                    newer entries
+                </button>
+                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older
+                    entries
+                </button>
             </div>
             <table class="table table-hover" style="margin-bottom: 10px">
                 <thead class="search-results-header">
@@ -32,7 +36,7 @@
                     <td>{{line.logger_name | formatClassname}}</td>
                     <td>
                         <div style="width: 945px; overflow: hidden; text-overflow: ellipsis"> <!--Hacky but works :-(-->
-                        {{::line.message}}
+                            {{::line.message}}
 
                         </div>
                     </td>
@@ -40,8 +44,12 @@
                 </tbody>
             </table>
             <div style="margin-bottom: 20px">
-                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get newer entries</button>
-                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older entries</button>
+                <button class="btn btn-default" ng-click="getNewerFormatted()" ng-disabled="currentJsonIndex === 0">Get
+                    newer entries
+                </button>
+                <button class="btn btn-default" ng-click="getOlderFormatted()" ng-disabled="!hasMoreJsonLines">Get older
+                    entries
+                </button>
             </div>
         </div>
     </uib-tab>

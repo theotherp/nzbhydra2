@@ -10,7 +10,7 @@ function hydraNews() {
 
     function controller($scope, $http) {
 
-        return $http.get("internalapi/news") .then(function (response) {
+        return $http.get("internalapi/news").then(function (response) {
             $scope.news = response.data;
         });
 

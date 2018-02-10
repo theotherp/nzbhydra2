@@ -93,7 +93,7 @@ function hydraUpdatesFooter() {
 
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
-                $http.get("internalapi/welcomeshown") .then(function (response) {
+                $http.get("internalapi/welcomeshown").then(function (response) {
                     if (!response.data) {
                         $http.put("internalapi/welcomeshown");
                         var promise = $uibModal.open({
@@ -110,7 +110,7 @@ function hydraUpdatesFooter() {
                     } else {
                         _.defer(checkAndShowNews);
                     }
-                }, function() {
+                }, function () {
                     console.log("Error while checking for welcome")
                 });
             });

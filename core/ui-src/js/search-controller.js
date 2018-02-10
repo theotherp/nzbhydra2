@@ -309,7 +309,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             return indexer.name.toLowerCase();
         })
             .map(function (indexer) {
-                return {name: indexer.name, activated: isIndexerPreselected(indexer), preselect: indexer.preselect, categories: indexer.categories, searchModuleType: indexer.searchModuleType};
+                return {
+                    name: indexer.name,
+                    activated: isIndexerPreselected(indexer),
+                    preselect: indexer.preselect,
+                    categories: indexer.categories,
+                    searchModuleType: indexer.searchModuleType
+                };
             }).value();
         _.forEach(availableIndexersList, function (x) {
             var deselectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) === -1);

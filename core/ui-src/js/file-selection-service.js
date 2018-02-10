@@ -23,7 +23,11 @@ function FileSelectionService($http, $q, $uibModal) {
             size: "md",
             resolve: {
                 data: function () {
-                    return $http.post("internalapi/config/folderlisting", {fullPath: angular.isDefined(fullPath) ? fullPath : null, goUp: false, type: type});
+                    return $http.post("internalapi/config/folderlisting", {
+                        fullPath: angular.isDefined(fullPath) ? fullPath : null,
+                        goUp: false,
+                        type: type
+                    });
                 },
                 type: function () {
                     return type;
@@ -54,14 +58,22 @@ angular
         if (selectType === "file" && type === "file") {
             $uibModalInstance.close(fileOrFolder.fullPath);
         } else if (selectType === "folder") {
-            $http.post("internalapi/config/folderlisting", {fullPath: fileOrFolder.fullPath, type: type, goUp: false}).then(function (data) {
+            $http.post("internalapi/config/folderlisting", {
+                fullPath: fileOrFolder.fullPath,
+                type: type,
+                goUp: false
+            }).then(function (data) {
                 $scope.data = data.data;
             })
         }
     };
 
     $scope.goUp = function () {
-        $http.post("internalapi/config/folderlisting", {fullPath: $scope.data.fullPath, type: type, goUp: true}).then(function (data) {
+        $http.post("internalapi/config/folderlisting", {
+            fullPath: $scope.data.fullPath,
+            type: type,
+            goUp: true
+        }).then(function (data) {
             $scope.data = data.data;
         })
     };

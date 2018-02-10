@@ -23,7 +23,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {
+        label: "Internal",
+        value: 'INTERNAL'
+    }];
 
     //Preloaded data
     $scope.searchRequests = history.searchRequests;
@@ -100,7 +103,11 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
 
     $scope.openSearch = function (request) {
-        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
+        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {
+            inherit: false,
+            notify: true,
+            reload: true
+        });
     };
 
     $scope.formatQuery = function (request) {

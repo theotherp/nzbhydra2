@@ -19,7 +19,12 @@ function hydralog() {
 
         function getLog(index) {
             if ($scope.active === 0) {
-                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).then(function (response) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {
+                    params: {
+                        offset: index,
+                        limit: 500
+                    }
+                }).then(function (response) {
                     var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
                     $scope.hasMoreJsonLines = data.hasMore;
@@ -32,7 +37,7 @@ function hydralog() {
                         .replace(/>/g, "&gt;")
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;"));
-                }, function(data) {
+                }, function (data) {
                     growl.error(data)
                 });
             } else if ($scope.active === 2) {

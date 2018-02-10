@@ -30,7 +30,7 @@ function columnFilterWrapper() {
             }
         };
 
-        vm.clear = function() {
+        vm.clear = function () {
             if (vm.open) {
                 $scope.$broadcast("clear");
             }
@@ -133,13 +133,21 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            $scope.active =   $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.active = $scope.selected.entries.length < $scope.entries.length;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: _.pluck($scope.selected.entries, "id"),
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selectAll();
             $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
         DebugService.log("filter-checkboxes");
@@ -168,7 +176,10 @@ function booleanFilter(DebugService) {
 
         $scope.apply = function () {
             $scope.active = $scope.selected.value !== $scope.options[0].value;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.selected.value,
+                filterType: "boolean"
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selected.value = true;
@@ -224,7 +235,12 @@ function timeFilter() {
 
         $scope.apply = function () {
             $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: {
+                    after: $scope.selected.afterDate,
+                    before: $scope.selected.beforeDate
+                }, filterType: "time"
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selected.beforeDate = undefined;
@@ -258,12 +274,20 @@ function numberRangeFilter() {
 
         function apply() {
             $scope.active = $scope.filterValue.min || $scope.filterValue.max;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.filterValue,
+                filterType: "numberRange"
+            }, $scope.active)
         }
+
         $scope.clear = function () {
             $scope.filterValue = {min: undefined, max: undefined};
             $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "numberRange", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "numberRange",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
 

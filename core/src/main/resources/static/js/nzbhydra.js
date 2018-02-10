@@ -982,7 +982,7 @@ function searchResult() {
             }
         });
 
-        $scope.$on("duplicatesDisplayed", function($event, value) {
+        $scope.$on("duplicatesDisplayed", function ($event, value) {
             $scope.foo.duplicatesDisplayed = value;
             if (!value) {
                 //Collapse duplicate groups they shouldn't be displayed
@@ -1126,8 +1126,8 @@ function searchResult() {
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
 
-        $scope.kify =  function() {
-           return function (number) {
+        $scope.kify = function () {
+            return function (number) {
                 if (number > 1000) {
                     return Math.round(number / 1000) + "k";
                 }
@@ -1157,7 +1157,7 @@ function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
 
 angular
     .module('nzbhydraApp')
-    .filter('kify', function() {
+    .filter('kify', function () {
         return function (number) {
             if (number > 1000) {
                 return Math.round(number / 1000) + "k";
@@ -1274,7 +1274,7 @@ function dropdownMultiselectDirective() {
                             $scope.buttonText = $scope.selectedModel.join(", ");
                         }
                     } else {
-                        if (angular.isUndefined($scope.selectedModel) ||($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+                        if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
                             $scope.buttonText = $scope.settings.noSelectedText;
                         } else {
                             $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
@@ -1694,7 +1694,7 @@ function hydraUpdatesFooter() {
 
         function checkAndShowWelcome() {
             RequestsErrorHandler.specificallyHandled(function () {
-                $http.get("internalapi/welcomeshown") .then(function (response) {
+                $http.get("internalapi/welcomeshown").then(function (response) {
                     if (!response.data) {
                         $http.put("internalapi/welcomeshown");
                         var promise = $uibModal.open({
@@ -1711,7 +1711,7 @@ function hydraUpdatesFooter() {
                     } else {
                         _.defer(checkAndShowNews);
                     }
-                }, function() {
+                }, function () {
                     console.log("Error while checking for welcome")
                 });
             });
@@ -1751,28 +1751,6 @@ function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationSe
         $state.go("root.config.main");
     }
 }
-angular
-    .module('nzbhydraApp')
-    .directive('hydraNews', hydraNews);
-
-function hydraNews() {
-    controller.$inject = ["$scope", "$http"];
-    return {
-        templateUrl: "static/html/directives/news.html",
-        controller: controller
-    };
-
-    function controller($scope, $http) {
-
-        return $http.get("internalapi/news") .then(function (response) {
-            $scope.news = response.data;
-        });
-
-
-    }
-}
-
-
 
 LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
 escapeHtml.$inject = ["$sanitize"];angular
@@ -1797,7 +1775,12 @@ function hydralog() {
 
         function getLog(index) {
             if ($scope.active === 0) {
-                return $http.get("internalapi/debuginfos/jsonlogs", {params: {offset: index, limit: 500}}).then(function (response) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {
+                    params: {
+                        offset: index,
+                        limit: 500
+                    }
+                }).then(function (response) {
                     var data = response.data;
                     $scope.jsonLogLines = angular.fromJson(data.lines);
                     $scope.hasMoreJsonLines = data.hasMore;
@@ -1810,7 +1793,7 @@ function hydralog() {
                         .replace(/>/g, "&gt;")
                         .replace(/"/g, "&quot;")
                         .replace(/'/g, "&#039;"));
-                }, function(data) {
+                }, function (data) {
                     growl.error(data)
                 });
             } else if ($scope.active === 2) {
@@ -2007,7 +1990,7 @@ function downloadNzbzipButton() {
                         link = "internalapi/nzbzipDownload";
                         FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.data.addedIds});
+                            $scope.callback({result: response.data.addedIds});
                         }
                         if (response.data.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
@@ -2015,7 +1998,7 @@ function downloadNzbzipButton() {
                     } else {
                         growl.error(response.data.message);
                     }
-                },function (data, status, headers, config) {
+                }, function (data, status, headers, config) {
                     growl.error(status);
                 });
             }
@@ -2072,7 +2055,7 @@ function downloadNzbsButton() {
                     growl.info("Some the selected results are torrent results which were skipped");
                 }
 
-                var tos = _.map(searchResults, function(entry) {
+                var tos = _.map(searchResults, function (entry) {
                     return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
                 });
 
@@ -2097,40 +2080,40 @@ function downloadNzbsButton() {
             }
         };
 
-       $scope.sendToBlackhole = function() {
-           var didFilterOutResults = false;
-           var didKeepAnyResults = false;
-           var searchResults = _.filter($scope.searchResults, function (value) {
-               if (value.downloadType === "TORRENT") {
-                   didKeepAnyResults = true;
-                   return true;
-               } else {
-                   console.log("Not sending NZB result to black hole");
-                   didFilterOutResults = true;
-                   return false;
-               }
-           });
-           if (didFilterOutResults && !didKeepAnyResults) {
-               growl.info("None of the selected results were torrents. Adding aborted");
-               if (angular.isDefined($scope.callback)) {
-                   $scope.callback({result: []});
-               }
-               return;
-           } else if (didFilterOutResults && didKeepAnyResults) {
-               growl.info("Some the selected results are NZB results which were skipped");
-           }
-           var searchResultIds = _.pluck(searchResults, "searchResultId");
-           $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
-               if (response.data.successful) {
-                   growl.info("Successfully saved all torrents");
-               } else {
-                   growl.error(response.data.message);
-               }
-               if (angular.isDefined($scope.callback)) {
-                   $scope.callback({result: response.data.addedIds});
-               }
-           });
-       }
+        $scope.sendToBlackhole = function () {
+            var didFilterOutResults = false;
+            var didKeepAnyResults = false;
+            var searchResults = _.filter($scope.searchResults, function (value) {
+                if (value.downloadType === "TORRENT") {
+                    didKeepAnyResults = true;
+                    return true;
+                } else {
+                    console.log("Not sending NZB result to black hole");
+                    didFilterOutResults = true;
+                    return false;
+                }
+            });
+            if (didFilterOutResults && !didKeepAnyResults) {
+                growl.info("None of the selected results were torrents. Adding aborted");
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: []});
+                }
+                return;
+            } else if (didFilterOutResults && didKeepAnyResults) {
+                growl.info("Some the selected results are NZB results which were skipped");
+            }
+            var searchResultIds = _.pluck(searchResults, "searchResultId");
+            $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
+                if (response.data.successful) {
+                    growl.info("Successfully saved all torrents");
+                } else {
+                    growl.error(response.data.message);
+                }
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: response.data.addedIds});
+                }
+            });
+        }
 
     }
 }
@@ -2171,7 +2154,7 @@ function columnFilterWrapper() {
             }
         };
 
-        vm.clear = function() {
+        vm.clear = function () {
             if (vm.open) {
                 $scope.$broadcast("clear");
             }
@@ -2276,13 +2259,21 @@ function checkboxesFilter() {
         };
 
         $scope.apply = function () {
-            $scope.active =   $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {filterValue: _.pluck($scope.selected.entries, "id"), filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.active = $scope.selected.entries.length < $scope.entries.length;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: _.pluck($scope.selected.entries, "id"),
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selectAll();
             $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "checkboxes", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
         DebugService.log("filter-checkboxes");
@@ -2312,7 +2303,10 @@ function booleanFilter(DebugService) {
 
         $scope.apply = function () {
             $scope.active = $scope.selected.value !== $scope.options[0].value;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.selected.value, filterType: "boolean"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.selected.value,
+                filterType: "boolean"
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selected.value = true;
@@ -2369,7 +2363,12 @@ function timeFilter() {
 
         $scope.apply = function () {
             $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {filterValue: {after: $scope.selected.afterDate, before: $scope.selected.beforeDate}, filterType: "time"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: {
+                    after: $scope.selected.afterDate,
+                    before: $scope.selected.beforeDate
+                }, filterType: "time"
+            }, $scope.active)
         };
         $scope.clear = function () {
             $scope.selected.beforeDate = undefined;
@@ -2404,12 +2403,20 @@ function numberRangeFilter() {
 
         function apply() {
             $scope.active = $scope.filterValue.min || $scope.filterValue.max;
-            $scope.$emit("filter", $scope.column, {filterValue: $scope.filterValue, filterType: "numberRange"}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.filterValue,
+                filterType: "numberRange"
+            }, $scope.active)
         }
+
         $scope.clear = function () {
             $scope.filterValue = {min: undefined, max: undefined};
             $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "numberRange", isBoolean: $scope.isBoolean}, $scope.active)
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "numberRange",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
         };
         $scope.$on("clear", $scope.clear);
 
@@ -2572,128 +2579,128 @@ function connectionTest() {
 
 //Taken from https://github.com/IamAdamJowett/angular-click-outside
 
-    clickOutside.$inject = ["$document", "$parse", "$timeout"];
-function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
-    while((c=c.parentNode)&&c!==p);
+clickOutside.$inject = ["$document", "$parse", "$timeout"];
+function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
+    while ((c = c.parentNode) && c !== p) ;
     return !!c;
 };
 
-    angular
-        .module('nzbhydraApp').directive("clickOutside", clickOutside);
+angular
+    .module('nzbhydraApp').directive("clickOutside", clickOutside);
 
-    /**
-     * @ngdoc directive
-     * @name angular-click-outside.directive:clickOutside
-     * @description Directive to add click outside capabilities to DOM elements
-     * @requires $document
-     * @requires $parse
-     * @requires $timeout
-     **/
-    function clickOutside($document, $parse, $timeout) {
-        return {
-            restrict: 'A',
-            link: function($scope, elem, attr) {
+/**
+ * @ngdoc directive
+ * @name angular-click-outside.directive:clickOutside
+ * @description Directive to add click outside capabilities to DOM elements
+ * @requires $document
+ * @requires $parse
+ * @requires $timeout
+ **/
+function clickOutside($document, $parse, $timeout) {
+    return {
+        restrict: 'A',
+        link: function ($scope, elem, attr) {
 
-                // postpone linking to next digest to allow for unique id generation
-                $timeout(function() {
-                    var classList = (attr.outsideIfNot !== undefined) ? attr.outsideIfNot.split(/[ ,]+/) : [],
-                        fn;
+            // postpone linking to next digest to allow for unique id generation
+            $timeout(function () {
+                var classList = (attr.outsideIfNot !== undefined) ? attr.outsideIfNot.split(/[ ,]+/) : [],
+                    fn;
 
-                    function eventHandler(e) {
-                        var i,
-                            element,
-                            r,
-                            id,
-                            classNames,
-                            l;
+                function eventHandler(e) {
+                    var i,
+                        element,
+                        r,
+                        id,
+                        classNames,
+                        l;
 
-                        // check if our element already hidden and abort if so
-                        if (angular.element(elem).hasClass("ng-hide")) {
+                    // check if our element already hidden and abort if so
+                    if (angular.element(elem).hasClass("ng-hide")) {
+                        return;
+                    }
+
+                    // if there is no click target, no point going on
+                    if (!e || !e.target) {
+                        return;
+                    }
+
+                    if (angular.isDefined(attr.outsideIgnore) && $scope.$eval(attr.outsideIgnore)) {
+                        return;
+                    }
+                    var isChild = childOf(e.target, elem.context);
+                    if (isChild) {
+                        return;
+                    }
+                    // loop through the available elements, looking for classes in the class list that might match and so will eat
+                    for (element = e.target; element; element = element.parentNode) {
+                        // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
+                        if (element === elem[0]) {
                             return;
                         }
 
-                        // if there is no click target, no point going on
-                        if (!e || !e.target) {
-                            return;
+                        // now we have done the initial checks, start gathering id's and classes
+                        id = element.id,
+                            classNames = element.className,
+                            l = classList.length;
+
+                        // Unwrap SVGAnimatedString classes
+                        if (classNames && classNames.baseVal !== undefined) {
+                            classNames = classNames.baseVal;
                         }
 
-                        if (angular.isDefined(attr.outsideIgnore) && $scope.$eval(attr.outsideIgnore)) {
-                            return;
-                        }
-                        var isChild = childOf(e.target, elem.context);
-                        if (isChild) {
-                            return;
-                        }
-                        // loop through the available elements, looking for classes in the class list that might match and so will eat
-                        for (element = e.target; element; element = element.parentNode) {
-                            // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
-                            if (element === elem[0]) {
-                                return;
-                            }
+                        // if there are no class names on the element clicked, skip the check
+                        if (classNames || id) {
 
-                            // now we have done the initial checks, start gathering id's and classes
-                            id = element.id,
-                                classNames = element.className,
-                                l = classList.length;
+                            // loop through the elements id's and classnames looking for exceptions
+                            for (i = 0; i < l; i++) {
+                                //prepare regex for class word matching
+                                r = new RegExp('\\b' + classList[i] + '\\b');
 
-                            // Unwrap SVGAnimatedString classes
-                            if (classNames && classNames.baseVal !== undefined) {
-                                classNames = classNames.baseVal;
-                            }
-
-                            // if there are no class names on the element clicked, skip the check
-                            if (classNames || id) {
-
-                                // loop through the elements id's and classnames looking for exceptions
-                                for (i = 0; i < l; i++) {
-                                    //prepare regex for class word matching
-                                    r = new RegExp('\\b' + classList[i] + '\\b');
-
-                                    // check for exact matches on id's or classes, but only if they exist in the first place
-                                    if ((id !== undefined && id === classList[i]) || (classNames && r.test(classNames))) {
-                                        // now let's exit out as it is an element that has been defined as being ignored for clicking outside
-                                        return;
-                                    }
+                                // check for exact matches on id's or classes, but only if they exist in the first place
+                                if ((id !== undefined && id === classList[i]) || (classNames && r.test(classNames))) {
+                                    // now let's exit out as it is an element that has been defined as being ignored for clicking outside
+                                    return;
                                 }
                             }
                         }
-
-                        // if we have got this far, then we are good to go with processing the command passed in via the click-outside attribute
-                        $timeout(function() {
-                            fn = $parse(attr['clickOutside']);
-                            fn($scope, { event: e });
-                        });
                     }
 
-                    // if the devices has a touchscreen, listen for this event
-                    if (_hasTouch()) {
-                        $document.on('touchstart', eventHandler);
-                    }
-
-                    // still listen for the click event even if there is touch to cater for touchscreen laptops
-                    $document.on('click', eventHandler);
-
-                    // when the scope is destroyed, clean up the documents event handlers as we don't want it hanging around
-                    $scope.$on('$destroy', function() {
-                        if (_hasTouch()) {
-                            $document.off('touchstart', eventHandler);
-                        }
-
-                        $document.off('click', eventHandler);
+                    // if we have got this far, then we are good to go with processing the command passed in via the click-outside attribute
+                    $timeout(function () {
+                        fn = $parse(attr['clickOutside']);
+                        fn($scope, {event: e});
                     });
+                }
 
-                    /**
-                     * @description Private function to attempt to figure out if we are on a touch device
-                     * @private
-                     **/
-                    function _hasTouch() {
-                        // works on most browsers, IE10/11 and Surface
-                        return 'ontouchstart' in window || navigator.maxTouchPoints;
-                    };
+                // if the devices has a touchscreen, listen for this event
+                if (_hasTouch()) {
+                    $document.on('touchstart', eventHandler);
+                }
+
+                // still listen for the click event even if there is touch to cater for touchscreen laptops
+                $document.on('click', eventHandler);
+
+                // when the scope is destroyed, clean up the documents event handlers as we don't want it hanging around
+                $scope.$on('$destroy', function () {
+                    if (_hasTouch()) {
+                        $document.off('touchstart', eventHandler);
+                    }
+
+                    $document.off('click', eventHandler);
                 });
-            }
-        };
-    }
+
+                /**
+                 * @description Private function to attempt to figure out if we are on a touch device
+                 * @private
+                 **/
+                function _hasTouch() {
+                    // works on most browsers, IE10/11 and Surface
+                    return 'ontouchstart' in window || navigator.maxTouchPoints;
+                };
+            });
+        }
+    };
+}
 
 angular
     .module('nzbhydraApp')
@@ -2849,7 +2856,8 @@ function addableNzb(DebugService) {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [{
                 searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
-                originalCategory: $scope.searchresult.originalCategory}], $scope.alwaysAsk).then(function (response) {
+                originalCategory: $scope.searchresult.originalCategory
+            }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful) {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
@@ -3083,7 +3091,11 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}) .then(function (response, status, headers, config) {
+        $http({
+            method: 'GET',
+            url: 'internalapi/debuginfos/logandconfig',
+            responseType: 'arraybuffer'
+        }).then(function (response, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
@@ -4028,7 +4040,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
 
 
-
         var sortPredicateKey = sortModel.column;
         var sortReversed = sortModel.reversed;
 
@@ -4563,7 +4574,10 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
         $scope.categoriesForFiltering.push({label: category.name, id: category.name})
     });
     $scope.preselectedTimeInterval = {beforeDate: null, afterDate: null};
-    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {label: "Internal", value: 'INTERNAL'}];
+    $scope.accessOptionsForFiltering = [{label: "All", value: "all"}, {label: "API", value: 'API'}, {
+        label: "Internal",
+        value: 'INTERNAL'
+    }];
 
     //Preloaded data
     $scope.searchRequests = history.searchRequests;
@@ -4640,7 +4654,11 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
 
 
     $scope.openSearch = function (request) {
-        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {inherit: false, notify: true, reload: true});
+        $state.go("root.search", SearchHistoryService.getStateParamsForRepeatedSearch(request), {
+            inherit: false,
+            notify: true,
+            reload: true
+        });
     };
 
     $scope.formatQuery = function (request) {
@@ -5052,7 +5070,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
             return indexer.name.toLowerCase();
         })
             .map(function (indexer) {
-                return {name: indexer.name, activated: isIndexerPreselected(indexer), preselect: indexer.preselect, categories: indexer.categories, searchModuleType: indexer.searchModuleType};
+                return {
+                    name: indexer.name,
+                    activated: isIndexerPreselected(indexer),
+                    preselect: indexer.preselect,
+                    categories: indexer.categories,
+                    searchModuleType: indexer.searchModuleType
+                };
             }).value();
         _.forEach(availableIndexersList, function (x) {
             var deselectedBefore = (_.indexOf(previouslyAvailable, x.name) > -1 && _.indexOf(alreadySelected, x.name) === -1);
@@ -5263,7 +5287,11 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
     return service;
 
     function sendNzbAddCommand(downloader, searchResults, category) {
-        var params = {downloaderName: downloader.name, searchResults: searchResults, category: category === "No category" ? "" : category};
+        var params = {
+            downloaderName: downloader.name,
+            searchResults: searchResults,
+            category: category === "No category" ? "" : category
+        };
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
@@ -5512,7 +5540,11 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
             }
         } else {
             url = "internalapi/migration/files";
-            params = {settingsCfgFile: $scope.foo.settingsCfgFile, dbFile: $scope.foo.nzbhydraDbFile, doMigrateDatabase: $scope.doMigrateDatabase};
+            params = {
+                settingsCfgFile: $scope.foo.settingsCfgFile,
+                dbFile: $scope.foo.nzbhydraDbFile,
+                doMigrateDatabase: $scope.doMigrateDatabase
+            };
             if (!params.settingsCfgFile || (!params.dbFile && params.doMigrateDatabase)) {
                 $scope.foo.isMigrating = false;
                 ModalService.open("Requirements not met", "You did not enter all required valued", {
@@ -5718,6 +5750,7 @@ function reformatDate() {
         return moment.unix(date).local().format(format);
     }
 }
+
 angular
     .module('nzbhydraApp')
     .filter('reformatDateSeconds', reformatDateSeconds);
@@ -5834,7 +5867,11 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
 
     function getUserRights() {
         var userInfos = getUserInfos();
-        return {maySeeStats: userInfos.maySeeStats, maySeeAdmin: userInfos.maySeeAdmin, maySeeSearch: userInfos.maySeeSearch};
+        return {
+            maySeeStats: userInfos.maySeeStats,
+            maySeeAdmin: userInfos.maySeeAdmin,
+            maySeeSearch: userInfos.maySeeSearch
+        };
     }
 
     function getUserName() {
@@ -6718,7 +6755,11 @@ function FileSelectionService($http, $q, $uibModal) {
             size: "md",
             resolve: {
                 data: function () {
-                    return $http.post("internalapi/config/folderlisting", {fullPath: angular.isDefined(fullPath) ? fullPath : null, goUp: false, type: type});
+                    return $http.post("internalapi/config/folderlisting", {
+                        fullPath: angular.isDefined(fullPath) ? fullPath : null,
+                        goUp: false,
+                        type: type
+                    });
                 },
                 type: function () {
                     return type;
@@ -6749,14 +6790,22 @@ angular
         if (selectType === "file" && type === "file") {
             $uibModalInstance.close(fileOrFolder.fullPath);
         } else if (selectType === "folder") {
-            $http.post("internalapi/config/folderlisting", {fullPath: fileOrFolder.fullPath, type: type, goUp: false}).then(function (data) {
+            $http.post("internalapi/config/folderlisting", {
+                fullPath: fileOrFolder.fullPath,
+                type: type,
+                goUp: false
+            }).then(function (data) {
                 $scope.data = data.data;
             })
         }
     };
 
     $scope.goUp = function () {
-        $http.post("internalapi/config/folderlisting", {fullPath: $scope.data.fullPath, type: type, goUp: true}).then(function (data) {
+        $http.post("internalapi/config/folderlisting", {
+            fullPath: $scope.data.fullPath,
+            type: type,
+            goUp: true
+        }).then(function (data) {
             $scope.data = data.data;
         })
     };
@@ -6780,7 +6829,12 @@ function FileDownloadService($http, growl) {
     return service;
 
     function downloadFile(link, filename, method, data) {
-        return $http({method: method, url: link, data: data, responseType: 'arraybuffer'}).then(function (response, status, headers, config) {
+        return $http({
+            method: method,
+            url: link,
+            data: data,
+            responseType: 'arraybuffer'
+        }).then(function (response, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);
@@ -6789,7 +6843,7 @@ function FileDownloadService($http, growl) {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        },function (data, status, headers, config) {
+        }, function (data, status, headers, config) {
             growl.error(status);
         });
 
@@ -6859,8 +6913,9 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
             }
         });
 
-        instance.result.then(function() {}, function() {
-            deferred.reject("dismissed");
+        instance.result.then(function () {
+            }, function () {
+                deferred.reject("dismissed");
             }
         );
         deferred = $q.defer();
@@ -7087,7 +7142,7 @@ function DebugService($filter) {
             debug[name]["last"] = new Date().getTime();
         }
     }
-    
+
     function print() {
         return; //Re-enable if necessary
         for (var key in debug) {
@@ -7098,7 +7153,6 @@ function DebugService($filter) {
             }
         }
     }
-
 
 
 }

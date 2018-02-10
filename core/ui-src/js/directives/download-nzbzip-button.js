@@ -37,7 +37,7 @@ function downloadNzbzipButton() {
                         link = "internalapi/nzbzipDownload";
                         FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
                         if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result:response.data.addedIds});
+                            $scope.callback({result: response.data.addedIds});
                         }
                         if (response.data.missedIds.length > 0) {
                             growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
@@ -45,7 +45,7 @@ function downloadNzbzipButton() {
                     } else {
                         growl.error(response.data.message);
                     }
-                },function (data, status, headers, config) {
+                }, function (data, status, headers, config) {
                     growl.error(status);
                 });
             }

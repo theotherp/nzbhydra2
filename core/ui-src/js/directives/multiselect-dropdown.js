@@ -52,7 +52,7 @@ function dropdownMultiselectDirective() {
                             $scope.buttonText = $scope.selectedModel.join(", ");
                         }
                     } else {
-                        if (angular.isUndefined($scope.selectedModel) ||($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+                        if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
                             $scope.buttonText = $scope.settings.noSelectedText;
                         } else {
                             $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";

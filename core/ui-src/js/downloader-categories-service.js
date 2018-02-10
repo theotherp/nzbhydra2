@@ -57,8 +57,9 @@ function DownloaderCategoriesService($http, $q, $uibModal) {
             }
         });
 
-        instance.result.then(function() {}, function() {
-            deferred.reject("dismissed");
+        instance.result.then(function () {
+            }, function () {
+                deferred.reject("dismissed");
             }
         );
         deferred = $q.defer();

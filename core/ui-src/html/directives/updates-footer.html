@@ -14,18 +14,27 @@
   ~  limitations under the License.
   -->
 
-<div id="footer" ng-if="updateAvailable" ng-cloak="" class="alert alert-info" role="alert" style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
+<div id="footer" ng-if="updateAvailable" ng-cloak="" class="alert alert-info" role="alert"
+     style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
     <div class="container" ng-if="!runInDocker">
-        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="latestVersion"></span>.<br>
-        <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!</button>
-        <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update</button>
+        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span
+            ng-bind-html="latestVersion"></span>.<br>
+        <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's
+            new!
+        </button>
+        <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update
+        </button>
         <button class="btn btn-success" type="button" ng-click="update()" style="margin-top: 5px;">Update now!</button>
     </div>
     <div class="container" ng-if="runInDocker" style="font-size: larger;">
-        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span ng-bind-html="latestVersion"></span>.
+        An update is available. Your version: <span ng-bind-html="currentVersion"></span>. Latest version: <span
+            ng-bind-html="latestVersion"></span>.
         You seem to be running Hydra inside docker. Please update your container.
-        <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's new!</button>
-        <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update</button>
+        <button class="btn btn-default" type="button" ng-click="showChangelog()" style="margin-top: 5px;">See what's
+            new!
+        </button>
+        <button class="btn btn-warning" type="button" ng-click="ignore()" style="margin-top: 5px">Ignore this update
+        </button>
     </div>
 
 </div>

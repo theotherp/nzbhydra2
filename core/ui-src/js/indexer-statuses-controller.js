@@ -70,6 +70,7 @@ function reformatDate() {
         return moment.unix(date).local().format(format);
     }
 }
+
 angular
     .module('nzbhydraApp')
     .filter('reformatDateSeconds', reformatDateSeconds);

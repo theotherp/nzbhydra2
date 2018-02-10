@@ -29,7 +29,8 @@
             </column-filter-wrapper>
         </th>
         <th class="col-md-1" style="width: {{columnSizes.result}}%;">
-            <column-sortable column="status">Result <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+            <column-sortable column="status">Result <span class="glyphicon glyphicon-question-sign"
+                                                          tooltip-placement="auto top"
                                                           uib-tooltip="Actual download result only available if Hydra's downloader user scripts are used"></span></div>
             </column-sortable>
             <column-filter-wrapper>
@@ -64,23 +65,27 @@
     </tr>
     </thead>
     <tbody>
-    <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage:limit" total-items="totalDownloads" current-page="pagination.current" pagination-id="downloads">
+    <tr dir-paginate="nzbDownload in nzbDownloads | itemsPerPage:limit" total-items="totalDownloads"
+        current-page="pagination.current" pagination-id="downloads">
         <td class="narrow-row">{{ ::nzbDownload.time | reformatDate }}</td>
         <td class="narrow-row">{{ ::nzbDownload.searchResult.indexer.name }}</td>
         <td class="narrow-row">
             <span ng-style="{'visibility':!nzbDownload.searchResult.indexerGuid ? 'hidden' : 'initial'}">
                 <span ng-switch on="::nzbDownload.searchResult.downloadType">
                     <span ng-switch-when="TORRENT">
-                        <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                        <a target="_blank" href="gettorrent/user/{{ ::nzbDownload.searchResult.id }}"
+                           style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
                            class="no-underline result-torrent-download-link"
                            uib-tooltip="Download torrent"
                            tooltip-placement="top"
                            tooltip-trigger="mouseenter"><span class="glyphicon glyphicon-save"></span>
                         </a>
-                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id" ng-if="::result.link.indexOf('magnet:') > -1"></send-torrent-to-blackhole>
+                        <send-torrent-to-blackhole search-result-id="nzbDownload.searchResult.id"
+                                                   ng-if="::result.link.indexOf('magnet:') > -1"></send-torrent-to-blackhole>
                     </span>
                     <span ng-switch-default>
-                        <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}" style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
+                        <a target="_blank" href="getnzb/user/{{ ::nzbDownload.searchResult.id }}"
+                           style="vertical-align: middle; margin-left: 3px; margin-right: 3px"
                            class="no-underline result-nzb-download-link"
                            uib-tooltip="Download NZB"
                            tooltip-placement="top"
@@ -89,7 +94,8 @@
                         <addable-nzbs searchresult="::nzbDownload.searchResult" always-ask="true"></addable-nzbs>
                     </span>
                 </span>
-                <a target="_blank" href="{{ ::nzbDownload.searchResult.details | dereferer }}" ng-if="nzbDownload.searchResult.details">{{ ::nzbDownload.searchResult.title }}</a><span
+                <a target="_blank" href="{{ ::nzbDownload.searchResult.details | dereferer }}"
+                   ng-if="nzbDownload.searchResult.details">{{ ::nzbDownload.searchResult.title }}</a><span
                     ng-if="!nzbDownload.searchResult.details">{{ nzbDownload.searchResult.title }}</span>
             </span>
         </td>
@@ -104,4 +110,5 @@
     </tbody>
 </table>
 
-<dir-pagination-controls on-page-change="pageChanged(newPageNumber)" pagination-id="downloads"></dir-pagination-controls>
+<dir-pagination-controls on-page-change="pageChanged(newPageNumber)"
+                         pagination-id="downloads"></dir-pagination-controls>

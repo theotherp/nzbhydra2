@@ -83,7 +83,11 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
 
     function getUserRights() {
         var userInfos = getUserInfos();
-        return {maySeeStats: userInfos.maySeeStats, maySeeAdmin: userInfos.maySeeAdmin, maySeeSearch: userInfos.maySeeSearch};
+        return {
+            maySeeStats: userInfos.maySeeStats,
+            maySeeAdmin: userInfos.maySeeAdmin,
+            maySeeSearch: userInfos.maySeeSearch
+        };
     }
 
     function getUserName() {

@@ -57,7 +57,11 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
             }
         } else {
             url = "internalapi/migration/files";
-            params = {settingsCfgFile: $scope.foo.settingsCfgFile, dbFile: $scope.foo.nzbhydraDbFile, doMigrateDatabase: $scope.doMigrateDatabase};
+            params = {
+                settingsCfgFile: $scope.foo.settingsCfgFile,
+                dbFile: $scope.foo.nzbhydraDbFile,
+                doMigrateDatabase: $scope.doMigrateDatabase
+            };
             if (!params.settingsCfgFile || (!params.dbFile && params.doMigrateDatabase)) {
                 $scope.foo.isMigrating = false;
                 ModalService.open("Requirements not met", "You did not enter all required valued", {

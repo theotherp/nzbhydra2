@@ -86,7 +86,11 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
     };
 
     $scope.downloadDebuggingInfos = function () {
-        $http({method: 'GET', url: 'internalapi/debuginfos/logandconfig', responseType: 'arraybuffer'}) .then(function (response, status, headers, config) {
+        $http({
+            method: 'GET',
+            url: 'internalapi/debuginfos/logandconfig',
+            responseType: 'arraybuffer'
+        }).then(function (response, status, headers, config) {
             var a = document.createElement('a');
             var blob = new Blob([response.data], {'type': "application/octet-stream"});
             a.href = URL.createObjectURL(blob);

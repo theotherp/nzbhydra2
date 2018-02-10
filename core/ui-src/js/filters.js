@@ -7,8 +7,8 @@ filters.filter('bytes', function () {
 });
 
 filters
-    .filter('unsafe', ['$sce', function($sce){
-        return function(text) {
+    .filter('unsafe', ['$sce', function ($sce) {
+        return function (text) {
             return $sce.trustAsHtml(text);
         };
     }]);

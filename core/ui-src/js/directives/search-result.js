@@ -50,7 +50,7 @@ function searchResult() {
             }
         });
 
-        $scope.$on("duplicatesDisplayed", function($event, value) {
+        $scope.$on("duplicatesDisplayed", function ($event, value) {
             $scope.foo.duplicatesDisplayed = value;
             if (!value) {
                 //Collapse duplicate groups they shouldn't be displayed
@@ -194,8 +194,8 @@ function searchResult() {
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
 
-        $scope.kify =  function() {
-           return function (number) {
+        $scope.kify = function () {
+            return function (number) {
                 if (number > 1000) {
                     return Math.round(number / 1000) + "k";
                 }
@@ -225,7 +225,7 @@ function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
 
 angular
     .module('nzbhydraApp')
-    .filter('kify', function() {
+    .filter('kify', function () {
         return function (number) {
             if (number > 1000) {
                 return Math.round(number / 1000) + "k";

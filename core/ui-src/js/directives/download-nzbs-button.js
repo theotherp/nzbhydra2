@@ -45,7 +45,7 @@ function downloadNzbsButton() {
                     growl.info("Some the selected results are torrent results which were skipped");
                 }
 
-                var tos = _.map(searchResults, function(entry) {
+                var tos = _.map(searchResults, function (entry) {
                     return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
                 });
 
@@ -70,40 +70,40 @@ function downloadNzbsButton() {
             }
         };
 
-       $scope.sendToBlackhole = function() {
-           var didFilterOutResults = false;
-           var didKeepAnyResults = false;
-           var searchResults = _.filter($scope.searchResults, function (value) {
-               if (value.downloadType === "TORRENT") {
-                   didKeepAnyResults = true;
-                   return true;
-               } else {
-                   console.log("Not sending NZB result to black hole");
-                   didFilterOutResults = true;
-                   return false;
-               }
-           });
-           if (didFilterOutResults && !didKeepAnyResults) {
-               growl.info("None of the selected results were torrents. Adding aborted");
-               if (angular.isDefined($scope.callback)) {
-                   $scope.callback({result: []});
-               }
-               return;
-           } else if (didFilterOutResults && didKeepAnyResults) {
-               growl.info("Some the selected results are NZB results which were skipped");
-           }
-           var searchResultIds = _.pluck(searchResults, "searchResultId");
-           $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
-               if (response.data.successful) {
-                   growl.info("Successfully saved all torrents");
-               } else {
-                   growl.error(response.data.message);
-               }
-               if (angular.isDefined($scope.callback)) {
-                   $scope.callback({result: response.data.addedIds});
-               }
-           });
-       }
+        $scope.sendToBlackhole = function () {
+            var didFilterOutResults = false;
+            var didKeepAnyResults = false;
+            var searchResults = _.filter($scope.searchResults, function (value) {
+                if (value.downloadType === "TORRENT") {
+                    didKeepAnyResults = true;
+                    return true;
+                } else {
+                    console.log("Not sending NZB result to black hole");
+                    didFilterOutResults = true;
+                    return false;
+                }
+            });
+            if (didFilterOutResults && !didKeepAnyResults) {
+                growl.info("None of the selected results were torrents. Adding aborted");
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: []});
+                }
+                return;
+            } else if (didFilterOutResults && didKeepAnyResults) {
+                growl.info("Some the selected results are NZB results which were skipped");
+            }
+            var searchResultIds = _.pluck(searchResults, "searchResultId");
+            $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
+                if (response.data.successful) {
+                    growl.info("Successfully saved all torrents");
+                } else {
+                    growl.error(response.data.message);
+                }
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: response.data.addedIds});
+                }
+            });
+        }
 
     }
 }

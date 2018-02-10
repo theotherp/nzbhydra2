@@ -3,7 +3,8 @@
 </div>
 <div class="modal-body" style="text-align: left">
     <div class="list-group">
-        <li ng-repeat="entry in versionHistory" class="list-group-item" style="padding-top: 20px; padding-bottom: 20px;">
+        <li ng-repeat="entry in versionHistory" class="list-group-item"
+            style="padding-top: 20px; padding-bottom: 20px;">
             <h3 style="margin-top: 0">{{::entry.version}}</h3>
             <div ng-repeat="change in entry.changes" style="margin-bottom: 5px">
                 <span ng-switch="change.type" style="margin-right: 5px">

@@ -1,11 +1,14 @@
 <div class="btn-group">
-    <button class="btn selection-button-invert-selection" ng-class="'btn-' + btn" ng-click="invertSelection()">Invert selection</button>
-    <button type="button" class="btn dropdown-toggle selection-button-toggle-dropdown" ng-class="'btn-' + btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <button class="btn selection-button-invert-selection" ng-class="'btn-' + btn" ng-click="invertSelection()">Invert
+        selection
+    </button>
+    <button type="button" class="btn dropdown-toggle selection-button-toggle-dropdown" ng-class="'btn-' + btn"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="caret"></span>
         <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu">
         <li><a href="#" ng-click="selectAll(true)" class="selection-button-select-all">Select all</a></li>
-        <li><a href="#" ng-click="deselectAll(false)"  class="selection-button-deselect-all">Deselect all</a></li>
+        <li><a href="#" ng-click="deselectAll(false)" class="selection-button-deselect-all">Deselect all</a></li>
     </ul>
 </div>

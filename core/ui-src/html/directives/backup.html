@@ -2,7 +2,9 @@
 
     <!-- Split button -->
     <div class="btn-group" uib-dropdown>
-        <button id="split-button" type="button" class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create and download backup</button>
+        <button id="split-button" type="button" class="btn btn-primary" ng-click="createAndDownloadBackupFile()">Create
+            and download backup
+        </button>
         <button type="button" class="btn btn-primary" uib-dropdown-toggle>
             <span class="caret"></span>
             <span class="sr-only">Split button!</span>
@@ -18,7 +20,9 @@
     <button type="file" ngf-select="uploadBackupFile($file, $invalidFiles)" class="btn btn-primary">
         Upload and restore from file
     </button>
-    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded" class="progress-striped active" style="margin-top: 10px"><span style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span>
+    <uib-progressbar ng-class="{'hidden': !uploadActive}" max="file.total" value="file.loaded"
+                     class="progress-striped active" style="margin-top: 10px"><span
+            style="color:white; white-space:nowrap;">{{ file.loaded }} kB</span>
     </uib-progressbar>
 
 
@@ -31,9 +35,13 @@
                 <th class="col-md-1" style="text-align: left">Restore</th>
             </tr>
             <tr ng-repeat="backup in backups" class="row">
-                <td class="col-md-15" style="text-align: left"><a href="internalapi/getbackupfile?filename={{ backup.filename }}" target="_self">{{ backup.filename }}</a></td>
+                <td class="col-md-15" style="text-align: left"><a
+                        href="internalapi/getbackupfile?filename={{ backup.filename }}" target="_self">{{
+                    backup.filename }}</a></td>
                 <td class="col-md-4" style="text-align: left">{{ backup.creationDate | reformatDate }}</td>
-                <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat" ng-click="restoreFromFile(backup.filename)"></span></td>
+                <td class="col-md-1" style="text-align: center"><span class="glyphicon glyphicon-repeat"
+                                                                      ng-click="restoreFromFile(backup.filename)"></span>
+                </td>
             </tr>
 
         </table>

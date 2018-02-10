@@ -1,19 +1,23 @@
 <div class="input-group" style="margin-left: 5px; margin-top: 5px; margin-bottom: 5px">
 
-    <span selection-button invert-selection="invert" select-all="selectAll" deselect-all="deselectAll" btn="primary"></span>
+    <span selection-button invert-selection="invert" select-all="selectAll" deselect-all="deselectAll"
+          btn="primary"></span>
 </div>
 
 <li ng-repeat="entry in entries" style="margin-left: 5px; margin-right: 5px">
     <span style="white-space:nowrap">
         <label class="dropdown-label">
-            <input type="checkbox" data-checklist-model="selected.entries" data-checklist-value="entry" class="checkbox-filter-option" data-label="{{::entry.label}}"> {{ ::entry.label }}
+            <input type="checkbox" data-checklist-model="selected.entries" data-checklist-value="entry"
+                   class="checkbox-filter-option" data-label="{{::entry.label}}"> {{ ::entry.label }}
         </label>
     </span>
 </li>
 
-<button type="button" class="btn btn-primary checkbox-filter-button-apply" ng-click="apply()" style="margin-left: 5px; margin-bottom: 5px">
+<button type="button" class="btn btn-primary checkbox-filter-button-apply" ng-click="apply()"
+        style="margin-left: 5px; margin-bottom: 5px">
     Apply
 </button>
-<button type="button" class="btn btn-primary checkbox-filter-button-clear" ng-click="clear()" style="margin-right: 5px; margin-bottom: 5px; float: right">
+<button type="button" class="btn btn-primary checkbox-filter-button-clear" ng-click="clear()"
+        style="margin-right: 5px; margin-bottom: 5px; float: right">
     Clear
 </button>

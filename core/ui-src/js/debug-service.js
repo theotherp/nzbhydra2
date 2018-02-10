@@ -34,7 +34,7 @@ function DebugService($filter) {
             debug[name]["last"] = new Date().getTime();
         }
     }
-    
+
     function print() {
         return; //Re-enable if necessary
         for (var key in debug) {
@@ -45,7 +45,6 @@ function DebugService($filter) {
             }
         }
     }
-
 
 
 }

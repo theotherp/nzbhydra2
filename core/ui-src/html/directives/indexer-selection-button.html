@@ -15,16 +15,20 @@
   -->
 
 <div class="btn-group">
-    <button class="btn selection-button-invert-selection btn-default" ng-click="invertSelection()">Invert selection</button>
-    <button type="button" class="btn dropdown-toggle selection-button-toggle-dropdown btn-default" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <button class="btn selection-button-invert-selection btn-default" ng-click="invertSelection()">Invert selection
+    </button>
+    <button type="button" class="btn dropdown-toggle selection-button-toggle-dropdown btn-default"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <span class="caret"></span>
         <span class="sr-only">Toggle Dropdown</span>
     </button>
     <ul class="dropdown-menu">
         <li><a href="#" ng-click="reset()" class="selection-button-reset-selection">Reset to preselection</a></li>
         <li><a href="#" ng-click="selectAll()" class="selection-button-select-all">Select all</a></li>
-        <li><a href="#" ng-click="deselectAll()"  class="selection-button-deselect-all">Deselect all</a></li>
-        <li><a href="#" ng-if="::anyTorrentIndexersSelectable" ng-click="selectAllUsenet()"  class="selection-button-select-usenet">Select all usenet indexers</a></li>
-        <li><a href="#" ng-if="::anyTorrentIndexersSelectable" ng-click="selectAllTorrent()"  class="selection-button-select-torrent">Select all torrent indexers</a></li>
+        <li><a href="#" ng-click="deselectAll()" class="selection-button-deselect-all">Deselect all</a></li>
+        <li><a href="#" ng-if="::anyTorrentIndexersSelectable" ng-click="selectAllUsenet()"
+               class="selection-button-select-usenet">Select all usenet indexers</a></li>
+        <li><a href="#" ng-if="::anyTorrentIndexersSelectable" ng-click="selectAllTorrent()"
+               class="selection-button-select-torrent">Select all torrent indexers</a></li>
     </ul>
 </div>

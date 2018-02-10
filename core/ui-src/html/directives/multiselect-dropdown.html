@@ -1,10 +1,13 @@
 <!--Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly-->
 
-<div class="multiselect-parent btn-group dropdown-multiselect dropdown ng-class:settings.classes" ng-class="{open: open}" >
+<div class="multiselect-parent btn-group dropdown-multiselect dropdown ng-class:settings.classes"
+     ng-class="{open: open}">
     <div ng-transclude=toggleDropdown ng-click=toggleDropdown()>
-        <button ng-disabled=disabled type=button class="btn btn-default dropdown-toggle">{{buttonText}}&nbsp;<span class=caret style="position: absolute; left: 90%; top: 45%;"></span></button>
+        <button ng-disabled=disabled type=button class="btn btn-default dropdown-toggle">{{buttonText}}&nbsp;<span
+                class=caret style="position: absolute; left: 90%; top: 45%;"></span></button>
     </div>
-    <ul class="dropdown-menu dropdown-menu-form" ng-if=open ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
+    <ul class="dropdown-menu dropdown-menu-form" ng-if=open
+        ng-style="{display: open ? 'block' : 'none', height : 'auto', overflow: 'auto' }">
         <li ng-if="settings.showSelectAll">
             <a data-ng-click=selectAll() tabindex=-1 id=selectAll>
                 <span class="glyphicon glyphicon-ok"></span>
