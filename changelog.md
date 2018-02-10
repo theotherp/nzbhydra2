@@ -1,3 +1,8 @@
+### v1.4.0
+Feature: Rewrote the display of indexer statuses. An indexer's status is now displayed in the indexer config section (where you would probably expect it). The 'Enabled' switch was extended and now will show one of the states 'Enabled', 'Temporarily disabled', 'Permanently disabled' or 'User disabled' and an explanation. THe Indexer statuses view does still show alle the indexers' statuses but is less cluttered
+Feature: Show search results filter box in table header because some users didn't find the filter icons
+Fix: Prevent weird 'Unexpected error in hydra code. Sorry...'
+
 ### v1.3.3
 Feature: Improve conversion of newznab categories to internal categories
 Fix: Exception in migration when providing no database file even when migration of database was requested
