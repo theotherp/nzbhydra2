@@ -64,12 +64,12 @@ public class StatsComponentTest {
         indexerConfig1 = new IndexerConfig();
         indexerConfig1.setName("indexer1");
         indexerConfig1.setSearchModuleType(SearchModuleType.NEWZNAB);
-        indexerConfig1.setEnabled(true);
+        indexerConfig1.setState(IndexerConfig.State.ENABLED);
         indexerConfig1.setHost("somehost");
         indexerConfig2 = new IndexerConfig();
         indexerConfig2.setName("indexer2");
         indexerConfig2.setSearchModuleType(SearchModuleType.NEWZNAB);
-        indexerConfig2.setEnabled(false);
+        indexerConfig2.setState(IndexerConfig.State.DISABLED_USER);
         indexerConfig2.setHost("somehost");
         searchModuleConfigProvider.setIndexers(Arrays.asList(indexerConfig1, indexerConfig2));
         searchModuleProvider.loadIndexers(Arrays.asList(indexerConfig1, indexerConfig2));

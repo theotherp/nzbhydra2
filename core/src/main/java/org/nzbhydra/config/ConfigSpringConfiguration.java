@@ -30,6 +30,4 @@ public class ConfigSpringConfiguration {
         return configProvider.getBaseConfig().getDownloading();
     }
 
-
-
 }

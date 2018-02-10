@@ -4,6 +4,10 @@
     "changes": [
       {
         "type": "feature",
+        "text": "Rewrote the display of indexer statuses. An indexer's status is now displayed in the indexer config section (where you would probably expect it). The 'Enabled' switch was extended and now will show one of the states 'Enabled', 'Temporarily disabled', 'Permanently disabled' or 'User disabled' and an explanation. THe Indexer statuses view does still show alle the indexers' statuses but is less cluttered"
+      },
+      {
+        "type": "feature",
         "text": "Trigger search results title filter while typing"
       },
       {

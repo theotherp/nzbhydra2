@@ -302,7 +302,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
         $scope.selectedIndexers = [];
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            var indexerAvailableForSearch = indexer.state === "ENABLED" || (indexer.state === "DISABLED_SYSTEM_TEMPORARY" && safeConfig.searching.ignoreTemporarilyDisabled);
+            var categorySelectedForIndexer = (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexerAvailableForSearch && indexer.showOnSearch && categorySelectedForIndexer;
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })

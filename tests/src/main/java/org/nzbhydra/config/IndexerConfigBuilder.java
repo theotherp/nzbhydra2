@@ -31,7 +31,7 @@ public final class IndexerConfigBuilder {
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
-    private boolean enabled = true;
+    private IndexerConfig.State state = IndexerConfig.State.ENABLED;
     private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
     private Integer hitLimit = null;
@@ -93,8 +93,8 @@ public final class IndexerConfigBuilder {
         return this;
     }
 
-    public IndexerConfigBuilder enabled(boolean enabled) {
-        this.enabled = enabled;
+    public IndexerConfigBuilder state(IndexerConfig.State state) {
+        this.state = state;
         return this;
     }
 
@@ -197,7 +197,7 @@ public final class IndexerConfigBuilder {
         indexerConfig.setConfigComplete(configComplete);
         indexerConfig.setEnabledCategories(enabledCategories);
         indexerConfig.setDownloadLimit(downloadLimit);
-        indexerConfig.setEnabled(enabled);
+        indexerConfig.setState(state);
         indexerConfig.setEnabledForSearchSource(enabledForSearchSource);
         indexerConfig.setGeneralMinSize(generalMinSize);
         indexerConfig.setHitLimit(hitLimit);

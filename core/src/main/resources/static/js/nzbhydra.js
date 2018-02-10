@@ -1384,6 +1384,70 @@ angular
 
 angular
     .module('nzbhydraApp')
+    .directive('indexerStateSwitch', indexerStateSwitch);
+
+function indexerStateSwitch() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/indexer-state-switch.html',
+        scope: {
+            indexer: "=",
+            handleWidth: "@"
+        },
+        replace: true,
+        controller: controller
+    };
+
+    function controller($scope) {
+        $scope.value = $scope.indexer.state === "ENABLED";
+        $scope.handleWidth = $scope.handleWidth || "125px";
+        var initialized = false;
+
+        function calculateTextAndColor() {
+            if ($scope.indexer.state === "DISABLED_USER") {
+                $scope.offText = "User disabled";
+                $scope.offColor = "default";
+            } else if ($scope.indexer.state === "DISABLED_SYSTEM_TEMPORARY") {
+                $scope.offText = "Temporary disabled";
+                $scope.offColor = "warning";
+            } else if ($scope.indexer.state === "DISABLED_SYSTEM") {
+                $scope.offText = "Permanently disabled";
+                $scope.offColor = "danger";
+            }
+        }
+
+        calculateTextAndColor();
+
+        $scope.onChange = function () {
+            $scope.indexer.state = $scope.value ? "ENABLED" : "DISABLED_USER";
+            if (initialized) {
+                //Skip on first call when initial value is set
+                calculateTextAndColor();
+            }
+            initialized = true;
+        }
+    }
+}
+
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
     .directive('indexerSelectionButton', indexerSelectionButton);
 
 function indexerSelectionButton() {
@@ -1484,7 +1548,6 @@ function indexerInput() {
         $scope.onBlur = function () {
             $scope.isFocused = false;
         };
-
     }
 }
 
@@ -4975,7 +5038,9 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
         $scope.selectedIndexers = [];
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
-            return indexer.enabled && indexer.showOnSearch && (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            var indexerAvailableForSearch = indexer.state === "ENABLED" || (indexer.state === "DISABLED_SYSTEM_TEMPORARY" && safeConfig.searching.ignoreTemporarilyDisabled);
+            var categorySelectedForIndexer = (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
+            return indexerAvailableForSearch && indexer.showOnSearch && categorySelectedForIndexer;
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })
@@ -5581,15 +5646,33 @@ formatDate.$inject = ["dateFilter"];angular
 function IndexerStatusesController($scope, $http, statuses) {
     $scope.statuses = statuses.data;
 
+    $scope.formatState = function (state) {
+        if (state === "ENABLED") {
+            return "Enabled";
+        } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
+            return "Temporarily disabled by system";
+        } else if (state === "DISABLED_SYSTEM") {
+            return "Permanently disabled by system";
+        } else {
+            return "Disabled by user";
+        }
+    };
+
+    $scope.getLabelClass = function (state) {
+        if (state === "ENABLED") {
+            return "primary";
+        } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
+            return "warning";
+        } else if (state === "DISABLED_SYSTEM") {
+            return "danger";
+        } else {
+            return "default";
+        }
+    };
+
     $scope.isInPast = function (epochSeconds) {
         return epochSeconds < moment().unix();
     };
-
-    $scope.enable = function (indexerName) {
-        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
-            $scope.statuses = response.data;
-        });
-    }
 }
 
 angular
@@ -5618,6 +5701,9 @@ angular
 
 function reformatDate() {
     return function (date, format) {
+        if (!date) {
+            return "";
+        }
         if (angular.isUndefined(format)) {
             format = "YYYY-MM-DD HH:mm";
         }
@@ -5643,7 +5729,6 @@ angular
 function humanizeDate() {
     return function (date) {
         return moment().to(moment.unix(date));
-
     }
 }
 
@@ -6110,7 +6195,7 @@ angular
             model.categoryMapping = indexerConfig.categoryMapping;
             model.configComplete = indexerConfig.configComplete;
             model.allCapsChecked = indexerConfig.allCapsChecked;
-            model.enabled = indexerConfig.enabled;
+            model.state = indexerConfig.state;
         }
 
         formlyConfigProvider.setType({
@@ -6206,6 +6291,18 @@ angular
         formlyConfigProvider.setType({
             name: 'switch',
             template: '<div style="text-align:left"><input bs-switch type="checkbox" ng-model="model[options.key]"/></div>'
+        });
+
+        formlyConfigProvider.setType({
+            name: 'indexerStateSwitch',
+            template: '<indexer-state-switch indexer="model" handle-width="165px"/>'
+        });
+
+
+        formlyConfigProvider.setType({
+            name: 'horizontalIndexerStateSwitch',
+            extends: 'indexerStateSwitch',
+            wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
 
@@ -8338,7 +8435,6 @@ function ConfigFields($injector) {
                             configComplete: false,
                             categoryMapping: null,
                             downloadLimit: null,
-                            enabled: true,
                             enabledCategories: [],
                             enabledForSearchSource: "BOTH",
                             generalMinSize: null,
@@ -8352,6 +8448,7 @@ function ConfigFields($injector) {
                             score: 0,
                             searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
+                            state: "ENABLED",
                             supportedSearchIds: undefined,
                             supportedSearchTypes: undefined,
                             timeout: null,
@@ -8696,13 +8793,14 @@ function getIndexerPresets(configuredIndexers) {
         ],
         [
             {
-                allCapsChecked: true,
-                configComplete: true,
+                allCapsChecked: false,
+                configComplete: false,
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
                 supportedSearchIds: undefined,
                 supportedSearchTypes: undefined,
                 searchModuleType: "TORZNAB",
+                state: "ENABLED",
                 enabledForSearchSource: "BOTH"
             }
         ],
@@ -8713,7 +8811,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: ["Anime"],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: false,
                 hitLimit: null,
                 hitLimitResetTime: null,
                 host: "https://anizb.org",
@@ -8722,9 +8819,10 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "ANIZB",
                 username: null
@@ -8735,7 +8833,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: [],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: true,
                 hitLimit: null,
                 hitLimitResetTime: null,
                 host: "https://binsearch.info",
@@ -8744,9 +8841,10 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "BINSEARCH",
                 username: null
@@ -8757,7 +8855,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: [],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: true,
                 generalMinSize: 1,
                 hitLimit: null,
                 hitLimitResetTime: null,
@@ -8767,21 +8864,20 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "NZBINDEX",
                 username: null
             }
         ]
     ];
-
     return presets;
 }
 
 function getIndexerBoxFields(model, parentModel, isInitial, injector, CategoriesService) {
-    console.log(isInitial);
     var fieldset = [];
     if (model.searchModuleType === "TORZNAB") {
         fieldset.push({
@@ -8791,7 +8887,8 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 lines: ["Torznab indexers can only be used for internal searches or dedicated searches using /torznab/api"]
             }
         });
-    } else if ((model.searchModuleType === "NEWZNAB" || model.searchModuleType === "TORZNAB") && !isInitial) {
+    }
+    if ((model.searchModuleType === "NEWZNAB" || model.searchModuleType === "TORZNAB") && !isInitial) {
         var message;
         var cssClass;
         if (!model.configComplete) {
@@ -8812,15 +8909,14 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
         });
     }
 
-    fieldset.push({
-        key: 'enabled',
-        type: 'horizontalSwitch',
-        hideExpression: '!model.configComplete',
-        templateOptions: {
-            type: 'switch',
-            label: 'Enabled'
+    var stateHelp = "";
+    if (model.state === "DISABLED_SYSTEM_TEMPORARY" || model.state === "DISABLED_SYSTEM") {
+        if (model.state === "DISABLED_SYSTEM_TEMPORARY") {
+            stateHelp = "The indexer was disabled by the program due to an error. It will be reenabled automatically or you can enable it manually";
+        } else {
+            stateHelp = "The indexer was disabled by the program due to an unrecoverable error. Try checking the caps to make sure it works or just enable it and see what happens.";
         }
-    });
+    }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
@@ -8857,6 +8953,17 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 }
             })
     }
+
+    fieldset.push({
+        key: 'state',
+        type: 'horizontalIndexerStateSwitch',
+        templateOptions: {
+            type: 'switch',
+            label: 'State',
+            help: stateHelp
+        }
+    });
+
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         var hostField = {
             key: 'host',

@@ -229,32 +229,26 @@ public abstract class Indexer<T> {
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
-        IndexerStatusEntity status = indexer.getStatus();
-        status.setLevel(0);
-        status.setDisabledPermanently(false);
-        status.setDisabledUntil(null);
-        indexerRepository.save(indexer);
-
+        //New state can only be enabled, if the user has disabled the indexer it wouldn't've been called
+        getConfig().setState(IndexerConfig.State.ENABLED);
+        configProvider.getBaseConfig().saveSafe();
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
-        IndexerStatusEntity status = indexer.getStatus();
-        if (status.getLevel() == 0) {
-            status.setFirstFailure(Instant.now());
-        }
-        status.setLevel(status.getLevel() + 1);
-        status.setDisabledPermanently(disablePermanently);
-        status.setLastFailure(Instant.now());
-        long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, status.getLevel() + 1));
-        status.setDisabledUntil(Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES));
-        status.setReason(reason);
-        indexerRepository.save(indexer);
         if (disablePermanently) {
-            getLogger().warn("{} will be permanently disabled until reenabled by the user", indexer.getName());
+            getLogger().warn("Because an unrecoverable error occurred {} will be permanently disabled until reenabled by the user", indexer.getName());
+            getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM);
         } else {
-            getLogger().warn("Will disable {} until {}", indexer.getName(), status.getDisabledUntil());
+            //Set state first because the setters of the others depend on this
+            getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+            getConfig().setDisabledLevel(getConfig().getDisabledLevel() + 1);
+            long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getConfig().getDisabledLevel()));
+            getConfig().setDisabledUntil(Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES).toEpochMilli());
+            getLogger().warn("Because an error occurred {} will be temporariy disabled until {}", indexer.getName(), getConfig().getDisabledUntil());
         }
+        getConfig().setLastError(reason);
+        configProvider.getBaseConfig().saveSafe();
 
         saveApiAccess(accessType, responseTime, accessResult, false);
     }
@@ -462,6 +456,11 @@ public abstract class Indexer<T> {
     @Override
     public int hashCode() {
         return config == null ? 0 : Objects.hashCode(config.getName());
+    }
+
+    @Override
+    public String toString() {
+        return config.getName();
     }
 
     protected void error(String msg) {

@@ -162,7 +162,7 @@ angular
             model.categoryMapping = indexerConfig.categoryMapping;
             model.configComplete = indexerConfig.configComplete;
             model.allCapsChecked = indexerConfig.allCapsChecked;
-            model.enabled = indexerConfig.enabled;
+            model.state = indexerConfig.state;
         }
 
         formlyConfigProvider.setType({
@@ -258,6 +258,18 @@ angular
         formlyConfigProvider.setType({
             name: 'switch',
             template: '<div style="text-align:left"><input bs-switch type="checkbox" ng-model="model[options.key]"/></div>'
+        });
+
+        formlyConfigProvider.setType({
+            name: 'indexerStateSwitch',
+            template: '<indexer-state-switch indexer="model" handle-width="165px"/>'
+        });
+
+
+        formlyConfigProvider.setType({
+            name: 'horizontalIndexerStateSwitch',
+            extends: 'indexerStateSwitch',
+            wrapper: ['settingWrapper', 'bootstrapHasError']
         });
 
 

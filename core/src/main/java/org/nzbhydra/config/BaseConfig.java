@@ -88,8 +88,7 @@ public class BaseConfig extends ValidatingConfig {
         applicationEventPublisher.publishEvent(configChangedEvent);
     }
 
-    public void save(File targetFile) throws IOException {
-        logger.debug("Writing config to file {}", targetFile.getCanonicalPath());
+    private void save(File targetFile) throws IOException {
         try {
             String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
             if (Strings.isNullOrEmpty(asString)) {
@@ -110,7 +109,18 @@ public class BaseConfig extends ValidatingConfig {
 
     public void save() throws IOException {
         File file = buildConfigFileFile();
+        logger.debug("Writing config to file {}", file.getCanonicalPath());
         save(file);
+    }
+
+    public void saveSafe() {
+        //Called often, don't log
+        File file = buildConfigFileFile();
+        try {
+            save(file);
+        } catch (IOException e) {
+            logger.error("Unable to save config", e);
+        }
     }
 
 
@@ -202,7 +212,7 @@ public class BaseConfig extends ValidatingConfig {
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || downloadingValidation.isRestartNeeded());
 
         if (!indexers.isEmpty()) {
-            if (indexers.stream().noneMatch(IndexerConfig::isEnabled)) {
+            if (indexers.stream().noneMatch(x -> x.getState() == IndexerConfig.State.ENABLED)) {
                 configValidationResult.getWarningMessages().add("No indexers enabled. Searches will return empty results");
             } else if (indexers.stream().allMatch(x -> x.getSupportedSearchIds().isEmpty())) {
                 if (searching.getGenerateQueries() == SearchSourceRestriction.NONE) {

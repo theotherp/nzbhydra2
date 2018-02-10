@@ -360,7 +360,7 @@ public class JsonConfigMigration {
                     continue;
                 }
                 IndexerConfig newIndexer = new IndexerConfig();
-                newIndexer.setEnabled(oldIndexer.isEnabled());
+                newIndexer.setState(oldIndexer.isEnabled() ? IndexerConfig.State.ENABLED : IndexerConfig.State.DISABLED_USER);
                 originalEnabledState.put(oldIndexer.getName(), oldIndexer.isEnabled());
                 newIndexer.setHost(oldIndexer.getHost());
                 newIndexer.setTimeout(oldIndexer.getTimeout());
@@ -457,7 +457,7 @@ public class JsonConfigMigration {
                     }
                 }
                 if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB || newIndexer.getSearchModuleType() == SearchModuleType.TORZNAB) {
-                    newIndexer.setEnabled(false);
+                    newIndexer.setState(IndexerConfig.State.DISABLED_USER);
                     newIndexer.setConfigComplete(false);
                     logger.info("Adding {} disabled for now because the config is incomplete", newIndexer.getName());
                 } else {
@@ -496,7 +496,7 @@ public class JsonConfigMigration {
                         IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
                         if (checkCapsRespone.isConfigComplete()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
-                            indexerConfig.setEnabled(true);
+                            indexerConfig.setState(IndexerConfig.State.ENABLED);
                             indexerConfig = checkCapsRespone.getIndexerConfig();
                             enabledNewznabIndexers.set(enabledNewznabIndexers.indexOf(indexerConfig), indexerConfig);
                             if (!checkCapsRespone.isAllCapsChecked()) {

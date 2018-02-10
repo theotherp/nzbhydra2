@@ -3,21 +3,9 @@ package org.nzbhydra.indexers;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.config.SearchingConfig;
-import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.mockito.*;
+import org.nzbhydra.config.*;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -33,9 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -50,8 +36,6 @@ public class TorznabTest {
     private IndexerWebAccess indexerWebAccessMock;
     @Mock
     private IndexerEntity indexerEntityMock;
-    @Mock
-    private IndexerStatusEntity indexerStatusEntityMock;
     @Mock
     private CategoryProvider categoryProviderMock;
     @Mock
@@ -81,8 +65,6 @@ public class TorznabTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = spy(testee);
-
-        when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));

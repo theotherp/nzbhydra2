@@ -205,7 +205,6 @@ public class SqliteMigration {
         while (indexersResultSet.next()) {
             IndexerEntity entity = new IndexerEntity();
             entity.setName(indexersResultSet.getString("name"));
-            entity.setStatus(new IndexerStatusEntity());
             logger.debug("Migrating indexer {}", entity);
             entity = indexerRepository.save(entity);
             oldIdToIndexersMap.put(indexersResultSet.getInt("id"), entity);

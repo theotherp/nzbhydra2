@@ -38,7 +38,7 @@ public class SearchModuleProvider {
     }
 
     public List<Indexer> getEnabledIndexers() {
-        return searchModuleInstances.values().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
+        return searchModuleInstances.values().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED).collect(Collectors.toList());
     }
 
     public Indexer getIndexerByName(String indexerName) {
@@ -77,7 +77,6 @@ public class SearchModuleProvider {
                     logger.info("Indexer with name {} not yet in database. Adding it", config.getName());
                     indexerEntity = new IndexerEntity();
                     indexerEntity.setName(config.getName());
-                    indexerEntity.setStatus(new IndexerStatusEntity());
                     indexerEntity = indexerRepository.save(indexerEntity);
                     logger.info("Now {} indexers in database", indexerRepository.count());
                 }

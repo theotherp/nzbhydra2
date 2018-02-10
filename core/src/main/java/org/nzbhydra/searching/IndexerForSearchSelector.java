@@ -15,7 +15,6 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerStatusEntity;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -82,17 +81,18 @@ public class IndexerForSearchSelector {
         }
 
         public IndexerForSearchSelection pickIndexers() {
-            List<Indexer> enabledIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled()).collect(Collectors.toList());
-            if (enabledIndexers.isEmpty()) {
+            //Check any indexer that's not disabled by the user. If it's disabled by the system it will be deselected with a proper message later
+            List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).collect(Collectors.toList());
+            if (eligibleIndexers.isEmpty()) {
                 logger.warn("You don't have any enabled indexers");
                 return new IndexerForSearchSelection();
             }
 
             List<Indexer> selectedIndexers = new ArrayList<>();
-            logger.debug("Picking indexers out of " + enabledIndexers.size());
+            logger.debug("Picking indexers out of " + eligibleIndexers.size());
 
             Stopwatch stopwatch = Stopwatch.createStarted();
-            for (Indexer indexer : enabledIndexers) {
+            for (Indexer indexer : eligibleIndexers) {
 
                 if (!checkIndexerConfigComplete(indexer)) {
                     continue;
@@ -100,10 +100,10 @@ public class IndexerForSearchSelector {
                 if (!checkSearchSource(indexer)) {
                     continue;
                 }
-                if (!checkIndexerSelectedByUser(indexer)) {
+                if (!checkIndexerStatus(indexer)) {
                     continue;
                 }
-                if (!checkIndexerStatus(indexer)) {
+                if (!checkIndexerSelectedByUser(indexer)) {
                     continue;
                 }
                 if (!checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer)) {
@@ -131,7 +131,7 @@ public class IndexerForSearchSelector {
             if (selectedIndexers.isEmpty()) {
                 logger.warn("No indexers were selected for this search. You probably don't have any indexers configured which support the provided ID type or all of your indexers which do are currently disabled. You can enable query generation to work around this.");
             } else {
-                logger.info("Selected {} out of {} indexers: {}", selectedIndexers.size(), enabledIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
+                logger.info("Selected {} out of {} indexers: {}", selectedIndexers.size(), eligibleIndexers.size(), Joiner.on(", ").join(selectedIndexers.stream().map(Indexer::getName).collect(Collectors.toList())));
             }
 
             eventPublisher.publishEvent(new IndexerSelectionEvent(searchRequest, selectedIndexers.size()));
@@ -183,19 +183,21 @@ public class IndexerForSearchSelector {
         }
 
         protected boolean checkIndexerStatus(Indexer indexer) {
-            IndexerStatusEntity status = indexer.getIndexerEntity().getStatus();
-            boolean indexerTemporarilyDisabled = status.getDisabledUntil() != null && status.getDisabledUntil().isAfter(Instant.now());
-            if (indexerTemporarilyDisabled) {
+            if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
                 if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
-                    logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), status.getDisabledUntil());
+                    logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), indexer.getConfig().getDisabledUntil());
                     return true;
                 }
-                String message = String.format("Not using %s because it's disabled until %s", indexer.getName(), status.getDisabledUntil().toString());
-                return handleIndexerNotSelected(indexer, message, "Disabled temporarily");
+                if (Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(Instant.now().minus(1, ChronoUnit.DAYS))) {
+                    indexer.getConfig().setState(IndexerConfig.State.ENABLED);
+                    return true;
+                }
+                String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), indexer.getConfig().getDisabledUntil().toString());
+                return handleIndexerNotSelected(indexer, message, "Disabled temporarily because of previous errors");
             }
-            if (status.getDisabledPermanently()) {
-                String message = String.format("Not using %s because it's disabled until re-enabled by user", indexer.getName());
-                return handleIndexerNotSelected(indexer, message, "Disabled permanently");
+            if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM) {
+                String message = String.format("Not using %s because it's disabled due to a previous unrecoverable error", indexer.getName());
+                return handleIndexerNotSelected(indexer, message, "Disabled permanently because of previous unrecoverable error");
             }
             return true;
         }
@@ -264,7 +266,7 @@ public class IndexerForSearchSelector {
         LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {
             LocalDateTime nextPossibleHit;
             if (indexerConfig.getHitLimitResetTime().isPresent()) {
-                //Next possible hit is at the hour of day defined by the reset time. If that is already in the past we add one hour
+                //Next possible hit is at the hour of day defined by the reset time. If that is already in the past it will be the next day at that time
                 nextPossibleHit = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
                 if (nextPossibleHit.isBefore(LocalDateTime.now())) {
                     nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);

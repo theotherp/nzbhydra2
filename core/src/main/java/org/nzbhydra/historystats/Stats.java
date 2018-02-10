@@ -1,6 +1,7 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
+import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.historystats.stats.*;
 import org.nzbhydra.indexers.Indexer;
@@ -178,7 +179,7 @@ public class Stats {
                         "  INDEXER.NAME";
 
         Query query = entityManager.createNativeQuery(sqlQueryByIndexer);
-        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List resultList = query.getResultList();
         for (Object result : resultList) {
             Object[] resultSet = (Object[]) result;
@@ -211,7 +212,7 @@ public class Stats {
 
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
-        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         OptionalDouble overallAverage = resultList.stream().filter(x -> ((Object[]) x)[1] != null).mapToLong(x -> ((BigInteger) ((Object[]) x)[1]).longValue()).average();
 
         for (Object result : resultList) {
@@ -334,7 +335,7 @@ public class Stats {
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer API stats");
-        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toSet());
+        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toSet());
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
                 "  indexer_id,\n" +
@@ -530,7 +531,7 @@ public class Stats {
                 buildWhereFromStatsRequest(false, statsRequest) +
                 "   GROUP BY name3) ON name1 = name3;";
         Query query = entityManager.createNativeQuery(sql);
-        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().isEnabled() || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
+        Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List<Object> resultList = query.getResultList();
         List<SuccessfulDownloadsPerIndexer> result = new ArrayList<>();
         for (Object o : resultList) {

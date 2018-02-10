@@ -1248,7 +1248,6 @@ function ConfigFields($injector) {
                             configComplete: false,
                             categoryMapping: null,
                             downloadLimit: null,
-                            enabled: true,
                             enabledCategories: [],
                             enabledForSearchSource: "BOTH",
                             generalMinSize: null,
@@ -1262,6 +1261,7 @@ function ConfigFields($injector) {
                             score: 0,
                             searchModuleType: 'NEWZNAB',
                             showOnSearch: true,
+                            state: "ENABLED",
                             supportedSearchIds: undefined,
                             supportedSearchTypes: undefined,
                             timeout: null,
@@ -1606,13 +1606,14 @@ function getIndexerPresets(configuredIndexers) {
         ],
         [
             {
-                allCapsChecked: true,
-                configComplete: true,
+                allCapsChecked: false,
+                configComplete: false,
                 name: "Jackett/Cardigann",
                 host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
                 supportedSearchIds: undefined,
                 supportedSearchTypes: undefined,
                 searchModuleType: "TORZNAB",
+                state: "ENABLED",
                 enabledForSearchSource: "BOTH"
             }
         ],
@@ -1623,7 +1624,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: ["Anime"],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: false,
                 hitLimit: null,
                 hitLimitResetTime: null,
                 host: "https://anizb.org",
@@ -1632,9 +1632,10 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "ANIZB",
                 username: null
@@ -1645,7 +1646,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: [],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: true,
                 hitLimit: null,
                 hitLimitResetTime: null,
                 host: "https://binsearch.info",
@@ -1654,9 +1654,10 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "BINSEARCH",
                 username: null
@@ -1667,7 +1668,6 @@ function getIndexerPresets(configuredIndexers) {
                 categories: [],
                 configComplete: true,
                 downloadLimit: null,
-                enabled: true,
                 generalMinSize: 1,
                 hitLimit: null,
                 hitLimitResetTime: null,
@@ -1677,21 +1677,20 @@ function getIndexerPresets(configuredIndexers) {
                 password: null,
                 preselect: true,
                 score: 0,
+                showOnSearch: true,
+                state: "ENABLED",
                 supportedSearchIds: [],
                 supportedSearchTypes: [],
-                showOnSearch: true,
                 timeout: null,
                 searchModuleType: "NZBINDEX",
                 username: null
             }
         ]
     ];
-
     return presets;
 }
 
 function getIndexerBoxFields(model, parentModel, isInitial, injector, CategoriesService) {
-    console.log(isInitial);
     var fieldset = [];
     if (model.searchModuleType === "TORZNAB") {
         fieldset.push({
@@ -1701,7 +1700,8 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 lines: ["Torznab indexers can only be used for internal searches or dedicated searches using /torznab/api"]
             }
         });
-    } else if ((model.searchModuleType === "NEWZNAB" || model.searchModuleType === "TORZNAB") && !isInitial) {
+    }
+    if ((model.searchModuleType === "NEWZNAB" || model.searchModuleType === "TORZNAB") && !isInitial) {
         var message;
         var cssClass;
         if (!model.configComplete) {
@@ -1722,15 +1722,14 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
         });
     }
 
-    fieldset.push({
-        key: 'enabled',
-        type: 'horizontalSwitch',
-        hideExpression: '!model.configComplete',
-        templateOptions: {
-            type: 'switch',
-            label: 'Enabled'
+    var stateHelp = "";
+    if (model.state === "DISABLED_SYSTEM_TEMPORARY" || model.state === "DISABLED_SYSTEM") {
+        if (model.state === "DISABLED_SYSTEM_TEMPORARY") {
+            stateHelp = "The indexer was disabled by the program due to an error. It will be reenabled automatically or you can enable it manually";
+        } else {
+            stateHelp = "The indexer was disabled by the program due to an unrecoverable error. Try checking the caps to make sure it works or just enable it and see what happens.";
         }
-    });
+    }
 
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
@@ -1767,6 +1766,17 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 }
             })
     }
+
+    fieldset.push({
+        key: 'state',
+        type: 'horizontalIndexerStateSwitch',
+        templateOptions: {
+            type: 'switch',
+            label: 'State',
+            help: stateHelp
+        }
+    });
+
     if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         var hostField = {
             key: 'host',

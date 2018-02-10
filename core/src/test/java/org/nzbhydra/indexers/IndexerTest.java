@@ -4,35 +4,22 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
-import org.nzbhydra.indexers.exceptions.IndexerAccessException;
-import org.nzbhydra.indexers.exceptions.IndexerAuthException;
-import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
-import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
-import org.nzbhydra.searching.IndexerSearchResult;
-import org.nzbhydra.searching.SearchResultAcceptor;
+import org.nzbhydra.searching.*;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
-import org.nzbhydra.searching.SearchResultEntity;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchResultRepository;
-import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.Logger;
@@ -42,7 +29,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,27 +36,23 @@ import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class IndexerTest {
 
     private BaseConfig baseConfig;
     @Mock
     private IndexerEntity indexerEntityMock;
+    private IndexerConfig indexerConfig = new IndexerConfig();
     @Mock
     private Indexer indexerMock;
-    @Mock
-    private IndexerStatusEntity statusMock;
     @Mock
     private SearchResultEntity searchResultEntityMock;
     @Mock
@@ -143,14 +125,13 @@ public class IndexerTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
-        when(indexerEntityMock.getStatus()).thenReturn(statusMock);
-        when(statusMock.getLevel()).thenReturn(0);
+        when(indexerMock.getConfig()).thenReturn(indexerConfig);
         when(indexerEntityMock.getName()).thenReturn("indexerName");
         when(indexerMock.getName()).thenReturn("indexerName");
 
         testee.indexer = indexerEntityMock;
-        testee.config = new IndexerConfig();
-        testee.config.setTimeout(1);
+        testee.config = indexerConfig;
+        indexerConfig.setTimeout(1);
         baseConfig = new BaseConfig();
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getSearching().setIdFallbackToQueryGeneration(SearchSourceRestriction.BOTH);
@@ -205,30 +186,38 @@ public class IndexerTest {
 
     @Test
     public void handleSuccess() throws Exception {
-        when(indexerMock.getIndexerEntity().getStatus()).thenReturn(statusMock);
+        indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfig.setDisabledLevel(1);
+        indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
+
         testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
 
-        verify(statusMock).setDisabledPermanently(false);
-        verify(statusMock).setLevel(0);
-        verify(statusMock).setDisabledUntil(null);
-
-        verify(indexerRepositoryMock).save(indexerEntityMock);
+        assertThat(indexerConfig.getState(), is(IndexerConfig.State.ENABLED));
+        assertThat(indexerConfig.getDisabledLevel(), is(0));
+        assertThat(indexerConfig.getDisabledUntil(), is(nullValue()));
     }
 
     @Test
     public void handleFailure() throws Exception {
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledUntil(null);
+
+        testee.handleFailure("reason", false, null, null, null);
+
+        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY));
+        assertThat(indexerConfig.getDisabledLevel(), is(1));
+        long disabledPeriod = Math.abs(Instant.ofEpochMilli(indexerConfig.getDisabledUntil()).getEpochSecond() - Instant.now().getEpochSecond());
+        long delta = Math.abs(Indexer.DISABLE_PERIODS.get(1) * 60 - disabledPeriod);
+        org.assertj.core.api.Assertions.assertThat(delta).isLessThan(5);
+
+        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setDisabledLevel(0);
+        indexerConfig.setDisabledUntil(null);
+
         testee.handleFailure("reason", true, null, null, null);
-        ArgumentCaptor<Instant> captor = ArgumentCaptor.forClass(Instant.class);
 
-        verify(statusMock).setReason("reason");
-        verify(statusMock).setDisabledPermanently(true);
-        verify(statusMock).setDisabledUntil(captor.capture());
-        verify(statusMock).setLevel(1);
-
-        assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) - 1, ChronoUnit.MINUTES).isAfter(Instant.now()));
-        assertTrue(captor.getValue().minus(Indexer.DISABLE_PERIODS.get(1) + 1, ChronoUnit.MINUTES).isBefore(Instant.now()));
-
-        verify(indexerRepositoryMock).save(indexerEntityMock);
+        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM));
     }
 
     @Test

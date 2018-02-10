@@ -5,15 +5,33 @@ angular
 function IndexerStatusesController($scope, $http, statuses) {
     $scope.statuses = statuses.data;
 
+    $scope.formatState = function (state) {
+        if (state === "ENABLED") {
+            return "Enabled";
+        } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
+            return "Temporarily disabled by system";
+        } else if (state === "DISABLED_SYSTEM") {
+            return "Permanently disabled by system";
+        } else {
+            return "Disabled by user";
+        }
+    };
+
+    $scope.getLabelClass = function (state) {
+        if (state === "ENABLED") {
+            return "primary";
+        } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
+            return "warning";
+        } else if (state === "DISABLED_SYSTEM") {
+            return "danger";
+        } else {
+            return "default";
+        }
+    };
+
     $scope.isInPast = function (epochSeconds) {
         return epochSeconds < moment().unix();
     };
-
-    $scope.enable = function (indexerName) {
-        $http.post("internalapi/indexerstatuses/enable/" + encodeURI(indexerName)).then(function (response) {
-            $scope.statuses = response.data;
-        });
-    }
 }
 
 angular
@@ -42,6 +60,9 @@ angular
 
 function reformatDate() {
     return function (date, format) {
+        if (!date) {
+            return "";
+        }
         if (angular.isUndefined(format)) {
             format = "YYYY-MM-DD HH:mm";
         }
@@ -67,6 +88,5 @@ angular
 function humanizeDate() {
     return function (date) {
         return moment().to(moment.unix(date));
-
     }
 }

@@ -59,8 +59,6 @@ public class NewznabTest {
     @Mock
     private IndexerEntity indexerEntityMock;
     @Mock
-    private IndexerStatusEntity indexerStatusEntityMock;
-    @Mock
     private CategoryProvider categoryProviderMock;
     @Mock
     private IndexerSearchRepository indexerSearchRepositoryMock;
@@ -113,7 +111,7 @@ public class NewznabTest {
 
         when(infoProviderMock.convert(anyMap())).thenReturn(info);
         when(infoProviderMock.convert("tvmazeId", IdType.TVMAZE)).thenReturn(info);
-        when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
+        //when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
         testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));

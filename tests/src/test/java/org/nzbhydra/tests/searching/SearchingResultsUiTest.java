@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.downloading.FileZipResponse;
-import org.nzbhydra.indexers.IndexerStatusRepository;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
@@ -66,8 +65,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     WebDriver webDriver;
     @Autowired
     SearchRepository searchRepository;
-    @Autowired
-    private IndexerStatusRepository indexerStatusRepository;
     String url = null;
 
 

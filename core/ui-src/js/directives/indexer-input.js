@@ -24,7 +24,6 @@ function indexerInput() {
         $scope.onBlur = function () {
             $scope.isFocused = false;
         };
-
     }
 }
 

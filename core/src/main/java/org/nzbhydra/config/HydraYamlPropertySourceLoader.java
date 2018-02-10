@@ -1,5 +1,6 @@
 package org.nzbhydra.config;
 
+import org.nzbhydra.config.migration.ConfigMigration;
 import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.boot.yaml.SpringProfileDocumentMatcher;

@@ -21,6 +21,13 @@ import java.util.regex.Matcher;
 @ConfigurationProperties(prefix = "indexers")
 public class IndexerConfig extends ValidatingConfig {
 
+    public enum State {
+        ENABLED,
+        DISABLED_SYSTEM_TEMPORARY,
+        DISABLED_SYSTEM,
+        DISABLED_USER
+    }
+
     private boolean allCapsChecked;
     @SensitiveData
     private String apiKey;
@@ -30,13 +37,17 @@ public class IndexerConfig extends ValidatingConfig {
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
-    private boolean enabled = true;
+    @JsonFormat(shape = Shape.STRING)
+    private State state = State.ENABLED;
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
     private String host;
+    private String lastError;
+    private Long disabledUntil = null;
+    private int disabledLevel;
     private Integer loadLimitOnRandom = null;
     private String name;
     @SensitiveData
@@ -92,6 +103,44 @@ public class IndexerConfig extends ValidatingConfig {
 
     public Optional<String> getUserAgent() {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
+    }
+
+    public Optional<String> getLastError() {
+        return Optional.ofNullable(Strings.emptyToNull(lastError));
+    }
+
+    public void setState(State state) {
+        this.state = state;
+        if (state == State.ENABLED || state == State.DISABLED_USER) {
+            //Reset error, only relevant while disabled so it can be displayed to the user
+            lastError = null;
+            disabledUntil = null;
+            disabledLevel = 0;
+        }
+    }
+
+    public void setDisabledUntil(Long disabledUntil) {
+        this.disabledUntil = disabledUntil;
+        //When the config is written from YAML or from the web the setters are called in any order
+        if (state == State.ENABLED || state == State.DISABLED_USER) {
+            this.disabledUntil = null;
+        }
+    }
+
+    public void setDisabledLevel(int disabledLevel) {
+        this.disabledLevel = disabledLevel;
+        //When the config is written from YAML or from the web the setters are called in any order
+        if (state == State.ENABLED || state == State.DISABLED_USER) {
+            this.disabledLevel = 0;
+        }
+    }
+
+    public void setLastError(String lastError) {
+        this.lastError = lastError;
+        //When the config is written from YAML or from the web the setters are called in any order
+        if (state == State.ENABLED || state == State.DISABLED_USER) {
+            this.lastError = null;
+        }
     }
 
     @Override

@@ -201,14 +201,14 @@ public class NewznabChecker {
         indexerConfig.setBackend(backendType);
         indexerConfig.setConfigComplete(configComplete);
         indexerConfig.setAllCapsChecked(allChecked);
-        indexerConfig.setEnabled(configComplete);
+        indexerConfig.setState(configComplete ? IndexerConfig.State.ENABLED : IndexerConfig.State.DISABLED_SYSTEM);
 
         return new CheckCapsResponse(indexerConfig, allChecked, configComplete);
     }
 
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream().filter(x -> {
-            return x.isEnabled() && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked());
+            return x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         }).collect(Collectors.toList());
         logger.info("Calling caps check for indexers {}", configsToCheck.stream().map(IndexerConfig::getName).collect(Collectors.joining(", ")));
         if (configsToCheck.isEmpty()) {
