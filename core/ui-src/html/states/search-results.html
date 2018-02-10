@@ -239,8 +239,9 @@
             <th class="col-md-12 cursor-default search-results-cell result-title">
                 <column-sortable column="title" reversed="false" start-mode="1">Title
                 </column-sortable>
-                <column-filter-wrapper>
-                    <freetext-filter column="title" on-key="true" id="title-filter"/>
+                <column-filter-wrapper inline="true">
+                    <freetext-filter column="title" on-key="true" id="title-filter" placeholder="Filter results"
+                                     no-focus="true"/>
                 </column-filter-wrapper>
             </th>
             <th class="col-md-1 cursor-default search-results-cell result-indexer" style="vertical-align: top; text-align: right">

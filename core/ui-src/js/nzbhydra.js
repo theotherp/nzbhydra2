@@ -755,7 +755,10 @@ nzbhydraapp.config(['$httpProvider', function ($httpProvider) {
 nzbhydraapp.directive('autoFocus', function ($timeout) {
     return {
         restrict: 'AC',
-        link: function (_scope, _element) {
+        link: function (_scope, _element, attrs) {
+            if (attrs.noFocus) {
+                return;
+            }
             $timeout(function () {
                 _element[0].focus();
             }, 0);

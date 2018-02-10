@@ -1,1 +1,3 @@
-<input type="text" ng-keyup="onKeyUp($event)" ng-model="data.filter" id="freetext-filter-input" auto-focus/>
+<input type="text" ng-keyup="onKeyUp($event)" ng-model="data.filter" id="freetext-filter-input" auto-focus
+       no-focus="{{::inline}}" ng-class="::{'inline-filter': inline, 'form-control' : inline}"
+       placeholder="{{::placeholder}}"/>

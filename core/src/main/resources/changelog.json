@@ -8,7 +8,7 @@
       },
       {
         "type": "feature",
-        "text": "Trigger search results title filter while typing"
+        "text": "Show search results filter box in table header because some users didn't find the filter icons"
       },
       {
         "type": "fix",

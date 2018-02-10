@@ -7,10 +7,12 @@ function columnFilterWrapper() {
         templateUrl: 'static/html/dataTable/columnFilterOuter.html',
         transclude: true,
         controllerAs: 'columnFilterWrapperCtrl',
-        scope: true,
+        scope: {
+            inline: "@"
+        },
         bindToController: true,
         controller: controller,
-        link: function (scope, element, attr) {
+        link: function (scope, element, attr, ctrl) {
             scope.element = element;
         }
     };
@@ -55,12 +57,14 @@ function freetextFilter(DebugService) {
         controllerAs: 'innerController',
         scope: {
             column: "@",
-            onKey: "@"
+            onKey: "@",
+            placeholder: "@"
         },
         controller: controller
     };
 
     function controller($scope, focus) {
+        $scope.inline = $scope.$parent.$parent.columnFilterWrapperCtrl.inline; //Hacky way of getting the value from the outer wrapper
         $scope.data = {};
 
         $scope.$on("opened", function () {
@@ -68,7 +72,7 @@ function freetextFilter(DebugService) {
         });
 
         function emitFilterEvent(isOpen) {
-            isOpen = isOpen || false;
+            isOpen = $scope.inline || isOpen;
             $scope.$emit("filter", $scope.column, {
                 filterValue: $scope.data.filter,
                 filterType: "freetext"
