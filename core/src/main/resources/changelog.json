@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Indexers with incomplete config were shown in selection list but not actually usable"
+      }
+    ]
+  },
+  {
     "version": "v1.4.0",
     "changes": [
       {
