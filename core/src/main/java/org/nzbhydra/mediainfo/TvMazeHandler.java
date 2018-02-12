@@ -30,14 +30,18 @@ public class TvMazeHandler {
         }
         logger.info("Searching TVMaze for show with {} {}", idType, id);
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://api.tvmaze.com/");
-        if (idType == InfoProvider.IdType.TVRAGE) {
-            builder = builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
-        } else if (idType == InfoProvider.IdType.TVDB) {
-            builder = builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
-        } else if (idType == InfoProvider.IdType.TVMAZE) {
-            builder = builder.path("shows").path(id);
-        } else {
-            throw new InfoProviderException("Unable to handle " + idType);
+        switch (idType) {
+            case TVRAGE:
+                builder = builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
+                break;
+            case TVDB:
+                builder = builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
+                break;
+            case TVMAZE:
+                builder = builder.path("shows").path(id);
+                break;
+            default:
+                throw new InfoProviderException("Unable to handle " + idType);
         }
 
         ResponseEntity<TvmazeShow> showLookupResponse = restTemplate.getForEntity(builder.build().encode().toUri(), TvmazeShow.class);

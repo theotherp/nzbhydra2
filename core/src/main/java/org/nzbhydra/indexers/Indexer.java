@@ -50,6 +50,8 @@ public abstract class Indexer<T> {
 
     List<DateTimeFormatter> DATE_FORMATs = Arrays.asList(DateTimeFormatter.RFC_1123_DATE_TIME, DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH));
 
+    private final Object lock = "";
+
     protected IndexerEntity indexer;
     protected IndexerConfig config;
 
@@ -194,7 +196,7 @@ public abstract class Indexer<T> {
     @Transactional
     protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        synchronized (indexer) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
+        synchronized (lock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
             ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
             Set<Long> alreadySavedIds = searchResultRepository.findAllIdsByIdIn(searchResultItems.stream().map(SearchResultIdCalculator::calculateSearchResultId).collect(Collectors.toList()));
             for (SearchResultItem item : searchResultItems) {

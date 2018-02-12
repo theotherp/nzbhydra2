@@ -161,6 +161,10 @@ public class MockNewznab {
             Thread.sleep(new Random().nextInt(5000));
         }
 
+        if (params.getQ() != null && params.getQ().equals("sleep10")) {
+            Thread.sleep(5000);
+        }
+
 
         if (params.getQ() != null && params.getQ().contains("movies")) {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));

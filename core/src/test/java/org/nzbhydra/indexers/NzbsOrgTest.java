@@ -50,11 +50,11 @@ public class NzbsOrgTest {
     
     @Test
     public void shouldTruncateLongQuery() {
-        String longQuery = "";
+        StringBuilder longQuery = new StringBuilder();
         for (int i = 0; i < 56; i++) {
-            longQuery += " " +"characters15sss"; 
+            longQuery.append(" " + "characters15sss");
         }assertThat(longQuery.length()).isGreaterThan(255);
-        String query = testee.cleanupQuery(longQuery);
+        String query = testee.cleanupQuery(longQuery.toString());
         assertThat(query.length()).isLessThan(255);
     }
 

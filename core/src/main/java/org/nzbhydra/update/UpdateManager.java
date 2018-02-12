@@ -329,7 +329,7 @@ public class UpdateManager implements InitializingBean {
 
     @Data
     @AllArgsConstructor
-    public class UpdateEvent {
+    public static class UpdateEvent {
         private String message;
     }
 

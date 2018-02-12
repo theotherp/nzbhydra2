@@ -237,7 +237,7 @@ public class ExternalApi {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
         }
-        DownloadResult downloadResult = null;
+        DownloadResult downloadResult;
         try {
 
             downloadResult = fileHandler.getFileByGuid(Long.valueOf(params.getId()), configProvider.getBaseConfig().getSearching().getNzbAccessType(), SearchSource.API);

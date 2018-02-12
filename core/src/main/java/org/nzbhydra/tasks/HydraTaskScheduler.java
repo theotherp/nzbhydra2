@@ -38,14 +38,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -146,7 +139,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     @Data
     @AllArgsConstructor
-    public class TaskInformation {
+    public static class TaskInformation {
         private String name;
         private Instant lastExecutionTime;
         private Instant nextExecutionTime;
@@ -154,7 +147,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     @Data
     @AllArgsConstructor
-    public class TaskRuntimeInformation {
+    public static class TaskRuntimeInformation {
         private Object bean;
         private Method method;
     }

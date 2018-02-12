@@ -116,13 +116,19 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 jacksonConverter.setPrettyPrint(true);
             }
         }
-        converters.add(0, new NewznabAndTorznabResponseNamespaceFixer());
+        converters.add(0, new NewznabAndTorznabResponseNamespaceFixer(marshaller()));
     }
 
 
-    private class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
+    private static class NewznabAndTorznabResponseNamespaceFixer implements HttpMessageConverter<Object> {
 
+        private final Jaxb2Marshaller marshaller;
         private MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+
+
+        public NewznabAndTorznabResponseNamespaceFixer(Jaxb2Marshaller marshaller) {
+            this.marshaller = marshaller;
+        }
 
         @Override
         public boolean canRead(Class<?> clazz, MediaType mediaType) {
@@ -154,7 +160,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             } else {
                 outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                marshaller().marshal(newznabResponse, new StreamResult(bos));
+                marshaller.marshal(newznabResponse, new StreamResult(bos));
                 String result;
                 if ("torznab".equalsIgnoreCase(newznabResponse.getSearchType())) {
                     result = bos.toString().replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");

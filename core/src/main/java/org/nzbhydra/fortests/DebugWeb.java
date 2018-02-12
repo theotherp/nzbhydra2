@@ -42,37 +42,37 @@ public class DebugWeb {
 
     @RequestMapping(value = "/fortests/getHostData", method = RequestMethod.GET)
     public String getHostData(HttpServletRequest request) throws Exception {
-        String info = "";
+        StringBuilder info = new StringBuilder();
         URL requestUrl = new URL(request.getRequestURL().toString());
 
 
-        info +="Config:<br>";
-        info += "Host: " + configProvider.getBaseConfig().getMain().getHost() + "\r\n<br>";
-        info += "Port: " + configProvider.getBaseConfig().getMain().getPort() + "\r\n<br>";
-        info += "Scheme: " + (configProvider.getBaseConfig().getMain().isSsl() ? "https" : "http") + "\r\n<br>";
+        info.append("Config:<br>");
+        info.append("Host: ").append(configProvider.getBaseConfig().getMain().getHost()).append("\r\n<br>");
+        info.append("Port: ").append(configProvider.getBaseConfig().getMain().getPort()).append("\r\n<br>");
+        info.append("Scheme: ").append(configProvider.getBaseConfig().getMain().isSsl() ? "https" : "http").append("\r\n<br>");
 
-        info +="<br>Headers:<br>";
+        info.append("<br>Headers:<br>");
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = headerNames.nextElement();
             String content = request.getHeader(name);
-            info += name + ": " + content + "\r\n<br>";
+            info.append(name).append(": ").append(content).append("\r\n<br>");
         }
 
-        info +="<br>From request URL:<br>";
-        info += "Request URL: " + request.getRequestURL() + "\r\n<br>";
-        info += "Request Host: " + requestUrl.getHost() + "\r\n<br>";
-        info += "Request Port: " + requestUrl.getPort() + "\r\n<br>";
-        info += "Request Protocol: " + requestUrl.getProtocol() + "\r\n<br>";
-        info +="<br>From request:<br>";
-        info += "Server name: " + request.getServerName() + "\r\n<br>";
-        info += "Server port: " + request.getServerPort() + "\r\n<br>";
-        info += "Server protocol: " + request.getProtocol() + "\r\n<br>";
-        info += "Scheme: " + request.getScheme() + "\r\n<br>";
-        info += "Context path: " + request.getContextPath() + "\r\n<br>";
-        info += "Servlet path: " + request.getServletPath() + "\r\n<br>";
+        info.append("<br>From request URL:<br>");
+        info.append("Request URL: ").append(request.getRequestURL()).append("\r\n<br>");
+        info.append("Request Host: ").append(requestUrl.getHost()).append("\r\n<br>");
+        info.append("Request Port: ").append(requestUrl.getPort()).append("\r\n<br>");
+        info.append("Request Protocol: ").append(requestUrl.getProtocol()).append("\r\n<br>");
+        info.append("<br>From request:<br>");
+        info.append("Server name: ").append(request.getServerName()).append("\r\n<br>");
+        info.append("Server port: ").append(request.getServerPort()).append("\r\n<br>");
+        info.append("Server protocol: ").append(request.getProtocol()).append("\r\n<br>");
+        info.append("Scheme: ").append(request.getScheme()).append("\r\n<br>");
+        info.append("Context path: ").append(request.getContextPath()).append("\r\n<br>");
+        info.append("Servlet path: ").append(request.getServletPath()).append("\r\n<br>");
 
-        return info;
+        return info.toString();
     }
 
 }

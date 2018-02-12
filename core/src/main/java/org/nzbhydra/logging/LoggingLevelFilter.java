@@ -49,14 +49,17 @@ public class LoggingLevelFilter extends Filter<ILoggingEvent> {
             Iterator<Appender<ILoggingEvent>> appenderIterator = logger.iteratorForAppenders();
             while (appenderIterator.hasNext()) {
                 Appender<ILoggingEvent> appender = appenderIterator.next();
-                if ("CONSOLE".equals(appender.getName())) {
-                    minLevel = Level.valueOf(configProvider.getBaseConfig().getMain().getLogging().getLogfilelevel());
-                    target = "CONSOLE";
-                } else if ("FILE".equals(appender.getName())) {
-                    minLevel = Level.valueOf(configProvider.getBaseConfig().getMain().getLogging().getConsolelevel());
-                    target = "FILE";
-                } else {
-                    continue;
+                switch (appender.getName()) {
+                    case "CONSOLE":
+                        minLevel = Level.valueOf(configProvider.getBaseConfig().getMain().getLogging().getLogfilelevel());
+                        target = "CONSOLE";
+                        break;
+                    case "FILE":
+                        minLevel = Level.valueOf(configProvider.getBaseConfig().getMain().getLogging().getConsolelevel());
+                        target = "FILE";
+                        break;
+                    default:
+                        continue;
                 }
                 appender.addFilter(this);
             }

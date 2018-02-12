@@ -102,9 +102,7 @@ public class HydraEmbeddedServletContainer implements EmbeddedServletContainerCu
                 }
             }
         });
-        ((TomcatEmbeddedServletContainerFactory) container).addContextCustomizers(context -> {
-            context.setMapperContextRootRedirectEnabled(true);
-        });
+        ((TomcatEmbeddedServletContainerFactory) container).addContextCustomizers(context -> context.setMapperContextRootRedirectEnabled(true));
 
 
     }

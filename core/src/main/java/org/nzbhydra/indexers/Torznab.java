@@ -4,11 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
-import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
-import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.searching.IndexerSearchResult;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -43,14 +39,19 @@ public class Torznab extends Newznab {
         searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
             searchResultItem.getAttributes().put(attribute.getName(), attribute.getValue());
-            if (attribute.getName().equals("grabs")) {
-                searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("guid")) {
-                searchResultItem.setIndexerGuid(attribute.getValue());
-            } else if (attribute.getName().equals("seeders")) {
-                searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
-            } else if (attribute.getName().equals("peers")) {
-                searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
+            switch (attribute.getName()) {
+                case "grabs":
+                    searchResultItem.setGrabs(Integer.valueOf(attribute.getValue()));
+                    break;
+                case "guid":
+                    searchResultItem.setIndexerGuid(attribute.getValue());
+                    break;
+                case "seeders":
+                    searchResultItem.setSeeders(Integer.valueOf(attribute.getValue()));
+                    break;
+                case "peers":
+                    searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
+                    break;
             }
         }
         searchResultItem.setHasNfo(HasNfo.NO);

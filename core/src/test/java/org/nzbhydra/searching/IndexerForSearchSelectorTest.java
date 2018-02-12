@@ -14,7 +14,6 @@ import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.searching.IndexerForSearchSelector.InnerInstance;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,8 +28,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static junit.framework.TestCase.*;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -70,8 +67,7 @@ public class IndexerForSearchSelectorTest {
     private Map<Indexer, String> count;
 
     @InjectMocks
-    private IndexerForSearchSelector outerClass;
-    private InnerInstance testee;
+    private IndexerForSearchSelector testee;
 
     @Before
     public void setUp() throws Exception {
@@ -85,24 +81,10 @@ public class IndexerForSearchSelectorTest {
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
         when(category.getName()).thenReturn("category");
         when(category.getSubtype()).thenReturn(Subtype.NONE);
-        testee = outerClass.getInnerInstanceInstance(searchRequest);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
     }
 
-    @Test
-    public void instancesShouldBeDifferent() {
-        SearchRequest searchRequest1 = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        InnerInstance instance1 = outerClass.getInnerInstanceInstance(searchRequest1);
-        SearchRequest searchRequest2 = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 200);
-        InnerInstance instance2 = outerClass.getInnerInstanceInstance(searchRequest2);
 
-        assertThat(instance1.searchRequest, is(searchRequest1));
-        assertThat(instance2.searchRequest, is(searchRequest2));
-
-        instance1.notSelectedIndersWithReason.put(indexer, "message");
-        assertThat(instance1.notSelectedIndersWithReason.size(), is(1));
-        assertThat(instance2.notSelectedIndersWithReason.size(), is(0));
-    }
 
     @Test
     public void shouldCheckIfSelectedByUser() {

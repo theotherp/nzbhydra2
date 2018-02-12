@@ -177,7 +177,7 @@ public class SearchWeb {
 
     @Data
     @NoArgsConstructor
-    private class SearchState {
+    private static class SearchState {
 
         private boolean indexerSelectionFinished = false;
         private boolean searchFinished = false;

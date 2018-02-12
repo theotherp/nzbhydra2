@@ -46,7 +46,7 @@ public class IndexerStatusesWeb {
 
     @Data
     @AllArgsConstructor
-    public class IndexerStatus {
+    public static class IndexerStatus {
         private String indexer;
         private String state;
         private int level;

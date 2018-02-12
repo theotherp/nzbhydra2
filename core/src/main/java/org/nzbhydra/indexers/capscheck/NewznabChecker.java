@@ -184,7 +184,7 @@ public class NewznabChecker {
                 logger.info("Indexer {} supports the following search types: {}", indexerConfig.getName(), indexerConfig.getSupportedSearchTypes().stream().map(Enum::name).collect(Collectors.joining(", ")));
             }
         } catch (IndexerAccessException e) {
-            logger.error("Error while accessing indexer", e);
+            logger.error("Error while accessing indexer: " + e.getMessage());
             configComplete = false;
         }
 
@@ -209,9 +209,9 @@ public class NewznabChecker {
     }
 
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
-        List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream().filter(x -> {
-            return x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked());
-        }).collect(Collectors.toList());
+        List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
+                .filter(x -> x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked()))
+                .collect(Collectors.toList());
         logger.info("Calling caps check for indexers {}", configsToCheck.stream().map(IndexerConfig::getName).collect(Collectors.joining(", ")));
         if (configsToCheck.isEmpty()) {
             return Collections.emptyList();
@@ -341,7 +341,7 @@ public class NewznabChecker {
 
     @Data
     @AllArgsConstructor
-    private class CheckCapsRequest {
+    private static class CheckCapsRequest {
         private IndexerConfig indexerConfig;
         private String tMode;
         private String key;
@@ -351,7 +351,7 @@ public class NewznabChecker {
 
     @Data
     @AllArgsConstructor
-    private class SingleCheckCapsResponse {
+    private static class SingleCheckCapsResponse {
         private String key;
         private boolean supported;
         private String backend;

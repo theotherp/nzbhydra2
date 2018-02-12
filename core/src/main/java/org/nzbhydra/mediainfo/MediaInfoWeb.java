@@ -100,7 +100,7 @@ public class MediaInfoWeb {
 
     @Data
     @AllArgsConstructor
-    private class CacheKey {
+    private static class CacheKey {
         private AutocompleteType type;
         private String input;
     }
@@ -111,7 +111,7 @@ public class MediaInfoWeb {
     }
 
     @Data
-    public class MediaInfoTO {
+    public static class MediaInfoTO {
         private String imdbId;
         private String tmdbId;
         private String tvmazeId;

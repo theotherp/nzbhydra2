@@ -75,7 +75,7 @@ public class UrlCalculator {
         String scheme;
         String host;
          int port = -1;
-        String path = null;
+        String path;
 
         //Reverse proxies send the x-forwarded-proto header when HTTPS is enabled
         if ("https".equalsIgnoreCase(request.getHeader("x-forwarded-proto"))) {

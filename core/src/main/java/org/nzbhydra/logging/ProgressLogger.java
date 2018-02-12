@@ -23,6 +23,7 @@ package org.nzbhydra.logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -345,7 +346,7 @@ public final class ProgressLogger {
     }
 
     private final String itemName() {
-        if (referenceItemsName == itemsName) {
+        if (Objects.equals(referenceItemsName, itemsName)) {
             return itemName;
         }
         referenceItemsName = itemsName;

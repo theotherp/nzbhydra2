@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Some issues with indexers not beeing reenabled and some confusing messages being shown. The whole thing with indexers being disabled after errors is still a bit wonky"
+      },
+      {
+        "type": "fix",
+        "text": "Some potential memory leaks"
       }
     ]
   },

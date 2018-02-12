@@ -19,14 +19,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -146,7 +140,7 @@ public class History {
 
     @Data
     @AllArgsConstructor
-    public class SearchDetails {
+    public static class SearchDetails {
         String username;
         String ip;
         String userAgent;
@@ -156,7 +150,7 @@ public class History {
 
     @Data
     @AllArgsConstructor
-    public class IndexerSearchTO {
+    public static class IndexerSearchTO {
         private String indexerName;
         private boolean successful;
         private int resultsCount;
