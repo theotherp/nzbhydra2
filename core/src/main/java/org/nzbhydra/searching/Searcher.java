@@ -24,23 +24,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -301,8 +287,9 @@ public class Searcher {
             }
         } catch (InterruptedException e) {
             logger.error("Unexpected error while searching", e);
+        } finally {
+            executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
         }
-        executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
         executors.remove(executor);
         indexerSearchResults = handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
         return indexerSearchResults;

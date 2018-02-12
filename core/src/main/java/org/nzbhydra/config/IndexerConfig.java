@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import lombok.Data;
@@ -12,6 +13,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -105,18 +107,8 @@ public class IndexerConfig extends ValidatingConfig {
         return Optional.ofNullable(Strings.emptyToNull(userAgent));
     }
 
-    public Optional<String> getLastError() {
-        return Optional.ofNullable(Strings.emptyToNull(lastError));
-    }
-
     public void setState(State state) {
         this.state = state;
-        if (state == State.ENABLED || state == State.DISABLED_USER) {
-            //Reset error, only relevant while disabled so it can be displayed to the user
-            lastError = null;
-            disabledUntil = null;
-            disabledLevel = 0;
-        }
     }
 
     public void setDisabledUntil(Long disabledUntil) {
@@ -141,6 +133,18 @@ public class IndexerConfig extends ValidatingConfig {
         if (state == State.ENABLED || state == State.DISABLED_USER) {
             this.lastError = null;
         }
+    }
+
+    @JsonIgnore
+    public boolean isEligibleForInternalSearch(boolean isIgnoreTemporarilyDisabled) {
+        return showOnSearch
+                && configComplete
+                && (
+                state == State.ENABLED
+                        || (state == State.DISABLED_SYSTEM_TEMPORARY
+                        && (
+                        isIgnoreTemporarilyDisabled || disabledUntil == null || Instant.ofEpochMilli(disabledUntil).isBefore(Instant.now())
+                )));
     }
 
     @Override

@@ -268,6 +268,10 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     };
 
     $scope.initiateSearch = function () {
+        if ($scope.selectedIndexers.length === 0) {
+            growl.error("You didn't select any indexers");
+            return;
+        }
         if ($scope.selectedItem) {
             //Movie or tv show was selected
             $scope.goToSearchUrl();
@@ -302,9 +306,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         var previouslyAvailable = _.pluck($scope.availableIndexers, "name");
         $scope.selectedIndexers = [];
         var availableIndexersList = _.chain(safeConfig.indexers).filter(function (indexer) {
-            var indexerAvailableForSearch = (indexer.state === "ENABLED" && indexer.configComplete) || (indexer.state === "DISABLED_SYSTEM_TEMPORARY" && safeConfig.searching.ignoreTemporarilyDisabled);
+            if (!indexer.showOnSearch) {
+                return false;
+            }
             var categorySelectedForIndexer = (angular.isUndefined(indexer.categories) || indexer.categories.length === 0 || $scope.category.name.toLowerCase() === "all" || indexer.categories.indexOf($scope.category.name) > -1);
-            return indexerAvailableForSearch && indexer.showOnSearch && categorySelectedForIndexer;
+            return categorySelectedForIndexer;
         }).sortBy(function (indexer) {
             return indexer.name.toLowerCase();
         })

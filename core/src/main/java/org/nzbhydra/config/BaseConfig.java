@@ -88,22 +88,24 @@ public class BaseConfig extends ValidatingConfig {
         applicationEventPublisher.publishEvent(configChangedEvent);
     }
 
-    private void save(File targetFile) throws IOException {
-        try {
-            String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
-            if (Strings.isNullOrEmpty(asString)) {
-                logger.warn("Not writing empty config to file");
-            } else {
-                try {
-                    File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
-                    Files.write(tempFile.toPath(), asString.getBytes("UTF-8"));
-                    Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-                } catch (IOException e) {
-                    logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());
+    private void save(File targetFile) {
+        synchronized (objectMapper) {
+            try {
+                String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
+                if (Strings.isNullOrEmpty(asString)) {
+                    logger.warn("Not writing empty config to file");
+                } else {
+                    try {
+                        File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
+                        Files.write(tempFile.toPath(), asString.getBytes("UTF-8"));
+                        Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                    } catch (IOException e) {
+                        logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());
+                    }
                 }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error while saving config data. Fatal error");
             }
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error while saving config data. Fatal error");
         }
     }
 
@@ -113,22 +115,21 @@ public class BaseConfig extends ValidatingConfig {
         save(file);
     }
 
-    public void saveSafe() {
+    /**
+     * Call when internal changes to config are made (just don't log this)
+     */
+    public void saveInternal() {
         //Called often, don't log
         File file = buildConfigFileFile();
-        try {
-            save(file);
-        } catch (IOException e) {
-            logger.error("Unable to save config", e);
-        }
+        save(file);
     }
 
 
     @PostConstruct
     public void init() throws IOException {
         if (initialized) {
-        //In some cases a call to the server will attempt to restart everything, trying to initialize beans. This
-        //method is called a second time and an empty / initial config is written
+            //In some cases a call to the server will attempt to restart everything, trying to initialize beans. This
+            //method is called a second time and an empty / initial config is written
             logger.warn("Init method called again. This can only happen during a faulty shutdown");
             return;
         }

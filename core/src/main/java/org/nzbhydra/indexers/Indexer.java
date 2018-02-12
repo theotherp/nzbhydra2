@@ -231,7 +231,10 @@ public abstract class Indexer<T> {
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
         //New state can only be enabled, if the user has disabled the indexer it wouldn't've been called
         getConfig().setState(IndexerConfig.State.ENABLED);
-        configProvider.getBaseConfig().saveSafe();
+        getConfig().setLastError(null);
+        getConfig().setDisabledUntil(null);
+        getConfig().setDisabledLevel(0);
+        configProvider.getBaseConfig().saveInternal();
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
@@ -240,15 +243,15 @@ public abstract class Indexer<T> {
             getLogger().warn("Because an unrecoverable error occurred {} will be permanently disabled until reenabled by the user", indexer.getName());
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM);
         } else {
-            //Set state first because the setters of the others depend on this
             getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
             getConfig().setDisabledLevel(getConfig().getDisabledLevel() + 1);
             long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getConfig().getDisabledLevel()));
-            getConfig().setDisabledUntil(Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES).toEpochMilli());
-            getLogger().warn("Because an error occurred {} will be temporariy disabled until {}", indexer.getName(), getConfig().getDisabledUntil());
+            Instant disabledUntil = Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES);
+            getConfig().setDisabledUntil(disabledUntil.toEpochMilli());
+            getLogger().warn("Because an error occurred {} will be temporarily disabled until {}. This is error number {} in a row", indexer.getName(), disabledUntil, getConfig().getDisabledLevel());
         }
         getConfig().setLastError(reason);
-        configProvider.getBaseConfig().saveSafe();
+        configProvider.getBaseConfig().saveInternal();
 
         saveApiAccess(accessType, responseTime, accessResult, false);
     }
@@ -281,7 +284,8 @@ public abstract class Indexer<T> {
             apiAccessResult = IndexerAccessResult.CONNECTION_ERROR;
         } else {
             //Anything else is probably a coding error, don't disable indexer
-            saveApiAccess(accessType, null, IndexerAccessResult.HYDRA_ERROR, false);
+            saveApiAccess(accessType, null, IndexerAccessResult.HYDRA_ERROR, true); //Save as success, it's our fault
+            error("An unexpected error occurred while communicating with the indexer: " + e.getMessage());
             return;
         }
         handleFailure(e.getMessage(), disablePermanently, accessType, null, apiAccessResult);

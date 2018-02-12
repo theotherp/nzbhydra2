@@ -26,7 +26,7 @@ public class SafeConfig {
         this.searching = new SafeSearchingConfig(baseConfig.getSearching());
         this.downloading = new SafeDownloadingConfig(baseConfig.getDownloading());
         this.logging = new SafeLoggingConfig(baseConfig.getMain().getLogging());
-        this.indexers = baseConfig.getIndexers().stream().map(SafeIndexerConfig::new).collect(Collectors.toList());
+        this.indexers = baseConfig.getIndexers().stream().map(indexerConfig -> new SafeIndexerConfig(indexerConfig, baseConfig)).collect(Collectors.toList());
         this.categoriesConfig = new SafeCategoriesConfig(baseConfig.getCategoriesConfig());
         this.showNews = baseConfig.getMain().isShowNews();
     }

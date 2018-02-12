@@ -138,9 +138,9 @@ public class NewznabChecker {
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
         Set<IdType> supportedIds;
         String backend = null;
+        ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(MAX_CONNECTIONS);
         try {
             logger.info("Will check capabilities of indexer {} using {} concurrent connections", indexerConfig.getName(), MAX_CONNECTIONS);
-            ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(MAX_CONNECTIONS);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
@@ -172,6 +172,8 @@ public class NewznabChecker {
         } catch (InterruptedException e) {
             logger.error("Unexpected error while checking caps", e);
             allChecked = false;
+        } finally {
+            executor.shutdown();
         }
 
         try {
@@ -228,6 +230,8 @@ public class NewznabChecker {
 
         } catch (InterruptedException e) {
             logger.error("Error while calling caps check for all indexers", e);
+        } finally {
+            executor.shutdown();
         }
         return responses;
     }

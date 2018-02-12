@@ -93,7 +93,12 @@ public class IndexerForSearchSelector {
 
             Stopwatch stopwatch = Stopwatch.createStarted();
             for (Indexer indexer : eligibleIndexers) {
-
+                if (!checkInternalAndNotEvenShown(indexer)) {
+                    continue;
+                }
+                if (!checkIndexerSelectedByUser(indexer)) {
+                    continue;
+                }
                 if (!checkIndexerConfigComplete(indexer)) {
                     continue;
                 }
@@ -101,9 +106,6 @@ public class IndexerForSearchSelector {
                     continue;
                 }
                 if (!checkIndexerStatus(indexer)) {
-                    continue;
-                }
-                if (!checkIndexerSelectedByUser(indexer)) {
                     continue;
                 }
                 if (!checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer)) {
@@ -184,15 +186,14 @@ public class IndexerForSearchSelector {
 
         protected boolean checkIndexerStatus(Indexer indexer) {
             if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
+                if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(Instant.now())) {
+                    return true;
+                }
                 if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
                     logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), indexer.getConfig().getDisabledUntil());
                     return true;
                 }
-                if (Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(Instant.now().minus(1, ChronoUnit.DAYS))) {
-                    indexer.getConfig().setState(IndexerConfig.State.ENABLED);
-                    return true;
-                }
-                String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), indexer.getConfig().getDisabledUntil().toString());
+                String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()));
                 return handleIndexerNotSelected(indexer, message, "Disabled temporarily because of previous errors");
             }
             if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM) {
@@ -214,6 +215,18 @@ public class IndexerForSearchSelector {
                 return false;
             }
             return true;
+        }
+
+        /**
+         * If an indexer was not shown an the search page (for any reason) it should not be used but also no message should be
+         * logged or shown to the user. It doesn't make sense to log "Indexer is incomplete" to the user when he didn't have a chance to even select it
+         */
+        protected boolean checkInternalAndNotEvenShown(Indexer indexer) {
+            if (searchRequest.getSource() == SearchSource.API) {
+                return true;
+            }
+
+            return indexer.getConfig().isEligibleForInternalSearch(configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled());
         }
 
         protected boolean checkIndexerHitLimit(Indexer indexer) {

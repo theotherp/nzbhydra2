@@ -1,11 +1,9 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.auth.UserInfosProvider;
-import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
@@ -24,20 +22,11 @@ public class MainWeb {
     private ConfigurableEnvironment environment;
     @Autowired
     private UserInfosProvider userInfos;
-    private SafeConfig safeConfig = null;
 
     private SafeConfig getSafeConfig() {
-        if (safeConfig == null) {
-            safeConfig = new SafeConfig(configProvider.getBaseConfig());
-        }
-        return safeConfig;
+        return new SafeConfig(configProvider.getBaseConfig());
     }
 
-
-    @EventListener
-    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
-        safeConfig = new SafeConfig(configChangedEvent.getNewConfig());
-    }
 
     @RequestMapping(value = "/**", method = RequestMethod.GET)
     @Secured({"ROLE_USER"})

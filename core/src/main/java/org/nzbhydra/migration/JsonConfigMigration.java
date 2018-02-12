@@ -512,6 +512,8 @@ public class JsonConfigMigration {
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } finally {
+                executor.shutdown();
             }
         }
         boolean anyDisabledNewznabIndexer = indexerConfigs.stream().anyMatch(x -> (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB) && originalEnabledState.get(x.getName()));

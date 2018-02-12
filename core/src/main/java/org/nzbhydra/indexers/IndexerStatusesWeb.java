@@ -38,7 +38,7 @@ public class IndexerStatusesWeb {
                                 x.getState().name(),
                                 x.getDisabledLevel(),
                                 (x.getDisabledUntil() == null ? null : Instant.ofEpochMilli(x.getDisabledUntil())),
-                                x.getLastError().orElse(null)
+                                x.getLastError()
                         )
                 )
                 .collect(Collectors.toList());
