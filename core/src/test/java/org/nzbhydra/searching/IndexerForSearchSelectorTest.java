@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static junit.framework.TestCase.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -83,7 +84,6 @@ public class IndexerForSearchSelectorTest {
         when(category.getSubtype()).thenReturn(Subtype.NONE);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
     }
-
 
 
     @Test
@@ -269,65 +269,69 @@ public class IndexerForSearchSelectorTest {
     }
 
     @Test
-    public void shouldCalculateNextHitWithFixedResetTime() throws Exception {
-        Instant base;
-        LocalDateTime now = LocalDateTime.now();
-        if (now.get(ChronoField.HOUR_OF_DAY) < 12) {
-            indexerConfigMock.setHitLimitResetTime(14);
-            base = now.minus(1, ChronoUnit.DAYS).with(ChronoField.HOUR_OF_DAY, 23).toInstant(ZoneOffset.UTC);
-        } else {
-            indexerConfigMock.setHitLimitResetTime(10);
-            base = now.with(ChronoField.HOUR_OF_DAY, 9).toInstant(ZoneOffset.UTC);
-        }
-        Instant firstInWindow = base;
-        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, firstInWindow);
-        //24 hours after the reset time
-        assertInstantsClose(now.withHour(indexerConfigMock.getHitLimitResetTime().get()).plus(1, ChronoUnit.DAYS), nextHit);
+    public void shouldCalculateNextHitWithFixedResetTime() {
+        //First access was at 05:38, hit limit reset time is 10:00, next possible hit today at 10:00
+        Instant currentTime = Instant.ofEpochSecond(1518500323);//05:38
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimitResetTime(10);
+
+        LocalDateTime nextHit = testee.calculateNextPossibleHit(indexerConfigMock, currentTime);
+
+        assertThat(nextHit.getHour()).isEqualTo(10);
+        assertThat(nextHit.getDayOfYear()).isEqualTo(LocalDateTime.ofInstant(currentTime, ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR));
+
+        //First access was at 05:38, hit limit time is 04:00, next possible hit tomorrow at 04:00
+        currentTime = Instant.ofEpochSecond(1518500323);//05:38
+        testee.clock = Clock.fixed(currentTime, ZoneId.of("UTC"));
+        indexerConfigMock.setHitLimitResetTime(4);
+
+        nextHit = testee.calculateNextPossibleHit(indexerConfigMock, currentTime);
+
+        assertThat(nextHit.getHour()).isEqualTo(4);
+        assertThat(nextHit.getDayOfYear()).isEqualTo(LocalDateTime.ofInstant(currentTime, ZoneId.of("UTC")).get(ChronoField.DAY_OF_YEAR) + 1);
     }
 
-    private void assertInstantsClose(LocalDateTime i1, LocalDateTime i2) {
-        org.assertj.core.api.Assertions.assertThat(Math.abs(i1.toInstant(ZoneOffset.UTC).getEpochSecond() - i2.toInstant(ZoneOffset.UTC).getEpochSecond())).isLessThan(60);
-    }
+
 
     @Test
     public void shouldHonorSchedule() throws Exception {
         testee.clock = Clock.fixed(Instant.ofEpochSecond(1512974083), ZoneId.of("UTC")); //Monday, December 11, 2017 6:34:43 AM
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-su")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-mo")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we")).isFalse();
+        assertThat(testee.isInTime("mo")).isTrue();
+        assertThat(testee.isInTime("mo-tu")).isTrue();
+        assertThat(testee.isInTime("mo-su")).isTrue();
+        assertThat(testee.isInTime("tu-mo")).isTrue();
+        assertThat(testee.isInTime("tu")).isFalse();
+        assertThat(testee.isInTime("tu-we")).isFalse();
 
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6-10")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo6-23")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo1-10")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo1-5")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo7-23")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo22-8")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo22-5")).isFalse();
+        assertThat(testee.isInTime("mo6")).isTrue();
+        assertThat(testee.isInTime("mo6-10")).isTrue();
+        assertThat(testee.isInTime("mo6-23")).isTrue();
+        assertThat(testee.isInTime("mo1-10")).isTrue();
+        assertThat(testee.isInTime("mo1-5")).isFalse();
+        assertThat(testee.isInTime("mo7-23")).isFalse();
+        assertThat(testee.isInTime("mo22-8")).isTrue();
+        assertThat(testee.isInTime("mo22-5")).isFalse();
 
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu6")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu6-10")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-tu1-2")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we6")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("tu-we6-10")).isFalse();
+        assertThat(testee.isInTime("mo-tu6")).isTrue();
+        assertThat(testee.isInTime("mo-tu6-10")).isTrue();
+        assertThat(testee.isInTime("mo-tu1-2")).isFalse();
+        assertThat(testee.isInTime("tu-we6")).isFalse();
+        assertThat(testee.isInTime("tu-we6-10")).isFalse();
 
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("6")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("6-10")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("7-10")).isFalse();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("10-7")).isTrue();
+        assertThat(testee.isInTime("6")).isTrue();
+        assertThat(testee.isInTime("6-10")).isTrue();
+        assertThat(testee.isInTime("7-10")).isFalse();
+        assertThat(testee.isInTime("10-7")).isTrue();
 
         indexerConfigMock.setSchedule(Arrays.asList("tu-we6", "mo"));
-        org.assertj.core.api.Assertions.assertThat(testee.checkSchedule(indexer)).isTrue();
+        assertThat(testee.checkSchedule(indexer)).isTrue();
 
         indexerConfigMock.setSchedule(Arrays.asList("tu-we6"));
-        org.assertj.core.api.Assertions.assertThat(testee.checkSchedule(indexer)).isFalse();
+        assertThat(testee.checkSchedule(indexer)).isFalse();
 
         testee.clock = Clock.fixed(Instant.ofEpochSecond(1513412203), ZoneId.of("UTC")); //Saturday, December 16, 2017 8:16:43 AM
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("fr-sa")).isTrue();
-        org.assertj.core.api.Assertions.assertThat(testee.isInTime("mo-sa")).isTrue();
+        assertThat(testee.isInTime("fr-sa")).isTrue();
+        assertThat(testee.isInTime("mo-sa")).isTrue();
     }
 
 

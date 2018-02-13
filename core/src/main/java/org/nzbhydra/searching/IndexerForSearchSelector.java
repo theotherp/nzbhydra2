@@ -175,7 +175,7 @@ public class IndexerForSearchSelector {
 
     protected boolean checkIndexerStatus(Indexer indexer) {
         if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
-            if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(Instant.now())) {
+            if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(clock.instant())) {
                 return true;
             }
             if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
@@ -225,13 +225,15 @@ public class IndexerForSearchSelector {
             return true;
         }
         LocalDateTime comparisonTime;
+        LocalDateTime now = LocalDateTime.now(clock);
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
-            comparisonTime = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
-            if (comparisonTime.isAfter(LocalDateTime.now())) {
+
+            comparisonTime = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
+            if (comparisonTime.isAfter(now)) {
                 comparisonTime = comparisonTime.minus(1, ChronoUnit.DAYS);
             }
         } else {
-            comparisonTime = LocalDateTime.now().minus(1, ChronoUnit.DAYS);
+            comparisonTime = now.minus(1, ChronoUnit.DAYS);
         }
         if (indexerConfig.getHitLimit().isPresent()) {
             Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) ORDER BY TIME DESC LIMIT (:hitLimit)");
@@ -269,8 +271,9 @@ public class IndexerForSearchSelector {
         LocalDateTime nextPossibleHit;
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
             //Next possible hit is at the hour of day defined by the reset time. If that is already in the past it will be the next day at that time
-            nextPossibleHit = LocalDateTime.now().with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
-            if (nextPossibleHit.isBefore(LocalDateTime.now())) {
+            LocalDateTime now = LocalDateTime.now(clock);
+            nextPossibleHit = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get()).with(ChronoField.MINUTE_OF_HOUR, 0);
+            if (nextPossibleHit.isBefore(now)) {
                 nextPossibleHit = nextPossibleHit.plus(1, ChronoUnit.DAYS);
             }
         } else {
