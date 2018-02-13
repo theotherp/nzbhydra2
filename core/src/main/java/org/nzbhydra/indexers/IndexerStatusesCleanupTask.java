@@ -32,7 +32,6 @@ public class IndexerStatusesCleanupTask {
 
     private static final long MINUTE = 1000 * 60;
 
-
     private ConfigProvider configProvider;
 
     @Autowired
@@ -42,10 +41,9 @@ public class IndexerStatusesCleanupTask {
 
     @HydraTask(configId = "cleanUpIndexerStatuses", name = "Clean up indexer statuses", interval = MINUTE)
     public void cleanup() {
-        //Just
         for (IndexerConfig config : configProvider.getBaseConfig().getIndexers()) {
             if (config.getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY && config.getDisabledUntil() != null && Instant.ofEpochMilli(config.getDisabledUntil()).isBefore(Instant.now())) {
-                //Do not reset the level. When the indexer is called the next time (because disabledUntil is in the past)
+                //Do not reset the level. When the indexer is called the next time (when disabledUntil is in the past)
                 //and an error occurs the level is increased and the indexer gets disabled for a longer time
                 logger.debug("Setting indexer {} back to enabled after having been temporarily disabled until {}", config.getName(), Instant.ofEpochMilli(config.getDisabledUntil()));
                 config.setState(IndexerConfig.State.ENABLED);

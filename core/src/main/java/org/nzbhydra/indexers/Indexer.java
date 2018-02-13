@@ -232,6 +232,9 @@ public abstract class Indexer<T> {
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
         //New state can only be enabled, if the user has disabled the indexer it wouldn't've been called
+        if (getConfig().getDisabledLevel() > 0) {
+            debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
+        }
         getConfig().setState(IndexerConfig.State.ENABLED);
         getConfig().setLastError(null);
         getConfig().setDisabledUntil(null);
