@@ -1,3 +1,8 @@
+### v1.4.1
+Fix: Indexers with incomplete config were shown in selection list but not actually usable
+Fix: Some issues with indexers not beeing reenabled and some confusing messages being shown. The whole thing with indexers being disabled after errors is still a bit wonky
+Fix: Some potential memory leaks
+
 ### v1.4.0
 Feature: Rewrote the display of indexer statuses. An indexer's status is now displayed in the indexer config section (where you would probably expect it). The 'Enabled' switch was extended and now will show one of the states 'Enabled', 'Temporarily disabled', 'Permanently disabled' or 'User disabled' and an explanation. THe Indexer statuses view does still show alle the indexers' statuses but is less cluttered
 Feature: Show search results filter box in table header because some users didn't find the filter icons
