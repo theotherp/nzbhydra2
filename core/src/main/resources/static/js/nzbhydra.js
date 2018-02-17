@@ -9193,7 +9193,7 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 }
             });
     }
-    if (model.searchModuleType === 'NEWZNAB') {
+    if (model.searchModuleType === 'NEWZNAB' || model.searchModuleType === 'TORZNAB') {
         fieldset.push(
             {
                 key: 'username',
@@ -9213,8 +9213,6 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                 }
             }
         );
-    }
-    if (model.searchModuleType === 'NEWZNAB') {
         fieldset.push(
             {
                 key: 'password',

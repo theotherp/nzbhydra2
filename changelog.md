@@ -1,3 +1,6 @@
+### v1.4.2
+Fix: Allow configuration of basic auth credentials for jackett
+
 ### v1.4.1
 Fix: Indexers with incomplete config were shown in selection list but not actually usable
 Fix: Some issues with indexers not beeing reenabled and some confusing messages being shown. The whole thing with indexers being disabled after errors is still a bit wonky
