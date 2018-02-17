@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Allow configuration of basic auth credentials for jackett"
+      }
+    ]
+  },
+  {
     "version": "v1.4.1",
     "changes": [
       {
