@@ -37,7 +37,7 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
 
 
 ## How to run
-You need [Java Runtime Environment (>=8u101 but not 9.x)](https://www.java.com/en/download/manual.jsp) or OpenJDK.<sup>Don't complain about Java. You can still use [python based NZBHydra 1](https://github.com/theotherp/nzbhydra) if you really want.</sup> 
+You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both (>=8u101 but it won't work with 9.x or higher).
 
 Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra2/releases) for your platform. Extract it anywhere and start using the appropriate way:
 * On windows (64bit) you can either start "NZBHydra2.exe" which will add a tray icon (give it some time) or "NZBHydra2 Console.exe" which will open a console window. Note: Do *not* use the folders <tt>c:\program files</tt> or <tt>c:\program files (x86)</tt>.
