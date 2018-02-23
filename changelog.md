@@ -1,3 +1,6 @@
+### v1.4.3
+Fix: Migration failed because of missing datatabase table
+
 ### v1.4.2
 Fix: Allow configuration of basic auth credentials for jackett
 
