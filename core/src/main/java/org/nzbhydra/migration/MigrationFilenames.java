@@ -12,7 +12,6 @@ public class MigrationFilenames {
     public String apiAccesses;
     public String downloads;
     public String indexerSearches;
-    public String indexerStatuses;
     public String indexers;
     public String searches;
 

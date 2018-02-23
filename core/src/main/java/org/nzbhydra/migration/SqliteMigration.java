@@ -77,7 +77,6 @@ public class SqliteMigration {
                 entityManager.createNativeQuery("TRUNCATE TABLE INDEXERAPIACCESS").executeUpdate();
                 entityManager.createNativeQuery("TRUNCATE TABLE indexersearch").executeUpdate();
                 entityManager.createNativeQuery("TRUNCATE TABLE search").executeUpdate();
-                entityManager.createNativeQuery("TRUNCATE TABLE indexerstatus").executeUpdate();
                 entityManager.createNativeQuery("TRUNCATE TABLE indexernzbdownload").executeUpdate();
                 entityManager.createNativeQuery("TRUNCATE TABLE SEARCHRESULT").executeUpdate();
                 entityManager.createNativeQuery("TRUNCATE TABLE indexer").executeUpdate();

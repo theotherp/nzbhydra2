@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Migration failed because of missing datatabase table"
+      }
+    ]
+  },
+  {
     "version": "v1.4.2",
     "changes": [
       {
