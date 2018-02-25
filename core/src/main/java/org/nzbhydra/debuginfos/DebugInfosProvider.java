@@ -60,7 +60,16 @@ public class DebugInfosProvider {
                 if (traceFile.exists()) {
                     writeFileToZip(zos, "nzbhydra.trace.db", traceFile);
                 }
-                File wrapperLog = new File(new File(NzbHydra.getDataFolder(), "logs"), "wrapper.log");
+                File logsFolder = new File(NzbHydra.getDataFolder(), "logs");
+                //Write all GC logs
+                File[] files = logsFolder.listFiles((dir, name) -> name.startsWith("gclog"));
+                if (files != null) {
+                    for (File file : files) {
+                        writeFileToZip(zos, file.getName(), file);
+                    }
+                }
+                //Write wrapper log
+                File wrapperLog = new File(logsFolder, "wrapper.log");
                 if (wrapperLog.exists()) {
                     writeFileToZip(zos, "wrapper.log", wrapperLog);
                 }

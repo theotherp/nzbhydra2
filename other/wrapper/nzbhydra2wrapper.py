@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import argparse
 import logging
+import datetime
 import os
 import platform
 import shutil
@@ -125,10 +126,10 @@ def daemonize(pidfile, nopidfile):
 
 
 def setupLogger():
-    dataFolder = os.path.join(args.datafolder, "logs")
-    if not os.path.exists(dataFolder):
-        os.makedirs(dataFolder)
-    logfilename = os.path.join(dataFolder, "wrapper.log")
+    logsFolder = os.path.join(args.datafolder, "logs")
+    if not os.path.exists(logsFolder):
+        os.makedirs(logsFolder)
+    logfilename = os.path.join(logsFolder, "wrapper.log")
     if not args.quiet:
         print("Logging wrapper output to " + logfilename)
     if not args.quiet:
@@ -356,7 +357,10 @@ def startup():
     if xmx.lower().endswith("m"):
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify"]
+    gcLogFilename = os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
+    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify", "-Xloggc:" + gcLogFilename
+        , "-XX:+PrintGCDetails",
+                      "-XX:+PrintGCTimeStamps", "-XX:+PrintTenuringDistribution", "-XX:+PrintGCCause", "-XX:+UseGCLogFileRotation", "-XX:NumberOfGCLogFiles=10", "-XX:GCLogFileSize=5M"]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
