@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>nzbhydra2</artifactId>
-        <version>1.4.4-SNAPSHOT</version>
+        <version>1.4.4</version>
     </parent>
 	
     <artifactId>shared</artifactId>

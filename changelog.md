@@ -1,3 +1,6 @@
+### v1.4.4
+Fix: Handle LL searches better that request a general category and a subcategory (e.g. 7000,7020)
+
 ### v1.4.3
 Fix: Migration failed because of missing datatabase table
 
