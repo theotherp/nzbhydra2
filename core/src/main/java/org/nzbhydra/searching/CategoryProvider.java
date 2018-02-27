@@ -179,12 +179,14 @@ public class CategoryProvider implements InitializingBean {
         List<Integer> foundMainCategories = cats.stream().filter(x -> x % 1000 == 0).collect(Collectors.toList());
         if (!foundMainCategories.isEmpty()) {
             Category category = categoryMapByNumber.get(foundMainCategories.get(0));
-            if (foundMainCategories.size() > 1) {
-                logger.warn("Search supplied multiple main categories: {}. Will use ", catsString, category.getName());
-            } else if (cats.size() > 1) {
-                logger.warn("Search supplied a general category and a subcategory: {}. Will use the subcategory {}", catsString, category.getName());
+            if (category != null) {
+                if (foundMainCategories.size() > 1) {
+                    logger.warn("Search supplied multiple main categories: {}. Will use ", catsString, category.getName());
+                } else if (cats.size() > 1) {
+                    logger.warn("Search supplied a general category and a subcategory: {}. Will use the subcategory {}", catsString, category.getName());
+                }
+                return category;
             }
-            return category;
         }
 
 

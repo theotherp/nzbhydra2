@@ -172,6 +172,7 @@ public class Newznab extends Indexer<Xml> {
             categoryIds = searchRequest.getInternalData().getNewznabCategories();
         }
         if (!categoryIds.isEmpty()) {
+            Collections.sort(categoryIds);
             componentsBuilder.queryParam("cat", Joiner.on(",").join(categoryIds));
         }
 

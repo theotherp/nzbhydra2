@@ -68,6 +68,7 @@ public class CategoryProviderTest {
         assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3000), CategoriesConfig.allCategory).getName(), is("3000,3030"));
         assertThat(testee.fromSearchNewznabCategories(Arrays.asList(3030), CategoriesConfig.allCategory).getName(), is("3000,3030"));
         assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020), CategoriesConfig.allCategory).getName(), is("7020,8010"));
+        assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7000, 7020), CategoriesConfig.allCategory).getName(), is("7020,8010"));
 
         //Different order
         assertThat(testee.fromSearchNewznabCategories(Arrays.asList(7020, 8010), CategoriesConfig.allCategory).getName(), is("7020,8010"));

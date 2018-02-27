@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Handle LL searches better that request a general category and a subcategory (e.g. 7000,7020)"
+      }
+    ]
+  },
+  {
     "version": "v1.4.3",
     "changes": [
       {
