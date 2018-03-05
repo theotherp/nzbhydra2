@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Improve caps check for some results using a TV show's initialism instead of the full name in the title"
+      }
+    ]
+  },
+  {
     "version": "v1.4.4",
     "changes": [
       {

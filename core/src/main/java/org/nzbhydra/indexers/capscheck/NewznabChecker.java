@@ -115,10 +115,10 @@ public class NewznabChecker {
      */
     public CheckCapsResponse checkCaps(IndexerConfig indexerConfig) {
         List<CheckCapsRequest> requests = Arrays.asList(
-                new CheckCapsRequest(indexerConfig, "tvsearch", "tvdbid", "121361", Collections.singletonList("Thrones")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "rid", "24493", Collections.singletonList("Thrones")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "tvmazeid", "82", Collections.singletonList("Thrones")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", "traktid", "1390", Collections.singletonList("Thrones")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "rid", "24493", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", "traktid", "1390", Arrays.asList("Thrones", "GOT")),
                 new CheckCapsRequest(indexerConfig, "movie", "tmdbid", "1399", Arrays.asList("Avengers", "Vengadores")),
                 new CheckCapsRequest(indexerConfig, "movie", "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
         );
