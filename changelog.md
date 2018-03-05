@@ -1,3 +1,6 @@
+### v1.4.5
+Fix: Improve caps check for some results using a TV show's initialism instead of the full name in the title
+
 ### v1.4.4
 Fix: Handle LL searches better that request a general category and a subcategory (e.g. 7000,7020)
 
