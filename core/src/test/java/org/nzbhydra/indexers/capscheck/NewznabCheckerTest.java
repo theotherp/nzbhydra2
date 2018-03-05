@@ -23,11 +23,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerCategoryConfig;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.*;
 import org.nzbhydra.fortests.NewznabResponseBuilder;
 import org.nzbhydra.indexers.BinsearchTest;
 import org.nzbhydra.indexers.Indexer.BackendType;
@@ -48,21 +44,11 @@ import java.io.StringReader;
 import java.net.URI;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.IMDB;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.TMDB;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.TRAKT;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVDB;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVMAZE;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.TVRAGE;
+import static org.mockito.Mockito.*;
+import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
 
 @SuppressWarnings("ALL")
 
@@ -116,7 +102,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
-                .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+                .thenReturn(builder.getTestResult(1, 100, "GOT", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
