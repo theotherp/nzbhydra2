@@ -58,7 +58,8 @@ function freetextFilter(DebugService) {
         scope: {
             column: "@",
             onKey: "@",
-            placeholder: "@"
+            placeholder: "@",
+            tooltip: "@"
         },
         controller: controller
     };
@@ -66,6 +67,7 @@ function freetextFilter(DebugService) {
     function controller($scope, focus) {
         $scope.inline = $scope.$parent.$parent.columnFilterWrapperCtrl.inline; //Hacky way of getting the value from the outer wrapper
         $scope.data = {};
+        $scope.tooltip = $scope.tooltip || "";
 
         $scope.$on("opened", function () {
             focus("freetext-filter-input");

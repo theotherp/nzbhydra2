@@ -1,3 +1,5 @@
 <input type="text" ng-keyup="onKeyUp($event)" ng-model="data.filter" id="freetext-filter-input" auto-focus
        no-focus="{{::inline}}" ng-class="::{'inline-filter': inline, 'form-control' : inline}"
-       placeholder="{{::placeholder}}"/>
+       placeholder="{{::placeholder}}" uib-tooltip="{{::tooltip}}"
+       tooltip-placement="top"
+       tooltip-trigger="mouseenter"/>

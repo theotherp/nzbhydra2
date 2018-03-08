@@ -283,6 +283,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
             if ("title" in $scope.filterModel) {
                 var ok = _.every(words, function (word) {
+                    if (word.startsWith("!")) {
+                        if (word.length === 1) {
+                            return true;
+                        }
+                        return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                    }
                     return item.title.toLowerCase().indexOf(word) > -1;
                 });
                 if (!ok) return false;
@@ -405,6 +411,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         var filtered = _.filter(results, filter);
         var newSelected = $scope.selected;
         _.forEach($scope.selected, function (x) {
+            if (x === undefined) {
+                return;
+            }
             if (filtered.indexOf(x) === -1) {
                 console.log("Removing " + x.title + " from selected results because it's being hidden");
                 $scope.$broadcast("toggleSelection", x, false);

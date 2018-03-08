@@ -3,6 +3,10 @@
     "version": "v1.4.6",
     "changes": [
       {
+        "type": "feature",
+        "text": "Prepend words in the results filter box with ! to exclude them"
+      },
+      {
         "type": "fix",
         "text": "Shift-click for selecting multiple results in a row didn't work on firefox"
       }

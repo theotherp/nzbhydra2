@@ -2205,7 +2205,8 @@ function freetextFilter(DebugService) {
         scope: {
             column: "@",
             onKey: "@",
-            placeholder: "@"
+            placeholder: "@",
+            tooltip: "@"
         },
         controller: controller
     };
@@ -2213,6 +2214,7 @@ function freetextFilter(DebugService) {
     function controller($scope, focus) {
         $scope.inline = $scope.$parent.$parent.columnFilterWrapperCtrl.inline; //Hacky way of getting the value from the outer wrapper
         $scope.data = {};
+        $scope.tooltip = $scope.tooltip || "";
 
         $scope.$on("opened", function () {
             focus("freetext-filter-input");
@@ -4016,6 +4018,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
             if ("title" in $scope.filterModel) {
                 var ok = _.every(words, function (word) {
+                    if (word.startsWith("!")) {
+                        if (word.length === 1) {
+                            return true;
+                        }
+                        return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
+                    }
                     return item.title.toLowerCase().indexOf(word) > -1;
                 });
                 if (!ok) return false;
@@ -4138,6 +4146,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         var filtered = _.filter(results, filter);
         var newSelected = $scope.selected;
         _.forEach($scope.selected, function (x) {
+            if (x === undefined) {
+                return;
+            }
             if (filtered.indexOf(x) === -1) {
                 console.log("Removing " + x.title + " from selected results because it's being hidden");
                 $scope.$broadcast("toggleSelection", x, false);
