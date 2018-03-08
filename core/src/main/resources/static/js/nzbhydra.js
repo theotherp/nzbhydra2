@@ -1003,7 +1003,7 @@ function searchResult() {
             $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
         }
 
-        $scope.clickCheckbox = function () {
+        $scope.clickCheckbox = function (event, result) {
             sendSelectionEvent();
             $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
         };
