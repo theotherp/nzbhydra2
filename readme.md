@@ -44,7 +44,7 @@ Download the [latest release of NZBHydra2](https://github.com/theotherp/nzbhydra
 * On linux start "nzbhydra2" (currently working only on x64)
 * On Mac: No executable yet, see next point 
 * If you cannot run the executables for some reason there's another way: The executables are just compiled python. Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the main NZBHydra folder and run it
-* Alternatively you can use docker. You might want to use [binhex' container](https://hub.docker.com/r/binhex/arch-nzbhydra2/). A container by popular maintainers linuxserver.io is [in the works](https://github.com/linuxserver/docker-hydra2).
+* Alternatively you can use docker. You might want to use [binhex' container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [linuxserver.io](https://github.com/linuxserver/docker-hydra2). 
 
 After a while your browser should open to http://127.0.0.1:5076
 
