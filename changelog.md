@@ -1,3 +1,7 @@
+### v1.4.6
+Feature: Prepend words in the results filter box with ! to exclude them
+Fix: Shift-click for selecting multiple results in a row didn't work on firefox
+
 ### v1.4.5
 Fix: Improve caps check for some results using a TV show's initialism instead of the full name in the title
 
