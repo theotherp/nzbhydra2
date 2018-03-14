@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Bug in internal logic would throw exception and cause indexers to be disabled for no reason"
+      },
+      {
+        "type": "fix",
+        "text": "API hit limit reached on omg would disable indexer permanently"
       }
     ]
   },

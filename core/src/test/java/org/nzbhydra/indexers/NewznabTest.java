@@ -309,6 +309,15 @@ public class NewznabTest {
         testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
     }
 
+    @Test(expected = IndexerErrorCodeException.class)
+    public void shouldThrowErrorCodeWhen100ApiHitLimits() throws Exception {
+        doReturn(new NewznabXmlError("100", "Daily Hits Limit Reached\"")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));
+        doNothing().when(testee).handleFailure(errorMessageCaptor.capture(), disabledPermanentlyCaptor.capture(), any(IndexerApiAccessType.class), any(), indexerApiAccessResultCaptor.capture());
+
+        testee.searchInternal(new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100), 0, 100);
+    }
+
+
     @Test(expected = IndexerProgramErrorException.class)
     public void shouldThrowProgramErrorCodeException() throws Exception {
         doReturn(new NewznabXmlError("200", "Whatever")).when(testee).getAndStoreResultToDatabase(any(), eq(Xml.class), eq(IndexerApiAccessType.SEARCH));

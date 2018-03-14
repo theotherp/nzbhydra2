@@ -310,7 +310,7 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected void handleRssError(NewznabXmlError response, String url) throws IndexerAccessException {
-        if (Stream.of("100", "101", "102").anyMatch(x -> x.equals(response.getCode()))) {
+        if (Stream.of("100", "101", "102").anyMatch(x -> x.equals(response.getCode())) && !(response.getDescription() != null && response.getDescription().contains("Hits Limit Reached"))) {
             throw new IndexerAuthException(String.format("Indexer refused authentication. Error code: %s. Description: %s", response.getCode(), response.getDescription()));
         }
         if (Stream.of("200", "201", "202", "203").anyMatch(x -> x.equals(response.getCode()))) {
