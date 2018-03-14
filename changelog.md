@@ -1,3 +1,9 @@
+### v1.4.7
+Fix: Bug in internal logic would throw exception and cause indexers to be disabled for no reason
+Fix: API hit limit reached on omg would disable indexer permanently
+Fix: Indexer config state would change when switching config tabs
+Fix: Indexer priority field was not displayed in config
+
 ### v1.4.6
 Feature: Prepend words in the results filter box with ! to exclude them
 Fix: Shift-click for selecting multiple results in a row didn't work on firefox
