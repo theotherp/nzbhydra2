@@ -168,8 +168,9 @@ public class Newznab extends Indexer<Xml> {
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
                 categoryIds = searchRequest.getCategory().getNewznabCategories();
             }
+            categoryIds = new ArrayList<>(categoryIds); //Arrays.asList() returns an unmodifiable list which will not be sortable
         } else {
-            categoryIds = searchRequest.getInternalData().getNewznabCategories();
+            categoryIds = new ArrayList<>(searchRequest.getInternalData().getNewznabCategories()); //Use new instance of list to be sorted
         }
         if (!categoryIds.isEmpty()) {
             Collections.sort(categoryIds);
@@ -471,8 +472,8 @@ public class Newznab extends Indexer<Xml> {
                     }
                     return categoryOptional.orElse(categoryProvider.fromResultNewznabCategories(newznabCategories));
                 });
-            //Use the indexer's own category mapping to build the category name
-            searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
+                //Use the indexer's own category mapping to build the category name
+                searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
             }
             searchResultItem.setCategory(category);
         } else {

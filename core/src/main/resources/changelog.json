@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.7",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Bug in internal logic would throw exception and cause indexers to be disabled for no reason"
+      }
+    ]
+  },
+  {
     "version": "v1.4.6",
     "changes": [
       {
