@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Indexer config state would change when switching config tabs"
+      },
+      {
+        "type": "fix",
+        "text": "Indexer priority field was not displayed in config"
       }
     ]
   },
