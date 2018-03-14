@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "API hit limit reached on omg would disable indexer permanently"
+      },
+      {
+        "type": "fix",
+        "text": "Indexer config state would change when switching config tabs"
       }
     ]
   },

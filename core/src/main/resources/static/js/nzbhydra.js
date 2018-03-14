@@ -1422,9 +1422,9 @@ function indexerStateSwitch() {
         calculateTextAndColor();
 
         $scope.onChange = function () {
-            $scope.indexer.state = $scope.value ? "ENABLED" : "DISABLED_USER";
             if (initialized) {
                 //Skip on first call when initial value is set
+                $scope.indexer.state = $scope.value ? "ENABLED" : "DISABLED_USER";
                 calculateTextAndColor();
             }
             initialized = true;
