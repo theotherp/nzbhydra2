@@ -56,7 +56,7 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         }
 
         try {
-            Files.write(changelogMdFile.toPath(), Joiner.on("\n").join(lines).getBytes("UTF-8"));
+            Files.write(changelogMdFile.toPath(), Joiner.on("\n\n").join(lines).getBytes("UTF-8"));
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to write lines to MD file " + changelogMdFile.getAbsolutePath(), e);
         }

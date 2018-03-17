@@ -360,7 +360,9 @@ def startup():
     gcLogFilename = os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
     java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify", "-Xloggc:" + gcLogFilename
         , "-XX:+PrintGCDetails",
-                      "-XX:+PrintGCTimeStamps", "-XX:+PrintTenuringDistribution", "-XX:+PrintGCCause", "-XX:+UseGCLogFileRotation", "-XX:NumberOfGCLogFiles=10", "-XX:GCLogFileSize=5M"]
+                      "-XX:+PrintGCTimeStamps", "-XX:+PrintTenuringDistribution", "-XX:+PrintGCCause", "-XX:+UseGCLogFileRotation", "-XX:NumberOfGCLogFiles=10", "-XX:GCLogFileSize=5M"
+                      ,"-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
+                      ]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
