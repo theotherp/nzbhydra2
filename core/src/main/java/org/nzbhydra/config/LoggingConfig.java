@@ -9,10 +9,12 @@ import java.util.List;
 @Data
 public class LoggingConfig extends ValidatingConfig {
 
+    @RestartRequired
     private String consolelevel;
     private HistoryUserInfoType historyUserInfoType = HistoryUserInfoType.NONE;
     private boolean logIpAddresses;
     private int logMaxHistory;
+    @RestartRequired
     private String logfilelevel;
     private boolean logUsername;
     private List<String> markersToLog = new ArrayList<>();

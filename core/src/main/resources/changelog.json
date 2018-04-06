@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.9",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Log levels for console and file were not honored properly."
+      }
+    ]
+  },
+  {
     "version": "v1.4.8",
     "changes": [
       {

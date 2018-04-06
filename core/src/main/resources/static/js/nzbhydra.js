@@ -7579,7 +7579,8 @@ function ConfigFields($injector) {
                                     {name: 'Warning', value: 'WARN'},
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
-                                ]
+                                ],
+                                help: 'Takes effect on next restart.'
                             }
                         },
                         {
@@ -7602,7 +7603,8 @@ function ConfigFields($injector) {
                                     {name: 'Warning', value: 'WARN'},
                                     {name: 'Info', value: 'INFO'},
                                     {name: 'Debug', value: 'DEBUG'}
-                                ]
+                                ],
+                                help: 'Takes effect on next restart.'
                             }
                         },
                         {
