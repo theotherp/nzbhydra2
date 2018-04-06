@@ -1,3 +1,9 @@
+### v1.4.9
+
+Fix: Log levels for console and file were not honored properly.
+
+
+
 ### v1.4.8
 
 Note: Updated the wrapper to create a memory dump file if the main process crashes when it's out of memory. As before you need to update the wrapper manually (except when you use docker and don't use the internal update mechanism). This is not strictly necessary but will improve chances of me debugging memory problems.
