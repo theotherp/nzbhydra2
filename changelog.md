@@ -1,3 +1,11 @@
+### v1.4.11
+
+Fix: Prevent rare database error when converting between movie IDs
+
+Fix: Prevent API keys from leaking in debug infos ZIP when included in last error property
+
+
+
 ### v1.4.10
 
 Feature: Option to disable download status updates. *Might* help in some rare cases where CPU usage is high when NZBHydra2 is supposed to idle
