@@ -82,10 +82,10 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
             @Override
             public Date nextExecutionTime(TriggerContext triggerContext) {
                 Calendar nextExecutionTime = new GregorianCalendar();
-                Date lastActualExecutionTime = runNow ? new Date() : triggerContext.lastActualExecutionTime();
-                nextExecutionTime.setTime(lastActualExecutionTime != null ? lastActualExecutionTime : new Date());
+                Date lastCompletionTime = runNow ? new Date() : triggerContext.lastCompletionTime();
+                nextExecutionTime.setTime(lastCompletionTime != null ? lastCompletionTime : new Date());
                 nextExecutionTime.add(Calendar.MILLISECOND, (int) getIntervalForTask(task));
-                taskInformations.put(task, new TaskInformation(task.name(), lastActualExecutionTime != null ? lastActualExecutionTime.toInstant() : null, nextExecutionTime.toInstant()));
+                taskInformations.put(task, new TaskInformation(task.name(), lastCompletionTime != null ? lastCompletionTime.toInstant() : null, nextExecutionTime.toInstant()));
                 return nextExecutionTime.getTime();
             }
         });

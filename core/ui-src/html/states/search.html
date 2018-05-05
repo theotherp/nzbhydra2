@@ -65,10 +65,6 @@
                               {{selectedItem.title}}
                                     </span>
                             </div>
-
-                            <script type="text/ng-template" id="movieAutocompleteEntry">
-                                <a>{{ match.label }}</a>
-                            </script>
                             <input id="searchfield" type="search" ngtype="search" ng-model="query"
                                    ng-enter="onTypeAheadEnter()" placeholder="Search" typeahead-min-length="2"
                                    typeahead-wait-ms="typeAheadWait" ng-keydown="onTypeAheadKeyDown($event)"

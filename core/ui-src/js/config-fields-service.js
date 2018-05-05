@@ -1196,6 +1196,15 @@ function ConfigFields($injector) {
                                 label: 'Send magnet links',
                                 help: "Enable to send magnet links to the associated program on the server machine. Won't work with docker"
                             }
+                        },
+                        {
+                            key: 'updateStatuses',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Update statuses',
+                                help: "Query your downloader for status updates of downloads"
+                            }
                         }
                     ]
 

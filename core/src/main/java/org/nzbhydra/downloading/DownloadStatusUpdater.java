@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading;
 
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
 import org.nzbhydra.downloading.downloaders.DownloaderProvider;
@@ -56,10 +57,16 @@ public class DownloadStatusUpdater {
     protected DownloaderProvider downloaderProvider;
     @Autowired
     protected FileDownloadRepository downloadRepository;
+    @Autowired
+    private ConfigProvider configProvider;
 
     @HydraTask(configId = "downloadHistoryCheck", name = "Download history check", interval = TEN_MINUTES_MS)
     @Transactional
     public void checkHistoryStatus() {
+        if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping history status update because it's disabled");
+            return;
+        }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED, FileDownloadStatus.NZB_ADDED, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
         checkStatus(statusesToCheck, DAY_SECONDS, StatusCheckType.HISTORY);
     }
@@ -67,6 +74,10 @@ public class DownloadStatusUpdater {
     @HydraTask(configId = "downloadQueueCheck", name = "Download queue check", interval = TEN_SECONDS_MS)
     @Transactional
     public void checkQueueStatus() {
+        if (!configProvider.getBaseConfig().getDownloading().isUpdateStatuses()) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping queue status update because it's disabled");
+            return;
+        }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED);
         checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
     }

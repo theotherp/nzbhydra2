@@ -17,6 +17,7 @@ public class DownloadingConfig extends ValidatingConfig {
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;
     private boolean sendMagnetLinks;
+    private boolean updateStatuses;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig) {

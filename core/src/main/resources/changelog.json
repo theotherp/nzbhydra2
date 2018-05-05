@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.10",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Option to disable download status updates. *Might* help in some rare cases where CPU usage is high when NZBHydra2 is supposed to idle"
+      }
+    ]
+  },
+  {
     "version": "v1.4.9",
     "changes": [
       {

@@ -31,12 +31,10 @@ public class MediaInfoWeb {
 
     private static final Logger logger = LoggerFactory.getLogger(MediaInfoWeb.class);
 
-
     @Autowired
     private InfoProvider infoProvider;
     @Autowired
     private ConfigProvider configProvider;
-
 
     private LoadingCache<CacheKey, List<MediaInfoTO>> autocompleteCache = CacheBuilder.newBuilder()
             .maximumSize(100)
