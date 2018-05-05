@@ -47,6 +47,7 @@ public class IndexerConfig extends ValidatingConfig {
     private Integer hitLimit = null;
     private Integer hitLimitResetTime = null;
     private String host;
+    @SensitiveData //May contain API key in called URL
     private String lastError;
     private Long disabledUntil = null;
     private int disabledLevel;

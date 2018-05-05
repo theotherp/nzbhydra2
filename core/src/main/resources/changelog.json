@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Prevent rare database error when converting between movie IDs"
+      },
+      {
+        "type": "fix",
+        "text": "Prevent API keys from leaking in debug infos ZIP when included in last error property"
       }
     ]
   },
