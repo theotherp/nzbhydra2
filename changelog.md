@@ -1,3 +1,9 @@
+### v1.4.12
+
+Fix: Prevent database error when ignoring too many updates...
+
+
+
 ### v1.4.11
 
 Fix: Prevent rare database error when converting between movie IDs
