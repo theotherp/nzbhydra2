@@ -1,3 +1,9 @@
+### v1.4.10
+
+Feature: Option to disable download status updates. *Might* help in some rare cases where CPU usage is high when NZBHydra2 is supposed to idle
+
+
+
 ### v1.4.9
 
 Fix: Log levels for console and file were not honored properly.
