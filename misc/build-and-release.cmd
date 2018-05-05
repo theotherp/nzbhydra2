@@ -30,6 +30,13 @@ if not exist "%~dp0..\releases\windows-release\include\nzbhydra2 console.exe" (
     goto error
 )
 
+echo Running clean
+call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean
+if not "%ERRORLEVEL%" == "0" (
+    echo Error during clean
+    goto error
+)
+
 echo Setting release version
 call mvn versions:set -DnewVersion=%1
 if not "%ERRORLEVEL%" == "0" (
@@ -51,14 +58,14 @@ if not "%ERRORLEVEL%" == "0" (
     goto error
 )
 
-echo Running clean install
+echo Running install
 if "%3" == "skiptests" (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install -DskipTests=true
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
 ) else (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean install
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install
 )
 if not "%ERRORLEVEL%" == "0" (
-    echo Error during clean install
+    echo Error during install
     goto error
 )
 
