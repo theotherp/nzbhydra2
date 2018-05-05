@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.12",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Prevent database error when ignoring too many updates..."
+      }
+    ]
+  },
+  {
     "version": "v1.4.11",
     "changes": [
       {

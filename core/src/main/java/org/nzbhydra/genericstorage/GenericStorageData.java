@@ -3,10 +3,7 @@ package org.nzbhydra.genericstorage;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -17,6 +14,7 @@ public class GenericStorageData {
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected int id;
     protected String key;
+    @Lob
     protected String data;
 
     public GenericStorageData(String key, String data) {
