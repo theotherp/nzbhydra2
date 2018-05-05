@@ -110,10 +110,14 @@ public class InfoProvider {
                     } else {
                         TmdbSearchResult result = tmdbHandler.getInfos(value, fromType);
                         info = new MediaInfo(result);
-                        movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                        if (((info.getTmdbId().isPresent() && movieInfoRepository.findByTmdbId(info.getTmdbId().get()) == null) && (info.getImdbId().isPresent() && movieInfoRepository.findByImdbId(info.getImdbId().get()) == null))) {
-                            movieInfoRepository.save(movieInfo);
+                        //The info currently only contains the value we converted to, we also want the one we converted from of course
+                        if (fromType == TMDB) {
+                            info.setTmdbId(value);
+                        } else if (fromType == IMDB) {
+                            info.setImdbId(value);
                         }
+                        movieInfo = new MovieInfo(info.getImdbId().orElse(null), info.getTmdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
+                        movieInfoRepository.save(movieInfo);
                     }
                     break;
                 case TVMAZE:
@@ -136,9 +140,7 @@ public class InfoProvider {
                         TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
                         info = new MediaInfo(result);
                         tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
-                        if (((info.getTvMazeId().isPresent() && tvInfoRepository.findByTvmazeId(info.getTvMazeId().get()) == null) && (info.getTvDbId().isPresent() && tvInfoRepository.findByTvdbId(info.getTvDbId().get()) == null) && (info.getTvRageId().isPresent() && tvInfoRepository.findByTvrageId(info.getTvRageId().get()) == null))) {
-                            tvInfoRepository.save(tvInfo);
-                        }
+                        tvInfoRepository.save(tvInfo);
                     }
                     break;
                 default:
