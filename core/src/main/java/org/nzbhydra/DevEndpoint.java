@@ -42,7 +42,7 @@ public class DevEndpoint {
         if (imdb != null) {
             return infoProvider.convert(imdb, InfoProvider.IdType.IMDB).toString();
         } else if (tmdb != null) {
-            return infoProvider.convert(tmdb, InfoProvider.IdType.TVDB).toString();
+            return infoProvider.convert(tmdb, InfoProvider.IdType.TMDB).toString();
         } else {
             return "neither tmdb nor imdb set";
         }
