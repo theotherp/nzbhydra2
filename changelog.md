@@ -1,3 +1,9 @@
+### v1.4.13
+
+Fix: Conversion of IMDB to TMDB ID failed with missing tt prefix
+
+
+
 ### v1.4.12
 
 Fix: Prevent database error when ignoring too many updates...
