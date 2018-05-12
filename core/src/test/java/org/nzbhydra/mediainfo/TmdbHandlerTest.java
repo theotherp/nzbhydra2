@@ -40,6 +40,6 @@ public class TmdbHandlerTest {
 
         result = testee.fromTitle("gladiator", 1992);
         assertThat(result.getImdbId(), is("tt0104346"));
-
     }
+
 }

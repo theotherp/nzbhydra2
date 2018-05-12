@@ -49,8 +49,8 @@ public class TmdbHandler {
         return result;
     }
 
-    private TmdbSearchResult fromTmdb(String imdbId) throws InfoProviderException {
-        Movie movie = getMovieByTmdbId(imdbId);
+    private TmdbSearchResult fromTmdb(String tmdbId) throws InfoProviderException {
+        Movie movie = getMovieByTmdbId(tmdbId);
         TmdbSearchResult result = getSearchResultFromMovie(movie);
         return result;
     }

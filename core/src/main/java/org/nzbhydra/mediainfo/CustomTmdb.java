@@ -27,7 +27,7 @@ public class CustomTmdb extends Tmdb {
     protected OkHttpClient client;
 
     @Autowired
-    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
+    protected HydraOkHttp3ClientHttpRequestFactory requestFactory;
 
     public CustomTmdb() {
         super(null);

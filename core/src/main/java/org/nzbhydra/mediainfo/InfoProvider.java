@@ -96,6 +96,9 @@ public class InfoProvider {
             switch (fromType) {
                 case TMDB:
                 case IMDB:
+                    if (!value.startsWith("tt")) {
+                        value = "tt" + value;
+                    }
                 case MOVIETITLE:
                     MovieInfo movieInfo;
                     if (fromType == TMDB) {
