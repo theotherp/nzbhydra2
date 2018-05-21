@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.nzbhydra</groupId>
         <artifactId>releases</artifactId>
-        <version>1.4.14-SNAPSHOT</version>
+        <version>1.4.14</version>
     </parent>
 
     <artifactId>windows-release</artifactId>
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>core</artifactId>
-            <version>1.4.14-SNAPSHOT</version>
+            <version>1.4.14</version>
         </dependency>
     </dependencies>
 

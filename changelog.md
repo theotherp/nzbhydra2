@@ -1,3 +1,11 @@
+### v1.4.14
+
+Fix: Error with TMDB IDs introduced with last version
+
+Note: In some cases long running instances of Hydra use a lot of CPU when they should be idle. I've made some changes which should reduce the problem to a degree. Please let me know at https://github.com/theotherp/nzbhydra2/issues/96 if you have similar problems or, even better, if they've gone away with this version
+
+
+
 ### v1.4.13
 
 Fix: Conversion of IMDB to TMDB ID failed with missing tt prefix
