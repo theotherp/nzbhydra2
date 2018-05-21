@@ -87,7 +87,7 @@ public class MainConfig extends ValidatingConfig {
         ConfigValidationResult result = new ConfigValidationResult();
         MainConfig oldMain = oldConfig.getMain();
         if (oldMain.getPort() != port || (oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase) || oldMain.isSsl() != isSsl()) && !startupBrowser) {
-            result.getWarningMessages().add("You've maded changes that affect Hydra's URL and require a restart. Hydra will try to reload to the new URL when it's back.");
+            result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
         }
 
         if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
