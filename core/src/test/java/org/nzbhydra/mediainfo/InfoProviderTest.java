@@ -12,18 +12,12 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class InfoProviderTest {
 
@@ -121,13 +115,17 @@ public class InfoProviderTest {
     @Test
     public void shouldCallTmdb() throws Exception {
         for (InfoProvider.IdType type : Arrays.asList(InfoProvider.IdType.IMDB, InfoProvider.IdType.TMDB, InfoProvider.IdType.MOVIETITLE)) {
-            reset(tmdbHandlerMock);
-            when(tmdbHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TmdbSearchResult(null, null, null, null, null));
-            testee.convert("value", type);
-            verify(tmdbHandlerMock).getInfos("value", type);
+            testConvertByType(type, type == IdType.IMDB ? "ttvalue" : "value");
         }
         verify(movieInfoRepository).findByTmdbId("value");
-        verify(movieInfoRepository).findByImdbId("value");
+        verify(movieInfoRepository).findByImdbId("ttvalue");
+    }
+
+    protected void testConvertByType(IdType type, String expectedValue) throws InfoProviderException {
+        reset(tmdbHandlerMock);
+        when(tmdbHandlerMock.getInfos(anyString(), any(IdType.class))).thenReturn(new TmdbSearchResult(null, null, null, null, null));
+        testee.convert("value", type);
+        verify(tmdbHandlerMock).getInfos(expectedValue, type);
     }
 
     @Test
