@@ -94,11 +94,11 @@ public class InfoProvider {
         try {
             MediaInfo info;
             switch (fromType) {
-                case TMDB:
                 case IMDB:
                     if (!value.startsWith("tt")) {
                         value = "tt" + value;
                     }
+                case TMDB:
                 case MOVIETITLE:
                     MovieInfo movieInfo;
                     if (fromType == TMDB) {
