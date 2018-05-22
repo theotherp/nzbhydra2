@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.17",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Previous version was missing readme.md which resulted in broken updates"
+      }
+    ]
+  },
+  {
     "version": "v1.4.16",
     "changes": [
       {

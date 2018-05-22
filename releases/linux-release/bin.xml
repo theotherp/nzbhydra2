@@ -25,7 +25,7 @@
             <directory>../../</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
-                <include>readme.md</include>
+                <include>README.md</include>
                 <include>changelog.md</include>
                 <include>LICENSE</include>
             </includes>

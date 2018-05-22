@@ -178,6 +178,7 @@ public class ReleaseMojo extends AbstractMojo {
             }
         } catch (IOException e) {
             getLog().error("Error while uploading windows asset", e);
+            throw new MojoExecutionException("When trying to upload windows asset the following error occurred: " + e.getMessage());
         }
 
 
@@ -194,6 +195,7 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Successfully uploaded linux asset");
         } catch (IOException e) {
             getLog().error("Error while uploading linux asset", e);
+            throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
         }
     }
 
