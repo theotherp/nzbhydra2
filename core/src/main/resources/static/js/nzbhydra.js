@@ -8807,6 +8807,7 @@ function getIndexerPresets(configuredIndexers) {
             {
                 name: "Animetosho (Newznab)",
                 host: "https://feed.animetosho.org",
+                categories: ["Anime"],
                 supportedSearchIds: [],
                 supportedSearchTypes: ["SEARCH"],
                 allCapsChecked: true,
@@ -8934,6 +8935,7 @@ function getIndexerPresets(configuredIndexers) {
                 enabledForSearchSource: "BOTH"
             },
             {
+                categories: ["Anime"],
                 allCapsChecked: true,
                 configComplete: true,
                 name: "Animetosho (Torznab)",
