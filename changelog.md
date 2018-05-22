@@ -1,3 +1,9 @@
+### v1.4.17
+
+Fix: Previous version was missing readme.md which resulted in broken updates
+
+
+
 ### v1.4.16
 
 Fix: Small error in API? help from last version
