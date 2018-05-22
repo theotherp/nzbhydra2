@@ -8796,10 +8796,19 @@ function getIndexerPresets(configuredIndexers) {
             {
                 name: "altHUB",
                 host: "https://api.althub.co.za"
-            }, {
-            name: "dbKitty",
-            host: "https://dbkitty.club"
-        },
+            },
+            {
+                name: "Animetosho (Newznab)",
+                host: "https://feed.animetosho.org",
+                supportedSearchIds: [],
+                supportedSearchTypes: ["SEARCH"],
+                allCapsChecked: true,
+                configComplete: true
+            },
+            {
+                name: "dbKitty",
+                host: "https://dbkitty.club"
+            },
             {
                 name: "DogNZB",
                 host: "https://api.dognzb.cr"
@@ -8913,6 +8922,17 @@ function getIndexerPresets(configuredIndexers) {
                 host: "http://127.0.0.1:9117/api/v2.0/indexers/YOURTRACKER/results/torznab/",
                 supportedSearchIds: undefined,
                 supportedSearchTypes: undefined,
+                searchModuleType: "TORZNAB",
+                state: "ENABLED",
+                enabledForSearchSource: "BOTH"
+            },
+            {
+                allCapsChecked: true,
+                configComplete: true,
+                name: "Animetosho (Torznab)",
+                host: "https://feed.animetosho.org",
+                supportedSearchIds: [],
+                supportedSearchTypes: ["SEARCH"],
                 searchModuleType: "TORZNAB",
                 state: "ENABLED",
                 enabledForSearchSource: "BOTH"

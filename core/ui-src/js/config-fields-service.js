@@ -1509,7 +1509,11 @@ function getIndexerPresets(configuredIndexers) {
             },
             {
                 name: "Animetosho (Newznab)",
-                host: "https://feed.animetosho.org"
+                host: "https://feed.animetosho.org",
+                supportedSearchIds: [],
+                supportedSearchTypes: ["SEARCH"],
+                allCapsChecked: true,
+                configComplete: true
             },
             {
                 name: "dbKitty",
@@ -1633,12 +1637,12 @@ function getIndexerPresets(configuredIndexers) {
                 enabledForSearchSource: "BOTH"
             },
             {
-                allCapsChecked: false,
-                configComplete: false,
+                allCapsChecked: true,
+                configComplete: true,
                 name: "Animetosho (Torznab)",
                 host: "https://feed.animetosho.org",
-                supportedSearchIds: undefined,
-                supportedSearchTypes: undefined,
+                supportedSearchIds: [],
+                supportedSearchTypes: ["SEARCH"],
                 searchModuleType: "TORZNAB",
                 state: "ENABLED",
                 enabledForSearchSource: "BOTH"
