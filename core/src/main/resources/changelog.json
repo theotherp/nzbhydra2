@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.16",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Small error in API? help from last version"
+      }
+    ]
+  },
+  {
     "version": "v1.4.15",
     "changes": [
       {
