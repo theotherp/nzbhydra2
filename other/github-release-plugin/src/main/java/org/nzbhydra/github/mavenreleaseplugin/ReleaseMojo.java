@@ -166,26 +166,35 @@ public class ReleaseMojo extends AbstractMojo {
         String name = windowsAsset.getName();
         getLog().info("Uploading windows asset to " + uploadUrl);
 
-        Response response = client.newCall(new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
-                .post(
-                        RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
-                .build()).execute();
-        if (!response.isSuccessful()) {
-            throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
+        Response response = null;
+        try {
+            response = client.newCall(new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
+                    .post(
+                            RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
+                    .build()).execute();
+            getLog().info("Successfully uploaded windows asset");
+            if (!response.isSuccessful()) {
+                throw new MojoExecutionException("When trying to upload windows asset Github returned code " + response.code() + " and message: " + response.message());
+            }
+        } catch (IOException e) {
+            getLog().error("Error while uploading windows asset", e);
         }
 
-        getLog().info("Successfully uploaded windows asset");
 
         getLog().info("Uploading linux asset to " + uploadUrl);
         name = linuxAsset.getName();
-        response = client.newCall(new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
-                .post(
-                        RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
-                .build()).execute();
+        try {
+            response = client.newCall(new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
+                    .post(
+                            RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
+                    .build()).execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
         }
         getLog().info("Successfully uploaded linux asset");
+        } catch (IOException e) {
+            getLog().error("Error while uploading linux asset", e);
+        }
     }
 
 
