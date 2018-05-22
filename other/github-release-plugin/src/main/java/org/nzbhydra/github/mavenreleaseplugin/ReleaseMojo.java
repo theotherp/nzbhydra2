@@ -4,12 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import okhttp3.Call;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import okhttp3.Request.Builder;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -20,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @SuppressWarnings("unchecked")
@@ -61,7 +58,7 @@ public class ReleaseMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        client = new OkHttpClient();
+        client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
 
         getLog().info("Will release version " + tagName + " to GitHub");
 
