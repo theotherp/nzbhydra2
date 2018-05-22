@@ -1,4 +1,4 @@
-### v1.4.17
+### v1.4.18
 
 Fix: Previous version was missing readme.md which resulted in broken updates
 
