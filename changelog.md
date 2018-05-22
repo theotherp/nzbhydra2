@@ -1,3 +1,11 @@
+### v1.4.15
+
+Feature: Support animetosho (both newznab and torznab)
+
+Feature: Add small 'API?' button in config to display newznab and torznab endpoints and the api key
+
+
+
 ### v1.4.14
 
 Fix: Error with TMDB IDs introduced with last version
