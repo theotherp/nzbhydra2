@@ -79,7 +79,7 @@
     "metasearch"
   ],
   "author": "TheOtherP",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/theotherp/nzbhydra2/issues"
   },
