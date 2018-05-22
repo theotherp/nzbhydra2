@@ -1,3 +1,9 @@
+### v1.4.16
+
+Fix: Small error in API? help from last version
+
+
+
 ### v1.4.15
 
 Feature: Support animetosho (both newznab and torznab)
