@@ -229,6 +229,27 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
         $state.go($scope.allTabs[index].state, {activeTab: index}, {inherit: false, notify: true, reload: true});
     };
 
+    $scope.apiHelp = function () {
+
+        if ($scope.isSavingNeeded()) {
+            growl.info("Please save first");
+            return;
+        }
+        var apiHelp = ConfigService.apiHelp().then(function (data) {
+
+            var html = '<span style="text-align: left;"><table>' +
+                '<tr><td>Newznab API endpoint:</td><td style="padding-left: 10px">%newznab%</td></tr>' +
+                '<tr><td>Torznab API endpoint:</td><td style="padding-left: 10px">%torznab%</td></tr>' +
+                '<tr><td>API key:</td><td style="padding-left: 10px">%apikey%</td></tr>' +
+                '</table></span>';
+            //Torznab API endpoint: <span class="label label-default">%torznab%</span><br>API key: <span class="label label-default">%apikey%
+            html = html.replace("%newznab%", data.newznabApi);
+            html = html.replace("%torznab%", data.torznabApi);
+            html = html.replace("%apikey%", data.apiKey);
+            ModalService.open("API infos", html, {}, "md");
+        });
+    };
+
     $scope.help = function () {
         var tabName = $scope.allTabs[$scope.activeTab].name;
         $http.get("internalapi/help/" + tabName).then(function (result) {

@@ -13,7 +13,8 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
         getSafe: getSafe,
         invalidateSafe: invalidateSafe,
         maySeeAdminArea: maySeeAdminArea,
-        reloadConfig: reloadConfig
+        reloadConfig: reloadConfig,
+        apiHelp: apiHelp
     };
 
     function set(newConfig, ignoreWarnings) {
@@ -36,6 +37,12 @@ function ConfigService($http, $q, $cacheFactory, bootstrapped) {
 
     function reloadConfig() {
         return $http.get('internalapi/config/reload').then(function (response) {
+            return response.data;
+        });
+    }
+
+    function apiHelp() {
+        return $http.get('internalapi/config/apiHelp').then(function (response) {
             return response.data;
         });
     }

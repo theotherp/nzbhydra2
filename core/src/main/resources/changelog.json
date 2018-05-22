@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Support animetosho (both newznab and torznab)"
+      },
+      {
+        "type": "feature",
+        "text": "Add small 'API?' button in config to display newznab and torznab endpoints and the api key"
       }
     ]
   },

@@ -5,6 +5,7 @@
                 <a href="" ng-click="goToConfigState($index)">{{ tab.name }}</a>
             </li>
             <li style="float: right">
+                <button ng-click="apiHelp()" class="btn config-button config-api-button btn-default">API?</button>
                 <button ng-click="help()" class="btn config-button config-help-button btn-default">Help</button>
                 <button ng-click="submit()" class="btn config-button"
                         ng-class="{'btn-info': isSavingNeeded(), 'pulse2': isSavingNeeded(), 'btn-success': !isSavingNeeded()}">
