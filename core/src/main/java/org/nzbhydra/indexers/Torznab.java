@@ -29,12 +29,7 @@ public class Torznab extends Newznab {
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
-        if (item.getCategory() != null) {
-            computeCategory(searchResultItem, Collections.singletonList(Integer.valueOf(item.getCategory())));
-        } else {
-            searchResultItem.setCategory(categoryProvider.getNotAvailable());
-        }
-
+        String categoryFromAttributes = null;
         searchResultItem.setGrabs(item.getGrabs());
         searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
@@ -52,13 +47,38 @@ public class Torznab extends Newznab {
                 case "peers":
                     searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
                     break;
+                case "category":
+                    categoryFromAttributes = attribute.getValue();
             }
+        }
+        Integer categoryInt = tryAndGetCategoryAsNumber(categoryFromAttributes, item.getCategory());
+        if (categoryInt != null) {
+            computeCategory(searchResultItem, Collections.singletonList(categoryInt));
+        } else {
+            searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
         searchResultItem.setHasNfo(HasNfo.NO);
         searchResultItem.setIndexerScore(config.getScore().orElse(0));
         searchResultItem.setDownloadType(DownloadType.TORRENT);
         searchResultItem.setGuid(SearchResultIdCalculator.calculateSearchResultId(searchResultItem));
         return searchResultItem;
+    }
+
+    private Integer tryAndGetCategoryAsNumber(String category, String categoryFromItem) {
+        Integer categoryInt = null;
+        if (category != null) {
+            try {
+                categoryInt = Integer.parseInt(category);
+            } catch (NumberFormatException e) {
+            }
+        }
+        if (categoryFromItem != null) {
+            try {
+                categoryInt = Integer.parseInt(categoryFromItem);
+            } catch (NumberFormatException e) {
+            }
+        }
+        return categoryInt;
     }
 
     @Override

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.15",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Support animetosho (both newznab and torznab)"
+      }
+    ]
+  },
+  {
     "version": "v1.4.14",
     "changes": [
       {

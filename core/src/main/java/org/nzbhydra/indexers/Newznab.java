@@ -335,8 +335,13 @@ public class Newznab extends Indexer<Xml> {
         NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
-            indexerSearchResult.setTotalResults(newznabResponse.getTotal());
-            indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + acceptorResult.getNumberOfRejectedResults());
+            if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
+                indexerSearchResult.setTotalResults(newznabResponse.getTotal());
+                indexerSearchResult.setHasMoreResults(newznabResponse.getTotal() > newznabResponse.getOffset() + indexerSearchResult.getSearchResultItems().size() + acceptorResult.getNumberOfRejectedResults());
+            } else {
+                indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+                indexerSearchResult.setHasMoreResults(false);
+            }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
             indexerSearchResult.setLimit(100);
         } else {

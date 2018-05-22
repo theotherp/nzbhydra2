@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+    <channel>
+        <atom:link href="https://feed.animetosho.org/api" rel="self" type="application/rss+xml"/>
+        <title>Anime Tosho</title>
+        <link>https://animetosho.org/</link>
+        <description>Latest releases feed</description>
+        <language>en-gb</language>
+        <ttl>30</ttl>
+        <lastBuildDate>Wed, 18 Apr 2018 20:52:01 +0000</lastBuildDate>
+        <newznab:response offset="0"/>
+        <item>
+            <title>[Golumpa] Enter Peaceship Yoghurt - 01 (Achoo Senkan Yoghurt) [English Dub] [FuniDub 1080p x264 AAC] [MKV] [A7E170FF]</title>
+            <description>
+                <![CDATA[<strong>Total Size</strong>: 403.0 MB<br/><strong>Download Links</strong>: <a href="https://storage.animetosho.org/torrents/4a1040ccfe6674bfb07281c5cc15b32294bdddf8/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BA7E170FF%5D.torrent">Torrent</a>/<a href="magnet:?xt=urn:btih:JIIEBTH6MZ2L7MDSQHC4YFNTEKKL3XPY&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BEnglish%20Dub%5D%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BMKV%5D%20%5BA7E170FF%5D">Magnet</a>, <a href="https://storage.animetosho.org/nzb/0003db67/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BA7E170FF%5D.nzb.gz">NZB</a> | <a href="https://clicknupload.link/hp25sgu7b9xq">ClickNUpload</a> | <a href="http://diskokosmiko.mx/tf/9ab2115-anime-tosho-2/download,2205853">DiskoKosmiko</a> | <a href="https://go4up.com/dl/928a20e5b59a75">Go4Up</a> | <a href="http://jheberg.net/download/golumpa-space-battleship-Yoghurt-01-2/">Jheberg</a> | <a href="https://multiup.org/download/f04edec3b84d8f2b532bb5b0b4ab621f/_Golumpa__Space_Battleship_Yoghurt_-_01__Achoo_Senkan_Yoghurt___FuniDub_1080p_x264_AAC___A7E170FF_.mkv">MultiUp</a> | <a href="http://openload.co/f/4mgZ7nX7UtI/file_510788_%28a7e170ff%29.7z">OpenLoad</a> | <a href="https://www.solidfiles.com/v/Aw5VGarYNXyee">SolidFiles</a> | <a href="https://www80.zippyshare.com/v/l7rpXpyI/file.html">ZippyShare</a>]]></description>
+            <link>https://animetosho.org/view/golumpa-space-battleship-Yoghurt-01-Achoo-senkan-english.d138816</link>
+            <comments>https://animetosho.org/view/golumpa-space-battleship-Yoghurt-01-Achoo-senkan-english.d138816</comments>
+            <enclosure
+                    url="https://storage.animetosho.org/torrents/4a1040ccfe6674bfb07281c5cc15b32294bdddf8/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BA7E170FF%5D.torrent"
+                    type="application/x-bittorrent" length="0"/>
+            <enclosure url="https://storage.animetosho.org/nzb/0003db67/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BA7E170FF%5D.nzb"
+                       type="application/x-nzb" length="0"/>
+            <source url="https://anidex.info/?page=torrent&amp;id=138816">AniDex</source>
+            <pubDate>Wed, 18 Apr 2018 20:52:01 +0000</pubDate>
+            <guid isPermaLink="true">https://animetosho.org/view/d138816</guid>
+            <category>Anime</category>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="files" value="1"/>
+            <newznab:attr name="size" value="422590144"/>
+            <torznab:attr name="tvdbid" value="344222"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="imdb" value=""/>
+            <newznab:attr name="year" value="2018"/>
+            <newznab:attr name="tvairdate" value="Tue, 03 Apr 2018 00:00:00 +0000"/>
+            <newznab:attr name="episode" value="1"/>
+            <torznab:attr name="category" value="5070"/>
+            <torznab:attr name="files" value="1"/>
+            <torznab:attr name="size" value="422590144"/>
+            <torznab:attr name="infohash" value="4a1040ccfe6674bfb07281c5cc15b32294bdddf8"/>
+            <torznab:attr name="magneturl"
+                          value="magnet:?xt=urn:btih:JIIEBTH6MZ2L7MDSQHC4YFNTEKKL3XPY&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BEnglish%20Dub%5D%20%5BFuniDub%201080p%20x264%20AAC%5D%20%5BMKV%5D%20%5BA7E170FF%5D"/>
+            <torznab:attr name="seeders" value="5"/>
+            <torznab:attr name="leechers" value="0"/>
+            <torznab:attr name="peers" value="5"/>
+        </item>
+        <item>
+            <title>[Golumpa] Enter Peaceship Yoghurt - 01 (Achoo Senkan Yoghurt) [English Dub] [FuniDub 720p x264 AAC] [MKV] [E5FF1BB1]</title>
+            <description>
+                <![CDATA[<strong>Total Size</strong>: 124.9 MB<br/><strong>Download Links</strong>: <a href="https://storage.animetosho.org/torrents/1f4d3ae216775f57e25609cfb3ed93d81cabf39f/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BE5FF1BB1%5D.torrent">Torrent</a>/<a href="magnet:?xt=urn:btih:D5GTVYQWO5PVPYSWBHH3H3MT3AOKX447&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BEnglish%20Dub%5D%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BMKV%5D%20%5BE5FF1BB1%5D">Magnet</a>, <a href="https://storage.animetosho.org/nzb/0003db64/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BE5FF1BB1%5D.nzb.gz">NZB</a> | <a href="https://clicknupload.link/hc4el4w1omzm">ClickNUpload</a> | <a href="http://diskokosmiko.mx/tf/9ab2115-anime-tosho-2/download,2205820">DiskoKosmiko</a> | <a href="https://go4up.com/dl/cbbeb2e411076c">Go4Up</a> | <a href="http://jheberg.net/download/golumpa-space-battleship-Yoghurt-01/">Jheberg</a> | <a href="https://multiup.org/download/09ea0d4271c51c9053761547cd2df0fd/_Golumpa__Space_Battleship_Yoghurt_-_01__Achoo_Senkan_Yoghurt___FuniDub_720p_x264_AAC___E5FF1BB1_.mkv">MultiUp</a> | <a href="http://openload.co/f/eeTt6jWNu_Q/file_510786_%28e5ff1bb1%29.7z">OpenLoad</a> | <a href="https://www.sendspace.com/file/hn154r">Sendspace</a> | <a href="https://www.solidfiles.com/v/YnQW6LqwYDZBV">SolidFiles</a> | <a href="https://www80.zippyshare.com/v/jL8t3J8r/file.html">ZippyShare</a>]]></description>
+            <link>https://animetosho.org/view/golumpa-space-battleship-Yoghurt-01-Achoo-senkan-english.d138809</link>
+            <comments>https://animetosho.org/view/golumpa-space-battleship-Yoghurt-01-Achoo-senkan-english.d138809</comments>
+            <enclosure
+                    url="https://storage.animetosho.org/torrents/1f4d3ae216775f57e25609cfb3ed93d81cabf39f/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BE5FF1BB1%5D.torrent"
+                    type="application/x-bittorrent" length="0"/>
+            <enclosure url="https://storage.animetosho.org/nzb/0003db64/%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BE5FF1BB1%5D.nzb"
+                       type="application/x-nzb" length="0"/>
+            <source url="https://anidex.info/?page=torrent&amp;id=138809">AniDex</source>
+            <pubDate>Wed, 18 Apr 2018 20:36:01 +0000</pubDate>
+            <guid isPermaLink="true">https://animetosho.org/view/d138809</guid>
+            <category>Anime</category>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="files" value="1"/>
+            <newznab:attr name="size" value="130955650"/>
+            <torznab:attr name="tvdbid" value="344222"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="imdb" value=""/>
+            <newznab:attr name="year" value="2018"/>
+            <newznab:attr name="tvairdate" value="Tue, 03 Apr 2018 00:00:00 +0000"/>
+            <newznab:attr name="episode" value="1"/>
+            <torznab:attr name="category" value="5070"/>
+            <torznab:attr name="files" value="1"/>
+            <torznab:attr name="size" value="130955650"/>
+            <torznab:attr name="infohash" value="1f4d3ae216775f57e25609cfb3ed93d81cabf39f"/>
+            <torznab:attr name="magneturl"
+                          value="magnet:?xt=urn:btih:D5GTVYQWO5PVPYSWBHH3H3MT3AOKX447&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BGolumpa%5D%20Space%20Battleship%20Yoghurt%20-%2001%20%28Achoo%20Senkan%20Yoghurt%29%20%5BEnglish%20Dub%5D%20%5BFuniDub%20720p%20x264%20AAC%5D%20%5BMKV%5D%20%5BE5FF1BB1%5D"/>
+            <torznab:attr name="seeders" value="2"/>
+            <torznab:attr name="leechers" value="0"/>
+            <torznab:attr name="peers" value="2"/>
+        </item>
+        <item>
+            <title>[BakedFish] Achoo Senkan Yoghurt - 01 &amp; 02 - Batch [720p][MP4][AAC]</title>
+            <description>
+                <![CDATA[<strong>Total Size</strong>: 281.6 MB<br/><strong>Download Links</strong>: <a href="https://storage.animetosho.org/torrents/c7e658f2a10e729080859b180946b44b45aaef49/%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D.torrent">Torrent</a>/<a href="magnet:?xt=urn:btih:Y7TFR4VBBZZJBAEFTMMASRVUJNC2V32J&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D">Magnet</a>, <a href="https://storage.animetosho.org/nzb/0003d81f/%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D.nzb.gz">NZB</a> | <a href="https://animetosho.org/view/bakedfish-Achoo-senkan-Yoghurt-01-02-batch-720p-mp4-aac.d136911">2 file(s)</a>]]></description>
+            <link>https://animetosho.org/view/bakedfish-Achoo-senkan-Yoghurt-01-02-batch-720p-mp4-aac.d136911</link>
+            <comments>https://animetosho.org/view/bakedfish-Achoo-senkan-Yoghurt-01-02-batch-720p-mp4-aac.d136911</comments>
+            <enclosure url="https://storage.animetosho.org/torrents/c7e658f2a10e729080859b180946b44b45aaef49/%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D.torrent"
+                       type="application/x-bittorrent" length="0"/>
+            <enclosure url="https://storage.animetosho.org/nzb/0003d81f/%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D.nzb" type="application/x-nzb" length="0"/>
+            <source url="https://anidex.info/?page=torrent&amp;id=136911">AniDex</source>
+            <pubDate>Fri, 13 Apr 2018 10:42:02 +0000</pubDate>
+            <guid isPermaLink="true">https://animetosho.org/view/d136911</guid>
+            <category>Anime</category>
+            <newznab:attr name="category" value="5070"/>
+            <newznab:attr name="files" value="2"/>
+            <newznab:attr name="size" value="295286542"/>
+            <torznab:attr name="tvdbid" value="344222"/>
+            <newznab:attr name="season" value="1"/>
+            <newznab:attr name="imdb" value=""/>
+            <newznab:attr name="year" value="2018"/>
+            <newznab:attr name="tvairdate" value="Tue, 03 Apr 2018 00:00:00 +0000"/>
+            <newznab:attr name="episode" value="1"/>
+            <torznab:attr name="category" value="5070"/>
+            <torznab:attr name="files" value="2"/>
+            <torznab:attr name="size" value="295286542"/>
+            <torznab:attr name="infohash" value="c7e658f2a10e729080859b180946b44b45aaef49"/>
+            <torznab:attr name="magneturl"
+                          value="magnet:?xt=urn:btih:Y7TFR4VBBZZJBAEFTMMASRVUJNC2V32J&amp;tr=http%3A%2F%2Fanidex.moe%3A6969%2Fannounce&amp;dn=%5BBakedFish%5D%20Achoo%20Senkan%20Yoghurt%20-%2001%20%26%2002%20-%20Batch%20%5B720p%5D%5BMP4%5D%5BAAC%5D"/>
+            <torznab:attr name="seeders" value="3"/>
+            <torznab:attr name="leechers" value="0"/>
+            <torznab:attr name="peers" value="3"/>
+        </item>
+    </channel>
+</rss>

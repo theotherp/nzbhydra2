@@ -56,6 +56,8 @@ public class TorznabTest {
     private ConfigProvider configProviderMock;
     @Mock
     private SearchingConfig searchingConfigMock;
+    @Mock
+    private Category categoryMock;
 
     @InjectMocks
     private Torznab testee = new Torznab();
@@ -101,6 +103,23 @@ public class TorznabTest {
         assertThat(item.getDownloadType(), is(DownloadType.TORRENT));
     }
 
+
+    @Test
+    public void shouldComputeCategory() throws Exception {
+        when(categoryProviderMock.fromResultNewznabCategories(ArgumentMatchers.any())).thenReturn(categoryMock);
+        NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.getTorznabAttributes().add(new NewznabAttribute("category", "5070"));
+
+        SearchResultItem item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getCategory(), is(categoryMock));
+
+        rssItem.getTorznabAttributes().clear();
+        rssItem.setCategory("5070");
+        item = testee.createSearchResultItem(rssItem);
+        assertThat(item.getCategory(), is(categoryMock));
+
+
+    }
     private NewznabXmlItem buildBasicRssItem() {
         NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setLink("http://indexer.com/123");
