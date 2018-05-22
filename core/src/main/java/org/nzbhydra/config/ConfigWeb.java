@@ -103,7 +103,7 @@ public class ConfigWeb {
     public ApiHelpResponse getApiHelp(HttpSession session) throws IOException {
         UriComponentsBuilder requestBasedUriBuilder = urlCalculator.getRequestBasedUriBuilder();
         String newznabApi = requestBasedUriBuilder.cloneBuilder().toUriString();
-        String torznabApi = requestBasedUriBuilder.cloneBuilder().path("torznab").toUriString();
+        String torznabApi = requestBasedUriBuilder.cloneBuilder().path("/torznab").toUriString();
         String apikey = configProvider.getBaseConfig().getMain().getApiKey();
         return new ApiHelpResponse(newznabApi, torznabApi, apikey);
     }
