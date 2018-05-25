@@ -80,7 +80,7 @@ public class TorrentFileHandler {
                     continue;
                 }
                 if (result.getContent() != null) {
-                    successful = saveToBlackHole(result);
+                    successful = saveToBlackHole(result, false, null);
                 } else {
                     successful = sendMagnet(result);
                 }
@@ -105,20 +105,25 @@ public class TorrentFileHandler {
             logger.error("Unable to encode magnet URI {}", result.getUrl());
             return false;
         }
-        URISchemeHandler uriSchemeHandler = new URISchemeHandler();
-        try {
-            uriSchemeHandler.open(magnetLinkUri);
-            return true;
-        } catch (CouldNotOpenUriSchemeHandler e) {
-            logger.error("Unable to add magnet link for {}: {}", result.getTitle(), e.getMessage());
-            return false;
-        } catch (RuntimeException e) {
-            logger.error("No handler registered for magnet links. Unable to add link for {}", result.getTitle());
-            return false;
+        if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
+            saveToBlackHole(result, true, magnetLinkUri)
+        } else {
+            logger.error("Torrent black hole folder not set");
+            URISchemeHandler uriSchemeHandler = new URISchemeHandler();
+            try {
+                uriSchemeHandler.open(magnetLinkUri);
+                return true;
+            } catch (CouldNotOpenUriSchemeHandler e) {
+                logger.error("Unable to add magnet link for {}: {}", result.getTitle(), e.getMessage());
+                return false;
+            } catch (RuntimeException e) {
+                logger.error("No handler registered for magnet links. Unable to add link for {}", result.getTitle());
+                return false;
+            }
         }
     }
 
-    private boolean saveToBlackHole(DownloadResult result) {
+    private boolean saveToBlackHole(DownloadResult result, Boolean magnet, URI magnetLinkUri) {
         if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
             logger.error("Torrent black hole folder not set");
             return false;
@@ -128,13 +133,20 @@ public class TorrentFileHandler {
         if (!Objects.equals(sanitizedTitle, result.getTitle())) {
             logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
         }
-        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+        String content;
+        if(magnetLinkUri != null){
+            File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
+            content = magnetLinkUri;
+        }else{
+            File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+            content = result.getContent();
+        }
         if (torrent.exists()) {
             logger.info("File {} already exists and will be skipped", torrent.getAbsolutePath());
             return false;
         }
         try {
-            Files.write(result.getContent(), torrent);
+            Files.write(content, torrent);
             logger.info("Saved torrent file to {}", torrent.getAbsolutePath());
             return true;
         } catch (Exception e) {
