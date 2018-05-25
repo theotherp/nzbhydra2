@@ -107,6 +107,7 @@ public class TorrentFileHandler {
         }
         if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
             saveToBlackHole(result, true, magnetLinkUri);
+            return true;
         } else {
             logger.error("Torrent black hole folder not set");
             URISchemeHandler uriSchemeHandler = new URISchemeHandler();
