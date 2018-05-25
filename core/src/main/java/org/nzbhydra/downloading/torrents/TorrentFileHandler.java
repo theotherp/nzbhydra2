@@ -140,6 +140,7 @@ public class TorrentFileHandler {
         }else{
             File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
             content = result.getContent();
+            content = new String(content);
         }
         if (torrent.exists()) {
             logger.info("File {} already exists and will be skipped", torrent.getAbsolutePath());
