@@ -133,7 +133,7 @@ public class TorrentFileHandler {
         if (!Objects.equals(sanitizedTitle, result.getTitle())) {
             logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
         }
-        String content;
+        byte[] content;
         File torrent;
         if(magnetLinkUri != null){
             torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
