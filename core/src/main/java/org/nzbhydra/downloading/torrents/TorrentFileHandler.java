@@ -134,11 +134,12 @@ public class TorrentFileHandler {
             logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
         }
         String content;
+        File torrent;
         if(magnetLinkUri != null){
-            File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
+            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
             content = magnetLinkUri.toString();
         }else{
-            File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
             content = new String(result.getContent());
         }
         if (torrent.exists()) {
