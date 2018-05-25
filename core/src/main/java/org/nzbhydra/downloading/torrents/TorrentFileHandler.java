@@ -136,7 +136,7 @@ public class TorrentFileHandler {
         String content;
         if(magnetLinkUri != null){
             File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
-            content = magnetLinkUri;
+            content = magnetLinkUri.toString();
         }else{
             File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
             content = result.getContent();
