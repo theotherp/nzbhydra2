@@ -51,6 +51,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             try {
                 String fileStatic = staticFolderFile.toURI().toURL().toString();
                 locations = (fileStatic != null && staticFolderFile.exists()) ? new String[]{fileStatic, "classpath:/static/"} : new String[]{"classpath:/static/"};
+                logger.info("Found folder {}. Will load UI resources from there", staticFolderFile.getAbsolutePath());
             } catch (MalformedURLException e) {
                 logger.error("Unable to build path for local static files");
             }
