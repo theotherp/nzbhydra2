@@ -138,9 +138,10 @@ public class TorrentFileHandler {
         if(magnetLinkUri != null){
             torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
             content = magnetLinkUri.toString();
+            content = content.getBytes();
         }else{
             torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
-            content = new String(result.getContent());
+            content = result.getContent();
         }
         if (torrent.exists()) {
             logger.info("File {} already exists and will be skipped", torrent.getAbsolutePath());
