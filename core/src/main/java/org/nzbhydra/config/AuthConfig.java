@@ -16,7 +16,7 @@ import java.util.Set;
 @Data
 @ConfigurationProperties
 @EqualsAndHashCode
-public class AuthConfig extends ValidatingConfig {
+public class AuthConfig extends ValidatingConfig<AuthConfig> {
 
     @JsonFormat(shape = Shape.STRING)
     @RestartRequired
@@ -37,7 +37,7 @@ public class AuthConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, AuthConfig newConfig) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         if (authType != AuthType.NONE && users.isEmpty()) {

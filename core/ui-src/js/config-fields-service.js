@@ -1898,6 +1898,15 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                     type: 'number',
                     label: 'API hit limit',
                     help: 'Maximum number of API hits since "API hit reset time"'
+                },
+                validators: {
+                    greaterThanZero: {
+                        expression: function ($viewValue, $modelValue) {
+                            var value = $modelValue || $viewValue;
+                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                        },
+                        message: '"Value must be greater than 1"'
+                    }
                 }
             },
             {
@@ -1907,6 +1916,15 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                     type: 'number',
                     label: 'Download limit',
                     help: 'When # of downloads since "Hit reset time" is reached indexer will not be searched.'
+                },
+                validators: {
+                    greaterThanZero: {
+                        expression: function ($viewValue, $modelValue) {
+                            var value = $modelValue || $viewValue;
+                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                        },
+                        message: '"Value must be greater than 1"'
+                    }
                 }
             }
         );
@@ -1927,7 +1945,6 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         },
                         message: '"Value must be greater than 1"'
                     }
-
                 }
             },
             {
@@ -1947,7 +1964,6 @@ function getIndexerBoxFields(model, parentModel, isInitial, injector, Categories
                         },
                         message: '$viewValue + " is not a valid hour of day (0-23)"'
                     }
-
                 }
             });
     }

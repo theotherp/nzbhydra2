@@ -16,15 +16,16 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public abstract class ValidatingConfig {
+public abstract class ValidatingConfig<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidatingConfig.class);
 
     /**
      * @param oldConfig old config state (e.g. to compare what has changed)
+     * @param newConfig the new config. Will always be the same object as the one on which the method was called
      * @return a list of error messages or an empty list when everything is fine
      */
-    public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig);
+    public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig, T newConfig);
 
     @Data
     @AllArgsConstructor

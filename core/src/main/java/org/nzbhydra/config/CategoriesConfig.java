@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import static org.nzbhydra.searching.SearchType.SEARCH;
 
 @Data
-public class CategoriesConfig extends ValidatingConfig {
+public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
 
     public final static Category allCategory = new Category("All");
 
@@ -29,7 +29,7 @@ public class CategoriesConfig extends ValidatingConfig {
     private List<Category> categories = new ArrayList<>();
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, CategoriesConfig newConfig) {
         ArrayList<String> errors = new ArrayList<>();
         ArrayList<String> warnings = new ArrayList<>();
         for (Category category : categories) {

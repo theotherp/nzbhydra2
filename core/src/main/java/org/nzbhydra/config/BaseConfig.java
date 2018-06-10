@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @Data
 @ConfigurationProperties
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"}, callSuper = false)
-public class BaseConfig extends ValidatingConfig {
+public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
@@ -184,42 +184,49 @@ public class BaseConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, BaseConfig newConfig) {
         ConfigValidationResult configValidationResult = new ConfigValidationResult();
 
-        ConfigValidationResult authValidation = auth.validateConfig(oldConfig);
+        ConfigValidationResult authValidation = newConfig.getAuth().validateConfig(oldConfig, newConfig.getAuth());
         configValidationResult.getErrorMessages().addAll(authValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(authValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || authValidation.isRestartNeeded());
 
-        ConfigValidationResult categoriesValidation = categoriesConfig.validateConfig(oldConfig);
+        ConfigValidationResult categoriesValidation = newConfig.getCategoriesConfig().validateConfig(oldConfig, newConfig.getCategoriesConfig());
         configValidationResult.getErrorMessages().addAll(categoriesValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(categoriesValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || categoriesValidation.isRestartNeeded());
 
-        ConfigValidationResult mainValidation = main.validateConfig(oldConfig);
+        ConfigValidationResult mainValidation = newConfig.getMain().validateConfig(oldConfig, newConfig.getMain());
         configValidationResult.getErrorMessages().addAll(mainValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(mainValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || mainValidation.isRestartNeeded());
 
-        ConfigValidationResult searchingValidation = searching.validateConfig(oldConfig);
+        ConfigValidationResult searchingValidation = newConfig.getSearching().validateConfig(oldConfig, newConfig.getSearching());
         configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || searchingValidation.isRestartNeeded());
 
-        ConfigValidationResult downloadingValidation = downloading.validateConfig(oldConfig);
+        ConfigValidationResult downloadingValidation = newConfig.getDownloading().validateConfig(oldConfig, newConfig.getDownloading());
         configValidationResult.getErrorMessages().addAll(downloadingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(downloadingValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || downloadingValidation.isRestartNeeded());
 
-        if (!indexers.isEmpty()) {
-            if (indexers.stream().noneMatch(x -> x.getState() == IndexerConfig.State.ENABLED)) {
+        for (IndexerConfig indexer : newConfig.getIndexers()) {
+            ConfigValidationResult indexerValidation = indexer.validateConfig(oldConfig, indexer);
+            configValidationResult.getErrorMessages().addAll(indexerValidation.getErrorMessages());
+            configValidationResult.getWarningMessages().addAll(indexerValidation.getWarningMessages());
+            configValidationResult.setRestartNeeded(indexerValidation.isRestartNeeded() || indexerValidation.isRestartNeeded());
+        }
+
+        if (!newConfig.getIndexers().isEmpty()) {
+            if (newConfig.getIndexers().stream().noneMatch(x -> x.getState() == IndexerConfig.State.ENABLED)) {
                 configValidationResult.getWarningMessages().add("No indexers enabled. Searches will return empty results");
-            } else if (indexers.stream().allMatch(x -> x.getSupportedSearchIds().isEmpty())) {
-                if (searching.getGenerateQueries() == SearchSourceRestriction.NONE) {
+            } else if (newConfig.getIndexers().stream().allMatch(x -> x.getSupportedSearchIds().isEmpty())) {
+                if (newConfig.getSearching().getGenerateQueries() == SearchSourceRestriction.NONE) {
                     configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation searches using search IDs will return empty results.");
-                } else if (searching.getGenerateQueries() != SearchSourceRestriction.BOTH) {
-                    String name = searching.getGenerateQueries() == SearchSourceRestriction.API ? "internal" : "API";
+                } else if (newConfig.getSearching().getGenerateQueries() != SearchSourceRestriction.BOTH) {
+                    String name = newConfig.getSearching().getGenerateQueries() == SearchSourceRestriction.API ? "internal" : "API";
                     configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation " + name + " searches using search IDs will return empty results.");
                 }
             }

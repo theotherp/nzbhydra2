@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
 @ConfigurationProperties(prefix = "auth.users")
-public class UserAuthConfig extends ValidatingConfig {
+public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
 
     private boolean maySeeAdmin;
     private boolean maySeeDetailsDl;
@@ -18,7 +18,7 @@ public class UserAuthConfig extends ValidatingConfig {
     private String password;
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, UserAuthConfig newConfig) {
         return new ConfigValidationResult();
     }
 }

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Data
 @ConfigurationProperties(prefix = "downloading")
-public class DownloadingConfig extends ValidatingConfig {
+public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
 
     private List<DownloaderConfig> downloaders = new ArrayList<>();
     private String saveTorrentsTo;
@@ -20,7 +20,7 @@ public class DownloadingConfig extends ValidatingConfig {
     private boolean updateStatuses;
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig) {
         List<String> errors = new ArrayList<>();
         if (oldConfig.getDownloading().getSaveTorrentsTo().isPresent()) {
             File file = new File(oldConfig.getDownloading().getSaveTorrentsTo().get());
@@ -37,7 +37,7 @@ public class DownloadingConfig extends ValidatingConfig {
                 }
             }
         }
-        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig)).collect(Collectors.toList());
+        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig, downloaderConfig)).collect(Collectors.toList());
         List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(List::stream).collect(Collectors.toList());
         errors.addAll(downloaderErrors);
 

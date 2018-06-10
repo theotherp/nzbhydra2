@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 
 @Data
 @ConfigurationProperties(prefix = "indexers")
-public class IndexerConfig extends ValidatingConfig {
+public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
 
     public enum State {
         ENABLED,
@@ -149,21 +149,20 @@ public class IndexerConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, IndexerConfig newIndexerConfig) {
         ConfigValidationResult validationResult = new ConfigValidationResult();
-        for (IndexerConfig config : oldConfig.getIndexers()) {
-            for (String schedule : config.getSchedule()) {
-                Matcher matcher = IndexerForSearchSelector.SCHEDULER_PATTERN.matcher(schedule);
-                if (!matcher.matches()) {
-                    validationResult.getErrorMessages().add("Indexer " + config.getName() + " contains an invalid schedule: " + schedule);
-                }
+
+        for (String schedule : newIndexerConfig.getSchedule()) {
+            Matcher matcher = IndexerForSearchSelector.SCHEDULER_PATTERN.matcher(schedule);
+            if (!matcher.matches()) {
+                validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " contains an invalid schedule: " + schedule);
             }
-            if (config.getHitLimit().isPresent() && config.getHitLimit().get() <= 0) {
-                validationResult.getErrorMessages().add("Indexer " + config.getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
-            }
-            if (config.getDownloadLimit().isPresent() && config.getDownloadLimit().get() <= 0) {
-                validationResult.getErrorMessages().add("Indexer " + config.getName() + " has a download limit of 0 or lower which doesn't make sense: ");
-            }
+        }
+        if (newIndexerConfig.getHitLimit().isPresent() && newIndexerConfig.getHitLimit().get() <= 0) {
+            validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
+        }
+        if (newIndexerConfig.getDownloadLimit().isPresent() && newIndexerConfig.getDownloadLimit().get() <= 0) {
+            validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " has a download limit of 0 or lower which doesn't make sense: ");
         }
 
         return validationResult;

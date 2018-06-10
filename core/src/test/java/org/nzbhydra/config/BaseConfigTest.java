@@ -13,18 +13,14 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class BaseConfigTest {
 
@@ -83,6 +79,15 @@ public class BaseConfigTest {
         HashMap<String, Object> mapFromBaseConfig = jsonMapper.readValue(jsonFromBaseConfig, typeRef);
 
         compare(mapFromApplicationYml, mapFromBaseConfig);
+    }
+
+    @Test
+    public void shouldValidateIndexers() {
+        IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
+        when(indexerConfigMock.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        testee.getIndexers().add(indexerConfigMock);
+        testee.validateConfig(new BaseConfig(), testee);
+        verify(indexerConfigMock).validateConfig(any(), any());
     }
 
     private void compare(Object left, Object right) {

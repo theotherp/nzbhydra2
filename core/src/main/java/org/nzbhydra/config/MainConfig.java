@@ -17,7 +17,7 @@ import java.util.Optional;
 @ConfigurationProperties("main")
 @Component
 @Data
-public class MainConfig extends ValidatingConfig {
+public class MainConfig extends ValidatingConfig<MainConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(MainConfig.class);
 
@@ -83,7 +83,7 @@ public class MainConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, MainConfig newMainConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
         MainConfig oldMain = oldConfig.getMain();
         if (oldMain.getPort() != port || (oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase) || oldMain.isSsl() != isSsl()) && !startupBrowser) {
@@ -107,7 +107,7 @@ public class MainConfig extends ValidatingConfig {
             }
         }
 
-        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig);
+        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
         result.getErrorMessages().addAll(loggingResult.getErrorMessages());
 

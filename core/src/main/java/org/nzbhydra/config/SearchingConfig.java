@@ -15,7 +15,7 @@ import java.util.Optional;
 @SuppressWarnings("unchecked")
 @Data
 @ConfigurationProperties
-public class SearchingConfig extends ValidatingConfig {
+public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
@@ -72,9 +72,8 @@ public class SearchingConfig extends ValidatingConfig {
     }
 
 
-
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, SearchingConfig newConfig) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");

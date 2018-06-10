@@ -22,7 +22,7 @@ public class DownloadingConfigTest {
         baseConfig.getDownloading().setSaveTorrentsTo("relative");
         new File("relative").deleteOnExit();
 
-        ConfigValidationResult result = testee.validateConfig(baseConfig);
+        ConfigValidationResult result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages().size(), is(1));
         assertThat(result.getErrorMessages().get(0), containsString("not absolute"));
 
@@ -31,13 +31,13 @@ public class DownloadingConfigTest {
         PrintWriter out = new PrintWriter("afile.txt");
         out.write("out");
         baseConfig.getDownloading().setSaveTorrentsTo(afile.getAbsolutePath());
-        result = testee.validateConfig(baseConfig);
+        result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages().size(), is(1));
         assertThat(result.getErrorMessages().get(0), containsString("is a file"));
 
         File folder = new File("");
         baseConfig.getDownloading().setSaveTorrentsTo(folder.getAbsolutePath());
-        result = testee.validateConfig(baseConfig);
+        result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages().size(), is(0));
         afile.delete();
 

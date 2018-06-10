@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Data
 @ConfigurationProperties(prefix = "downloaders")
-public class DownloaderConfig extends ValidatingConfig {
+public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
 
     @SensitiveData
     private String apiKey;
@@ -40,7 +40,7 @@ public class DownloaderConfig extends ValidatingConfig {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig) {
         return new ConfigValidationResult();
     }
 }

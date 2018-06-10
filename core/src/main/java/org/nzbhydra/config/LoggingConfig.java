@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class LoggingConfig extends ValidatingConfig {
+public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
 
     @RestartRequired
     private String consolelevel;
@@ -21,7 +21,7 @@ public class LoggingConfig extends ValidatingConfig {
 
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, LoggingConfig newLoggingConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
 
         result.setRestartNeeded(isRestartNeeded(oldConfig.getMain().getLogging()));
