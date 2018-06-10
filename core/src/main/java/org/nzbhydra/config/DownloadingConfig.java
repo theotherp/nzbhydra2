@@ -22,10 +22,10 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig) {
         List<String> errors = new ArrayList<>();
-        if (oldConfig.getDownloading().getSaveTorrentsTo().isPresent()) {
-            File file = new File(oldConfig.getDownloading().getSaveTorrentsTo().get());
+        if (getSaveTorrentsTo().isPresent()) {
+            File file = new File(getSaveTorrentsTo().get());
             if (!file.isAbsolute()) {
-                errors.add("Torrent black hole folder " + oldConfig.getDownloading().getSaveTorrentsTo().get() + " is not absolute");
+                errors.add("Torrent black hole folder " + getSaveTorrentsTo().get() + " is not absolute");
             }
             if (file.exists() && !file.isDirectory()) {
                 errors.add("Torrent black hole folder " + file.getAbsolutePath() + " is a file");

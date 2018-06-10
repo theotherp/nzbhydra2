@@ -23,7 +23,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion = 2;
+    private Integer configVersion = 3;
     private boolean backupEverySunday = true;
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;

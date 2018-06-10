@@ -152,17 +152,17 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, IndexerConfig newIndexerConfig) {
         ConfigValidationResult validationResult = new ConfigValidationResult();
 
-        for (String schedule : newIndexerConfig.getSchedule()) {
+        for (String schedule : getSchedule()) {
             Matcher matcher = IndexerForSearchSelector.SCHEDULER_PATTERN.matcher(schedule);
             if (!matcher.matches()) {
-                validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " contains an invalid schedule: " + schedule);
+                validationResult.getErrorMessages().add("Indexer " + getName() + " contains an invalid schedule: " + schedule);
             }
         }
-        if (newIndexerConfig.getHitLimit().isPresent() && newIndexerConfig.getHitLimit().get() <= 0) {
-            validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
+        if (getHitLimit().isPresent() && getHitLimit().get() <= 0) {
+            validationResult.getErrorMessages().add("Indexer " + getName() + " has a hit limit of 0 or lower which doesn't make sense: ");
         }
-        if (newIndexerConfig.getDownloadLimit().isPresent() && newIndexerConfig.getDownloadLimit().get() <= 0) {
-            validationResult.getErrorMessages().add("Indexer " + newIndexerConfig.getName() + " has a download limit of 0 or lower which doesn't make sense: ");
+        if (getDownloadLimit().isPresent() && getDownloadLimit().get() <= 0) {
+            validationResult.getErrorMessages().add("Indexer " + getName() + " has a download limit of 0 or lower which doesn't make sense: ");
         }
 
         return validationResult;

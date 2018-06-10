@@ -1,5 +1,14 @@
 [
   {
+    "version": "v1.4.19",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Config validation was not executed properly, sometimes allowing invalid values or even preventing the config from being changed"
+      }
+    ]
+  },
+  {
     "version": "v1.4.18",
     "changes": [
       {

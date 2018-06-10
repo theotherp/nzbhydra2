@@ -31,16 +31,15 @@ public class IndexerConfigTest {
 
     @Test
     public void shouldValidateSchedules() {
-        IndexerConfig config = new IndexerConfig();
-        config.setSchedule(Arrays.asList("blabla"));
-        config.setName("indexer");
+        testee.setSchedule(Arrays.asList("blabla"));
+        testee.setName("indexer");
         BaseConfig baseConfig = new BaseConfig();
-        baseConfig.setIndexers(Arrays.asList(config));
+        baseConfig.setIndexers(Arrays.asList(testee));
         ConfigValidationResult result = testee.validateConfig(baseConfig, testee);
 
         assertThat(result.getErrorMessages()).containsExactly("Indexer indexer contains an invalid schedule: blabla");
 
-        config.setSchedule(Arrays.asList("mo8-10"));
+        testee.setSchedule(Arrays.asList("mo8-10"));
         result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages()).isEmpty();
     }

@@ -47,6 +47,12 @@ public abstract class ValidatingConfig<T> {
         }
     }
 
+    /**
+     * Detects if any setting was changed that requires a restart to be effective
+     *
+     * @param configToCompare the old config (its settings will be compared with the ones from the calling instance)
+     * @return
+     */
     protected boolean isRestartNeeded(Object configToCompare) {
         for (Field field : configToCompare.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(RestartRequired.class)) {

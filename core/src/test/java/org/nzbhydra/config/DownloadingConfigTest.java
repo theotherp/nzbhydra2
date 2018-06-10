@@ -19,7 +19,7 @@ public class DownloadingConfigTest {
     @Test
     public void shouldValidateTorrentsFolder() throws Exception {
         BaseConfig baseConfig = new BaseConfig();
-        baseConfig.getDownloading().setSaveTorrentsTo("relative");
+        testee.setSaveTorrentsTo("relative");
         new File("relative").deleteOnExit();
 
         ConfigValidationResult result = testee.validateConfig(baseConfig, testee);
@@ -30,13 +30,13 @@ public class DownloadingConfigTest {
         afile.deleteOnExit();
         PrintWriter out = new PrintWriter("afile.txt");
         out.write("out");
-        baseConfig.getDownloading().setSaveTorrentsTo(afile.getAbsolutePath());
+        testee.setSaveTorrentsTo(afile.getAbsolutePath());
         result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages().size(), is(1));
         assertThat(result.getErrorMessages().get(0), containsString("is a file"));
 
         File folder = new File("");
-        baseConfig.getDownloading().setSaveTorrentsTo(folder.getAbsolutePath());
+        testee.setSaveTorrentsTo(folder.getAbsolutePath());
         result = testee.validateConfig(baseConfig, testee);
         assertThat(result.getErrorMessages().size(), is(0));
         afile.delete();
