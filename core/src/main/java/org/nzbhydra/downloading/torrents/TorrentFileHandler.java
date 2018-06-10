@@ -77,12 +77,13 @@ public class TorrentFileHandler {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
                 if (!result.isSuccessful()) {
                     successful = false;
-                    continue;
-                }
-                if (result.getContent() != null) {
-                    successful = saveToBlackHole(result);
+
                 } else {
-                    successful = sendMagnet(result);
+                    if (result.getContent() != null) {
+                        successful = saveToBlackHole(result, null);
+                    } else {
+                        successful = handleMagnetLink(result);
+                    }
                 }
             } catch (InvalidSearchResultIdException e) {
                 logger.error("Unable to find result with ID {}", guid);
@@ -93,11 +94,11 @@ public class TorrentFileHandler {
                 failedIds.add(guid);
             }
         }
-        String message = failedIds.isEmpty() ? "All magnet URLs successfully sent" : failedIds.size() + " magnet links could not be sent";
-        return new SaveOrSendTorrentsResponse(true, message, successfulIds, failedIds);
+        String message = failedIds.isEmpty() ? "All torrents successfully handled" : failedIds.size() + " torrents could not be handled";
+        return new SaveOrSendTorrentsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds);
     }
 
-    private boolean sendMagnet(DownloadResult result) {
+    private boolean handleMagnetLink(DownloadResult result) {
         URI magnetLinkUri;
         try {
             magnetLinkUri = new URI(result.getCleanedUrl());
@@ -105,20 +106,25 @@ public class TorrentFileHandler {
             logger.error("Unable to encode magnet URI {}", result.getUrl());
             return false;
         }
-        URISchemeHandler uriSchemeHandler = new URISchemeHandler();
-        try {
-            uriSchemeHandler.open(magnetLinkUri);
-            return true;
-        } catch (CouldNotOpenUriSchemeHandler e) {
-            logger.error("Unable to add magnet link for {}: {}", result.getTitle(), e.getMessage());
-            return false;
-        } catch (RuntimeException e) {
-            logger.error("No handler registered for magnet links. Unable to add link for {}", result.getTitle());
-            return false;
+        if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
+            return saveToBlackHole(result, magnetLinkUri);
+        } else {
+            logger.error("Torrent black hole folder not set");
+            URISchemeHandler uriSchemeHandler = new URISchemeHandler();
+            try {
+                uriSchemeHandler.open(magnetLinkUri);
+                return true;
+            } catch (CouldNotOpenUriSchemeHandler e) {
+                logger.error("Unable to add magnet link for {}: {}", result.getTitle(), e.getMessage());
+                return false;
+            } catch (RuntimeException e) {
+                logger.error("No handler registered for magnet links. Unable to add link for {}", result.getTitle());
+                return false;
+            }
         }
     }
 
-    private boolean saveToBlackHole(DownloadResult result) {
+    private boolean saveToBlackHole(DownloadResult result, URI magnetLinkUri) {
         if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
             logger.error("Torrent black hole folder not set");
             return false;
@@ -128,13 +134,22 @@ public class TorrentFileHandler {
         if (!Objects.equals(sanitizedTitle, result.getTitle())) {
             logger.info("Sanitized torrent title from '{}' to '{}'", result.getTitle(), sanitizedTitle);
         }
-        File torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+        byte[] content;
+        File torrent;
+        if(magnetLinkUri != null){
+            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".magnet");
+            String UriContent = magnetLinkUri.toString();
+            content = UriContent.getBytes();
+        }else{
+            torrent = new File(configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().get(), sanitizedTitle + ".torrent");
+            content = result.getContent();
+        }
         if (torrent.exists()) {
             logger.info("File {} already exists and will be skipped", torrent.getAbsolutePath());
             return false;
         }
         try {
-            Files.write(result.getContent(), torrent);
+            Files.write(content, torrent);
             logger.info("Saved torrent file to {}", torrent.getAbsolutePath());
             return true;
         } catch (Exception e) {
