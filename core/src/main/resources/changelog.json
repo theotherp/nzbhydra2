@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Config validation was not executed properly, sometimes allowing invalid values or even preventing the config from being changed"
+      },
+      {
+        "type": "note",
+        "text": "Added a small note to the readme that \"linux\" releases mean any platform but windows. Renaming the releases would break updates for running instances."
       }
     ]
   },
