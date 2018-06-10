@@ -77,12 +77,13 @@ public class TorrentFileHandler {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
                 if (!result.isSuccessful()) {
                     successful = false;
-                    continue;
-                }
-                if (result.getContent() != null) {
-                    successful = saveToBlackHole(result, false, null);
+
                 } else {
-                    successful = sendMagnet(result);
+                    if (result.getContent() != null) {
+                        successful = saveToBlackHole(result, null);
+                    } else {
+                        successful = handleMagnetLink(result);
+                    }
                 }
             } catch (InvalidSearchResultIdException e) {
                 logger.error("Unable to find result with ID {}", guid);
@@ -93,11 +94,11 @@ public class TorrentFileHandler {
                 failedIds.add(guid);
             }
         }
-        String message = failedIds.isEmpty() ? "All magnet URLs successfully sent" : failedIds.size() + " magnet links could not be sent";
-        return new SaveOrSendTorrentsResponse(true, message, successfulIds, failedIds);
+        String message = failedIds.isEmpty() ? "All torrents successfully handled" : failedIds.size() + " torrents could not be handled";
+        return new SaveOrSendTorrentsResponse(!successfulIds.isEmpty(), message, successfulIds, failedIds);
     }
 
-    private boolean sendMagnet(DownloadResult result) {
+    private boolean handleMagnetLink(DownloadResult result) {
         URI magnetLinkUri;
         try {
             magnetLinkUri = new URI(result.getCleanedUrl());
@@ -106,8 +107,7 @@ public class TorrentFileHandler {
             return false;
         }
         if (configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
-            saveToBlackHole(result, true, magnetLinkUri);
-            return true;
+            return saveToBlackHole(result, magnetLinkUri);
         } else {
             logger.error("Torrent black hole folder not set");
             URISchemeHandler uriSchemeHandler = new URISchemeHandler();
@@ -124,7 +124,7 @@ public class TorrentFileHandler {
         }
     }
 
-    private boolean saveToBlackHole(DownloadResult result, Boolean magnet, URI magnetLinkUri) {
+    private boolean saveToBlackHole(DownloadResult result, URI magnetLinkUri) {
         if (!configProvider.getBaseConfig().getDownloading().getSaveTorrentsTo().isPresent()) {
             logger.error("Torrent black hole folder not set");
             return false;

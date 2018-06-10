@@ -3,12 +3,16 @@
     "version": "v1.4.19",
     "changes": [
       {
+        "type": "feature",
+        "text": "When a torrent black hole is configured magnet links will be saved as files there. Let me know if you need a switch to disable that. Thanks to wh0cares"
+      },
+      {
         "type": "fix",
         "text": "Config validation was not executed properly, sometimes allowing invalid values or even preventing the config from being changed"
       },
       {
         "type": "note",
-        "text": "Added a small note to the readme that \"linux\" releases mean any platform but windows. Renaming the releases would break updates for running instances."
+        "text": "Added a small note to the readme that \"linux\" releases mean any platform but windows. Renaming the releases would break updates for running instances"
       }
     ]
   },
