@@ -156,7 +156,7 @@ public abstract class Indexer<T> {
         indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
-        completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest);
+        completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
 
         int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
         debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), acceptorResult.getNumberOfRejectedResults());
@@ -166,13 +166,14 @@ public abstract class Indexer<T> {
 
     /**
      * Responsible for filling the meta data of the IndexerSearchResult, e.g. number of available results and the used offset
-     *
-     * @param response            The web response from the indexer
+     *  @param response            The web response from the indexer
      * @param indexerSearchResult The result to fill
      * @param acceptorResult      The result acceptor result
      * @param searchRequest       The original search request
+     * @param offset
+     * @param limit
      */
-    protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest);
+    protected abstract void completeIndexerSearchResult(T response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit);
 
     /**
      * Parse the given indexer web response and return the search result items

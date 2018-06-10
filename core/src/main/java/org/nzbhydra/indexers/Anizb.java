@@ -31,7 +31,7 @@ public class Anizb extends Indexer<NewznabXmlRoot> {
     private static final Logger logger = LoggerFactory.getLogger(Anizb.class);
 
     @Override
-    protected void completeIndexerSearchResult(NewznabXmlRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(NewznabXmlRoot response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
 
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());

@@ -87,9 +87,9 @@ public class Torznab extends Newznab {
     }
 
     @Override
-    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
-        super.completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest);
+        super.completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
         indexerSearchResult.setTotalResultsKnown(true);
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setOffset(0);

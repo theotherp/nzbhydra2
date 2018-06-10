@@ -18,7 +18,7 @@ public class DogNzb extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(DogNzb.class);
 
-    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
 
         //DogNZB does not return a reliable total number. It's always 100 if there are more results, less if it's the last page

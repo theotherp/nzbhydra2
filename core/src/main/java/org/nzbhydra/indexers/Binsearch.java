@@ -55,7 +55,7 @@ public class Binsearch extends Indexer<String> {
     //LATER It's not ideal that currently the web response needs to be parsed twice, once for the search results and once for the completion of the indexer search result. Will need to check how much that impacts performance
 
     @Override
-    protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest) {
+    protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
         Document doc = Jsoup.parse(response);
         if (doc.select("table.xMenuT").size() > 0) {
             Element navigationTable = doc.select("table.xMenuT").get(1);
@@ -76,7 +76,8 @@ public class Binsearch extends Indexer<String> {
             indexerSearchResult.setTotalResults(0);
             indexerSearchResult.setTotalResultsKnown(true);
         }
-        indexerSearchResult.setLimit(100);
+        indexerSearchResult.setLimit(limit);
+        indexerSearchResult.setOffset(offset);
     }
 
 
@@ -210,7 +211,6 @@ public class Binsearch extends Indexer<String> {
             throw new IndexerSearchAbortedException("Binsearch cannot search without a query");
         }
         query = cleanupQuery(query);
-
         return UriComponentsBuilder.fromHttpUrl("https://www.binsearch.info/?adv_col=on&postdate=date&adv_sort=date").queryParam("min", offset).queryParam("max", limit).queryParam("q", query);
     }
 

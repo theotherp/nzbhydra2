@@ -4,11 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
@@ -31,9 +27,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ConstantConditions")
 public class BinsearchTest {
@@ -92,7 +86,7 @@ public class BinsearchTest {
             items.add(new SearchResultItem());
         }
         indexerSearchResult.setSearchResultItems(items);
-        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest);
+        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
         assertThat(indexerSearchResult.getOffset(), is(0));
         assertThat(indexerSearchResult.getLimit(), is(100));
         assertThat(indexerSearchResult.getTotalResults(), is(24));
@@ -106,7 +100,7 @@ public class BinsearchTest {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         String html = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/binsearch.html"), Charsets.UTF_8);
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
-        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest);
+        testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);
         assertThat(indexerSearchResult.isTotalResultsKnown(), is(false));
         assertThat(indexerSearchResult.isHasMoreResults(), is(true));
     }
