@@ -1,3 +1,15 @@
+### v1.5.0
+
+Feature: Redesigned the button to add new indexers. Inspired by Sonarr
+
+Feature: When a torrent black hole is configured magnet links will be saved as files there. Let me know if you need a switch to disable that. Thanks to wh0cares
+
+Fix: Config validation was not executed properly, sometimes allowing invalid values or even preventing the config from being changed
+
+Note: Added a small note to the readme that "linux" releases mean any platform but windows. Renaming the releases would break updates for running instances
+
+
+
 ### v1.4.18
 
 Fix: Previous version was missing readme.md which resulted in broken updates
