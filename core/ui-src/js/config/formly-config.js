@@ -1,3 +1,19 @@
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 hashCode = function (s) {
     return s.split("").reduce(function (a, b) {
         a = ((a << 5) - a) + b.charCodeAt(0);
@@ -379,84 +395,11 @@ angular
         });
 
         formlyConfigProvider.setType({
-            name: 'arrayConfig',
-            templateUrl: 'arrayConfig.html',
-            controller: function ($scope, $uibModal, growl, CategoriesService) {
-                $scope.formOptions = {formState: $scope.formState};
-                $scope._showBox = _showBox;
-                $scope.showBox = showBox;
-                $scope.isInitial = false;
-                $scope.presets = $scope.options.data.presets($scope.model);
-
-                function _showBox(model, parentModel, isInitial, callback) {
-                    var modalInstance = $uibModal.open({
-                        templateUrl: 'configBox.html',
-                        controller: 'ConfigBoxInstanceController',
-                        size: 'lg',
-                        resolve: {
-                            model: function () {
-                                return model;
-                            },
-                            fields: function () {
-                                return $scope.options.data.fieldsFunction(model, parentModel, isInitial, angular.injector(), CategoriesService);
-                            },
-                            isInitial: function () {
-                                return isInitial
-                            },
-                            parentModel: function () {
-                                return parentModel;
-                            },
-                            data: function () {
-                                return $scope.options.data;
-                            }
-                        }
-                    });
-
-
-                    modalInstance.result.then(function (returnedModel) {
-                        $scope.form.$setDirty(true);
-                        if (angular.isDefined(callback)) {
-                            callback(true, returnedModel);
-                        }
-                    }, function () {
-                        if (angular.isDefined(callback)) {
-                            callback(false);
-                        }
-                    });
-                }
-
-                function showBox(model, parentModel) {
-                    $scope._showBox(model, parentModel, false)
-                }
-
-                $scope.addEntry = function (entriesCollection, preset) {
-                    if ($scope.options.data.checkAddingAllowed(entriesCollection, preset)) {
-                        var model = angular.copy($scope.options.data.defaultModel);
-                        if (angular.isDefined(preset)) {
-                            _.extend(model, preset);
-                        }
-
-                        $scope.isInitial = true;
-
-                        $scope._showBox(model, entriesCollection, true, function (isSubmitted, returnedModel) {
-                            if (isSubmitted) {
-                                //Here is where the entry is actually added to the model
-                                entriesCollection.push(angular.isDefined(returnedModel) ? returnedModel : model);
-                            }
-                        });
-                    } else {
-                        growl.error("That predefined indexer is already configured."); //For now this is the only case where adding is forbidden so we use this hardcoded message "for now"... (;-))
-                    }
-                };
-            }
-        });
-
-        formlyConfigProvider.setType({
             name: 'recheckAllCaps',
-            templateUrl: 'recheckAllCaps.html',
-            controller: function ($scope, $uibModal, growl, ConfigBoxService) {
+            templateUrl: 'static/html/config/recheck-all-caps.html',
+            controller: function ($scope, $uibModal, growl, IndexerConfigBoxService) {
                 $scope.recheck = function (checkType) {
-                    ConfigBoxService.checkCaps({checkType: checkType}).then(function (listOfResults) {
+                    IndexerConfigBoxService.checkCaps({checkType: checkType}).then(function (listOfResults) {
                         //A bit ugly, but we have to update the current model with the new data from the list
                         for (var i = 0; i < $scope.model.length; i++) {
                             for (var j = 0; j < listOfResults.length; j++) {
@@ -469,169 +412,6 @@ angular
                     });
                 }
             }
-
         });
-
-
     });
-
-
-angular.module('nzbhydraApp').controller('ConfigBoxInstanceController', function ($scope, $q, $uibModalInstance, $http, model, fields, isInitial, parentModel, data, growl) {
-
-    $scope.model = model;
-    $scope.fields = fields;
-    $scope.isInitial = isInitial;
-    $scope.allowDelete = data.allowDeleteFunction(model);
-    $scope.deleteTooltip = data.deleteTooltip;
-    $scope.spinnerActive = false;
-    $scope.needsConnectionTest = false;
-
-    $scope.obSubmit = function () {
-        if ($scope.form.$valid) {
-            var a = data.checkBeforeClose($scope, model).then(function (data) {
-                if (angular.isDefined(data)) {
-                    $scope.model = data;
-                }
-                $uibModalInstance.close(data);
-            });
-        } else {
-            growl.error("Config invalid. Please check your settings.");
-            angular.forEach($scope.form.$error, function (error) {
-                angular.forEach(error, function (field) {
-                    field.$setTouched();
-                });
-            });
-        }
-    };
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss();
-    };
-
-    $scope.deleteEntry = function () {
-        parentModel.splice(parentModel.indexOf(model), 1);
-        $uibModalInstance.close($scope);
-    };
-
-    $scope.reset = function () {
-        if (angular.isDefined(data.resetFunction)) {
-            data.resetFunction($scope);
-        }
-    };
-
-    $scope.$on("modal.closing", function (targetScope, reason) {
-        if (reason === "backdrop click") {
-            $scope.reset($scope);
-        }
-    });
-});
-
-angular
-    .module('nzbhydraApp')
-    .factory('ConfigBoxService', ConfigBoxService);
-
-function ConfigBoxService($http, $q, $uibModal) {
-
-    return {
-        checkConnection: checkConnection,
-        checkCaps: checkCaps
-    };
-
-    function checkConnection(url, settings) {
-        var deferred = $q.defer();
-
-        $http.post(url, settings).then(function (result) {
-            //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click 
-            if (result.data.successful) {
-                deferred.resolve({checked: true, message: null, model: result.data});
-            } else {
-                deferred.reject({checked: true, message: result.data.message});
-            }
-        }, function (result) {
-            deferred.reject({checked: false, message: result.data.message});
-        });
-
-        return deferred.promise;
-    }
-
-    function checkCaps(capsCheckRequest) {
-        var deferred = $q.defer();
-
-        var result = $uibModal.open({
-            templateUrl: 'static/html/checker-state.html',
-            controller: CheckCapsModalInstanceCtrl,
-            size: "md",
-            backdrop: "static",
-            backdropClass: "waiting-cursor",
-            resolve: {
-                capsCheckRequest: function () {
-                    return capsCheckRequest;
-                }
-            }
-        });
-
-        result.result.then(function (data) {
-            deferred.resolve(data[0], data[1]);
-        }, function (message) {
-            deferred.reject(message);
-        });
-
-        return deferred.promise;
-    }
-
-}
-
-angular
-    .module('nzbhydraApp')
-    .controller('CheckCapsModalInstanceCtrl', CheckCapsModalInstanceCtrl);
-
-function CheckCapsModalInstanceCtrl($scope, $interval, $http, $timeout, growl, capsCheckRequest) {
-
-    var updateMessagesInterval = undefined;
-
-    $scope.messages = undefined;
-    $http.post("internalapi/indexer/checkCaps", capsCheckRequest).then(function (response) {
-        $scope.$close([response.data, capsCheckRequest.indexerConfig]);
-        if (response.data.length === 0) {
-            growl.info("No indexers were checked");
-        }
-    }, function () {
-        $scope.$dismiss("Unknown error")
-    });
-
-    $timeout(
-        updateMessagesInterval = $interval(function () {
-            $http.get("internalapi/indexer/checkCapsMessages").then(function (response) {
-                var map = response.data;
-                var messages = [];
-                for (var name in map) {
-                    if (map.hasOwnProperty(name)) {
-                        for (var i = 0; i < map[name].length; i++) {
-                            var message = "";
-                            if (capsCheckRequest.checkType !== "SINGLE") {
-                                message += name + ": ";
-                            }
-                            message += map[name][i];
-                            messages.push(message);
-                        }
-                    }
-                }
-                $scope.messages = messages;
-            });
-
-        }, 500),
-        500);
-
-
-    $scope.$on('$destroy', function () {
-        if (angular.isDefined(updateMessagesInterval)) {
-            $interval.cancel(updateMessagesInterval);
-        }
-    });
-
-
-}
-
-
-
 

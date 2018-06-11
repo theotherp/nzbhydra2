@@ -1,0 +1,52 @@
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<div class="row">
+  
+  <div class="btn-group"
+       style="margin-bottom: 30px; margin-left: auto; margin-right: auto; float:none !important;">
+    <button class="btn btn-info" ng-click="addEntry(model)"><span
+      class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>Add new indexer
+    </button>
+    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="false">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <ul class="dropdown-menu">
+      <li ng-repeat="preset in presets[0]">
+        <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+      </li>
+      <li ng-if="presets.length > 1" role="separator" class="divider"></li>
+      <li ng-repeat="preset in presets[1]">
+        <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+      </li>
+      <li ng-if="presets.length > 2" role="separator" class="divider"></li>
+      <li ng-repeat="preset in presets[2]">
+        <a ng-click="addEntry(model, preset)">{{ preset.name }}</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+
+<div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
+  <div class="row">
+    <div style="margin-left: auto; margin-right: auto; float:none !important;">
+      <indexer-input indexer="entry" model="model" on-click="showBox"></indexer-input>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<span class="config-box">
+    <div class="modal-header" ng-show="model.name">
+        <h3 class="modal-title">{{ model.name }}</h3>
+    </div>
+    <div class="modal-body">
+        <formly-form fields="fields"
+                     model="model"
+                     form="form"
+                     options="options"
+        >
+        </formly-form>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial"
+                uib-tooltip="Deleting an indexer will remove its stats and related downloads and search results from the database" tooltip-placement="top" tooltip-trigger="mouseenter">Delete</button>
+        <button class="btn btn-warning" ng-click="reset()">Reset</button>
+        <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()"><span
+          class="spinner"><i class="icon-spin icon-refresh"></i></span>Submit</button>
+    </div>
+</span>

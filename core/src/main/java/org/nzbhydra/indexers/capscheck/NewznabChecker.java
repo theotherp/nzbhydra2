@@ -92,7 +92,7 @@ public class NewznabChecker {
                 logger.warn("Connection to indexer {} successful but search did not return any results", indexerConfig.getName());
                 return GenericResponse.notOk("Indexer did not return any results");
             }
-        } catch (IndexerAccessException e) {
+        } catch (IndexerAccessException | IllegalArgumentException e) {
             logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), e.getMessage());
             return GenericResponse.notOk(e.getMessage());
         }
