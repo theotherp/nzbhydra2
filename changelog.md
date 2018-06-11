@@ -1,3 +1,9 @@
+### v1.5.1
+
+Fix: Adding of downloaders to config was broken with last version
+
+
+
 ### v1.5.0
 
 Feature: Redesigned the button to add new indexers. Inspired by Sonarr
