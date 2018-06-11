@@ -4,6 +4,10 @@
     "changes": [
       {
         "type": "feature",
+        "text": "Redesigned the button to add new indexers. Inspired by Sonarr"
+      },
+      {
+        "type": "feature",
         "text": "When a torrent black hole is configured magnet links will be saved as files there. Let me know if you need a switch to disable that. Thanks to wh0cares"
       },
       {

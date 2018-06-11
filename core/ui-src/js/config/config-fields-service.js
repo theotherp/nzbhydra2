@@ -1241,7 +1241,8 @@ function ConfigFields($injector) {
                 {
                     type: "indexers",
                     data: {}
-                }, {
+                },
+                {
                     type: 'recheckAllCaps'
                 }
             ],

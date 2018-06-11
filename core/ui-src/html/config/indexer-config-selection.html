@@ -1,0 +1,73 @@
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<span class="config-box">
+    <div class="modal-header">
+        <h3 class="modal-title">Add indexer</h3>
+    </div>
+    <div class="modal-body">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Usenet</h3>
+          </div>
+          <div class="panel-body">
+            
+            <div class="btn-group"
+                 style="margin-left: auto; margin-right: auto; float:none !important;">
+              <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Choose from presets
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu scrollable-menu">
+                <li ng-repeat="preset in newznabPresets">
+                  <a ng-click="select(preset)">{{ preset.name }}</a>
+                </li>
+              </ul>
+            </div>
+            <button class="btn btn-info" ng-click="select()">
+              Add custom newznab indexer
+            </button>
+          
+          </div>
+        </div>
+      
+      
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Torrents</h3>
+          </div>
+          <div class="panel-body">
+            <div class="btn-group"
+                 style="margin-left: auto; margin-right: auto; float:none !important;">
+              <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Choose from presets
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu scrollable-menu">
+                <li ng-repeat="preset in torznabPresets">
+                  <a ng-click="select(preset)">{{ preset.name }}</a>
+                </li>
+              </ul>
+            </div>
+            <button class="btn btn-info" ng-click="select()">
+              Add custom torznab indexer
+            </button>
+          </div>
+        </div>
+    </div>
+</span>

@@ -37,13 +37,13 @@ function DebugService($filter) {
 
     function print() {
         return; //Re-enable if necessary
-        for (var key in debug) {
-            if (debug.hasOwnProperty(key)) {
-                console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));
-                console.log("Last " + key + ": " + $filter("date")(new Date(debug[key]["last"]), "h:mm:ss:sss"));
-                console.log("Diff: " + (debug[key]["last"] - debug[key]["first"]));
-            }
-        }
+        // for (var key in debug) {
+        //     if (debug.hasOwnProperty(key)) {
+        //         console.log("First " + key + ": " + $filter("date")(new Date(debug[key]["first"]), "h:mm:ss:sss"));
+        //         console.log("Last " + key + ": " + $filter("date")(new Date(debug[key]["last"]), "h:mm:ss:sss"));
+        //         console.log("Diff: " + (debug[key]["last"] - debug[key]["first"]));
+        //     }
+        // }
     }
 
 

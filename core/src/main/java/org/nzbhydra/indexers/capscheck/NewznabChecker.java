@@ -212,10 +212,11 @@ public class NewznabChecker {
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
                 .filter(x -> x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked()))
                 .collect(Collectors.toList());
-        logger.info("Calling caps check for indexers {}", configsToCheck.stream().map(IndexerConfig::getName).collect(Collectors.joining(", ")));
         if (configsToCheck.isEmpty()) {
+            logger.info("No indexers to check");
             return Collections.emptyList();
         }
+        logger.info("Calling caps check for indexers {}", configsToCheck.stream().map(IndexerConfig::getName).collect(Collectors.joining(", ")));
         ExecutorService executor = Executors.newFixedThreadPool(configsToCheck.size());
         List<CheckCapsResponse> responses = new ArrayList<>();
         try {

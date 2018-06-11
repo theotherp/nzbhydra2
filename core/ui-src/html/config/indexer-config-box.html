@@ -15,8 +15,11 @@
   -->
 
 <span class="config-box">
-    <div class="modal-header" ng-show="model.name">
-        <h3 class="modal-title">{{ model.name }}</h3>
+    <div class="modal-header">
+        <h3 class="modal-title">
+            <span ng-if="model.name">{{ model.name }}</span>
+            <span ng-if="!model.name">Unnamed indexer</span>
+        </h3>
     </div>
     <div class="modal-body">
         <formly-form fields="fields"
@@ -30,7 +33,9 @@
         <button class="btn btn-danger pull-left" ng-click="deleteEntry()" ng-if="!isInitial"
                 uib-tooltip="Deleting an indexer will remove its stats and related downloads and search results from the database" tooltip-placement="top" tooltip-trigger="mouseenter">Delete</button>
         <button class="btn btn-warning" ng-click="reset()">Reset</button>
-        <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()"><span
-          class="spinner"><i class="icon-spin icon-refresh"></i></span>Submit</button>
+        <button class="btn btn-success has-spinner" ng-class="{'active': spinnerActive}" ng-click="obSubmit()">
+            <span class="spinner"><i class="fa fa-refresh fa-spin"></i></span>
+            Submit
+        </button>
     </div>
 </span>

@@ -9,10 +9,11 @@
 @gray-light: rgb(122, 130, 136);
 @gray-lighter: rgb(70, 70, 70);
 @brand-primary: @gray-light;
-@brand-success: rgb(98, 196, 98);
-@brand-info: rgb(91, 192, 222);
-@brand-warning: rgb(248, 148, 6);
-@brand-danger: rgb(238, 95, 91);
+@color-darken: 10%;
+@brand-success: darken(rgb(98, 196, 98), @color-darken);
+@brand-info: darken(rgb(79, 169, 194), @color-darken);
+@brand-warning: darken(rgb(194, 115, 6), @color-darken / 2);
+@brand-danger: darken(rgb(194, 78, 76), @color-darken);
 @body-bg: @gray-darker;
 @text-color: rgb(200, 200, 200);
 @link-color: rgb(255, 255, 255);

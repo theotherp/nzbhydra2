@@ -185,7 +185,7 @@ angular
             //BUtton
             name: 'checkCaps',
             templateUrl: 'button-check-caps.html',
-            controller: function ($scope, ConfigBoxService, ModalService, growl) {
+            controller: function ($scope, IndexerConfigBoxService, ModalService, growl) {
                 $scope.message = "";
                 $scope.uniqueId = hashCode($scope.model.name) + hashCode($scope.model.host);
 
@@ -217,7 +217,7 @@ angular
                 //When button is clicked
                 $scope.checkCaps = function () {
                     angular.element(testButton).addClass("glyphicon-refresh-animate");
-                    ConfigBoxService.checkCaps({
+                    IndexerConfigBoxService.checkCaps({
                         indexerConfig: $scope.model,
                         checkType: "SINGLE"
                     }).then(function (data) {
