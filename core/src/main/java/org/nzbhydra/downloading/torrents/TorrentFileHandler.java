@@ -77,7 +77,6 @@ public class TorrentFileHandler {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
                 if (!result.isSuccessful()) {
                     successful = false;
-
                 } else {
                     if (result.getContent() != null) {
                         successful = saveToBlackHole(result, null);

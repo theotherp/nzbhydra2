@@ -33,6 +33,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.time.*;
+import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -339,7 +340,7 @@ public class IndexerForSearchSelector {
 
             DayOfWeek currentDay = now.getDayOfWeek();
             if (!inRange(fromDay, toDay, currentDay.getValue())) {
-                logger.debug(LoggingMarkers.SCHEDULER, "Current date does not match scheduler string {}: Current day {} is not between {} and {}", scheduleTime, currentDay, DayOfWeek.of(fromDay).name(), DayOfWeek.of(toDay % 7).name());
+                logger.debug(LoggingMarkers.SCHEDULER, "Current date does not match scheduler string {}: Current day {} is not between {} and {}", scheduleTime, currentDay.getDisplayName(TextStyle.FULL, Locale.US), DayOfWeek.of(fromDay).getDisplayName(TextStyle.FULL, Locale.US), DayOfWeek.of(toDay).getDisplayName(TextStyle.FULL, Locale.US));
                 return false;
             }
         }
