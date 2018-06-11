@@ -3977,7 +3977,7 @@ angular
                 $scope._showBox = _showBox;
                 $scope.showBox = showBox;
                 $scope.isInitial = false;
-                $scope.newznabPresets = [[
+                $scope.presets = [
                     {
                         name: "NZBGet",
                         downloaderType: "NZBGET",
@@ -3997,7 +3997,7 @@ angular
                         iconCssClass: "",
                         downloadType: "NZB"
                     }
-                ]];
+                ];
 
                 function _showBox(model, parentModel, isInitial, callback) {
                     var modalInstance = $uibModal.open({
