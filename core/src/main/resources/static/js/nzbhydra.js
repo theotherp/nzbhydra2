@@ -3344,7 +3344,7 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
             fields: function () {
                 return getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService);
             },
-            form: function() {
+            form: function () {
                 return form;
             },
             isInitial: function () {
@@ -3390,7 +3390,7 @@ angular
                             model: function () {
                                 return $scope.model;
                             },
-                            form: function() {
+                            form: function () {
                                 return $scope.form;
                             }
                         }
