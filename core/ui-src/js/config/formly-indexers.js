@@ -695,7 +695,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         },
         {
             name: "Tabula-Rasa",
-            host: "https://www.tabula-rasa.pw"
+            host: "https://www.tabula-rasa.pw/api/v1/"
         },
         {
             name: "Usenet-Crawler",
