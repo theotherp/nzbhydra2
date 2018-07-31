@@ -7,6 +7,7 @@ import org.nzbhydra.config.Category.Subtype;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,11 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
+    }
+
+    public void setCategories(List<Category> categories) {
+        categories.sort(Comparator.comparing(Category::getName));
+        this.categories = categories;
     }
 
     public List<Category> withoutAll() {
