@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.nzbhydra</groupId>
             <artifactId>mapping</artifactId>
-            <version>1.5.2-SNAPSHOT</version>
+            <version>1.5.2</version>
         </dependency>
 
         <dependency>

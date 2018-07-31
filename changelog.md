@@ -1,3 +1,11 @@
+### v1.5.2
+
+Fix: Adding new categories resulted in an exception
+
+Note: Increased the default XMX value to 256
+
+
+
 ### v1.5.1
 
 Fix: Adding of downloaders to config was broken with last version
