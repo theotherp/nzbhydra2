@@ -1,5 +1,18 @@
 [
   {
+    "version": "v1.5.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Adding new categories resulted in an exception"
+      },
+      {
+        "type": "note",
+        "text": "Increased the default XMX value to 256"
+      }
+    ]
+  },
+  {
     "version": "v1.5.1",
     "changes": [
       {

@@ -300,7 +300,7 @@ main:
   usePackagedCaCerts: true
   verifySsl: true
   welcomeShown: false
-  xmx: 128
+  xmx: 256
 searching:
   applyRestrictions: "NONE"
   duplicateAgeThreshold: 2.0

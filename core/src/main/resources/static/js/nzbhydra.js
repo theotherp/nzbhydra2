@@ -3604,7 +3604,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         },
         {
             name: "Tabula-Rasa",
-            host: "https://www.tabula-rasa.pw"
+            host: "https://www.tabula-rasa.pw/api/v1/"
         },
         {
             name: "Usenet-Crawler",
@@ -5307,7 +5307,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'MB'
                                 },
-                                help: '128M should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
+                                help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
                             }
                         }
                     ]
@@ -6032,9 +6032,10 @@ function ConfigFields($injector) {
                         ],
                         defaultModel: {
                             name: null,
+                            applySizeLimitsToApi: false,
                             applyRestrictionsType: "NONE",
                             forbiddenRegex: null,
-                            forbiddenWords: null,
+                            forbiddenWords: [],
                             ignoreResultsFrom: "NONE",
                             mayBeSelected: true,
                             maxSizePreset: null,
@@ -6042,14 +6043,13 @@ function ConfigFields($injector) {
                             newznabCategories: [],
                             preselect: true,
                             requiredRegex: null,
-                            requiredWords: null,
+                            requiredWords: [],
                             searchType: "SEARCH",
-                            subType: "NONE"
+                            subtype: "NONE"
                         }
                     }
                 }
             ],
-
             downloading: [
                 {
                     wrapper: 'fieldset',

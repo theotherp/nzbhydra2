@@ -348,11 +348,11 @@ def startup():
                     xmx = line[index + 5:].rstrip("\n\r ")
                     break
             else:
-                logger.warn("Didn't find XMX in YAML file, using default of 128")
-                xmx = 128
+                logger.warn("Didn't find XMX in YAML file, using default of 256")
+                xmx = 256
     else:
-        logger.info("No file nzbhydra.yml found. Using 128M XMX")
-        xmx = 128
+        logger.info("No file nzbhydra.yml found. Using 256M XMX")
+        xmx = 256
     xmx = str(xmx)
     if xmx.lower().endswith("m"):
         logger.info("Removing superfluous M from XMX value " + xmx)
@@ -427,7 +427,7 @@ if __name__ == '__main__':
 
     # Pass to main process
     parser.add_argument('--datafolder', action='store', help='Set the main data folder containing config, database, etc using an absolute path', default=os.path.join(getBasePath(), "data"))
-    parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 128)', default=None)
+    parser.add_argument('--xmx', action='store', help='Java Xmx setting in MB (e.g. 256)', default=None)
     parser.add_argument('--quiet', action='store_true', help='Set to disable all console output', default=False)
     parser.add_argument('--host', action='store', help='Set the host')
     parser.add_argument('--port', action='store', help='Set the port')
