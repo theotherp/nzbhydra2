@@ -140,7 +140,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                     ModalService.open("Migration successful", message, {
                         yes: {
                             onYes: function () {
-                                RestartService.startCountdown();
+                                RestartService.restart();
                             },
                             text: "Restart"
                         },
@@ -154,7 +154,7 @@ function MigrationModalInstanceCtrl($scope, $uibModalInstance, $interval, $http,
                 }
             }, function (response) {
                 $interval.cancel(updateMigrationMessagesInterval);
-                //$scope.foo.isMigrating = false;
+                $scope.foo.isMigrating = false;
                 $scope.foo.messages = [response.data.message];
             }
         );

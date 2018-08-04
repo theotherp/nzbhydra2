@@ -6,7 +6,7 @@
         <p>You are about to migrate from an installation of NZBHydra 1. This will overwrite your existing settings and database for v2. No automatic backup will be made before.</p>
 
         <p>The migration can take a couple of minutes for big databases. All enabled newznab indexers will be queried multiple times for a capabilities check.</p>
-        <p>For big databases I recommend temporarily starting NZBHydra with more memory (using the parameter <tt>--xmx 512</tt> (or even more)). Otherwise the migration might fail.</p>
+        <p>For big databases I recommend temporarily starting NZBHydra with more memory (using the parameter <tt>--xmx 512</tt> (or even more)). Otherwise the migration might fail (in some cases without an error being shown here).</p>
 
         <p>The migration is easier if the older instance is callable from here and its files are on the same machine as v2 (and not containerized). Please select what applies:</p>
 
@@ -16,17 +16,16 @@
         The old instance of NZBHydra 1 needs to be running and must be at least version 0.2.220. Please enter its base URL below.
         If it's auth protected please enter the URL like this: http://user:pass@127.0.0.1:5075. Leave v1 open until the migration is finished.
 
-                <input type="text" data-ng-model="foo.baseUrl" class="form-control input-lg"
-                       placeholder="http://127.0.01:5075" style="margin-top: 10px"/>
+                <input type="text" data-ng-model="foo.baseUrl" class="form-control input-lg" placeholder="http://127.0.01:5075" style="margin-top: 10px"/>
             </div>
             <div uib-accordion-group class="panel-default"
                  heading="NZBHydra 1 is running on another machine or in a container" is-open="foo.isFileBasedOpen">
                 Please make extra sure that NZBHydra 1 is at least version 0.2.220.<br>
                 You need to copy <code>settings.cfg</code> and <code>nzbhydra.db.*</code> files to this machine. Then paste their full paths:<br>
                 <div class="input-group">
-                    <label>settings.cfg</label><input ng-model="foo.settingsCfgFile" class="form-control"
+                    <label>settings.cfg</label><input ng-model="foo.settingsCfgFile" class="form-control" placeholder="/path/to/settings.cfg"
                                                       size="100"/><br>
-                    <label>nzbhydra.db</label><input ng-model="foo.nzbhydraDbFile" class="form-control"/>
+                    <label>nzbhydra.db</label><input ng-model="foo.nzbhydraDbFile" class="form-control"  placeholder="/path/to/nzbhydra.db"/>
                 </div>
             </div>
         </uib-accordion>
@@ -35,7 +34,7 @@
         </p>
     </span>
     <span ng-show="foo.isMigrating" style="text-align: left">
-
+        If nothing happens here for a while check the logs for an error...
         <ul style="padding-left: 0">
             <li ng-repeat="message in foo.messages" style="list-style-type: none">
                 {{message}}
@@ -45,6 +44,6 @@
     </span>
 </div>
 <div class="modal-footer">
-    <button class="btn btn-success" type="button" ng-click="yes()">Start migration</button>
+    <button class="btn btn-success" type="button" ng-click="yes()" ng-disabled="foo.isMigrating" >Start migration</button>
     <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
 </div>
