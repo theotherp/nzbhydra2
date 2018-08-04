@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.*;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.indexers.Indexer.BackendType;
@@ -524,6 +525,7 @@ public class JsonConfigMigration {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class ConfigMigrationResult {
         private BaseConfig migratedConfig;
         private List<String> messages;

@@ -2,6 +2,7 @@ package org.nzbhydra.historystats;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.historystats.stats.HistoryRequestData;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
@@ -140,6 +141,7 @@ public class History {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class SearchDetails {
         String username;
         String ip;
@@ -150,6 +152,7 @@ public class History {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class IndexerSearchTO {
         private String indexerName;
         private boolean successful;

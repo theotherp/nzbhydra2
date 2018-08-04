@@ -19,6 +19,7 @@ package org.nzbhydra.indexers.capscheck;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerCategoryConfig;
@@ -335,6 +336,7 @@ public class NewznabChecker {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CheckerEvent {
         private String indexerName;
         private String message;
@@ -342,6 +344,7 @@ public class NewznabChecker {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     private static class CheckCapsRequest {
         private IndexerConfig indexerConfig;
         private String tMode;
@@ -352,6 +355,7 @@ public class NewznabChecker {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     private static class SingleCheckCapsResponse {
         private String key;
         private boolean supported;

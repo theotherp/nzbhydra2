@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest;
 import org.nzbhydra.config.FileSystemBrowser.FileSystemEntry;
@@ -110,6 +111,7 @@ public class ConfigWeb {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     private static class ApiHelpResponse {
         private String newznabApi;
         private String torznabApi;

@@ -6,6 +6,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
@@ -98,6 +99,7 @@ public class MediaInfoWeb {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     private static class CacheKey {
         private AutocompleteType type;
         private String input;

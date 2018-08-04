@@ -2,6 +2,7 @@ package org.nzbhydra.backup;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
@@ -189,6 +190,7 @@ public class BackupAndRestore {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class BackupEntry {
         private String filename;
         private Instant creationDate;

@@ -7,6 +7,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Multiset.Entry;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
@@ -331,6 +332,7 @@ public class SearchResultAcceptor {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AcceptorResult {
 
         private List<SearchResultItem> acceptedResults;

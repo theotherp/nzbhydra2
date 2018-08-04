@@ -2,6 +2,7 @@ package org.nzbhydra.news;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Markdown;
@@ -90,6 +91,7 @@ public class NewsWeb {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class NewsEntryForWeb {
         private String version;
         private String news;

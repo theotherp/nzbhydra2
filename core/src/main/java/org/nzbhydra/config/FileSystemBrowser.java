@@ -48,6 +48,7 @@ public class FileSystemBrowser {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class DirectoryListingRequest {
         private String fullPath;
         private String type;
@@ -104,6 +105,7 @@ public class FileSystemBrowser {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class FileSystemSubEntry {
         private String name;
         private String fullPath;

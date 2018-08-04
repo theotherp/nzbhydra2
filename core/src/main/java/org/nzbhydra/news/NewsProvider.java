@@ -3,6 +3,7 @@ package org.nzbhydra.news;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.update.UpdateManager;
@@ -65,6 +66,7 @@ public class NewsProvider {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class NewsEntry {
         private SemanticVersion showForVersion;
         private String newsAsMarkdown;

@@ -202,6 +202,7 @@ public abstract class Downloader {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public class AddNzbsResponse {
         private boolean successful;
         private String message;

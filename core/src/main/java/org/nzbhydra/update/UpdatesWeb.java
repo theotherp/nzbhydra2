@@ -4,6 +4,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
@@ -119,6 +120,7 @@ public class UpdatesWeb {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class VersionsInfo {
         private String currentVersion;
         private String latestVersion;

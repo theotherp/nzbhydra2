@@ -10,6 +10,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.io.Resources;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
@@ -329,12 +330,14 @@ public class UpdateManager implements InitializingBean {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class UpdateEvent {
         private String message;
     }
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class BlockedVersion {
         private String version;
         private String comment;

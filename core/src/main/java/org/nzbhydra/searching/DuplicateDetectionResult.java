@@ -3,6 +3,7 @@ package org.nzbhydra.searching;
 import com.google.common.collect.Multiset;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.indexers.Indexer;
 
 import java.util.LinkedHashSet;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class DuplicateDetectionResult {
 
     /**

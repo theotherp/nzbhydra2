@@ -19,6 +19,7 @@ package org.nzbhydra.tasks;
 import com.google.common.reflect.Invokable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.nzbhydra.ShutdownEvent;
 import org.slf4j.Logger;
@@ -139,6 +140,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class TaskInformation {
         private String name;
         private Instant lastExecutionTime;
@@ -147,6 +149,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class TaskRuntimeInformation {
         private Object bean;
         private Method method;

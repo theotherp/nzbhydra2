@@ -6,6 +6,7 @@ import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import okhttp3.*;
 import okhttp3.Request.Builder;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
@@ -164,12 +165,14 @@ public class FromPythonMigration {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class MigrationMessageEvent {
         private String message;
     }
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     //For mocking
     public static class OkHttpResponse {
         private String body;

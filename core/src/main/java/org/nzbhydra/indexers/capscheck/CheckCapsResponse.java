@@ -18,10 +18,12 @@ package org.nzbhydra.indexers.capscheck;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.IndexerConfig;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class CheckCapsResponse {
     private IndexerConfig indexerConfig;
     private boolean allCapsChecked;

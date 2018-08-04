@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ public class IndexerStatusesWeb {
 
     @Data
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class IndexerStatus {
         private String indexer;
         private String state;
