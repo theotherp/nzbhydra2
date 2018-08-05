@@ -25,7 +25,7 @@ public class IndexerApiAccessEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private IndexerEntity indexer;
 
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time;
 
     @Enumerated(EnumType.STRING)

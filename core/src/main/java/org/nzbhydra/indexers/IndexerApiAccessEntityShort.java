@@ -3,12 +3,7 @@ package org.nzbhydra.indexers;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 
 
@@ -28,7 +23,7 @@ public class IndexerApiAccessEntityShort {
 
     private int indexer_id;
 
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time;
 
     private boolean successful;

@@ -28,7 +28,7 @@ public class FileDownloadEntity {
     private FileDownloadAccessType nzbAccessType;
     @Enumerated(EnumType.STRING)
     private SearchSource accessSource;
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time = Instant.now();
     @Enumerated(EnumType.STRING)
     private FileDownloadStatus status;

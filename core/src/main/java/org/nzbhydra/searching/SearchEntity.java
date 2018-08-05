@@ -26,7 +26,7 @@ public class SearchEntity {
     private SearchSource source;
     @Enumerated(EnumType.STRING)
     private SearchType searchType;
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time;
 
     @OneToMany(cascade = CascadeType.ALL)

@@ -43,7 +43,7 @@ public class SearchResultEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     protected IndexerEntity indexer;
 
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     protected Instant firstFound;
 
     @NotNull
@@ -59,7 +59,7 @@ public class SearchResultEntity {
     protected String details;
     @Enumerated(EnumType.STRING)
     protected DownloadType downloadType;
-    @Convert(converter = com.github.marschall.threeten.jpa.InstantConverter.class)
+    @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     protected Instant pubDate;
 
     public SearchResultEntity() {

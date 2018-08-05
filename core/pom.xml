@@ -205,7 +205,7 @@
         <dependency>
             <groupId>com.uwetrottmann.tmdb2</groupId>
             <artifactId>tmdb-java</artifactId>
-            <version>1.8.4</version>
+            <version>1.6.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.briandilley.jsonrpc4j</groupId>
