@@ -46,11 +46,11 @@ public class UrlCalculator {
     static final Logger logger = LoggerFactory.getLogger(UrlCalculator.class);
     private UriComponentsBuilder baseBuilder;
 
-    @Value("${server.address}")
+    @Value("${main.host}")
     private String serverAddress;
-    @Value("${server.port}")
+    @Value("${main.port}")
     private Integer serverPort;
-    @Value("${server.contextPath}")
+    @Value("${main.urlBase}")
     private String serverContextPath;
     @Autowired
     private ConfigurableEnvironment environment;
@@ -176,7 +176,7 @@ public class UrlCalculator {
                     .scheme(isSsl ? "https" : "http")
                     .port(port);
             logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme {}", isSsl ? "https" : "http");
-            String urlBase = serverContextPath;
+            String urlBase = serverContextPath != null ? serverContextPath : "/";
 
             if (urlBase != null) {
                 baseBuilder.path(urlBase);

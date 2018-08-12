@@ -19,38 +19,34 @@ package org.nzbhydra.springconfig;
 import org.apache.catalina.connector.Connector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class GracefulSpringShutdown {
+@Component
+public class GracefulSpringShutdown implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     @Bean
     public GracefulShutdown gracefulShutdown() {
         return new GracefulShutdown();
     }
 
-    @Bean
-    public EmbeddedServletContainerCustomizer tomcatCustomizer() {
-        return new EmbeddedServletContainerCustomizer() {
 
-            @Override
-            public void customize(ConfigurableEmbeddedServletContainer container) {
-                if (container instanceof TomcatEmbeddedServletContainerFactory) {
-                    ((TomcatEmbeddedServletContainerFactory) container)
-                            .addConnectorCustomizers(gracefulShutdown());
-                }
+    @Override
+    public void customize(ConfigurableServletWebServerFactory factory) {
+        if (factory instanceof TomcatServletWebServerFactory) {
+            ((TomcatServletWebServerFactory) factory).addConnectorCustomizers(gracefulShutdown());
+        }
 
-            }
-        };
     }
 
     private static class GracefulShutdown implements TomcatConnectorCustomizer,
@@ -77,8 +73,7 @@ public class GracefulSpringShutdown {
                         log.warn("Tomcat thread pool did not shut down gracefully within "
                                 + "30 seconds. Proceeding with forceful shutdown");
                     }
-                }
-                catch (InterruptedException ex) {
+                } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 }
             }

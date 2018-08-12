@@ -22,9 +22,9 @@ import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
@@ -35,17 +35,16 @@ import java.io.IOException;
  * should aready work when server.use-forward-headers is true but it doesn't
  */
 @Component
-public class HydraEmbeddedServletContainer implements EmbeddedServletContainerCustomizer {
+public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     private static final Logger logger = LoggerFactory.getLogger(HydraEmbeddedServletContainer.class);
 
     @Override
-    public void customize(ConfigurableEmbeddedServletContainer container) {
-        if (!(container instanceof TomcatEmbeddedServletContainerFactory)) {
+    public void customize(ConfigurableServletWebServerFactory factory) {
+        if (!(factory instanceof TomcatServletWebServerFactory)) {
             return; //Is the case in tests
         }
-        TomcatEmbeddedServletContainerFactory containerFactory = (TomcatEmbeddedServletContainerFactory) container;
-
+        TomcatServletWebServerFactory containerFactory = (TomcatServletWebServerFactory) factory;
         containerFactory.addContextValves(new ValveBase() {
             @Override
             public void invoke(Request request, Response response) throws IOException, ServletException {
@@ -102,8 +101,9 @@ public class HydraEmbeddedServletContainer implements EmbeddedServletContainerCu
                 }
             }
         });
-        ((TomcatEmbeddedServletContainerFactory) container).addContextCustomizers(context -> context.setMapperContextRootRedirectEnabled(true));
-
-
+        containerFactory.addContextCustomizers(context -> context.setMapperContextRootRedirectEnabled(true));
     }
+
+
+
 }

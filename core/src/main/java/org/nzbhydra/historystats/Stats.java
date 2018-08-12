@@ -335,7 +335,7 @@ public class Stats {
     List<IndexerApiAccessStatsEntry> indexerApiAccesses(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer API stats");
-        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findOne(id) != null).collect(Collectors.toSet());
+        Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findById(id) != null).collect(Collectors.toSet());
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
                 "  indexer_id,\n" +
@@ -405,7 +405,7 @@ public class Stats {
         List<IndexerApiAccessStatsEntry> indexerApiAccessStatsEntries = new ArrayList<>();
         for (Integer id : indexerIdsToInclude) {
             IndexerApiAccessStatsEntry entry = new IndexerApiAccessStatsEntry();
-            IndexerEntity indexerEntity = indexerRepository.findOne(id);
+            IndexerEntity indexerEntity = indexerRepository.findById(id).get();
             entry.setIndexerName(indexerEntity.getName());
 
             if (allAccessesCountMap.containsKey(id) && allAccessesCountMap.get(id) != null) {

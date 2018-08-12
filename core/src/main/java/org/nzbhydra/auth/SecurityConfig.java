@@ -7,9 +7,8 @@ import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -42,7 +41,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 @Configuration
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
+@Order
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -103,7 +102,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             if (baseConfig.getAuth().isRememberUsers()) {
                 JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
                 tokenRepository.setDataSource(dataSource());
-                http = http.rememberMe().alwaysRemember(true).tokenValiditySeconds(configProvider.getBaseConfig().getAuth().getRememberMeValidityDays() * SECONDS_PER_DAY).tokenRepository(tokenRepository).and();
+                int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
+                if (rememberMeValidityDays == 0) {
+                    rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
+                }
+                http = http.rememberMe().alwaysRemember(true).tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY).tokenRepository(tokenRepository).and();
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("rememberMe");
 

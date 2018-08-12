@@ -64,7 +64,7 @@ public class BaseConfigTest {
 
         ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
         yamlMapper.registerModule(new Jdk8Module());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/application.yml").openStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/baseConfig.yml").openStream()));
         String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
         BaseConfig fromApplicationYml = yamlMapper.readValue(applicationYmlContent, BaseConfig.class);
         String jsonFromApplicationProperties = jsonMapper.writeValueAsString(fromApplicationYml);

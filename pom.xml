@@ -15,8 +15,6 @@
     </modules>
 
     <scm>
-        <!--<connection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</connection>-->
-        <!--<developerConnection>scm:git:ssh://admin@127.0.0.1:29418/nzbhydra2-test.git</developerConnection>-->
         <connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>
         <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
       <tag>HEAD</tag>
@@ -37,7 +35,6 @@
                 <version>1.0.0</version>
                 <configuration>
                     <commitish>master</commitish>
-                    <!--<githubReleasesUrl>http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>-->
                     <githubReleasesUrl>https://api.github.com/repos/theotherp/nzbhydra2/releases</githubReleasesUrl>
                     <githubTokenFile>${basedir}/core/token.txt</githubTokenFile>
                     <linuxAsset>${basedir}/releases/linux-release/target/nzbhydra2-${project.version}-linux.zip</linuxAsset>
@@ -56,8 +53,8 @@
     </build>
   
   <properties>
-        <spring.boot.version>1.5.7.RELEASE</spring.boot.version>
-        <spring.oxm.version>4.3.10.RELEASE</spring.oxm.version>
+        <spring.boot.version>2.0.4.RELEASE</spring.boot.version>
+        <spring.oxm.version>5.0.8.RELEASE</spring.oxm.version>
         <spring.test.version>4.3.10.RELEASE</spring.test.version>
         <spring.security.test.version>4.2.3.RELEASE</spring.security.test.version>
         <jackson.version>2.9.6</jackson.version>

@@ -93,7 +93,7 @@ public class DownloadStatusUpdaterTest {
         testee.checkStatus(statuses, 10000, StatusCheckType.HISTORY);
 
         verify(downloaderMock).checkForStatusUpdates(downloadsWaitingForUpdate, StatusCheckType.HISTORY);
-        verify(downloadRepository).save(downloadsReturnedFromDownloader);
+        verify(downloadRepository).saveAll(downloadsReturnedFromDownloader);
     }
 
     @Test

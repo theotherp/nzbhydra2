@@ -16,12 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
-import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
-import org.springframework.boot.context.embedded.tomcat.ConnectorStartFailedException;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.embedded.tomcat.ConnectorStartFailedException;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.guava.GuavaCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +42,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Configuration
-@EnableAutoConfiguration(exclude = {WebSocketAutoConfiguration.class, AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {
+        //WebSocketServletAutoConfiguration.class,
+        AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
 @RestController
 @EnableCaching
@@ -129,7 +130,7 @@ public class NzbHydra {
 
         System.setProperty("nzbhydra.dataFolder", dataFolder);
         File yamlFile = new File(dataFolder, "nzbhydra.yml");
-        System.setProperty("spring.config.location", yamlFile.getAbsolutePath());
+        System.setProperty("spring.config.location", "classpath:config/baseConfig.yml,classpath:config/baseConfig.properties," + yamlFile.getAbsolutePath());
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
         useIfSet(options, "baseurl", "server.contextPath");
@@ -289,8 +290,7 @@ public class NzbHydra {
 
     @Bean
     public CacheManager getCacheManager() {
-        GuavaCacheManager guavaCacheManager = new GuavaCacheManager("infos", "titles", "updates", "dev");
-        return guavaCacheManager;
+        return new CaffeineCacheManager("infos", "titles", "updates", "dev");
     }
 
 

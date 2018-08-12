@@ -86,7 +86,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
         url = "http://127.0.0.1:5077";
         WebdriverContext context = new WebdriverContext();
         context.setConfig(new WebdriverConfig(webDriver, url));
-        //TODO Collect automatically ?
         context.getDefaultElementFactory().addImplClassForElement(IColumnSortable.class, ColumnSortable.class);
         context.getDefaultElementFactory().addImplClassForElement(IFreetextFilter.class, FreetextFilter.class);
         context.getDefaultElementFactory().addImplClassForElement(ICheckboxFilter.class, CheckboxFilter.class);

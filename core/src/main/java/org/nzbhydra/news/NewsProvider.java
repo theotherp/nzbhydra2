@@ -48,7 +48,7 @@ public class NewsProvider {
     }
 
     public void saveShownForCurrentVersion() throws IOException {
-        shownNewsRepository.delete(shownNewsRepository.findAll());
+        shownNewsRepository.deleteAll(shownNewsRepository.findAll());
         shownNewsRepository.save(new ShownNews(updateManager.getCurrentVersionString()));
         logger.debug("Saved that news for version {} and before were shown", updateManager.getCurrentVersionString());
     }

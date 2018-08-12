@@ -35,10 +35,7 @@ import uriSchemeHandler.URISchemeHandler;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class TorrentFileHandler {
@@ -54,11 +51,12 @@ public class TorrentFileHandler {
 
     public DownloadResult getTorrentByGuid(long guid, FileDownloadAccessType accessType, SearchRequest.SearchSource accessSource) throws InvalidSearchResultIdException {
         //Get result. if link contains magnet: return redirect to magnet URI. otherwise return file
-        SearchResultEntity result = searchResultRepository.findOne(guid);
-        if (result == null) {
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+        if (!optionalResult.isPresent()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchRequest.SearchSource.INTERNAL);
         }
+        SearchResultEntity result = optionalResult.get();
         logger.info("Download request for \"{}\" from indexer {}", result.getTitle(), result.getIndexer().getName());
         if (result.getLink().contains("magnet:") || accessType == FileDownloadAccessType.REDIRECT) {
             return fileHandler.handleRedirect(accessSource, result);

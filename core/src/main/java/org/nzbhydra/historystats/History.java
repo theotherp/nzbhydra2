@@ -129,7 +129,8 @@ public class History {
     }
 
     public SearchDetails getSearchDetails(int searchId) {
-        SearchEntity search = searchRepository.findOne(searchId);
+        Optional<SearchEntity> searchOptional = searchRepository.findById(searchId);
+        SearchEntity search = searchOptional.get();
         Collection<IndexerSearchEntity> entities = indexerSearchRepository.findBySearchEntity(search);
         List<IndexerSearchTO> details = new ArrayList<>();
         for (IndexerSearchEntity entity : entities) {

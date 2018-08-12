@@ -39,7 +39,7 @@ public class NzbDetailsWeb {
     @RequestMapping(value = "/details/{guid}", method = RequestMethod.GET)
     public RedirectView details(@PathVariable("guid") long guid) {
         RedirectView redirectView = new RedirectView();
-        String url = searchResultRepository.findOne(guid).getDetails();
+        String url = searchResultRepository.findById(guid).get().getDetails();
         redirectView.setUrl(url);
         logger.debug("Redirecting to {} for GUID {}", url, guid);
         return redirectView;

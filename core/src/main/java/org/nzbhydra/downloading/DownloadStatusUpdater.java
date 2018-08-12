@@ -82,7 +82,6 @@ public class DownloadStatusUpdater {
         checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
     }
 
-    //TODO Handle shutdown event
 
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
@@ -117,7 +116,7 @@ public class DownloadStatusUpdater {
                 updatedDownloads.addAll(downloader.checkForStatusUpdates(downloadsWaitingForUpdate, statusCheckType));
             }
         }
-        downloadRepository.save(updatedDownloads);
+        downloadRepository.saveAll(updatedDownloads);
     }
 
 }

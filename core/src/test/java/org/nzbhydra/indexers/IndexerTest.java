@@ -158,7 +158,7 @@ public class IndexerTest {
 
         testee.persistSearchResults(Collections.singletonList(item));
 
-        verify(searchResultRepositoryMock).save(searchResultEntitiesCaptor.capture());
+        verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 
         List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
         assertThat(persistedEntities.size(), is(1));
@@ -177,7 +177,7 @@ public class IndexerTest {
 
         testee.persistSearchResults(Collections.singletonList(item));
 
-        verify(searchResultRepositoryMock).save(searchResultEntitiesCaptor.capture());
+        verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 
         List<SearchResultEntity> persistedEntities = searchResultEntitiesCaptor.getValue();
         assertThat(persistedEntities.size(), is(0));

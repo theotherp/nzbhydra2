@@ -18,14 +18,8 @@ package org.nzbhydra.okhttp;
 
 import com.google.common.net.InetAddresses;
 import joptsimple.internal.Strings;
-import okhttp3.ConnectionPool;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.Route;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.ProxyType;
@@ -49,23 +43,10 @@ import sockslib.client.SocksProxy;
 import sockslib.client.SocksSocket;
 
 import javax.net.SocketFactory;
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
-import java.net.Proxy;
+import java.net.*;
 import java.net.Proxy.Type;
-import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -94,47 +75,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
     @Autowired
     private ConfigProvider configProvider;
     private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
-
-
-    /**
-     * Sets the underlying read timeout in milliseconds.
-     * A value of 0 specifies an infinite timeout.
-     *
-     * @see OkHttpClient.Builder#readTimeout(long, TimeUnit)
-     */
-    public void setReadTimeout(int readTimeout) {
-        //TODO
-        this.client = this.client.newBuilder()
-                .readTimeout(readTimeout, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
-    /**
-     * Sets the underlying write timeout in milliseconds.
-     * A value of 0 specifies an infinite timeout.
-     *
-     * @see OkHttpClient.Builder#writeTimeout(long, TimeUnit)
-     */
-    public void setWriteTimeout(int writeTimeout) {
-        //TODO
-        this.client = this.client.newBuilder()
-                .writeTimeout(writeTimeout, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
-    /**
-     * Sets the underlying connect timeout in milliseconds.
-     * A value of 0 specifies an infinite timeout.
-     *
-     * @see OkHttpClient.Builder#connectTimeout(long, TimeUnit)
-     */
-    public void setConnectTimeout(int connectTimeout) {
-        //TODO
-        this.client = this.client.newBuilder()
-                .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
 
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {

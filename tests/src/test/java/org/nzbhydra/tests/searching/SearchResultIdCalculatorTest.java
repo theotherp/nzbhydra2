@@ -40,7 +40,7 @@ public class SearchResultIdCalculatorTest {
         assertEquals(-2991137394797183212L, SearchResultIdCalculator.calculateSearchResultId(searchResultEntity));
         assertEquals(-2991137394797183212L, searchResultEntity.getId());
 
-        assertEquals(searchResultEntity, searchResultRepository.findOne(-2991137394797183212L));
+        assertEquals(searchResultEntity, searchResultRepository.findById(-2991137394797183212L).get());
     }
 
 }

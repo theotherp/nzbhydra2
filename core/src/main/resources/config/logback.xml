@@ -30,10 +30,6 @@
     <property name="FILE_LOG_PATTERN"
               value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%15.15t] %-40.40logger{39} : %mdc%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
 
-    <appender name="DEBUG_LEVEL_REMAPPER" class="org.springframework.boot.logging.logback.LevelRemappingAppender">
-        <destinationLogger>org.springframework.boot</destinationLogger>
-    </appender>
-
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>

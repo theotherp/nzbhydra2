@@ -132,9 +132,7 @@ public class ErrorHandler {
 
     private HttpStatus getStatusForException(Exception ex) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        if (ex instanceof org.springframework.web.servlet.mvc.multiaction.NoSuchRequestHandlingMethodException) {
-            status = HttpStatus.NOT_FOUND;
-        } else if (ex instanceof HttpRequestMethodNotSupportedException) {
+        if (ex instanceof HttpRequestMethodNotSupportedException) {
             status = HttpStatus.METHOD_NOT_ALLOWED;
         } else if (ex instanceof HttpMediaTypeNotSupportedException) {
             status = HttpStatus.UNSUPPORTED_MEDIA_TYPE;

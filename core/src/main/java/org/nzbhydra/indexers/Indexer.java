@@ -221,7 +221,7 @@ public abstract class Indexer<T> {
                 item.setSearchResultId(guid);
             }
             try {
-                searchResultRepository.save(searchResultEntities);
+                searchResultRepository.saveAll(searchResultEntities);
             } catch (EntityExistsException e) {
                 logger.error("Unable to save the search results to the database", e);
             }

@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -57,11 +58,12 @@ public class FileHandler {
     protected UrlCalculator urlCalculator;
 
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
-        SearchResultEntity result = searchResultRepository.findOne(guid);
-        if (result == null) {
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
+        if (!optionalResult.isPresent()) {
             logger.error("Download request with invalid/outdated GUID {}", guid);
             throw new InvalidSearchResultIdException(guid, accessSource == SearchSource.INTERNAL);
         }
+        SearchResultEntity result = optionalResult.get();
         String downloadType = result.getDownloadType() == DownloadType.NZB ? "NZB" : "Torrent";
         logger.info("{} download request for \"{}\" from indexer {}", downloadType, result.getTitle(), result.getIndexer().getName());
 
@@ -200,11 +202,12 @@ public class FileHandler {
     }
 
     public NfoResult getNfo(Long searchResultId) {
-        SearchResultEntity result = searchResultRepository.findOne(searchResultId);
-        if (result == null) {
+        Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(searchResultId);
+        if (!optionalResult.isPresent()) {
             logger.error("Download request with invalid/outdated search result ID " + searchResultId);
             throw new RuntimeException("Download request with invalid/outdated search result ID " + searchResultId);
         }
+        SearchResultEntity result = optionalResult.get();
         Indexer indexer = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         return indexer.getNfo(result.getIndexerGuid());
     }

@@ -142,8 +142,8 @@ public class SqliteMigration {
             dummySearchResultEntities.add(searchResultEntity);
             downloadEntities.add(entity);
         }
-        searchResultRepository.save(dummySearchResultEntities);
-        downloadRepository.save(downloadEntities);
+        searchResultRepository.saveAll(dummySearchResultEntities);
+        downloadRepository.saveAll(downloadEntities);
 
         logger.info("Successfully migrated downloads from old database");
         eventPublisher.publishEvent(new MigrationMessageEvent("Successfully migrated NZB download entries"));
@@ -308,7 +308,7 @@ public class SqliteMigration {
             }
         }
         logger.info("Saving search entities to database");
-        searchRepository.save(oldIdToNewEntity.values());
+        searchRepository.saveAll(oldIdToNewEntity.values());
         if (skippedSearches > 0) {
             String message = "Skipped " + skippedSearches + " of " + (skippedSearches + oldIdToNewEntity.size()) + " searches because the database entries could not be read";
             logger.warn(message);

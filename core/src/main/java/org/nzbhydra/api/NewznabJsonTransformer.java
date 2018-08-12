@@ -86,7 +86,6 @@ public class NewznabJsonTransformer {
             rssItem.setAttr(attributes.stream().map(NewznabJsonItemAttr::new).collect(Collectors.toList()));
             resultType = APPLICATION_TYPE_NZB;
         } else {
-//            rssItem.setTorznabAttributes(newznabAttributes); //TODO
             resultType = APPLICATION_TYPE_TORRENT;
         }
         rssItem.setEnclosure(new NewznabJsonEnclosure(new NewznabJsonEnclosureAttributes(link, searchResultItem.getSize(), resultType)));

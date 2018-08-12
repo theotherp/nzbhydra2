@@ -170,11 +170,11 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     /**
      * Returns the original config as it was deployed
      *
-     * @return the content of config/application.yml (from resources) as BaseConfig object
-     * @throws IOException Unable to read application.yml
+     * @return the content of config/baseConfig.yml (from resources) as BaseConfig object
+     * @throws IOException Unable to read baseConfig.yml
      */
     public static BaseConfig originalConfig() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/application.yml").openStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/baseConfig.yml").openStream()));
         String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
         return objectMapper.readValue(applicationYmlContent, BaseConfig.class);
     }

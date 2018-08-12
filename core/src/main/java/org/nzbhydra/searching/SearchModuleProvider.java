@@ -91,7 +91,7 @@ public class SearchModuleProvider {
         Collection<IndexerEntity> byNameNotIn = indexerRepository.findByNameNotIn(indexerNames);
         if (!byNameNotIn.isEmpty()) {
             logger.info("Found {} indexers in database which are not configured. Will delete them and any related database entries. This may take some time", byNameNotIn.size());
-            indexerRepository.delete(byNameNotIn);
+            indexerRepository.deleteAll(byNameNotIn);
         }
         if (searchModuleInstances.isEmpty()) {
             logger.warn("No indexers configured");

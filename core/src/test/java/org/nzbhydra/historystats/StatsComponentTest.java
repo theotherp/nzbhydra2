@@ -117,7 +117,7 @@ public class StatsComponentTest {
         searchThursday2.setTime(Instant.ofEpochSecond(1490858910L)); //Thursday
         SearchEntity searchSunday = new SearchEntity();
         searchSunday.setTime(Instant.ofEpochSecond(1490513310L)); //Sunday
-        searchRepository.save(Arrays.asList(searchFriday, searchThursday1, searchThursday2, searchSunday));
+        searchRepository.saveAll(Arrays.asList(searchFriday, searchThursday1, searchThursday2, searchSunday));
 
 
         StatsRequest statsRequest = new StatsRequest(searchFriday.getTime().minus(10, ChronoUnit.DAYS), searchFriday.getTime().plus(10, ChronoUnit.DAYS), true);
@@ -150,7 +150,7 @@ public class StatsComponentTest {
         FileDownloadEntity downloadSunday = new FileDownloadEntity();
         downloadSunday.setTime(Instant.ofEpochSecond(1490513310L)); //Sunday
 
-        downloadRepository.save(Arrays.asList(downloadFriday, downloadSunday, downloadThursday1, downloadThursday2));
+        downloadRepository.saveAll(Arrays.asList(downloadFriday, downloadSunday, downloadThursday1, downloadThursday2));
 
 
         List<CountPerDayOfWeek> result = stats.countPerDayOfWeek("INDEXERNZBDOWNLOAD", new StatsRequest(downloadFriday.getTime().minus(10, ChronoUnit.DAYS), downloadFriday.getTime().plus(10, ChronoUnit.DAYS), true));
@@ -182,7 +182,7 @@ public class StatsComponentTest {
         FileDownloadEntity download6 = new FileDownloadEntity();
         download6.setAge(3400);
 
-        downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
+        downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<DownloadPerAge> downloadPerAges = stats.downloadsPerAge();
         assertThat(downloadPerAges.get(34).getAge(), is(3400));
@@ -221,8 +221,8 @@ public class StatsComponentTest {
         SearchResultEntity searchResultEntity6 = getSearchResultEntity(indexer2, "6");
         download6.setSearchResult(searchResultEntity6);
 
-        searchResultRepository.save(Arrays.asList(searchResultEntity1, searchResultEntity2, searchResultEntity3, searchResultEntity4, searchResultEntity5, searchResultEntity6));
-        downloadRepository.save(Arrays.asList(download1, download2, download3, download4, download5, download6));
+        searchResultRepository.saveAll(Arrays.asList(searchResultEntity1, searchResultEntity2, searchResultEntity3, searchResultEntity4, searchResultEntity5, searchResultEntity6));
+        downloadRepository.saveAll(Arrays.asList(download1, download2, download3, download4, download5, download6));
 
         List<IndexerDownloadShare> shares = stats.indexerDownloadShares(new StatsRequest(Instant.now().minus(100, ChronoUnit.DAYS), Instant.now().plus(1, ChronoUnit.DAYS), true));
         assertThat(shares.get(0).getIndexerName(), is("indexer1"));
@@ -249,7 +249,7 @@ public class StatsComponentTest {
         search16b.setTime(Instant.ofEpochSecond(1490971572L));
         SearchEntity search23 = new SearchEntity();
         search23.setTime(Instant.ofEpochSecond(1490996779L));
-        searchRepository.save(Arrays.asList(search12, search16a, search16b, search23));
+        searchRepository.saveAll(Arrays.asList(search12, search16a, search16b, search23));
 
         List<CountPerHourOfDay> result = stats.countPerHourOfDay("SEARCH", new StatsRequest(search12.getTime().minus(10, ChronoUnit.DAYS), search12.getTime().plus(10, ChronoUnit.DAYS), true));
         assertEquals(24, result.size());
@@ -324,7 +324,7 @@ public class StatsComponentTest {
             indexer2Search1.setSuccessful(true);
 
             searchRepository.save(search1);
-            indexerSearchRepository.save(Arrays.asList(indexer1Search1, indexer1Search2Unsuccessful, indexer2Search1));
+            indexerSearchRepository.saveAll(Arrays.asList(indexer1Search1, indexer1Search2Unsuccessful, indexer2Search1));
         }
 
         {
@@ -343,7 +343,7 @@ public class StatsComponentTest {
             indexer2Search2.setSuccessful(true);
 
             searchRepository.save(search2UpdateQuery);
-            indexerSearchRepository.save(Arrays.asList(indexer1Search2, indexer1Search2));
+            indexerSearchRepository.saveAll(Arrays.asList(indexer1Search2, indexer1Search2));
         }
 
 

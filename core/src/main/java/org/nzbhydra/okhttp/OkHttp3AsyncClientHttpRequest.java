@@ -16,11 +16,7 @@
 
 package org.nzbhydra.okhttp;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.AsyncClientHttpRequest;
@@ -61,6 +57,11 @@ class OkHttp3AsyncClientHttpRequest extends AbstractBufferingAsyncClientHttpRequ
     @Override
     public HttpMethod getMethod() {
         return this.method;
+    }
+
+    @Override
+    public String getMethodValue() {
+        return this.method.name();
     }
 
     @Override
