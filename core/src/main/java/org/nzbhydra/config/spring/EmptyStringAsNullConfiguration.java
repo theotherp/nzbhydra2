@@ -16,10 +16,11 @@
 
 package org.nzbhydra.config.spring;
 
-import com.sun.beans.editors.StringEditor;
 import org.springframework.beans.factory.config.CustomEditorConfigurer;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 import java.beans.PropertyEditor;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
 public class EmptyStringAsNullConfiguration {
 
     @Bean
-    public  static CustomEditorConfigurer propertyEditorRegistrySupport() {
+    public static CustomEditorConfigurer propertyEditorRegistrySupport() {
         CustomEditorConfigurer customEditorConfigurer = new CustomEditorConfigurer();
 
         Map<Class<?>, Class<? extends PropertyEditor>> map = new HashMap<>();
@@ -38,14 +39,20 @@ public class EmptyStringAsNullConfiguration {
         return customEditorConfigurer;
     }
 
-    public static class EmptyStringAsNullEditor extends StringEditor {
+    public static class EmptyStringAsNullEditor extends StringTrimmerEditor {
+        public EmptyStringAsNullEditor(boolean emptyAsNull) {
+            super(true);
+        }
+        public EmptyStringAsNullEditor() {
+            super(true);
+        }
 
         @Override
-        public void setValue(Object value) {
-            if ("".equals(value)) {
+        public void setAsText(@Nullable String text) {
+            if ("".equals(text)) {
                 super.setValue(null);
             } else {
-                super.setValue(value);
+                super.setValue(text);
             }
         }
     }
