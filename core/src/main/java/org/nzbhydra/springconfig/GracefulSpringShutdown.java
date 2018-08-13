@@ -24,7 +24,6 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
@@ -35,18 +34,11 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class GracefulSpringShutdown implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
-    @Bean
-    public GracefulShutdown gracefulShutdown() {
-        return new GracefulShutdown();
-    }
-
-
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
         if (factory instanceof TomcatServletWebServerFactory) {
-            ((TomcatServletWebServerFactory) factory).addConnectorCustomizers(gracefulShutdown());
+            ((TomcatServletWebServerFactory) factory).addConnectorCustomizers(new GracefulShutdown());
         }
-
     }
 
     private static class GracefulShutdown implements TomcatConnectorCustomizer,
@@ -56,6 +48,7 @@ public class GracefulSpringShutdown implements WebServerFactoryCustomizer<Config
 
         private volatile Connector connector;
 
+
         @Override
         public void customize(Connector connector) {
             this.connector = connector;
@@ -63,18 +56,21 @@ public class GracefulSpringShutdown implements WebServerFactoryCustomizer<Config
 
         @Override
         public void onApplicationEvent(ContextClosedEvent event) {
-            this.connector.pause();
-            Executor executor = this.connector.getProtocolHandler().getExecutor();
-            if (executor instanceof ThreadPoolExecutor) {
-                try {
-                    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-                    threadPoolExecutor.shutdown();
-                    if (!threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
-                        log.warn("Tomcat thread pool did not shut down gracefully within "
-                                + "30 seconds. Proceeding with forceful shutdown");
+            if (connector != null) {
+
+                this.connector.pause();
+                Executor executor = this.connector.getProtocolHandler().getExecutor();
+                if (executor instanceof ThreadPoolExecutor) {
+                    try {
+                        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+                        threadPoolExecutor.shutdown();
+                        if (!threadPoolExecutor.awaitTermination(30, TimeUnit.SECONDS)) {
+                            log.warn("Tomcat thread pool did not shut down gracefully within "
+                                    + "30 seconds. Proceeding with forceful shutdown");
+                        }
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
                     }
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
                 }
             }
         }
