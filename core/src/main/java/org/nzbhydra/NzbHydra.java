@@ -5,7 +5,9 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.migration.ConfigMigration;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
@@ -127,9 +129,10 @@ public class NzbHydra {
             }
         }
 
-
         System.setProperty("nzbhydra.dataFolder", dataFolder);
         File yamlFile = new File(dataFolder, "nzbhydra.yml");
+        migrateYamlFile(yamlFile);
+
         System.setProperty("spring.config.location", "classpath:config/baseConfig.yml,classpath:config/baseConfig.properties," + yamlFile.getAbsolutePath());
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
@@ -147,6 +150,12 @@ public class NzbHydra {
         } catch (Exception e) {
             handleException(e);
         }
+    }
+
+    private static void migrateYamlFile(File yamlFile) throws IOException {
+        BaseConfig baseConfig = BaseConfig.loadSavedConfig();
+        baseConfig = new ConfigMigration().migrate(baseConfig);
+        BaseConfig.getObjectMapper().writeValue(yamlFile, baseConfig);
     }
 
     private static void handleException(Exception e) throws Exception {

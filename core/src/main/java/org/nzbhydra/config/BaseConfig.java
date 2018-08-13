@@ -154,17 +154,21 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         replace(getFromYamlFile(file));
     }
 
-    private BaseConfig getFromYamlFile(File file) throws IOException {
+    private static BaseConfig getFromYamlFile(File file) throws IOException {
         return objectMapper.readValue(file, BaseConfig.class);
     }
 
-    public BaseConfig loadSavedConfig() throws IOException {
+    public static BaseConfig loadSavedConfig() throws IOException {
         return objectMapper.readValue(buildConfigFileFile(), BaseConfig.class);
     }
 
     @JsonIgnore
     public String getAsYamlString() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
+    }
+
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
     }
 
     /**
@@ -248,6 +252,5 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
         return configValidationResult;
     }
-
 
 }

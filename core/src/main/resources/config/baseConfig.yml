@@ -263,7 +263,7 @@ downloading:
 indexers: []
 main:
   apiKey: null
-  configVersion: 2
+  configVersion: 4
   backupEverySunday: true
   backupBeforeUpdate: true
   deleteBackupsAfterWeeks: 4

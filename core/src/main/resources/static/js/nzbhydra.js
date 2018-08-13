@@ -6319,7 +6319,6 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
     });
 }
 
-
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl"];angular
     .module('nzbhydraApp')
     .factory('ConfigModel', function () {

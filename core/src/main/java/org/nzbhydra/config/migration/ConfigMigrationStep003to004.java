@@ -17,15 +17,27 @@
 package org.nzbhydra.config.migration;
 
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.UserAuthConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface ConfigMigrationStep extends Comparable<ConfigMigrationStep> {
+public class ConfigMigrationStep003to004 implements ConfigMigrationStep {
 
-    int forVersion();
-
-    BaseConfig migrate(BaseConfig baseConfig);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigMigrationStep003to004.class);
 
     @Override
-    default int compareTo(ConfigMigrationStep o) {
-        return Integer.compare(forVersion(), o.forVersion());
+    public int forVersion() {
+        return 3;
+    }
+
+    @Override
+    public BaseConfig migrate(BaseConfig toMigrate) {
+        for (UserAuthConfig user: toMigrate.getAuth().getUsers()) {
+            if (user.getPassword() != null) {
+                user.setPassword("{noop}" + user.getPassword());
+                logger.debug("Migrated password for user {}", user.getUsername());
+            }
+        }
+        return toMigrate;
     }
 }

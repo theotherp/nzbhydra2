@@ -16,15 +16,17 @@
 
 package org.nzbhydra.config.migration;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.MainConfig;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,23 +48,26 @@ public class ConfigMigrationTest {
 
     @Test
     public void shouldMigrate() {
-        HashMap<String, Object> input = new HashMap<>(ImmutableMap.of("main", new HashMap<>(ImmutableMap.of("configVersion", 1))));
-        HashMap<String, Object> afterMigration = new HashMap<>(ImmutableMap.of("main", new HashMap<>(ImmutableMap.of("configVersion", 2))));
+        BaseConfig input = new BaseConfig();
+        input.getMain().setConfigVersion(1);
+        BaseConfig afterMigration = new BaseConfig();
+        afterMigration.getMain().setConfigVersion(2);
 
         when(configMigrationStepMock.forVersion()).thenReturn(1);
         when(configMigrationStepMock.migrate(any())).thenReturn(afterMigration);
         testee.steps = Arrays.asList(configMigrationStepMock);
         testee.expectedConfigVersion = 2;
 
-        Map<String, Object> result = testee.migrate(input);
+        BaseConfig result = testee.migrate(input);
 
         verify(configMigrationStepMock).migrate(input);
-        assertThat((int) ((Map<String, Object>) result.get("main")).get("configVersion")).isEqualTo(2);
+        assertThat(result.getMain().getConfigVersion()).isEqualTo(2);
     }
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfWrongConfigVersionAfterMigration() {
-        HashMap<String, Object> input = new HashMap<>(ImmutableMap.of("main", new HashMap<>(ImmutableMap.of("configVersion", 1))));
+        BaseConfig input = new BaseConfig();
+        input.getMain().setConfigVersion(1);
 
         testee.steps = Collections.emptyList(); //Just don't call any steps, this will skip the loop, not increasing the version
         testee.expectedConfigVersion = 2;
@@ -74,7 +79,7 @@ public class ConfigMigrationTest {
     public void shouldFindMigrationStepsForAllPossibleConfigVersions() {
         Integer currentConfigVersion = new MainConfig().getConfigVersion();
         List<ConfigMigrationStep> steps = ConfigMigration.getMigrationSteps();
-        for (int i = 1; i < currentConfigVersion; i++) {
+        for (int i = 3; i < currentConfigVersion; i++) {
             int finalI = i;
             assertThat(steps.stream().anyMatch(x -> x.forVersion() == finalI)).isTrue();
         }
