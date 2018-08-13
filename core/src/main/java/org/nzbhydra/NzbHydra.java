@@ -25,6 +25,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -71,6 +72,8 @@ public class NzbHydra {
     private BrowserOpener browserOpener;
     @Autowired
     private GenericStorage genericStorage;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
@@ -299,6 +302,7 @@ public class NzbHydra {
                 //An exception might be thrown while shutting down, ignore this
             }
         }
+        applicationEventPublisher.publishEvent(new ShutdownEvent());
         logger.info("Shutting down");
     }
 
