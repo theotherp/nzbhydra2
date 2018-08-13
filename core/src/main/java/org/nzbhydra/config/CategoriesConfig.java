@@ -70,5 +70,15 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         return categories.stream().filter(x -> !allCategory.equals(x)).collect(Collectors.toList());
     }
 
+    @Override
+    public CategoriesConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public CategoriesConfig updateAfterLoading() {
+        return this;
+    }
+
 
 }

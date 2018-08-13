@@ -117,4 +117,14 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         return result;
     }
 
+    @Override
+    public MainConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public MainConfig updateAfterLoading() {
+        return this;
+    }
+
 }

@@ -75,5 +75,10 @@ public abstract class ValidatingConfig<T> {
         return false;
     }
 
+    public abstract T prepareForSaving();
+    public abstract T updateAfterLoading();
+
+
+
 
 }

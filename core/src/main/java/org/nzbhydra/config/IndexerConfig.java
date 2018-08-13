@@ -188,4 +188,14 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     public int hashCode() {
         return Objects.hashCode(super.hashCode(), host, name);
     }
+
+    @Override
+    public IndexerConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public IndexerConfig updateAfterLoading() {
+        return this;
+    }
 }

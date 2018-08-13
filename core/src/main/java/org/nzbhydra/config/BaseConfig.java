@@ -253,4 +253,16 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         return configValidationResult;
     }
 
+    @Override
+    public BaseConfig prepareForSaving() {
+        getAuth().prepareForSaving();
+        return this;
+    }
+
+    @Override
+    public BaseConfig updateAfterLoading() {
+        getAuth().updateAfterLoading();
+        return this;
+    }
+
 }

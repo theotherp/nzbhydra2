@@ -46,7 +46,7 @@ public class ConfigWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) throws IOException {
-        return configProvider.getBaseConfig().loadSavedConfig();
+        return configProvider.getBaseConfig().loadSavedConfig().updateAfterLoading();
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -67,6 +67,7 @@ public class ConfigWeb {
         }
 
         logger.info("Received new config");
+        newConfig = newConfig.prepareForSaving();
         ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig(), newConfig);
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(newConfig);

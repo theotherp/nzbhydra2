@@ -43,4 +43,14 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig) {
         return new ConfigValidationResult();
     }
+
+    @Override
+    public DownloaderConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public DownloaderConfig updateAfterLoading() {
+        return this;
+    }
 }

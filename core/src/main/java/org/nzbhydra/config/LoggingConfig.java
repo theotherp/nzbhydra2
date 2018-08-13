@@ -29,4 +29,14 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
         return result;
     }
 
+    @Override
+    public LoggingConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public LoggingConfig updateAfterLoading() {
+        return this;
+    }
+
 }

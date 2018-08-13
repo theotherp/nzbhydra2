@@ -90,4 +90,14 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }
-};
+
+    @Override
+    public SearchingConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public SearchingConfig updateAfterLoading() {
+        return this;
+    }
+}

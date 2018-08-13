@@ -62,4 +62,16 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
 
         return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);
     }
+
+    @Override
+    public AuthConfig prepareForSaving() {
+        getUsers().forEach(ValidatingConfig::prepareForSaving);
+        return this;
+    }
+
+    @Override
+    public AuthConfig updateAfterLoading() {
+        getUsers().forEach(ValidatingConfig::updateAfterLoading);
+        return this;
+    }
 }

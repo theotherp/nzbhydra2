@@ -50,4 +50,14 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         return Optional.ofNullable(Strings.emptyToNull(saveTorrentsTo));
     }
 
+    @Override
+    public DownloadingConfig prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public DownloadingConfig updateAfterLoading() {
+        return this;
+    }
+
 }
