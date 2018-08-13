@@ -13,6 +13,10 @@
       {
         "type": "feature",
         "text": "The database is compacted on shutdown, resulting in often very much reduced disk usage"
+      },
+      {
+        "type": "fix",
+        "text": "Hydra will correctly recognize if run in the windows program files folder"
       }
     ]
   },

@@ -1,5 +1,6 @@
 package org.nzbhydra;
 
+import com.google.common.base.Strings;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -121,10 +122,11 @@ public class NzbHydra {
             System.exit(1);
         }
         if (isOsWindows()) {
+            String programFiles = Strings.nullToEmpty(System.getenv("PROGRAMFILES")).toLowerCase();
+            String programFilesx86 = Strings.nullToEmpty(System.getenv("PROGRAMFILES(X86)")).toLowerCase();
             //It may happen that the yaml file is written empty due to some weird write right constraints in c:\program files or c:\program files (x86)
-            if (dataFolderFile.getAbsolutePath().toLowerCase().contains(":\\program files")) {
-                String[] split = dataFolderFile.getAbsolutePath().split("\\\\");
-                logger.error("NZBHydra 2 may not work properly when run in {}\\\\{}. Please put it somewhere else", split[0], split[1]);
+            if (dataFolderFile.getAbsolutePath().toLowerCase().contains(programFiles) || dataFolderFile.getAbsolutePath().toLowerCase().contains(programFilesx86)) {
+                logger.error("NZBHydra 2 may not work properly when run your windows program files folder. Please put it somewhere else");
                 System.exit(1);
             }
         }
@@ -153,6 +155,10 @@ public class NzbHydra {
     }
 
     private static void migrateYamlFile(File yamlFile) throws IOException {
+        if (!yamlFile.exists()) {
+            logger.debug("Did not find a yaml file at {}. Skipping migration", yamlFile.getAbsolutePath());
+            return;
+        }
         BaseConfig baseConfig = BaseConfig.loadSavedConfig();
         baseConfig = new ConfigMigration().migrate(baseConfig);
         BaseConfig.getObjectMapper().writeValue(yamlFile, baseConfig);
