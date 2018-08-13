@@ -20,7 +20,6 @@ import org.nzbhydra.config.MainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.boot.origin.OriginTrackedValue;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -71,8 +70,7 @@ public class ConfigMigration {
     }
 
     private Object getMapEntry(Map<String, Object> map, String firstLevel, String secondLevel) {
-        OriginTrackedValue originTracked = (OriginTrackedValue) ((Map<String, Object>) map.get(firstLevel)).get(secondLevel);
-        return originTracked;
+         return ((Map<String, Object>) map.get(firstLevel)).get(secondLevel);
     }
 
     protected static List<ConfigMigrationStep> getMigrationSteps() {

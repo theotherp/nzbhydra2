@@ -7,8 +7,6 @@ import org.nzbhydra.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -57,6 +55,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private HydraUserDetailsManager hydraUserDetailsManager;
     @Autowired
     private AuthAndAccessEventHandler authAndAccessEventHandler;
+    @Autowired
+    private DataSource dataSource;
 
 
     @Override
@@ -101,7 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             enableAnonymousAccessIfConfigured(http);
             if (baseConfig.getAuth().isRememberUsers()) {
                 JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-                tokenRepository.setDataSource(dataSource());
+                tokenRepository.setDataSource(dataSource);
                 int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
                 if (rememberMeValidityDays == 0) {
                     rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
@@ -144,13 +144,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(hydraUserDetailsManager);
     }
 
-    @ConfigurationProperties(prefix = "spring.datasource")
-    @Bean
-    public DataSource dataSource() {
-        return DataSourceBuilder
-                .create()
-                .build();
-    }
 
     @PostConstruct
     public void usePackagedCaCerts() {
