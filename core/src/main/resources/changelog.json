@@ -8,11 +8,15 @@
       },
       {
         "type": "feature",
+        "text": "Reduced startup time. My instance starts in 8 seconds instead of 22 but YRMV"
+      },
+      {
+        "type": "feature",
         "text": "I updated the underlying libraries and main framework. This doesn't change much for you except that NZBHydra 2 is a bit more future proof and may have some new bugs :-)"
       },
       {
         "type": "feature",
-        "text": "The database is compacted on shutdown, resulting in often very much reduced disk usage"
+        "text": "The database is compacted on shutdown, resulting in reduced disk usage"
       },
       {
         "type": "fix",

@@ -2,11 +2,13 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import lombok.*;
@@ -14,8 +16,6 @@ import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +27,11 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-@EnableConfigurationProperties
 @Data
-@ConfigurationProperties
 @EqualsAndHashCode(exclude = {"applicationEventPublisher"}, callSuper = false)
 public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
@@ -69,6 +64,10 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     }
 
     public void replace(BaseConfig newConfig) {
+        replace(newConfig, true);
+    }
+
+    private void replace(BaseConfig newConfig, boolean fireConfigChangedEvent) {
         BaseConfig oldBaseConfig = null;
         try {
             //Easy way of cloning old config
@@ -83,9 +82,10 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         downloading = newConfig.getDownloading();
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
-
-        ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
-        applicationEventPublisher.publishEvent(configChangedEvent);
+        if (fireConfigChangedEvent) {
+            ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
+            applicationEventPublisher.publishEvent(configChangedEvent);
+        }
     }
 
     private void save(File targetFile) {
@@ -97,7 +97,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
                 } else {
                     try {
                         File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
-                        Files.write(tempFile.toPath(), asString.getBytes("UTF-8"));
+                        Files.write(tempFile.toPath(), asString.getBytes(Charsets.UTF_8));
                         Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
                     } catch (IOException e) {
                         logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());
@@ -139,6 +139,8 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
             logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());
             Random random = new Random();
             main.setApiKey(new BigInteger(130, random).toString(32));
+        } else {
+            replace(getFromYamlFile(file), false);
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         save();
@@ -165,6 +167,14 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     @JsonIgnore
     public String getAsYamlString() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
+    }
+
+
+    public static Map<String, Object> getAsMap(BaseConfig baseConfig) {
+        TypeReference<HashMap<String, Object>> typeRef
+                = new TypeReference<HashMap<String, Object>>() {
+        };
+        return objectMapper.convertValue(baseConfig, typeRef);
     }
 
     public static ObjectMapper getObjectMapper() {

@@ -138,11 +138,13 @@ public class NzbHydra {
         File yamlFile = new File(dataFolder, "nzbhydra.yml");
         migrateYamlFile(yamlFile);
 
-        System.setProperty("spring.config.location", "classpath:config/baseConfig.yml,classpath:config/baseConfig.properties," + yamlFile.getAbsolutePath());
+
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
         useIfSet(options, "baseurl", "server.contextPath");
         useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
+
+        setApplicationPropertiesFromConfig();
 
         SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
         NzbHydra.originalArgs = args;
@@ -154,6 +156,25 @@ public class NzbHydra {
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
             handleException(e);
+        }
+    }
+
+    /**
+     * Sets all properties referenced in application.properties so that they can be resolved
+     */
+    private static void setApplicationPropertiesFromConfig() throws IOException {
+        BaseConfig baseConfig = BaseConfig.loadSavedConfig();
+        setApplicationProperty("main.host", "MAIN_HOST", baseConfig.getMain().getHost());
+        setApplicationProperty("main.port", "MAIN_PORT",  String.valueOf(baseConfig.getMain().getPort()));
+        setApplicationProperty("main.urlBase", "MAIN_URL_BASE",  baseConfig.getMain().getUrlBase().orElse(""));
+        setApplicationProperty("main.ssl", "MAIN_SSL", String.valueOf(baseConfig.getMain().isSsl()));
+        setApplicationProperty("main.sslKeyStore", "MAIN_SSL_KEY_STORE", baseConfig.getMain().getSslKeyStore());
+        setApplicationProperty("main.sslKeyStorePassword", "MAIN_SSL_KEY_STORE_PASSWORD", baseConfig.getMain().getSslKeyStorePassword());
+    }
+
+    private static void setApplicationProperty(String key, String envKey, String value) {
+        if (System.getProperty(key) == null && System.getenv(envKey) == null) {
+            System.setProperty(key, value);
         }
     }
 
