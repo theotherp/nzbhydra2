@@ -1,16 +1,7 @@
 package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import lombok.*;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
@@ -20,15 +11,16 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
+
+import static org.nzbhydra.config.ConfigReaderWriter.buildConfigFileFile;
 
 @Component
 @Data
@@ -42,39 +34,24 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     @Setter(AccessLevel.NONE)
     @JsonIgnore
     private ApplicationEventPublisher applicationEventPublisher;
-
+    @JsonIgnore
+    private boolean initialized = false;
+    @JsonIgnore
+    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
     private AuthConfig auth = new AuthConfig();
     private CategoriesConfig categoriesConfig = new CategoriesConfig();
     private DownloadingConfig downloading = new DownloadingConfig();
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
-    @JsonIgnore
-    private final DefaultPrettyPrinter defaultPrettyPrinter;
-    private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-    private static boolean initialized = false;
 
-
-    public BaseConfig() {
-        objectMapper.registerModule(new Jdk8Module());
-        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
-        defaultPrettyPrinter = new DefaultPrettyPrinter();
-        defaultPrettyPrinter.indentObjectsWith(indenter);
-        defaultPrettyPrinter.indentArraysWith(indenter);
-    }
 
     public void replace(BaseConfig newConfig) {
         replace(newConfig, true);
     }
 
     private void replace(BaseConfig newConfig, boolean fireConfigChangedEvent) {
-        BaseConfig oldBaseConfig = null;
-        try {
-            //Easy way of cloning old config
-            oldBaseConfig = objectMapper.readValue(objectMapper.writeValueAsString(this), BaseConfig.class);
-        } catch (IOException e) {
-            logger.error("Error while creating copy of old config", e);
-        }
+        BaseConfig oldBaseConfig = configReaderWriter.getCopy(this);
 
         main = newConfig.getMain();
         categoriesConfig = newConfig.getCategoriesConfig();
@@ -88,40 +65,8 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         }
     }
 
-    private void save(File targetFile) {
-        synchronized (objectMapper) {
-            try {
-                String asString = objectMapper.writer(defaultPrettyPrinter).writeValueAsString(this);
-                if (Strings.isNullOrEmpty(asString)) {
-                    logger.warn("Not writing empty config to file");
-                } else {
-                    try {
-                        File tempFile = new File(targetFile.getCanonicalPath() + ".tmp");
-                        Files.write(tempFile.toPath(), asString.getBytes(Charsets.UTF_8));
-                        Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-                    } catch (IOException e) {
-                        logger.error("Unable to write config to temp file or temp file to yml file: " + e.getMessage());
-                    }
-                }
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException("Error while saving config data. Fatal error");
-            }
-        }
-    }
-
-    public void save() throws IOException {
-        File file = buildConfigFileFile();
-        logger.debug("Writing config to file {}", file.getCanonicalPath());
-        save(file);
-    }
-
-    /**
-     * Call when internal changes to config are made (just don't log this)
-     */
-    public void saveInternal() {
-        //Called often, don't log
-        File file = buildConfigFileFile();
-        save(file);
+    public void save() {
+        configReaderWriter.save(this);
     }
 
 
@@ -140,62 +85,17 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
             Random random = new Random();
             main.setApiKey(new BigInteger(130, random).toString(32));
         } else {
-            replace(getFromYamlFile(file), false);
+            replace(configReaderWriter.loadSavedConfig(), false);
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
-        save();
+        configReaderWriter.save(this);
         initialized = true;
     }
 
-    public static File buildConfigFileFile() {
-        return new File(NzbHydra.getDataFolder(), "nzbhydra.yml");
-    }
-
     public void load() throws IOException {
-        File file = buildConfigFileFile();
-        replace(getFromYamlFile(file));
+        replace(configReaderWriter.loadSavedConfig());
     }
 
-    private static BaseConfig getFromYamlFile(File file) throws IOException {
-        return objectMapper.readValue(file, BaseConfig.class);
-    }
-
-    public static BaseConfig loadSavedConfig() throws IOException {
-        return objectMapper.readValue(buildConfigFileFile(), BaseConfig.class);
-    }
-
-    @JsonIgnore
-    public String getAsYamlString() throws JsonProcessingException {
-        return objectMapper.writeValueAsString(this);
-    }
-
-
-    public static Map<String, Object> getAsMap(BaseConfig baseConfig) {
-        TypeReference<HashMap<String, Object>> typeRef
-                = new TypeReference<HashMap<String, Object>>() {
-        };
-        return objectMapper.convertValue(baseConfig, typeRef);
-    }
-
-    public static ObjectMapper getObjectMapper() {
-        return objectMapper;
-    }
-
-    /**
-     * Returns the original config as it was deployed
-     *
-     * @return the content of config/baseConfig.yml (from resources) as BaseConfig object
-     * @throws IOException Unable to read baseConfig.yml
-     */
-    public static BaseConfig originalConfig() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/baseConfig.yml").openStream()));
-        String applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
-        return objectMapper.readValue(applicationYmlContent, BaseConfig.class);
-    }
-
-    public void setIndexers(List<IndexerConfig> indexers) {
-        this.indexers = indexers;
-    }
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, BaseConfig newConfig) {

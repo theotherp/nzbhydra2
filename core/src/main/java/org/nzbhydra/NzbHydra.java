@@ -8,6 +8,7 @@ import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.migration.ConfigMigration;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -41,9 +42,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Map;
 
 @Configuration
 @EnableAutoConfiguration(exclude = {
@@ -63,6 +67,7 @@ public class NzbHydra {
     private static String dataFolder = null;
     private static boolean wasRestarted = false;
     private static boolean anySettingsOverwritten = false;
+    private static ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Autowired
     private ConfigProvider configProvider;
@@ -138,7 +143,6 @@ public class NzbHydra {
         File yamlFile = new File(dataFolder, "nzbhydra.yml");
         migrateYamlFile(yamlFile);
 
-
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
         useIfSet(options, "baseurl", "server.contextPath");
@@ -163,29 +167,32 @@ public class NzbHydra {
      * Sets all properties referenced in application.properties so that they can be resolved
      */
     private static void setApplicationPropertiesFromConfig() throws IOException {
-        BaseConfig baseConfig = BaseConfig.loadSavedConfig();
+        BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
         setApplicationProperty("main.host", "MAIN_HOST", baseConfig.getMain().getHost());
-        setApplicationProperty("main.port", "MAIN_PORT",  String.valueOf(baseConfig.getMain().getPort()));
-        setApplicationProperty("main.urlBase", "MAIN_URL_BASE",  baseConfig.getMain().getUrlBase().orElse(""));
+        setApplicationProperty("main.port", "MAIN_PORT", String.valueOf(baseConfig.getMain().getPort()));
+        setApplicationProperty("main.urlBase", "MAIN_URL_BASE", baseConfig.getMain().getUrlBase().orElse(""));
         setApplicationProperty("main.ssl", "MAIN_SSL", String.valueOf(baseConfig.getMain().isSsl()));
         setApplicationProperty("main.sslKeyStore", "MAIN_SSL_KEY_STORE", baseConfig.getMain().getSslKeyStore());
         setApplicationProperty("main.sslKeyStorePassword", "MAIN_SSL_KEY_STORE_PASSWORD", baseConfig.getMain().getSslKeyStorePassword());
     }
 
     private static void setApplicationProperty(String key, String envKey, String value) {
-        if (System.getProperty(key) == null && System.getenv(envKey) == null) {
+        if (value != null && System.getProperty(key) == null && System.getenv(envKey) == null) {
             System.setProperty(key, value);
         }
     }
 
     private static void migrateYamlFile(File yamlFile) throws IOException {
         if (!yamlFile.exists()) {
-            logger.debug("Did not find a yaml file at {}. Skipping migration", yamlFile.getAbsolutePath());
+            logger.debug("Did not find a yaml file at {}. Will copy original to path", yamlFile.getAbsolutePath());
+            try (InputStream inputStream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
+                Files.copy(inputStream, yamlFile.toPath());
+            }
             return;
         }
-        BaseConfig baseConfig = BaseConfig.loadSavedConfig();
-        baseConfig = new ConfigMigration().migrate(baseConfig);
-        BaseConfig.getObjectMapper().writeValue(yamlFile, baseConfig);
+        Map<String, Object> map = configReaderWriter.loadSavedConfigAsMap();
+        Map<String, Object> migrated = new ConfigMigration().migrate(map);
+        configReaderWriter.save(migrated, yamlFile);
     }
 
     private static void handleException(Exception e) throws Exception {
@@ -288,11 +295,7 @@ public class NzbHydra {
             if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
-                try {
-                    configProvider.getBaseConfig().save();
-                } catch (IOException e) {
-                    logger.error("Unable to save config", e);
-                }
+                configProvider.getBaseConfig().save();
             }
 
             if (DebugInfosProvider.isRunInDocker()) {

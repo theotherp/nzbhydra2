@@ -16,10 +16,11 @@
 
 package org.nzbhydra.config.migration;
 
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.UserAuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 public class ConfigMigrationStep003to004 implements ConfigMigrationStep {
 
@@ -31,13 +32,16 @@ public class ConfigMigrationStep003to004 implements ConfigMigrationStep {
     }
 
     @Override
-    public BaseConfig migrate(BaseConfig toMigrate) {
-        for (UserAuthConfig user: toMigrate.getAuth().getUsers()) {
-            if (user.getPassword() != null) {
-                user.setPassword("{noop}" + user.getPassword());
-                logger.debug("Migrated password for user {}", user.getUsername());
+    public Map<String, Object> migrate(Map<String, Object> toMigrate) {
+        Map<String, Object> auth = getFromMap(toMigrate, "auth");
+        List<Map> users = (List<Map>) auth.get("users");
+
+        for (Map<String, Object> user: users) {
+            if (user.get("password") != null) {
+                user.put("password", "{NOOP}" + user.get("password"));
             }
         }
+
         return toMigrate;
     }
 }

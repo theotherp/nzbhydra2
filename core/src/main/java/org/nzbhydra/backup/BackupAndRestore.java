@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,7 @@ public class BackupAndRestore {
     private ConfigProvider configProvider;
     @Autowired
     private UpdateManager updateManager;
+    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Transactional
     public File backup() throws Exception {
@@ -67,7 +69,7 @@ public class BackupAndRestore {
         try (FileSystem fs = FileSystems.newFileSystem(uri, env)) {
             Path nf = fs.getPath("nzbhydra.yml");
             try (Writer writer = java.nio.file.Files.newBufferedWriter(nf, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-                writer.write(configProvider.getBaseConfig().getAsYamlString());
+                writer.write(configReaderWriter.getAsYamlString(configProvider.getBaseConfig()));
                 logger.debug("Successfully wrote config to backup ZIP");
             }
         }

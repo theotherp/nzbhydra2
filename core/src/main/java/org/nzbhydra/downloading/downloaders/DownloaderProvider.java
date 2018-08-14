@@ -58,7 +58,6 @@ public class DownloaderProvider implements InitializingBean {
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
-        logger.info("Reloading downloaders");
         baseConfig = configChangedEvent.getNewConfig();
         afterPropertiesSet();
     }
@@ -79,6 +78,7 @@ public class DownloaderProvider implements InitializingBean {
                     logger.error("Error while initializing downloader", e);
                 }
             }
+            logger.info("Finished initializing active downloaders");
             if (downloadersMap.isEmpty()) {
                 logger.info("No downloaders configured");
             }

@@ -18,10 +18,12 @@ package org.nzbhydra.indexers;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.IndexerConfig;
 
 import java.time.Instant;
@@ -37,12 +39,16 @@ public class IndexerStatusesCleanupTaskTest {
     private ConfigProvider configProvider;
     @Mock
     private BaseConfig baseConfig;
+    @Mock
+    private ConfigReaderWriter configReaderWriterMock;
+
     IndexerConfig indexerConfigEnabled = new IndexerConfig();
     IndexerConfig indexerConfigDisabledSystem = new IndexerConfig();
     IndexerConfig indexerConfigDisabledTempInTimeWindow = new IndexerConfig();
     IndexerConfig indexerConfigDisabledTempOutsideTimeWindow = new IndexerConfig();
     IndexerConfig indexerConfigUserDisabled = new IndexerConfig();
 
+    @InjectMocks
     private IndexerStatusesCleanupTask testee;
 
 
@@ -65,6 +71,7 @@ public class IndexerStatusesCleanupTaskTest {
         indexerConfigDisabledTempOutsideTimeWindow.setDisabledLevel(1);
         when(baseConfig.getIndexers()).thenReturn(Arrays.asList(indexerConfigDisabledSystem, indexerConfigDisabledTempInTimeWindow, indexerConfigDisabledTempOutsideTimeWindow, indexerConfigEnabled, indexerConfigUserDisabled));
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
+        testee.configReaderWriter = configReaderWriterMock;
     }
 
     @Test

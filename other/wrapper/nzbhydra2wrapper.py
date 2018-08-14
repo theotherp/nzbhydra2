@@ -2,8 +2,8 @@
 from __future__ import print_function
 
 import argparse
-import logging
 import datetime
+import logging
 import os
 import platform
 import shutil
@@ -28,6 +28,7 @@ console_logger.setLevel(LOGGER_DEFAULT_LEVEL)
 logger.addHandler(console_logger)
 file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
+consoleLines = []
 
 if sys.version_info >= (3, 0):
     sys.stderr.write("Sorry, requires Python 2.7")
@@ -275,7 +276,7 @@ def subprocess_args(include_stdout=True):
 
 
 def startup():
-    global jarFile, process, args, unknownArgs
+    global jarFile, process, args, unknownArgs, consoleLines
     basePath = getBasePath()
 
     readme = os.path.join(basePath, "readme.md")
@@ -357,11 +358,15 @@ def startup():
     if xmx.lower().endswith("m"):
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
-    gcLogFilename = os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
-    java_arguments = ["-Xmx" + xmx + "M", "-DfromWrapper", "-XX:TieredStopAtLevel=1", "-noverify", "-Xloggc:" + gcLogFilename
-        , "-XX:+PrintGCDetails",
-                      "-XX:+PrintGCTimeStamps", "-XX:+PrintTenuringDistribution", "-XX:+PrintGCCause", "-XX:+UseGCLogFileRotation", "-XX:NumberOfGCLogFiles=10", "-XX:GCLogFileSize=5M"
-                      ,"-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
+    gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
+    gcLogFilename = os.path.relpath(gcLogFilename, basePath)
+    java_arguments = ["-Xmx" + xmx + "M",
+                      "-DfromWrapper",
+                      "-XX:TieredStopAtLevel=1",
+                      "-noverify",
+                      "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000",
+                      "-XX:+HeapDumpOnOutOfMemoryError",
+                      "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
@@ -390,6 +395,11 @@ def startup():
             nextline = process.stdout.readline()
             if nextline == '' and process.poll() is not None:
                 break
+            if nextline != "":
+                consoleLines.append(nextline)
+
+            if len(consoleLines) > 100:
+                consoleLines = consoleLines[-100:]
             if not args.quiet:
                 sys.stdout.write(nextline)
                 sys.stdout.flush()
@@ -413,6 +423,18 @@ def list_files(startpath):
         subindent = ' ' * 4 * (level + 1)
         for f in files:
             logger.info('{}{}'.format(subindent, f))
+
+
+def handleUnexpectedExit():
+    global consoleLines
+    message = "Main process shut down unexpectedly. If the wrapper was started in daemon mode you might not see the error output. Start Hydra manually with the same parameters in the same environment to see it"
+    for x in consoleLines:
+        if "Unrecognized option: -Xlog" in x:
+            message = "You seem to be trying to run NZBHydra with a wrong Java version. Please make sure to use at least Java 9"
+        elif "java.lang.OutOfMemoryError" in x:
+            message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
+    logger.error(message)
+    sys.exit(-1)
 
 
 if __name__ == '__main__':
@@ -489,9 +511,7 @@ if __name__ == '__main__':
                 sys.exit(0)
 
             if process.returncode == 1:
-                logger.error(
-                    "Main process shut down unexpectedly. If the wrapper was started in daemon mode you might not see the error output. Start Hydra manually with the same parameters in the same environment to see it")
-                sys.exit(-1)
+                handleUnexpectedExit()
             args.restarted = True
 
             # Try to read control code from file because under linux when started from the wrapper the return code is always 0

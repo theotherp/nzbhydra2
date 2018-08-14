@@ -87,6 +87,7 @@ public class SearchModuleProvider {
                 logger.error("Unable to instantiate indexer with name {} and type {}", config.getName(), config.getSearchModuleType(), e);
             }
         }
+        logger.info("Finished initializing active indexers");
         List<String> indexerNames = indexers.stream().map(IndexerConfig::getName).collect(Collectors.toList());
         Collection<IndexerEntity> byNameNotIn = indexerRepository.findByNameNotIn(indexerNames);
         if (!byNameNotIn.isEmpty()) {

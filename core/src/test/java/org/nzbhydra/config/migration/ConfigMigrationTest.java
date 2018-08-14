@@ -16,6 +16,9 @@
 
 package org.nzbhydra.config.migration;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -24,11 +27,9 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.MainConfig;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,9 +42,15 @@ public class ConfigMigrationTest {
     @InjectMocks
     private ConfigMigration testee = new ConfigMigration();
 
+    private TypeReference<HashMap<String, Object>> typeRef
+            = new TypeReference<HashMap<String, Object>>() {
+    };
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        objectMapper.registerModule(new Jdk8Module());
     }
 
     @Test
@@ -52,27 +59,30 @@ public class ConfigMigrationTest {
         input.getMain().setConfigVersion(1);
         BaseConfig afterMigration = new BaseConfig();
         afterMigration.getMain().setConfigVersion(2);
+        Map<String, Object> map = objectMapper.convertValue(input, typeRef);
 
         when(configMigrationStepMock.forVersion()).thenReturn(1);
-        when(configMigrationStepMock.migrate(any())).thenReturn(afterMigration);
+        when(configMigrationStepMock.migrate(any())).thenReturn(map);
         testee.steps = Arrays.asList(configMigrationStepMock);
         testee.expectedConfigVersion = 2;
 
-        BaseConfig result = testee.migrate(input);
+        Map<String, Object> result = testee.migrate(map);
 
-        verify(configMigrationStepMock).migrate(input);
-        assertThat(result.getMain().getConfigVersion()).isEqualTo(2);
+        input = objectMapper.convertValue(result, BaseConfig.class);
+        verify(configMigrationStepMock).migrate(map);
+        assertThat(input.getMain().getConfigVersion()).isEqualTo(2);
     }
 
     @Test(expected = RuntimeException.class)
     public void shouldThrowExceptionIfWrongConfigVersionAfterMigration() {
         BaseConfig input = new BaseConfig();
         input.getMain().setConfigVersion(1);
+        Map<String, Object> map = objectMapper.convertValue(input, typeRef);
 
         testee.steps = Collections.emptyList(); //Just don't call any steps, this will skip the loop, not increasing the version
         testee.expectedConfigVersion = 2;
 
-        testee.migrate(input);
+        testee.migrate(map);
     }
 
     @Test

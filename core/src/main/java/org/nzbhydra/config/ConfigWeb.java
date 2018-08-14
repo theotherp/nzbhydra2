@@ -42,11 +42,12 @@ public class ConfigWeb {
     private FileSystemBrowser fileSystemBrowser;
     @Autowired
     private UrlCalculator urlCalculator;
+    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) throws IOException {
-        return configProvider.getBaseConfig().loadSavedConfig().updateAfterLoading();
+        return configReaderWriter.loadSavedConfig().updateAfterLoading();
     }
 
     @Secured({"ROLE_ADMIN"})

@@ -16,7 +16,12 @@
 
 package org.nzbhydra.config.migration;
 
-import org.nzbhydra.config.BaseConfig;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.MainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,41 +29,59 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class ConfigMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);
 
+    private static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
+    };
+    private static final DefaultPrettyPrinter defaultPrettyPrinter;
+
     protected List<ConfigMigrationStep> steps;
     protected int expectedConfigVersion;
+    private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+
+    static {
+        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+        defaultPrettyPrinter = new DefaultPrettyPrinter();
+        defaultPrettyPrinter.indentObjectsWith(indenter);
+        defaultPrettyPrinter.indentArraysWith(indenter);
+    }
 
     public ConfigMigration() {
         steps = getMigrationSteps();
         expectedConfigVersion = new MainConfig().getConfigVersion();
     }
 
-    public BaseConfig migrate(BaseConfig toMigrate) {
-        int configVersion = toMigrate.getMain().getConfigVersion();
+    public void migrate(File yamlFile) throws IOException {
+        Map<String, Object> originalMap = objectMapper.readValue(yamlFile, MAP_TYPE_REFERENCE);
+        Map<String, Object> migrated = migrate(originalMap);
+        configReaderWriter.save(migrated, yamlFile);
+    }
+
+    public Map<String, Object> migrate(Map<String, Object> map) {
+        int configVersion = (int) ((Map<String, Object>) map.get("main")).get("configVersion");
 
         for (ConfigMigrationStep step : steps) {
             if (configVersion <= step.forVersion()) {
                 logger.info("Migrating config from version {}", step.forVersion());
-                toMigrate = step.migrate(toMigrate);
+                map = step.migrate(map);
                 configVersion = step.forVersion() + 1;
             }
-            toMigrate.getMain().setConfigVersion(step.forVersion() + 1);
+            ((Map<String, Object>) map.get("main")).put("configVersion", configVersion);
         }
 
         if (configVersion != expectedConfigVersion) {
             throw new RuntimeException(String.format("Expected the config after migration to be at version %d but it's at version %d", expectedConfigVersion, configVersion));
         }
 
-        return toMigrate;
+        return map;
     }
 
     protected static List<ConfigMigrationStep> getMigrationSteps() {

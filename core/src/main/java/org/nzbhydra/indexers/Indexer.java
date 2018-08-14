@@ -240,7 +240,7 @@ public abstract class Indexer<T> {
         getConfig().setLastError(null);
         getConfig().setDisabledUntil(null);
         getConfig().setDisabledLevel(0);
-        configProvider.getBaseConfig().saveInternal();
+        configProvider.getBaseConfig().save();
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
@@ -257,7 +257,7 @@ public abstract class Indexer<T> {
             getLogger().warn("Because an error occurred {} will be temporarily disabled until {}. This is error number {} in a row", indexer.getName(), disabledUntil, getConfig().getDisabledLevel());
         }
         getConfig().setLastError(reason);
-        configProvider.getBaseConfig().saveInternal();
+        configProvider.getBaseConfig().save();
 
         saveApiAccess(accessType, responseTime, accessResult, false);
     }

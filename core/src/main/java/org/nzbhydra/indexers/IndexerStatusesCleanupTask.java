@@ -17,6 +17,7 @@
 package org.nzbhydra.indexers;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ public class IndexerStatusesCleanupTask {
     private static final long MINUTE = 1000 * 60;
 
     private ConfigProvider configProvider;
+    ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Autowired
     public IndexerStatusesCleanupTask(ConfigProvider configProvider) {
@@ -51,6 +53,6 @@ public class IndexerStatusesCleanupTask {
                 config.setLastError(null);
             }
         }
-        configProvider.getBaseConfig().saveInternal();
+        configReaderWriter.save(configProvider.getBaseConfig());
     }
 }
