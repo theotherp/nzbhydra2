@@ -105,7 +105,11 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     @After
     public void tearDown() throws IOException {
         mockWebServer.close();
-        webDriver.quit();
+        try {
+            webDriver.quit();
+        } catch (Exception e) {
+            //NOP, may catch UnsatisfiedLinkError
+        }
     }
 
     @Test
