@@ -1,10 +1,8 @@
 <configuration>
     <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
-    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel"
-                    defaultValue="INFO"/>
+    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logging.logMaxHistory"
-                    defaultValue="30"/>
+    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logMaxHistory" defaultValue="30"/>
     <!--
     consolelevel: "DEBUG"
     keepLogFiles: 25
