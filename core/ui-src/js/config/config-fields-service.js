@@ -978,6 +978,18 @@ function ConfigFields($injector) {
                                     }
                                 },
                                 {
+                                    key: 'keepHistoryForWeeks',
+                                    type: 'horizontalInput',
+                                    templateOptions: {
+                                        type: 'number',
+                                        label: 'Keep history for...',
+                                        addonRight: {
+                                            text: 'weeks'
+                                        },
+                                        help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit'
+                                    }
+                                },
+                                {
                                     key: 'showQuickFilterButtons',
                                     type: 'horizontalSwitch',
                                     templateOptions: {

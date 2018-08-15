@@ -19,6 +19,10 @@
         "text": "The database is compacted on shutdown, resulting in reduced disk usage"
       },
       {
+        "type": "feature",
+        "text": "Added an option to keep the history (searches, downloads, stats) only for a certain time (see Searching options). This may reduce the database time and stats calculation time and may improve performance a bit."
+      },
+      {
         "type": "fix",
         "text": "Hydra will correctly recognize if run in the windows program files folder"
       }

@@ -32,6 +32,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
     private int keepSearchResultsForDays = 14;
+    private Integer keepHistoryForWeeks = null;
     private String language = "en";
     private boolean loadAllCachedOnInternal;
     private Integer maxAge;

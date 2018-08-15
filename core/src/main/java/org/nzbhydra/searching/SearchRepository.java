@@ -14,5 +14,4 @@ public interface SearchRepository extends JpaRepository<SearchEntity, Integer> {
 
     @Query("select t from SearchEntity t where t.source = 'INTERNAL' order by t.time desc")
     Page<SearchEntity> findForUserSearchHistory(Pageable pageable);
-
 }
