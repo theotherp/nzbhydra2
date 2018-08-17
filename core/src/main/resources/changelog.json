@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "NZBHydra 2 can now run with Java 8, 9 or 10. It shouldn't matter much which version you use as long as it's up to date"
+        "text": "NZBHydra 2 can now run with Java 8, 9 or 10. It shouldn't matter much which version you use as long as it's up to date. If you want to use 9 or 10 you'll need to manually update the wrapper (i.e. the executable(s) in the main folder)"
       },
       {
         "type": "feature",
@@ -13,10 +13,6 @@
       {
         "type": "feature",
         "text": "I updated the underlying libraries and main framework. This doesn't change much for you except that NZBHydra 2 is a bit more future proof and may have some new bugs :-)"
-      },
-      {
-        "type": "feature",
-        "text": "The database is compacted on shutdown, resulting in reduced disk usage"
       },
       {
         "type": "feature",
