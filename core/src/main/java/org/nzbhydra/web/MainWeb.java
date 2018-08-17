@@ -68,7 +68,7 @@ public class MainWeb {
         BootstrappedDataTO bootstrappedData = userInfos.getUserInfos(principal);
         bootstrappedData.setSafeConfig(getSafeConfig());
 
-        String urlBase = environment.getProperty("server.contextPath");
+        String urlBase = environment.getProperty("server.servlet.context-path");
         if (urlBase == null) {
             urlBase = "";
         }

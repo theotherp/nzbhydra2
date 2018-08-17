@@ -145,7 +145,7 @@ public class NzbHydra {
 
         useIfSet(options, "host", "server.address");
         useIfSet(options, "port", "server.port");
-        useIfSet(options, "baseurl", "server.contextPath");
+        useIfSet(options, "baseurl", "server.servlet.context-path");
         useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
 
         setApplicationPropertiesFromConfig();
@@ -170,7 +170,7 @@ public class NzbHydra {
         BaseConfig baseConfig = configReaderWriter.loadSavedConfig();
         setApplicationProperty("main.host", "MAIN_HOST", baseConfig.getMain().getHost());
         setApplicationProperty("main.port", "MAIN_PORT", String.valueOf(baseConfig.getMain().getPort()));
-        setApplicationProperty("main.urlBase", "MAIN_URL_BASE", baseConfig.getMain().getUrlBase().orElse(""));
+        setApplicationProperty("main.urlBase", "MAIN_URL_BASE", baseConfig.getMain().getUrlBase().orElse("/"));
         setApplicationProperty("main.ssl", "MAIN_SSL", String.valueOf(baseConfig.getMain().isSsl()));
         setApplicationProperty("main.sslKeyStore", "MAIN_SSL_KEY_STORE", baseConfig.getMain().getSslKeyStore());
         setApplicationProperty("main.sslKeyStorePassword", "MAIN_SSL_KEY_STORE_PASSWORD", baseConfig.getMain().getSslKeyStorePassword());

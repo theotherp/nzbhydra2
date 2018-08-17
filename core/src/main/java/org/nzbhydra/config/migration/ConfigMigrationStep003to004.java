@@ -38,7 +38,11 @@ public class ConfigMigrationStep003to004 implements ConfigMigrationStep {
 
         for (Map<String, Object> user: users) {
             if (user.get("password") != null) {
-                user.put("password", "{NOOP}" + user.get("password"));
+                String password = (String) user.get("password");
+                if (password.startsWith("{noop}")) {
+                    continue;
+                }
+                user.put("password", "{noop}" + password);
             }
         }
 

@@ -25,7 +25,7 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
 
     @Override
     public UserAuthConfig prepareForSaving() {
-        if (password != null && !password.startsWith("{noop}")) {
+        if (password != null && !password.startsWith(PASSWORD_ID)) {
             password = PASSWORD_ID + password;
         }
         return this;
@@ -33,7 +33,7 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
 
     @Override
     public UserAuthConfig updateAfterLoading() {
-        if (password != null && password.startsWith("{noop}")) {
+        if (password != null && password.startsWith(PASSWORD_ID)) {
             password = password.substring(6);
         }
         return this;

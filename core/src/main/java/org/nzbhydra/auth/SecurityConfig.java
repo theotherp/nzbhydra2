@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.SSLContext;
@@ -138,6 +139,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    @Bean
+    public DefaultHttpFirewall defaultHttpFirewall() {
+        //Allow duplicate trailing slashes which happen when behind a reverse proxy, e.g. proxy_pass http://127.0.0.1:5076/nzbhydra2/;
+        return new DefaultHttpFirewall();
+    }
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {

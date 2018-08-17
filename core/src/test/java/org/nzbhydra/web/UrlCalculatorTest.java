@@ -224,6 +224,6 @@ public class UrlCalculatorTest {
         when(environmentMock.getProperty("server.ssl.enabled")).thenReturn(String.valueOf(isSsl));
         when(environmentMock.getProperty("server.address")).thenReturn(bindAll ? "0.0.0.0" : "127.0.0.1");
         when(environmentMock.getProperty("server.port")).thenReturn("5076");
-        when(environmentMock.getProperty("server.contextPath")).thenReturn(contextPath == null ? "/" : contextPath);
+        when(environmentMock.getProperty("server.servlet.context-path")).thenReturn(contextPath == null ? "/" : contextPath);
     }
 }
