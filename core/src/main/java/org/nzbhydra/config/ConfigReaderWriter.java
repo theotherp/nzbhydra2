@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -54,6 +55,7 @@ public class ConfigReaderWriter {
         DefaultPrettyPrinter defaultPrettyPrinter = new DefaultPrettyPrinter();
         defaultPrettyPrinter.indentObjectsWith(indenter);
         defaultPrettyPrinter.indentArraysWith(indenter);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(new Jdk8Module());
         objectWriter = objectMapper.writer(defaultPrettyPrinter);
     }
