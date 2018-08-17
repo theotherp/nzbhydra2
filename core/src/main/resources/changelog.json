@@ -29,6 +29,10 @@
       {
         "type": "fix",
         "text": "When shutting down or restarting Hydra will try to defrag the database file. In some cases this should drastically reduce the database size. It may grow again but for now I don't have a better fix than restarting the instance..."
+      },
+      {
+        "type": "fix",
+        "text": "Remove multiple trailing words from titles if found"
       }
     ]
   },

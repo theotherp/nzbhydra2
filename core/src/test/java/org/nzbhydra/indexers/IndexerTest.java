@@ -29,10 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -294,6 +291,23 @@ public class IndexerTest {
         searchRequest.setIdentifiers(identifiers);
         String query = testee.generateQueryIfApplicable(searchRequest, "query");
         assertThat(query, is("title"));
+    }
+
+    @Test
+    public void shouldRemoveTrailing() {
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing1", "trailing2"));
+        String result = testee.cleanUpTitle("abc trailing1 trailing2");
+        assertThat(result, is("abc"));
+
+        result = testee.cleanUpTitle("abc trailing1 trailing2 def");
+        assertThat(result, is("abc trailing1 trailing2 def"));
+
+        result = testee.cleanUpTitle("abc");
+        assertThat(result, is("abc"));
+
+        baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        result = testee.cleanUpTitle("abc");
+        assertThat(result, is("abc"));
     }
 
 

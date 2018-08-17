@@ -417,13 +417,22 @@ public abstract class Indexer<T> {
             return title;
         }
         title = title.trim();
-        for (String word : configProvider.getBaseConfig().getSearching().getRemoveTrailing()) {
-            if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
-                debug(LoggingMarkers.TRAILING, "Removing trailing {} from title {}", word, title);
-                title = title.substring(0, title.length() - word.length()).trim();
-                return title;
-            }
+
+        List<String> removeTrailing = configProvider.getBaseConfig().getSearching().getRemoveTrailing().stream().map(x -> x.toLowerCase().trim()).collect(Collectors.toList());
+        if (removeTrailing.isEmpty()) {
+            return title;
         }
+        boolean removed;
+        do {
+            removed = false;
+            for (String word : removeTrailing) {
+                if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
+                    debug(LoggingMarkers.TRAILING, "Removing trailing {} from title {}", word, title);
+                    title = title.substring(0, title.length() - word.length()).trim();
+                    removed = true;
+                }
+            }
+        } while (removed);
         return title;
     }
 
