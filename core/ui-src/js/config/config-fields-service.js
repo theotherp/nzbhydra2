@@ -384,7 +384,7 @@ function ConfigFields($injector) {
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
                                     {label: 'URL calculation', id: 'URL_CALCULATION'},
                                     {label: 'HTTP', id: 'HTTP'},
-                                    {label: 'HISTORY_CLEANUP', id: 'HISTORY_CLEANUP'}
+                                    {label: 'History cleanup', id: 'HISTORY_CLEANUP'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"

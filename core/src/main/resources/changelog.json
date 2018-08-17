@@ -20,11 +20,15 @@
       },
       {
         "type": "feature",
-        "text": "Added an option to keep the history (searches, downloads, stats) only for a certain time (see Searching options). This may reduce the database time and stats calculation time and may improve performance a bit."
+        "text": "Added an option to keep the history (searches, downloads, stats) only for a certain time (see Searching options). This may reduce the database size and stats calculation time and may improve performance a bit."
       },
       {
         "type": "fix",
         "text": "Hydra will correctly recognize if run in the windows program files folder"
+      },
+      {
+        "type": "fix",
+        "text": "When shutting down or restarting Hydra will try to defrag the database file. In some cases this should drastically reduce the database size. It may grow again but for now I don't have a better fix than restarting the instance..."
       }
     ]
   },
