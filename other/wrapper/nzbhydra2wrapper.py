@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -358,16 +359,35 @@ def startup():
     if xmx.lower().endswith("m"):
         logger.info("Removing superfluous M from XMX value " + xmx)
         xmx = xmx[:-1]
+
+    javaVersion = getJavaVersion(args.java)
+
     gcLogFilename = (os.path.join(args.datafolder, "logs") + "/gclog-" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log").replace("\\", "/")
     gcLogFilename = os.path.relpath(gcLogFilename, basePath)
+
+    gcArguments = []
+    if javaVersion < 9:
+        gcArguments = ["-Xloggc:" + gcLogFilename,
+                       "-XX:+PrintGCDetails",
+                       "-XX:+PrintGCTimeStamps",
+                       "-XX:+PrintTenuringDistribution",
+                       "-XX:+PrintGCCause",
+                       "-XX:+UseGCLogFileRotation",
+                       "-XX:NumberOfGCLogFiles=10",
+                       "-XX:GCLogFileSize=5M",
+                       ]
+    else:
+        gcArguments = [
+            "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000"]
+
     java_arguments = ["-Xmx" + xmx + "M",
                       "-DfromWrapper",
                       "-XX:TieredStopAtLevel=1",
                       "-noverify",
-                      "-Xlog:gc*:file=" + gcLogFilename + "::filecount=10,filesize=5000",
                       "-XX:+HeapDumpOnOutOfMemoryError",
                       "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
+    java_arguments.extend(gcArguments)
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
@@ -435,6 +455,54 @@ def handleUnexpectedExit():
             message = "The main process has exited because it didn't have enough memory. Please increase the XMX value in the main config"
     logger.error(message)
     sys.exit(-1)
+
+
+def getJavaVersion(javaExecutable):
+    if hasattr(subprocess, 'STARTUPINFO'):
+        si = subprocess.STARTUPINFO()
+        try:
+            import _subprocess
+            si.dwFlags |= _subprocess.STARTF_USESHOWWINDOW
+        except:
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    else:
+        si = None
+    # todo check shell=True/False for linux and windows
+    # shell=true: pass string, shell=false: pass arguments
+    try:
+        lines = []
+        process = subprocess.Popen([javaExecutable, "-version"], shell=False, bufsize=-1, **subprocess_args())
+
+        # atexit.register(killProcess)
+        while True:
+            # Handle error first in case startup of main process returned only an error (on stderror)
+            nextline = process.stdout.readline()
+            if nextline == '' and process.poll() is not None:
+                break
+            if nextline != "":
+                lines.append(nextline)
+        process.wait()
+        if len(lines) == 0:
+            raise Exception("Unable to get output from call to java -version")
+        versionLine = lines[0].replace("\n", "").replace("\r", "")
+        match = re.match('(java|openjdk) version "(?P<major>\d+)(\.(?P<minor>\d+)\.(?P<patch>\d)+[\-_\w]*)?".*', versionLine)
+        if match is None:
+            raise Exception("Unable to determine java version from string " + lines[0])
+        javaMajor = int(match.group("major"))
+        javaMinor = int(match.group("minor")) if match.group("minor") is not None else 0
+        javaVersion = 0
+        if (javaMajor == 1 and javaMinor < 8) or (javaMajor > 1 and javaMajor < 8):
+            logger.error("Found incompatible java version '" + versionLine + "'")
+            sys.exit(-1)
+        if javaMajor == 1 and javaMinor == 8:
+            javaVersion = 8
+        else:
+            javaVersion = javaMajor
+        logger.info("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
+        return javaVersion
+    except Exception as e:
+        logger.error("Unable to determine java version; make sure Java is installed and callable. Error message: " + str(e))
+        sys.exit(-1)
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "NZBHydra 2 can now run with Java 8, 9 or 10"
+        "text": "NZBHydra 2 can now run with Java 8, 9 or 10. It shouldn't matter much which version you use as long as it's up to date"
       },
       {
         "type": "feature",
