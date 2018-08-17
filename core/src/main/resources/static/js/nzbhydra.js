@@ -837,6 +837,2089 @@ nzbhydraapp.directive('eventFocus', ["focus", function (focus) {
  *  limitations under the License.
  */
 
+angular
+    .module('nzbhydraApp')
+    .directive('hydraTasks', hydraTasks);
+
+function hydraTasks() {
+    controller.$inject = ["$scope", "$http"];
+    return {
+        templateUrl: 'static/html/directives/tasks.html',
+        controller: controller
+    };
+
+    function controller($scope, $http) {
+
+        $http.get("internalapi/tasks").then(function (response) {
+            $scope.tasks = response.data;
+        });
+
+        $scope.runTask = function (taskName) {
+            $http.put("internalapi/tasks/" + taskName).then(function (response) {
+                $scope.tasks = response.data;
+            });
+        }
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('tabOrChart', tabOrChart);
+
+function tabOrChart() {
+    return {
+        templateUrl: 'static/html/directives/tab-or-chart.html',
+        transclude: {
+            "chartSlot": "chart",
+            "tableSlot": "table"
+        },
+        restrict: 'E',
+        replace: true,
+        scope: {
+            display: "@"
+        }
+
+    };
+
+}
+
+angular
+    .module('nzbhydraApp')
+    .directive('selectionButton', selectionButton);
+
+function selectionButton() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/selection-button.html',
+        scope: {
+            selected: "=",
+            selectable: "=",
+            invertSelection: "<",
+            selectAll: "<",
+            deselectAll: "<",
+            btn: "@"
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+
+        if (angular.isUndefined($scope.btn)) {
+            $scope.btn = "default"; //Will form class "btn-default"
+        }
+
+        if (angular.isUndefined($scope.invertSelection)) {
+            $scope.invertSelection = function () {
+                $scope.selected = _.difference($scope.selectable, $scope.selected);
+            };
+        }
+
+        if (angular.isUndefined($scope.selectAll)) {
+            $scope.selectAll = function () {
+                $scope.selected.push.apply($scope.selected, $scope.selectable);
+            };
+        }
+
+        if (angular.isUndefined($scope.deselectAll)) {
+            $scope.deselectAll = function () {
+                $scope.selected.splice(0, $scope.selected.length);
+            };
+        }
+
+
+    }
+}
+
+
+
+NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];angular
+    .module('nzbhydraApp')
+    .directive('searchResult', searchResult);
+
+function searchResult() {
+    controller.$inject = ["$scope", "$element", "$http", "growl", "$attrs", "$uibModal", "$window", "DebugService", "localStorageService", "HydraAuthService"];
+    return {
+        templateUrl: 'static/html/directives/search-result.html',
+        require: '^result',
+        replace: false,
+        scope: {
+            result: "<"
+        },
+        controller: controller
+    };
+
+
+    function handleDisplay($scope, localStorageService) {
+        //Display state / expansion
+        $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
+        $scope.duplicatesExpanded = false;
+        $scope.titlesExpanded = false;
+
+        function calculateDisplayState() {
+            $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
+        }
+
+        calculateDisplayState();
+
+        $scope.toggleTitleExpansion = function () {
+            $scope.titlesExpanded = !$scope.titlesExpanded;
+            $scope.$emit("toggleTitleExpansionUp", $scope.titlesExpanded, $scope.result.titleGroupIndicator);
+        };
+
+        $scope.toggleDuplicateExpansion = function () {
+            $scope.duplicatesExpanded = !$scope.duplicatesExpanded;
+            $scope.$emit("toggleDuplicateExpansionUp", $scope.duplicatesExpanded, $scope.result.hash);
+        };
+
+        $scope.$on("toggleTitleExpansionDown", function ($event, value, titleGroupIndicator) {
+            if ($scope.result.titleGroupIndicator === titleGroupIndicator) {
+                $scope.titlesExpanded = value;
+                calculateDisplayState();
+            }
+        });
+
+        $scope.$on("toggleDuplicateExpansionDown", function ($event, value, hash) {
+            if ($scope.result.hash === hash) {
+                $scope.duplicatesExpanded = value;
+                calculateDisplayState();
+            }
+        });
+
+        $scope.$on("duplicatesDisplayed", function ($event, value) {
+            $scope.foo.duplicatesDisplayed = value;
+            if (!value) {
+                //Collapse duplicate groups they shouldn't be displayed
+                $scope.duplicatesExpanded = false;
+            }
+            calculateDisplayState();
+        });
+
+        $scope.$on("calculateDisplayState", function () {
+            calculateDisplayState();
+        });
+    }
+
+    function handleSelection($scope, $element) {
+        $scope.foo.selected = false;
+
+        function sendSelectionEvent() {
+            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
+        }
+
+        $scope.clickCheckbox = function (event, result) {
+            sendSelectionEvent();
+            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
+        };
+
+        function isBetween(num, betweena, betweenb) {
+            return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
+        }
+
+        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue, previousClickTargetElement, newClickTargetElement) {
+            var fromYlocation = $($(previousClickTargetElement).prop("parentNode")).prop("offsetTop");
+            var newYlocation = $($(newClickTargetElement).prop("parentNode")).prop("offsetTop");
+            var elementYlocation = $($element).prop("offsetTop");
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            //if (isBetween($scope.rowIndex, startIndex, endIndex)) {
+            if (isBetween(elementYlocation, fromYlocation, newYlocation)) {
+                if (newValue) {
+                    $scope.foo.selected = true;
+                } else {
+                    $scope.foo.selected = false;
+                }
+                sendSelectionEvent();
+            }
+        });
+        $scope.$on("invertSelection", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = !$scope.foo.selected;
+            sendSelectionEvent();
+        });
+        $scope.$on("deselectAll", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = false;
+            sendSelectionEvent();
+        });
+        $scope.$on("selectAll", function () {
+            if (!$scope.resultDisplayed) {
+                return;
+            }
+            $scope.foo.selected = true;
+            sendSelectionEvent();
+        });
+        $scope.$on("toggleSelection", function ($event, result, value) {
+            if (!$scope.resultDisplayed || result !== $scope.result) {
+                return;
+            }
+            $scope.foo.selected = value;
+        });
+    }
+
+    function handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService) {
+        $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
+
+        $scope.showNfo = showNfo;
+
+        function showNfo(resultItem) {
+            if (resultItem.has_nfo === 0) {
+                return;
+            }
+            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
+            return $http.get(uri.toString()).then(function (response) {
+                if (response.data.successful) {
+                    if (response.data.hasNfo) {
+                        $scope.openModal("lg", response.data.content)
+                    } else {
+                        growl.info("No NFO available");
+                    }
+                } else {
+                    growl.error(response.data.content);
+                }
+            });
+        }
+
+        $scope.openModal = openModal;
+
+        function openModal(size, nfo) {
+            var modalInstance = $uibModal.open({
+                template: '<pre class="nfo"><span ng-bind-html="nfo"></span></pre>',
+                controller: NfoModalInstanceCtrl,
+                size: size,
+                resolve: {
+                    nfo: function () {
+                        return nfo;
+                    }
+                }
+            });
+
+            modalInstance.result.then();
+        }
+
+        $scope.getNfoTooltip = function () {
+            if ($scope.result.hasNfo === "YES") {
+                return "Show NFO"
+            } else if ($scope.result.hasNfo === "MAYBE") {
+                return "Try to load NFO (may not be available)";
+            } else {
+                return "No NFO available";
+            }
+        };
+    }
+
+    function handleNzbDownload($scope, $window) {
+        $scope.downloadNzb = downloadNzb;
+
+        function downloadNzb(resultItem) {
+            //href = "{{ result.link }}"
+            $window.location.href = resultItem.link;
+        }
+    }
+
+
+    function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService) {
+        $scope.foo = {};
+        handleDisplay($scope, localStorageService);
+        handleSelection($scope, $element);
+        handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
+        handleNzbDownload($scope, $window);
+
+        $scope.kify = function () {
+            return function (number) {
+                if (number > 1000) {
+                    return Math.round(number / 1000) + "k";
+                }
+                return number;
+            };
+        };
+        DebugService.log("search-result");
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('NfoModalInstanceCtrl', NfoModalInstanceCtrl);
+
+function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
+
+    $scope.nfo = nfo;
+
+    $scope.ok = function () {
+        $uibModalInstance.close($scope.selected.item);
+    };
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss();
+    };
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('kify', function () {
+        return function (number) {
+            if (number > 1000) {
+                return Math.round(number / 1000) + "k";
+            }
+            return number;
+        }
+    });
+angular
+    .module('nzbhydraApp')
+    .directive('saveOrSendTorrent', saveOrSendTorrent);
+
+function saveOrSendTorrent() {
+    controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
+    return {
+        templateUrl: 'static/html/directives/save-or-send-torrent.html',
+        scope: {
+            searchResultId: "<",
+            isFile: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, $http, growl, ConfigService) {
+        $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
+        $scope.cssClass = "glyphicon-save-file";
+        $scope.add = function () {
+            $scope.cssClass = "nzb-spinning";
+            $http.put("internalapi/saveOrSendTorrent", [$scope.searchResultId]).then(function (response) {
+                if (response.data.successful) {
+                    $scope.cssClass = "glyphicon-ok";
+                } else {
+                    $scope.cssClass = "glyphicon-remove";
+                    growl.error(response.data.message);
+                }
+            });
+        };
+    }
+}
+
+//Can be used in an ng-repeat directive to call a function when the last element was rendered
+//We use it to mark the end of sorting / filtering so we can stop blocking the UI
+
+onFinishRender.$inject = ["$timeout"];
+angular
+    .module('nzbhydraApp')
+    .directive('onFinishRender', onFinishRender);
+
+function onFinishRender($timeout) {
+    function linkFunction(scope, element, attr) {
+
+        if (scope.$last === true) {
+            // console.log("Render finished");
+            // console.timeEnd("Presenting");
+            // console.timeEnd("searchall");
+            scope.$emit("onFinishRender")
+        }
+    }
+
+    return {
+        link: linkFunction
+    }
+}
+//Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly
+angular
+    .module('nzbhydraApp')
+    .directive('multiselectDropdown',
+
+        dropdownMultiselectDirective
+    );
+
+function dropdownMultiselectDirective() {
+    return {
+        scope: {
+            selectedModel: '=',
+            options: '=',
+            settings: '=?',
+            events: '=?'
+        },
+        transclude: {
+            toggleDropdown: '?toggleDropdown'
+        },
+        templateUrl: 'static/html/directives/multiselect-dropdown.html',
+        controller: ["$scope", "$element", "$filter", "$document", function dropdownMultiselectController($scope, $element, $filter, $document) {
+            var $dropdownTrigger = $element.children()[0];
+
+            var settings = {
+                showSelectedValues: true,
+                showSelectAll: true,
+                showDeselectAll: true,
+                noSelectedText: 'None selected'
+            };
+            var events = {
+                onToggleItem: angular.noop
+            };
+            angular.extend(events, $scope.events || []);
+            angular.extend(settings, $scope.settings || []);
+            angular.extend($scope, {settings: settings, events: events});
+
+            $scope.buttonText = "";
+            if (settings.buttonText) {
+                $scope.buttonText = settings.buttonText;
+            } else {
+                $scope.$watch("selectedModel", function () {
+                    if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
+                        if ($scope.selectedModel.length === 0) {
+                            if ($scope.settings.noSelectedText) {
+                                $scope.buttonText = $scope.settings.noSelectedText;
+                            } else {
+                                $scope.buttonText = "None selected";
+                            }
+                        } else if ($scope.selectedModel.length === $scope.options.length) {
+                            $scope.buttonText = "All selected";
+                        } else {
+                            $scope.buttonText = $scope.selectedModel.join(", ");
+                        }
+                    } else {
+                        if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
+                            $scope.buttonText = $scope.settings.noSelectedText;
+                        } else {
+                            $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
+                        }
+                    }
+                }, true);
+            }
+            $scope.open = false;
+
+            $scope.toggleDropdown = function () {
+                $scope.open = !$scope.open;
+            };
+
+            $scope.toggleItem = function (option) {
+                var index = $scope.selectedModel.indexOf(option.id);
+                var oldValue = index > -1;
+                if (oldValue) {
+                    $scope.selectedModel.splice(index, 1);
+                } else {
+                    $scope.selectedModel.push(option.id);
+                }
+                $scope.events.onToggleItem(option, !oldValue);
+            };
+
+            $scope.selectAll = function () {
+                $scope.selectedModel = _.pluck($scope.options, "id");
+            };
+
+            $scope.deselectAll = function () {
+                $scope.selectedModel.splice(0, $scope.selectedModel.length);
+            };
+
+            //Close when clicked outside
+
+            $document.on('click', function (e) {
+                function contains(collection, target) {
+                    var containsTarget = false;
+                    collection.some(function (object) {
+                        if (object === target) {
+                            containsTarget = true;
+                            return true;
+                        }
+                        return false;
+                    });
+                    return containsTarget;
+                }
+
+                if ($scope.open) {
+                    var target = e.target.parentElement;
+                    var parentFound = false;
+
+                    while (angular.isDefined(target) && target !== null && !parentFound) {
+                        if (!!target.className.split && contains(target.className.split(' '), 'multiselect-parent') && !parentFound) {
+                            if (target === $dropdownTrigger) {
+                                parentFound = true;
+                            }
+                        }
+                        target = target.parentElement;
+                    }
+
+                    if (!parentFound) {
+                        $scope.$apply(function () {
+                            $scope.open = false;
+                        });
+                    }
+                }
+            });
+
+
+        }]
+
+    }
+}
+angular
+    .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
+    /*
+     Intended use:
+     <input keep-focus ng-model='someModel.value'></input>
+     */
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function ($scope, $element, attrs, ngModel) {
+
+            ngModel.$parsers.unshift(function (value) {
+                $timeout(function () {
+                    $element[0].focus();
+                });
+                return value;
+            });
+
+        }
+    };
+}])
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .directive('indexerStateSwitch', indexerStateSwitch);
+
+function indexerStateSwitch() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/indexer-state-switch.html',
+        scope: {
+            indexer: "=",
+            handleWidth: "@"
+        },
+        replace: true,
+        controller: controller
+    };
+
+    function controller($scope) {
+        $scope.value = $scope.indexer.state === "ENABLED";
+        $scope.handleWidth = $scope.handleWidth || "130px";
+        var initialized = false;
+
+        function calculateTextAndColor() {
+            if ($scope.indexer.state === "DISABLED_USER") {
+                $scope.offText = "Disabled by user";
+                $scope.offColor = "default";
+            } else if ($scope.indexer.state === "DISABLED_SYSTEM_TEMPORARY") {
+                $scope.offText = "Temporary disabled";
+                $scope.offColor = "warning";
+            } else if ($scope.indexer.state === "DISABLED_SYSTEM") {
+                $scope.offText = "Permanently disabled";
+                $scope.offColor = "danger";
+            }
+        }
+
+        calculateTextAndColor();
+
+        $scope.onChange = function () {
+            if (initialized) {
+                //Skip on first call when initial value is set
+                $scope.indexer.state = $scope.value ? "ENABLED" : "DISABLED_USER";
+                calculateTextAndColor();
+            }
+            initialized = true;
+        }
+    }
+}
+
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .directive('indexerSelectionButton', indexerSelectionButton);
+
+function indexerSelectionButton() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/indexer-selection-button.html',
+        scope: {
+            selectedIndexers: "=",
+            availableIndexers: "=",
+            btn: "@"
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+
+        $scope.anyTorrentIndexersSelectable = _.any($scope.availableIndexers,
+            function (indexer) {
+                return indexer.searchModuleType === "TORZNAB";
+            }
+        );
+
+        $scope.invertSelection = function () {
+            _.forEach($scope.availableIndexers, function (x) {
+                var index = _.indexOf($scope.selectedIndexers, x.name);
+                if (index === -1) {
+                    $scope.selectedIndexers.push(x.name);
+                } else {
+                    $scope.selectedIndexers.splice(index, 1);
+                }
+            });
+        };
+
+        $scope.selectAll = function () {
+            $scope.deselectAll();
+            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
+        };
+
+        $scope.deselectAll = function () {
+            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
+        };
+
+        function selectByPredicate(predicate) {
+            $scope.deselectAll();
+            $scope.selectedIndexers.push.apply($scope.selectedIndexers,
+                _.pluck(
+                    _.filter($scope.availableIndexers,
+                        predicate
+                    ), "name")
+            );
+        }
+
+        $scope.reset = function () {
+            selectByPredicate(function (indexer) {
+                return indexer.preselect;
+            });
+        };
+
+        $scope.selectAllUsenet = function () {
+            selectByPredicate(function (indexer) {
+                return indexer.searchModuleType !== "TORZNAB";
+            });
+        };
+
+        $scope.selectAllTorrent = function () {
+            selectByPredicate(function (indexer) {
+                return indexer.searchModuleType === "TORZNAB";
+            });
+        }
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('indexerInput', indexerInput);
+
+function indexerInput() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/indexer-input.html',
+        scope: {
+            indexer: "=",
+            model: "=",
+            onClick: "="
+        },
+        replace: true,
+        controller: controller
+    };
+
+    function controller($scope) {
+        $scope.isFocused = false;
+
+        $scope.onFocus = function () {
+            $scope.isFocused = true;
+        };
+
+        $scope.onBlur = function () {
+            $scope.isFocused = false;
+        };
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('hydraupdates', hydraupdates);
+
+function hydraupdates() {
+    controller.$inject = ["$scope", "UpdateService"];
+    return {
+        templateUrl: 'static/html/directives/updates.html',
+        controller: controller
+    };
+
+    function controller($scope, UpdateService) {
+
+        $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
+            $scope.currentVersion = response.data.currentVersion;
+            $scope.repVersion = response.data.latestVersion;
+            $scope.updateAvailable = response.data.updateAvailable;
+            $scope.latestVersionIgnored = response.data.latestVersionIgnored;
+            $scope.changelog = response.data.changelog;
+            $scope.runInDocker = response.data.runInDocker;
+        });
+
+        UpdateService.getVersionHistory().then(function (response) {
+            $scope.versionHistory = response.data;
+        });
+
+        $scope.update = function () {
+            UpdateService.update();
+        };
+
+        $scope.showChangelog = function () {
+            UpdateService.showChanges($scope.changelog);
+        };
+
+        $scope.forceUpdate = function () {
+            UpdateService.update()
+        };
+    }
+}
+
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+NewsModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "news"];
+WelcomeModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$state", "MigrationService"];
+angular
+    .module('nzbhydraApp')
+    .directive('hydraUpdatesFooter', hydraUpdatesFooter);
+
+function hydraUpdatesFooter() {
+    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
+    return {
+        templateUrl: 'static/html/directives/updates-footer.html',
+        controller: controller
+    };
+
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
+
+        $scope.updateAvailable = false;
+        $scope.checked = false;
+        var welcomeIsBeingShown = false;
+
+        $scope.mayUpdate = HydraAuthService.getUserInfos().maySeeAdmin;
+
+        $scope.$on("user:loggedIn", function () {
+            if (HydraAuthService.getUserInfos().maySeeAdmin && !$scope.checked) {
+                retrieveUpdateInfos();
+            }
+        });
+
+
+        if ($scope.mayUpdate) {
+            retrieveUpdateInfos();
+        }
+
+        function retrieveUpdateInfos() {
+            $scope.checked = true;
+            UpdateService.getInfos().then(function (response) {
+                $scope.currentVersion = response.data.currentVersion;
+                $scope.latestVersion = response.data.latestVersion;
+                $scope.updateAvailable = response.data.updateAvailable;
+                $scope.changelog = response.data.changelog;
+                $scope.runInDocker = response.data.runInDocker;
+            });
+        }
+
+
+        $scope.update = function () {
+            UpdateService.update();
+        };
+
+        $scope.ignore = function () {
+            UpdateService.ignore($scope.latestVersion);
+            $scope.updateAvailable = false;
+        };
+
+        $scope.showChangelog = function () {
+            UpdateService.showChanges();
+        };
+
+        function checkAndShowNews() {
+            RequestsErrorHandler.specificallyHandled(function () {
+                if (ConfigService.getSafe().showNews) {
+                    $http.get("internalapi/news/forcurrentversion").then(function (response) {
+                        var data = response.data;
+                        if (data && data.length > 0) {
+                            $uibModal.open({
+                                templateUrl: 'static/html/news-modal.html',
+                                controller: NewsModalInstanceCtrl,
+                                size: "lg",
+                                resolve: {
+                                    news: function () {
+                                        return data;
+                                    }
+                                }
+                            });
+                            $http.put("internalapi/news/saveshown");
+                        }
+                    });
+                }
+            });
+        }
+
+        function checkAndShowWelcome() {
+            RequestsErrorHandler.specificallyHandled(function () {
+                $http.get("internalapi/welcomeshown").then(function (response) {
+                    if (!response.data) {
+                        $http.put("internalapi/welcomeshown");
+                        var promise = $uibModal.open({
+                            templateUrl: 'static/html/welcome-modal.html',
+                            controller: WelcomeModalInstanceCtrl,
+                            size: "md"
+                        });
+                        promise.opened.then(function () {
+                            welcomeIsBeingShown = true;
+                        });
+                        promise.closed.then(function () {
+                            welcomeIsBeingShown = false;
+                        });
+                    } else {
+                        _.defer(checkAndShowNews);
+                    }
+                }, function () {
+                    console.log("Error while checking for welcome")
+                });
+            });
+        }
+
+        checkAndShowWelcome();
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
+
+function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
+    $scope.news = news;
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('WelcomeModalInstanceCtrl', WelcomeModalInstanceCtrl);
+
+function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationService) {
+    $scope.close = function () {
+        $uibModalInstance.dismiss();
+    };
+
+    $scope.startMigration = function () {
+        $uibModalInstance.dismiss();
+        MigrationService.migrate();
+    };
+
+    $scope.goToConfig = function () {
+        $uibModalInstance.dismiss();
+        $state.go("root.config.main");
+    }
+}
+angular
+    .module('nzbhydraApp')
+    .directive('hydraNews', hydraNews);
+
+function hydraNews() {
+    controller.$inject = ["$scope", "$http"];
+    return {
+        templateUrl: "static/html/directives/news.html",
+        controller: controller
+    };
+
+    function controller($scope, $http) {
+
+        return $http.get("internalapi/news").then(function (response) {
+            $scope.news = response.data;
+        });
+
+
+    }
+}
+
+
+
+LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
+escapeHtml.$inject = ["$sanitize"];angular
+    .module('nzbhydraApp')
+    .directive('hydralog', hydralog);
+
+function hydralog() {
+    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl"];
+    return {
+        templateUrl: "static/html/directives/log.html",
+        controller: controller
+    };
+
+    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
+        $scope.tailInterval = null;
+        $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
+        $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
+
+        $scope.active = 0;
+        $scope.currentJsonIndex = 0;
+        $scope.hasMoreJsonLines = true;
+
+        function getLog(index) {
+            if ($scope.active === 0) {
+                return $http.get("internalapi/debuginfos/jsonlogs", {
+                    params: {
+                        offset: index,
+                        limit: 500
+                    }
+                }).then(function (response) {
+                    var data = response.data;
+                    $scope.jsonLogLines = angular.fromJson(data.lines);
+                    $scope.hasMoreJsonLines = data.hasMore;
+                });
+            } else if ($scope.active === 1) {
+                return $http.get("internalapi/debuginfos/currentlogfile").then(function (response) {
+                    var data = response.data;
+                    $scope.log = $sce.trustAsHtml(data.replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;"));
+                }, function (data) {
+                    growl.error(data)
+                });
+            } else if ($scope.active === 2) {
+                return $http.get("internalapi/debuginfos/logfilenames").then(function (response) {
+                    $scope.logfilenames = response.data;
+                });
+            }
+        }
+
+        $scope.logPromise = getLog();
+
+        $scope.select = function (index) {
+            $scope.active = index;
+            $scope.update();
+        };
+
+        $scope.scrollToBottom = function () {
+            document.getElementById("logfile").scrollTop = 10000000;
+            document.getElementById("logfile").scrollTop = 100001000;
+        };
+
+        $scope.update = function () {
+            getLog($scope.currentJsonIndex);
+            if ($scope.active === 1) {
+                $scope.scrollToBottom();
+            }
+        };
+
+        $scope.getOlderFormatted = function () {
+            getLog($scope.currentJsonIndex + 500).then(function () {
+                $scope.currentJsonIndex += 500;
+            });
+
+        };
+
+        $scope.getNewerFormatted = function () {
+            var index = Math.max($scope.currentJsonIndex - 500, 0);
+            getLog(index);
+            $scope.currentJsonIndex = index;
+        };
+
+        function startUpdateLogInterval() {
+            $scope.tailInterval = $interval(function () {
+                if ($scope.active === 1) {
+                    $scope.update();
+                    if ($scope.doTailLog && $scope.active === 1) {
+                        $scope.scrollToBottom();
+                    }
+                }
+            }, 5000);
+        }
+
+        $scope.toggleUpdate = function (doUpdateLog) {
+            $scope.doUpdateLog = doUpdateLog;
+            if ($scope.doUpdateLog) {
+                startUpdateLogInterval();
+            } else if ($scope.tailInterval !== null) {
+                console.log("Cancelling");
+                $interval.cancel($scope.tailInterval);
+                localStorageService.set("doTailLog", false);
+                $scope.doTailLog = false;
+            }
+            localStorageService.set("doUpdateLog", $scope.doUpdateLog);
+        };
+
+        $scope.toggleTailLog = function () {
+            localStorageService.set("doTailLog", $scope.doTailLog);
+        };
+
+        $scope.openModal = function openModal(entry) {
+            var modalInstance = $uibModal.open({
+                templateUrl: 'log-entry.html',
+                controller: LogModalInstanceCtrl,
+                size: "xl",
+                resolve: {
+                    entry: function () {
+                        return entry;
+                    }
+                }
+            });
+
+            modalInstance.result.then();
+        };
+
+        $scope.$on('$destroy', function () {
+            if ($scope.tailInterval !== null) {
+                $interval.cancel($scope.tailInterval);
+            }
+        });
+
+        if ($scope.doUpdateLog) {
+            startUpdateLogInterval();
+        }
+
+
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .controller('LogModalInstanceCtrl', LogModalInstanceCtrl);
+
+function LogModalInstanceCtrl($scope, $uibModalInstance, entry) {
+
+    $scope.entry = entry;
+
+    $scope.ok = function () {
+        $uibModalInstance.dismiss();
+    };
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('formatTimestamp', formatTimestamp);
+
+function formatTimestamp() {
+    return function (date) {
+        return moment(date).local().format("YYYY-MM-DD HH:mm");
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('escapeHtml', escapeHtml);
+
+function escapeHtml($sanitize) {
+    return function (text) {
+        return $sanitize(text);
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .filter('formatClassname', formatClassname);
+
+function formatClassname() {
+    return function (fqn) {
+        return fqn.substr(fqn.lastIndexOf(".") + 1);
+
+    }
+}
+angular
+    .module('nzbhydraApp').directive('focusOn', focusOn);
+
+function focusOn() {
+    return directive;
+
+    function directive(scope, elem, attr) {
+        scope.$on('focusOn', function (e, name) {
+            if (name === attr.focusOn) {
+                elem[0].focus();
+            }
+        });
+    }
+}
+
+angular
+    .module('nzbhydraApp')
+    .directive('downloadNzbzipButton', downloadNzbzipButton);
+
+function downloadNzbzipButton() {
+    controller.$inject = ["$scope", "growl", "$http", "FileDownloadService"];
+    return {
+        templateUrl: 'static/html/directives/download-nzbzip-button.html',
+        require: ['^searchResults'],
+        scope: {
+            searchResults: "<",
+            searchTitle: "<",
+            callback: "&"
+        },
+        controller: controller
+    };
+
+    function controller($scope, growl, $http, FileDownloadService) {
+        $scope.download = function () {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
+                growl.info("You should select at least one result...");
+            } else {
+                var values = _.map($scope.searchResults, function (value) {
+                    return value.searchResultId;
+                });
+                var link = "internalapi/nzbzip";
+
+                var searchTitle;
+                if (angular.isDefined($scope.searchTitle)) {
+                    searchTitle = " for " + $scope.searchTitle.replace("[^a-zA-Z0-9.-]", "_");
+                } else {
+                    searchTitle = "";
+                }
+                var filename = "NZBHydra NZBs" + searchTitle + ".zip";
+                $http({method: "post", url: link, data: values}).then(function (response) {
+                    if (response.data.successful && response.data.zip !== null) {
+                        //FileDownloadService.sendFile($base64.decode(response.zip), filename);
+                        link = "internalapi/nzbzipDownload";
+                        FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
+                        if (angular.isDefined($scope.callback)) {
+                            $scope.callback({result: response.data.addedIds});
+                        }
+                        if (response.data.missedIds.length > 0) {
+                            growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
+                        }
+                    } else {
+                        growl.error(response.data.message);
+                    }
+                }, function (data, status, headers, config) {
+                    growl.error(status);
+                });
+            }
+        }
+    }
+}
+
+
+angular
+    .module('nzbhydraApp')
+    .directive('downloadNzbsButton', downloadNzbsButton);
+
+function downloadNzbsButton() {
+    controller.$inject = ["$scope", "$http", "NzbDownloadService", "ConfigService", "growl"];
+    return {
+        templateUrl: 'static/html/directives/download-nzbs-button.html',
+        require: ['^searchResults'],
+        scope: {
+            searchResults: "<",
+            callback: "&"
+        },
+        controller: controller
+    };
+
+    function controller($scope, $http, NzbDownloadService, ConfigService, growl) {
+
+        $scope.downloaders = NzbDownloadService.getEnabledDownloaders();
+        $scope.blackholeEnabled = ConfigService.getSafe().downloading.saveTorrentsTo !== null;
+
+        $scope.download = function (downloader) {
+            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
+                growl.info("You should select at least one result...");
+            } else {
+
+                var didFilterOutResults = false;
+                var didKeepAnyResults = false;
+                var searchResults = _.filter($scope.searchResults, function (value) {
+                    if (value.downloadType === "NZB") {
+                        didKeepAnyResults = true;
+                        return true;
+                    } else {
+                        console.log("Not sending torrent result to downloader");
+                        didFilterOutResults = true;
+                        return false;
+                    }
+                });
+                if (didFilterOutResults && !didKeepAnyResults) {
+                    growl.info("None of the selected results were NZBs. Adding aborted");
+                    if (angular.isDefined($scope.callback)) {
+                        $scope.callback({result: []});
+                    }
+                    return;
+                } else if (didFilterOutResults && didKeepAnyResults) {
+                    growl.info("Some the selected results are torrent results which were skipped");
+                }
+
+                var tos = _.map(searchResults, function (entry) {
+                    return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
+                });
+
+                NzbDownloadService.download(downloader, tos).then(function (response) {
+                    if (angular.isDefined(response.data)) {
+                        if (response !== "dismissed") {
+                            if (response.data.successful) {
+                                growl.info("Successfully added all NZBs");
+                            } else {
+                                growl.error(response.data.message);
+                            }
+                        } else {
+                            growl.error("Error while adding NZBs");
+                        }
+                        if (angular.isDefined($scope.callback)) {
+                            $scope.callback({result: response.data.addedIds});
+                        }
+                    }
+                }, function () {
+                    growl.error("Error while adding NZBs");
+                });
+            }
+        };
+
+        $scope.sendToBlackhole = function () {
+            var didFilterOutResults = false;
+            var didKeepAnyResults = false;
+            var searchResults = _.filter($scope.searchResults, function (value) {
+                if (value.downloadType === "TORRENT") {
+                    didKeepAnyResults = true;
+                    return true;
+                } else {
+                    console.log("Not sending NZB result to black hole");
+                    didFilterOutResults = true;
+                    return false;
+                }
+            });
+            if (didFilterOutResults && !didKeepAnyResults) {
+                growl.info("None of the selected results were torrents. Adding aborted");
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: []});
+                }
+                return;
+            } else if (didFilterOutResults && didKeepAnyResults) {
+                growl.info("Some the selected results are NZB results which were skipped");
+            }
+            var searchResultIds = _.pluck(searchResults, "searchResultId");
+            $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
+                if (response.data.successful) {
+                    growl.info("Successfully saved all torrents");
+                } else {
+                    growl.error(response.data.message);
+                }
+                if (angular.isDefined($scope.callback)) {
+                    $scope.callback({result: response.data.addedIds});
+                }
+            });
+        }
+
+    }
+}
+
+
+
+freetextFilter.$inject = ["DebugService"];
+booleanFilter.$inject = ["DebugService"];angular
+    .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
+
+function columnFilterWrapper() {
+    controller.$inject = ["$scope", "DebugService"];
+    return {
+        restrict: "E",
+        templateUrl: 'static/html/dataTable/columnFilterOuter.html',
+        transclude: true,
+        controllerAs: 'columnFilterWrapperCtrl',
+        scope: {
+            inline: "@"
+        },
+        bindToController: true,
+        controller: controller,
+        link: function (scope, element, attr, ctrl) {
+            scope.element = element;
+        }
+    };
+
+    function controller($scope, DebugService) {
+        var vm = this;
+
+        vm.open = false;
+        vm.isActive = false;
+
+        vm.toggle = function () {
+            vm.open = !vm.open;
+            if (vm.open) {
+                $scope.$broadcast("opened");
+            }
+        };
+
+        vm.clear = function () {
+            if (vm.open) {
+                $scope.$broadcast("clear");
+            }
+        };
+
+        $scope.$on("filter", function (event, column, filterModel, isActive, open) {
+            vm.open = open || false;
+            vm.isActive = isActive;
+        });
+
+        DebugService.log("filter-wrapper");
+    }
+
+}
+
+
+angular
+    .module('nzbhydraApp').directive("freetextFilter", freetextFilter);
+
+function freetextFilter(DebugService) {
+    controller.$inject = ["$scope", "focus"];
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
+        require: "^columnFilterWrapper",
+        controllerAs: 'innerController',
+        scope: {
+            column: "@",
+            onKey: "@",
+            placeholder: "@",
+            tooltip: "@"
+        },
+        controller: controller
+    };
+
+    function controller($scope, focus) {
+        $scope.inline = $scope.$parent.$parent.columnFilterWrapperCtrl.inline; //Hacky way of getting the value from the outer wrapper
+        $scope.data = {};
+        $scope.tooltip = $scope.tooltip || "";
+
+        $scope.$on("opened", function () {
+            focus("freetext-filter-input");
+        });
+
+        function emitFilterEvent(isOpen) {
+            isOpen = $scope.inline || isOpen;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.data.filter,
+                filterType: "freetext"
+            }, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0, isOpen);
+        }
+
+        $scope.$on("clear", function () {
+            //Don't clear but close window (event is fired when clicked outside)
+            emitFilterEvent(false);
+        });
+
+        $scope.onKeyUp = function (keyEvent) {
+            if (keyEvent.which === 13 || $scope.onKey) {
+                emitFilterEvent($scope.onKey && keyEvent.which !== 13); //Keep open if triggered by key, close always when enter pressed
+            }
+        };
+        DebugService.log("filter-freetext");
+    }
+}
+
+angular
+    .module('nzbhydraApp').directive("checkboxesFilter", checkboxesFilter);
+
+function checkboxesFilter() {
+    controller.$inject = ["$scope", "DebugService"];
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterCheckboxes.html\'"/>',
+        controllerAs: 'checkboxesFilterController',
+        scope: {
+            column: "@",
+            entries: "<",
+            preselect: "<",
+            showInvert: "<",
+            isBoolean: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, DebugService) {
+        $scope.selected = {
+            entries: []
+        };
+        $scope.active = false;
+
+        if ($scope.preselect) {
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
+        }
+
+        $scope.invert = function () {
+            $scope.selected.entries = _.difference($scope.entries, $scope.selected.entries);
+        };
+
+        $scope.selectAll = function () {
+            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
+        };
+
+        $scope.deselectAll = function () {
+            $scope.selected.entries.splice(0, $scope.selected.entries.length);
+        };
+
+        $scope.apply = function () {
+            $scope.active = $scope.selected.entries.length < $scope.entries.length;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: _.pluck($scope.selected.entries, "id"),
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selectAll();
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "checkboxes",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-checkboxes");
+    }
+}
+
+angular
+    .module('nzbhydraApp').directive("booleanFilter", booleanFilter);
+
+function booleanFilter(DebugService) {
+    controller.$inject = ["$scope"];
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
+        controllerAs: 'booleanFilterController',
+        scope: {
+            column: "@",
+            options: "<",
+            preselect: "@"
+        },
+        controller: controller
+    };
+
+
+    function controller($scope) {
+        $scope.selected = {value: $scope.options[$scope.preselect].value};
+        $scope.active = false;
+
+        $scope.apply = function () {
+            $scope.active = $scope.selected.value !== $scope.options[0].value;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.selected.value,
+                filterType: "boolean"
+            }, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.value = true;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-boolean");
+    }
+}
+
+angular
+    .module('nzbhydraApp').directive("timeFilter", timeFilter);
+
+function timeFilter() {
+    controller.$inject = ["$scope", "DebugService"];
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterTime.html\'"/>',
+        scope: {
+            column: "@",
+            selected: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, DebugService) {
+
+        $scope.dateOptions = {
+            dateDisabled: false,
+            formatYear: 'yy',
+            startingDay: 1
+        };
+
+        $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
+        $scope.format = $scope.formats[0];
+        $scope.altInputFormats = ['M!/d!/yyyy'];
+        $scope.active = false;
+
+        $scope.openAfter = function () {
+            $scope.after.opened = true;
+        };
+
+        $scope.openBefore = function () {
+            $scope.before.opened = true;
+        };
+
+        $scope.after = {
+            opened: false
+        };
+
+        $scope.before = {
+            opened: false
+        };
+
+        $scope.apply = function () {
+            $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: {
+                    after: $scope.selected.afterDate,
+                    before: $scope.selected.beforeDate
+                }, filterType: "time"
+            }, $scope.active)
+        };
+        $scope.clear = function () {
+            $scope.selected.beforeDate = undefined;
+            $scope.selected.afterDate = undefined;
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
+        DebugService.log("filter-time");
+    }
+}
+
+angular
+    .module('nzbhydraApp').directive("numberRangeFilter", numberRangeFilter);
+
+function numberRangeFilter() {
+    controller.$inject = ["$scope", "DebugService"];
+    return {
+        template: '<ng-include src="\'static/html/dataTable/columnFilterNumberRange.html\'"/>',
+        scope: {
+            column: "@",
+            min: "<",
+            max: "<",
+            addon: "@"
+        },
+        controller: controller
+    };
+
+    function controller($scope, DebugService) {
+        $scope.filterValue = {min: undefined, max: undefined};
+        $scope.active = false;
+
+        function apply() {
+            $scope.active = $scope.filterValue.min || $scope.filterValue.max;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: $scope.filterValue,
+                filterType: "numberRange"
+            }, $scope.active)
+        }
+
+        $scope.clear = function () {
+            $scope.filterValue = {min: undefined, max: undefined};
+            $scope.active = false;
+            $scope.$emit("filter", $scope.column, {
+                filterValue: undefined,
+                filterType: "numberRange",
+                isBoolean: $scope.isBoolean
+            }, $scope.active)
+        };
+        $scope.$on("clear", $scope.clear);
+
+        $scope.apply = function () {
+            apply();
+        };
+
+        $scope.onKeypress = function (keyEvent) {
+            if (keyEvent.which === 13) {
+                apply();
+            }
+        }
+
+        DebugService.log("filter-number");
+    }
+}
+
+
+angular
+    .module('nzbhydraApp').directive("columnSortable", columnSortable);
+
+function columnSortable() {
+    controller.$inject = ["$scope"];
+    return {
+        restrict: "E",
+        templateUrl: "static/html/dataTable/columnSortable.html",
+        transclude: true,
+        scope: {
+            sortMode: "<", //0: no sorting, 1: asc, 2: desc
+            column: "@",
+            reversed: "<",
+            startMode: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+        if (angular.isUndefined($scope.sortMode)) {
+            $scope.sortMode = 0;
+        }
+
+        if (angular.isUndefined($scope.startMode)) {
+            $scope.startMode = 1;
+        }
+
+        $scope.sortModel = {
+            sortMode: $scope.sortMode,
+            column: $scope.column,
+            reversed: $scope.reversed,
+            startMode: $scope.startMode,
+            active: false
+        };
+
+        $scope.$on("newSortColumn", function (event, column, sortMode) {
+            $scope.sortModel.active = column === $scope.sortModel.column;
+            if (column !== $scope.sortModel.column) {
+                $scope.sortModel.sortMode = 0;
+            } else {
+                $scope.sortModel.sortMode = sortMode;
+            }
+        });
+
+        $scope.sort = function () {
+            if ($scope.sortModel.sortMode === 0 || angular.isUndefined($scope.sortModel.sortMode)) {
+                $scope.sortModel.sortMode = $scope.sortModel.startMode;
+            } else if ($scope.sortModel.sortMode === 1) {
+                $scope.sortModel.sortMode = 2;
+            } else {
+                $scope.sortModel.sortMode = 1;
+            }
+            $scope.$emit("sort", $scope.sortModel.column, $scope.sortModel.sortMode, $scope.sortModel.reversed)
+        };
+
+    }
+}
+angular
+    .module('nzbhydraApp')
+    .directive('connectionTest', connectionTest);
+
+function connectionTest() {
+    controller.$inject = ["$scope"];
+    return {
+        templateUrl: 'static/html/directives/connection-test.html',
+        require: ['^type', '^data'],
+        scope: {
+            type: "=",
+            id: "=",
+            data: "=",
+            downloader: "="
+        },
+        controller: controller
+    };
+
+    function controller($scope) {
+        $scope.message = "";
+
+
+        var testButton = "#button-test-connection";
+        var testMessage = "#message-test-connection";
+
+        function showSuccess() {
+            angular.element(testButton).removeClass("btn-default");
+            angular.element(testButton).removeClass("btn-danger");
+            angular.element(testButton).addClass("btn-success");
+        }
+
+        function showError() {
+            angular.element(testButton).removeClass("btn-default");
+            angular.element(testButton).removeClass("btn-success");
+            angular.element(testButton).addClass("btn-danger");
+        }
+
+        $scope.testConnection = function () {
+            angular.element(testButton).addClass("glyphicon-refresh-animate");
+            var myInjector = angular.injector(["ng"]);
+            var $http = myInjector.get("$http");
+            var url;
+            var params;
+            if ($scope.type === "downloader") {
+                url = "internalapi/test_downloader";
+                params = {name: $scope.downloader, username: $scope.data.username, password: $scope.data.password};
+                if ($scope.downloader === "SABNZBD") {
+                    params.apiKey = $scope.data.apiKey;
+                    params.url = $scope.data.url;
+                } else {
+                    params.host = $scope.data.host;
+                    params.port = $scope.data.port;
+                    params.ssl = $scope.data.ssl;
+                }
+            } else if ($scope.data.type === "newznab") {
+                url = "internalapi/test_newznab";
+                params = {host: $scope.data.host, apiKey: $scope.data.apiKey};
+                if (angular.isDefined($scope.data.username)) {
+                    params["username"] = $scope.data.username;
+                    params["password"] = $scope.data.password;
+                }
+            }
+            $http.get(url, {params: params}).then(function (result) {
+                    //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click
+                    if (result.successful) {
+                        angular.element(testMessage).text("");
+                        showSuccess();
+                    } else {
+                        angular.element(testMessage).text(result.message);
+                        showError();
+                    }
+
+                }, function () {
+                    angular.element(testMessage).text(result.message);
+                    showError();
+                }
+            ).finally(function () {
+                angular.element(testButton).removeClass("glyphicon-refresh-animate");
+            })
+        }
+
+    }
+}
+
+
+//Taken from https://github.com/IamAdamJowett/angular-click-outside
+
+clickOutside.$inject = ["$document", "$parse", "$timeout"];
+function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
+    while ((c = c.parentNode) && c !== p) ;
+    return !!c;
+};
+
+angular
+    .module('nzbhydraApp').directive("clickOutside", clickOutside);
+
+/**
+ * @ngdoc directive
+ * @name angular-click-outside.directive:clickOutside
+ * @description Directive to add click outside capabilities to DOM elements
+ * @requires $document
+ * @requires $parse
+ * @requires $timeout
+ **/
+function clickOutside($document, $parse, $timeout) {
+    return {
+        restrict: 'A',
+        link: function ($scope, elem, attr) {
+
+            // postpone linking to next digest to allow for unique id generation
+            $timeout(function () {
+                var classList = (attr.outsideIfNot !== undefined) ? attr.outsideIfNot.split(/[ ,]+/) : [],
+                    fn;
+
+                function eventHandler(e) {
+                    var i,
+                        element,
+                        r,
+                        id,
+                        classNames,
+                        l;
+
+                    // check if our element already hidden and abort if so
+                    if (angular.element(elem).hasClass("ng-hide")) {
+                        return;
+                    }
+
+                    // if there is no click target, no point going on
+                    if (!e || !e.target) {
+                        return;
+                    }
+
+                    if (angular.isDefined(attr.outsideIgnore) && $scope.$eval(attr.outsideIgnore)) {
+                        return;
+                    }
+                    var isChild = childOf(e.target, elem.context);
+                    if (isChild) {
+                        return;
+                    }
+                    // loop through the available elements, looking for classes in the class list that might match and so will eat
+                    for (element = e.target; element; element = element.parentNode) {
+                        // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
+                        if (element === elem[0]) {
+                            return;
+                        }
+
+                        // now we have done the initial checks, start gathering id's and classes
+                        id = element.id,
+                            classNames = element.className,
+                            l = classList.length;
+
+                        // Unwrap SVGAnimatedString classes
+                        if (classNames && classNames.baseVal !== undefined) {
+                            classNames = classNames.baseVal;
+                        }
+
+                        // if there are no class names on the element clicked, skip the check
+                        if (classNames || id) {
+
+                            // loop through the elements id's and classnames looking for exceptions
+                            for (i = 0; i < l; i++) {
+                                //prepare regex for class word matching
+                                r = new RegExp('\\b' + classList[i] + '\\b');
+
+                                // check for exact matches on id's or classes, but only if they exist in the first place
+                                if ((id !== undefined && id === classList[i]) || (classNames && r.test(classNames))) {
+                                    // now let's exit out as it is an element that has been defined as being ignored for clicking outside
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    // if we have got this far, then we are good to go with processing the command passed in via the click-outside attribute
+                    $timeout(function () {
+                        fn = $parse(attr['clickOutside']);
+                        fn($scope, {event: e});
+                    });
+                }
+
+                // if the devices has a touchscreen, listen for this event
+                if (_hasTouch()) {
+                    $document.on('touchstart', eventHandler);
+                }
+
+                // still listen for the click event even if there is touch to cater for touchscreen laptops
+                $document.on('click', eventHandler);
+
+                // when the scope is destroyed, clean up the documents event handlers as we don't want it hanging around
+                $scope.$on('$destroy', function () {
+                    if (_hasTouch()) {
+                        $document.off('touchstart', eventHandler);
+                    }
+
+                    $document.off('click', eventHandler);
+                });
+
+                /**
+                 * @description Private function to attempt to figure out if we are on a touch device
+                 * @private
+                 **/
+                function _hasTouch() {
+                    // works on most browsers, IE10/11 and Surface
+                    return 'ontouchstart' in window || navigator.maxTouchPoints;
+                };
+            });
+        }
+    };
+}
+
+angular
+    .module('nzbhydraApp')
+    .directive('cfgFormEntry', cfgFormEntry);
+
+function cfgFormEntry() {
+    return {
+        templateUrl: 'static/html/directives/cfg-form-entry.html',
+        require: ["^title", "^cfg"],
+        scope: {
+            title: "@",
+            cfg: "=",
+            help: "@",
+            type: "@?",
+            options: "=?"
+        },
+        controller: ["$scope", "$element", "$attrs", function ($scope, $element, $attrs) {
+            $scope.type = angular.isDefined($scope.type) ? $scope.type : 'text';
+            $scope.options = angular.isDefined($scope.type) ? $scope.$eval($attrs.options) : [];
+        }]
+    };
+}
+angular
+    .module('nzbhydraApp')
+    .directive('hydrabackup', hydrabackup);
+
+function hydrabackup() {
+    controller.$inject = ["$scope", "BackupService", "Upload", "FileDownloadService", "$http", "RequestsErrorHandler", "growl", "RestartService"];
+    return {
+        templateUrl: 'static/html/directives/backup.html',
+        controller: controller
+    };
+
+    function controller($scope, BackupService, Upload, FileDownloadService, $http, RequestsErrorHandler, growl, RestartService) {
+        $scope.refreshBackupList = function () {
+            BackupService.getBackupsList().then(function (backups) {
+                $scope.backups = backups;
+            });
+        };
+
+        $scope.refreshBackupList();
+
+        $scope.uploadActive = false;
+
+
+        $scope.createBackupFile = function () {
+            $http.get("internalapi/backup/backuponly", {params: {dontdownload: true}}).then(function () {
+                $scope.refreshBackupList();
+            });
+        };
+        $scope.createAndDownloadBackupFile = function () {
+            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET").then(function () {
+                $scope.refreshBackupList();
+            });
+        };
+
+        $scope.uploadBackupFile = function (file, errFiles) {
+            RequestsErrorHandler.specificallyHandled(function () {
+
+                $scope.file = file;
+                $scope.errFile = errFiles && errFiles[0];
+                if (file) {
+                    $scope.uploadActive = true;
+                    file.upload = Upload.upload({
+                        url: 'internalapi/backup/restorefile',
+                        file: file
+                    });
+
+                    file.upload.then(function (response) {
+                        $scope.uploadActive = false;
+                        file.result = response.data;
+                        RestartService.restart("Restore successful.");
+
+                    }, function (response) {
+                        $scope.uploadActive = false;
+                        growl.error(response.data)
+                    }, function (evt) {
+                        file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
+                        file.loaded = Math.floor(evt.loaded / 1024);
+                        file.total = Math.floor(evt.total / 1024);
+                    });
+                }
+            });
+        };
+
+        $scope.restoreFromFile = function (filename) {
+            BackupService.restoreFromFile(filename).then(function () {
+                    RestartService.restart("Extraction of backup successful. Restarting for wrapper to restore data.");
+                },
+                function (response) {
+                    growl.error(response.data);
+                })
+        }
+
+    }
+}
+
+
+
+addableNzbs.$inject = ["DebugService"];angular
+    .module('nzbhydraApp')
+    .directive('addableNzbs', addableNzbs);
+
+function addableNzbs(DebugService) {
+    controller.$inject = ["$scope", "NzbDownloadService"];
+    return {
+        templateUrl: 'static/html/directives/addable-nzbs.html',
+        require: [],
+        scope: {
+            searchresult: "<",
+            alwaysAsk: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, NzbDownloadService) {
+        $scope.alwaysAsk = $scope.alwaysAsk === "true";
+        $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
+            if ($scope.searchresult.downloadType !== "NZB") {
+                return downloader.downloadType === $scope.searchresult.downloadType
+            }
+            return true;
+        });
+    }
+}
+
+
+addableNzb.$inject = ["DebugService"];angular
+    .module('nzbhydraApp')
+    .directive('addableNzb', addableNzb);
+
+function addableNzb(DebugService) {
+    controller.$inject = ["$scope", "NzbDownloadService", "growl"];
+    return {
+        templateUrl: 'static/html/directives/addable-nzb.html',
+        scope: {
+            searchresult: "=",
+            downloader: "<",
+            alwaysAsk: "<"
+        },
+        controller: controller
+    };
+
+    function controller($scope, NzbDownloadService, growl) {
+        if ($scope.downloader.iconCssClass) {
+            $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
+        } else {
+            $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd" : "nzbget";
+        }
+
+        $scope.add = function () {
+            var originalClass = $scope.cssClass;
+            $scope.cssClass = "nzb-spinning";
+            NzbDownloadService.download($scope.downloader, [{
+                searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
+                originalCategory: $scope.searchresult.originalCategory
+            }], $scope.alwaysAsk).then(function (response) {
+                if (response !== "dismissed") {
+                    if (response.data.successful) {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
+                    } else {
+                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                        growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                    }
+                } else {
+                    $scope.cssClass = originalClass;
+                }
+            }, function () {
+                $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
+                growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
+            })
+        };
+    }
+}
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 CheckCapsModalInstanceCtrl.$inject = ["$scope", "$interval", "$http", "$timeout", "growl", "capsCheckRequest"];
 IndexerConfigBoxService.$inject = ["$http", "$q", "$uibModal"];
 IndexerCheckBeforeCloseService.$inject = ["$q", "ModalService", "IndexerConfigBoxService", "growl", "blockUI"];
@@ -4544,2089 +6627,6 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 }
 
 
-
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-angular
-    .module('nzbhydraApp')
-    .directive('hydraTasks', hydraTasks);
-
-function hydraTasks() {
-    controller.$inject = ["$scope", "$http"];
-    return {
-        templateUrl: 'static/html/directives/tasks.html',
-        controller: controller
-    };
-
-    function controller($scope, $http) {
-
-        $http.get("internalapi/tasks").then(function (response) {
-            $scope.tasks = response.data;
-        });
-
-        $scope.runTask = function (taskName) {
-            $http.put("internalapi/tasks/" + taskName).then(function (response) {
-                $scope.tasks = response.data;
-            });
-        }
-    }
-}
-
-
-angular
-    .module('nzbhydraApp')
-    .directive('tabOrChart', tabOrChart);
-
-function tabOrChart() {
-    return {
-        templateUrl: 'static/html/directives/tab-or-chart.html',
-        transclude: {
-            "chartSlot": "chart",
-            "tableSlot": "table"
-        },
-        restrict: 'E',
-        replace: true,
-        scope: {
-            display: "@"
-        }
-
-    };
-
-}
-
-angular
-    .module('nzbhydraApp')
-    .directive('selectionButton', selectionButton);
-
-function selectionButton() {
-    controller.$inject = ["$scope"];
-    return {
-        templateUrl: 'static/html/directives/selection-button.html',
-        scope: {
-            selected: "=",
-            selectable: "=",
-            invertSelection: "<",
-            selectAll: "<",
-            deselectAll: "<",
-            btn: "@"
-        },
-        controller: controller
-    };
-
-    function controller($scope) {
-
-        if (angular.isUndefined($scope.btn)) {
-            $scope.btn = "default"; //Will form class "btn-default"
-        }
-
-        if (angular.isUndefined($scope.invertSelection)) {
-            $scope.invertSelection = function () {
-                $scope.selected = _.difference($scope.selectable, $scope.selected);
-            };
-        }
-
-        if (angular.isUndefined($scope.selectAll)) {
-            $scope.selectAll = function () {
-                $scope.selected.push.apply($scope.selected, $scope.selectable);
-            };
-        }
-
-        if (angular.isUndefined($scope.deselectAll)) {
-            $scope.deselectAll = function () {
-                $scope.selected.splice(0, $scope.selected.length);
-            };
-        }
-
-
-    }
-}
-
-
-
-NfoModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "nfo"];angular
-    .module('nzbhydraApp')
-    .directive('searchResult', searchResult);
-
-function searchResult() {
-    controller.$inject = ["$scope", "$element", "$http", "growl", "$attrs", "$uibModal", "$window", "DebugService", "localStorageService", "HydraAuthService"];
-    return {
-        templateUrl: 'static/html/directives/search-result.html',
-        require: '^result',
-        replace: false,
-        scope: {
-            result: "<"
-        },
-        controller: controller
-    };
-
-
-    function handleDisplay($scope, localStorageService) {
-        //Display state / expansion
-        $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
-        $scope.duplicatesExpanded = false;
-        $scope.titlesExpanded = false;
-
-        function calculateDisplayState() {
-            $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
-        }
-
-        calculateDisplayState();
-
-        $scope.toggleTitleExpansion = function () {
-            $scope.titlesExpanded = !$scope.titlesExpanded;
-            $scope.$emit("toggleTitleExpansionUp", $scope.titlesExpanded, $scope.result.titleGroupIndicator);
-        };
-
-        $scope.toggleDuplicateExpansion = function () {
-            $scope.duplicatesExpanded = !$scope.duplicatesExpanded;
-            $scope.$emit("toggleDuplicateExpansionUp", $scope.duplicatesExpanded, $scope.result.hash);
-        };
-
-        $scope.$on("toggleTitleExpansionDown", function ($event, value, titleGroupIndicator) {
-            if ($scope.result.titleGroupIndicator === titleGroupIndicator) {
-                $scope.titlesExpanded = value;
-                calculateDisplayState();
-            }
-        });
-
-        $scope.$on("toggleDuplicateExpansionDown", function ($event, value, hash) {
-            if ($scope.result.hash === hash) {
-                $scope.duplicatesExpanded = value;
-                calculateDisplayState();
-            }
-        });
-
-        $scope.$on("duplicatesDisplayed", function ($event, value) {
-            $scope.foo.duplicatesDisplayed = value;
-            if (!value) {
-                //Collapse duplicate groups they shouldn't be displayed
-                $scope.duplicatesExpanded = false;
-            }
-            calculateDisplayState();
-        });
-
-        $scope.$on("calculateDisplayState", function () {
-            calculateDisplayState();
-        });
-    }
-
-    function handleSelection($scope, $element) {
-        $scope.foo.selected = false;
-
-        function sendSelectionEvent() {
-            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
-        }
-
-        $scope.clickCheckbox = function (event, result) {
-            sendSelectionEvent();
-            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
-        };
-
-        function isBetween(num, betweena, betweenb) {
-            return (betweena <= num && num <= betweenb) || (betweena >= num && num >= betweenb);
-        }
-
-        $scope.$on("shiftClick", function (event, startIndex, endIndex, newValue, previousClickTargetElement, newClickTargetElement) {
-            var fromYlocation = $($(previousClickTargetElement).prop("parentNode")).prop("offsetTop");
-            var newYlocation = $($(newClickTargetElement).prop("parentNode")).prop("offsetTop");
-            var elementYlocation = $($element).prop("offsetTop");
-            if (!$scope.resultDisplayed) {
-                return;
-            }
-            //if (isBetween($scope.rowIndex, startIndex, endIndex)) {
-            if (isBetween(elementYlocation, fromYlocation, newYlocation)) {
-                if (newValue) {
-                    $scope.foo.selected = true;
-                } else {
-                    $scope.foo.selected = false;
-                }
-                sendSelectionEvent();
-            }
-        });
-        $scope.$on("invertSelection", function () {
-            if (!$scope.resultDisplayed) {
-                return;
-            }
-            $scope.foo.selected = !$scope.foo.selected;
-            sendSelectionEvent();
-        });
-        $scope.$on("deselectAll", function () {
-            if (!$scope.resultDisplayed) {
-                return;
-            }
-            $scope.foo.selected = false;
-            sendSelectionEvent();
-        });
-        $scope.$on("selectAll", function () {
-            if (!$scope.resultDisplayed) {
-                return;
-            }
-            $scope.foo.selected = true;
-            sendSelectionEvent();
-        });
-        $scope.$on("toggleSelection", function ($event, result, value) {
-            if (!$scope.resultDisplayed || result !== $scope.result) {
-                return;
-            }
-            $scope.foo.selected = value;
-        });
-    }
-
-    function handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService) {
-        $scope.showDetailsDl = HydraAuthService.getUserInfos().maySeeDetailsDl;
-
-        $scope.showNfo = showNfo;
-
-        function showNfo(resultItem) {
-            if (resultItem.has_nfo === 0) {
-                return;
-            }
-            var uri = new URI("internalapi/nfo/" + resultItem.searchResultId);
-            return $http.get(uri.toString()).then(function (response) {
-                if (response.data.successful) {
-                    if (response.data.hasNfo) {
-                        $scope.openModal("lg", response.data.content)
-                    } else {
-                        growl.info("No NFO available");
-                    }
-                } else {
-                    growl.error(response.data.content);
-                }
-            });
-        }
-
-        $scope.openModal = openModal;
-
-        function openModal(size, nfo) {
-            var modalInstance = $uibModal.open({
-                template: '<pre class="nfo"><span ng-bind-html="nfo"></span></pre>',
-                controller: NfoModalInstanceCtrl,
-                size: size,
-                resolve: {
-                    nfo: function () {
-                        return nfo;
-                    }
-                }
-            });
-
-            modalInstance.result.then();
-        }
-
-        $scope.getNfoTooltip = function () {
-            if ($scope.result.hasNfo === "YES") {
-                return "Show NFO"
-            } else if ($scope.result.hasNfo === "MAYBE") {
-                return "Try to load NFO (may not be available)";
-            } else {
-                return "No NFO available";
-            }
-        };
-    }
-
-    function handleNzbDownload($scope, $window) {
-        $scope.downloadNzb = downloadNzb;
-
-        function downloadNzb(resultItem) {
-            //href = "{{ result.link }}"
-            $window.location.href = resultItem.link;
-        }
-    }
-
-
-    function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService) {
-        $scope.foo = {};
-        handleDisplay($scope, localStorageService);
-        handleSelection($scope, $element);
-        handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
-        handleNzbDownload($scope, $window);
-
-        $scope.kify = function () {
-            return function (number) {
-                if (number > 1000) {
-                    return Math.round(number / 1000) + "k";
-                }
-                return number;
-            };
-        };
-        DebugService.log("search-result");
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .controller('NfoModalInstanceCtrl', NfoModalInstanceCtrl);
-
-function NfoModalInstanceCtrl($scope, $uibModalInstance, nfo) {
-
-    $scope.nfo = nfo;
-
-    $scope.ok = function () {
-        $uibModalInstance.close($scope.selected.item);
-    };
-
-    $scope.cancel = function () {
-        $uibModalInstance.dismiss();
-    };
-}
-
-angular
-    .module('nzbhydraApp')
-    .filter('kify', function () {
-        return function (number) {
-            if (number > 1000) {
-                return Math.round(number / 1000) + "k";
-            }
-            return number;
-        }
-    });
-angular
-    .module('nzbhydraApp')
-    .directive('saveOrSendTorrent', saveOrSendTorrent);
-
-function saveOrSendTorrent() {
-    controller.$inject = ["$scope", "$http", "growl", "ConfigService"];
-    return {
-        templateUrl: 'static/html/directives/save-or-send-torrent.html',
-        scope: {
-            searchResultId: "<",
-            isFile: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, $http, growl, ConfigService) {
-        $scope.enableButton = (ConfigService.getSafe().downloading.saveTorrentsTo !== null && ConfigService.getSafe().downloading.saveTorrentsTo !== "") || ConfigService.getSafe().downloading.sendMagnetLinks;
-        $scope.cssClass = "glyphicon-save-file";
-        $scope.add = function () {
-            $scope.cssClass = "nzb-spinning";
-            $http.put("internalapi/saveOrSendTorrent", [$scope.searchResultId]).then(function (response) {
-                if (response.data.successful) {
-                    $scope.cssClass = "glyphicon-ok";
-                } else {
-                    $scope.cssClass = "glyphicon-remove";
-                    growl.error(response.data.message);
-                }
-            });
-        };
-    }
-}
-
-//Can be used in an ng-repeat directive to call a function when the last element was rendered
-//We use it to mark the end of sorting / filtering so we can stop blocking the UI
-
-onFinishRender.$inject = ["$timeout"];
-angular
-    .module('nzbhydraApp')
-    .directive('onFinishRender', onFinishRender);
-
-function onFinishRender($timeout) {
-    function linkFunction(scope, element, attr) {
-
-        if (scope.$last === true) {
-            // console.log("Render finished");
-            // console.timeEnd("Presenting");
-            // console.timeEnd("searchall");
-            scope.$emit("onFinishRender")
-        }
-    }
-
-    return {
-        link: linkFunction
-    }
-}
-//Fork of https://github.com/dotansimha/angularjs-dropdown-multiselect to make it compatible with formly
-angular
-    .module('nzbhydraApp')
-    .directive('multiselectDropdown',
-
-        dropdownMultiselectDirective
-    );
-
-function dropdownMultiselectDirective() {
-    return {
-        scope: {
-            selectedModel: '=',
-            options: '=',
-            settings: '=?',
-            events: '=?'
-        },
-        transclude: {
-            toggleDropdown: '?toggleDropdown'
-        },
-        templateUrl: 'static/html/directives/multiselect-dropdown.html',
-        controller: ["$scope", "$element", "$filter", "$document", function dropdownMultiselectController($scope, $element, $filter, $document) {
-            var $dropdownTrigger = $element.children()[0];
-
-            var settings = {
-                showSelectedValues: true,
-                showSelectAll: true,
-                showDeselectAll: true,
-                noSelectedText: 'None selected'
-            };
-            var events = {
-                onToggleItem: angular.noop
-            };
-            angular.extend(events, $scope.events || []);
-            angular.extend(settings, $scope.settings || []);
-            angular.extend($scope, {settings: settings, events: events});
-
-            $scope.buttonText = "";
-            if (settings.buttonText) {
-                $scope.buttonText = settings.buttonText;
-            } else {
-                $scope.$watch("selectedModel", function () {
-                    if (angular.isDefined($scope.selectedModel) && settings.showSelectedValues) {
-                        if ($scope.selectedModel.length === 0) {
-                            if ($scope.settings.noSelectedText) {
-                                $scope.buttonText = $scope.settings.noSelectedText;
-                            } else {
-                                $scope.buttonText = "None selected";
-                            }
-                        } else if ($scope.selectedModel.length === $scope.options.length) {
-                            $scope.buttonText = "All selected";
-                        } else {
-                            $scope.buttonText = $scope.selectedModel.join(", ");
-                        }
-                    } else {
-                        if (angular.isUndefined($scope.selectedModel) || ($scope.settings.noSelectedText && $scope.selectedModel.length === 0)) {
-                            $scope.buttonText = $scope.settings.noSelectedText;
-                        } else {
-                            $scope.buttonText = $scope.selectedModel.length + " / " + $scope.options.length + " selected";
-                        }
-                    }
-                }, true);
-            }
-            $scope.open = false;
-
-            $scope.toggleDropdown = function () {
-                $scope.open = !$scope.open;
-            };
-
-            $scope.toggleItem = function (option) {
-                var index = $scope.selectedModel.indexOf(option.id);
-                var oldValue = index > -1;
-                if (oldValue) {
-                    $scope.selectedModel.splice(index, 1);
-                } else {
-                    $scope.selectedModel.push(option.id);
-                }
-                $scope.events.onToggleItem(option, !oldValue);
-            };
-
-            $scope.selectAll = function () {
-                $scope.selectedModel = _.pluck($scope.options, "id");
-            };
-
-            $scope.deselectAll = function () {
-                $scope.selectedModel.splice(0, $scope.selectedModel.length);
-            };
-
-            //Close when clicked outside
-
-            $document.on('click', function (e) {
-                function contains(collection, target) {
-                    var containsTarget = false;
-                    collection.some(function (object) {
-                        if (object === target) {
-                            containsTarget = true;
-                            return true;
-                        }
-                        return false;
-                    });
-                    return containsTarget;
-                }
-
-                if ($scope.open) {
-                    var target = e.target.parentElement;
-                    var parentFound = false;
-
-                    while (angular.isDefined(target) && target !== null && !parentFound) {
-                        if (!!target.className.split && contains(target.className.split(' '), 'multiselect-parent') && !parentFound) {
-                            if (target === $dropdownTrigger) {
-                                parentFound = true;
-                            }
-                        }
-                        target = target.parentElement;
-                    }
-
-                    if (!parentFound) {
-                        $scope.$apply(function () {
-                            $scope.open = false;
-                        });
-                    }
-                }
-            });
-
-
-        }]
-
-    }
-}
-angular
-    .module('nzbhydraApp').directive("keepFocus", ['$timeout', function ($timeout) {
-    /*
-     Intended use:
-     <input keep-focus ng-model='someModel.value'></input>
-     */
-    return {
-        restrict: 'A',
-        require: 'ngModel',
-        link: function ($scope, $element, attrs, ngModel) {
-
-            ngModel.$parsers.unshift(function (value) {
-                $timeout(function () {
-                    $element[0].focus();
-                });
-                return value;
-            });
-
-        }
-    };
-}])
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-angular
-    .module('nzbhydraApp')
-    .directive('indexerStateSwitch', indexerStateSwitch);
-
-function indexerStateSwitch() {
-    controller.$inject = ["$scope"];
-    return {
-        templateUrl: 'static/html/directives/indexer-state-switch.html',
-        scope: {
-            indexer: "=",
-            handleWidth: "@"
-        },
-        replace: true,
-        controller: controller
-    };
-
-    function controller($scope) {
-        $scope.value = $scope.indexer.state === "ENABLED";
-        $scope.handleWidth = $scope.handleWidth || "130px";
-        var initialized = false;
-
-        function calculateTextAndColor() {
-            if ($scope.indexer.state === "DISABLED_USER") {
-                $scope.offText = "Disabled by user";
-                $scope.offColor = "default";
-            } else if ($scope.indexer.state === "DISABLED_SYSTEM_TEMPORARY") {
-                $scope.offText = "Temporary disabled";
-                $scope.offColor = "warning";
-            } else if ($scope.indexer.state === "DISABLED_SYSTEM") {
-                $scope.offText = "Permanently disabled";
-                $scope.offColor = "danger";
-            }
-        }
-
-        calculateTextAndColor();
-
-        $scope.onChange = function () {
-            if (initialized) {
-                //Skip on first call when initial value is set
-                $scope.indexer.state = $scope.value ? "ENABLED" : "DISABLED_USER";
-                calculateTextAndColor();
-            }
-            initialized = true;
-        }
-    }
-}
-
-
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-angular
-    .module('nzbhydraApp')
-    .directive('indexerSelectionButton', indexerSelectionButton);
-
-function indexerSelectionButton() {
-    controller.$inject = ["$scope"];
-    return {
-        templateUrl: 'static/html/directives/indexer-selection-button.html',
-        scope: {
-            selectedIndexers: "=",
-            availableIndexers: "=",
-            btn: "@"
-        },
-        controller: controller
-    };
-
-    function controller($scope) {
-
-        $scope.anyTorrentIndexersSelectable = _.any($scope.availableIndexers,
-            function (indexer) {
-                return indexer.searchModuleType === "TORZNAB";
-            }
-        );
-
-        $scope.invertSelection = function () {
-            _.forEach($scope.availableIndexers, function (x) {
-                var index = _.indexOf($scope.selectedIndexers, x.name);
-                if (index === -1) {
-                    $scope.selectedIndexers.push(x.name);
-                } else {
-                    $scope.selectedIndexers.splice(index, 1);
-                }
-            });
-        };
-
-        $scope.selectAll = function () {
-            $scope.deselectAll();
-            $scope.selectedIndexers.push.apply($scope.selectedIndexers, _.pluck($scope.availableIndexers, "name"));
-        };
-
-        $scope.deselectAll = function () {
-            $scope.selectedIndexers.splice(0, $scope.selectedIndexers.length);
-        };
-
-        function selectByPredicate(predicate) {
-            $scope.deselectAll();
-            $scope.selectedIndexers.push.apply($scope.selectedIndexers,
-                _.pluck(
-                    _.filter($scope.availableIndexers,
-                        predicate
-                    ), "name")
-            );
-        }
-
-        $scope.reset = function () {
-            selectByPredicate(function (indexer) {
-                return indexer.preselect;
-            });
-        };
-
-        $scope.selectAllUsenet = function () {
-            selectByPredicate(function (indexer) {
-                return indexer.searchModuleType !== "TORZNAB";
-            });
-        };
-
-        $scope.selectAllTorrent = function () {
-            selectByPredicate(function (indexer) {
-                return indexer.searchModuleType === "TORZNAB";
-            });
-        }
-    }
-}
-
-
-angular
-    .module('nzbhydraApp')
-    .directive('indexerInput', indexerInput);
-
-function indexerInput() {
-    controller.$inject = ["$scope"];
-    return {
-        templateUrl: 'static/html/directives/indexer-input.html',
-        scope: {
-            indexer: "=",
-            model: "=",
-            onClick: "="
-        },
-        replace: true,
-        controller: controller
-    };
-
-    function controller($scope) {
-        $scope.isFocused = false;
-
-        $scope.onFocus = function () {
-            $scope.isFocused = true;
-        };
-
-        $scope.onBlur = function () {
-            $scope.isFocused = false;
-        };
-    }
-}
-
-
-angular
-    .module('nzbhydraApp')
-    .directive('hydraupdates', hydraupdates);
-
-function hydraupdates() {
-    controller.$inject = ["$scope", "UpdateService"];
-    return {
-        templateUrl: 'static/html/directives/updates.html',
-        controller: controller
-    };
-
-    function controller($scope, UpdateService) {
-
-        $scope.loadingPromise = UpdateService.getInfos().then(function (response) {
-            $scope.currentVersion = response.data.currentVersion;
-            $scope.repVersion = response.data.latestVersion;
-            $scope.updateAvailable = response.data.updateAvailable;
-            $scope.latestVersionIgnored = response.data.latestVersionIgnored;
-            $scope.changelog = response.data.changelog;
-            $scope.runInDocker = response.data.runInDocker;
-        });
-
-        UpdateService.getVersionHistory().then(function (response) {
-            $scope.versionHistory = response.data;
-        });
-
-        $scope.update = function () {
-            UpdateService.update();
-        };
-
-        $scope.showChangelog = function () {
-            UpdateService.showChanges($scope.changelog);
-        };
-
-        $scope.forceUpdate = function () {
-            UpdateService.update()
-        };
-    }
-}
-
-
-/*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
-NewsModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "news"];
-WelcomeModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "$state", "MigrationService"];
-angular
-    .module('nzbhydraApp')
-    .directive('hydraUpdatesFooter', hydraUpdatesFooter);
-
-function hydraUpdatesFooter() {
-    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
-    return {
-        templateUrl: 'static/html/directives/updates-footer.html',
-        controller: controller
-    };
-
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
-
-        $scope.updateAvailable = false;
-        $scope.checked = false;
-        var welcomeIsBeingShown = false;
-
-        $scope.mayUpdate = HydraAuthService.getUserInfos().maySeeAdmin;
-
-        $scope.$on("user:loggedIn", function () {
-            if (HydraAuthService.getUserInfos().maySeeAdmin && !$scope.checked) {
-                retrieveUpdateInfos();
-            }
-        });
-
-
-        if ($scope.mayUpdate) {
-            retrieveUpdateInfos();
-        }
-
-        function retrieveUpdateInfos() {
-            $scope.checked = true;
-            UpdateService.getInfos().then(function (response) {
-                $scope.currentVersion = response.data.currentVersion;
-                $scope.latestVersion = response.data.latestVersion;
-                $scope.updateAvailable = response.data.updateAvailable;
-                $scope.changelog = response.data.changelog;
-                $scope.runInDocker = response.data.runInDocker;
-            });
-        }
-
-
-        $scope.update = function () {
-            UpdateService.update();
-        };
-
-        $scope.ignore = function () {
-            UpdateService.ignore($scope.latestVersion);
-            $scope.updateAvailable = false;
-        };
-
-        $scope.showChangelog = function () {
-            UpdateService.showChanges();
-        };
-
-        function checkAndShowNews() {
-            RequestsErrorHandler.specificallyHandled(function () {
-                if (ConfigService.getSafe().showNews) {
-                    $http.get("internalapi/news/forcurrentversion").then(function (response) {
-                        var data = response.data;
-                        if (data && data.length > 0) {
-                            $uibModal.open({
-                                templateUrl: 'static/html/news-modal.html',
-                                controller: NewsModalInstanceCtrl,
-                                size: "lg",
-                                resolve: {
-                                    news: function () {
-                                        return data;
-                                    }
-                                }
-                            });
-                            $http.put("internalapi/news/saveshown");
-                        }
-                    });
-                }
-            });
-        }
-
-        function checkAndShowWelcome() {
-            RequestsErrorHandler.specificallyHandled(function () {
-                $http.get("internalapi/welcomeshown").then(function (response) {
-                    if (!response.data) {
-                        $http.put("internalapi/welcomeshown");
-                        var promise = $uibModal.open({
-                            templateUrl: 'static/html/welcome-modal.html',
-                            controller: WelcomeModalInstanceCtrl,
-                            size: "md"
-                        });
-                        promise.opened.then(function () {
-                            welcomeIsBeingShown = true;
-                        });
-                        promise.closed.then(function () {
-                            welcomeIsBeingShown = false;
-                        });
-                    } else {
-                        _.defer(checkAndShowNews);
-                    }
-                }, function () {
-                    console.log("Error while checking for welcome")
-                });
-            });
-        }
-
-        checkAndShowWelcome();
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .controller('NewsModalInstanceCtrl', NewsModalInstanceCtrl);
-
-function NewsModalInstanceCtrl($scope, $uibModalInstance, news) {
-    $scope.news = news;
-    $scope.close = function () {
-        $uibModalInstance.dismiss();
-    };
-}
-
-angular
-    .module('nzbhydraApp')
-    .controller('WelcomeModalInstanceCtrl', WelcomeModalInstanceCtrl);
-
-function WelcomeModalInstanceCtrl($scope, $uibModalInstance, $state, MigrationService) {
-    $scope.close = function () {
-        $uibModalInstance.dismiss();
-    };
-
-    $scope.startMigration = function () {
-        $uibModalInstance.dismiss();
-        MigrationService.migrate();
-    };
-
-    $scope.goToConfig = function () {
-        $uibModalInstance.dismiss();
-        $state.go("root.config.main");
-    }
-}
-angular
-    .module('nzbhydraApp')
-    .directive('hydraNews', hydraNews);
-
-function hydraNews() {
-    controller.$inject = ["$scope", "$http"];
-    return {
-        templateUrl: "static/html/directives/news.html",
-        controller: controller
-    };
-
-    function controller($scope, $http) {
-
-        return $http.get("internalapi/news").then(function (response) {
-            $scope.news = response.data;
-        });
-
-
-    }
-}
-
-
-
-LogModalInstanceCtrl.$inject = ["$scope", "$uibModalInstance", "entry"];
-escapeHtml.$inject = ["$sanitize"];angular
-    .module('nzbhydraApp')
-    .directive('hydralog', hydralog);
-
-function hydralog() {
-    controller.$inject = ["$scope", "$http", "$interval", "$uibModal", "$sce", "localStorageService", "growl"];
-    return {
-        templateUrl: "static/html/directives/log.html",
-        controller: controller
-    };
-
-    function controller($scope, $http, $interval, $uibModal, $sce, localStorageService, growl) {
-        $scope.tailInterval = null;
-        $scope.doUpdateLog = localStorageService.get("doUpdateLog") !== null ? localStorageService.get("doUpdateLog") : false;
-        $scope.doTailLog = localStorageService.get("doTailLog") !== null ? localStorageService.get("doTailLog") : false;
-
-        $scope.active = 0;
-        $scope.currentJsonIndex = 0;
-        $scope.hasMoreJsonLines = true;
-
-        function getLog(index) {
-            if ($scope.active === 0) {
-                return $http.get("internalapi/debuginfos/jsonlogs", {
-                    params: {
-                        offset: index,
-                        limit: 500
-                    }
-                }).then(function (response) {
-                    var data = response.data;
-                    $scope.jsonLogLines = angular.fromJson(data.lines);
-                    $scope.hasMoreJsonLines = data.hasMore;
-                });
-            } else if ($scope.active === 1) {
-                return $http.get("internalapi/debuginfos/currentlogfile").then(function (response) {
-                    var data = response.data;
-                    $scope.log = $sce.trustAsHtml(data.replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/'/g, "&#039;"));
-                }, function (data) {
-                    growl.error(data)
-                });
-            } else if ($scope.active === 2) {
-                return $http.get("internalapi/debuginfos/logfilenames").then(function (response) {
-                    $scope.logfilenames = response.data;
-                });
-            }
-        }
-
-        $scope.logPromise = getLog();
-
-        $scope.select = function (index) {
-            $scope.active = index;
-            $scope.update();
-        };
-
-        $scope.scrollToBottom = function () {
-            document.getElementById("logfile").scrollTop = 10000000;
-            document.getElementById("logfile").scrollTop = 100001000;
-        };
-
-        $scope.update = function () {
-            getLog($scope.currentJsonIndex);
-            if ($scope.active === 1) {
-                $scope.scrollToBottom();
-            }
-        };
-
-        $scope.getOlderFormatted = function () {
-            getLog($scope.currentJsonIndex + 500).then(function () {
-                $scope.currentJsonIndex += 500;
-            });
-
-        };
-
-        $scope.getNewerFormatted = function () {
-            var index = Math.max($scope.currentJsonIndex - 500, 0);
-            getLog(index);
-            $scope.currentJsonIndex = index;
-        };
-
-        function startUpdateLogInterval() {
-            $scope.tailInterval = $interval(function () {
-                if ($scope.active === 1) {
-                    $scope.update();
-                    if ($scope.doTailLog && $scope.active === 1) {
-                        $scope.scrollToBottom();
-                    }
-                }
-            }, 5000);
-        }
-
-        $scope.toggleUpdate = function (doUpdateLog) {
-            $scope.doUpdateLog = doUpdateLog;
-            if ($scope.doUpdateLog) {
-                startUpdateLogInterval();
-            } else if ($scope.tailInterval !== null) {
-                console.log("Cancelling");
-                $interval.cancel($scope.tailInterval);
-                localStorageService.set("doTailLog", false);
-                $scope.doTailLog = false;
-            }
-            localStorageService.set("doUpdateLog", $scope.doUpdateLog);
-        };
-
-        $scope.toggleTailLog = function () {
-            localStorageService.set("doTailLog", $scope.doTailLog);
-        };
-
-        $scope.openModal = function openModal(entry) {
-            var modalInstance = $uibModal.open({
-                templateUrl: 'log-entry.html',
-                controller: LogModalInstanceCtrl,
-                size: "xl",
-                resolve: {
-                    entry: function () {
-                        return entry;
-                    }
-                }
-            });
-
-            modalInstance.result.then();
-        };
-
-        $scope.$on('$destroy', function () {
-            if ($scope.tailInterval !== null) {
-                $interval.cancel($scope.tailInterval);
-            }
-        });
-
-        if ($scope.doUpdateLog) {
-            startUpdateLogInterval();
-        }
-
-
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .controller('LogModalInstanceCtrl', LogModalInstanceCtrl);
-
-function LogModalInstanceCtrl($scope, $uibModalInstance, entry) {
-
-    $scope.entry = entry;
-
-    $scope.ok = function () {
-        $uibModalInstance.dismiss();
-    };
-}
-
-angular
-    .module('nzbhydraApp')
-    .filter('formatTimestamp', formatTimestamp);
-
-function formatTimestamp() {
-    return function (date) {
-        return moment(date).local().format("YYYY-MM-DD HH:mm");
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .filter('escapeHtml', escapeHtml);
-
-function escapeHtml($sanitize) {
-    return function (text) {
-        return $sanitize(text);
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .filter('formatClassname', formatClassname);
-
-function formatClassname() {
-    return function (fqn) {
-        return fqn.substr(fqn.lastIndexOf(".") + 1);
-
-    }
-}
-angular
-    .module('nzbhydraApp').directive('focusOn', focusOn);
-
-function focusOn() {
-    return directive;
-
-    function directive(scope, elem, attr) {
-        scope.$on('focusOn', function (e, name) {
-            if (name === attr.focusOn) {
-                elem[0].focus();
-            }
-        });
-    }
-}
-
-angular
-    .module('nzbhydraApp')
-    .directive('downloadNzbzipButton', downloadNzbzipButton);
-
-function downloadNzbzipButton() {
-    controller.$inject = ["$scope", "growl", "$http", "FileDownloadService"];
-    return {
-        templateUrl: 'static/html/directives/download-nzbzip-button.html',
-        require: ['^searchResults'],
-        scope: {
-            searchResults: "<",
-            searchTitle: "<",
-            callback: "&"
-        },
-        controller: controller
-    };
-
-    function controller($scope, growl, $http, FileDownloadService) {
-        $scope.download = function () {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
-                growl.info("You should select at least one result...");
-            } else {
-                var values = _.map($scope.searchResults, function (value) {
-                    return value.searchResultId;
-                });
-                var link = "internalapi/nzbzip";
-
-                var searchTitle;
-                if (angular.isDefined($scope.searchTitle)) {
-                    searchTitle = " for " + $scope.searchTitle.replace("[^a-zA-Z0-9.-]", "_");
-                } else {
-                    searchTitle = "";
-                }
-                var filename = "NZBHydra NZBs" + searchTitle + ".zip";
-                $http({method: "post", url: link, data: values}).then(function (response) {
-                    if (response.data.successful && response.data.zip !== null) {
-                        //FileDownloadService.sendFile($base64.decode(response.zip), filename);
-                        link = "internalapi/nzbzipDownload";
-                        FileDownloadService.downloadFile(link, filename, "POST", response.data.zipFilepath);
-                        if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result: response.data.addedIds});
-                        }
-                        if (response.data.missedIds.length > 0) {
-                            growl.error("Unable to add " + response.missedIds.length + " out of " + values.length + " NZBs to ZIP");
-                        }
-                    } else {
-                        growl.error(response.data.message);
-                    }
-                }, function (data, status, headers, config) {
-                    growl.error(status);
-                });
-            }
-        }
-    }
-}
-
-
-angular
-    .module('nzbhydraApp')
-    .directive('downloadNzbsButton', downloadNzbsButton);
-
-function downloadNzbsButton() {
-    controller.$inject = ["$scope", "$http", "NzbDownloadService", "ConfigService", "growl"];
-    return {
-        templateUrl: 'static/html/directives/download-nzbs-button.html',
-        require: ['^searchResults'],
-        scope: {
-            searchResults: "<",
-            callback: "&"
-        },
-        controller: controller
-    };
-
-    function controller($scope, $http, NzbDownloadService, ConfigService, growl) {
-
-        $scope.downloaders = NzbDownloadService.getEnabledDownloaders();
-        $scope.blackholeEnabled = ConfigService.getSafe().downloading.saveTorrentsTo !== null;
-
-        $scope.download = function (downloader) {
-            if (angular.isUndefined($scope.searchResults) || $scope.searchResults.length === 0) {
-                growl.info("You should select at least one result...");
-            } else {
-
-                var didFilterOutResults = false;
-                var didKeepAnyResults = false;
-                var searchResults = _.filter($scope.searchResults, function (value) {
-                    if (value.downloadType === "NZB") {
-                        didKeepAnyResults = true;
-                        return true;
-                    } else {
-                        console.log("Not sending torrent result to downloader");
-                        didFilterOutResults = true;
-                        return false;
-                    }
-                });
-                if (didFilterOutResults && !didKeepAnyResults) {
-                    growl.info("None of the selected results were NZBs. Adding aborted");
-                    if (angular.isDefined($scope.callback)) {
-                        $scope.callback({result: []});
-                    }
-                    return;
-                } else if (didFilterOutResults && didKeepAnyResults) {
-                    growl.info("Some the selected results are torrent results which were skipped");
-                }
-
-                var tos = _.map(searchResults, function (entry) {
-                    return {searchResultId: entry.searchResultId, originalCategory: entry.originalCategory}
-                });
-
-                NzbDownloadService.download(downloader, tos).then(function (response) {
-                    if (angular.isDefined(response.data)) {
-                        if (response !== "dismissed") {
-                            if (response.data.successful) {
-                                growl.info("Successfully added all NZBs");
-                            } else {
-                                growl.error(response.data.message);
-                            }
-                        } else {
-                            growl.error("Error while adding NZBs");
-                        }
-                        if (angular.isDefined($scope.callback)) {
-                            $scope.callback({result: response.data.addedIds});
-                        }
-                    }
-                }, function () {
-                    growl.error("Error while adding NZBs");
-                });
-            }
-        };
-
-        $scope.sendToBlackhole = function () {
-            var didFilterOutResults = false;
-            var didKeepAnyResults = false;
-            var searchResults = _.filter($scope.searchResults, function (value) {
-                if (value.downloadType === "TORRENT") {
-                    didKeepAnyResults = true;
-                    return true;
-                } else {
-                    console.log("Not sending NZB result to black hole");
-                    didFilterOutResults = true;
-                    return false;
-                }
-            });
-            if (didFilterOutResults && !didKeepAnyResults) {
-                growl.info("None of the selected results were torrents. Adding aborted");
-                if (angular.isDefined($scope.callback)) {
-                    $scope.callback({result: []});
-                }
-                return;
-            } else if (didFilterOutResults && didKeepAnyResults) {
-                growl.info("Some the selected results are NZB results which were skipped");
-            }
-            var searchResultIds = _.pluck(searchResults, "searchResultId");
-            $http.put("internalapi/saveTorrent", searchResultIds).then(function (response) {
-                if (response.data.successful) {
-                    growl.info("Successfully saved all torrents");
-                } else {
-                    growl.error(response.data.message);
-                }
-                if (angular.isDefined($scope.callback)) {
-                    $scope.callback({result: response.data.addedIds});
-                }
-            });
-        }
-
-    }
-}
-
-
-
-freetextFilter.$inject = ["DebugService"];
-booleanFilter.$inject = ["DebugService"];angular
-    .module('nzbhydraApp').directive("columnFilterWrapper", columnFilterWrapper);
-
-function columnFilterWrapper() {
-    controller.$inject = ["$scope", "DebugService"];
-    return {
-        restrict: "E",
-        templateUrl: 'static/html/dataTable/columnFilterOuter.html',
-        transclude: true,
-        controllerAs: 'columnFilterWrapperCtrl',
-        scope: {
-            inline: "@"
-        },
-        bindToController: true,
-        controller: controller,
-        link: function (scope, element, attr, ctrl) {
-            scope.element = element;
-        }
-    };
-
-    function controller($scope, DebugService) {
-        var vm = this;
-
-        vm.open = false;
-        vm.isActive = false;
-
-        vm.toggle = function () {
-            vm.open = !vm.open;
-            if (vm.open) {
-                $scope.$broadcast("opened");
-            }
-        };
-
-        vm.clear = function () {
-            if (vm.open) {
-                $scope.$broadcast("clear");
-            }
-        };
-
-        $scope.$on("filter", function (event, column, filterModel, isActive, open) {
-            vm.open = open || false;
-            vm.isActive = isActive;
-        });
-
-        DebugService.log("filter-wrapper");
-    }
-
-}
-
-
-angular
-    .module('nzbhydraApp').directive("freetextFilter", freetextFilter);
-
-function freetextFilter(DebugService) {
-    controller.$inject = ["$scope", "focus"];
-    return {
-        template: '<ng-include src="\'static/html/dataTable/columnFilterFreetext.html\'"/>',
-        require: "^columnFilterWrapper",
-        controllerAs: 'innerController',
-        scope: {
-            column: "@",
-            onKey: "@",
-            placeholder: "@",
-            tooltip: "@"
-        },
-        controller: controller
-    };
-
-    function controller($scope, focus) {
-        $scope.inline = $scope.$parent.$parent.columnFilterWrapperCtrl.inline; //Hacky way of getting the value from the outer wrapper
-        $scope.data = {};
-        $scope.tooltip = $scope.tooltip || "";
-
-        $scope.$on("opened", function () {
-            focus("freetext-filter-input");
-        });
-
-        function emitFilterEvent(isOpen) {
-            isOpen = $scope.inline || isOpen;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: $scope.data.filter,
-                filterType: "freetext"
-            }, angular.isDefined($scope.data.filter) && $scope.data.filter.length > 0, isOpen);
-        }
-
-        $scope.$on("clear", function () {
-            //Don't clear but close window (event is fired when clicked outside)
-            emitFilterEvent(false);
-        });
-
-        $scope.onKeyUp = function (keyEvent) {
-            if (keyEvent.which === 13 || $scope.onKey) {
-                emitFilterEvent($scope.onKey && keyEvent.which !== 13); //Keep open if triggered by key, close always when enter pressed
-            }
-        };
-        DebugService.log("filter-freetext");
-    }
-}
-
-angular
-    .module('nzbhydraApp').directive("checkboxesFilter", checkboxesFilter);
-
-function checkboxesFilter() {
-    controller.$inject = ["$scope", "DebugService"];
-    return {
-        template: '<ng-include src="\'static/html/dataTable/columnFilterCheckboxes.html\'"/>',
-        controllerAs: 'checkboxesFilterController',
-        scope: {
-            column: "@",
-            entries: "<",
-            preselect: "<",
-            showInvert: "<",
-            isBoolean: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, DebugService) {
-        $scope.selected = {
-            entries: []
-        };
-        $scope.active = false;
-
-        if ($scope.preselect) {
-            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
-        }
-
-        $scope.invert = function () {
-            $scope.selected.entries = _.difference($scope.entries, $scope.selected.entries);
-        };
-
-        $scope.selectAll = function () {
-            $scope.selected.entries.push.apply($scope.selected.entries, $scope.entries);
-        };
-
-        $scope.deselectAll = function () {
-            $scope.selected.entries.splice(0, $scope.selected.entries.length);
-        };
-
-        $scope.apply = function () {
-            $scope.active = $scope.selected.entries.length < $scope.entries.length;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: _.pluck($scope.selected.entries, "id"),
-                filterType: "checkboxes",
-                isBoolean: $scope.isBoolean
-            }, $scope.active)
-        };
-        $scope.clear = function () {
-            $scope.selectAll();
-            $scope.active = false;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: undefined,
-                filterType: "checkboxes",
-                isBoolean: $scope.isBoolean
-            }, $scope.active)
-        };
-        $scope.$on("clear", $scope.clear);
-        DebugService.log("filter-checkboxes");
-    }
-}
-
-angular
-    .module('nzbhydraApp').directive("booleanFilter", booleanFilter);
-
-function booleanFilter(DebugService) {
-    controller.$inject = ["$scope"];
-    return {
-        template: '<ng-include src="\'static/html/dataTable/columnFilterBoolean.html\'"/>',
-        controllerAs: 'booleanFilterController',
-        scope: {
-            column: "@",
-            options: "<",
-            preselect: "@"
-        },
-        controller: controller
-    };
-
-
-    function controller($scope) {
-        $scope.selected = {value: $scope.options[$scope.preselect].value};
-        $scope.active = false;
-
-        $scope.apply = function () {
-            $scope.active = $scope.selected.value !== $scope.options[0].value;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: $scope.selected.value,
-                filterType: "boolean"
-            }, $scope.active)
-        };
-        $scope.clear = function () {
-            $scope.selected.value = true;
-            $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "boolean"}, $scope.active)
-        };
-        $scope.$on("clear", $scope.clear);
-        DebugService.log("filter-boolean");
-    }
-}
-
-angular
-    .module('nzbhydraApp').directive("timeFilter", timeFilter);
-
-function timeFilter() {
-    controller.$inject = ["$scope", "DebugService"];
-    return {
-        template: '<ng-include src="\'static/html/dataTable/columnFilterTime.html\'"/>',
-        scope: {
-            column: "@",
-            selected: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, DebugService) {
-
-        $scope.dateOptions = {
-            dateDisabled: false,
-            formatYear: 'yy',
-            startingDay: 1
-        };
-
-        $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
-        $scope.format = $scope.formats[0];
-        $scope.altInputFormats = ['M!/d!/yyyy'];
-        $scope.active = false;
-
-        $scope.openAfter = function () {
-            $scope.after.opened = true;
-        };
-
-        $scope.openBefore = function () {
-            $scope.before.opened = true;
-        };
-
-        $scope.after = {
-            opened: false
-        };
-
-        $scope.before = {
-            opened: false
-        };
-
-        $scope.apply = function () {
-            $scope.active = $scope.selected.beforeDate || $scope.selected.afterDate;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: {
-                    after: $scope.selected.afterDate,
-                    before: $scope.selected.beforeDate
-                }, filterType: "time"
-            }, $scope.active)
-        };
-        $scope.clear = function () {
-            $scope.selected.beforeDate = undefined;
-            $scope.selected.afterDate = undefined;
-            $scope.active = false;
-            $scope.$emit("filter", $scope.column, {filterValue: undefined, filterType: "time"}, $scope.active)
-        };
-        $scope.$on("clear", $scope.clear);
-        DebugService.log("filter-time");
-    }
-}
-
-angular
-    .module('nzbhydraApp').directive("numberRangeFilter", numberRangeFilter);
-
-function numberRangeFilter() {
-    controller.$inject = ["$scope", "DebugService"];
-    return {
-        template: '<ng-include src="\'static/html/dataTable/columnFilterNumberRange.html\'"/>',
-        scope: {
-            column: "@",
-            min: "<",
-            max: "<",
-            addon: "@"
-        },
-        controller: controller
-    };
-
-    function controller($scope, DebugService) {
-        $scope.filterValue = {min: undefined, max: undefined};
-        $scope.active = false;
-
-        function apply() {
-            $scope.active = $scope.filterValue.min || $scope.filterValue.max;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: $scope.filterValue,
-                filterType: "numberRange"
-            }, $scope.active)
-        }
-
-        $scope.clear = function () {
-            $scope.filterValue = {min: undefined, max: undefined};
-            $scope.active = false;
-            $scope.$emit("filter", $scope.column, {
-                filterValue: undefined,
-                filterType: "numberRange",
-                isBoolean: $scope.isBoolean
-            }, $scope.active)
-        };
-        $scope.$on("clear", $scope.clear);
-
-        $scope.apply = function () {
-            apply();
-        };
-
-        $scope.onKeypress = function (keyEvent) {
-            if (keyEvent.which === 13) {
-                apply();
-            }
-        }
-
-        DebugService.log("filter-number");
-    }
-}
-
-
-angular
-    .module('nzbhydraApp').directive("columnSortable", columnSortable);
-
-function columnSortable() {
-    controller.$inject = ["$scope"];
-    return {
-        restrict: "E",
-        templateUrl: "static/html/dataTable/columnSortable.html",
-        transclude: true,
-        scope: {
-            sortMode: "<", //0: no sorting, 1: asc, 2: desc
-            column: "@",
-            reversed: "<",
-            startMode: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope) {
-        if (angular.isUndefined($scope.sortMode)) {
-            $scope.sortMode = 0;
-        }
-
-        if (angular.isUndefined($scope.startMode)) {
-            $scope.startMode = 1;
-        }
-
-        $scope.sortModel = {
-            sortMode: $scope.sortMode,
-            column: $scope.column,
-            reversed: $scope.reversed,
-            startMode: $scope.startMode,
-            active: false
-        };
-
-        $scope.$on("newSortColumn", function (event, column, sortMode) {
-            $scope.sortModel.active = column === $scope.sortModel.column;
-            if (column !== $scope.sortModel.column) {
-                $scope.sortModel.sortMode = 0;
-            } else {
-                $scope.sortModel.sortMode = sortMode;
-            }
-        });
-
-        $scope.sort = function () {
-            if ($scope.sortModel.sortMode === 0 || angular.isUndefined($scope.sortModel.sortMode)) {
-                $scope.sortModel.sortMode = $scope.sortModel.startMode;
-            } else if ($scope.sortModel.sortMode === 1) {
-                $scope.sortModel.sortMode = 2;
-            } else {
-                $scope.sortModel.sortMode = 1;
-            }
-            $scope.$emit("sort", $scope.sortModel.column, $scope.sortModel.sortMode, $scope.sortModel.reversed)
-        };
-
-    }
-}
-angular
-    .module('nzbhydraApp')
-    .directive('connectionTest', connectionTest);
-
-function connectionTest() {
-    controller.$inject = ["$scope"];
-    return {
-        templateUrl: 'static/html/directives/connection-test.html',
-        require: ['^type', '^data'],
-        scope: {
-            type: "=",
-            id: "=",
-            data: "=",
-            downloader: "="
-        },
-        controller: controller
-    };
-
-    function controller($scope) {
-        $scope.message = "";
-
-
-        var testButton = "#button-test-connection";
-        var testMessage = "#message-test-connection";
-
-        function showSuccess() {
-            angular.element(testButton).removeClass("btn-default");
-            angular.element(testButton).removeClass("btn-danger");
-            angular.element(testButton).addClass("btn-success");
-        }
-
-        function showError() {
-            angular.element(testButton).removeClass("btn-default");
-            angular.element(testButton).removeClass("btn-success");
-            angular.element(testButton).addClass("btn-danger");
-        }
-
-        $scope.testConnection = function () {
-            angular.element(testButton).addClass("glyphicon-refresh-animate");
-            var myInjector = angular.injector(["ng"]);
-            var $http = myInjector.get("$http");
-            var url;
-            var params;
-            if ($scope.type === "downloader") {
-                url = "internalapi/test_downloader";
-                params = {name: $scope.downloader, username: $scope.data.username, password: $scope.data.password};
-                if ($scope.downloader === "SABNZBD") {
-                    params.apiKey = $scope.data.apiKey;
-                    params.url = $scope.data.url;
-                } else {
-                    params.host = $scope.data.host;
-                    params.port = $scope.data.port;
-                    params.ssl = $scope.data.ssl;
-                }
-            } else if ($scope.data.type === "newznab") {
-                url = "internalapi/test_newznab";
-                params = {host: $scope.data.host, apiKey: $scope.data.apiKey};
-                if (angular.isDefined($scope.data.username)) {
-                    params["username"] = $scope.data.username;
-                    params["password"] = $scope.data.password;
-                }
-            }
-            $http.get(url, {params: params}).then(function (result) {
-                    //Using ng-class and a scope variable doesn't work for some reason, is only updated at second click
-                    if (result.successful) {
-                        angular.element(testMessage).text("");
-                        showSuccess();
-                    } else {
-                        angular.element(testMessage).text(result.message);
-                        showError();
-                    }
-
-                }, function () {
-                    angular.element(testMessage).text(result.message);
-                    showError();
-                }
-            ).finally(function () {
-                angular.element(testButton).removeClass("glyphicon-refresh-animate");
-            })
-        }
-
-    }
-}
-
-
-//Taken from https://github.com/IamAdamJowett/angular-click-outside
-
-clickOutside.$inject = ["$document", "$parse", "$timeout"];
-function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
-    while ((c = c.parentNode) && c !== p) ;
-    return !!c;
-};
-
-angular
-    .module('nzbhydraApp').directive("clickOutside", clickOutside);
-
-/**
- * @ngdoc directive
- * @name angular-click-outside.directive:clickOutside
- * @description Directive to add click outside capabilities to DOM elements
- * @requires $document
- * @requires $parse
- * @requires $timeout
- **/
-function clickOutside($document, $parse, $timeout) {
-    return {
-        restrict: 'A',
-        link: function ($scope, elem, attr) {
-
-            // postpone linking to next digest to allow for unique id generation
-            $timeout(function () {
-                var classList = (attr.outsideIfNot !== undefined) ? attr.outsideIfNot.split(/[ ,]+/) : [],
-                    fn;
-
-                function eventHandler(e) {
-                    var i,
-                        element,
-                        r,
-                        id,
-                        classNames,
-                        l;
-
-                    // check if our element already hidden and abort if so
-                    if (angular.element(elem).hasClass("ng-hide")) {
-                        return;
-                    }
-
-                    // if there is no click target, no point going on
-                    if (!e || !e.target) {
-                        return;
-                    }
-
-                    if (angular.isDefined(attr.outsideIgnore) && $scope.$eval(attr.outsideIgnore)) {
-                        return;
-                    }
-                    var isChild = childOf(e.target, elem.context);
-                    if (isChild) {
-                        return;
-                    }
-                    // loop through the available elements, looking for classes in the class list that might match and so will eat
-                    for (element = e.target; element; element = element.parentNode) {
-                        // check if the element is the same element the directive is attached to and exit if so (props @CosticaPuntaru)
-                        if (element === elem[0]) {
-                            return;
-                        }
-
-                        // now we have done the initial checks, start gathering id's and classes
-                        id = element.id,
-                            classNames = element.className,
-                            l = classList.length;
-
-                        // Unwrap SVGAnimatedString classes
-                        if (classNames && classNames.baseVal !== undefined) {
-                            classNames = classNames.baseVal;
-                        }
-
-                        // if there are no class names on the element clicked, skip the check
-                        if (classNames || id) {
-
-                            // loop through the elements id's and classnames looking for exceptions
-                            for (i = 0; i < l; i++) {
-                                //prepare regex for class word matching
-                                r = new RegExp('\\b' + classList[i] + '\\b');
-
-                                // check for exact matches on id's or classes, but only if they exist in the first place
-                                if ((id !== undefined && id === classList[i]) || (classNames && r.test(classNames))) {
-                                    // now let's exit out as it is an element that has been defined as being ignored for clicking outside
-                                    return;
-                                }
-                            }
-                        }
-                    }
-
-                    // if we have got this far, then we are good to go with processing the command passed in via the click-outside attribute
-                    $timeout(function () {
-                        fn = $parse(attr['clickOutside']);
-                        fn($scope, {event: e});
-                    });
-                }
-
-                // if the devices has a touchscreen, listen for this event
-                if (_hasTouch()) {
-                    $document.on('touchstart', eventHandler);
-                }
-
-                // still listen for the click event even if there is touch to cater for touchscreen laptops
-                $document.on('click', eventHandler);
-
-                // when the scope is destroyed, clean up the documents event handlers as we don't want it hanging around
-                $scope.$on('$destroy', function () {
-                    if (_hasTouch()) {
-                        $document.off('touchstart', eventHandler);
-                    }
-
-                    $document.off('click', eventHandler);
-                });
-
-                /**
-                 * @description Private function to attempt to figure out if we are on a touch device
-                 * @private
-                 **/
-                function _hasTouch() {
-                    // works on most browsers, IE10/11 and Surface
-                    return 'ontouchstart' in window || navigator.maxTouchPoints;
-                };
-            });
-        }
-    };
-}
-
-angular
-    .module('nzbhydraApp')
-    .directive('cfgFormEntry', cfgFormEntry);
-
-function cfgFormEntry() {
-    return {
-        templateUrl: 'static/html/directives/cfg-form-entry.html',
-        require: ["^title", "^cfg"],
-        scope: {
-            title: "@",
-            cfg: "=",
-            help: "@",
-            type: "@?",
-            options: "=?"
-        },
-        controller: ["$scope", "$element", "$attrs", function ($scope, $element, $attrs) {
-            $scope.type = angular.isDefined($scope.type) ? $scope.type : 'text';
-            $scope.options = angular.isDefined($scope.type) ? $scope.$eval($attrs.options) : [];
-        }]
-    };
-}
-angular
-    .module('nzbhydraApp')
-    .directive('hydrabackup', hydrabackup);
-
-function hydrabackup() {
-    controller.$inject = ["$scope", "BackupService", "Upload", "FileDownloadService", "$http", "RequestsErrorHandler", "growl", "RestartService"];
-    return {
-        templateUrl: 'static/html/directives/backup.html',
-        controller: controller
-    };
-
-    function controller($scope, BackupService, Upload, FileDownloadService, $http, RequestsErrorHandler, growl, RestartService) {
-        $scope.refreshBackupList = function () {
-            BackupService.getBackupsList().then(function (backups) {
-                $scope.backups = backups;
-            });
-        };
-
-        $scope.refreshBackupList();
-
-        $scope.uploadActive = false;
-
-
-        $scope.createBackupFile = function () {
-            $http.get("internalapi/backup/backuponly", {params: {dontdownload: true}}).then(function () {
-                $scope.refreshBackupList();
-            });
-        };
-        $scope.createAndDownloadBackupFile = function () {
-            FileDownloadService.downloadFile("internalapi/backup/backup", "nzbhydra-backup-" + moment().format("YYYY-MM-DD-HH-mm") + ".zip", "GET").then(function () {
-                $scope.refreshBackupList();
-            });
-        };
-
-        $scope.uploadBackupFile = function (file, errFiles) {
-            RequestsErrorHandler.specificallyHandled(function () {
-
-                $scope.file = file;
-                $scope.errFile = errFiles && errFiles[0];
-                if (file) {
-                    $scope.uploadActive = true;
-                    file.upload = Upload.upload({
-                        url: 'internalapi/backup/restorefile',
-                        file: file
-                    });
-
-                    file.upload.then(function (response) {
-                        $scope.uploadActive = false;
-                        file.result = response.data;
-                        RestartService.restart("Restore successful.");
-
-                    }, function (response) {
-                        $scope.uploadActive = false;
-                        growl.error(response.data)
-                    }, function (evt) {
-                        file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
-                        file.loaded = Math.floor(evt.loaded / 1024);
-                        file.total = Math.floor(evt.total / 1024);
-                    });
-                }
-            });
-        };
-
-        $scope.restoreFromFile = function (filename) {
-            BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.restart("Extraction of backup successful. Restarting for wrapper to restore data.");
-                },
-                function (response) {
-                    growl.error(response.data);
-                })
-        }
-
-    }
-}
-
-
-
-addableNzbs.$inject = ["DebugService"];angular
-    .module('nzbhydraApp')
-    .directive('addableNzbs', addableNzbs);
-
-function addableNzbs(DebugService) {
-    controller.$inject = ["$scope", "NzbDownloadService"];
-    return {
-        templateUrl: 'static/html/directives/addable-nzbs.html',
-        require: [],
-        scope: {
-            searchresult: "<",
-            alwaysAsk: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, NzbDownloadService) {
-        $scope.alwaysAsk = $scope.alwaysAsk === "true";
-        $scope.downloaders = _.filter(NzbDownloadService.getEnabledDownloaders(), function (downloader) {
-            if ($scope.searchresult.downloadType !== "NZB") {
-                return downloader.downloadType === $scope.searchresult.downloadType
-            }
-            return true;
-        });
-    }
-}
-
-
-addableNzb.$inject = ["DebugService"];angular
-    .module('nzbhydraApp')
-    .directive('addableNzb', addableNzb);
-
-function addableNzb(DebugService) {
-    controller.$inject = ["$scope", "NzbDownloadService", "growl"];
-    return {
-        templateUrl: 'static/html/directives/addable-nzb.html',
-        scope: {
-            searchresult: "=",
-            downloader: "<",
-            alwaysAsk: "<"
-        },
-        controller: controller
-    };
-
-    function controller($scope, NzbDownloadService, growl) {
-        if ($scope.downloader.iconCssClass) {
-            $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
-        } else {
-            $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd" : "nzbget";
-        }
-
-        $scope.add = function () {
-            var originalClass = $scope.cssClass;
-            $scope.cssClass = "nzb-spinning";
-            NzbDownloadService.download($scope.downloader, [{
-                searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
-                originalCategory: $scope.searchresult.originalCategory
-            }], $scope.alwaysAsk).then(function (response) {
-                if (response !== "dismissed") {
-                    if (response.data.successful) {
-                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
-                    } else {
-                        $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                        growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
-                    }
-                } else {
-                    $scope.cssClass = originalClass;
-                }
-            }, function () {
-                $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                growl.error("An unexpected error occurred while trying to contact NZBHydra or add the NZB.");
-            })
-        };
-    }
-}
 
 
 UpdateService.$inject = ["$http", "growl", "blockUI", "RestartService", "RequestsErrorHandler", "$uibModal", "$timeout"];
