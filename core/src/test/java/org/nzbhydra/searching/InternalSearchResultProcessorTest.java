@@ -19,6 +19,7 @@ package org.nzbhydra.searching;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO.SearchResultWebTOBuilder;
 
 import java.time.Instant;
@@ -35,7 +36,7 @@ public class InternalSearchResultProcessorTest {
     @Test
     public void setSearchResultDateRelatedValues() {
 
-        SearchResultWebTOBuilder builder = new SearchResultWebTOBuilder();
+        SearchResultWebTOBuilder builder = SearchResultWebTO.builder();
         SearchResultItem item = new SearchResultItem();
         item.setPubDate(Instant.now().minus(100, ChronoUnit.DAYS)); //Should be ignored when usenet date is set
 
