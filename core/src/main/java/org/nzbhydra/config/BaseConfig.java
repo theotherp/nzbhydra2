@@ -29,6 +29,8 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(BaseConfig.class);
 
+    public static boolean isProductive = true;
+
     @Autowired
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -72,6 +74,11 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
     @PostConstruct
     public void init() throws IOException {
+        if (!isProductive) {
+            //Don't overwrite settings from test code
+            initialized = true;
+            return;
+        }
         if (initialized) {
             //In some cases a call to the server will attempt to restart everything, trying to initialize beans. This
             //method is called a second time and an empty / initial config is written

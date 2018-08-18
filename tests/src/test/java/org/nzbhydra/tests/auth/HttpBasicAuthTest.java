@@ -5,11 +5,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.auth.HydraUserDetailsManager;
-import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -30,6 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = NzbHydra.class)
 @WebAppConfiguration
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/auth/allRestrictedWithBasicStatsAndAdminUser.properties")
+@Import(HttpBasicAuthTest.Config.class)
+@DirtiesContext
 public class HttpBasicAuthTest {
 
     @Autowired
@@ -39,6 +44,7 @@ public class HttpBasicAuthTest {
     @Autowired
     private HydraUserDetailsManager userDetailsManager;
 
+
     private MockMvc mvc;
 
     @Before
@@ -46,15 +52,15 @@ public class HttpBasicAuthTest {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
-                .build();
-
-        baseConfig.getAuth().getUsers().get(0).setMaySeeStats(false);
-        baseConfig.getAuth().getUsers().get(0).setMaySeeAdmin(false);
+                .build(
+                );
+        baseConfig.setAuth(Config.getBasicAuthConfig());
         userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
     @Test
     public void shouldFollowRoles() throws Exception {
+        userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
         mvc.perform(MockMvcRequestBuilders.get("/").with(csrf())).andExpect(status().is(401));
         mvc.perform(MockMvcRequestBuilders.get("/stats").with(csrf())).andExpect(status().is(401));
         mvc.perform(MockMvcRequestBuilders.get("/config").with(csrf())).andExpect(status().is(401));
@@ -90,4 +96,43 @@ public class HttpBasicAuthTest {
         mvc.perform(MockMvcRequestBuilders.get("/stats").with(csrf()).with(httpBasic(username, password))).andExpect(status().is(statusStats));
     }
 
+    public static class Config {
+
+
+        @Bean
+        @Primary
+        public BaseConfig baseConfig() {
+            BaseConfig baseConfig = new BaseConfig();
+            baseConfig.getMain().setUseCsrf(false);
+            baseConfig.setAuth(getBasicAuthConfig());
+            BaseConfig.isProductive = false;
+            return baseConfig;
+        }
+
+        public static AuthConfig getBasicAuthConfig() {
+            AuthConfig authConfig = new AuthConfig();
+            authConfig.setAuthType(AuthType.BASIC);
+            authConfig.setRestrictAdmin(true);
+            authConfig.setRestrictDetailsDl(true);
+            authConfig.setRestrictSearch(true);
+            authConfig.setRestrictIndexerSelection(true);
+            authConfig.setRestrictStats(true);
+
+            addUser(authConfig, "u", "u", false, false);
+            addUser(authConfig, "s", "s", true, false);
+            addUser(authConfig, "a", "a", true, true);
+            return authConfig;
+        }
+
+        protected static void addUser(AuthConfig authConfig, String username, final String password, boolean maySeeStats, boolean maySeeAdmin) {
+            UserAuthConfig userAuthConfig = new UserAuthConfig();
+            userAuthConfig.setMaySeeStats(maySeeStats);
+            userAuthConfig.setMaySeeAdmin(maySeeAdmin);
+            userAuthConfig.setMaySeeDetailsDl(false);
+            userAuthConfig.setUsername(username);
+            userAuthConfig.setPassword("{noop}" + password);
+            authConfig.getUsers().add(userAuthConfig);
+        }
+
+    }
 }

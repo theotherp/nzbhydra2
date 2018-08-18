@@ -23,6 +23,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface SearchRepository extends JpaRepository<SearchEntity, Integer> {
 
     @Query("select t from SearchEntity t where t.username = :username and t.source = 'INTERNAL' order by t.time desc")
@@ -30,4 +32,6 @@ public interface SearchRepository extends JpaRepository<SearchEntity, Integer> {
 
     @Query("select t from SearchEntity t where t.source = 'INTERNAL' order by t.time desc")
     Page<SearchEntity> findForUserSearchHistory(Pageable pageable);
+
+    List<SearchEntity> findAllByTitle(String title);
 }
