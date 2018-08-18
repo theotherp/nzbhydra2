@@ -68,7 +68,6 @@ public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
     SearchRepository searchRepository;
     String url = null;
 
-
     @Before
     public void setUp() throws IOException {
         new Thread(new Runnable() {
