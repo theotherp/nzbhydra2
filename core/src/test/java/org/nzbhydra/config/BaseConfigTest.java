@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 
 public class BaseConfigTest {
 
-    //If true the actual content of the config in code and in application.yml will be compared
+    //If true the actual content of the config in code and in baseConfig.yml will be compared
     //If false only the structure will be compare, meaning both sides have to have the same keys but the values can be different
     private static final boolean COMPARE_CONFIG_VALUES = false;
     private Set<String> dontCheckTheseLists = Sets.newHashSet("categories");
@@ -70,7 +70,7 @@ public class BaseConfigTest {
         String jsonFromApplicationProperties = jsonMapper.writeValueAsString(fromApplicationYml);
 
         if (COMPARE_CONFIG_VALUES) {
-            assertEquals("JSON generated from application.yml and base config should be the same", jsonFromApplicationProperties, jsonFromBaseConfig);
+            assertEquals("JSON generated from baseConfig.yml and base config should be the same", jsonFromApplicationProperties, jsonFromBaseConfig);
         }
 
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
@@ -96,13 +96,13 @@ public class BaseConfigTest {
         } else if (left instanceof List) {
             compareLists((List) left, (List) right);
         } else {
-            assertEquals("Setting in application.yml is different than in base config", left, left);
+            assertEquals("Setting in baseConfig.yml is different than in base config", left, left);
         }
     }
 
     private void compareMaps(HashMap<String, Object> left, HashMap<String, Object> right) {
         for (Entry<String, Object> entry : left.entrySet()) {
-            assertTrue(entry.getValue() + " is contained in application.yml but not in base config", right.containsKey(entry.getKey()));
+            assertTrue(entry.getValue() + " is contained in baseConfig.yml but not in base config", right.containsKey(entry.getKey()));
             if (entry.getValue() instanceof LinkedHashMap) {
                 compareMaps((HashMap) entry.getValue(), (HashMap) right.get(entry.getKey()));
             } else if (entry.getValue() instanceof List) {
@@ -110,13 +110,13 @@ public class BaseConfigTest {
                     compareLists((List) entry.getValue(), (List) right.get(entry.getKey()));
                 }
             } else if (COMPARE_CONFIG_VALUES) {
-                assertEquals("Setting " + entry.getKey() + " in application.yml is different than in base config", entry.getValue(), right.get(entry.getKey()));
+                assertEquals("Setting " + entry.getKey() + " in baseConfig.yml is different than in base config", entry.getValue(), right.get(entry.getKey()));
             }
         }
         Set<String> rightKeys = right.keySet();
         rightKeys.removeAll(left.keySet());
         if (!rightKeys.isEmpty()) {
-            fail("Some keys in base config are not contained in the application.yml: " + rightKeys);
+            fail("Some keys in base config are not contained in the baseConfig.yml: " + rightKeys);
         }
     }
 
@@ -145,7 +145,7 @@ public class BaseConfigTest {
                 if (l instanceof Category) {
                     assertTrue("Both categories should be the same", ((Category) l).deepEquals((Category) right.get(i)));
                 } else {
-                    assertEquals("Setting in application.yml is different than in base config", l, right.get(i));
+                    assertEquals("Setting in baseConfig.yml is different than in base config", l, right.get(i));
                 }
             }
         }

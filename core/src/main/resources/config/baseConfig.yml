@@ -314,6 +314,7 @@ searching:
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
   keepSearchResultsForDays: 14
+  keepHistoryForWeeks: null
   language: "en"
   loadAllCachedOnInternal: true
   maxAge: null

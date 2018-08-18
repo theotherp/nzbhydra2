@@ -1,34 +1,16 @@
 <configuration>
-    <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
-    <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>
-    <springProperty scope="context" name="logging.logMaxHistory" source="main.logging.logging.logMaxHistory" defaultValue="30"/>
-    <!--
-    consolelevel: "DEBUG"
-    keepLogFiles: 25
-    logIpAddresses: true
-    logMaxSize: 1000
-    logRotateAfterDays: null
-    consolelevel: "DEBUG"
-    logfilename: "nzbhydra2.log"
-    rolloverAtStart: false
 
-    -->
 
-    <!--<conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>-->
     <conversionRule conversionWord="clr" converterClass="org.nzbhydra.logging.ColorConverter"/>
     <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
     <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
     <conversionRule conversionWord="mdc" converterClass="org.nzbhydra.logging.MdcLogConverter"/>
 
     <property name="CONSOLE_LOG_PATTERN"
-              value="${CONSOLE_LOG_PATTERN:-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clr(%mdc){magenta}%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx{15}}}"/>
+              value="-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %clr(%mdc){magenta}%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx{15}}"/>
     <property name="FILE_LOG_PATTERN"
-              value="${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%15.15t] %-40.40logger{39} : %mdc%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+              value="-%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%15.15t] %-40.40logger{39} : %mdc%m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
 
-    <appender name="DEBUG_LEVEL_REMAPPER" class="org.springframework.boot.logging.logback.LevelRemappingAppender">
-        <destinationLogger>org.springframework.boot</destinationLogger>
-    </appender>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
@@ -40,33 +22,17 @@
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="org.nzbhydra.logging.SensitiveDataRemovingPatternLayoutEncoder">
-            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <pattern>DEBUG</pattern>
         </encoder>
-        <file>${logging.baseFolder}/logs/nzbhydra2.log</file>
+        <file>logs/nzbhydra2.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>${logging.logMaxHistory}</maxHistory>
-        </rollingPolicy>
-
-    </appender>
-
-    <appender name="STASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>info</level>
-        </filter>
-        <file>${logging.baseFolder}/logs/nzbhydra2-log.json</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${logging.baseFolder}/logs/nzbhydra2-log.json.%d{yyyy-ww}</fileNamePattern>
+            <fileNamePattern>/logs/nzbhydra2.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>1</maxHistory>
         </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeContext>false</includeContext>
-        </encoder>
-
     </appender>
 
+
     <logger name="org.nzbhydra" level="DEBUG">
-        <appender-ref ref="STASH"/>
     </logger>
     <logger name="org.spring" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
