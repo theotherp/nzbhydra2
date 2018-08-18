@@ -19,8 +19,8 @@ package org.nzbhydra.api;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.mapping.newznab.xml.*;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class NewznabXmlTransformer {
         rssChannel.setTitle("NZBHydra 2");
         rssChannel.setLink("https://www.github.com/theotherp/nzbhydra2");
         rssChannel.setWebMaster("theotherp@gmx.de");
-        if (searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB) {
+        if (searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB) {
             rssChannel.setNewznabResponse(new NewznabXmlResponse(offset == null ? 0 : offset, total));
         }
         rssChannel.setGenerator("NZBHydra2");
@@ -72,7 +72,7 @@ public class NewznabXmlTransformer {
 
     NewznabXmlItem buildRssItem(SearchResultItem searchResultItem, SearchRequest searchRequest) {
         NewznabXmlItem rssItem = new NewznabXmlItem();
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
+        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB;
         String link = nzbHandler.getDownloadLink(searchResultItem.getSearchResultId(), false, isNzb ? DownloadType.NZB : DownloadType.TORRENT);
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());

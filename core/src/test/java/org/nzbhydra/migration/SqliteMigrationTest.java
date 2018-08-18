@@ -5,21 +5,17 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.IdentifierKeyValuePair;
-import org.nzbhydra.searching.SearchEntity;
-import org.nzbhydra.searching.SearchRepository;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.db.IdentifierKeyValuePair;
+import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 
 import java.sql.Connection;
 import java.util.Arrays;
@@ -27,9 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 

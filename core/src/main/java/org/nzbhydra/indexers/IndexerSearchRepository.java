@@ -1,7 +1,7 @@
 package org.nzbhydra.indexers;
 
 
-import org.nzbhydra.searching.SearchEntity;
+import org.nzbhydra.searching.db.SearchEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;

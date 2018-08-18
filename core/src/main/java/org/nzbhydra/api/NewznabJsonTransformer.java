@@ -19,8 +19,8 @@ package org.nzbhydra.api;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.mapping.newznab.json.*;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -80,7 +80,7 @@ public class NewznabJsonTransformer {
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerScore", String.valueOf(searchResultItem.getIndexer().getConfig().getScore().orElse(null))));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerHost", String.valueOf(searchResultItem.getIndexer().getConfig().getHost())));
         attributes.add(new NewznabJsonItemAttributes("hydraIndexerName", String.valueOf(searchResultItem.getIndexer().getName())));
-        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.DownloadType.NZB;
+        boolean isNzb = searchRequest.getDownloadType() == org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB;
         String resultType;
         if (isNzb) {
             rssItem.setAttr(attributes.stream().map(NewznabJsonItemAttr::new).collect(Collectors.toList()));

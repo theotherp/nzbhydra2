@@ -6,17 +6,12 @@ import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.searching.DownloadType;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.dtoseventsenums.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

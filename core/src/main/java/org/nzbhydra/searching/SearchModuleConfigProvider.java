@@ -26,7 +26,6 @@ public class SearchModuleConfigProvider implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(SearchModuleConfigProvider.class);
 
     private List<IndexerConfig> indexers;
-    private Map<String, IndexerConfig> configsByname;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
@@ -47,13 +46,10 @@ public class SearchModuleConfigProvider implements InitializingBean {
         return indexers;
     }
 
-    public IndexerConfig getConfigByName(String name) {
-        return configsByname.get(name);
-    }
-
     @Override
     public void afterPropertiesSet() {
         indexers = baseConfig.getIndexers();
+        Map<String, IndexerConfig> configsByname;
         if (indexers != null) {
             configsByname = indexers.stream().collect(Collectors.toMap(IndexerConfig::getName, Function.identity()));
         } else {

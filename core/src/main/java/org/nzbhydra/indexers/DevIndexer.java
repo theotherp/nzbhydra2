@@ -11,7 +11,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
-import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 

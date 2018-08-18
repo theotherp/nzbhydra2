@@ -21,8 +21,9 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.searching.SearchType;
 import org.nzbhydra.searching.Searcher;
+import org.nzbhydra.searching.dtoseventsenums.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
@@ -255,9 +256,9 @@ public class ExternalApi {
         Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = buildBaseSearchRequest(params);
         if (isTorznabCall()) {
-            searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.TORRENT);
+            searchRequest.setDownloadType(DownloadType.TORRENT);
         } else {
-            searchRequest.setDownloadType(org.nzbhydra.searching.DownloadType.NZB);
+            searchRequest.setDownloadType(DownloadType.NZB);
         }
         SearchResult searchResult = searcher.search(searchRequest);
 

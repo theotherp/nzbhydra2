@@ -18,7 +18,8 @@ package org.nzbhydra.searching;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.searching.SearchResultWebTO.SearchResultWebTOBuilder;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO.SearchResultWebTOBuilder;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

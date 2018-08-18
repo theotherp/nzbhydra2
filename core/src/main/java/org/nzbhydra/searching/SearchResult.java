@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
 import java.util.ArrayList;
 import java.util.List;

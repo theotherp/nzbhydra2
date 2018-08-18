@@ -17,8 +17,8 @@
 package org.nzbhydra.downloading;
 
 import org.junit.Test;
-import org.nzbhydra.searching.SearchResultEntity;
-import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.http.HttpHeaders;
 
 import static org.assertj.core.api.Assertions.assertThat;

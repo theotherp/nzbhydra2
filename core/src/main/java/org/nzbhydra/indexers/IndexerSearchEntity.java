@@ -3,7 +3,7 @@ package org.nzbhydra.indexers;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.nzbhydra.searching.SearchEntity;
+import org.nzbhydra.searching.db.SearchEntity;
 
 import javax.persistence.*;
 import java.util.Objects;

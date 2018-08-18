@@ -7,18 +7,15 @@ import com.google.common.collect.Multiset;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.logging.LoggingMarkers;
+import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -144,7 +141,7 @@ public class DuplicateDetector {
             return false;
         }
         long sizeDifference = Math.abs(result1.getSize() - result2.getSize());
-        float sizeAverage = (result1.getSize() + result2.getSize()) / 2;
+        float sizeAverage = (result1.getSize() + result2.getSize()) / 2F;
         float sizeDiffPercent = Math.abs(sizeDifference / sizeAverage) * 100;
         boolean sameSize = sizeDiffPercent < duplicateSizeDifference;
         logger.debug(LoggingMarkers.DUPLICATES, "Same size: {}", sameSize);

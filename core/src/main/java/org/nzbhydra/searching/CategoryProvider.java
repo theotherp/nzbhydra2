@@ -53,7 +53,7 @@ public class CategoryProvider implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         initialize();
     }
 
@@ -110,7 +110,7 @@ public class CategoryProvider implements InitializingBean {
      * Returns a category converted getInfos the newznab categories. Returns the "N/A" category if no matching category is found
      *
      * @param cats A string (possibly comma separated) containing newznab categories.
-     * @return
+     * @return A category
      */
     public Category fromSearchNewznabCategories(String cats) {
         if (StringUtils.isEmpty(cats)) {

@@ -2,6 +2,8 @@ package org.nzbhydra.searching;
 
 import com.google.common.collect.Sets;
 import org.junit.Test;
+import org.nzbhydra.searching.db.IdentifierKeyValuePair;
+import org.nzbhydra.searching.db.SearchEntity;
 
 import java.time.Instant;
 import java.util.HashSet;

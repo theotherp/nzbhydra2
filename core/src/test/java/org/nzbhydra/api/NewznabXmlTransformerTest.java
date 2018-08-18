@@ -25,10 +25,10 @@ import org.nzbhydra.config.*;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
-import org.nzbhydra.searching.DownloadType;
 import org.nzbhydra.searching.SearchResult;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.dtoseventsenums.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 

@@ -27,8 +27,8 @@ import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.downloaders.Downloader.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
-import org.nzbhydra.searching.SearchResultEntity;
-import org.nzbhydra.searching.SearchResultRepository;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.db.SearchResultRepository;
 
 import java.util.Collections;
 import java.util.List;

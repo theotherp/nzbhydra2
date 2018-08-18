@@ -6,7 +6,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.mediainfo.TvInfo;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;

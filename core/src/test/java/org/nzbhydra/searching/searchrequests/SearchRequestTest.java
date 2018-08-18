@@ -2,7 +2,7 @@ package org.nzbhydra.searching.searchrequests;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.nzbhydra.searching.SearchType;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 
 import static junit.framework.TestCase.assertTrue;

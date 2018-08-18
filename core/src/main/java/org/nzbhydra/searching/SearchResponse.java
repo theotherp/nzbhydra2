@@ -1,6 +1,8 @@
 package org.nzbhydra.searching;
 
 import lombok.Data;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchMetaData;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
 
 import java.util.ArrayList;
 import java.util.HashMap;

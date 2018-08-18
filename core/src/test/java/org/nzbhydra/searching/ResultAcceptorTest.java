@@ -10,6 +10,7 @@ import org.nzbhydra.config.*;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;

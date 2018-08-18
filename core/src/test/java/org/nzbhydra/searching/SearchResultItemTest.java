@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import org.junit.Test;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

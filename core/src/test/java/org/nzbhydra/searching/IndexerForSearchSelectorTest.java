@@ -14,6 +14,7 @@ import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
@@ -250,16 +251,16 @@ public class IndexerForSearchSelectorTest {
     @Test
     public void shouldOnlyUseTorznabIndexersForTorrentSearches() throws Exception {
         indexerConfigMock.setSearchModuleType(SearchModuleType.NEWZNAB);
-        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
+        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
         assertFalse("Only torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
-        when(searchRequest.getDownloadType()).thenReturn(DownloadType.TORRENT);
+        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.TORRENT);
         assertTrue("Torznab indexers should be used for torrent searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);
         when(searchRequest.getSource()).thenReturn(SearchSource.INTERNAL);
-        when(searchRequest.getDownloadType()).thenReturn(DownloadType.NZB);
+        when(searchRequest.getDownloadType()).thenReturn(org.nzbhydra.searching.dtoseventsenums.DownloadType.NZB);
         assertTrue("Torznab indexers should be selected for internal NZB searches", testee.checkTorznabOnlyUsedForTorrentOrInternalSearches(indexer));
 
         indexerConfigMock.setSearchModuleType(SearchModuleType.TORZNAB);

@@ -1,5 +1,8 @@
 package org.nzbhydra.searching;
 
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+
 import java.nio.charset.Charset;
 
 public class SearchResultIdCalculator {

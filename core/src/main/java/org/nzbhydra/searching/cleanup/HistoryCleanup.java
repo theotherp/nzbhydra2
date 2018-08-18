@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.searching;
+package org.nzbhydra.searching.cleanup;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;

@@ -5,11 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.Category;
@@ -20,6 +16,12 @@ import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
+import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -27,11 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -39,9 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 //@RunWith(SpringRunner.class)
 //@ContextConfiguration(classes = {Searcher.class, DuplicateDetector.class})

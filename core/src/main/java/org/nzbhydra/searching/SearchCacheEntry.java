@@ -9,6 +9,9 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
+import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
 import java.time.Instant;

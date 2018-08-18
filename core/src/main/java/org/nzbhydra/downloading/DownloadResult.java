@@ -17,7 +17,7 @@
 package org.nzbhydra.downloading;
 
 import lombok.Data;
-import org.nzbhydra.searching.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

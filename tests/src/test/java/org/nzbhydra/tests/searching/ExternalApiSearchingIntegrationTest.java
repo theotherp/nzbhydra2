@@ -26,7 +26,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.searching.SearchModuleProvider;
-import org.nzbhydra.searching.SearchResultRepository;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

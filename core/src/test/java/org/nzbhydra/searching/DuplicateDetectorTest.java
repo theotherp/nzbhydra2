@@ -11,6 +11,8 @@ import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.Newznab;
+import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

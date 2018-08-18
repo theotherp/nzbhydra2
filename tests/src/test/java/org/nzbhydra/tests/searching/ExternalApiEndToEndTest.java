@@ -34,7 +34,7 @@ import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
-import org.nzbhydra.searching.SearchRepository;
+import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.tests.AbstractConfigReplacingTest;
 import org.nzbhydra.tests.NzbhydraMockMvcTest;
 import org.popper.fw.interfaces.IPoFactory;

@@ -11,7 +11,12 @@ import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.historystats.stats.*;
 import org.nzbhydra.indexers.*;
-import org.nzbhydra.searching.*;
+import org.nzbhydra.searching.SearchModuleConfigProvider;
+import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,7 +34,6 @@ import static org.junit.Assert.*;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
 @DataJpaTest
-//@TestPropertySource(locations = "classpath:/org/nzbhydra/tests/searching/application.properties")
 public class StatsComponentTest {
 
     private IndexerEntity indexer1;

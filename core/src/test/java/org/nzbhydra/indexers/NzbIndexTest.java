@@ -12,9 +12,9 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.CategoryProvider;
-import org.nzbhydra.searching.SearchResultItem;
-import org.nzbhydra.searching.SearchResultItem.DownloadType;
-import org.nzbhydra.searching.SearchResultItem.HasNfo;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 
 import java.time.Instant;
 import java.util.Arrays;

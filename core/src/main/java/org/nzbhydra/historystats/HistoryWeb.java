@@ -3,7 +3,7 @@ package org.nzbhydra.historystats;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History.SearchDetails;
 import org.nzbhydra.historystats.stats.HistoryRequestData;
-import org.nzbhydra.searching.SearchEntity;
+import org.nzbhydra.searching.db.SearchEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
