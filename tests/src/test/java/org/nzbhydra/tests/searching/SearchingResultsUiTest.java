@@ -57,6 +57,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @NzbhydraMockMvcTest
 @TestPropertySource(locations = "classpath:config/application.properties")
+@Ignore //Currently chromedriver doesn't work
 public class SearchingResultsUiTest extends AbstractConfigReplacingTest {
 
     private IPoFactory factory;
