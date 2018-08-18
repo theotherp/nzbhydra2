@@ -1,3 +1,21 @@
+### v2.0.0
+
+Feature: NZBHydra 2 can now run with Java 8, 9 or 10. It shouldn't matter much which version you use as long as it's up to date. If you want to use 9 or 10 you'll need to manually update the wrapper (i.e. the executable(s) in the main folder)
+
+Feature: Reduced startup time. My instance starts in 8 seconds instead of 22 but YRMV
+
+Feature: I updated the underlying libraries and main framework. This doesn't change much for you except that NZBHydra 2 is a bit more future proof and may have some new bugs :-)
+
+Feature: Added an option to keep the history (searches, downloads, stats) only for a certain time (see Searching options). This may reduce the database size and stats calculation time and may improve performance a bit.
+
+Fix: Hydra will correctly recognize if run in the windows program files folder
+
+Fix: When shutting down or restarting Hydra will try to defrag the database file. In some cases this should drastically reduce the database size. It may grow again but for now I don't have a better fix than restarting the instance...
+
+Fix: Remove multiple trailing words from titles if found
+
+
+
 ### v1.5.2
 
 Fix: Adding new categories resulted in an exception
