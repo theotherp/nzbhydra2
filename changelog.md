@@ -1,3 +1,9 @@
+### v2.0.1
+
+Fix: New installations would generate a faulty default configuration, resulting in failed searches
+
+
+
 ### v2.0.0
 
 Feature: NZBHydra 2 can now run with Java 8, 9 or 10. It shouldn't matter much which version you use as long as it's up to date. If you want to use 9 or 10 you'll need to manually update the wrapper (i.e. the executable(s) in the main folder)

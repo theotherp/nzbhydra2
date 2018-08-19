@@ -2,6 +2,7 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -38,6 +39,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;
+    @JsonSetter()
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
@@ -101,4 +103,5 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     public SearchingConfig updateAfterLoading() {
         return this;
     }
+
 }
