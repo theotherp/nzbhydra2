@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "New installations would generate a faulty default configuration, resulting in failed searches"
+      }
+    ]
+  },
+  {
     "version": "v2.0.0",
     "changes": [
       {
