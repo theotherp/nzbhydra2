@@ -15,7 +15,7 @@ import java.util.Optional;
 @ConfigurationProperties(prefix = "categories")
 @Data
 @NoArgsConstructor
-public class Category {
+public class Category extends ValidatingConfig<Category> {
 
     public enum Subtype {
         NONE,
@@ -53,6 +53,21 @@ public class Category {
 
     public Category(String name) {
         this.name = name;
+    }
+
+    @Override
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, Category newConfig) {
+        return new ConfigValidationResult();
+    }
+
+    @Override
+    public Category prepareForSaving() {
+        return this;
+    }
+
+    @Override
+    public Category updateAfterLoading() {
+        return this;
     }
 
     public Optional<String> getForbiddenRegex() {

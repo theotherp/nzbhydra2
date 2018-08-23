@@ -10,9 +10,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.reflections.Reflections;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -88,6 +94,49 @@ public class BaseConfigTest {
         testee.getIndexers().add(indexerConfigMock);
         testee.validateConfig(new BaseConfig(), testee);
         verify(indexerConfigMock).validateConfig(any(), any());
+    }
+
+    @Test
+    public void shouldInitializeAllListsAsEmptyInBaseConfigYaml() throws Exception {
+        BaseConfig baseConfig = new ConfigReaderWriter().originalConfig();
+        validateListsNotNull(baseConfig);
+    }
+
+    @Test
+    public void shouldInitializeAllListsAsEmptyInClasses() throws Exception {
+        Reflections reflections = new Reflections("org.nzbhydra");
+        Set<Class<? extends ValidatingConfig>> classes = reflections.getSubTypesOf(ValidatingConfig.class);
+        for (Class<? extends ValidatingConfig> configClass : classes) {
+            boolean constructorFound = false;
+            for (Constructor<?> constructor : configClass.getDeclaredConstructors()) {
+                if (constructor.getParameterCount() == 0) {
+                    ValidatingConfig config = (ValidatingConfig) constructor.newInstance();
+                    validateListsNotNull(config);
+                    constructorFound = true;
+                    break;
+                }
+            }
+            assertTrue("No default constructor found for class " + configClass.getName(), constructorFound);
+        }
+    }
+
+    protected void validateListsNotNull(ValidatingConfig config) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
+        for (PropertyDescriptor pd : Introspector.getBeanInfo(config.getClass()).getPropertyDescriptors()) {
+            if (pd.getReadMethod().getReturnType().isAssignableFrom(List.class)) {
+                List list = (List) pd.getReadMethod().invoke(config);
+                assertNotNull("Property of " + config.getClass().getName() + "#" + pd.getReadMethod().getName() + " should be initialized as empty list", list);
+                if (!list.isEmpty()) {
+                    if (list.get(0).getClass().getSuperclass() == ValidatingConfig.class) {
+                        for (Object o : list) {
+                            validateListsNotNull((ValidatingConfig) o);
+                        }
+                    }
+                }
+            } else if (pd.getReadMethod().getReturnType().getSuperclass() == ValidatingConfig.class) {
+                ValidatingConfig subConfig = (ValidatingConfig) pd.getReadMethod().invoke(config);
+                validateListsNotNull(subConfig);
+            }
+        }
     }
 
     private void compare(Object left, Object right) {

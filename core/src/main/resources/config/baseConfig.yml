@@ -282,7 +282,7 @@ main:
   proxyHost: null
   proxyPort: 1080
   proxyIgnoreLocal: true
-  proxyIgnoreDomains: null
+  proxyIgnoreDomains: []
   proxyUsername: null
   proxyPassword: null
   repositoryBase: "https://github.com/theotherp"

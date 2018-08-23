@@ -26,6 +26,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class SearchResultAcceptor {
 
     private static final Pattern TITLE_PATTERN = Pattern.compile("(\\w[\\w']*\\w|\\w)");
 
-    private Map<String, List<String>> titleWordCache = new HashMap<>();
+    private Map<String, List<String>> titleWordCache = new ConcurrentHashMap<>();
 
     private ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     private Validator validator = factory.getValidator();
@@ -290,7 +291,7 @@ public class SearchResultAcceptor {
         return true;
     }
 
-    private List<String> getTitleWords(SearchResultItem item) {
+    private synchronized List<String> getTitleWords(SearchResultItem item) {
         return titleWordCache.computeIfAbsent(item.getTitle(), s -> {
             List<String> titleWords = new ArrayList<>();
             Matcher matcher = TITLE_PATTERN.matcher(item.getTitle().toLowerCase());
