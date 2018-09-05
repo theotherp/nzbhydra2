@@ -1,3 +1,21 @@
+### v2.0.3
+
+Fix: In some cases an incorrect NZB URL was used for downloads
+
+Fix: Saving the config would sometimes show confusing or wrong warnings
+
+Fix: Restoring from web UI had no effect
+
+Fix: Category mapping would sometimes not work for incoming searches
+
+
+
+### v2.0.2
+
+Fix: Minor stability improvements
+
+
+
 ### v2.0.1
 
 Fix: New installations would generate a faulty default configuration, resulting in failed searches
