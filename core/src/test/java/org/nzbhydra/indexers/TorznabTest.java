@@ -90,10 +90,11 @@ public class TorznabTest {
         rssItem.getTorznabAttributes().add(new NewznabAttribute("grabs", "20"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("comments", "30"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("usenetdate", new JaxbPubdateAdapter().marshal(Instant.ofEpochSecond(6666666))));
+        rssItem.getEnclosures().add(new NewznabXmlEnclosure("http://indexer.com/abc", 1L, "application/x-bittorrent"));
         rssItem.setCategory("4000");
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
-        assertThat(item.getLink(), is("http://indexer.com/123"));
+        assertThat(item.getLink(), is("http://indexer.com/abc"));
         assertThat(item.getIndexerGuid(), is("http://indexer.com/123"));
         assertThat(item.getSize(), is(456L));
         assertThat(item.getCommentsLink(), is("http://indexer.com/123/details#comments"));
@@ -109,6 +110,7 @@ public class TorznabTest {
         when(categoryProviderMock.fromResultNewznabCategories(ArgumentMatchers.any())).thenReturn(categoryMock);
         NewznabXmlItem rssItem = buildBasicRssItem();
         rssItem.getTorznabAttributes().add(new NewznabAttribute("category", "5070"));
+        rssItem.getEnclosures().add(new NewznabXmlEnclosure("url", 1L, "application/x-bittorrent"));
 
         SearchResultItem item = testee.createSearchResultItem(rssItem);
         assertThat(item.getCategory(), is(categoryMock));
@@ -125,7 +127,7 @@ public class TorznabTest {
         rssItem.setLink("http://indexer.com/123");
         rssItem.setRssGuid(new NewznabXmlGuid("http://indexer.com/123", false));
         rssItem.setTitle("title");
-        rssItem.setEnclosure(new NewznabXmlEnclosure("http://indexer.com/123", 456L, "application/x-nzb"));
+        rssItem.setEnclosure(new NewznabXmlEnclosure("http://indexer.com/123456", 456L, "application/x-nzb"));
         rssItem.setPubDate(Instant.ofEpochSecond(5555555));
         rssItem.setDescription("description");
         rssItem.setComments("http://indexer.com/123/details#comments");
