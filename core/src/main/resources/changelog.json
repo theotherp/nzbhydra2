@@ -1,5 +1,23 @@
 [
   {
+    "version": "v2.0.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "In some cases an incorrect NZB URL was used for downloads"
+      }
+    ]
+  },
+  {
+    "version": "v2.0.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Minor stability improvements"
+      }
+    ]
+  },
+  {
     "version": "v2.0.1",
     "changes": [
       {

@@ -22,13 +22,14 @@ import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "item")
 @Data
 //Link must be before enclosure for HeadPhones to work
-@XmlType(propOrder = {"title", "link", "enclosure", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "newznabAttributes", "torznabAttributes"})
+@XmlType(propOrder = {"title", "link", "enclosures", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "newznabAttributes", "torznabAttributes"})
 public class NewznabXmlItem {
 
     @XmlElement(name = "title")
@@ -38,7 +39,7 @@ public class NewznabXmlItem {
     private String link;
 
     @XmlElement(name = "enclosure")
-    private NewznabXmlEnclosure enclosure;
+    private List<NewznabXmlEnclosure> enclosures;
 
     @XmlElement(name = "pubDate")
     @XmlJavaTypeAdapter(JaxbPubdateAdapter.class)
@@ -65,6 +66,14 @@ public class NewznabXmlItem {
     @XmlElement(name = "attr", namespace = "http://torznab.com/schemas/2015/feed")
     private List<NewznabAttribute> torznabAttributes = new ArrayList<>();
 
+    public NewznabXmlEnclosure getEnclosure() {
+        if (enclosures == null || enclosures.isEmpty()) {
+            return null;
+        }
+        return enclosures.get(0);
+    }
 
-
+    public void setEnclosure(NewznabXmlEnclosure enclosure) {
+        this.enclosures = new ArrayList<>(Collections.singletonList(enclosure));
+    }
 }

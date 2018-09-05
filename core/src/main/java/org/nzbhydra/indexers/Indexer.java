@@ -487,6 +487,10 @@ public abstract class Indexer<T> {
         return config.getName();
     }
 
+    protected void warn(String msg) {
+        getLogger().warn(getName() + ": " + msg);
+    }
+
     protected void error(String msg) {
         getLogger().error(getName() + ": " + msg);
     }

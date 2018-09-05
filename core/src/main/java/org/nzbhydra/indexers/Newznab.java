@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.Category;
 import org.nzbhydra.config.Category.Subtype;
 import org.nzbhydra.config.IndexerCategoryConfig;
@@ -328,8 +329,12 @@ public class Newznab extends Indexer<Xml> {
         List<SearchResultItem> searchResultItems = new ArrayList<>();
 
         for (NewznabXmlItem item : ((NewznabXmlRoot) rssRoot).getRssChannel().getItems()) {
-            SearchResultItem searchResultItem = createSearchResultItem(item);
-            searchResultItems.add(searchResultItem);
+            try {
+                SearchResultItem searchResultItem = createSearchResultItem(item);
+                searchResultItems.add(searchResultItem);
+            } catch (NzbHydraException e) {
+                //Already logged
+            }
         }
 
         return searchResultItems;
@@ -356,9 +361,10 @@ public class Newznab extends Indexer<Xml> {
         }
     }
 
-    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
         SearchResultItem searchResultItem = new SearchResultItem();
-        searchResultItem.setLink(item.getLink());
+        String link = getEnclosureUrl(item);
+        searchResultItem.setLink(link);
 
         if (item.getRssGuid().isPermaLink()) {
             searchResultItem.setDetails(item.getRssGuid().getGuid());
@@ -393,6 +399,25 @@ public class Newznab extends Indexer<Xml> {
         parseAttributes(item, searchResultItem);
 
         return searchResultItem;
+    }
+
+    protected String getEnclosureUrl(NewznabXmlItem item) throws NzbHydraException {
+        String link;
+        if (item.getEnclosures().size() == 0) {
+            link = item.getEnclosures().get(0).getUrl();
+        } else {
+            Optional<NewznabXmlEnclosure> nzbEnclosure = item.getEnclosures().stream().filter(x -> getEnclosureType().equals(x.getType())).findAny();
+            if (!nzbEnclosure.isPresent()) {
+                warn("Unable to find URL for result " + item.getTitle() + ". Will skip it.");
+                throw new NzbHydraException();
+            }
+            link = nzbEnclosure.get().getUrl();
+        }
+        return link;
+    }
+
+    protected String getEnclosureType() {
+        return "application/x-nzb";
     }
 
     protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {

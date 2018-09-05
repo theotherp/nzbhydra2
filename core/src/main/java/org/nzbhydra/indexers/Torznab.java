@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.mapping.newznab.xml.*;
@@ -26,7 +27,7 @@ public class Torznab extends Newznab {
 
     private static final Logger logger = LoggerFactory.getLogger(Torznab.class);
 
-    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
         String categoryFromAttributes = null;
@@ -95,6 +96,11 @@ public class Torznab extends Newznab {
         indexerSearchResult.setOffset(0);
         indexerSearchResult.setTotalResults(rssChannel.getItems().size());
         indexerSearchResult.setLimit(searchRequest.getLimit().orElse(100));
+    }
+
+    @Override
+    protected String getEnclosureType() {
+        return "application/x-bittorrent";
     }
 
     protected Logger getLogger() {

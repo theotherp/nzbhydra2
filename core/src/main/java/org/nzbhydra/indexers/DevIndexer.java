@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -88,7 +89,7 @@ public class DevIndexer extends Newznab {
     }
 
     @Override
-    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) {
+    protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
         SearchResultItem resultItem = super.createSearchResultItem(item);
         return resultItem;
     }
