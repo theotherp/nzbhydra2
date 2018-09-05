@@ -9,7 +9,6 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
         startCountdown: startCountdown
     };
 
-
     function restart(message) {
         NzbHydraControlService.restart().then(function (response) {
             startCountdown(message, response.data.message);

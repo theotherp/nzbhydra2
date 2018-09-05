@@ -388,6 +388,8 @@ def startup():
                       "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
     java_arguments.extend(gcArguments)
+    if args.debugport:
+        java_arguments.append("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:" + args.debugport)
     if not args.nocolors and not isWindows:
         java_arguments.append("-Dspring.output.ansi.enabled=ALWAYS")
     if args.debug:
@@ -509,6 +511,7 @@ if __name__ == '__main__':
     GracefulKiller()
     parser = argparse.ArgumentParser(description='NZBHydra 2')
     parser.add_argument('--java', action='store', help='Full path to java executable', default="java")
+    parser.add_argument('--debugport', action='store', help='Set debug port to enable remote debugging', default=None)
     parser.add_argument('--daemon', '-D', action='store_true', help='Run as daemon. *nix only', default=False)
     parser.add_argument('--pidfile', action='store', help='Path to PID file. Only relevant with daemon argument', default="nzbhydra2.pid")
     parser.add_argument('--nopidfile', action='store_true', help='Disable writing of PID file. Only relevant with daemon argument', default=False)

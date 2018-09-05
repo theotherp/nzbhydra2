@@ -2816,7 +2816,7 @@ function hydrabackup() {
 
         $scope.restoreFromFile = function (filename) {
             BackupService.restoreFromFile(filename).then(function () {
-                    RestartService.restart("Extraction of backup successful. Restarting for wrapper to restore data.");
+                    RestartService.startCountdown("Extraction of backup successful. Restarting for wrapper to restore data.");
                 },
                 function (response) {
                     growl.error(response.data);
@@ -8945,7 +8945,6 @@ function RestartService(growl, NzbHydraControlService, $uibModal) {
         restart: restart,
         startCountdown: startCountdown
     };
-
 
     function restart(message) {
         NzbHydraControlService.restart().then(function (response) {

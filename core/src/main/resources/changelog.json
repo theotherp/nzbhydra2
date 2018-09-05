@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Saving the config would sometimes show confusing or wrong warnings"
+      },
+      {
+        "type": "fix",
+        "text": "Restoring from web UI had no effect"
       }
     ]
   },

@@ -76,4 +76,6 @@ public class NewznabXmlItem {
     public void setEnclosure(NewznabXmlEnclosure enclosure) {
         this.enclosures = new ArrayList<>(Collections.singletonList(enclosure));
     }
+
+
 }
