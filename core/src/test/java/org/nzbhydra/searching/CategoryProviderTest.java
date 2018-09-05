@@ -129,6 +129,26 @@ public class CategoryProviderTest {
     }
 
     @Test
+    public void testThatWorksWithSameNewznabCategoriesAsCategory() {
+        testee.baseConfig.getCategoriesConfig().getCategories().clear();
+        Category category = new Category();
+        category.setName("TV HD");
+        category.setNewznabCategories(Arrays.asList(5010, 5040));
+        testee.baseConfig.getCategoriesConfig().getCategories().add(category);
+
+        Category category2 = new Category();
+        category2.setName("TV UHD");
+        category2.setNewznabCategories(Arrays.asList(5045));
+        testee.baseConfig.getCategoriesConfig().getCategories().add(category2);
+
+        testee.initialize();
+
+        Category foundCategory = testee.getCategory(Arrays.asList(5010, 5040), null);
+
+        assertThat(foundCategory.getName(), is(category.getName()));
+    }
+
+    @Test
     public void shouldFindBySubtype() {
         Optional<Category> animeOptional = testee.fromSubtype(Subtype.ANIME);
         assertThat(animeOptional.isPresent(), is(true));

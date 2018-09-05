@@ -171,7 +171,7 @@ public class CategoryProvider implements InitializingBean {
             return categoryMapByNumber.getOrDefault(cats.get(0), getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory));
         }
 
-        Category result;
+        Category result = null;
         cats.sort((o1, o2) -> Integer.compare(o2, o1));
         String catsString = Joiner.on(",").join(cats);
 
@@ -192,17 +192,21 @@ public class CategoryProvider implements InitializingBean {
 
         if (cats.size() == 1) {
             //No main categories found, specific subcategory must've been supplied
-            return getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
+            result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
+        } else {
+            List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).collect(Collectors.toList());
+            if (matchingSubcategories.size() == 1) {
+                result = categoryMapByNumber.get(matchingSubcategories.get(0));
+            } else if (matchingSubcategories.size() == 0) {
+                result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
+            } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
+                //All match the sub category
+                result = categoryMapByNumber.get(matchingSubcategories.get(0));
+            }
         }
-
-        List<Integer> matchingSubcategories = cats.stream().filter(cat -> categoryMapByNumber.containsKey(cat)).collect(Collectors.toList());
-        if (matchingSubcategories.size() == 1) {
-            return categoryMapByNumber.get(matchingSubcategories.get(0));
-        } else if (matchingSubcategories.size() == 0) {
-            return getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-        } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
-            //All match the sub category
-            return categoryMapByNumber.get(matchingSubcategories.get(0));
+        if (result != null) {
+            logger.debug("Found category {} matching newznab categories {}", result.getName(), catsString);
+            return result;
         }
 
         logger.debug("The supplied categories {} match multiple configured categories", catsString);
@@ -217,7 +221,7 @@ public class CategoryProvider implements InitializingBean {
         }
         //No matching main category was found, use any one
         result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
-        logger.warn("Unable to match the supplied categories to any specific or general category. Will use {}", catsString, (result == null ? defaultCategory : result).getName());
+        logger.warn("Unable to match the supplied categories {} to any specific or general category. Will use {}", catsString, (result == null ? defaultCategory : result).getName());
         return result;
 
     }
