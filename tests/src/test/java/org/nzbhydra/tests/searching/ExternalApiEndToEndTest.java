@@ -32,6 +32,7 @@ import org.nzbhydra.config.SearchModuleType;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.searching.db.SearchRepository;
@@ -122,7 +123,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
     @Test
     public void shouldAllowTorrentFileDownload() throws Exception {
         replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().searchModuleType(SearchModuleType.TORZNAB).apiKey("apikey").build()));
-        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").link(getMockServerBaseUrl() + "torrentlink").build();
+        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").enclosure(new NewznabXmlEnclosure(getMockServerBaseUrl() + "torrentlink", 1L, "application/x-bittorrent")).build();
         NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result), 0, 1);
         mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
         mockWebServer.enqueue(new MockResponse().setBody("torrentcontent").setHeader("Content-Type", "application/xml; charset=utf-8"));
@@ -142,7 +143,7 @@ public class ExternalApiEndToEndTest extends AbstractConfigReplacingTest {
     @Test
     public void shouldAllowMagnetLinkDownload() throws Exception {
         replaceIndexers(Arrays.asList(IndexerConfigBuilder.builder().searchModuleType(SearchModuleType.TORZNAB).apiKey("apikey").build()));
-        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").link("magnet:x&dn=y").build();
+        NewznabXmlItem result = RssItemBuilder.builder("result").category("5000").enclosure(new NewznabXmlEnclosure("magnet:x&dn=y", 1L, "application/x-bittorrent")).build();
         NewznabXmlRoot rssRoot = NewznabMockBuilder.getRssRoot(Arrays.asList(result), 0, 1);
         mockWebServer.enqueue(new MockResponse().setBody(rssRoot.toXmlString()).setHeader("Content-Type", "application/xml; charset=utf-8"));
         mockWebServer.enqueue(new MockResponse().setBody("torrentcontent").setHeader("Content-Type", "application/xml; charset=utf-8"));
