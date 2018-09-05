@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Restoring from web UI had no effect"
+      },
+      {
+        "type": "fix",
+        "text": "Category mapping would sometimes not work for incoming searches"
       }
     ]
   },

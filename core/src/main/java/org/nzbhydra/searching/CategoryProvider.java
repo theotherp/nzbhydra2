@@ -200,7 +200,11 @@ public class CategoryProvider implements InitializingBean {
             return categoryMapByNumber.get(matchingSubcategories.get(0));
         } else if (matchingSubcategories.size() == 0) {
             return getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
+        } else if (matchingSubcategories.stream().map(x -> categoryMapByNumber.get(x)).distinct().count() == 1) {
+            //All match the sub category
+            return categoryMapByNumber.get(matchingSubcategories.get(0));
         }
+
         logger.debug("The supplied categories {} match multiple configured categories", catsString);
         for (Integer cat : cats) {
             for (Category category : categories) {
