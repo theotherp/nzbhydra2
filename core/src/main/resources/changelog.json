@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "In some cases an incorrect NZB URL was used for downloads"
+      },
+      {
+        "type": "fix",
+        "text": "Saving the config would sometimes show confusing or wrong warnings"
       }
     ]
   },

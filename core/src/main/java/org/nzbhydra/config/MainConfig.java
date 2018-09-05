@@ -105,6 +105,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
             } else {
                 result.getWarningMessages().add("Removed URL base");
             }
+            newMainConfig.setUrlBase(urlBase);
         }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());

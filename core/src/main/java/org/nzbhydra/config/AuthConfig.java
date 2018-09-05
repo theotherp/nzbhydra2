@@ -59,7 +59,6 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
             errors.add("The following user names are not unique: " + Joiner.on(", ").join(duplicateUsernames));
         }
 
-
         return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);
     }
 
