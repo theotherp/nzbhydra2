@@ -2089,7 +2089,11 @@ function downloadNzbsButton() {
                     if (angular.isDefined(response.data)) {
                         if (response !== "dismissed") {
                             if (response.data.successful) {
-                                growl.info("Successfully added all NZBs");
+                                if (response.data.message == null) {
+                                    growl.info("Successfully added all NZBs");
+                                } else {
+                                    growl.warning(response.data.message);
+                                }
                             } else {
                                 growl.error(response.data.message);
                             }
@@ -2887,11 +2891,11 @@ function addableNzb(DebugService) {
                 originalCategory: $scope.searchresult.originalCategory
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
-                    if (response.data.successful) {
+                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf($scope.searchresult.searchResultId) > -1)) {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
                     } else {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
-                        growl.error("Unable to add NZB. Make sure the downloader is running and properly configured.");
+                        growl.error(response.data.message);
                     }
                 } else {
                     $scope.cssClass = originalClass;

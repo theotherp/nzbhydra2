@@ -40,8 +40,11 @@ public class MockNewznab {
 
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
-    public String nzbDownload(@PathVariable String nzbId) throws Exception {
-        return "Would download NZB with ID" + nzbId;
+    public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
+        if(nzbId.contains("11")) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+        return ResponseEntity.ok("Would download NZB with ID" + nzbId);
     }
 
     @RequestMapping(value = "/details/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)

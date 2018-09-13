@@ -122,7 +122,10 @@ public class NzbGet extends Downloader {
             return callAppend(link, title, category);
         } catch (Throwable throwable) {
             logger.error("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", link, title, throwable.getMessage());
-            throw new DownloaderException("Error while adding link to NZBGet: " + throwable.getMessage());
+            if (throwable.getMessage() != null) {
+                throw new DownloaderException("Error while adding link to NZBGet: " + throwable.getMessage());
+            }
+            throw new DownloaderException("Unknown error while adding link to NZBGet");
         }
     }
 
@@ -133,7 +136,10 @@ public class NzbGet extends Downloader {
             return callAppend(BaseEncoding.base64().encode(content), title, category);
         } catch (Throwable throwable) {
             logger.info("Error while trying to add link {} for NZB \"{}\" to NZBGet queue: {}", content, title, throwable.getMessage());
-            throw new DownloaderException("Error while adding NZB to NZBGet: " + throwable.getMessage());
+            if (throwable.getMessage() != null) {
+                throw new DownloaderException("Error while adding NZB to NZBGet: " + throwable.getMessage());
+            }
+            throw new DownloaderException("Unknown error while adding NZB to NZBGet");
         }
     }
 

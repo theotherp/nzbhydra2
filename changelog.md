@@ -1,3 +1,9 @@
+### v2.0.4
+
+Fix: Improved feedback when adding NZBs to downloader failed
+
+
+
 ### v2.0.3
 
 Fix: In some cases an incorrect NZB URL was used for downloads

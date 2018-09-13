@@ -57,6 +57,7 @@ public abstract class Downloader {
         HISTORY
     }
 
+
     @Autowired
     protected FileHandler nzbHandler;
     @Autowired
@@ -75,7 +76,8 @@ public abstract class Downloader {
     @Transactional
     public AddNzbsResponse addBySearchResultIds(List<AddFilesRequest.SearchResult> searchResults, String category) {
         NzbAddingType addingType = downloaderConfig.getNzbAddingType();
-        List<Long> addedNzbs = new ArrayList<>();
+        Set<Long> addedNzbs = new HashSet<>();
+        Set<SearchResultEntity> missedNzbs = new HashSet<>();
         try {
             for (AddFilesRequest.SearchResult entry : searchResults) {
                 Long guid = Long.valueOf(entry.getSearchResultId());
@@ -87,23 +89,27 @@ public abstract class Downloader {
                 }
                 if (addingType == NzbAddingType.UPLOAD) {
                     DownloadResult result = nzbHandler.getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
-                    String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
-                    result.getDownloadEntity().setExternalId(externalId);
-                    nzbHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                    if (result.isSuccessful()) {
+                        String externalId = addNzb(result.getContent(), result.getTitle(), categoryToSend);
+                        result.getDownloadEntity().setExternalId(externalId);
+                        nzbHandler.updateStatusByEntity(result.getDownloadEntity(), FileDownloadStatus.NZB_ADDED);
+                        addedNzbs.add(guid);
+                    } else {
+                        missedNzbs.add(result.getDownloadEntity().getSearchResult());
+                    }
                 } else {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(guid);
                     addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
+                    addedNzbs.add(guid);
                 }
-                addedNzbs.add(guid);
             }
-
-        } catch (InvalidSearchResultIdException | DownloaderException |EntityNotFoundException e) {
+        } catch (InvalidSearchResultIdException | DownloaderException | EntityNotFoundException e) {
             String message;
             if (e instanceof DownloaderException) {
                 message = "Error while adding NZB(s) to downloader: " + e.getMessage();
             } else if (e instanceof EntityNotFoundException) {
                 message = "Unable to find the search result in the database. Unable to download";
-            }else {
+            } else {
                 message = e.getMessage();
             }
             logger.error(message);
@@ -114,7 +120,14 @@ public abstract class Downloader {
             searchResultIds.removeAll(addedNzbs);
             return new AddNzbsResponse(false, message, addedNzbs, searchResultIds);
         }
-        return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
+        if (missedNzbs.isEmpty()) {
+            return new AddNzbsResponse(true, null, addedNzbs, Collections.emptyList());
+        } else {
+            logger.debug("At least one NZB was not downloaded successfully and could not be added to the downloader");
+            List<Long> missedNzbIds = missedNzbs.stream().map(SearchResultEntity::getId).collect(Collectors.toList());
+            String message = "NZBs for the following titles could not be downloaded:\r\n" + missedNzbs.stream().map(SearchResultEntity::getTitle).collect(Collectors.joining(", "));
+            return new AddNzbsResponse(true, message, addedNzbs, missedNzbIds);
+        }
     }
 
 
@@ -185,8 +198,7 @@ public abstract class Downloader {
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName(), statusCheckType);
         } catch (DownloaderException e) {
             logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to contact downloader {}: ", downloaderConfig.getName(), e.getMessage());
-        }
-        catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             logger.error("Error while trying to update download statuses", throwable);
         }
         return updatedDownloads;
@@ -200,10 +212,15 @@ public abstract class Downloader {
 
     protected abstract boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry);
 
+
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public class AddNzbsResponse {
+        /**
+         * Determines if the communication with the downloader was successful, not if all (or any) NZBs were successfully downloaded
+         */
         private boolean successful;
         private String message;
         private Collection<Long> addedIds;

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Improved feedback when adding NZBs to downloader failed"
+      }
+    ]
+  },
+  {
     "version": "v2.0.3",
     "changes": [
       {

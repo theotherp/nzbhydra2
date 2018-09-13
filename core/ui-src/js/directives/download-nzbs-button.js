@@ -53,7 +53,11 @@ function downloadNzbsButton() {
                     if (angular.isDefined(response.data)) {
                         if (response !== "dismissed") {
                             if (response.data.successful) {
-                                growl.info("Successfully added all NZBs");
+                                if (response.data.message == null) {
+                                    growl.info("Successfully added all NZBs");
+                                } else {
+                                    growl.warning(response.data.message);
+                                }
                             } else {
                                 growl.error(response.data.message);
                             }
