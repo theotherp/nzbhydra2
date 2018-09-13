@@ -35,6 +35,14 @@ public abstract class ValidatingConfig<T> {
         private boolean restartNeeded;
         private List<String> errorMessages = new ArrayList<>();
         private List<String> warningMessages = new ArrayList<>();
+        private BaseConfig newConfig;
+
+        public ConfigValidationResult(boolean ok, boolean restartNeeded, List<String> errorMessages, List<String> warningMessages) {
+            this.ok = ok;
+            this.restartNeeded = restartNeeded;
+            this.errorMessages = errorMessages;
+            this.warningMessages = warningMessages;
+        }
     }
 
     protected void checkRegex(List<String> errorMessages, String regex, String errorMessage) {

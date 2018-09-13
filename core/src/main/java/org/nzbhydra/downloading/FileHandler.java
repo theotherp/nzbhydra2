@@ -227,7 +227,7 @@ public class FileHandler {
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
         try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).build().newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Message: " + response.message());
+                throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Code: " + response.code() + ". Message: " + response.message());
             }
             ResponseBody body = response.body();
             if (body == null ) {

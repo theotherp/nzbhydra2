@@ -6332,7 +6332,7 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
     });
 }
 
-ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl"];angular
+ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl", "$window"];angular
     .module('nzbhydraApp')
     .factory('ConfigModel', function () {
         return {};
@@ -6359,7 +6359,7 @@ angular
     .module('nzbhydraApp')
     .controller('ConfigController', ConfigController);
 
-function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, localStorageService, $state, growl) {
+function ConfigController($scope, $http, activeTab, ConfigService, config, DownloaderCategoriesService, ConfigFields, ConfigModel, ModalService, RestartService, localStorageService, $state, growl, $window) {
     $scope.config = config;
     $scope.submit = submit;
     $scope.activeTab = activeTab;
@@ -6444,6 +6444,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                             ConfigService.set($scope.config, true).then(function (response) {
                                 handleConfigSetResponse(response, true, $scope.restartRequired);
                                 updateAndAskForRestartIfNecessary();
+                                $scope.config = response.data.newConfig;
+                                $window.location.reload();
                             }, function (response) {
                                 //Actual error while setting or validating config
                                 growl.error(response.data);
@@ -6455,6 +6457,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                         onYes: function () {
                             handleConfigSetResponse(response, true, $scope.restartRequired);
                             updateAndAskForRestartIfNecessary();
+                            $scope.config = response.data.newConfig;
+                            $window.location.reload();
                         },
                         text: "OK"
                     }
@@ -6464,6 +6468,8 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             ModalService.open(title, message, options, "md", "left");
         } else {
             updateAndAskForRestartIfNecessary();
+            $scope.config = response.data.newConfig;
+            $window.location.reload();
         }
     }
 

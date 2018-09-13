@@ -73,6 +73,7 @@ public class ConfigWeb {
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(newConfig);
             configProvider.getBaseConfig().save();
+            result.setNewConfig(configProvider.getBaseConfig());
         }
         return result;
     }

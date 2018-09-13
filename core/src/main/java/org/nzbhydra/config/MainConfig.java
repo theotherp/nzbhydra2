@@ -90,23 +90,6 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
             result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
         }
 
-        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
-            if (!urlBase.startsWith("/")) {
-                urlBase = "/" + urlBase;
-            }
-            if (urlBase.endsWith("/")) {
-                urlBase = urlBase.substring(0, urlBase.length() - 1);
-            }
-            if ("/".equals(urlBase) || "".equals(urlBase)) {
-                urlBase = null;
-            }
-            if (urlBase != null) {
-                result.getWarningMessages().add("Changed URL base to " + urlBase);
-            } else {
-                result.getWarningMessages().add("Removed URL base");
-            }
-            newMainConfig.setUrlBase(urlBase);
-        }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
@@ -120,6 +103,18 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @Override
     public MainConfig prepareForSaving() {
+        if (!Strings.isNullOrEmpty(urlBase) && (!urlBase.startsWith("/") || urlBase.endsWith("/") || "/".equals(urlBase))) {
+            if (!urlBase.startsWith("/")) {
+                urlBase = "/" + urlBase;
+            }
+            if (urlBase.endsWith("/")) {
+                urlBase = urlBase.substring(0, urlBase.length() - 1);
+            }
+            if ("/".equals(urlBase) || "".equals(urlBase)) {
+                urlBase = null;
+            }
+            setUrlBase(urlBase);
+        }
         return this;
     }
 

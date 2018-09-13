@@ -172,6 +172,10 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
 
     @Override
     public BaseConfig prepareForSaving() {
+        getCategoriesConfig().prepareForSaving();
+        getDownloading().prepareForSaving();
+        getSearching().prepareForSaving();
+        getMain().prepareForSaving();
         getAuth().prepareForSaving();
         return this;
     }
