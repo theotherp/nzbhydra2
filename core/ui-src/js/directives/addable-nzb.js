@@ -28,7 +28,7 @@ function addableNzb(DebugService) {
                 originalCategory: $scope.searchresult.originalCategory
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
-                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf($scope.searchresult.searchResultId) > -1)) {
+                    if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-success" : "nzbget-success";
                     } else {
                         $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd-error" : "nzbget-error";
@@ -44,3 +44,4 @@ function addableNzb(DebugService) {
         };
     }
 }
+
