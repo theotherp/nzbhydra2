@@ -1,3 +1,9 @@
+### v2.0.5
+
+Fix: Adding to downloader via result button would always show failed (introduced with 2.0.3)
+
+
+
 ### v2.0.4
 
 Fix: Improved feedback when adding NZBs to downloader failed
