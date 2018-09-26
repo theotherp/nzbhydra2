@@ -1,5 +1,6 @@
 package org.nzbhydra;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
@@ -139,24 +140,24 @@ public class NzbHydra {
             }
         }
 
-        System.setProperty("nzbhydra.dataFolder", dataFolder);
-        File yamlFile = new File(dataFolder, "nzbhydra.yml");
-        migrateYamlFile(yamlFile);
-
-        useIfSet(options, "host", "server.address");
-        useIfSet(options, "port", "server.port");
-        useIfSet(options, "baseurl", "server.servlet.context-path");
-        useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
-
-        setApplicationPropertiesFromConfig();
-
-        SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
-        NzbHydra.originalArgs = args;
-        wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
-        if (!options.has("quiet") && !options.has("nobrowser")) {
-            hydraApplication.setHeadless(false);
-        }
         try {
+            System.setProperty("nzbhydra.dataFolder", dataFolder);
+            File yamlFile = new File(dataFolder, "nzbhydra.yml");
+            migrateYamlFile(yamlFile);
+
+            useIfSet(options, "host", "server.address");
+            useIfSet(options, "port", "server.port");
+            useIfSet(options, "baseurl", "server.servlet.context-path");
+            useIfSet(options, "nobrowser", BROWSER_DISABLED, "true");
+
+            setApplicationPropertiesFromConfig();
+
+            SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
+            NzbHydra.originalArgs = args;
+            wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
+            if (!options.has("quiet") && !options.has("nobrowser")) {
+                hydraApplication.setHeadless(false);
+            }
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
             handleException(e);
@@ -203,7 +204,7 @@ public class NzbHydra {
         if (e.getClass().getName().contains("SilentExitException")) { //Sometimes thrown by spring boot devtools
             return;
         }
-        if (e instanceof YAMLException) {
+        if (e instanceof YAMLException || e instanceof JsonProcessingException) {
             msg = "The file " + new File(dataFolder, "nzbhydra.yml").getAbsolutePath() + " could not be parsed properly. It might be corrupted. Try restoring it from a backup. Error message: " + e.getMessage();
             logger.error(msg);
         }
