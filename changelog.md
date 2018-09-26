@@ -1,3 +1,9 @@
+### v2.0.6
+
+Fix: Torznab queries were limited to 100 results. I've removed the limit altogether. As torznab doesn't require or support paging there's no reason for a request limit
+
+
+
 ### v2.0.5
 
 Fix: Adding to downloader via result button would always show failed (introduced with 2.0.3)
