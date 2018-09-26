@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.6",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Torznab queries were limited to 100 results. I've removed the limit altogether. As torznab doesn't require or support paging there's no reason for a request limit"
+      }
+    ]
+  },
+  {
     "version": "v2.0.5",
     "changes": [
       {

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.IndexerConfig;
 import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 
@@ -95,7 +97,13 @@ public class Torznab extends Newznab {
         indexerSearchResult.setHasMoreResults(false);
         indexerSearchResult.setOffset(0);
         indexerSearchResult.setTotalResults(rssChannel.getItems().size());
-        indexerSearchResult.setLimit(searchRequest.getLimit().orElse(100));
+        indexerSearchResult.setLimit(10000);
+    }
+
+    @Override
+    protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
+        //Jackett doesn't support or require paging, so we overwrite offset and limit
+        return super.buildSearchUrl(searchRequest, null, null);
     }
 
     @Override
