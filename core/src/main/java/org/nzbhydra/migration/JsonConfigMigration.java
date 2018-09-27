@@ -142,6 +142,7 @@ public class JsonConfigMigration {
             } else {
                 newDownloader.setDownloaderType(DownloaderType.SABNZBD);
                 newDownloader.setUrl(oldDownloader.getUrl());
+                newDownloader.setApiKey(oldDownloader.getApikey());
             }
             newDownloader.setName(oldDownloader.getName());
             try {

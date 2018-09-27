@@ -122,6 +122,7 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getUrl(), is("http://127.0.0.1:8085/sabnzbd/"));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).isEnabled(), is(false));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getNzbAddingType(), is(NzbAddingType.UPLOAD));
+        assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(1).getApiKey(), is("apikey"));
 
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUrl(), is("https://127.0.0.1:6789"));
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().get(2).getUsername().get(), is("nzbgetx"));
