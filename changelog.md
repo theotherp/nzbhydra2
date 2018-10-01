@@ -1,3 +1,15 @@
+### v2.0.8
+
+Fix: Adapt database to store long torrent magnet links
+
+
+
+### v2.0.7
+
+Fix: Sabnzbd API key was not migrated
+
+
+
 ### v2.0.6
 
 Fix: Torznab queries were limited to 100 results. I've removed the limit altogether. As torznab doesn't require or support paging there's no reason for a request limit
