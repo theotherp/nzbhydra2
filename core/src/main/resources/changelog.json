@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Adapt database to store lonk torrent magnet links"
+        "text": "Adapt database to store long torrent magnet links"
       }
     ]
   },
