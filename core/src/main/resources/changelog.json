@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.8",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Adapt database to store lonk torrent magnet links"
+      }
+    ]
+  },
+  {
     "version": "v2.0.7",
     "changes": [
       {
