@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.9",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Caps check with Jackett indexers wouldn't complete properly due to a change in their code"
+      }
+    ]
+  },
+  {
     "version": "v2.0.8",
     "changes": [
       {

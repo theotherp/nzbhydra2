@@ -304,7 +304,7 @@ public class NewznabChecker {
 
         if (response instanceof NewznabXmlError) {
             String errorDescription = ((NewznabXmlError) response).getDescription();
-            if (errorDescription.toLowerCase().contains("function not available")) {
+            if (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getKey());
                 eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Doesn't support " + request.getKey()));
                 return new SingleCheckCapsResponse(request.getKey(), false, null);
