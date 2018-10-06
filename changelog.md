@@ -1,3 +1,9 @@
+### v2.0.9
+
+Fix: Caps check with Jackett indexers wouldn't complete properly due to a change in their code
+
+
+
 ### v2.0.8
 
 Fix: Adapt database to store long torrent magnet links
