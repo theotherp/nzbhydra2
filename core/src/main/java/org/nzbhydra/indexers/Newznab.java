@@ -115,6 +115,7 @@ public class Newznab extends Indexer<Xml> {
 
         if (limit != null) {
             componentsBuilder.queryParam("limit", limit);
+
         }
         if (offset != null) {
             componentsBuilder.queryParam("offset", offset);
@@ -258,8 +259,11 @@ public class Newznab extends Indexer<Xml> {
             searchRequest.getIdentifiers().putAll(params);
 
             for (Map.Entry<IdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
-                //We just add all IDs that we have. Some indexers support more than they say or will find results under one ID but not the other
+                //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
                 if (entry.getValue() == null) {
+                    continue;
+                }
+                if (!config.getSupportedSearchIds().contains(entry.getKey())) {
                     continue;
                 }
                 componentsBuilder.queryParam(idTypeToParamValueMap.get(entry.getKey()), entry.getValue().replace("tt", ""));

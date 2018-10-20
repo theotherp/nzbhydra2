@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.10",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Sometimes search IDs would be used even if the indexer wasn't configured to use them, resulting in failing searches"
+      }
+    ]
+  },
+  {
     "version": "v2.0.9",
     "changes": [
       {
