@@ -191,15 +191,15 @@ public class NewznabTest {
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvmazeId");
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
+        testee.config.getSupportedSearchIds().addAll(Arrays.asList(IdType.TMDB, IdType.TVRAGE, IdType.TVMAZE));
 
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
 
         MultiValueMap<String, String> params = builder.build().getQueryParams();
-        assertTrue(params.containsKey("imdbid"));
-        assertTrue(params.containsKey("tmdbid"));
-        assertTrue(params.containsKey("rid"));
+        assertFalse(params.containsKey("imdbid"));
+        assertFalse(params.containsKey("tmdbid"));
+        assertFalse(params.containsKey("rid"));
         assertTrue(params.containsKey("tvmazeid"));
-        verify(infoProviderMock, times(1)).convert(anyMap());
     }
 
     @Test
@@ -238,7 +238,7 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Collections.emptyList());
+        testee.config.setSupportedSearchIds(Collections.singletonList(IdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
         when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
