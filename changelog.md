@@ -1,3 +1,9 @@
+### v2.0.10
+
+Fix: Sometimes search IDs would be used even if the indexer wasn't configured to use them, resulting in failing searches
+
+
+
 ### v2.0.9
 
 Fix: Caps check with Jackett indexers wouldn't complete properly due to a change in their code
