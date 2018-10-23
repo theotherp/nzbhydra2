@@ -32,6 +32,7 @@ public class InfoProvider {
 
     public static Set<IdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE);
     public static Set<IdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
+    public static Set<IdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
 
     private static Map<IdType, Set<IdType>> canConvertMap = new HashMap<>();
 
@@ -69,27 +70,21 @@ public class InfoProvider {
     }
 
     public MediaInfo convert(Map<IdType, String> identifiers) throws InfoProviderException {
-        if (identifiers.containsKey(IMDB)) {
-            return convert(identifiers.get(IMDB), IMDB);
+        for (IdType idType : REAL_ID_TYPES) {
+            if (identifiers.containsKey(idType) && identifiers.get(idType) != null) {
+                return convert(identifiers.get(idType), idType);
+            }
         }
-        if (identifiers.containsKey(TMDB)) {
-            return convert(identifiers.get(TMDB), TMDB);
-        }
-        if (identifiers.containsKey(TVDB)) {
-            return convert(identifiers.get(TVDB), TVDB);
-        }
-        if (identifiers.containsKey(TVRAGE)) {
-            return convert(identifiers.get(TVRAGE), TVRAGE);
-        }
-        if (identifiers.containsKey(TVMAZE)) {
-            return convert(identifiers.get(TVMAZE), TVMAZE);
-        }
+
         throw new InfoProviderException("Unable to find any convertable IDs");
     }
 
 
     @Cacheable(cacheNames = "infos", sync = true)
     public MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
+        if (value == null) {
+            throw new InfoProviderException("Unable to convert IDType " + fromType + " with null value");
+        }
         logger.debug("Conversion of {} ID {} requested", fromType, value);
         try {
             MediaInfo info;

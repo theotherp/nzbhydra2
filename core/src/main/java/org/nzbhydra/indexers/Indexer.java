@@ -171,7 +171,8 @@ public abstract class Indexer<T> {
 
     /**
      * Responsible for filling the meta data of the IndexerSearchResult, e.g. number of available results and the used offset
-     *  @param response            The web response from the indexer
+     *
+     * @param response            The web response from the indexer
      * @param indexerSearchResult The result to fill
      * @param acceptorResult      The result acceptor result
      * @param searchRequest       The original search request
@@ -349,6 +350,7 @@ public abstract class Indexer<T> {
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
         boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
         boolean fallbackRequested = searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
+
         if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {
             return query;
         }
@@ -362,9 +364,12 @@ public abstract class Indexer<T> {
         } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get();
         } else {
-            Entry<IdType, String> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().iterator().next();
+            Optional<Entry<IdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
+            if (!firstIdentifierEntry.isPresent()) {
+                throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
+            }
             try {
-                MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.getValue(), firstIdentifierEntry.getKey());
+                MediaInfo mediaInfo = infoProvider.convert(firstIdentifierEntry.get().getValue(), firstIdentifierEntry.get().getKey());
                 if (!mediaInfo.getTitle().isPresent()) {
                     throw new IndexerSearchAbortedException("Unable to generate query because no title is known");
                 }
