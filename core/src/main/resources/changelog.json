@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Allow to disable SSL verification only for certain hosts"
+      },
+      {
+        "type": "feature",
+        "text": "Warn when host is changed from 0.0.0.0 and run in docker. This seems to cause some problems"
       }
     ]
   },

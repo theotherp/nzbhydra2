@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.sensitive.SensitiveData;
+import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -90,7 +91,9 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         if (oldMain.getPort() != port || (oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase) || oldMain.isSsl() != isSsl()) && !startupBrowser) {
             result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
         }
-
+        if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
+            result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'");
+        }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
