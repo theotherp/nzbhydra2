@@ -1,3 +1,11 @@
+### v2.0.11
+
+Feature: Allow to disable SSL verification only for certain hosts
+
+Feature: Warn when host is changed from 0.0.0.0 and run in docker. This seems to cause some problems
+
+
+
 ### v2.0.10
 
 Fix: Sometimes search IDs would be used even if the indexer wasn't configured to use them, resulting in failing searches
