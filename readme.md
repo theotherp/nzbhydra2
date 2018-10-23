@@ -19,24 +19,10 @@ It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra)
   * For GUI searches, allowing you to download torrents to a blackhole folder
   * A separate Torznab compatible endpoint for API requests, allowing you to merge multiple trackers
 * Extensive configurability
+* Save torrents in a black hole folder; Torznab API endpoint
 * Migration of database and settings from v1
 
 See some [screenshots](https://imgur.com/a/ePxwj).
-
-### Major Improvements Over Nzbhydra V1
-
-* Improved performance especially when using many indexers and/or doing multiple searches concurrently. Up to six times faster search times (ignoring indexer response times) and twice as fast result presentation:
-  * I wrote a benchmark. 5*3 concurrent API searches took 50 seconds on v1 compared to 4 seconds on v2. 5 subsequent single searches took 15 versus 2 seconds.
-  * Stats calculation may be slower, but you don't do that so often
-* Display of search progress with update messages and option to cancel searching
-* RSS support which will cache the results for a given time
-* Proper filtering of displayed results on the search results page
-* Extended statistics, e.g. share of downloads / searches per user, age distribution of downloaded NZBs and download failures per indexer
-* Query configured downloaders for updates of NZB download content for history and stats
-* Extended configurability of categories and improved mapping of categories between Hydra and indexers
-* Improved config validation
-* Save torrents in a black hole folder; Torznab API endpoint
-* Many more QoL improvements, background checks, log outputs, etc.
 
 ## How to Run
 
@@ -47,7 +33,7 @@ Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydr
 * On Linux start `nzbhydra2` (currently working only on x64)
 * On Mac: No executable yet, see next point
 * If you cannot run the executables for some reason, there's another way (the executables are just compiled Java):
-  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the NZBHydra folder containing the executables and run it; or
+  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7; or
   * Alternatively you can use Docker. You might want to use [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [LinuxServer.io](https://github.com/linuxserver/docker-hydra2).
 
 After a while your browser should open to http://127.0.0.1:5076.
@@ -69,7 +55,7 @@ the memory usage (see main config), especially for calculating stats.
 
 ### Disclaimer
 
-This is still in early development. Don't run in on the machine where the nuclear launch codes are stored.
+Bugs may/do exist. Don't run it on the machine where the nuclear launch codes are stored.
 
 ## Development and how you can help
 
@@ -90,12 +76,6 @@ If you plan on doing any frontend work (JS, CSS, HTML): Please contact me first 
 
 Please send merge requests to the develop branch!
 
-## Why Java?
-
-Although I don't think I need to justify myself I expect a lot of negativity because of my decision to go with Java. While it's not as cool as python it allows me to develop the best version
-of Hydra. I develop Java by day and I know it best. There's a lot of stuff I wouldn't have been able to do in version 1 - not because it cannot be done with python but because I just don't
-know it as well. I'm convinced v2 of Hydra is a huge improvement over v1 and reason enough to use Java.  
-While Hydra 2 does use more memory than Hydra 1 it's still comparable to what Sonarr or Radarr use. It's also way faster than v1.
 
 ## Contact
 
