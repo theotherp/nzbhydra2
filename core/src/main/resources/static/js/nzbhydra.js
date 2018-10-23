@@ -5131,6 +5131,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'verifySslDisabledFor',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Disable SSL for...',
+                                help: 'Add hosts for which to disable SSL verification. Apply words with return key.'
+                            }
+                        },
+                        {
                             key: 'sniDisabledFor',
                             type: 'horizontalChips',
                             templateOptions: {

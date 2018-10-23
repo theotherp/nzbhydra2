@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.11",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Allow to disable SSL verification only for certain hosts"
+      }
+    ]
+  },
+  {
     "version": "v2.0.10",
     "changes": [
       {

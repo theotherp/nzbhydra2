@@ -66,6 +66,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private boolean usePackagedCaCerts = true;
     @RestartRequired
     private boolean verifySsl = true;
+    private List<String> verifySslDisabledFor = new ArrayList<>();
     private boolean welcomeShown = false;
     @RestartRequired
     private int xmx;

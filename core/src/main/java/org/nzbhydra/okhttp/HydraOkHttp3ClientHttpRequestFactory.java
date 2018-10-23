@@ -126,7 +126,8 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
     public Builder getOkHttpClientBuilder(URI requestUri) {
         Builder builder = getBaseBuilder();
-        if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
+        String host = requestUri.getHost();
+        if (!configProvider.getBaseConfig().getMain().isVerifySsl() || (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x)))) {
             builder = getUnsafeOkHttpClientBuilder(builder);
         } else {
             try {
@@ -279,6 +280,22 @@ public class HydraOkHttp3ClientHttpRequestFactory
         };
     }
 
+    protected boolean isSameHost(final String a, final String b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        Matcher aMatcher = HOST_PATTERN.matcher(a);
+        Matcher bMatcher = HOST_PATTERN.matcher(b);
+        if (!aMatcher.matches()) {
+            logger.warn("Unable to parse host {}", a);
+        }
+        if (!bMatcher.matches()) {
+            logger.warn("Unable to parse host {}", b);
+        }
+
+        return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());
+    }
+
 
     protected class SniWhitelistingSocketFactory extends DelegatingSSLSocketFactory {
 
@@ -296,21 +313,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return super.createSocket(socket, newHost, port, autoClose);
         }
 
-        protected boolean isSameHost(final String a, final String b) {
-            if (a == null || b == null) {
-                return false;
-            }
-            Matcher aMatcher = HOST_PATTERN.matcher(a);
-            Matcher bMatcher = HOST_PATTERN.matcher(b);
-            if (!aMatcher.matches()) {
-                logger.warn("Unable to parse host {}", a);
-            }
-            if (!bMatcher.matches()) {
-                logger.warn("Unable to parse host {}", b);
-            }
 
-            return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());
-        }
     }
 
     protected class SockProxySocketFactory extends SocketFactory {
