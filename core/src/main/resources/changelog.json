@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.12",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "SSL error when accessing althub from docker. Should be fixed with the setting to use the packaged cacerts file enabled"
+      }
+    ]
+  },
+  {
     "version": "v2.0.11",
     "changes": [
       {
