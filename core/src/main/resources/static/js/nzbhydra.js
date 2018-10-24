@@ -6462,9 +6462,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                             localStorageService.set("ignoreWarnings", true);
                             ConfigService.set($scope.config, true).then(function (response) {
                                 handleConfigSetResponse(response, true, $scope.restartRequired);
-                                updateAndAskForRestartIfNecessary();
-                                $scope.config = response.data.newConfig;
-                                $window.location.reload();
+                                updateAndAskForRestartIfNecessary(response.data);
                             }, function (response) {
                                 //Actual error while setting or validating config
                                 growl.error(response.data);
@@ -6475,9 +6473,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     yes: {
                         onYes: function () {
                             handleConfigSetResponse(response, true, $scope.restartRequired);
-                            updateAndAskForRestartIfNecessary();
-                            $scope.config = response.data.newConfig;
-                            $window.location.reload();
+                            updateAndAskForRestartIfNecessary(response.data);
                         },
                         text: "OK"
                     }
