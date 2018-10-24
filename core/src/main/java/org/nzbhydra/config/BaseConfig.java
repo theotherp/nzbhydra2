@@ -137,7 +137,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
             ConfigValidationResult indexerValidation = indexer.validateConfig(oldConfig, indexer);
             configValidationResult.getErrorMessages().addAll(indexerValidation.getErrorMessages());
             configValidationResult.getWarningMessages().addAll(indexerValidation.getWarningMessages());
-            configValidationResult.setRestartNeeded(indexerValidation.isRestartNeeded() || indexerValidation.isRestartNeeded());
+            configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || indexerValidation.isRestartNeeded());
         }
 
         if (!newConfig.getIndexers().isEmpty()) {

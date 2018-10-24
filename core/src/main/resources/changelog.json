@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "SSL error when accessing althub from docker. Should be fixed with the setting to use the packaged cacerts file enabled"
+      },
+      {
+        "type": "fix",
+        "text": "Detection and handling of required restart after changing config was broken"
       }
     ]
   },

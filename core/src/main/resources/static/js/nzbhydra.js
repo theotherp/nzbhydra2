@@ -6382,7 +6382,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     $scope.ignoreSaveNeeded = false;
 
 
-    function updateAndAskForRestartIfNecessary() {
+    function updateAndAskForRestartIfNecessary(responseData) {
         if (angular.isUndefined($scope.form)) {
             console.error("Unable to determine if a restart is necessary");
             return;
@@ -6403,9 +6403,14 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                         $scope.restartRequired = false;
                         $uibModalInstance.dismiss();
                         $uibModalInstance.dismiss();
+                        $scope.config = responseData.newConfig;
+                        $window.location.reload();
                     }
                 }
             });
+        } else {
+            $scope.config = responseData.newConfig;
+            $window.location.reload();
         }
     }
 
@@ -6481,9 +6486,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
 
             ModalService.open(title, message, options, "md", "left");
         } else {
-            updateAndAskForRestartIfNecessary();
-            $scope.config = response.data.newConfig;
-            $window.location.reload();
+            updateAndAskForRestartIfNecessary(response.data);
         }
     }
 
