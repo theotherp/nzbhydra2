@@ -1,3 +1,11 @@
+### v2.0.12
+
+Fix: SSL error when accessing althub from docker. Should be fixed with the setting to use the packaged cacerts file enabled
+
+Fix: Detection and handling of required restart after changing config was broken
+
+
+
 ### v2.0.11
 
 Feature: Allow to disable SSL verification only for certain hosts
