@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -93,6 +95,16 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         }
         if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
             result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'");
+        }
+        if (!"0.0.0.0".equals(host)) {
+            try {
+                boolean reachable = InetAddress.getByName(host).isReachable(1);
+                if (!reachable) {
+                    result.getWarningMessages().add("The configured host address cannot be reached. Are you sure it is correct?");
+                }
+            } catch (IOException e) {
+                //Ignore, user will have to know what he does
+            }
         }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
