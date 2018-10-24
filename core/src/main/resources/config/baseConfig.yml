@@ -299,6 +299,7 @@ main:
   useCsrf: true
   usePackagedCaCerts: true
   verifySsl: true
+  verifySslDisabledFor: []
   welcomeShown: false
   xmx: 256
 searching:
