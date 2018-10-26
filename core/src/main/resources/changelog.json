@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.0.13",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Warn when changing the host to an invalid IP"
+      },
+      {
+        "type": "fix",
+        "text": "api.althub.co.za should hopefully actually work now"
+      }
+    ]
+  },
+  {
     "version": "v2.0.12",
     "changes": [
       {
