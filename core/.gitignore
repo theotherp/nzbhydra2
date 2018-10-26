@@ -16,3 +16,4 @@ target/
 nzbhydra.yml
 sql notes.sql
 /static
+/cacerts
