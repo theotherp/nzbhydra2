@@ -1,3 +1,11 @@
+### v2.0.13
+
+Feature: Warn when changing the host to an invalid IP
+
+Fix: api.althub.co.za should hopefully actually work now
+
+
+
 ### v2.0.12
 
 Fix: SSL error when accessing althub from docker. Should be fixed with the setting to use the packaged cacerts file enabled
