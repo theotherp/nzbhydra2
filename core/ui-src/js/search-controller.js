@@ -43,13 +43,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     if (angular.isDefined($stateParams.indexers)) {
         $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
-    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbid) || angular.isDefined($stateParams.imdbid) || angular.isDefined($stateParams.tvmazeid) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbid))) {
+    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbId) || angular.isDefined($stateParams.imdbId) || angular.isDefined($stateParams.tvmazeId) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbId))) {
         $scope.selectedItem = {
-            tmdbId: $stateParams.tmdbid,
-            imdbId: $stateParams.imdbid,
-            tvmazeId: $stateParams.tvmazeid,
+            tmdbId: $stateParams.tmdbId,
+            imdbId: $stateParams.imdbId,
+            tvmazeId: $stateParams.tvmazeId,
             rid: $stateParams.rid,
-            tvdbId: $stateParams.tvdbid,
+            tvdbId: $stateParams.tvdbId,
             title: $stateParams.title
         }
     }
@@ -220,11 +220,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //State params (query parameters) should all be lowercase
         var stateParams = {};
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbid = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
-        stateParams.tmdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
-        stateParams.tvdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
-        stateParams.tvrageid = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
-        stateParams.tvmazeid = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
+        stateParams.imdbId = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
+        stateParams.tmdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
+        stateParams.tvdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
+        stateParams.tvrageId = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
+        stateParams.tvmazeId = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
         stateParams.title = $scope.selectedItem === null ? null : $scope.selectedItem.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;

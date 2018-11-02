@@ -26,7 +26,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion = 4;
+    private Integer configVersion = 5;
     private boolean backupEverySunday = true;
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;
@@ -90,7 +90,13 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, MainConfig newMainConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
         MainConfig oldMain = oldConfig.getMain();
-        if (oldMain.getPort() != port || (oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase) || oldMain.isSsl() != isSsl()) && !startupBrowser) {
+        boolean portChanged = oldMain.getPort() != port;
+        boolean urlBaseChanged = oldMain.getUrlBase().isPresent() && !oldMain.getUrlBase().get().equals(urlBase);
+        if (urlBase == null && oldMain.getUrlBase().isPresent() && oldMain.getUrlBase().get().equals("/")) {
+            urlBaseChanged = false;
+        }
+        boolean sslChanged = oldMain.isSsl() != isSsl();
+        if (portChanged || urlBaseChanged || sslChanged && !startupBrowser) {
             result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
         }
         if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
@@ -111,6 +117,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
         result.getErrorMessages().addAll(loggingResult.getErrorMessages());
 
+        oldMain = oldMain.prepareForSaving();
         result.setRestartNeeded(loggingResult.isRestartNeeded() || isRestartNeeded(oldMain));
         result.setOk(loggingResult.isOk() && result.isOk());
 
@@ -127,7 +134,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
                 urlBase = urlBase.substring(0, urlBase.length() - 1);
             }
             if ("/".equals(urlBase) || "".equals(urlBase)) {
-                urlBase = null;
+                urlBase = "/";
             }
             setUrlBase(urlBase);
         }

@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.0.14",
+    "changes": [
+      {
+        "type": "note",
+        "text": "The URL base has to start with a / from now on. Configs without URL base will be migrated"
+      },
+      {
+        "type": "fix",
+        "text": "ID based TV search from GUI would sometimes ignore ID"
+      }
+    ]
+  },
+  {
     "version": "v2.0.13",
     "changes": [
       {

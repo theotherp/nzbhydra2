@@ -493,7 +493,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         })
 
         .state("root.search", {
-            url: "/?category&query&imdbid&tvdbid&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageid&mode&tmdbid&indexers&tvmazeid",
+            url: "/?category&query&imdbId&tvdbId&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageId&mode&tmdbId&indexers&tvmazeId",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/search.html",
@@ -4903,16 +4903,26 @@ function ConfigFields($injector) {
         };
     }
 
-    function regexValidator(regex, message, prefixViewValue) {
+    function regexValidator(regex, message, prefixViewValue, preventEmpty) {
         return {
             expression: function ($viewValue, $modelValue) {
                 var value = $modelValue || $viewValue;
                 if (value) {
                     return regex.test(value);
                 }
-                return true;
+                return !preventEmpty;
             },
             message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
+        };
+    }
+
+    function notNullValidator() {
+        return {
+            expression: function ($viewValue, $modelValue) {
+                var value = $modelValue || $viewValue;
+                return value !== null;
+            },
+            message: "May not be empty"
         };
     }
 
@@ -4944,7 +4954,7 @@ function ConfigFields($injector) {
                                 type: 'number',
                                 label: 'Port',
                                 required: true,
-                                placeholder: '5056',
+                                placeholder: '5076',
                                 help: 'Requires restart'
                             },
                             validators: {
@@ -4959,7 +4969,11 @@ function ConfigFields($injector) {
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
                                 help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
+                            },
+                            validators: {
+                                urlBase: regexValidator(/^((\/.*[^\/])|\/)$/, 'URL base has to start and may not end with /', false, true)
                             }
+
                         },
                         {
                             key: 'ssl',
@@ -7426,8 +7440,8 @@ function SearchService($http) {
                 searchRequestParameters.imdbId = metaData.imdbId;
             } else if (category.indexOf("TV") > -1 || (category.indexOf("50") === 0) || mode === "tvsearch") {
                 searchRequestParameters.tvdbId = metaData.tvdbId;
-                searchRequestParameters.tvrageid = metaData.rid;
-                searchRequestParameters.tvmazeid = metaData.rid;
+                searchRequestParameters.tvrageId = metaData.rid;
+                searchRequestParameters.tvmazeId = metaData.tvmazeId;
                 searchRequestParameters.season = season;
                 searchRequestParameters.episode = episode;
             }
@@ -8293,19 +8307,19 @@ function SearchHistoryService($filter, $http) {
         _.each(request.identifiers, function (entry) {
             switch (entry.identifierKey) {
                 case "TMDB":
-                    stateParams.tmdbid = entry.identifierValue;
+                    stateParams.tmdbId = entry.identifierValue;
                     break;
                 case "IMDB":
-                    stateParams.imdbid = entry.identifierValue;
+                    stateParams.imdbId = entry.identifierValue;
                     break;
                 case "TVMAZE":
-                    stateParams.tvmazeid = entry.identifierValue;
+                    stateParams.tvmazeId = entry.identifierValue;
                     break;
                 case "TVRAGE":
-                    stateParams.tvrageid = entry.identifierValue;
+                    stateParams.tvrageId = entry.identifierValue;
                     break;
                 case "TVDB":
-                    stateParams.tvdbid = entry.identifierValue;
+                    stateParams.tvdbId = entry.identifierValue;
                     break;
             }
         });
@@ -8584,13 +8598,13 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     if (angular.isDefined($stateParams.indexers)) {
         $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
-    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbid) || angular.isDefined($stateParams.imdbid) || angular.isDefined($stateParams.tvmazeid) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbid))) {
+    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbId) || angular.isDefined($stateParams.imdbId) || angular.isDefined($stateParams.tvmazeId) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbId))) {
         $scope.selectedItem = {
-            tmdbId: $stateParams.tmdbid,
-            imdbId: $stateParams.imdbid,
-            tvmazeId: $stateParams.tvmazeid,
+            tmdbId: $stateParams.tmdbId,
+            imdbId: $stateParams.imdbId,
+            tvmazeId: $stateParams.tvmazeId,
             rid: $stateParams.rid,
-            tvdbId: $stateParams.tvdbid,
+            tvdbId: $stateParams.tvdbId,
             title: $stateParams.title
         }
     }
@@ -8761,11 +8775,11 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         //State params (query parameters) should all be lowercase
         var stateParams = {};
         stateParams.mode = $scope.category.searchType.toLowerCase();
-        stateParams.imdbid = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
-        stateParams.tmdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
-        stateParams.tvdbid = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
-        stateParams.tvrageid = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
-        stateParams.tvmazeid = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
+        stateParams.imdbId = $scope.selectedItem === null ? null : $scope.selectedItem.imdbId;
+        stateParams.tmdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tmdbId;
+        stateParams.tvdbId = $scope.selectedItem === null ? null : $scope.selectedItem.tvdbId;
+        stateParams.tvrageId = $scope.selectedItem === null ? null : $scope.selectedItem.tvrageId;
+        stateParams.tvmazeId = $scope.selectedItem === null ? null : $scope.selectedItem.tvmazeId;
         stateParams.title = $scope.selectedItem === null ? null : $scope.selectedItem.title;
         stateParams.season = $scope.season;
         stateParams.episode = $scope.episode;

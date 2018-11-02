@@ -38,16 +38,26 @@ function ConfigFields($injector) {
         };
     }
 
-    function regexValidator(regex, message, prefixViewValue) {
+    function regexValidator(regex, message, prefixViewValue, preventEmpty) {
         return {
             expression: function ($viewValue, $modelValue) {
                 var value = $modelValue || $viewValue;
                 if (value) {
                     return regex.test(value);
                 }
-                return true;
+                return !preventEmpty;
             },
             message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
+        };
+    }
+
+    function notNullValidator() {
+        return {
+            expression: function ($viewValue, $modelValue) {
+                var value = $modelValue || $viewValue;
+                return value !== null;
+            },
+            message: "May not be empty"
         };
     }
 
@@ -79,7 +89,7 @@ function ConfigFields($injector) {
                                 type: 'number',
                                 label: 'Port',
                                 required: true,
-                                placeholder: '5056',
+                                placeholder: '5076',
                                 help: 'Requires restart'
                             },
                             validators: {
@@ -94,7 +104,11 @@ function ConfigFields($injector) {
                                 label: 'URL base',
                                 placeholder: '/nzbhydra',
                                 help: 'Adapt when using a reverse proxy. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies" target="_blank">wiki</a>. Always use when calling Hydra, even locally.'
+                            },
+                            validators: {
+                                urlBase: regexValidator(/^((\/.*[^\/])|\/)$/, 'URL base has to start and may not end with /', false, true)
                             }
+
                         },
                         {
                             key: 'ssl',

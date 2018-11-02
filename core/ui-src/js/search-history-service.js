@@ -126,19 +126,19 @@ function SearchHistoryService($filter, $http) {
         _.each(request.identifiers, function (entry) {
             switch (entry.identifierKey) {
                 case "TMDB":
-                    stateParams.tmdbid = entry.identifierValue;
+                    stateParams.tmdbId = entry.identifierValue;
                     break;
                 case "IMDB":
-                    stateParams.imdbid = entry.identifierValue;
+                    stateParams.imdbId = entry.identifierValue;
                     break;
                 case "TVMAZE":
-                    stateParams.tvmazeid = entry.identifierValue;
+                    stateParams.tvmazeId = entry.identifierValue;
                     break;
                 case "TVRAGE":
-                    stateParams.tvrageid = entry.identifierValue;
+                    stateParams.tvrageId = entry.identifierValue;
                     break;
                 case "TVDB":
-                    stateParams.tvdbid = entry.identifierValue;
+                    stateParams.tvdbId = entry.identifierValue;
                     break;
             }
         });
