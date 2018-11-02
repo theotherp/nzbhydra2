@@ -1,3 +1,9 @@
+### v2.0.15
+
+Fix: ID lookup for TV shows didn't always work
+
+
+
 ### v2.0.14
 
 Note: The URL base has to start with a / from now on. Configs without URL base will be migrated

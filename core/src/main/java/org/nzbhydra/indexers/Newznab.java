@@ -230,7 +230,7 @@ public class Newznab extends Indexer<Xml> {
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) throws IndexerSearchAbortedException {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<IdType, String> params = new HashMap<>();
-            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> config.getSupportedSearchIds().contains(x));
+            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x ->  searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
             if (!indexerSupportsAnyOfTheProvidedIds) {
                 boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {

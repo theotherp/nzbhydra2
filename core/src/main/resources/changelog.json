@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.15",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "ID lookup for TV shows didn't always work"
+      }
+    ]
+  },
+  {
     "version": "v2.0.14",
     "changes": [
       {

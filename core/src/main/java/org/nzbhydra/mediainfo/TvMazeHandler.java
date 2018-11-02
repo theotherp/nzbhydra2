@@ -38,7 +38,7 @@ public class TvMazeHandler {
                 builder = builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
                 break;
             case TVMAZE:
-                builder = builder.path("shows").path(id);
+                builder = builder.pathSegment("shows", id);
                 break;
             default:
                 throw new InfoProviderException("Unable to handle " + idType);
