@@ -1,3 +1,11 @@
+### v2.0.14
+
+Note: The URL base has to start with a / from now on. Configs without URL base will be migrated
+
+Fix: ID based TV search from GUI would sometimes ignore ID
+
+
+
 ### v2.0.13
 
 Feature: Warn when changing the host to an invalid IP
