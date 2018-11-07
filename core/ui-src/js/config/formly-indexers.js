@@ -194,9 +194,9 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     greaterThanZero: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                            return angular.isUndefined(value) || value === null || value === "" || value > 0;
                         },
-                        message: '"Value must be greater than 1"'
+                        message: '"Value must be greater than 0"'
                     }
                 }
             },
@@ -212,9 +212,9 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     greaterThanZero: {
                         expression: function ($viewValue, $modelValue) {
                             var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                            return angular.isUndefined(value) || value === null || value === "" || value > 0;
                         },
-                        message: '"Value must be greater than 1"'
+                        message: '"Value must be greater than 0"'
                     }
                 }
             }
