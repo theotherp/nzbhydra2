@@ -1,3 +1,9 @@
+### v2.0.16
+
+Fix: Size tag was not forwarded from torznab results
+
+
+
 ### v2.0.15
 
 Fix: ID lookup for TV shows didn't always work
