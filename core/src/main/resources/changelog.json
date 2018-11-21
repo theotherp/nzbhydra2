@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.16",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Size tag was not forwarded from torznab results"
+      }
+    ]
+  },
+  {
     "version": "v2.0.15",
     "changes": [
       {

@@ -29,7 +29,7 @@ import java.util.List;
 @XmlRootElement(name = "item")
 @Data
 //Link must be before enclosure for HeadPhones to work
-@XmlType(propOrder = {"title", "link", "enclosures", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "newznabAttributes", "torznabAttributes"})
+@XmlType(propOrder = {"title", "link", "enclosures", "pubDate", "rssGuid", "description", "comments", "category", "grabs", "size", "newznabAttributes", "torznabAttributes"})
 public class NewznabXmlItem {
 
     @XmlElement(name = "title")
@@ -59,6 +59,9 @@ public class NewznabXmlItem {
 
     @XmlElement(name = "grabs") //Only set by torznab
     private Integer grabs;
+
+    @XmlElement(name = "size") //Only set by torznab
+    private Long size;
 
     @XmlElement(name = "attr", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
     private List<NewznabAttribute> newznabAttributes = new ArrayList<>();

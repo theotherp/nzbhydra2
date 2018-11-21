@@ -77,6 +77,7 @@ public class NewznabXmlTransformer {
         rssItem.setLink(link);
         rssItem.setTitle(searchResultItem.getTitle());
         rssItem.setRssGuid(new NewznabXmlGuid(String.valueOf(searchResultItem.getGuid()), false));
+        rssItem.setSize(searchResultItem.getSize());
         if (searchResultItem.getPubDate() != null) {
             rssItem.setPubDate(searchResultItem.getPubDate());
         } else {
