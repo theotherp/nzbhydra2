@@ -29,7 +29,7 @@ public class TvMazeHandler {
             return fromTitle(id);
         }
         logger.info("Searching TVMaze for show with {} {}", idType, id);
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://api.tvmaze.com/");
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/");
         switch (idType) {
             case TVRAGE:
                 builder = builder.pathSegment("lookup", "shows").queryParam("tvrage", id);
@@ -64,7 +64,7 @@ public class TvMazeHandler {
 
     private TvMazeSearchResult getSearchResultFromShow(TvmazeShow show) {
         Integer year = show.premiered != null ? Integer.valueOf(show.premiered.substring(0, 4)) : null;
-        return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getName(), year, show.getMediumPosterUrl());
+        return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getName(), year, makePosterLinksSecure(show).getMediumPosterUrl());
     }
 
     public List<TvMazeSearchResult> search(String title) throws InfoProviderException {
@@ -75,7 +75,7 @@ public class TvMazeHandler {
     }
 
     private List<TvmazeShowSearch> searchByTitle(String title) throws InfoProviderException {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://api.tvmaze.com/search/shows").queryParam("q", title);
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.tvmaze.com/search/shows").queryParam("q", title);
         ParameterizedTypeReference<List<TvmazeShowSearch>> typeRef = new ParameterizedTypeReference<List<TvmazeShowSearch>>() {
         };
         ResponseEntity<List<TvmazeShowSearch>> lookupResponse = restTemplate.exchange(builder.build().encode().toUri(), HttpMethod.GET, null, typeRef);
@@ -83,10 +83,24 @@ public class TvMazeHandler {
             throw new InfoProviderException("TVMaze lookup returned wrong status: " + lookupResponse.getStatusCode());
         }
         List<TvmazeShowSearch> shows = lookupResponse.getBody();
-        if (shows.isEmpty()) {
+        if (shows == null || shows.isEmpty()) {
             throw new InfoProviderException("TVMaze found no series with title " + title);
         }
+        shows.forEach(x -> makePosterLinksSecure(x.getShow()));
         return shows;
+    }
+
+    private TvmazeShow makePosterLinksSecure(TvmazeShow show) {
+        if (show.getImage() == null) {
+            return show;
+        }
+        if (show.getImage().getMedium() != null && show.getImage().getMedium().startsWith("http://")) {
+            show.getImage().setMedium(show.getImage().getMedium().replace("http://", "https://"));
+        }
+        if (show.getImage().getOriginal() != null && show.getImage().getOriginal().startsWith("http://")) {
+            show.getImage().setOriginal(show.getImage().getOriginal().replace("http://", "https://"));
+        }
+        return show;
     }
 
 

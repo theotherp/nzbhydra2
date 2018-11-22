@@ -8,6 +8,10 @@
       },
       {
         "type": "fix",
+        "text": "Make sure to load resources from TVMaze using HTTPS"
+      },
+      {
+        "type": "fix",
         "text": "Handle (invalid) spaces in URLs"
       }
     ]
