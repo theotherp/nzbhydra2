@@ -209,7 +209,7 @@ public class UpdateManager implements InitializingBean {
 
     public void installUpdate() throws UpdateException {
         Release latestRelease = latestReleaseCache.get();
-        logger.info("Starting update process to {}", latestRelease.getTagName());
+        logger.info("Starting process to update to {}", latestRelease.getTagName());
         Asset asset = getAsset(latestRelease);
         String url = asset.getBrowserDownloadUrl();
         logger.debug("Downloading update from URL {}", url);

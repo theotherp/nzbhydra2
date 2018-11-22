@@ -3,6 +3,10 @@
     "version": "v2.0.17",
     "changes": [
       {
+        "type": "feature",
+        "text": "Automatic update. This feature has been requested for ages. Ironically, now that I rarely release new versions I've finally implemented it. It's opt-in for now even though the update process has been really stable for a while. Now that the startup is faster Hydra shouldn't be unavailable during the update process for more than 20 seconds or so. Any tools calling during that time should recover fine."
+      },
+      {
         "type": "fix",
         "text": "Handle (invalid) spaces in URLs"
       }

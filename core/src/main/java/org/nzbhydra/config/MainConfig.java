@@ -63,6 +63,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     @RestartRequired
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
+    private boolean updateAutomatically = false;
     @RestartRequired
     private boolean useCsrf = true;
     @RestartRequired

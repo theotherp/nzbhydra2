@@ -28,35 +28,35 @@ public class MockGithub {
 
     private static final Logger logger = LoggerFactory.getLogger(MockGithub.class);
 
-    private Release releasev2;
+    private Release releasev3;
     private List<Release> releases;
     private Asset windowsAsset = new Asset();
 
     public MockGithub() {
-        releasev2 = new Release();
-        releasev2.setBody("Changes in version 2.0.0");
-        releasev2.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
-        releasev2.setTagName("v2.0.0");
+        releasev3 = new Release();
+        releasev3.setBody("Changes in version 3.0.0");
+        releasev3.setUrl("http://127.0.0.1:5080/repos/theotherp/nzbhydra2/releases/1");
+        releasev3.setTagName("v3.1.0");
         windowsAsset.setBrowserDownloadUrl("http://127.0.0.1:5080/static/nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
-        windowsAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-windows.zip");
+        windowsAsset.setName("nzbhyra2-3.1.0-SNAPSHOT-windows.zip");
         windowsAsset.setSize(163L);
         Asset linuxAsset = new Asset();
         linuxAsset.setBrowserDownloadUrl("http://127.0.0.1.111:5080/static/nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
-        linuxAsset.setName("nzbhyra2-2.0.0-SNAPSHOT-linux.zip");
+        linuxAsset.setName("nzbhyra2-3.1.0-SNAPSHOT-linux.zip");
         linuxAsset.setSize(163L);
-        releasev2.setAssets(Arrays.asList(windowsAsset, linuxAsset));
+        releasev3.setAssets(Arrays.asList(windowsAsset, linuxAsset));
 
         Release releasev1current = new Release();
         releasev1current.setBody("Changes in version 10.0");
         releasev1current.setTagName("v10.0.0");
 
-        releases = Arrays.asList(releasev1current, releasev2);
+        releases = Arrays.asList(releasev1current, releasev3);
     }
 
 
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases/latest", method = RequestMethod.GET)
     public Release latestRelease() throws Exception {
-        return releasev2;
+        return releasev3;
     }
 
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases", method = RequestMethod.GET)
@@ -66,16 +66,16 @@ public class MockGithub {
 
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases", method = RequestMethod.POST)
     public Release postRelease(@RequestBody String body) throws Exception {
-        releasev2.setUploadUrl("http://127.0.0.1:5080/upload");
+        releasev3.setUploadUrl("http://127.0.0.1:5080/upload");
         logger.info(body);
-        return releasev2;
+        return releasev3;
     }
 
     @RequestMapping(value = "/repos/theotherp/nzbhydra2/releases/1", method = RequestMethod.PATCH)
     public Release patchRelease(@RequestBody String body) throws Exception {
-        releasev2.setDraft(false);
+        releasev3.setDraft(false);
         logger.info(body);
-        return releasev2;
+        return releasev3;
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
@@ -100,7 +100,7 @@ public class MockGithub {
 
     @RequestMapping(value = "/theotherp/nzbhydra/master/blockedVersions.json", method = RequestMethod.GET)
     public String blockedVersions() throws Exception {
-        return "[{\"version\":\"3.0.0\",\"comment\":\"some comment\"}]";
+        return "[{\"version\":\"3.2.1\",\"comment\":\"some comment\"}]";
     }
 
     @Configuration

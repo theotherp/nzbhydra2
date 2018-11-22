@@ -295,6 +295,7 @@ main:
   startupBrowser: true
   theme: "grey"
   updateCheckEnabled: true
+  updateAutomatically: false
   urlBase: "/"
   useCsrf: true
   usePackagedCaCerts: true
