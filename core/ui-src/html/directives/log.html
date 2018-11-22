@@ -23,18 +23,18 @@
                     <th style="width: 71%; overflow: hidden">Message</th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody class="log">
                 <tr ng-repeat="line in jsonLogLines" ng-click="openModal(line)">
-                    <td>{{::line["@timestamp"] | formatTimestamp}}</td>
-                    <td>
+                    <td class="log-line">{{::line["@timestamp"] | formatTimestamp}}</td>
+                    <td class="log-line">
                         <div ng-switch on="line.level">
                             <div class="fa fa-info-circle" ng-switch-when="INFO"></div>
                             <div class="fa fa-warning warning" ng-switch-when="WARN"></div>
                             <div class="fa fa-times-circle error" ng-switch-when="ERROR"></div>
                         </div>
                     </td>
-                    <td>{{line.logger_name | formatClassname}}</td>
-                    <td>
+                    <td class="log-line">{{line.logger_name | formatClassname}}</td>
+                    <td class="log-line">
                         <div style="width: 945px; overflow: hidden; text-overflow: ellipsis"> <!--Hacky but works :-(-->
                             {{::line.message}}
 

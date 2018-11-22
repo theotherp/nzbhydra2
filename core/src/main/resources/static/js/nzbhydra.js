@@ -5307,7 +5307,16 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Backup before update'
                             }
-                        }, {
+                        },
+                        {
+                            key: 'updateAutomatically',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Install updates automatically'
+                            }
+                        },
+                        {
                             key: 'deleteBackupsAfterWeeks',
                             type: 'horizontalInput',
                             templateOptions: {
