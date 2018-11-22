@@ -51,6 +51,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>SUREFIRE-1588</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+            </properties>
+        </profile>
+    </profiles>
   
   <properties>
         <spring.boot.version>2.0.4.RELEASE</spring.boot.version>
