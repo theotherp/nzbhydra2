@@ -1,3 +1,13 @@
+### v2.0.17
+
+Feature: Automatic update. This feature has been requested for ages. Ironically, now that I rarely release new versions I've finally implemented it. It's opt-in for now even though the update process has been really stable for a while. Now that the startup is faster Hydra shouldn't be unavailable during the update process for more than 20 seconds or so. Any tools calling during that time should recover fine.
+
+Fix: Make sure to load resources from TVMaze using HTTPS
+
+Fix: Handle (invalid) spaces in URLs
+
+
+
 ### v2.0.16
 
 Fix: Size tag was not forwarded from torznab results
