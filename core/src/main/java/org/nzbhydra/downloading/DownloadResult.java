@@ -60,9 +60,9 @@ public class DownloadResult {
     protected String getFileName() {
         String filename = title;
         if (downloadEntity.getSearchResult().getDownloadType() == SearchResultItem.DownloadType.NZB) {
-            filename  += ".nzb";
+            filename += ".nzb";
         } else {
-            filename  += ".torrent";
+            filename += ".torrent";
         }
         return filename;
     }
@@ -92,7 +92,7 @@ public class DownloadResult {
             return url;
         }
         String dn = matcher.group(1);
-        url = url.replace("dn="+dn, "dn="+URLEncoder.encode(dn));
+        url = url.replace("dn=" + dn, "dn=" + URLEncoder.encode(dn)).replace(" ", "%20");
         return url;
     }
 
