@@ -8,6 +8,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.sensitive.SensitiveDataModule;
 import org.nzbhydra.logging.LogAnonymizer;
+import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +33,14 @@ public class DebugInfosProvider {
     private LogAnonymizer logAnonymizer;
     @Autowired
     private ConfigProvider configProvider;
+    @Autowired
+    private UpdateManager updateManager;
     @PersistenceContext
     private EntityManager entityManager;
 
     public byte[] getDebugInfosAsZip() throws IOException {
         logger.info("Creating debug infos");
-        logger.info("NZBHydra2 version: {}", NzbHydra.class.getPackage().getImplementationVersion());
+        logger.info("NZBHydra2 version: {}", updateManager.getCurrentVersionString());
         logger.info("Java command line: {}", System.getProperty("sun.java.command"));
         logger.info("Java runtime name: {}", System.getProperty("java.runtime.name"));
         logger.info("Java runtime version: {}", System.getProperty("java.runtime.version"));

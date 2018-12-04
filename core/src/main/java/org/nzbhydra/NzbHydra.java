@@ -14,6 +14,7 @@ import org.nzbhydra.config.migration.ConfigMigration;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.misc.BrowserOpener;
+import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,6 @@ public class NzbHydra {
 
     public static void main(String[] args) throws Exception {
         LoggerFactory.getILoggerFactory();
-        String version = NzbHydra.class.getPackage().getImplementationVersion();
 
         OptionParser parser = new OptionParser();
         parser.accepts("datafolder", "Define path to main data folder. Must start with ./ for relative paths").withRequiredArg().defaultsTo("./data");
@@ -107,6 +107,7 @@ public class NzbHydra {
         } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
+            String version = new UpdateManager().getCurrentVersionChanges().get(0).getVersion();
             logger.info("NZBHydra 2 version: " + version);
         } else if (options.has("repairdb")) {
             String databaseFilePath = (String) options.valueOf("repairdb");
