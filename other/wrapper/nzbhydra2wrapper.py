@@ -1,5 +1,15 @@
 #!/usr/bin/env python
+
 from __future__ import print_function
+import sys
+
+CURRENT_PYTHON = sys.version_info[:2]
+REQUIRED_PYTHON = (2, 7)
+
+# This check and everything above must remain compatible with Python 2.7 and above.
+if CURRENT_PYTHON > REQUIRED_PYTHON:
+    sys.stderr.write("This script requires Python {}.{}, but you're trying to run it on Python {}.{}.".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
+    sys.exit(1)
 
 import argparse
 import datetime
@@ -9,7 +19,6 @@ import platform
 import re
 import shutil
 import subprocess
-import sys
 import zipfile
 from __builtin__ import file
 from logging.handlers import RotatingFileHandler
@@ -30,11 +39,6 @@ logger.addHandler(console_logger)
 file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 consoleLines = []
-
-if sys.version_info >= (3, 0):
-    sys.stderr.write("Sorry, requires Python 2.7")
-    sys.exit(1)
-
 
 def getBasePath():
     global basepath
