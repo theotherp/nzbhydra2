@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.18",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Details link was hidden even if not restricted by auth config"
+      }
+    ]
+  },
+  {
     "version": "v2.0.17",
     "changes": [
       {

@@ -26,7 +26,7 @@ public class UserInfosProvider {
         boolean adminRestricted = auth.isRestrictAdmin() && authConfigured;
         boolean statsRestricted = auth.isRestrictStats() && authConfigured;
         boolean searchRestricted = auth.isRestrictSearch() && authConfigured;
-        boolean detailsDlRestricted = auth.isRestrictIndexerSelection() && authConfigured;
+        boolean detailsDlRestricted = auth.isRestrictDetailsDl() && authConfigured;
         boolean indexerSelectionRestricted = auth.isRestrictIndexerSelection() && authConfigured;
         boolean showIndexerSelection;
         String username;
