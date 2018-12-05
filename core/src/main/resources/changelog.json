@@ -5,6 +5,14 @@
       {
         "type": "fix",
         "text": "Details link was hidden even if not restricted by auth config"
+      },
+      {
+        "type": "fix",
+        "text": "Redirects to torrent magnet links are recognized and properly handled"
+      },
+      {
+        "type": "fix",
+        "text": "Downloads of NZBs with spaces in the filename are properly handled"
       }
     ]
   },

@@ -77,7 +77,7 @@ public class DownloadResult {
             response = new ResponseEntity<>(headers, HttpStatus.FOUND);
         } else {
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + getFileName());
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName().replace("\\", "\\\\").replace("\"", "\\\"") + "\"");
             response = new ResponseEntity<>(getContent(), headers, HttpStatus.OK);
         }
         return response;

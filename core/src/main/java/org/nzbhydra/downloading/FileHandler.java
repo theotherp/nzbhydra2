@@ -70,11 +70,16 @@ public class FileHandler {
         if (fileDownloadAccessType == FileDownloadAccessType.REDIRECT) {
             return handleRedirect(accessSource, result);
         } else {
-            return handleContentDownload(accessSource, result, downloadType);
+            try {
+                return handleContentDownload(accessSource, result, downloadType);
+            } catch (MagnetLinkRedirectException e) {
+                logger.warn("Unable to download magnet link as file");
+                return DownloadResult.createErrorResult("Unable to download magnet link as file");
+            }
         }
     }
 
-    public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result, String downloadType) {
+    public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result, String downloadType) throws MagnetLinkRedirectException {
         if (result.getLink().contains("magnet:")) {
             logger.warn("Unable to download magnet link as file");
             return DownloadResult.createErrorResult("Unable to download magnet link as file");
@@ -221,22 +226,38 @@ public class FileHandler {
     }
 
 
-    protected byte[] downloadFile(SearchResultEntity result) throws IOException {
+    protected byte[] downloadFile(SearchResultEntity result) throws IOException, MagnetLinkRedirectException {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
-        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).build().newCall(request).execute()) {
+        try (Response response = clientHttpRequestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).followRedirects(true).build().newCall(request).execute()) {
+            if (response.isRedirect()) {
+                return handleRedirect(result, response);
+            }
             if (!response.isSuccessful()) {
                 throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Code: " + response.code() + ". Message: " + response.message());
             }
             ResponseBody body = response.body();
-            if (body == null ) {
+            if (body == null) {
                 throw new IOException("NZB downloaded from " + result.getLink() + " is empty");
             }
             return body.bytes();
         }
     }
 
+    private byte[] handleRedirect(SearchResultEntity result, Response response) throws MagnetLinkRedirectException, IOException {
+        String locationHeader = response.header("location");
+        if (locationHeader != null) {
+            if (locationHeader.startsWith("magnet:")) {
+                throw new MagnetLinkRedirectException(locationHeader);
+            } else {
+                logger.info("Redirecting to URL {}", locationHeader);
+                result.setLink(locationHeader);
+                return downloadFile(result);
+            }
+        }
+        throw new IOException("Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
+    }
 
 
 }

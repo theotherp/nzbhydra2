@@ -22,6 +22,7 @@ import org.nzbhydra.config.FileDownloadAccessType;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
+import org.nzbhydra.downloading.MagnetLinkRedirectException;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
@@ -61,7 +62,11 @@ public class TorrentFileHandler {
         if (result.getLink().contains("magnet:") || accessType == FileDownloadAccessType.REDIRECT) {
             return fileHandler.handleRedirect(accessSource, result);
         } else {
-            return fileHandler.handleContentDownload(accessSource, result, "torrent");
+            try {
+                return fileHandler.handleContentDownload(accessSource, result, "torrent");
+            } catch (MagnetLinkRedirectException e) {
+                return fileHandler.handleRedirect(accessSource, result);
+            }
         }
     }
 
@@ -73,9 +78,7 @@ public class TorrentFileHandler {
             boolean successful = false;
             try {
                 result = getTorrentByGuid(guid, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL);
-                if (!result.isSuccessful()) {
-                    successful = false;
-                } else {
+                if (result.isSuccessful()) {
                     if (result.getContent() != null) {
                         successful = saveToBlackHole(result, null);
                     } else {

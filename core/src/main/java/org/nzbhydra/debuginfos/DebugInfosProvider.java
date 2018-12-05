@@ -57,7 +57,8 @@ public class DebugInfosProvider {
         File tempFile = File.createTempFile("nzbhydradebuginfos", "zip");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
-                writeStringToZip(zos, "nzbhydra.log", anonymizedLog.getBytes("UTF-8"));
+                writeStringToZip(zos, "nzbhy" +
+                        "dra.log", anonymizedLog.getBytes("UTF-8"));
                 writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes("UTF-8"));
                 File traceFile = new File(new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
                 if (traceFile.exists()) {
