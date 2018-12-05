@@ -74,9 +74,7 @@ public class Sabnzbd extends Downloader {
     @Override
     public String addLink(String url, String title, String category) throws DownloaderException {
         logger.debug("Sending link for NZB {} to sabnzbd", title);
-        if (!title.toLowerCase().endsWith(".nzbd")) {
-            title += ".nzb";
-        }
+        title = suffixNzbToTitle(title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
         urlBuilder.queryParam("mode", "addurl").queryParam("name", url).queryParam("nzbname", title).queryParam("priority", "-100");
         if (!Strings.isNullOrEmpty(category)) {
@@ -85,6 +83,13 @@ public class Sabnzbd extends Downloader {
         String nzoId = sendAddNzbLinkCommand(urlBuilder, null, HttpMethod.POST);
         logger.info("Successfully added link {} for NZB \"{}\" to sabnzbd queue with ID {}", url, title, nzoId);
         return nzoId;
+    }
+
+    protected String suffixNzbToTitle(String title) {
+        if (!title.toLowerCase().endsWith(".nzbd")) {
+            title += ".nzb";
+        }
+        return title;
     }
 
     private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
@@ -110,6 +115,7 @@ public class Sabnzbd extends Downloader {
         //Using OKHTTP here because RestTemplate wouldn't work
         logger.debug("Uploading NZB {} to sabnzbd", title);
         UriComponentsBuilder urlBuilder = getBaseUrl();
+        title = suffixNzbToTitle(title);
         urlBuilder.queryParam("mode", "addfile").queryParam("nzbname", title).queryParam("priority", "-100");
         if (!Strings.isNullOrEmpty(category)) {
             urlBuilder.queryParam("cat", category);
@@ -125,9 +131,6 @@ public class Sabnzbd extends Downloader {
                 throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());
             }
             AddNzbResponse addNzbResponse = objectMapper.readValue(body.string(), AddNzbResponse.class);
-            if (addNzbResponse.getNzoIds().isEmpty()) {
-                throw new DownloaderException("Sabnzbd says NZB was added successfully but didn't return an NZO ID");
-            }
             if (addNzbResponse.getNzoIds().isEmpty()) {
                 throw new DownloaderException("Sabnzbd says NZB was added successfully but didn't return an NZO ID");
             }

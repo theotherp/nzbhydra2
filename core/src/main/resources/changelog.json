@@ -13,6 +13,10 @@
       {
         "type": "fix",
         "text": "Downloads of NZBs with spaces in the filename are properly handled"
+      },
+      {
+        "type": "fix",
+        "text": "Suffix NZBs sent to sabnzbd with .nzb to increase compatibility with newsbin"
       }
     ]
   },
