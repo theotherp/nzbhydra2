@@ -1,3 +1,15 @@
+### v2.0.18
+
+Fix: Details link was hidden even if not restricted by auth config
+
+Fix: Redirects to torrent magnet links are recognized and properly handled
+
+Fix: Downloads of NZBs with spaces in the filename are properly handled
+
+Fix: Suffix NZBs sent to sabnzbd with .nzb to increase compatibility with newsbin
+
+
+
 ### v2.0.17
 
 Feature: Automatic update. This feature has been requested for ages. Ironically, now that I rarely release new versions I've finally implemented it. It's opt-in for now even though the update process has been really stable for a while. Now that the startup is faster Hydra shouldn't be unavailable during the update process for more than 20 seconds or so. Any tools calling during that time should recover fine.
