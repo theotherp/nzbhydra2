@@ -105,9 +105,7 @@ public abstract class Downloader {
             }
         } catch (InvalidSearchResultIdException | DownloaderException | EntityNotFoundException e) {
             String message;
-            if (e instanceof DownloaderException) {
-                message = "Error while adding NZB(s) to downloader: " + e.getMessage();
-            } else if (e instanceof EntityNotFoundException) {
+            if (e instanceof EntityNotFoundException) {
                 message = "Unable to find the search result in the database. Unable to download";
             } else {
                 message = e.getMessage();

@@ -94,7 +94,8 @@ public class Sabnzbd extends Downloader {
 
     private String sendAddNzbLinkCommand(UriComponentsBuilder urlBuilder, HttpEntity httpEntity, HttpMethod httpMethod) throws DownloaderException {
         try {
-            ResponseEntity<AddNzbResponse> response = restTemplate.exchange(urlBuilder.build().encode().toUri(), httpMethod, httpEntity, AddNzbResponse.class);
+            URI url = urlBuilder.build().encode().toUri();
+            ResponseEntity<AddNzbResponse> response = restTemplate.exchange(url, httpMethod, httpEntity, AddNzbResponse.class);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.getStatusCode());
             }
@@ -106,7 +107,7 @@ public class Sabnzbd extends Downloader {
             }
             return response.getBody().getNzoIds().get(0);
         } catch (RestClientException e) {
-            throw new DownloaderUnreachableException("Error while adding NZB(s)", e);
+            throw new DownloaderUnreachableException("Error while adding NZB(s): " + e.getMessage());
         }
     }
 
