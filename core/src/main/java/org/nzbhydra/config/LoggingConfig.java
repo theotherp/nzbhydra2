@@ -39,4 +39,9 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
         return this;
     }
 
+    @Override
+    public LoggingConfig initialize() {
+        return this;
+    }
+
 }

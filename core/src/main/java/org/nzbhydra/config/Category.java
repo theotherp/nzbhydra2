@@ -70,6 +70,11 @@ public class Category extends ValidatingConfig<Category> {
         return this;
     }
 
+    @Override
+    public Category initialize() {
+        return this;
+    }
+
     public Optional<String> getForbiddenRegex() {
         return Optional.ofNullable(Strings.emptyToNull(forbiddenRegex));
     }

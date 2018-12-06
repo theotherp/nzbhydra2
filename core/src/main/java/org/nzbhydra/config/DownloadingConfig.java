@@ -60,4 +60,9 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
         return this;
     }
 
+    @Override
+    public DownloadingConfig initialize() {
+        return this;
+    }
+
 }

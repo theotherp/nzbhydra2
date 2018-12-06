@@ -53,4 +53,11 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     public DownloaderConfig updateAfterLoading() {
         return this;
     }
+
+    @Override
+    public DownloaderConfig initialize() {
+        return this;
+    }
+
+
 }

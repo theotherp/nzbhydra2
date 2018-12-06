@@ -80,5 +80,10 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         return this;
     }
 
+    @Override
+    public CategoriesConfig initialize() {
+        return this;
+    }
+
 
 }

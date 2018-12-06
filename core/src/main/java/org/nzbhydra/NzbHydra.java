@@ -44,9 +44,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
@@ -189,10 +187,6 @@ public class NzbHydra {
 
     private static void migrateYamlFile(File yamlFile) throws IOException {
         if (!yamlFile.exists()) {
-            logger.debug("Did not find a yaml file at {}. Will copy original to path", yamlFile.getAbsolutePath());
-            try (InputStream inputStream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
-                Files.copy(inputStream, yamlFile.toPath());
-            }
             return;
         }
         Map<String, Object> map = configReaderWriter.loadSavedConfigAsMap();

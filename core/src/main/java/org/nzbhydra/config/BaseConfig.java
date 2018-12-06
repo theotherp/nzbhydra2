@@ -13,11 +13,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.nzbhydra.config.ConfigReaderWriter.buildConfigFileFile;
@@ -89,8 +87,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         File file = buildConfigFileFile();
         if (!file.exists()) {
             logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());
-            Random random = new Random();
-            main.setApiKey(new BigInteger(130, random).toString(32));
+            initialize();
         } else {
             replace(configReaderWriter.loadSavedConfig(), false);
         }
@@ -183,6 +180,16 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     @Override
     public BaseConfig updateAfterLoading() {
         getAuth().updateAfterLoading();
+        return this;
+    }
+
+    @Override
+    public BaseConfig initialize() {
+        getCategoriesConfig().initialize();
+        getDownloading().initialize();
+        getSearching().initialize();
+        getMain().initialize();
+        getAuth().initialize();
         return this;
     }
 

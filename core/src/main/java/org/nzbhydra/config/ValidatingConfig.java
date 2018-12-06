@@ -93,6 +93,11 @@ public abstract class ValidatingConfig<T> {
      */
     public abstract T updateAfterLoading();
 
+    /**
+     * Called for a new config to initialize itself
+     */
+    public abstract T initialize();
+
 
 
 

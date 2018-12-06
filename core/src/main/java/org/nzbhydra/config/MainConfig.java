@@ -12,10 +12,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 @ConfigurationProperties("main")
 @Component
@@ -144,6 +146,13 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @Override
     public MainConfig updateAfterLoading() {
+        return this;
+    }
+
+    @Override
+    public MainConfig initialize() {
+        Random random = new Random();
+        setApiKey(new BigInteger(130, random).toString(32));
         return this;
     }
 

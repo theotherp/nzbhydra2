@@ -38,4 +38,9 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
         }
         return this;
     }
+
+    @Override
+    public UserAuthConfig initialize() {
+        return this;
+    }
 }

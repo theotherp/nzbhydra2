@@ -73,4 +73,9 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
         getUsers().forEach(ValidatingConfig::updateAfterLoading);
         return this;
     }
+
+    @Override
+    public AuthConfig initialize() {
+        return this;
+    }
 }

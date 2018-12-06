@@ -198,4 +198,9 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     public IndexerConfig updateAfterLoading() {
         return this;
     }
+
+    @Override
+    public IndexerConfig initialize() {
+        return this;
+    }
 }
