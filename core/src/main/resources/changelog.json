@@ -17,11 +17,11 @@
       },
       {
         "type": "fix",
-        "text": "Redirects to torrent magnet links are recognized and properly handled"
+        "text": "Redirects to torrent magnet links are now recognized and properly handled"
       },
       {
         "type": "fix",
-        "text": "Downloads of NZBs with spaces in the filename are properly handled"
+        "text": "Downloads of NZBs with spaces in the filename are now properly handled"
       },
       {
         "type": "fix",
