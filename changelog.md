@@ -1,3 +1,9 @@
+### v2.0.19
+
+Fix: Restoration from uploaded backup file wouldn't work
+
+
+
 ### v2.0.18
 
 Fix: Details link was hidden even if not restricted by auth config
