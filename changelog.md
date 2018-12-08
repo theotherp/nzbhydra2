@@ -1,3 +1,9 @@
+### v2.0.20
+
+Feature: Make sure existing configuration or database is not loaded by an older version of a program than it was created with
+
+
+
 ### v2.0.19
 
 Fix: Restoration from uploaded backup file wouldn't work
@@ -8,9 +14,9 @@ Fix: Restoration from uploaded backup file wouldn't work
 
 Fix: Details link was hidden even if not restricted by auth config
 
-Fix: Redirects to torrent magnet links are recognized and properly handled
+Fix: Redirects to torrent magnet links are now recognized and properly handled
 
-Fix: Downloads of NZBs with spaces in the filename are properly handled
+Fix: Downloads of NZBs with spaces in the filename are now properly handled
 
 Fix: Suffix NZBs sent to sabnzbd with .nzb to increase compatibility with newsbin
 
