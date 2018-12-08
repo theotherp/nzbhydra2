@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.20",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Make sure existing configuration or database is not loaded by an older version of a program than it was created with"
+      }
+    ]
+  },
+  {
     "version": "v2.0.19",
     "changes": [
       {

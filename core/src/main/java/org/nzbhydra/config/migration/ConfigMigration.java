@@ -29,8 +29,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
@@ -59,26 +57,23 @@ public class ConfigMigration {
         expectedConfigVersion = new MainConfig().getConfigVersion();
     }
 
-    public void migrate(File yamlFile) throws IOException {
-        Map<String, Object> originalMap = objectMapper.readValue(yamlFile, MAP_TYPE_REFERENCE);
-        Map<String, Object> migrated = migrate(originalMap);
-        configReaderWriter.save(migrated, yamlFile);
-    }
-
     public Map<String, Object> migrate(Map<String, Object> map) {
-        int configVersion = (int) ((Map<String, Object>) map.get("main")).get("configVersion");
-
-        for (ConfigMigrationStep step : steps) {
-            if (configVersion <= step.forVersion()) {
-                logger.info("Migrating config from version {}", step.forVersion());
-                map = step.migrate(map);
-                configVersion = step.forVersion() + 1;
-            }
-            ((Map<String, Object>) map.get("main")).put("configVersion", configVersion);
+        int foundConfigVersion = (int) ((Map<String, Object>) map.get("main")).get("configVersion");
+        if (foundConfigVersion > expectedConfigVersion) {
+            throw new RuntimeException("The existing config file has version " + foundConfigVersion + " but the program expects version " + expectedConfigVersion + ". You might be trying to use an older code base with settings created by a newer version of the program");
         }
 
-        if (configVersion != expectedConfigVersion) {
-            throw new RuntimeException(String.format("Expected the config after migration to be at version %d but it's at version %d", expectedConfigVersion, configVersion));
+        for (ConfigMigrationStep step : steps) {
+            if (foundConfigVersion <= step.forVersion()) {
+                logger.info("Migrating config from version {}", step.forVersion());
+                map = step.migrate(map);
+                foundConfigVersion = step.forVersion() + 1;
+            }
+            ((Map<String, Object>) map.get("main")).put("configVersion", foundConfigVersion);
+        }
+
+        if (foundConfigVersion != expectedConfigVersion) {
+            throw new RuntimeException(String.format("Expected the config after migration to be at version %d but it's at version %d", expectedConfigVersion, foundConfigVersion));
         }
 
         return map;

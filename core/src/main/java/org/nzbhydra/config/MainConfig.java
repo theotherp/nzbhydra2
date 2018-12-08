@@ -33,6 +33,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;
     private String dereferer = null;
+    private boolean instanceCounterDownloaded = false;
     @RestartRequired
     private String host = "0.0.0.0";
     private LoggingConfig logging = new LoggingConfig();

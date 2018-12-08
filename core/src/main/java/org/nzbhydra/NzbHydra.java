@@ -206,6 +206,10 @@ public class NzbHydra {
         if (e instanceof ConnectorStartFailedException) {
             msg = "The selected port is already in use. Either shut the other application down or select another port";
             logger.error(msg);
+        }
+        if (e.getMessage() != null && e.getMessage().contains("Detected applied migration not resolved locally")) {
+            msg = "The existing database was created by a newer version of the program than the one you're running. Make sure to get the latest release. ";
+            logger.error(msg);
         } else {
             msg = "An unexpected error occurred during startup: " + e;
             logger.error("An unexpected error occurred during startup", e);

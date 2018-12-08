@@ -269,6 +269,7 @@ main:
   deleteBackupsAfterWeeks: 4
   dereferer: "http://www.dereferer.org/?$s"
   host: "0.0.0.0"
+  instanceCounterDownloaded: false
   logging:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
