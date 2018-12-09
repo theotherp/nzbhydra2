@@ -2802,13 +2802,16 @@ function hydrabackup() {
                     });
 
                     file.upload.then(function (response) {
-                        $scope.uploadActive = false;
-                        file.result = response.data;
-                        RestartService.startCountdown("Upload successful. Restarting for wrapper to restore data.");
+                        if (response.successful) {
+                            $scope.uploadActive = false;
+                            RestartService.startCountdown("Upload successful. Restarting for wrapper to restore data.");
+                        } else {
+                            file.progress = 0;
+                            growl.error(response.data.message)
+                        }
 
                     }, function (response) {
-                        $scope.uploadActive = false;
-                        growl.error(response.data)
+                        growl.error(response.data.message)
                     }, function (evt) {
                         file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total));
                         file.loaded = Math.floor(evt.loaded / 1024);

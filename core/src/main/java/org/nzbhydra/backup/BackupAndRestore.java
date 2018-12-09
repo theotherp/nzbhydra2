@@ -166,12 +166,12 @@ public class BackupAndRestore {
 
     public GenericResponse restoreFromFile(InputStream inputStream) {
         try {
-            File tempFile = File.createTempFile("nzbhydra-restore", "zip");
+            File tempFile = File.createTempFile("nzbhydra-restore", ".zip");
             FileUtils.copyInputStreamToFile(inputStream, tempFile);
             restoreFromFile(tempFile);
             tempFile.deleteOnExit();
             return GenericResponse.ok();
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error while restoring", e);
             return GenericResponse.notOk("Error while restoring: " + e.getMessage());
         }

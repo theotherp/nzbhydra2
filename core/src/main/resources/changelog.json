@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.0.22",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Upload of large ZIP files for restoration was disabled"
+      }
+    ]
+  },
+  {
     "version": "v2.0.21",
     "changes": [
       {
