@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempt to repair it automatically"
+        "text": "Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempts to repair it automatically"
       },
       {
         "type": "fix",
