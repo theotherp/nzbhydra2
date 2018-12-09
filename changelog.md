@@ -1,3 +1,9 @@
+### v2.0.22
+
+Fix: Upload of large ZIP files for restoration was disabled
+
+
+
 ### v2.0.21
 
 Feature: Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempts to repair it automatically
