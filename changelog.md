@@ -1,3 +1,11 @@
+### v2.0.21
+
+Feature: Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempts to repair it automatically
+
+Fix: New instances were not properly initialized, in some instances resulting in a crash on startup. Sorry about that
+
+
+
 ### v2.0.20
 
 Feature: Make sure existing configuration or database is not loaded by an older version of a program than it was created with
