@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.0.21",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempt to repair it automatically"
+      },
+      {
+        "type": "fix",
+        "text": "New instances were not properly initialized, in some instances resulting in a crash on startup. Sorry about that"
+      }
+    ]
+  },
+  {
     "version": "v2.0.20",
     "changes": [
       {

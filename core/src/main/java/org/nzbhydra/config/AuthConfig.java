@@ -75,7 +75,7 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     }
 
     @Override
-    public AuthConfig initialize() {
+    public AuthConfig initializeNewConfig() {
         return this;
     }
 }

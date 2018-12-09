@@ -40,7 +40,7 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
     }
 
     @Override
-    public UserAuthConfig initialize() {
+    public UserAuthConfig initializeNewConfig() {
         return this;
     }
 }

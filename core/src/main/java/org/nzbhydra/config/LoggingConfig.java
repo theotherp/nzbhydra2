@@ -40,7 +40,7 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
     }
 
     @Override
-    public LoggingConfig initialize() {
+    public LoggingConfig initializeNewConfig() {
         return this;
     }
 

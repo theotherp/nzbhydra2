@@ -116,6 +116,9 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
                 //Ignore, user will have to know what he does
             }
         }
+        if (oldConfig.getMain().getXmx() < 128) {
+            result.getErrorMessages().add("The JVM memory must be set to at least 128");
+        }
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
@@ -151,9 +154,9 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     }
 
     @Override
-    public MainConfig initialize() {
+    public MainConfig initializeNewConfig() {
         Random random = new Random();
-        setApiKey(new BigInteger(130, random).toString(32));
+        setApiKey(new BigInteger(130, random).toString(32).toUpperCase());
         return this;
     }
 

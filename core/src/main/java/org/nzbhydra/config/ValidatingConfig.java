@@ -96,7 +96,7 @@ public abstract class ValidatingConfig<T> {
     /**
      * Called for a new config to initialize itself
      */
-    public abstract T initialize();
+    public abstract T initializeNewConfig();
 
 
 

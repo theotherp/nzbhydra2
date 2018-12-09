@@ -142,7 +142,7 @@ public class NzbHydra {
         try {
             System.setProperty("nzbhydra.dataFolder", dataFolder);
             File yamlFile = new File(dataFolder, "nzbhydra.yml");
-            migrateYamlFile(yamlFile);
+            initializeAndValidateAndMigrateYamlFile(yamlFile);
 
             useIfSet(options, "host", "server.address");
             useIfSet(options, "port", "server.port");
@@ -185,10 +185,9 @@ public class NzbHydra {
         }
     }
 
-    private static void migrateYamlFile(File yamlFile) throws IOException {
-        if (!yamlFile.exists()) {
-            return;
-        }
+    private static void initializeAndValidateAndMigrateYamlFile(File yamlFile) throws IOException {
+        configReaderWriter.initializeIfNeeded(yamlFile);
+        configReaderWriter.validateExistingConfig();
         Map<String, Object> map = configReaderWriter.loadSavedConfigAsMap();
         Map<String, Object> migrated = new ConfigMigration().migrate(map);
         configReaderWriter.save(migrated, yamlFile);

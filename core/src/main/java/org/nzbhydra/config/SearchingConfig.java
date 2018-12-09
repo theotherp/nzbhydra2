@@ -105,7 +105,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     }
 
     @Override
-    public SearchingConfig initialize() {
+    public SearchingConfig initializeNewConfig() {
         return this;
     }
 

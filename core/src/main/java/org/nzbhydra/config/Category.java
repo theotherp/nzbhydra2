@@ -71,7 +71,7 @@ public class Category extends ValidatingConfig<Category> {
     }
 
     @Override
-    public Category initialize() {
+    public Category initializeNewConfig() {
         return this;
     }
 

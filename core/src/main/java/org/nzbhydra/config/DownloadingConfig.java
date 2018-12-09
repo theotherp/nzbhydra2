@@ -61,7 +61,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     }
 
     @Override
-    public DownloadingConfig initialize() {
+    public DownloadingConfig initializeNewConfig() {
         return this;
     }
 

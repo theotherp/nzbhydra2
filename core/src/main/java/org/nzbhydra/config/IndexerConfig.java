@@ -200,7 +200,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     }
 
     @Override
-    public IndexerConfig initialize() {
+    public IndexerConfig initializeNewConfig() {
         return this;
     }
 }

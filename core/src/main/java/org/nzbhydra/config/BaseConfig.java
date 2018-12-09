@@ -11,14 +11,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.nzbhydra.config.ConfigReaderWriter.buildConfigFileFile;
 
 @Component
 @Data
@@ -84,12 +81,9 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
             return;
         }
         logger.info("Using data folder {}", NzbHydra.getDataFolder());
-        File file = buildConfigFileFile();
-        if (!file.exists()) {
-            logger.info("Config file {} does not exist and will be initialized", file.getCanonicalPath());
-            initialize();
-        } else {
-            replace(configReaderWriter.loadSavedConfig(), false);
+        replace(configReaderWriter.loadSavedConfig(), false);
+        if (main.getApiKey() == null) {
+            initializeNewConfig();
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         configReaderWriter.save(this);
@@ -184,12 +178,12 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     }
 
     @Override
-    public BaseConfig initialize() {
-        getCategoriesConfig().initialize();
-        getDownloading().initialize();
-        getSearching().initialize();
-        getMain().initialize();
-        getAuth().initialize();
+    public BaseConfig initializeNewConfig() {
+        getCategoriesConfig().initializeNewConfig();
+        getDownloading().initializeNewConfig();
+        getSearching().initializeNewConfig();
+        getMain().initializeNewConfig();
+        getAuth().initializeNewConfig();
         return this;
     }
 

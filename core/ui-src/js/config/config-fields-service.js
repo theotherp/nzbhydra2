@@ -480,6 +480,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'MB'
                                 },
+                                min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
                             }
                         }

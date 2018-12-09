@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 public class ConfigProvider {
 
     @Autowired
-    BaseConfig baseConfig;
+    private BaseConfig baseConfig;
 
     @EventListener
     public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
