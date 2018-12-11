@@ -59,6 +59,8 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
+    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_MOVIE_SEARCH = Collections.singletonList("nzbs.in");
+
 
     static {
         idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
@@ -96,11 +98,6 @@ public class Newznab extends Indexer<Xml> {
         SearchType searchType = searchRequest.getSearchType();
         if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
             searchType = SearchType.SEARCH;
-        }
-        if (searchRequest.getSearchType() == SearchType.MOVIE && searchRequest.getIdentifiers().isEmpty()) {
-            debug("Switching search type to SEARCH because some indexers don't allow using search type MOVIE without identifiers");
-            searchType = SearchType.SEARCH;
-            //Don't change the category, should always be set anyway
         }
         componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase()).queryParam("extended", "1");
 
@@ -173,6 +170,14 @@ public class Newznab extends Indexer<Xml> {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
                 categoryIds = searchRequest.getCategory().getNewznabCategories();
+            } else if (searchRequest.getIdentifiers().isEmpty() && HOSTS_NOT_SUPPORTING_EMPTY_MOVIE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x))) {
+                if (searchRequest.getSearchType() == SearchType.MOVIE) {
+                    debug("Adding newznab category 2000 because indexers doesn't allow using search type MOVIE without identifiers or category");
+                    categoryIds = Arrays.asList(2000);
+                } else if (searchRequest.getSearchType() == SearchType.TVSEARCH) {
+                    debug("Adding newznab category 5000 because indexers doesn't allow using search type TVSEARCH without identifiers or category");
+                    categoryIds = Arrays.asList(5000);
+                }
             }
             categoryIds = new ArrayList<>(categoryIds); //Arrays.asList() returns an unmodifiable list which will not be sortable
         } else {
@@ -230,7 +235,7 @@ public class Newznab extends Indexer<Xml> {
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) throws IndexerSearchAbortedException {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<IdType, String> params = new HashMap<>();
-            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x ->  searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
+            boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
             if (!indexerSupportsAnyOfTheProvidedIds) {
                 boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {
@@ -426,7 +431,7 @@ public class Newznab extends Indexer<Xml> {
 
     protected void parseAttributes(NewznabXmlItem item, SearchResultItem searchResultItem) {
         Map<String, String> attributes = item.getNewznabAttributes().stream().collect(Collectors.toMap(NewznabAttribute::getName, NewznabAttribute::getValue, (a, b) -> b));
-        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category") && !"None".equals(x.getValue())).map(newznabAttribute -> Integer.parseInt(newznabAttribute.getValue())).collect(Collectors.toList());
+        List<Integer> newznabCategories = item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category") && !"None".equals(x.getValue()) && !Strings.isNullOrEmpty(x.getValue())).map(newznabAttribute -> Integer.parseInt(newznabAttribute.getValue())).collect(Collectors.toList());
         searchResultItem.setAttributes(attributes);
 
         if (attributes.containsKey("usenetdate")) {
