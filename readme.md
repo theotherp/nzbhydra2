@@ -2,8 +2,6 @@
 
 NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a number of raw and newznab based indexers. You can search all your indexers from one place and use it as an indexer source for tools like Sonarr, Radarr or CouchPotato.
 
-It's a complete rewrite of [NZBHydra (1)](https://github.com/theotherp/nzbhydra). It's currently in Beta. It works mostly fine but some functions might not be completely done and incompatibilities with some tools might still exist.
-
 ## Major Features
 
 * Searches Anizb, BinSearch, NZBIndex and any newznab compatible indexers. Merges all results, filters them by a number of configurable restrictions, recognizes duplicates and returns them all in one place
@@ -26,7 +24,7 @@ See some [screenshots](https://imgur.com/a/ePxwj).
 
 ## How to Run
 
-You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both >=8u101 but it won't work with 9.x or higher).
+You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both >=8u101 or 9 or 10).
 
 Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases) for your platform ("linux" is any platform but windows). Extract it anywhere and start using the appropriate way:
 * On Windows (64-bit) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window. Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
