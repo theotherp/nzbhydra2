@@ -59,7 +59,7 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
-    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_MOVIE_SEARCH = Arrays.asList("nzbs.in", "nzbgeek");
+    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbs.in", "nzbgeek");
 
 
     static {
@@ -170,7 +170,7 @@ public class Newznab extends Indexer<Xml> {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
                 categoryIds = searchRequest.getCategory().getNewznabCategories();
-            } else if (searchRequest.getIdentifiers().isEmpty() && HOSTS_NOT_SUPPORTING_EMPTY_MOVIE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x))) {
+            } else if (searchRequest.getIdentifiers().isEmpty() && HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x))) {
                 if (searchRequest.getSearchType() == SearchType.MOVIE) {
                     debug("Adding newznab category 2000 because indexers doesn't allow using search type MOVIE without identifiers or category");
                     categoryIds = Arrays.asList(2000);
