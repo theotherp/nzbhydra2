@@ -1,3 +1,9 @@
+### v2.0.24
+
+Note: Added NZBGeek to the list mentioned in v2.0.23. Thanks to the user letting me know about it.
+
+
+
 ### v2.0.23
 
 Note: Previously when an API call with search type 'movie' or 'tvsearch' was made without any identifiers or category I would call indexers with search type 'search' instead because some indexers don't like that. This causes some other problems so I've reverted that behavior except for a certain list of indexers. I have hardcoded list of indexers for which the switch will be done. I'm not sure which indexers actually behave that way. So if you find an indexer where browsing the movie or TV releases (e.g. using NZB360) will return a lot of crap please let me know so I can add the indexer to the list.
