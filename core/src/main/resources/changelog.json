@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.0.25",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Search query was not built properly when conversion of search IDs did not provide any IDs usable by an indexer"
+      },
+      {
+        "type": "feature",
+        "text": "Support API caps in JSON"
+      }
+    ]
+  },
+  {
     "version": "v2.0.24",
     "changes": [
       {

@@ -16,7 +16,6 @@ import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
-import org.nzbhydra.mapping.newznab.caps.*;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.CategoryProvider;
@@ -75,6 +74,8 @@ public class ExternalApi {
     private NewznabJsonTransformer newznabJsonTransformer;
     @Autowired
     private CategoryProvider categoryProvider;
+    @Autowired
+    private CapsGenerator capsGenerator;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();
 
@@ -109,7 +110,7 @@ public class ExternalApi {
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
-            return getCaps();
+            return capsGenerator.getCaps(params.getO());
         }
 
         logger.error("Incorrect API request: {}", params);
@@ -146,93 +147,7 @@ public class ExternalApi {
         return new ResponseEntity<>(searchResult, HttpStatus.OK);
     }
 
-    protected ResponseEntity<?> getCaps() {
-        CapsRoot capsRoot = new CapsRoot();
-        capsRoot.setRetention(new CapsRetention(3000));
-        capsRoot.setLimits(new CapsLimits(100, 100)); //later link to global setting when implemented
 
-        CapsServer capsServer = new CapsServer();
-        capsServer.setEmail("theotherp@gmx.de");
-        capsServer.setTitle("NZBHydra 2");
-        capsServer.setUrl("https://github.com/theotherp/nzbhydra2");
-        capsRoot.setServer(capsServer);
-
-        CapsSearching capsSearching = new CapsSearching();
-        capsSearching.setSearch(new CapsSearch("yes", "q,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setTvSearch(new CapsSearch("yes", "q,rid,tvdbid,tvmazeid,traktid,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setMovieSearch(new CapsSearch("yes", "q,imdbid,tmdbid,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setBookSearch(new CapsSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setAudioSearch(new CapsSearch("no", ""));
-        capsRoot.setSearching(capsSearching);
-
-        List<CapsCategory> mainCategories = new ArrayList<>();
-        mainCategories.add(new CapsCategory(1000, "Console", Arrays.asList(
-                new CapsCategory(1010, "NDS"),
-                new CapsCategory(1020, "PSP"),
-                new CapsCategory(1030, "Wii"),
-                new CapsCategory(1040, "XBox"),
-                new CapsCategory(1050, "Xbox 360"),
-                new CapsCategory(1060, "Wiiware"),
-                new CapsCategory(1070, "Xbox 360 DLC")
-        )));
-        mainCategories.add(new CapsCategory(2000, "Movies", Arrays.asList(
-                new CapsCategory(2010, "Foreign"),
-                new CapsCategory(2020, "Other"),
-                new CapsCategory(2030, "SD"),
-                new CapsCategory(2040, "HD"),
-                new CapsCategory(2045, "UHD"),
-                new CapsCategory(2050, "Bluray"),
-                new CapsCategory(2060, "3D")
-        )));
-        mainCategories.add(new CapsCategory(3000, "Audio", Arrays.asList(
-                new CapsCategory(3010, "MP3"),
-                new CapsCategory(3020, "Video"),
-                new CapsCategory(3030, "Audiobook"),
-                new CapsCategory(3040, "Lossless")
-        )));
-        mainCategories.add(new CapsCategory(4000, "PC", Arrays.asList(
-                new CapsCategory(4010, "0day"),
-                new CapsCategory(4020, "ISO"),
-                new CapsCategory(4030, "Mac"),
-                new CapsCategory(4040, "Mobile Oher"),
-                new CapsCategory(4050, "Games"),
-                new CapsCategory(4060, "Mobile IOS"),
-                new CapsCategory(4070, "Mobile Android")
-        )));
-        mainCategories.add(new CapsCategory(5000, "TV", Arrays.asList(
-                new CapsCategory(5020, "Foreign"),
-                new CapsCategory(5030, "SD"),
-                new CapsCategory(5040, "HD"),
-                new CapsCategory(5045, "UHD"),
-                new CapsCategory(5050, "Other"),
-                new CapsCategory(5060, "Sport"),
-                new CapsCategory(5070, "Anime"),
-                new CapsCategory(5080, "Documentary")
-        )));
-        mainCategories.add(new CapsCategory(6000, "XXX", Arrays.asList(
-                new CapsCategory(6010, "DVD"),
-                new CapsCategory(6020, "WMV"),
-                new CapsCategory(6030, "XviD"),
-                new CapsCategory(6040, "x264"),
-                new CapsCategory(6050, "Pack"),
-                new CapsCategory(6060, "Imgset"),
-                new CapsCategory(6070, "Other")
-        )));
-        mainCategories.add(new CapsCategory(7000, "Books", Arrays.asList(
-                new CapsCategory(7010, "Mags"),
-                new CapsCategory(7020, "Ebook"),
-                new CapsCategory(7030, "COmics")
-        )));
-        mainCategories.add(new CapsCategory(8000, "Other", Arrays.asList(
-                new CapsCategory(8010, "Misc")
-        )));
-
-
-        capsRoot.setCategories(new CapsCategories(mainCategories));
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_XML);
-        return new ResponseEntity<>(capsRoot, headers, HttpStatus.OK);
-    }
 
     protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
         if (Strings.isNullOrEmpty(params.getId())) {

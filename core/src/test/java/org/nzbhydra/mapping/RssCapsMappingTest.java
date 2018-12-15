@@ -6,8 +6,8 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nzbhydra.mapping.newznab.caps.CapsCategory;
-import org.nzbhydra.mapping.newznab.caps.CapsRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.web.WebConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
@@ -41,11 +41,11 @@ public class RssCapsMappingTest {
 
     @Test
     public void shouldGenerateCorrectXml() throws JsonProcessingException, JAXBException {
-        CapsRoot caps = new CapsRoot();
-        List<CapsCategory> categories = new ArrayList<>();
-        CapsCategory capsCategory = new CapsCategory(1000, "1000");
-        List<CapsCategory> subCats = new ArrayList<>();
-        subCats.add(new CapsCategory(1010, "1010"));
+        CapsXmlRoot caps = new CapsXmlRoot();
+        List<CapsXmlCategory> categories = new ArrayList<>();
+        CapsXmlCategory capsCategory = new CapsXmlCategory(1000, "1000");
+        List<CapsXmlCategory> subCats = new ArrayList<>();
+        subCats.add(new CapsXmlCategory(1010, "1010"));
         capsCategory.setSubCategories(subCats);
         caps.getCategories().getCategories().add(capsCategory);
         StringWriter writer = new StringWriter();
@@ -60,12 +60,12 @@ public class RssCapsMappingTest {
     }
 
 
-    private CapsRoot getCaps(String xmlFileName) throws IOException {
+    private CapsXmlRoot getCaps(String xmlFileName) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
         mockServer.expect(requestTo("/api")).andRespond(withSuccess(Resources.toString(Resources.getResource(RssCapsMappingTest.class, xmlFileName), Charsets.UTF_8), MediaType.APPLICATION_XML));
 
-        return restTemplate.getForObject("/api", CapsRoot.class);
+        return restTemplate.getForObject("/api", CapsXmlRoot.class);
     }
 
 

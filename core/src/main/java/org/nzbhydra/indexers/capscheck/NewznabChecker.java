@@ -34,11 +34,11 @@ import org.nzbhydra.indexers.capscheck.CapsCheckRequest.CheckType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.caps.CapsCategory;
-import org.nzbhydra.mapping.newznab.caps.CapsRoot;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,7 +248,7 @@ public class NewznabChecker {
             supportedSearchTypes.add(ActionAttribute.MOVIE);
         }
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
-        CapsRoot capsRoot = indexerWebAccess.get(uri, indexerConfig);
+        CapsXmlRoot capsRoot = indexerWebAccess.get(uri, indexerConfig);
         if (capsRoot.getSearching().getAudioSearch() != null) {
             supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
@@ -258,33 +258,33 @@ public class NewznabChecker {
         indexerConfig.setSupportedSearchTypes(supportedSearchTypes);
 
         IndexerCategoryConfig categoryConfig = new IndexerCategoryConfig();
-        List<CapsCategory> categories = readAndConvertCategories(capsRoot, categoryConfig);
+        List<CapsXmlCategory> categories = readAndConvertCategories(capsRoot, categoryConfig);
         setCategorySpecificMappings(categoryConfig, categories);
         return categoryConfig;
     }
 
-    private void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsCategory> categories) {
-        Optional<CapsCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime") && x.getId() / 1000 != 6).findFirst(); //Sometimes 6070 is anime as subcategory of porn, don't use that
+    private void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsXmlCategory> categories) {
+        Optional<CapsXmlCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime") && x.getId() / 1000 != 6).findFirst(); //Sometimes 6070 is anime as subcategory of porn, don't use that
         anime.ifPresent(capsCategory -> categoryConfig.setAnime(capsCategory.getId()));
 
-        Optional<CapsCategory> audiobook = categories.stream().filter(x -> x.getName().toLowerCase().contains("audiobook")).findFirst();
+        Optional<CapsXmlCategory> audiobook = categories.stream().filter(x -> x.getName().toLowerCase().contains("audiobook")).findFirst();
         audiobook.ifPresent(capsCategory -> categoryConfig.setAudiobook(capsCategory.getId()));
 
-        Optional<CapsCategory> comic = categories.stream().filter(x -> x.getName().toLowerCase().contains("comic")).findFirst();
+        Optional<CapsXmlCategory> comic = categories.stream().filter(x -> x.getName().toLowerCase().contains("comic")).findFirst();
         comic.ifPresent(capsCategory -> categoryConfig.setComic(capsCategory.getId()));
 
-        Optional<CapsCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
+        Optional<CapsXmlCategory> ebook = categories.stream().filter(x -> x.getName().toLowerCase().contains("ebook")).findFirst();
         ebook.ifPresent(capsCategory -> categoryConfig.setEbook(capsCategory.getId()));
 
-        Optional<CapsCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine") || x.getName().toLowerCase().contains("mags")).findFirst();
+        Optional<CapsXmlCategory> magazine = categories.stream().filter(x -> x.getName().toLowerCase().contains("magazine") || x.getName().toLowerCase().contains("mags")).findFirst();
         magazine.ifPresent(capsCategory -> categoryConfig.setMagazine(capsCategory.getId()));
 
     }
 
-    private List<CapsCategory> readAndConvertCategories(CapsRoot capsRoot, IndexerCategoryConfig categoryConfig) {
-        List<CapsCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
+    private List<CapsXmlCategory> readAndConvertCategories(CapsXmlRoot capsRoot, IndexerCategoryConfig categoryConfig) {
+        List<CapsXmlCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
         List<MainCategory> configMainCategories = new ArrayList<>();
-        for (CapsCategory category : capsRoot.getCategories().getCategories()) {
+        for (CapsXmlCategory category : capsRoot.getCategories().getCategories()) {
             List<SubCategory> configSubcats = new ArrayList<>();
             if (category.getSubCategories() != null) {
                 categories.addAll(category.getSubCategories());

@@ -30,11 +30,11 @@ import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.caps.CapsLimits;
-import org.nzbhydra.mapping.newznab.caps.CapsRoot;
-import org.nzbhydra.mapping.newznab.caps.CapsSearch;
-import org.nzbhydra.mapping.newznab.caps.CapsSearching;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 import org.nzbhydra.web.WebConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
@@ -55,7 +55,7 @@ import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
 public class NewznabCheckerTest {
 
 
-    private CapsRoot capsRoot;
+    private CapsXmlRoot capsRoot;
     @Mock
     private IndexerWebAccess indexerWebAccess;
     @Mock
@@ -82,9 +82,9 @@ public class NewznabCheckerTest {
         when(searchingConfig.getTimeout()).thenReturn(1);
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         when(baseConfig.getSearching()).thenReturn(searchingConfig);
-        capsRoot = new CapsRoot();
-        capsRoot.setSearching(new CapsSearching());
-        CapsLimits capsLimits = new CapsLimits(200, 100);
+        capsRoot = new CapsXmlRoot();
+        capsRoot.setSearching(new CapsXmlSearching());
+        CapsXmlLimits capsLimits = new CapsXmlLimits(200, 100);
         capsRoot.setLimits(capsLimits);
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=caps"), indexerConfig)).thenReturn(capsRoot);
         testee.PAUSE_BETWEEN_CALLS = 0;
@@ -108,7 +108,7 @@ public class NewznabCheckerTest {
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
-        capsRoot.getSearching().setAudioSearch(new CapsSearch("yes", "q"));
+        capsRoot.getSearching().setAudioSearch(new CapsXmlSearch("yes", "q"));
 
         CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
         assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
@@ -134,7 +134,7 @@ public class NewznabCheckerTest {
     @Test
     public void shouldIdentifyCategoryMapping() throws Exception {
         String xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/nzbsOrgCapsResponse.xml"), Charsets.UTF_8);
-        capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
+        capsRoot = (CapsXmlRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
         IndexerCategoryConfig categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
@@ -145,7 +145,7 @@ public class NewznabCheckerTest {
 
         //Test with dog which has different mappings
         xml = Resources.toString(Resources.getResource(BinsearchTest.class, "/org/nzbhydra/mapping/dognzbCapsResponse.xml"), Charsets.UTF_8);
-        capsRoot = (CapsRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
+        capsRoot = (CapsXmlRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
         categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);

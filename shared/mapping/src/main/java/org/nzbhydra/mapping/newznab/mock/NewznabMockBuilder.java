@@ -1,7 +1,7 @@
 package org.nzbhydra.mapping.newznab.mock;
 
-import org.nzbhydra.mapping.newznab.caps.*;
 import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.caps.*;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -15,18 +15,18 @@ public class NewznabMockBuilder {
     static Random random = new Random();
     private static final List<Integer> newznabCategories = Arrays.asList(1000, 2000, 5000, 5040, 5035, 9090, 9000, 7020, 2030);
 
-    public static CapsRoot getCaps() {
-        CapsRoot capsRoot = new CapsRoot();
-        capsRoot.setLimits(new CapsLimits(100, 100));
-        capsRoot.setRetention(new CapsRetention(2000));
-        CapsSearching searching = new CapsSearching();
-        searching.setSearch(new CapsSearch("yes", "q,cat,limit"));
-        searching.setTvSearch(new CapsSearch("yes", "q,tmdb,tvmazeid"));
+    public static CapsXmlRoot getCaps() {
+        CapsXmlRoot capsRoot = new CapsXmlRoot();
+        capsRoot.setLimits(new CapsXmlLimits(100, 100));
+        capsRoot.setRetention(new CapsXmlRetention(2000));
+        CapsXmlSearching searching = new CapsXmlSearching();
+        searching.setSearch(new CapsXmlSearch("yes", "q,cat,limit"));
+        searching.setTvSearch(new CapsXmlSearch("yes", "q,tmdb,tvmazeid"));
         capsRoot.setSearching(searching);
-        CapsCategories capsCategories = new CapsCategories(Arrays.asList(
-                new CapsCategory(2000, "Movies", Arrays.asList(new CapsCategory(2030, "Movies HD"))),
-                new CapsCategory(7000, "Other",Arrays.asList(new CapsCategory(7020, "EBook"))),
-                new CapsCategory(9000, "Misc",  Arrays.asList(new CapsCategory(9090, "Anime")))
+        CapsXmlCategories capsCategories = new CapsXmlCategories(Arrays.asList(
+                new CapsXmlCategory(2000, "Movies", Arrays.asList(new CapsXmlCategory(2030, "Movies HD"))),
+                new CapsXmlCategory(7000, "Other", Arrays.asList(new CapsXmlCategory(7020, "EBook"))),
+                new CapsXmlCategory(9000, "Misc", Arrays.asList(new CapsXmlCategory(9090, "Anime")))
         ));
         capsRoot.setCategories(capsCategories);
         return capsRoot;
