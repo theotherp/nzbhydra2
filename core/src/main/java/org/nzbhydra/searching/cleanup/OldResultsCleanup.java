@@ -16,6 +16,7 @@
 
 package org.nzbhydra.searching.cleanup;
 
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
@@ -25,8 +26,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @Component
 public class OldResultsCleanup {
@@ -54,6 +58,28 @@ public class OldResultsCleanup {
         if (deletedResults > 0) {
             logger.debug("Deleted {} unused search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);
         }
+
+
+        cleanupGcLogs();
+
+
+    }
+
+    protected void cleanupGcLogs() {
+        File[] logFiles = new File(NzbHydra.getDataFolder(), "logs").listFiles();
+        if (logFiles == null) {
+            return;
+        }
+        Predicate<File> filePredicate = x -> x.getName().toLowerCase().endsWith("log.0.current") || x.getName().toLowerCase().endsWith("log.0");
+        Stream.of(logFiles).filter(filePredicate).forEach(x -> {
+            if (Instant.ofEpochMilli(x.lastModified()).isBefore(Instant.now().minus(30, ChronoUnit.DAYS))) {
+                try {
+                    x.delete();
+                } catch (Exception e) {
+                    //Swallow
+                }
+            }
+        });
     }
 
 }
