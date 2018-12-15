@@ -82,6 +82,7 @@ public class TorznabTest {
     @Test
     public void shouldCreateSearchResultItem() throws Exception {
         NewznabXmlItem rssItem = buildBasicRssItem();
+        rssItem.setSize(456L);
         rssItem.getTorznabAttributes().add(new NewznabAttribute("password", "0"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("group", "group"));
         rssItem.getTorznabAttributes().add(new NewznabAttribute("poster", "poster"));

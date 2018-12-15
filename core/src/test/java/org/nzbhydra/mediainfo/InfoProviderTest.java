@@ -106,9 +106,9 @@ public class InfoProviderTest {
         verify(tvInfoRepositoryMock, times(4)).save(tvInfoArgumentCaptor.capture());
         assertEquals(4, tvInfoArgumentCaptor.getAllValues().size());
         assertEquals("title", tvInfoArgumentCaptor.getValue().getTitle());
-        assertEquals("tvdbId", tvInfoArgumentCaptor.getValue().getTvdbId());
-        assertEquals("tvmazeId", tvInfoArgumentCaptor.getValue().getTvmazeId());
-        assertEquals("tvrageId", tvInfoArgumentCaptor.getValue().getTvrageId());
+        assertEquals("tvdbId", tvInfoArgumentCaptor.getValue().getTvdbId().get());
+        assertEquals("tvmazeId", tvInfoArgumentCaptor.getValue().getTvmazeId().get());
+        assertEquals("tvrageId", tvInfoArgumentCaptor.getValue().getTvrageId().get());
         assertEquals(Integer.valueOf(0), tvInfoArgumentCaptor.getValue().getYear());
     }
 

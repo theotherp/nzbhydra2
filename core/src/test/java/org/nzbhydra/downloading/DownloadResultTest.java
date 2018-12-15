@@ -33,11 +33,11 @@ public class DownloadResultTest {
         nzbDownloadEntity.setSearchResult(searchResultEntity);
 
         DownloadResult testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
-        assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=title.nzb");
+        assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=\"title.nzb\"");
 
         searchResultEntity.setDownloadType(SearchResultItem.DownloadType.TORRENT);
         testee = DownloadResult.createSuccessfulDownloadResult("title", "content".getBytes(), nzbDownloadEntity);
-        assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=title.torrent");
+        assertThat(testee.getAsResponseEntity().getHeaders().get(HttpHeaders.CONTENT_DISPOSITION)).containsExactly("attachment; filename=\"title.torrent\"");
     }
 
     @Test
