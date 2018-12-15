@@ -15,6 +15,7 @@ import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.downloaders.DownloaderProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultWebTO;
@@ -61,6 +62,8 @@ public class NzbDownloadingTests {
     private IndexerRepository indexerRepository;
     @Autowired
     private DownloaderProvider downloaderProvider;
+    @Autowired
+    private SearchModuleProvider searchModuleProvider;
 
     private MockMvc mvc;
     private ClientAndProxy proxy;
@@ -116,7 +119,8 @@ public class NzbDownloadingTests {
         baseConfig.getDownloading().getDownloaders().clear();
         baseConfig.getDownloading().getDownloaders().add(downloaderConfig);
         baseConfig.getSearching().setNzbAccessType(FileDownloadAccessType.REDIRECT);
-        downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
+        downloaderProvider.handleNewConfig(new ConfigChangedEvent(this, baseConfig, baseConfig));
+        searchModuleProvider.loadIndexers(baseConfig.getIndexers());
     }
 
     @Test

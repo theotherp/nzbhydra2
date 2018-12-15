@@ -99,7 +99,7 @@ public class DownloaderProvider implements InitializingBean {
 
     public Downloader getDownloaderByName(String downloaderName) {
         if (!downloadersMap.containsKey(downloaderName.toLowerCase())) {
-            throw new IllegalArgumentException("Unable to find indexer with name " + downloaderName);
+            throw new IllegalArgumentException("Unable to find downloader with name " + downloaderName);
         }
         return downloadersMap.get(downloaderName.toLowerCase());
     }
