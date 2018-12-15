@@ -1,3 +1,11 @@
+### v2.1.0
+
+Fix: Search query was not built properly when conversion of search IDs did not provide any IDs usable by an indexer
+
+Feature: Support API caps in JSON
+
+
+
 ### v2.0.24
 
 Note: Added NZBGeek to the list mentioned in v2.0.23. Thanks to the user letting me know about it.
@@ -20,7 +28,7 @@ Fix: Upload of large ZIP files for restoration was disabled
 
 ### v2.0.21
 
-Feature: Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startup and attempts to repair it automatically
+Feature: Some users have reported corrupted config files. I can't explain how that could ever happen but I've added code that tries to recognize this on startuppu and attempts to repair it automatically
 
 Fix: New instances were not properly initialized, in some instances resulting in a crash on startup. Sorry about that
 
