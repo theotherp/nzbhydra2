@@ -34,6 +34,13 @@ if not "x%4" == "x" (
     goto %4
 )
 
+echo Pulling
+git pull
+if not "%ERRORLEVEL%" == "0" (
+    echo Error during pull. Perhaps you need to merge first?
+    goto error
+)
+
 echo Running clean
 call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean
 if not "%ERRORLEVEL%" == "0" (
