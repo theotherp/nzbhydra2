@@ -19,7 +19,7 @@ public class SensitiveDataHidingSerializer extends JsonSerializer<Object> {
         String toWrite = "<REMOVED>";
         if (value instanceof Optional) {
             Optional optional = (Optional) value;
-            toWrite = optional.isPresent() ? "<REMOVED>" : "null";
+            toWrite = optional.isPresent() ? "<REMOVED>" : "<NOTSET>";
         }
         logger.debug("Hiding sensitive data in config setting \"{}\"", gen.getOutputContext().getCurrentName());
         gen.writeString(toWrite);

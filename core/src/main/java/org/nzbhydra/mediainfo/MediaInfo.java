@@ -1,8 +1,10 @@
 package org.nzbhydra.mediainfo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.Optional;
 
 @Setter
@@ -49,6 +51,31 @@ public class MediaInfo {
         return Optional.ofNullable(posterUrl);
     }
 
+    @JsonIgnore
+    public Optional<String> getByIdType(InfoProvider.IdType idType) {
+        switch (idType) {
+            case IMDB:
+                return getImdbId();
+            case TMDB:
+                return getTmdbId();
+            case TVMAZE:
+                return getTvMazeId();
+            case TVRAGE:
+                return getTvRageId();
+            case TVDB:
+                return getTvDbId();
+            case TVTITLE:
+            case MOVIETITLE:
+                return getTitle();
+        }
+        return Optional.empty();
+    }
+
+    @JsonIgnore
+    public boolean isInfoContained(Collection<InfoProvider.IdType> types) {
+        return types.stream().anyMatch(x -> getByIdType(x).isPresent());
+    }
+
     public MediaInfo(TvMazeSearchResult searchResult) {
         tvrageId = searchResult.getTvrageId();
         tvmazeId = searchResult.getTvmazeId();
@@ -67,20 +94,20 @@ public class MediaInfo {
     }
 
     public MediaInfo(MovieInfo movieInfo) {
-        imdbId = movieInfo.getImdbId();
-        tmdbId = movieInfo.getTmdbId();
-        title = movieInfo.getTitle();
+        imdbId = movieInfo.getImdbId().orElse(null);
+        tmdbId = movieInfo.getTmdbId().orElse(null);
+        title = movieInfo.getTitle().orElse(null);
         year = movieInfo.getYear();
-        posterUrl = movieInfo.getPosterUrl();
+        posterUrl = movieInfo.getPosterUrl().orElse(null);
     }
 
     public MediaInfo(TvInfo tvInfo) {
-        tvrageId = tvInfo.getTvrageId();
-        tvmazeId = tvInfo.getTvmazeId();
-        tvdbId = tvInfo.getTvdbId();
+        tvrageId = tvInfo.getTvrageId().orElse(null);
+        tvmazeId = tvInfo.getTvmazeId().orElse(null);
+        tvdbId = tvInfo.getTvdbId().orElse(null);
         title = tvInfo.getTitle();
         year = tvInfo.getYear();
-        posterUrl = tvInfo.getPosterUrl();
+        posterUrl = tvInfo.getPosterUrl().orElse(null);
     }
 
     public MediaInfo() {

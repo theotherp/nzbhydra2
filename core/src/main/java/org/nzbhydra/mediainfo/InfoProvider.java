@@ -51,7 +51,6 @@ public class InfoProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(InfoProvider.class);
 
-
     @Autowired
     protected TmdbHandler tmdbHandler;
     @Autowired
@@ -81,7 +80,8 @@ public class InfoProvider {
 
 
     @Cacheable(cacheNames = "infos", sync = true)
-    public MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
+    //sync=true is currently apparently not supported by Caffeine. synchronizing by method is good enough because we'll likely rarely hit this method concurrently with different parameters
+    public synchronized MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
         if (value == null) {
             throw new InfoProviderException("Unable to convert IDType " + fromType + " with null value");
         }
@@ -172,7 +172,7 @@ public class InfoProvider {
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     for (MediaInfo mediaInfo : infos) {
                         TvInfo tvInfo = new TvInfo(mediaInfo);
-                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(nullableId(tvInfo.getTvrageId()), nullableId(tvInfo.getTvmazeId()), nullableId(tvInfo.getTvdbId())) == null) {
+                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(tvInfo.getTvrageId().orElse("-1"), tvInfo.getTvmazeId().orElse("-1"), tvInfo.getTvdbId().orElse("-1")) == null) {
                             tvInfoRepository.save(tvInfo);
                         }
                     }
@@ -195,10 +195,6 @@ public class InfoProvider {
             Throwables.throwIfInstanceOf(e, InfoProviderException.class);
             throw new InfoProviderException("Unexpected error while converting infos", e);
         }
-    }
-
-    private String nullableId(String id) {
-        return id == null ? "-1" : id;
     }
 
 

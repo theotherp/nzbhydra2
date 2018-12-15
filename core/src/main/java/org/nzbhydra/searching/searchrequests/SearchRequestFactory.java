@@ -39,16 +39,16 @@ public class SearchRequestFactory {
             if (request.getIdentifiers().keySet().stream().anyMatch(x -> InfoProvider.TV_ID_TYPES.contains(x))) {
                 TvInfo tvInfo = infoProvider.findTvInfoInDatabase(request.getIdentifiers());
                 if (tvInfo != null) {
-                    request.getIdentifiers().put(IdType.TVDB, tvInfo.getTvdbId());
-                    request.getIdentifiers().put(IdType.TVMAZE, tvInfo.getTvmazeId());
-                    request.getIdentifiers().put(IdType.TVRAGE, tvInfo.getTvrageId());
+                    tvInfo.getTvmazeId().ifPresent(x -> request.getIdentifiers().put(IdType.TVMAZE, x));
+                    tvInfo.getTvdbId().ifPresent(x -> request.getIdentifiers().put(IdType.TVDB, x));
+                    tvInfo.getTvrageId().ifPresent(x -> request.getIdentifiers().put(IdType.TVRAGE, x));
                 }
             }
             if (request.getIdentifiers().keySet().stream().anyMatch(x -> InfoProvider.MOVIE_ID_TYPES.contains(x))) {
                 MovieInfo movieInfo = infoProvider.findMovieInfoInDatabase(request.getIdentifiers());
                 if (movieInfo != null) {
-                    request.getIdentifiers().put(IdType.TMDB, movieInfo.getTmdbId());
-                    request.getIdentifiers().put(IdType.IMDB, movieInfo.getImdbId());
+                    movieInfo.getTmdbId().ifPresent(x -> request.getIdentifiers().put(IdType.TMDB, x));
+                    movieInfo.getImdbId().ifPresent(x -> request.getIdentifiers().put(IdType.IMDB, x));
                 }
             }
         }

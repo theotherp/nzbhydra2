@@ -1,13 +1,10 @@
 package org.nzbhydra.mediainfo;
 
+import com.google.common.base.Strings;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -47,5 +44,21 @@ public class TvInfo {
     }
 
     public TvInfo() {
+    }
+
+    public Optional<String> getTvdbId() {
+        return Optional.ofNullable(Strings.emptyToNull(tvdbId));
+    }
+
+    public Optional<String> getTvrageId() {
+        return Optional.ofNullable(Strings.emptyToNull(tvrageId));
+    }
+
+    public Optional<String> getTvmazeId() {
+        return Optional.ofNullable(Strings.emptyToNull(tvmazeId));
+    }
+
+    public Optional<String> getPosterUrl() {
+        return Optional.ofNullable(Strings.emptyToNull(posterUrl));
     }
 }

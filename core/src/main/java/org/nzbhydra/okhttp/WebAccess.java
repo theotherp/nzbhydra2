@@ -53,7 +53,7 @@ public class WebAccess {
         Request request = builder.build();
 
         OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
-        logger.debug(LoggingMarkers.HTTP, "Calling URL {} with headers {} and timeout{}", url, headers.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining(", ")), timeout);
+        logger.debug(LoggingMarkers.HTTP, "Calling URL {} with headers {} and timeout {}", url, headers.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining(", ")), timeout);
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());

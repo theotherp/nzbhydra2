@@ -110,7 +110,7 @@ public abstract class Indexer<T> {
             }
 
         } catch (IndexerSearchAbortedException e) {
-            logger.warn("Unexpected error while preparing search");
+            logger.warn("Unexpected error while preparing search: " + e.getMessage());
             indexerSearchResult = new IndexerSearchResult(this, e.getMessage());
             eventPublisher.publishEvent(new SearchMessageEvent(searchRequest, "Unexpected error while preparing search for indexer " + getName()));
         } catch (IndexerAccessException e) {
@@ -352,6 +352,7 @@ public abstract class Indexer<T> {
         boolean fallbackRequested = searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
 
         if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {
+            debug("No query generation needed. indexerDoesntSupportRequiredSearchType: {}. indexerDoesntSupportAnyOfTheProvidedIds: {}. queryGenerationPossible: {}. queryGenerationEnabled: {}. fallbackRequested: {}", indexerDoesntSupportRequiredSearchType, indexerDoesntSupportAnyOfTheProvidedIds, queryGenerationPossible, queryGenerationEnabled, fallbackRequested);
             return query;
         }
         if (searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED) {
@@ -363,6 +364,7 @@ public abstract class Indexer<T> {
             debug("Search request provided title {}. Using that as query base.", query);
         } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get();
+            debug("Using internally provided title {]", query);
         } else {
             Optional<Entry<IdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
             if (!firstIdentifierEntry.isPresent()) {

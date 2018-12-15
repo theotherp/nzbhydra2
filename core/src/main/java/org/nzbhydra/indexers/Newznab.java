@@ -91,7 +91,6 @@ public class Newznab extends Indexer<Xml> {
         return builder;
     }
 
-
     @Override
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
         UriComponentsBuilder componentsBuilder = getBaseUri();
@@ -105,19 +104,26 @@ public class Newznab extends Indexer<Xml> {
 
         componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
         query = generateQueryIfApplicable(searchRequest, query);
+        verifyIdentifiersNotUnhandled(searchRequest, componentsBuilder, query);
         query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
-
         query = cleanupQuery(query);
         addFurtherParametersToUri(searchRequest, componentsBuilder, query);
 
         if (limit != null) {
             componentsBuilder.queryParam("limit", limit);
-
         }
         if (offset != null) {
             componentsBuilder.queryParam("offset", offset);
         }
         return componentsBuilder;
+    }
+
+    private void verifyIdentifiersNotUnhandled(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) throws IndexerSearchAbortedException {
+        //Make sure we didn't for some reason neither find any usable search IDs nor generate a query
+        String currentUriString = componentsBuilder.toUriString();
+        if (Strings.isNullOrEmpty(query) && !searchRequest.getIdentifiers().isEmpty() && idTypeToParamValueMap.values().stream().noneMatch(currentUriString::contains)) {
+            throw new IndexerSearchAbortedException("Aborting searching for indexer because no usable search IDs could be found and no query was generated");
+        }
     }
 
     protected void addFurtherParametersToUri(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder, String query) {
@@ -232,15 +238,17 @@ public class Newznab extends Indexer<Xml> {
         return query;
     }
 
-    protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) throws IndexerSearchAbortedException {
+    protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
         if (!searchRequest.getIdentifiers().isEmpty()) {
             Map<IdType, String> params = new HashMap<>();
             boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
             if (!indexerSupportsAnyOfTheProvidedIds) {
+                debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
                 boolean canConvertAnyId = infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), new HashSet<>(config.getSupportedSearchIds()));
                 if (canConvertAnyId) {
                     try {
                         MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
+
                         if (info.getImdbId().isPresent()) {
                             params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
                         }
@@ -259,6 +267,11 @@ public class Newznab extends Indexer<Xml> {
                     } catch (InfoProviderException e) {
                         error("Error while converting search ID", e);
                     }
+                } else {
+                    debug("Unable to convert any of the provided IDs to any of these supported IDs: {}", Joiner.on(", ").join(config.getSupportedSearchIds()));
+                }
+                if (params.isEmpty()) {
+                    warn("Didn't find any usable IDs to add to search request");
                 }
             }
             searchRequest.getIdentifiers().putAll(params);

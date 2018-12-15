@@ -1,12 +1,10 @@
 package org.nzbhydra.mediainfo;
 
+import com.google.common.base.Strings;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -41,5 +39,21 @@ public class MovieInfo {
     }
 
     public MovieInfo() {
+    }
+
+    public Optional<String> getImdbId() {
+        return Optional.ofNullable(Strings.emptyToNull(imdbId));
+    }
+
+    public Optional<String> getTmdbId() {
+        return Optional.ofNullable(Strings.emptyToNull(tmdbId));
+    }
+
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(Strings.emptyToNull(title));
+    }
+
+    public Optional<String> getPosterUrl() {
+        return Optional.ofNullable(Strings.emptyToNull(posterUrl));
     }
 }
