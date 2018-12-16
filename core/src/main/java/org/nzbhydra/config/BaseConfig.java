@@ -12,9 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -142,6 +140,18 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
                     configValidationResult.getWarningMessages().add("No indexer found that supports search IDs. Without query generation " + name + " searches using search IDs will return empty results.");
                 }
             }
+            Set<String> indexerNames = new HashSet<>();
+            Set<String> duplicateIndexerNames = new HashSet<>();
+
+            for (IndexerConfig indexer : newConfig.getIndexers()) {
+                if (!indexerNames.add(indexer.getName())) {
+                    duplicateIndexerNames.add(indexer.getName());
+                }
+            }
+            if (!duplicateIndexerNames.isEmpty()) {
+                configValidationResult.getErrorMessages().add("Duplicate indexer names found: " + Joiner.on(", ").join(duplicateIndexerNames));
+            }
+
         } else {
             configValidationResult.getWarningMessages().add("No indexers configured. You won't get any results");
         }

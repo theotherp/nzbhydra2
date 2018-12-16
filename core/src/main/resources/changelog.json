@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Validate saved config to prevent indexers with duplicate names"
+      }
+    ]
+  },
+  {
     "version": "v2.1.0",
     "changes": [
       {

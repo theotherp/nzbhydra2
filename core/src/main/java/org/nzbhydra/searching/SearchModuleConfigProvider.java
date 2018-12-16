@@ -12,11 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @ConfigurationProperties
@@ -49,13 +45,6 @@ public class SearchModuleConfigProvider implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         indexers = baseConfig.getIndexers();
-        Map<String, IndexerConfig> configsByname;
-        if (indexers != null) {
-            configsByname = indexers.stream().collect(Collectors.toMap(IndexerConfig::getName, Function.identity()));
-        } else {
-            logger.error("Configuration incomplete, no indexers found");
-            configsByname = Collections.emptyMap();
-        }
         searchModuleProvider.loadIndexers(indexers);
     }
 }

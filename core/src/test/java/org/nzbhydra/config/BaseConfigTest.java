@@ -97,6 +97,21 @@ public class BaseConfigTest {
     }
 
     @Test
+    public void shouldRecognizeDuplicateIndexerNames() {
+        IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
+        when(indexerConfigMock.getName()).thenReturn("name");
+        IndexerConfig indexerConfigMock2 = mock(IndexerConfig.class);
+        when(indexerConfigMock2.getName()).thenReturn("name");
+        when(indexerConfigMock.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        when(indexerConfigMock2.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        testee.getIndexers().add(indexerConfigMock);
+        testee.getIndexers().add(indexerConfigMock2);
+        ValidatingConfig.ConfigValidationResult result = testee.validateConfig(new BaseConfig(), testee);
+        assertEquals(3, result.getErrorMessages().size());
+        assertTrue(result.getErrorMessages().get(2).contains("Duplicate"));
+    }
+
+    @Test
     public void shouldInitializeAllListsAsEmptyInBaseConfigYaml() throws Exception {
         BaseConfig baseConfig = new ConfigReaderWriter().originalConfig();
         validateListsNotNull(baseConfig);
