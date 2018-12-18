@@ -86,7 +86,15 @@ public class NewznabChecker {
                 return GenericResponse.notOk("Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription());
             }
             NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
+
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
+                if (indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB && isTorznabResult(rssRoot)) {
+                    return GenericResponse.notOk("You added the indexer as newznab indexer but the results indicate a torznab indexer");
+                }
+                if (indexerConfig.getSearchModuleType() == SearchModuleType.TORZNAB && isNewznabResult(rssRoot)) {
+                    return GenericResponse.notOk("You added the indexer as torznab indexer but the results indicate a newznab indexer");
+                }
+
                 logger.info("Connection to indexer {} successful", indexerConfig.getName());
                 return GenericResponse.ok();
             } else {
@@ -97,6 +105,14 @@ public class NewznabChecker {
             logger.warn("Connection check with indexer {} failed with message: {}", indexerConfig.getName(), e.getMessage());
             return GenericResponse.notOk(e.getMessage());
         }
+    }
+
+    protected boolean isTorznabResult(NewznabXmlRoot rssRoot) {
+        return rssRoot.getRssChannel().getItems().stream().anyMatch(x -> x.getEnclosures().stream().anyMatch(enclosure -> "application/x-bittorrent".equals(enclosure.getType())) || !x.getTorznabAttributes().isEmpty());
+    }
+
+    protected boolean isNewznabResult(NewznabXmlRoot rssRoot) {
+        return rssRoot.getRssChannel().getItems().stream().anyMatch(x -> x.getEnclosures().stream().anyMatch(enclosure -> "application/x-nzb".equals(enclosure.getType())));
     }
 
 
@@ -152,7 +168,7 @@ public class NewznabChecker {
                     responses.add(response);
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof IndexerAccessException) {
-                        logger.error("Error while communicating with indexer: "+ e.getMessage());
+                        logger.error("Error while communicating with indexer: " + e.getMessage());
                     } else {
                         logger.error("Unexpected error while checking caps", e);
                     }
@@ -306,18 +322,18 @@ public class NewznabChecker {
             String errorDescription = ((NewznabXmlError) response).getDescription();
             if (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getKey());
-                eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Doesn't support " + request.getKey()));
+                eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Doesn't support " + request.getKey()));
                 return new SingleCheckCapsResponse(request.getKey(), false, null);
             }
             logger.debug("RSS error from indexer {}: {}", request.indexerConfig.getName(), errorDescription);
-            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"RSS error from indexer: " + errorDescription));
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "RSS error from indexer: " + errorDescription));
             throw new IndexerAccessException("RSS error from indexer: " + errorDescription);
         }
         NewznabXmlRoot rssRoot = (NewznabXmlRoot) response;
 
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getKey());
-            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Probably doesn't support " + request.getKey()));
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably doesn't support " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> request.getTitleExpectedToContain().stream().anyMatch(y -> x.getTitle().toLowerCase().contains(y.toLowerCase()))).count();
@@ -325,11 +341,11 @@ public class NewznabChecker {
         boolean supported = percentCorrect >= ID_THRESHOLD_PERCENT;
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
-            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Probably supports " + request.getKey()));
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably supports " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), true, rssRoot.getRssChannel().getGenerator());
         } else {
             logger.info("Indexer {} probably doesn't support the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getKey(), percentCorrect);
-            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(),"Probably doesn't support " + request.getKey()));
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably doesn't support " + request.getKey()));
             return new SingleCheckCapsResponse(request.getKey(), false, rssRoot.getRssChannel().getGenerator());
         }
     }
@@ -341,6 +357,15 @@ public class NewznabChecker {
         private String indexerName;
         private String message;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ConnectionCheckResponse {
+        private String indexerName;
+        private String message;
+    }
+
 
     @Data
     @AllArgsConstructor
