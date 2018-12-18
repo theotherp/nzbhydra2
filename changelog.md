@@ -1,3 +1,11 @@
+### v2.1.1
+
+Fix: Validate config to prevent indexers with duplicate names
+
+Fix: Validate config to prevent torznab indexers being added as newznab indexer and vice versa
+
+
+
 ### v2.1.0
 
 Fix: Search query was not built properly when conversion of search IDs did not provide any IDs usable by an indexer
