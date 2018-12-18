@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Indexer added as newznab indexer even when selected as torznab in the config GUI"
+      }
+    ]
+  },
+  {
     "version": "v2.1.1",
     "changes": [
       {

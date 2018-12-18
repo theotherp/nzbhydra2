@@ -3715,6 +3715,16 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             enabledForSearchSource: "BOTH"
         }
     ];
+
+    $scope.emptyTorznabPreset = {
+        allCapsChecked: false,
+        configComplete: false,
+        supportedSearchIds: undefined,
+        supportedSearchTypes: undefined,
+        searchModuleType: "TORZNAB",
+        state: "ENABLED",
+        enabledForSearchSource: "BOTH"
+    };
     $scope.torznabPresets = _.sortBy($scope.torznabPresets, function (entry) {
         return entry.name.toLowerCase()
     });
