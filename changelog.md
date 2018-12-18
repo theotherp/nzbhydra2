@@ -1,3 +1,9 @@
+### v2.1.2
+
+Fix: Indexer added as newznab indexer even when selected as torznab in the config GUI
+
+
+
 ### v2.1.1
 
 Fix: Validate config to prevent indexers with duplicate names
