@@ -594,10 +594,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             configComplete: true
         },
         {
-            name: "dbKitty",
-            host: "https://dbkitty.club"
-        },
-        {
             name: "DogNZB",
             host: "https://api.dognzb.cr"
         },
@@ -622,10 +618,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://newz69.keagaming.com"
         },
         {
-            name: "NewzTown",
-            host: "https://newztown.co.za"
-        },
-        {
             name: "NZB Finder",
             host: "https://nzbfinder.ws"
         },
@@ -634,20 +626,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://nzb.cat"
         },
         {
-            name: "nzb.ag",
-            host: "https://nzb.ag"
-        },
-        {
-            name: "nzb.is",
-            host: "https://nzb.is"
-        },
-        {
             name: "nzb.su",
             host: "https://api.nzb.su"
-        },
-        {
-            name: "nzb7",
-            host: "https://www.nzb7.com"
         },
         {
             name: "NZBGeek",
@@ -674,10 +654,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://www.nzbs.io"
         },
         {
-            name: "Nzeeb",
-            host: "https://www.nzeeb.com"
-        },
-        {
             name: "oznzb",
             host: "https://api.oznzb.com"
         },
@@ -686,20 +662,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://api.omgwtfnzbs.me"
         },
         {
-            name: "PFMonkey",
-            host: "https://www.pfmonkey.com"
-        },
-        {
-            name: "SimplyNZBs",
-            host: "https://simplynzbs.com"
-        },
-        {
             name: "Tabula-Rasa",
             host: "https://www.tabula-rasa.pw/api/v1/"
-        },
-        {
-            name: "Usenet-Crawler",
-            host: "https://www.usenet-crawler.com"
         },
         {
             allCapsChecked: true,

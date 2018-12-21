@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Removed dead indexers from presets"
+      }
+    ]
+  },
+  {
     "version": "v2.1.2",
     "changes": [
       {
