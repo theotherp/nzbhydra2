@@ -1,3 +1,11 @@
+### v2.1.3
+
+Fix: Removed dead indexers from presets
+
+Fix: Prevent exception related to duplicate TV infos in database
+
+
+
 ### v2.1.2
 
 Fix: Indexer added as newznab indexer even when selected as torznab in the config GUI
