@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
@@ -154,11 +151,13 @@ public class InfoProvider {
     }
 
     public TvInfo findTvInfoInDatabase(Map<IdType, String> ids) {
-        return tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"));
+        Collection<TvInfo> matchingInfos = tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"));
+        return matchingInfos.stream().max(TvInfo::compareTo).orElse(null);
     }
 
     public MovieInfo findMovieInfoInDatabase(Map<IdType, String> ids) {
-        return movieInfoRepository.findByImdbIdOrTmdbId(ids.getOrDefault(IMDB, "-1"), ids.getOrDefault(TMDB, "-1"));
+        Collection<MovieInfo> matchingInfos = movieInfoRepository.findByImdbIdOrTmdbId(ids.getOrDefault(IMDB, "-1"), ids.getOrDefault(TMDB, "-1"));
+        return matchingInfos.stream().max(MovieInfo::compareTo).orElse(null);
     }
 
     @Cacheable(cacheNames = "titles", sync = true)

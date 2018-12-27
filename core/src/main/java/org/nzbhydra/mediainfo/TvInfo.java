@@ -9,7 +9,7 @@ import java.util.Optional;
 @Data
 @Entity
 @Table(name = "tvinfo")
-public class TvInfo {
+public class TvInfo implements Comparable<TvInfo> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -60,5 +60,27 @@ public class TvInfo {
 
     public Optional<String> getPosterUrl() {
         return Optional.ofNullable(Strings.emptyToNull(posterUrl));
+    }
+
+    @Override
+    public int compareTo(TvInfo o) {
+        if (o == null) {
+            return 1;
+        }
+        return Integer.compare(getNumberOfContainedIds(), o.getNumberOfContainedIds());
+    }
+
+    protected int getNumberOfContainedIds() {
+        int countContainedIds = 0;
+        if (getTvmazeId().isPresent()) {
+            countContainedIds++;
+        }
+        if (getTvrageId().isPresent()) {
+            countContainedIds++;
+        }
+        if (getTvdbId().isPresent()) {
+            countContainedIds++;
+        }
+        return countContainedIds;
     }
 }

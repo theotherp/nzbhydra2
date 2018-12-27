@@ -11,6 +11,7 @@ import org.nzbhydra.mediainfo.InfoProvider.IdType;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -135,7 +136,19 @@ public class InfoProviderTest {
 
         testee.search("title", InfoProvider.IdType.MOVIETITLE);
         verify(tmdbHandlerMock).search("title", null);
+    }
 
+    @Test
+    public void shouldGetInfoWithMostIds() {
+        TvInfo mostInfo = new TvInfo("abc", "abc", "abc", null, null, null);
+        when(tvInfoRepositoryMock.findByTvrageIdOrTvmazeIdOrTvdbId(anyString(), anyString(), anyString())).thenReturn(Arrays.asList(
+                mostInfo,
+                new TvInfo("abc", "abc", null, null, null, null),
+                new TvInfo("abc", null, null, null, null, null)
+        ));
+
+        TvInfo info = testee.findTvInfoInDatabase(new HashMap<>());
+        assertEquals(mostInfo, info);
     }
 
 }

@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Removed dead indexers from presets"
+      },
+      {
+        "type": "fix",
+        "text": "Prevent exception related to duplicate TV infos in database"
       }
     ]
   },

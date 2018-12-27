@@ -3,6 +3,8 @@ package org.nzbhydra.mediainfo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
+
 public interface MovieInfoRepository extends JpaRepository<MovieInfo, Integer> {
 
     MovieInfo findByImdbId(String imdbId);
@@ -11,5 +13,5 @@ public interface MovieInfoRepository extends JpaRepository<MovieInfo, Integer> {
 
     MovieInfo findByTitle(String title);
 
-    MovieInfo findByImdbIdOrTmdbId(String imdbId, String tmdbId);
+    Collection<MovieInfo> findByImdbIdOrTmdbId(String imdbId, String tmdbId);
 }
