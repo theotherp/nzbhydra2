@@ -1,3 +1,13 @@
+### v2.1.4
+
+Feature: Allow retrieval of history and stats via API. See https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries
+
+Fix: Repeat of searches from history sometimes used wrong parameters
+
+Fix: Added nzbs.org to list of indexers unable to process type searches without IDs
+
+
+
 ### v2.1.3
 
 Fix: Removed dead indexers from presets
