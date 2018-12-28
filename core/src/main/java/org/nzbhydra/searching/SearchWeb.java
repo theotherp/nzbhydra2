@@ -78,7 +78,13 @@ public class SearchWeb {
 
     private SearchRequest createSearchRequest(@RequestBody SearchRequestParameters parameters) {
         Category category = categoryProvider.getByInternalName(parameters.getCategory());
-        SearchType searchType = category.getSearchType() == null ? SearchType.SEARCH : category.getSearchType();
+        SearchType searchType;
+        if (parameters.getMode() != null && category.getSubtype() == Category.Subtype.ALL) {
+            //This may be the case when an API search is repeated from the history
+            searchType = SearchType.valueOf(parameters.getMode().toUpperCase());
+        } else {
+            searchType = category.getSearchType() == null ? SearchType.SEARCH : category.getSearchType();
+        }
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.INTERNAL, category, parameters.getSearchRequestId(), parameters.getOffset(), parameters.getLimit());
         searchRequest.setLoadAll(parameters.isLoadAll());
         searchRequest.setIndexers(parameters.getIndexers());

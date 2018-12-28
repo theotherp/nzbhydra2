@@ -210,6 +210,7 @@ public class MockNewznab {
 
         if (params.getImdbid() != null) {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(10);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 

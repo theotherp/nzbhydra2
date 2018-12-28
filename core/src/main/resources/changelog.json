@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.1.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Repeat of searches from history sometimes used wrong parameters"
+      },
+      {
+        "type": "fix",
+        "text": "Added nzbs.org to list of indexers unable to process type searches without IDs"
+      }
+    ]
+  },
+  {
     "version": "v2.1.3",
     "changes": [
       {

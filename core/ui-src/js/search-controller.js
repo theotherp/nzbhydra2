@@ -43,7 +43,7 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
     if (angular.isDefined($stateParams.indexers)) {
         $scope.indexers = decodeURIComponent($stateParams.indexers).split(",");
     }
-    if (angular.isDefined($stateParams.title) && (angular.isDefined($stateParams.tmdbId) || angular.isDefined($stateParams.imdbId) || angular.isDefined($stateParams.tvmazeId) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbId))) {
+    if (angular.isDefined($stateParams.title) || (angular.isDefined($stateParams.tmdbId) || angular.isDefined($stateParams.imdbId) || angular.isDefined($stateParams.tvmazeId) || angular.isDefined($stateParams.rid) || angular.isDefined($stateParams.tvdbId))) {
         $scope.selectedItem = {
             tmdbId: $stateParams.tmdbId,
             imdbId: $stateParams.imdbId,

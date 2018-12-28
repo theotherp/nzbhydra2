@@ -164,6 +164,7 @@ public abstract class Indexer<T> {
         completeIndexerSearchResult(response, indexerSearchResult, acceptorResult, searchRequest, offset, limit);
 
         int endIndex = Math.min(indexerSearchResult.getOffset() + indexerSearchResult.getLimit(), indexerSearchResult.getOffset() + searchResultItems.size());
+        endIndex = Math.min(indexerSearchResult.getTotalResults(), endIndex);
         debug("Returning results {}-{} of {} available ({} already rejected)", indexerSearchResult.getOffset(), endIndex, indexerSearchResult.getTotalResults(), acceptorResult.getNumberOfRejectedResults());
 
         return indexerSearchResult;

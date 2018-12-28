@@ -37,6 +37,7 @@ public class SearchRequestParameters {
     protected Integer maxage;
     protected boolean loadAll;
     protected String category;
+    protected String mode;
     protected Set<String> indexers;
 
     private String title;
