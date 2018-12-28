@@ -75,6 +75,8 @@ public class ExternalApi {
     @Autowired
     private CategoryProvider categoryProvider;
     @Autowired
+    private org.nzbhydra.historystats.Stats stats;
+    @Autowired
     private CapsGenerator capsGenerator;
     protected Clock clock = Clock.systemUTC();
     private Random random = new Random();

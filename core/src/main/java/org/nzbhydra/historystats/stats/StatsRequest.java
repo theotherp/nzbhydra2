@@ -12,26 +12,26 @@ import java.time.temporal.ChronoUnit;
 @NoArgsConstructor
 public class StatsRequest {
 
-    private Instant after = Instant.now().minus(30, ChronoUnit.DAYS);
-    private Instant before = Instant.now();
-    private boolean includeDisabled;
+    protected Instant after = Instant.now().minus(30, ChronoUnit.DAYS);
+    protected Instant before = Instant.now();
+    protected boolean includeDisabled;
 
-    private boolean indexerApiAccessStats;
-    private boolean avgIndexerSearchResultsShares;
-    private boolean avgResponseTimes;
-    private boolean indexerDownloadShares;
-    private boolean downloadsPerDayOfWeek;
-    private boolean downloadsPerHourOfDay;
-    private boolean searchesPerDayOfWeek;
-    private boolean searchesPerHourOfDay;
-    private boolean downloadsPerAgeStats;
-    private boolean successfulDownloadsPerIndexer;
-    private boolean downloadSharesPerUser;
-    private boolean downloadSharesPerIp;
-    private boolean searchSharesPerUser;
-    private boolean searchSharesPerIp;
-    private boolean userAgentSearchShares;
-    private boolean userAgentDownloadShares;
+    protected boolean indexerApiAccessStats;
+    protected boolean avgIndexerSearchResultsShares;
+    protected boolean avgResponseTimes;
+    protected boolean indexerDownloadShares;
+    protected boolean downloadsPerDayOfWeek;
+    protected boolean downloadsPerHourOfDay;
+    protected boolean searchesPerDayOfWeek;
+    protected boolean searchesPerHourOfDay;
+    protected boolean downloadsPerAgeStats;
+    protected boolean successfulDownloadsPerIndexer;
+    protected boolean downloadSharesPerUser;
+    protected boolean downloadSharesPerIp;
+    protected boolean searchSharesPerUser;
+    protected boolean searchSharesPerIp;
+    protected boolean userAgentSearchShares;
+    protected boolean userAgentDownloadShares;
 
     public StatsRequest(Instant after, Instant before, boolean includeDisabled) {
         this.before = before;

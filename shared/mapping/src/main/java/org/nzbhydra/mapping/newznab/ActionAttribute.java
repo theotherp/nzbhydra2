@@ -10,5 +10,6 @@ public enum ActionAttribute {
     CAPS,
     GET,
     DETAILS,
-    GETNFO
+    GETNFO,
+    STATS
 }

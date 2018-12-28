@@ -1,9 +1,9 @@
 package org.nzbhydra.downloading.downloaders.sabnzbd;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import okhttp3.*;
 import org.nzbhydra.GenericResponse;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Downloader;
@@ -34,7 +34,6 @@ import java.util.Map;
 public class Sabnzbd extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Map<String, FileDownloadStatus> SABNZBD_STATUS_TO_HYDRA_STATUS = new HashMap<>();
 
@@ -131,7 +130,7 @@ public class Sabnzbd extends Downloader {
             if (!response.isSuccessful()) {
                 throw new DownloaderException("Downloader returned status code " + response.code() + " and message " + response.message());
             }
-            AddNzbResponse addNzbResponse = objectMapper.readValue(body.string(), AddNzbResponse.class);
+            AddNzbResponse addNzbResponse = Jackson.JSON_MAPPER.readValue(body.string(), AddNzbResponse.class);
             if (addNzbResponse.getNzoIds().isEmpty()) {
                 throw new DownloaderException("Sabnzbd says NZB was added successfully but didn't return an NZO ID");
             }

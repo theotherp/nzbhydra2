@@ -1,16 +1,7 @@
 package org.nzbhydra.historystats;
 
 import lombok.Data;
-import org.nzbhydra.historystats.stats.AverageResponseTime;
-import org.nzbhydra.historystats.stats.CountPerDayOfWeek;
-import org.nzbhydra.historystats.stats.CountPerHourOfDay;
-import org.nzbhydra.historystats.stats.DownloadOrSearchSharePerUserOrIp;
-import org.nzbhydra.historystats.stats.DownloadPerAgeStats;
-import org.nzbhydra.historystats.stats.IndexerApiAccessStatsEntry;
-import org.nzbhydra.historystats.stats.IndexerDownloadShare;
-import org.nzbhydra.historystats.stats.IndexerSearchResultsShare;
-import org.nzbhydra.historystats.stats.SuccessfulDownloadsPerIndexer;
-import org.nzbhydra.historystats.stats.UserAgentShare;
+import org.nzbhydra.historystats.stats.*;
 
 import java.time.Instant;
 import java.util.List;

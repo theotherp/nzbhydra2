@@ -16,12 +16,8 @@
 
 package org.nzbhydra.config.migration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.nzbhydra.config.ConfigReaderWriter;
 import org.nzbhydra.config.MainConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,14 +32,11 @@ public class ConfigMigration {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigMigration.class);
 
-    private static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
-    };
     private static final DefaultPrettyPrinter defaultPrettyPrinter;
 
     protected List<ConfigMigrationStep> steps;
     protected int expectedConfigVersion;
-    private static final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-    private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
+
 
     static {
         DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);

@@ -8,6 +8,7 @@ auth:
   restrictIndexerSelection: false
   restrictSearch: false
   restrictStats: false
+  allowApiStats: true
   users: []
 categoriesConfig:
     enableCategorySizes: true

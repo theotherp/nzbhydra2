@@ -1,7 +1,6 @@
 package org.nzbhydra.migration;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import joptsimple.internal.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import okhttp3.*;
 import okhttp3.Request.Builder;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.mapping.SemanticVersion;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
@@ -94,7 +94,7 @@ public class FromPythonMigration {
 
         Map<String, String> migrationData = null;
         try {
-            Map<String, String> versionsData = new ObjectMapper().readValue(versionsResponse.getBody(), mapTypeReference);
+            Map<String, String> versionsData = Jackson.JSON_MAPPER.readValue(versionsResponse.getBody(), mapTypeReference);
             String currentVersionString = versionsData.get("currentVersion");
             SemanticVersion currentVersion = new SemanticVersion(currentVersionString);
             if (currentVersion.compareTo(new SemanticVersion("0.2.220")) < 0) {
@@ -103,7 +103,7 @@ public class FromPythonMigration {
                 return MigrationResult.requirementsNotMet(msg);
             }
             OkHttpResponse migrationResponse = callHydraUrl(nzbhydra1BaseUrl, "migration");
-            migrationData = new ObjectMapper().readValue(migrationResponse.getBody(), mapTypeReference);
+            migrationData = Jackson.JSON_MAPPER.readValue(migrationResponse.getBody(), mapTypeReference);
             migrationData.put("doMigrateDatabase", String.valueOf(doMigrateDatabase));
         } catch (Exception e) {
             logger.error("Unexpected error while migrating", e);

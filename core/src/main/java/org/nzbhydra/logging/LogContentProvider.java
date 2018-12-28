@@ -6,10 +6,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -75,13 +75,12 @@ public class LogContentProvider {
             return new JsonLogResponse(Collections.emptyList(), false, offset, 0);
         }
         count = 1;
-        ObjectMapper objectMapper = new ObjectMapper();
         while (line != null && count++ <= limit) {
             TypeReference<HashMap<String, Object>> typeRef
                     = new TypeReference<HashMap<String, Object>>() {
             };
 
-            HashMap<String, Object> o = objectMapper.readValue(line, typeRef);
+            HashMap<String, Object> o = Jackson.JSON_MAPPER.readValue(line, typeRef);
             objects.add(o);
             line = reversedLinesFileReader.readLine();
         }

@@ -1,6 +1,6 @@
 package org.nzbhydra.api;
 
-public class WrongApiKeyException extends ExternalApiException {
+public class WrongApiKeyException extends IllegalAccessException {
 
     public WrongApiKeyException(String message) {
         super(message);

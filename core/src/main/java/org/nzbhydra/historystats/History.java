@@ -3,17 +3,14 @@ package org.nzbhydra.historystats;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.historystats.stats.HistoryRequestData;
+import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.web.SessionStorage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
@@ -27,6 +24,9 @@ import java.util.stream.Collectors;
 @Component
 public class History {
 
+    public static final String DOWNLOAD_TABLE = "INDEXERNZBDOWNLOAD left join SEARCHRESULT on INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID LEFT JOIN INDEXER ON SEARCHRESULT.INDEXER_ID = INDEXER.ID";
+    public static final String SEARCH_TABLE = "SEARCH";
+
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
@@ -34,7 +34,7 @@ public class History {
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
 
-    public <T> Page<T> getHistory(HistoryRequestData requestData, String tableName, Class<T> resultClass) {
+    public <T> Page<T> getHistory(HistoryRequest requestData, String tableName, Class<T> resultClass) {
         Map<String, Object> parameters = new HashMap<>();
 
         List<String> wheres = new ArrayList<>();
@@ -102,7 +102,12 @@ public class History {
         }
 
         List resultList = selectQuery.getResultList();
-        Pageable pageable = new PageRequest(requestData.getPage() - 1, requestData.getLimit());
+        Pageable pageable;
+        if (sortModel == null) {
+            pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit());
+        } else {
+            pageable = PageRequest.of(requestData.getPage() - 1, requestData.getLimit(), sortModel.getSortMode() == 1 ? Sort.Direction.ASC : Sort.Direction.DESC, sortModel.getColumn());
+        }
 
         BigInteger count = (BigInteger) countQuery.getSingleResult();
         return new PageImpl<>(resultList, pageable, count.longValue());

@@ -1,8 +1,7 @@
 package org.nzbhydra.genericstorage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.nzbhydra.Jackson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +16,11 @@ public class GenericStorage {
     @Autowired
     private GenericStorageDataRepository repository;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    public GenericStorage() {
-        objectMapper.registerModule(new JavaTimeModule());
-    }
-
     @Transactional
     public <T extends Serializable> void save(String key, T value) {
         repository.deleteByKey(key);
         try {
-            repository.save(new GenericStorageData(key, objectMapper.writeValueAsString(value)));
+            repository.save(new GenericStorageData(key, Jackson.JSON_MAPPER.writeValueAsString(value)));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error writing data as JSON", e);
         }
@@ -39,7 +32,7 @@ public class GenericStorage {
             return Optional.empty();
         } else {
             try {
-                return Optional.of(objectMapper.readValue(first.getData(), clazz));
+                return Optional.of(Jackson.JSON_MAPPER.readValue(first.getData(), clazz));
             } catch (IOException e) {
                 throw new RuntimeException("Error reading data", e);
             }

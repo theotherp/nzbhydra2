@@ -1390,6 +1390,15 @@ function ConfigFields($injector) {
                     }
                 },
                 {
+                    key: 'allowApiStats',
+                    type: 'horizontalSwitch',
+                    templateOptions: {
+                        type: 'switch',
+                        label: 'Allow stats access',
+                        help: 'Allow access to stats via external API'
+                    }
+                },
+                {
                     type: 'repeatSection',
                     key: 'users',
                     model: rootModel.auth,

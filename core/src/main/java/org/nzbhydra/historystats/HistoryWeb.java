@@ -2,7 +2,7 @@ package org.nzbhydra.historystats;
 
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History.SearchDetails;
-import org.nzbhydra.historystats.stats.HistoryRequestData;
+import org.nzbhydra.historystats.stats.HistoryRequest;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,8 +21,8 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/searches", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page<SearchEntity> searchHistory(@RequestBody HistoryRequestData requestData) {
-        return history.getHistory(requestData, "SEARCH", SearchEntity.class);
+    public Page<SearchEntity> searchHistory(@RequestBody HistoryRequest requestData) {
+        return history.getHistory(requestData, History.SEARCH_TABLE, SearchEntity.class);
     }
 
     @Secured({"ROLE_STATS"})
@@ -40,8 +40,8 @@ public class HistoryWeb {
 
     @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/history/downloads", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Page<FileDownloadEntity> downloadHistory(@RequestBody HistoryRequestData requestData) {
-        return history.getHistory(requestData, "INDEXERNZBDOWNLOAD left join SEARCHRESULT on INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID LEFT JOIN INDEXER ON SEARCHRESULT.INDEXER_ID = INDEXER.ID", FileDownloadEntity.class);
+    public Page<FileDownloadEntity> downloadHistory(@RequestBody HistoryRequest requestData) {
+        return history.getHistory(requestData, History.DOWNLOAD_TABLE, FileDownloadEntity.class);
     }
 
 }

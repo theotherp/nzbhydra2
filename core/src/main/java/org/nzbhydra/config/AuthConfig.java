@@ -28,6 +28,7 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     private boolean restrictIndexerSelection = false;
     private boolean restrictSearch = false;
     private boolean restrictStats = false;
+    private boolean allowApiStats = true;
 
     private List<UserAuthConfig> users = new ArrayList<>();
 

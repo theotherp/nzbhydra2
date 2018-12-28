@@ -18,17 +18,11 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,25 +39,14 @@ public class ConfigReaderWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigReaderWriter.class);
 
-    private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
     private final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
     };
     private final RetryPolicy saveRetryPolicy = new RetryPolicy().retryOn(IOException.class).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(3);
-    private ObjectWriter objectWriter;
 
-    public ConfigReaderWriter() {
-        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
-        DefaultPrettyPrinter defaultPrettyPrinter = new DefaultPrettyPrinter();
-        defaultPrettyPrinter.indentObjectsWith(indenter);
-        defaultPrettyPrinter.indentArraysWith(indenter);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.registerModule(new Jdk8Module());
-        objectWriter = objectMapper.writer(defaultPrettyPrinter);
-    }
 
     public void save(BaseConfig baseConfig) {
         try {
-            save(buildConfigFileFile(), objectWriter.writeValueAsString(baseConfig));
+            save(buildConfigFileFile(), Jackson.YAML_MAPPER.writeValueAsString(baseConfig));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to save config", e);
         }
@@ -71,24 +54,24 @@ public class ConfigReaderWriter {
 
     public void save(BaseConfig baseConfig, File targetFile) {
         try {
-            save(targetFile, objectWriter.writeValueAsString(baseConfig));
+            save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(baseConfig));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to save config", e);
         }
     }
 
     public void save(Map<String, Object> baseConfig, File targetFile) {
-        BaseConfig converted = objectMapper.convertValue(baseConfig, BaseConfig.class);
+        BaseConfig converted = Jackson.YAML_MAPPER.convertValue(baseConfig, BaseConfig.class);
         save(converted, targetFile);
     }
 
     public void save(Map<String, Object> baseConfig) {
-        BaseConfig converted = objectMapper.convertValue(baseConfig, BaseConfig.class);
+        BaseConfig converted = Jackson.YAML_MAPPER.convertValue(baseConfig, BaseConfig.class);
         save(converted, buildConfigFileFile());
     }
 
     protected void save(File targetFile, String configAsYamlString) {
-        synchronized (objectMapper) {
+        synchronized (Jackson.YAML_MAPPER) {
             Failsafe.with(saveRetryPolicy)
                     .onFailure(throwable -> logger.error("Unable to save config", throwable))
                     .run(() -> doWrite(targetFile, configAsYamlString))
@@ -103,7 +86,7 @@ public class ConfigReaderWriter {
         }
         //Make sure correct YAML was provided
         try {
-            objectMapper.readValue(configAsYamlString, BaseConfig.class);
+            Jackson.YAML_MAPPER.readValue(configAsYamlString, BaseConfig.class);
         } catch (IOException e) {
             logger.warn("Unreadable config string provided", e);
             throw e;
@@ -115,7 +98,7 @@ public class ConfigReaderWriter {
         Files.copy(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         try {
-            objectMapper.readValue(targetFile, BaseConfig.class);
+            Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
         } catch (IOException e) {
             logger.warn("Written target config file {} corrupted", e);
             throw e;
@@ -142,7 +125,7 @@ public class ConfigReaderWriter {
             return;
         }
         try {
-            objectMapper.readValue(configFile, BaseConfig.class);
+            Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
         } catch (IOException e) {
             File tempFile = new File(configFile.getAbsolutePath() + ".bak");
             if (!tempFile.exists()) {
@@ -150,7 +133,7 @@ public class ConfigReaderWriter {
                 throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'öö have to delete the file and start over. Please contact the developer when you have it running.");
             }
             try {
-                objectMapper.readValue(tempFile, BaseConfig.class);
+                Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
             } catch (IOException e2) {
                 logger.error("Config backup file corrupted: {}", e.getMessage());
                 throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " and its backup are corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'öö have to delete the file and start over. Please contact the developer when you have it running.");
@@ -168,13 +151,13 @@ public class ConfigReaderWriter {
     public BaseConfig loadSavedConfig() throws IOException {
         File configFile = buildConfigFileFile();
         if (configFile.exists()) {
-            return objectMapper.readValue(configFile, BaseConfig.class);
+            return Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
         }
         return originalConfig();
     }
 
     public Map<String, Object> loadSavedConfigAsMap() throws IOException {
-        return objectMapper.readValue(buildConfigFileFile(), MAP_TYPE_REFERENCE);
+        return Jackson.YAML_MAPPER.readValue(buildConfigFileFile(), MAP_TYPE_REFERENCE);
     }
 
 
@@ -193,12 +176,12 @@ public class ConfigReaderWriter {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(BaseConfig.class.getResource("/config/baseConfig.yml").openStream()))) {
             applicationYmlContent = reader.lines().collect(Collectors.joining("\n"));
         }
-        return objectMapper.readValue(applicationYmlContent, BaseConfig.class);
+        return Jackson.YAML_MAPPER.readValue(applicationYmlContent, BaseConfig.class);
     }
 
     public BaseConfig getCopy(BaseConfig toCopy) {
         try {
-            return objectMapper.readValue(objectMapper.writeValueAsString(toCopy), BaseConfig.class);
+            return Jackson.YAML_MAPPER.readValue(Jackson.YAML_MAPPER.writeValueAsString(toCopy), BaseConfig.class);
         } catch (IOException e) {
             throw new RuntimeException("Unable to copy config", e);
         }
@@ -206,7 +189,7 @@ public class ConfigReaderWriter {
 
     public String getAsYamlString(BaseConfig baseConfig) {
         try {
-            return objectWriter.writeValueAsString(baseConfig);
+            return Jackson.YAML_WRITER.writeValueAsString(baseConfig);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error while deserializing config", e);
         }

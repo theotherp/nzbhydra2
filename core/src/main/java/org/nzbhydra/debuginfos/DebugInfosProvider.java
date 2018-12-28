@@ -1,12 +1,9 @@
 package org.nzbhydra.debuginfos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.sensitive.SensitiveDataModule;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
@@ -118,10 +115,7 @@ public class DebugInfosProvider {
 
 
     private String getAnonymizedConfig() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
-        objectMapper.registerModule(new Jdk8Module());
-        objectMapper.registerModule(new SensitiveDataModule());
-        return objectMapper.writeValueAsString(configProvider.getBaseConfig());
+        return Jackson.SENSITIVE_YAML_MAPPER.writeValueAsString(configProvider.getBaseConfig());
     }
 
 }

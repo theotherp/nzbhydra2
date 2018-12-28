@@ -3,6 +3,10 @@
     "version": "v2.1.4",
     "changes": [
       {
+        "type": "feature",
+        "text": "Allow retrieval of history and stats via API. See https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries"
+      },
+      {
         "type": "fix",
         "text": "Repeat of searches from history sometimes used wrong parameters"
       },

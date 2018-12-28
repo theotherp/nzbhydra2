@@ -1,7 +1,6 @@
 package org.nzbhydra.okhttp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -9,6 +8,7 @@ import okhttp3.Request.Builder;
 import okhttp3.Response;
 import okio.BufferedSink;
 import okio.Okio;
+import org.nzbhydra.Jackson;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,6 @@ public class WebAccess {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
-    ObjectMapper objectMapper = new ObjectMapper();
 
     public String callUrl(String url) throws IOException {
         return callUrl(url, new HashMap<>());
@@ -69,12 +68,12 @@ public class WebAccess {
 
     public <T> T callUrl(String url, Map<String, String> headers, Class<T> clazz) throws IOException {
         String body = callUrl(url, headers);
-        return objectMapper.readValue(body, clazz);
+        return Jackson.JSON_MAPPER.readValue(body, clazz);
     }
 
     public <T> T callUrl(String url, TypeReference valueTypeRef) throws IOException {
         String body = callUrl(url);
-        return objectMapper.readValue(body, valueTypeRef);
+        return Jackson.JSON_MAPPER.readValue(body, valueTypeRef);
     }
 
     public void downloadToFile(String url, File file) throws IOException {
