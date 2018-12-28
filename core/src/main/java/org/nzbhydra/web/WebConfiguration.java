@@ -1,6 +1,8 @@
 package org.nzbhydra.web;
 
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.api.stats.HistoryRequestConverter;
+import org.nzbhydra.api.stats.StatsRequestConverter;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -91,6 +94,12 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(interceptor);
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new StatsRequestConverter());
+        registry.addConverter(new HistoryRequestConverter());
     }
 
     /**
