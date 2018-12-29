@@ -1,3 +1,13 @@
+### v2.1.5
+
+Fix: Improve handling of movie and tv searches with some indexers (see v2.0.23). I just wish all indexers could work the same... :-/
+
+Fix: Prevent indexers without caps from being caps checked (NZBIndex, Binsearch)
+
+Fix: Improve wording indexer state when disabled by the system due to an error from which it cannot recover automatically
+
+
+
 ### v2.1.4
 
 Feature: Allow retrieval of history and stats via API. See https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries
