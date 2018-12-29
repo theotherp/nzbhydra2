@@ -1418,7 +1418,7 @@ function indexerStateSwitch() {
                 $scope.offText = "Temporary disabled";
                 $scope.offColor = "warning";
             } else if ($scope.indexer.state === "DISABLED_SYSTEM") {
-                $scope.offText = "Permanently disabled";
+                $scope.offText = "Disabled by system";
                 $scope.offColor = "danger";
             }
         }
@@ -1435,8 +1435,6 @@ function indexerStateSwitch() {
         }
     }
 }
-
-
 /*
  *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
  *
@@ -2968,7 +2966,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         if (indexerModel.state === "DISABLED_SYSTEM_TEMPORARY") {
             stateHelp = "The indexer was disabled by the program due to an error. It will be reenabled automatically or you can enable it manually";
         } else {
-            stateHelp = "The indexer was disabled by the program due to an unrecoverable error. Try checking the caps to make sure it works or just enable it and see what happens.";
+            stateHelp = "The indexer was disabled by the program due to error from which it cannot recover by itself. Try checking the caps to make sure it works or just enable it and see what happens.";
         }
     }
 
@@ -9486,7 +9484,7 @@ function IndexerStatusesController($scope, $http, statuses) {
         } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
             return "Temporarily disabled by system";
         } else if (state === "DISABLED_SYSTEM") {
-            return "Permanently disabled by system";
+            return "Disabled by system";
         } else {
             return "Disabled by user";
         }

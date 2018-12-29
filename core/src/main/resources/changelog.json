@@ -5,6 +5,14 @@
       {
         "type": "fix",
         "text": "Improve handling of movie and tv searches with some indexers (see v2.0.23). I just wish all indexers could work the same... :-/"
+      },
+      {
+        "type": "fix",
+        "text": "Prevent indexers without caps from being caps checked (NZBIndex, Binsearch)"
+      },
+      {
+        "type": "fix",
+        "text": "Improve wording indexer state when disabled by the system due to an error from which it cannot recover automatically"
       }
     ]
   },

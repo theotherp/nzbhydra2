@@ -50,6 +50,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
@@ -226,8 +227,13 @@ public class NewznabChecker {
     }
 
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
+        Predicate<IndexerConfig> isToBeCheckedPredicate = x ->
+                x.getState() == IndexerConfig.State.ENABLED
+                        && (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)
+                        && x.isConfigComplete()
+                        && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
-                .filter(x -> x.getState() == IndexerConfig.State.ENABLED && x.isConfigComplete() && (checkType == CheckType.ALL || !x.isAllCapsChecked()))
+                .filter(isToBeCheckedPredicate)
                 .collect(Collectors.toList());
         if (configsToCheck.isEmpty()) {
             logger.info("No indexers to check");

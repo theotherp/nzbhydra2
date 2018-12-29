@@ -42,7 +42,7 @@ function indexerStateSwitch() {
                 $scope.offText = "Temporary disabled";
                 $scope.offColor = "warning";
             } else if ($scope.indexer.state === "DISABLED_SYSTEM") {
-                $scope.offText = "Permanently disabled";
+                $scope.offText = "Disabled by system";
                 $scope.offColor = "danger";
             }
         }
@@ -59,4 +59,3 @@ function indexerStateSwitch() {
         }
     }
 }
-

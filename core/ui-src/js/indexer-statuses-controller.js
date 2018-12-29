@@ -11,7 +11,7 @@ function IndexerStatusesController($scope, $http, statuses) {
         } else if (state === "DISABLED_SYSTEM_TEMPORARY") {
             return "Temporarily disabled by system";
         } else if (state === "DISABLED_SYSTEM") {
-            return "Permanently disabled by system";
+            return "Disabled by system";
         } else {
             return "Disabled by user";
         }
