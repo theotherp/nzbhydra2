@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Improve handling of movie and tv searches with some indexers (see v2.0.23). I just wish all indexers could work the same... :-/"
+      }
+    ]
+  },
+  {
     "version": "v2.1.4",
     "changes": [
       {

@@ -59,7 +59,7 @@ public class Newznab extends Indexer<Xml> {
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
     private static Pattern GUID_PATTERN = Pattern.compile("(.*\\/)?([a-zA-Z0-9@\\.]+)(#\\w+)?");
 
-    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbs.in", "nzbgeek", "nzbs.org");
+    private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "nzbs.org");
 
 
     static {
@@ -96,6 +96,11 @@ public class Newznab extends Indexer<Xml> {
         UriComponentsBuilder componentsBuilder = getBaseUri();
         SearchType searchType = searchRequest.getSearchType();
         if (config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x))) {
+            searchType = SearchType.SEARCH;
+        }
+        boolean searchTypeTvOrMovie = searchRequest.getSearchType() == SearchType.MOVIE || searchRequest.getSearchType() == SearchType.TVSEARCH;
+        if (searchTypeTvOrMovie && searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
+            debug("Switching search type to SEARCH because this indexer doesn't allow using search type MOVIE/TVSEARCH without identifiers");
             searchType = SearchType.SEARCH;
         }
         componentsBuilder = componentsBuilder.queryParam("t", searchType.name().toLowerCase()).queryParam("extended", "1");
@@ -176,12 +181,12 @@ public class Newznab extends Indexer<Xml> {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
                 categoryIds = searchRequest.getCategory().getNewznabCategories();
-            } else if (searchRequest.getIdentifiers().isEmpty() && HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x))) {
+            } else if (searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
                 if (searchRequest.getSearchType() == SearchType.MOVIE) {
-                    debug("Adding newznab category 2000 because indexers doesn't allow using search type MOVIE without identifiers or category");
+                    debug("Adding newznab category 2000 because this indexer doesn't allow using search type MOVIE without identifiers or category");
                     categoryIds = Arrays.asList(2000);
                 } else if (searchRequest.getSearchType() == SearchType.TVSEARCH) {
-                    debug("Adding newznab category 5000 because indexers doesn't allow using search type TVSEARCH without identifiers or category");
+                    debug("Adding newznab category 5000 because this indexer doesn't allow using search type TVSEARCH without identifiers or category");
                     categoryIds = Arrays.asList(5000);
                 }
             }
@@ -194,6 +199,10 @@ public class Newznab extends Indexer<Xml> {
             componentsBuilder.queryParam("cat", Joiner.on(",").join(categoryIds));
         }
 
+    }
+
+    private boolean isIndexerNotSupportingEmptyTypeSearch() {
+        return HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH.stream().anyMatch(x -> getConfig().getHost().toLowerCase().contains(x));
     }
 
     protected String addRequiredAndforbiddenWordsToQuery(SearchRequest searchRequest, String query) {
