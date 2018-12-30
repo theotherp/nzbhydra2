@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -123,6 +124,7 @@ public class TorznabTest {
 
 
     }
+
     private NewznabXmlItem buildBasicRssItem() {
         NewznabXmlItem rssItem = new NewznabXmlItem();
         rssItem.setLink("http://indexer.com/123");
@@ -137,12 +139,44 @@ public class TorznabTest {
     }
 
     @Test
-    public void shouldNotAddExcludedWordsToQuery() throws Exception{
+    public void shouldNotAddExcludedWordsToQuery() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
         searchRequest.getInternalData().setForbiddenWords(Arrays.asList("notthis", "alsonotthis"));
         searchRequest.setQuery("query");
         UriComponentsBuilder builder = testee.buildSearchUrl(searchRequest, 0, 100);
         assertThat(builder.toUriString(), not(containsString("notthis")));
+    }
+
+    @Test
+    public void shouldGetCorrectCategoryNumber() {
+        NewznabXmlItem item = buildBasicRssItem();
+
+        item.setTorznabAttributes(Collections.singletonList(new NewznabAttribute("category", "2000")));
+        List<Integer> integers = testee.tryAndGetCategoryAsNumber(item);
+        assertThat(integers.size(), is(1));
+        assertThat(integers.get(0), is(2000));
+
+        item.setTorznabAttributes(Collections.singletonList(new NewznabAttribute("category", "10000")));
+        integers = testee.tryAndGetCategoryAsNumber(item);
+        assertThat(integers.size(), is(1));
+        assertThat(integers.get(0), is(10000));
+
+        item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "10000")));
+        integers = testee.tryAndGetCategoryAsNumber(item);
+        assertThat(integers.size(), is(1));
+        assertThat(integers.get(0), is(2000));
+
+        item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040")));
+        integers = testee.tryAndGetCategoryAsNumber(item);
+        assertThat(integers.size(), is(2));
+        assertThat(integers.get(0), is(2000));
+        assertThat(integers.get(1), is(2040));
+
+        item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040"), new NewznabAttribute("category", "10000")));
+        integers = testee.tryAndGetCategoryAsNumber(item);
+        assertThat(integers.size(), is(2));
+        assertThat(integers.get(0), is(2000));
+        assertThat(integers.get(1), is(2040));
     }
 
 

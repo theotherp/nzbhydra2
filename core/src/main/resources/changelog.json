@@ -1,10 +1,19 @@
 [
   {
+    "version": "v2.1.7",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix/improve category mapping introduced in 2.1.6. Use custom newznab categories if none from the predefined range are provided."
+      }
+    ]
+  },
+  {
     "version": "v2.1.6",
     "changes": [
       {
         "type": "fix",
-        "text": "When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded"
+        "text": "When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded."
       },
       {
         "type": "fix",

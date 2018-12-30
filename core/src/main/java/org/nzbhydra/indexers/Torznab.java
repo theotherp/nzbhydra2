@@ -71,7 +71,7 @@ public class Torznab extends Newznab {
         return searchResultItem;
     }
 
-    private List<Integer> tryAndGetCategoryAsNumber(NewznabXmlItem item) {
+    protected List<Integer> tryAndGetCategoryAsNumber(NewznabXmlItem item) {
         Set<Integer> foundCategories = new HashSet<>();
         if (item.getCategory() != null) {
             try {
@@ -83,10 +83,12 @@ public class Torznab extends Newznab {
 
         foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
         foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
-        return foundCategories.stream()
-                //Remove custom categories which we cannot map
-                .filter(x -> x < 99999)
-                .collect(Collectors.toList());
+        List<Integer> categoriesInPredefinedRange = foundCategories.stream().filter(x -> x <= 9999).collect(Collectors.toList());
+        if (!categoriesInPredefinedRange.isEmpty()) {
+            return categoriesInPredefinedRange;
+        }
+        List<Integer> categoriesInCustomRange = foundCategories.stream().filter(x -> x > 9999).collect(Collectors.toList());
+        return categoriesInCustomRange;
     }
 
     @Override
