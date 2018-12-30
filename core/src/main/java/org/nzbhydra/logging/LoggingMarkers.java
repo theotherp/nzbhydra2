@@ -15,4 +15,5 @@ public class LoggingMarkers {
     public static final Marker URL_CALCULATION = MarkerFactory.getMarker("URL_CALCULATION");
     public static final Marker HTTP = MarkerFactory.getMarker("HTTP");
     public static final Marker HISTORY_CLEANUP = MarkerFactory.getMarker("HISTORY_CLEANUP");
+    public static final Marker CONFIG_READ_WRITE = MarkerFactory.getMarker("CONFIG_READ_WRITE");
 }

@@ -24,6 +24,7 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +95,9 @@ public class ConfigReaderWriter {
 
 
         File tempFile = new File(targetFile.getCanonicalPath() + ".bak");
+        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
         Files.write(tempFile.toPath(), configAsYamlString.getBytes(Charsets.UTF_8));
+        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying temporary file to {}", targetFile);
         Files.copy(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         try {
@@ -107,9 +110,10 @@ public class ConfigReaderWriter {
 
     public void initializeIfNeeded(File yamlFile) throws IOException {
         if (!yamlFile.exists()) {
-            logger.info("No config file found at {}. Initializing with base config", yamlFile.getAbsolutePath());
+            logger.info("No config file found at {}. Initializing with base config", yamlFile);
             try {
                 try (InputStream stream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
+                    logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying YAML to {}", yamlFile);
                     Files.copy(stream, yamlFile.toPath());
                 }
             } catch (IOException e) {
@@ -122,16 +126,21 @@ public class ConfigReaderWriter {
     public void validateExistingConfig() {
         File configFile = buildConfigFileFile();
         if (!configFile.exists()) {
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Config file {} exists", configFile);
             return;
         }
         try {
             Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
         } catch (IOException e) {
+            logger.warn("Error while reading YAML from {}", configFile);
             File tempFile = new File(configFile.getAbsolutePath() + ".bak");
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
             if (!tempFile.exists()) {
                 logger.error("Config file corrupted: {}", e.getMessage());
-                throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'öö have to delete the file and start over. Please contact the developer when you have it running.");
+                throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'll have to delete the file and start over. Please contact the developer when you have it running.");
             }
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Temporary file {} exists", tempFile);
+
             try {
                 Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
             } catch (IOException e2) {
