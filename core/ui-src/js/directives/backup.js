@@ -44,7 +44,7 @@ function hydrabackup() {
                     });
 
                     file.upload.then(function (response) {
-                        if (response.successful) {
+                        if (response.data.successful) {
                             $scope.uploadActive = false;
                             RestartService.startCountdown("Upload successful. Restarting for wrapper to restore data.");
                         } else {

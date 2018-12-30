@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.6",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded"
+      }
+    ]
+  },
+  {
     "version": "v2.1.5",
     "changes": [
       {
