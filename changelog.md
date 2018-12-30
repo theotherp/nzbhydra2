@@ -1,6 +1,12 @@
+### v2.1.7
+
+Fix: Fix/improve category mapping introduced in 2.1.6. Use custom newznab categories if none from the predefined range are provided.
+
+
+
 ### v2.1.6
 
-Fix: When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded
+Fix: When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded.
 
 Fix: Improve category mapping for (torznab) indexers. Some use custom newznab category numbers (>9999) which could not be properly mapped to preconfigured categories.
 
