@@ -1,3 +1,11 @@
+### v2.1.6
+
+Fix: When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded
+
+Fix: Improve category mapping for (torznab) indexers. Some use custom newznab category numbers (>9999) which could not be properly mapped to preconfigured categories.
+
+
+
 ### v2.1.5
 
 Fix: Improve handling of movie and tv searches with some indexers (see v2.0.23). I just wish all indexers could work the same... :-/
