@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "When uploading a backup file the UI didn't update to inform the user about the progress after the file was uploaded"
+      },
+      {
+        "type": "fix",
+        "text": "Improve category mapping for (torznab) indexers. Some use custom newznab category numbers (>9999) which could not be properly mapped to preconfigured categories."
       }
     ]
   },

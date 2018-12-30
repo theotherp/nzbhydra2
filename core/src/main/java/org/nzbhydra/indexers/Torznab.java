@@ -20,7 +20,10 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -32,7 +35,6 @@ public class Torznab extends Newznab {
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
         item.getRssGuid().setPermaLink(true); //Not set in RSS but actually always true
         SearchResultItem searchResultItem = super.createSearchResultItem(item);
-        String categoryFromAttributes = null;
         searchResultItem.setGrabs(item.getGrabs());
         searchResultItem.setIndexerGuid(item.getRssGuid().getGuid());
         for (NewznabAttribute attribute : item.getTorznabAttributes()) {
@@ -50,17 +52,15 @@ public class Torznab extends Newznab {
                 case "peers":
                     searchResultItem.setPeers(Integer.valueOf(attribute.getValue()));
                     break;
-                case "category":
-                    categoryFromAttributes = attribute.getValue();
             }
         }
         searchResultItem.setSize(item.getSize());
         if (item.getSize() != null && item.getTorznabAttributes().stream().noneMatch(x -> x.getName().equals("size"))) {
             searchResultItem.getAttributes().put("size", String.valueOf(item.getSize()));
         }
-        Integer categoryInt = tryAndGetCategoryAsNumber(categoryFromAttributes, item.getCategory());
-        if (categoryInt != null) {
-            computeCategory(searchResultItem, Collections.singletonList(categoryInt));
+        List<Integer> foundCategories = tryAndGetCategoryAsNumber(item);
+        if (!foundCategories.isEmpty()) {
+            computeCategory(searchResultItem, foundCategories);
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }
@@ -71,21 +71,22 @@ public class Torznab extends Newznab {
         return searchResultItem;
     }
 
-    private Integer tryAndGetCategoryAsNumber(String category, String categoryFromItem) {
-        Integer categoryInt = null;
-        if (category != null) {
+    private List<Integer> tryAndGetCategoryAsNumber(NewznabXmlItem item) {
+        Set<Integer> foundCategories = new HashSet<>();
+        if (item.getCategory() != null) {
             try {
-                categoryInt = Integer.parseInt(category);
+                foundCategories.add(Integer.parseInt(item.getCategory()));
             } catch (NumberFormatException e) {
+                //NOP
             }
         }
-        if (categoryFromItem != null) {
-            try {
-                categoryInt = Integer.parseInt(categoryFromItem);
-            } catch (NumberFormatException e) {
-            }
-        }
-        return categoryInt;
+
+        foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
+        foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
+        return foundCategories.stream()
+                //Remove custom categories which we cannot map
+                .filter(x -> x < 99999)
+                .collect(Collectors.toList());
     }
 
     @Override
