@@ -24,7 +24,7 @@ See some [screenshots](https://imgur.com/a/ePxwj).
 
 ## How to Run
 
-You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both >=8u101 or 9 or 10).
+You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both >=8u101 or 9 or 10, not 11!).
 
 Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases) for your platform ("linux" is any platform but windows). Extract it anywhere and start using the appropriate way:
 * On Windows (64-bit) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window. Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
