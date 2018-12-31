@@ -1,8 +1,12 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Joiner;
-import org.nzbhydra.config.*;
-import org.nzbhydra.config.Category.Subtype;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.category.Category.Subtype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,6 +43,7 @@ public class CategoryProvider implements InitializingBean {
      * Map of categories by their newznab numbers. Values may appear multiple times
      */
     protected Map<Integer, Category> categoryMapByNumber = new HashMap<>();
+    protected Map<List<Integer>, Category> categoryMapByMultipleNumber = new HashMap<>();
 
     @Autowired
     protected BaseConfig baseConfig;
@@ -68,9 +73,10 @@ public class CategoryProvider implements InitializingBean {
             categoryMap = categories.stream().collect(Collectors.toMap(Category::getName, Function.identity()));
             categoryMapByNumber.clear();
             for (Category category : categories) {
-                for (Integer integer : category.getNewznabCategories()) {
+                for (Integer integer : category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList())) {
                     categoryMapByNumber.put(integer, category);
                 }
+                category.getNewznabCategories().stream().filter(x -> x.size() > 1).forEach(x -> categoryMapByMultipleNumber.put(x, category));
             }
         } else {
             logger.error("Configuration incomplete, categories not set");
@@ -159,6 +165,7 @@ public class CategoryProvider implements InitializingBean {
         if (cats == null || cats.size() == 0) {
             return naCategory;
         }
+        //Start with higher numbers which are usually more specific (4050 is more specific than 4000, for example)
         cats.sort((o1, o2) -> Integer.compare(o2, o1));
         return getMatchingCategoryOrMatchingMainCategory(cats, naCategory);
     }
@@ -212,7 +219,7 @@ public class CategoryProvider implements InitializingBean {
         logger.debug("The supplied categories {} match multiple configured categories", catsString);
         for (Integer cat : cats) {
             for (Category category : categories) {
-                Optional<Integer> matchingMainCategory = category.getNewznabCategories().stream().filter(x -> checkCategoryMatchingMainCategory(cat, x)).findFirst();
+                Optional<List<Integer>> matchingMainCategory = category.getNewznabCategories().stream().filter(x -> x.size() == 1 && checkCategoryMatchingMainCategory(cat, x.get(0))).findFirst();
                 if (matchingMainCategory.isPresent()) {
                     logger.debug("The supplied categories {} match the configured main category {} and will be assigned to that", catsString, category.getName());
                     return category;
@@ -223,15 +230,21 @@ public class CategoryProvider implements InitializingBean {
         result = getMatchingCategoryOrMatchingMainCategory(cats, defaultCategory);
         logger.warn("Unable to match the supplied categories {} to any specific or general category. Will use {}", catsString, (result == null ? defaultCategory : result).getName());
         return result;
-
     }
 
     protected boolean checkCategoryMatchingMainCategory(int cat, int possibleMainCat) {
         return possibleMainCat % 1000 == 0 && cat / 1000 == possibleMainCat / 1000;
     }
 
-
     public Category getMatchingCategoryOrMatchingMainCategory(List<Integer> cats, Category defaultCategory) {
+        //Try to find categories with combined numbers which match the provided numbers
+        for (Map.Entry<List<Integer>, Category> listCategoryEntry : categoryMapByMultipleNumber.entrySet()) {
+            if (cats.containsAll(listCategoryEntry.getKey())) {
+                return listCategoryEntry.getValue();
+            }
+        }
+
+        //Try to find a category that matches any of the provided numbers
         Optional<Category> matchingCategory;
         for (Integer cat : cats) {
             if (categoryMapByNumber.containsKey(cat)) {
@@ -240,8 +253,16 @@ public class CategoryProvider implements InitializingBean {
         }
 
         //Let's try to find a more general one
-        matchingCategory = categories.stream().filter(x -> cats.stream().anyMatch(y -> x.getNewznabCategories().contains(y / 1000 * 1000))).findFirst();
-        return matchingCategory.orElse(defaultCategory);
+        Optional<Category> found = Optional.empty();
+        for (Category category : categories) {
+            List<Integer> categorySingleNewznabNumbers = category.getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList());
+            for (Integer cat : cats) {
+                if (categorySingleNewznabNumbers.contains(cat / 1000 * 1000)) {
+                    return category;
+                }
+            }
+        }
+        return defaultCategory;
     }
 
 

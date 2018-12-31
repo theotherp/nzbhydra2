@@ -5,11 +5,11 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
-import org.nzbhydra.config.Category;
-import org.nzbhydra.config.Category.Subtype;
-import org.nzbhydra.config.IndexerCategoryConfig;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.xml.*;
@@ -180,7 +180,7 @@ public class Newznab extends Indexer<Xml> {
             } else if (searchRequest.getCategory().getSubtype() == Subtype.MAGAZINE && config.getCategoryMapping().getMagazine().isPresent()) {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
-                categoryIds = searchRequest.getCategory().getNewznabCategories();
+                categoryIds = searchRequest.getCategory().getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList());
             } else if (searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
                 if (searchRequest.getSearchType() == SearchType.MOVIE) {
                     debug("Adding newznab category 2000 because this indexer doesn't allow using search type MOVIE without identifiers or category");

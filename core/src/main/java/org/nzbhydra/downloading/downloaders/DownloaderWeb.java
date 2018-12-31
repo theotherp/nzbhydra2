@@ -17,7 +17,7 @@
 package org.nzbhydra.downloading.downloaders;
 
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.downloaders.Downloader.AddNzbsResponse;
 import org.springframework.beans.factory.annotation.Autowired;

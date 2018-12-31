@@ -1,8 +1,8 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 

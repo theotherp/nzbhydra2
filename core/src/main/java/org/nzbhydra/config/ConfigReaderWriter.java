@@ -40,7 +40,7 @@ public class ConfigReaderWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigReaderWriter.class);
 
-    private final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
+    public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
     };
     private final RetryPolicy saveRetryPolicy = new RetryPolicy().retryOn(IOException.class).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(3);
 
@@ -108,28 +108,48 @@ public class ConfigReaderWriter {
         }
     }
 
-    public void initializeIfNeeded(File yamlFile) throws IOException {
+    /**
+     * Initializes the given YAML file with an initial config if needed.
+     *
+     * @param yamlFile The path of the file to be created
+     * @return true if initialization was needed
+     * @throws IOException
+     */
+    public boolean initializeIfNeeded(File yamlFile) throws IOException {
         if (!yamlFile.exists()) {
             logger.info("No config file found at {}. Initializing with base config", yamlFile);
             try {
                 try (InputStream stream = BaseConfig.class.getResource("/config/baseConfig.yml").openStream()) {
                     logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying YAML to {}", yamlFile);
                     Files.copy(stream, yamlFile.toPath());
+                    return true;
                 }
             } catch (IOException e) {
                 logger.error("Unable to initialize config file", e);
                 throw e;
             }
         }
+        return false;
     }
 
     public void validateExistingConfig() {
         File configFile = buildConfigFileFile();
         if (!configFile.exists()) {
-            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Config file {} exists", configFile);
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Config file {} doesn't exist. Nothing to validate", configFile);
             return;
         }
+
         try {
+            //We must first check if a migration is needed. If yes we can't convert the existing (valid) config file so a simple check must suffice
+            Map<String, Object> map = Jackson.YAML_MAPPER.readValue(configFile, ConfigReaderWriter.MAP_TYPE_REFERENCE);
+            if (!map.containsKey("main") || !((Map<String, Object>) map.get("main")).containsKey("configVersion")) {
+                throw new IOException("Unable to find main config or config version in config file");
+            }
+            int foundConfigVersion = (int) ((Map<String, Object>) map.get("main")).get("configVersion");
+            if (foundConfigVersion < new MainConfig().getConfigVersion()) {
+                //We can't read an old config
+                return;
+            }
             Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
         } catch (IOException e) {
             logger.warn("Error while reading YAML from {}", configFile);
@@ -154,6 +174,7 @@ public class ConfigReaderWriter {
             } catch (IOException e1) {
                 throw new RuntimeException("Error while restoring config file. You'll have to manually copy " + tempFile.getAbsolutePath() + " to " + configFile.getAbsolutePath());
             }
+            logger.warn("Restored config file from backup");
         }
     }
 

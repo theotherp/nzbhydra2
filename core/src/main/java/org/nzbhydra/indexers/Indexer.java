@@ -4,7 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;

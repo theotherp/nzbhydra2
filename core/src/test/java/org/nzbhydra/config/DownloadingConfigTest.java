@@ -3,6 +3,7 @@ package org.nzbhydra.config;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
+import org.nzbhydra.config.downloading.DownloadingConfig;
 
 import java.io.File;
 import java.io.PrintWriter;

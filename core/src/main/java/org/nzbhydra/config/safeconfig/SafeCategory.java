@@ -1,7 +1,7 @@
 package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.category.Category;
 
 //Only needed because I can't convince Thymeleaf to serialize enums as their names
 @Data

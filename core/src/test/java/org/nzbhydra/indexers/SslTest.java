@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;

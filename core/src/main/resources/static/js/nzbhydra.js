@@ -4351,8 +4351,8 @@ hashCode = function (s) {
 angular
     .module('nzbhydraApp').run(["formlyConfig", "formlyValidationMessages", function (formlyConfig, formlyValidationMessages) {
     formlyValidationMessages.addStringMessage('required', 'This field is required');
+    formlyValidationMessages.addStringMessage('newznabCategories', 'Invalid');
     formlyConfig.extras.errorExistsAndShouldBeVisibleExpression = 'fc.$touched || form.$submitted';
-
 }]);
 
 angular
@@ -4888,16 +4888,6 @@ function ConfigFields($injector) {
                 return !preventEmpty;
             },
             message: (prefixViewValue ? '$viewValue + " ' : '" ') + message + '"'
-        };
-    }
-
-    function notNullValidator() {
-        return {
-            expression: function ($viewValue, $modelValue) {
-                var value = $modelValue || $viewValue;
-                return value !== null;
-            },
-            message: "May not be empty"
         };
     }
 
@@ -6038,7 +6028,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
-                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key.'
+                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key. You can combine categories which must be all present by using "&".'
                                 }
                             },
                             {
@@ -6496,7 +6486,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     }
 
     function submit() {
-        if ($scope.form.$valid) {
+        if ($scope.form.$valid && !$scope.myShowError) {
             ConfigService.set($scope.config, true).then(function (response) {
                 handleConfigSetResponse(response);
             }, function (response) {
@@ -6652,6 +6642,18 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 });
             }
         })
+
+    $scope.$watch("$scope.form.$valid", function () {
+        console.log($scope.form.$valid);
+    });
+
+    $scope.$on('$formValidity', function (event, isValid) {
+        console.log("Received $formValidity event: " + isValid);
+        $scope.form.$valid = isValid;
+        $scope.form.$invalid = !isValid;
+        $scope.showError = !isValid;
+        $scope.myShowError = !isValid;
+    });
 }
 
 

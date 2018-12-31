@@ -17,7 +17,7 @@
 package org.nzbhydra.indexers.capscheck;
 
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.IndexerWebAccess;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.slf4j.Logger;

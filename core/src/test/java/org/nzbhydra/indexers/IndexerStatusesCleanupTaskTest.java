@@ -24,7 +24,7 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

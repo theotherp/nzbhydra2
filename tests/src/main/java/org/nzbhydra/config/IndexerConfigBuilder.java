@@ -16,6 +16,9 @@
 
 package org.nzbhydra.config;
 
+import org.nzbhydra.config.indexer.IndexerCategoryConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;

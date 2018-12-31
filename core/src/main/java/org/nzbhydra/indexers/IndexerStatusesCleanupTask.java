@@ -18,7 +18,7 @@ package org.nzbhydra.indexers;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

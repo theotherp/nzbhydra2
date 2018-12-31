@@ -22,7 +22,7 @@ import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
-import org.nzbhydra.config.ProxyType;
+import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

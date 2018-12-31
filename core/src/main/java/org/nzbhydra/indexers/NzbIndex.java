@@ -2,8 +2,8 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
 import joptsimple.internal.Strings;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;

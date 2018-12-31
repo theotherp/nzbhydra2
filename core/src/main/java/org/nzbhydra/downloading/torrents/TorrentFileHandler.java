@@ -18,7 +18,7 @@ package org.nzbhydra.downloading.torrents;
 
 import com.google.common.io.Files;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.FileDownloadAccessType;
+import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.downloading.DownloadResult;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;

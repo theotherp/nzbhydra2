@@ -19,7 +19,7 @@ package org.nzbhydra.indexers.capscheck;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 @Data
 @AllArgsConstructor

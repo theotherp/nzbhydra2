@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;

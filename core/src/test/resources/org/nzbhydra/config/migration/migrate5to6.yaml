@@ -1,0 +1,34 @@
+categoriesConfig:
+  enableCategorySizes: true
+  categories:
+  - name: cat1
+    applyRestrictionsType: BOTH
+    forbiddenRegex: null
+    forbiddenWords: []
+    ignoreResultsFrom: NONE
+    maxSizePreset: 3000
+    minSizePreset: 50
+    applySizeLimitsToApi: false
+    newznabCategories:
+    - 1000
+    requiredRegex: null
+    requiredWords: []
+    preselect: true
+    searchType: SEARCH
+    subtype: ANIME
+  - name: cat2
+    applyRestrictionsType: BOTH
+    forbiddenRegex: null
+    forbiddenWords: []
+    ignoreResultsFrom: NONE
+    maxSizePreset: 2000
+    minSizePreset: 1
+    applySizeLimitsToApi: false
+    newznabCategories:
+    - 3000
+    - 3030
+    requiredRegex: null
+    requiredWords: ["mp3", "flac"]
+    preselect: true
+    searchType: MUSIC
+    subtype: NONE

@@ -2,7 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.io.BaseEncoding;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;

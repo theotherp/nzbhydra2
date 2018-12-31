@@ -1,6 +1,6 @@
 package org.nzbhydra.indexers;
 
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 public interface IndexerHandlingStrategy {
 

@@ -1,7 +1,7 @@
 package org.nzbhydra.config.safeconfig;
 
 import lombok.Getter;
-import org.nzbhydra.config.CategoriesConfig;
+import org.nzbhydra.config.category.CategoriesConfig;
 
 import java.util.List;
 import java.util.stream.Collectors;

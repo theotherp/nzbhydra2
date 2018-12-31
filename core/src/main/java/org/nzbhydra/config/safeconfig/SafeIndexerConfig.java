@@ -2,7 +2,7 @@ package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package org.nzbhydra.auth;
 
-import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
+import org.nzbhydra.config.auth.AuthConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;

@@ -27,8 +27,8 @@ import okhttp3.Response;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.IndexerCategoryConfig;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 
 import javax.net.ssl.*;

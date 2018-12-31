@@ -16,6 +16,11 @@
 
 package org.nzbhydra.config;
 
+import org.nzbhydra.config.downloading.DownloadType;
+import org.nzbhydra.config.downloading.DownloaderConfig;
+import org.nzbhydra.config.downloading.DownloaderType;
+import org.nzbhydra.config.downloading.NzbAddingType;
+
 public final class DownloaderConfigBuilder {
     private String apiKey = "apikey";
     private String defaultCategory;

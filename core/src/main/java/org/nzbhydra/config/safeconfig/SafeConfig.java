@@ -1,8 +1,8 @@
 package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
-import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.auth.AuthType;
 
 import java.util.List;
 import java.util.stream.Collectors;

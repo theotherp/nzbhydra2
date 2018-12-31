@@ -139,7 +139,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
     }
 
     function submit() {
-        if ($scope.form.$valid) {
+        if ($scope.form.$valid && !$scope.myShowError) {
             ConfigService.set($scope.config, true).then(function (response) {
                 handleConfigSetResponse(response);
             }, function (response) {
@@ -295,6 +295,18 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                 });
             }
         })
+
+    $scope.$watch("$scope.form.$valid", function () {
+        console.log($scope.form.$valid);
+    });
+
+    $scope.$on('$formValidity', function (event, isValid) {
+        console.log("Received $formValidity event: " + isValid);
+        $scope.form.$valid = isValid;
+        $scope.form.$invalid = !isValid;
+        $scope.showError = !isValid;
+        $scope.myShowError = !isValid;
+    });
 }
 
 

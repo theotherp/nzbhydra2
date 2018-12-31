@@ -3,9 +3,9 @@ package org.nzbhydra.searching;
 import org.junit.Before;
 import org.junit.Test;
 import org.nzbhydra.config.BaseConfig;
-import org.nzbhydra.config.CategoriesConfig;
-import org.nzbhydra.config.Category;
-import org.nzbhydra.config.Category.Subtype;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.category.Category.Subtype;
 
 import java.util.*;
 
@@ -31,29 +31,50 @@ public class CategoryProviderTest {
 
         category = new Category();
         category.setName("3000,3030");
-        category.setNewznabCategories(Arrays.asList(3000, 3030));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(3000), Collections.singletonList(3030)));
         categories.add(category);
 
         category = new Category();
         category.setName("4000");
-        category.setNewznabCategories(Arrays.asList(4000));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(4000)));
         categories.add(category);
 
         category = new Category();
         category.setName("4030");
-        category.setNewznabCategories(Arrays.asList(4030));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(4030)));
         categories.add(category);
 
         category = new Category();
         category.setName("4090");
         category.setSubtype(Subtype.COMIC);
-        category.setNewznabCategories(Arrays.asList(4090));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(4090)));
         categories.add(category);
+
+        category = new Category();
+        category.setName("4090&11_000");
+        category.setNewznabCategories(Arrays.asList(Arrays.asList(4090, 11_000)));
+        categories.add(category);
+
+        category = new Category();
+        category.setName("7070&77_000+8080&88_000");
+        category.setNewznabCategories(Arrays.asList(Arrays.asList(7070, 77_000), Arrays.asList(8080, 88_000)));
+        categories.add(category);
+
+        category = new Category();
+        category.setName("10_000&20_000&30_000");
+        category.setNewznabCategories(Arrays.asList(Arrays.asList(10_000, 20_000, 30_000)));
+        categories.add(category);
+
+        category = new Category();
+        category.setName("6060+9090&99_000");
+        category.setNewznabCategories(Arrays.asList(Arrays.asList(6060), Arrays.asList(9090, 99_000)));
+        categories.add(category);
+
 
         category = new Category();
         category.setName("7020,8010");
         category.setSubtype(Subtype.ANIME);
-        category.setNewznabCategories(Arrays.asList(7020, 8010));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(7020), Collections.singletonList(8010)));
         categories.add(category);
         BaseConfig baseConfig = new BaseConfig();
         CategoriesConfig categoriesConfig = new CategoriesConfig();
@@ -111,6 +132,23 @@ public class CategoryProviderTest {
         //Should return more specific matching category
         assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090)).getName(), is("4090"));
 
+        //Should ignore numbers from custom range if not specified in category
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 4090, 10_000)).getName(), is("4090"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4000, 10_000)).getName(), is("4000"));
+
+        //Should use category that matches custom range if specified
+        //Matches both and is more specific than only 4090
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(4090, 11_000)).getName(), is("4090&11_000"));
+        //Doesn't use custom range but category with combined is still found
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060)).getName(), is("6060+9090&99_000"));
+        //Uses combined range and is found
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(6060, 99_000)).getName(), is("6060+9090&99_000"));
+        //Does not match both numbers in either combination
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(7070, 88_000)).getName(), is("N/A"));
+        //Uses combination of three
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000, 30_000)).getName(), is("10_000&20_000&30_000"));
+        assertThat(testee.fromResultNewznabCategories(Arrays.asList(10_000, 20_000)).getName(), is("N/A"));
+
         //Should return matching main category if subcat not found
         assertThat(testee.fromResultNewznabCategories(Arrays.asList(4020)).getName(), is("4000"));
 
@@ -133,12 +171,12 @@ public class CategoryProviderTest {
         testee.baseConfig.getCategoriesConfig().getCategories().clear();
         Category category = new Category();
         category.setName("TV HD");
-        category.setNewznabCategories(Arrays.asList(5010, 5040));
+        category.setNewznabCategories(Arrays.asList(Collections.singletonList(5010), Collections.singletonList(5040)));
         testee.baseConfig.getCategoriesConfig().getCategories().add(category);
 
         Category category2 = new Category();
         category2.setName("TV UHD");
-        category2.setNewznabCategories(Arrays.asList(5045));
+        category2.setNewznabCategories(Arrays.asList(Collections.singletonList(5045)));
         testee.baseConfig.getCategoriesConfig().getCategories().add(category2);
 
         testee.initialize();

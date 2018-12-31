@@ -1,6 +1,6 @@
 package org.nzbhydra.searching;
 
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerHandlingStrategy;

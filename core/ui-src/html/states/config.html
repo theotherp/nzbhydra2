@@ -105,12 +105,20 @@
             </label>
         </div>
         <div class="col-md-6 config-content">
+            <!--Before transclude-->
             <formly-transclude></formly-transclude>
+            <!--After transclude-->
             <div class="my-messages" ng-messages="fc.$error" ng-if="options.formControl.$touched || form.$submitted"
                  ng-messages-multiple>
                 <div class="some-message has-error control-label" ng-message="{{::name}}"
                      ng-repeat="(name, message) in ::options.validation.messages">
                     {{ message(fc.$viewValue, fc.$modelValue, this)}}
+                </div>
+            </div>
+            <div class="my-messages">
+                <div class="some-message has-error control-label"
+                     ng-repeat="message in ::options.validation.customMessages">
+                    {{ message}}
                 </div>
             </div>
         </div>

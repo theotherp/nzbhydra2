@@ -1,7 +1,7 @@
 package org.nzbhydra.config.safeconfig;
 
 import lombok.Data;
-import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.config.downloading.DownloaderConfig;
 
 @Data
 public class SafeDownloaderConfig {

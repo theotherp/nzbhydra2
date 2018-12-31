@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.google.common.base.Strings;
 import lombok.Data;
+import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion = 5;
+    private Integer configVersion = 6;
     private boolean backupEverySunday = true;
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;

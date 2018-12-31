@@ -51,16 +51,6 @@ function ConfigFields($injector) {
         };
     }
 
-    function notNullValidator() {
-        return {
-            expression: function ($viewValue, $modelValue) {
-                var value = $modelValue || $viewValue;
-                return value !== null;
-            },
-            message: "May not be empty"
-        };
-    }
-
     function getFields(rootModel) {
         return {
             main: [
@@ -1198,7 +1188,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
-                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key.'
+                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key. You can combine categories which must be all present by using "&".'
                                 }
                             },
                             {

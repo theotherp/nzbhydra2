@@ -2,8 +2,9 @@ package org.nzbhydra.config;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
-import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig.MainCategory;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
 
 import java.util.Arrays;
 

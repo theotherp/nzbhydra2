@@ -7,7 +7,17 @@ import org.junit.Test;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.nzbhydra.config.*;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.*;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -215,7 +225,7 @@ public class ConfigMigrationTest {
                 assertThat(category.getRequiredWords(), contains("required", "words"));
                 assertThat(category.getMinSizePreset().get(), is(11));
                 assertThat(category.getMaxSizePreset().get(), is(12));
-                assertThat(category.getNewznabCategories(), contains(5071));
+                assertThat(category.getNewznabCategories().stream().anyMatch(x -> x.size() == 1 && x.get(0) == 5071), is(true));
             }
             if (category.getName().equals("Audio")) {
                 audioChecked = true;

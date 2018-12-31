@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.mapping.newznab.builder.RssBuilder;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;

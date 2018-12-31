@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nzbhydra.config.IndexerConfigBuilder;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;

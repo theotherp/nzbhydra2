@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.reflections.Reflections;
 
 import java.beans.IntrospectionException;

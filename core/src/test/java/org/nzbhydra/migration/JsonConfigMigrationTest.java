@@ -2,11 +2,15 @@ package org.nzbhydra.migration;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.nzbhydra.config.*;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.MainConfig;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.migration.configmapping.*;
-import org.nzbhydra.migration.configmapping.Category;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -55,14 +59,15 @@ public class JsonConfigMigrationTest {
         oldCategories.setCategories(categoryMap);
 
         CategoriesConfig newCategories = new CategoriesConfig();
-        org.nzbhydra.config.Category newCategory = new org.nzbhydra.config.Category("Category");
+        org.nzbhydra.config.category.Category newCategory = new org.nzbhydra.config.category.Category("Category");
         newCategories.setCategories(Arrays.asList(newCategory));
         testee.migrateCategories(oldCategories, newCategories);
 
         assertThat(newCategories.isEnableCategorySizes(), is(true));
         assertThat(newCategories.getCategories(), hasSize(1));
-        org.nzbhydra.config.Category category = newCategories.getCategories().get(0);
-        assertThat(category.getNewznabCategories(), equalTo(Arrays.asList(1000, 2000)));
+        org.nzbhydra.config.category.Category category = newCategories.getCategories().get(0);
+        List<Integer> collect = category.getNewznabCategories().stream().map(x -> x.get(0)).collect(Collectors.toList());
+        assertThat(collect, equalTo(Arrays.asList(1000, 2000)));
         assertThat(category.getApplyRestrictionsType(), is(SearchSourceRestriction.INTERNAL));
         assertThat(category.getIgnoreResultsFrom(), is(SearchSourceRestriction.API));
         assertThat(category.getForbiddenRegex().get(), is("someForbiddenRegex"));

@@ -17,7 +17,7 @@
 package org.nzbhydra.indexers.capscheck;
 
 import lombok.Data;
-import org.nzbhydra.config.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 @Data
 public class CapsCheckRequest {

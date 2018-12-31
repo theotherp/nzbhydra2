@@ -7,10 +7,15 @@ import org.junit.Test;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.nzbhydra.config.*;
-import org.nzbhydra.config.Category.Subtype;
-import org.nzbhydra.config.IndexerCategoryConfig.MainCategory;
-import org.nzbhydra.config.IndexerCategoryConfig.SubCategory;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSourceRestriction;
+import org.nzbhydra.config.SearchingConfig;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig.MainCategory;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerAuthException;
@@ -628,12 +633,12 @@ public class NewznabTest {
         String uri = testee.buildSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&limit=100&offset=0"));
 
-        otherCategory.setNewznabCategories(Arrays.asList(2000));
+        otherCategory.setNewznabCategories(Collections.singletonList(Arrays.asList(2000)));
         request.setCategory(otherCategory);
         uri = testee.buildSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2000&limit=100&offset=0"));
 
-        otherCategory.setNewznabCategories(Arrays.asList(2030, 2040));
+        otherCategory.setNewznabCategories(Arrays.asList(Collections.singletonList(2030), Collections.singletonList(2040)));
         request.setCategory(otherCategory);
         uri = testee.buildSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040&limit=100&offset=0"));

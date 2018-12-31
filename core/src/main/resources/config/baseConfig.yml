@@ -22,7 +22,7 @@ categoriesConfig:
           minSizePreset: 50
           applySizeLimitsToApi: false
           newznabCategories:
-          - 5070
+          - "5070"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -37,7 +37,7 @@ categoriesConfig:
           minSizePreset: 1
           applySizeLimitsToApi: false
           newznabCategories:
-          - 3000
+          - "3000"
           requiredRegex: null
           requiredWords: ["mp3", "flac"]
           preselect: true
@@ -52,7 +52,7 @@ categoriesConfig:
           minSizePreset: 50
           applySizeLimitsToApi: false
           newznabCategories:
-          - 3030
+          - "3030"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -67,7 +67,7 @@ categoriesConfig:
           minSizePreset: 1
           applySizeLimitsToApi: false
           newznabCategories:
-          - 7030
+          - "7030"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -82,7 +82,7 @@ categoriesConfig:
           minSizePreset: 100
           applySizeLimitsToApi: false
           newznabCategories:
-          - 1000
+          - "1000"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -97,8 +97,8 @@ categoriesConfig:
           minSizePreset:
           applySizeLimitsToApi: false
           newznabCategories:
-          - 7020
-          - 8010
+          - "7020"
+          - "8010"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -113,7 +113,7 @@ categoriesConfig:
           minSizePreset: 10
           applySizeLimitsToApi: false
           newznabCategories:
-          - 3040
+          - "3040"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -128,7 +128,7 @@ categoriesConfig:
           minSizePreset: 500
           applySizeLimitsToApi: false
           newznabCategories:
-          - 2000
+          - "2000"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -143,10 +143,10 @@ categoriesConfig:
           minSizePreset: 3000
           applySizeLimitsToApi: false
           newznabCategories:
-          - 2040
-          - 2050
-          - 2060
-          - 2070
+          - "2040"
+          - "2050"
+          - "2060"
+          - "2070"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -161,7 +161,7 @@ categoriesConfig:
           minSizePreset: 500
           applySizeLimitsToApi: false
           newznabCategories:
-          - 2030
+          - "2030"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -175,7 +175,7 @@ categoriesConfig:
           minSizePreset: 1
           applySizeLimitsToApi: false
           newznabCategories:
-          - 3010
+          - "3010"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -190,7 +190,7 @@ categoriesConfig:
           minSizePreset: 100
           applySizeLimitsToApi: false
           newznabCategories:
-          - 4000
+          - "4000"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -205,7 +205,7 @@ categoriesConfig:
           minSizePreset: 50
           applySizeLimitsToApi: false
           newznabCategories:
-          - 5000
+          - "5000"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -220,7 +220,7 @@ categoriesConfig:
           minSizePreset: 300
           applySizeLimitsToApi: false
           newznabCategories:
-          - 5040
+          - "5040"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -235,7 +235,7 @@ categoriesConfig:
           minSizePreset: 50
           applySizeLimitsToApi: false
           newznabCategories:
-          - 5030
+          - "5030"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -250,7 +250,7 @@ categoriesConfig:
           minSizePreset: 100
           applySizeLimitsToApi: false
           newznabCategories:
-          - 6000
+          - "6000"
           requiredRegex: null
           requiredWords: []
           preselect: true
@@ -264,7 +264,7 @@ downloading:
 indexers: []
 main:
   apiKey: null
-  configVersion: 5
+  configVersion: 6
   backupEverySunday: true
   backupBeforeUpdate: true
   deleteBackupsAfterWeeks: 4

@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.dtoseventsenums.*;
 import org.nzbhydra.searching.searchrequests.SearchRequest;

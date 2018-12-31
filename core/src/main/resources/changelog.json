@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.1.8",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Allow combinations of newznab categories which must all be found in a search result for that category to be applied. For example 4090&11000 will only match items with both 4090 and 11000. This should allow for even finer category tuning with trackers accessed via Jackett."
+      }
+    ]
+  },
+  {
     "version": "v2.1.7",
     "changes": [
       {

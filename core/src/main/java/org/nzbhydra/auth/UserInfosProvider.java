@@ -1,9 +1,9 @@
 package org.nzbhydra.auth;
 
-import org.nzbhydra.config.AuthConfig;
-import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.UserAuthConfig;
+import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.web.BootstrappedDataTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

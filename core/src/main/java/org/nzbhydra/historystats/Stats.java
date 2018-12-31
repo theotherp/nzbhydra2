@@ -1,8 +1,8 @@
 package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.historystats.stats.*;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerAccessResult;

@@ -1,7 +1,7 @@
 package org.nzbhydra.indexers;
 
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

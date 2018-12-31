@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;

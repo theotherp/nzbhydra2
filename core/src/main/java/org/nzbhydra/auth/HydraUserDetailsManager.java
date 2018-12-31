@@ -1,9 +1,9 @@
 package org.nzbhydra.auth;
 
-import org.nzbhydra.config.AuthConfig;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
-import org.nzbhydra.config.UserAuthConfig;
+import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

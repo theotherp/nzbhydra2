@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.UserAuthConfig;
+import org.nzbhydra.config.auth.UserAuthConfig;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;

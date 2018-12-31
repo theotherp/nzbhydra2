@@ -24,8 +24,8 @@ hashCode = function (s) {
 angular
     .module('nzbhydraApp').run(function (formlyConfig, formlyValidationMessages) {
     formlyValidationMessages.addStringMessage('required', 'This field is required');
+    formlyValidationMessages.addStringMessage('newznabCategories', 'Invalid');
     formlyConfig.extras.errorExistsAndShouldBeVisibleExpression = 'fc.$touched || form.$submitted';
-
 });
 
 angular

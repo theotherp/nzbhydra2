@@ -19,7 +19,7 @@ package org.nzbhydra.downloading.downloaders.nzbget;
 import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
-import org.nzbhydra.config.DownloaderConfig;
+import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Downloader;

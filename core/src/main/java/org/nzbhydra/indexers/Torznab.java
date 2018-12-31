@@ -3,8 +3,8 @@ package org.nzbhydra.indexers;
 import lombok.Getter;
 import lombok.Setter;
 import org.nzbhydra.NzbHydraException;
-import org.nzbhydra.config.IndexerConfig;
-import org.nzbhydra.config.SearchModuleType;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.mapping.newznab.xml.*;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
@@ -20,6 +20,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,12 +84,7 @@ public class Torznab extends Newznab {
 
         foundCategories.addAll(item.getNewznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
         foundCategories.addAll(item.getTorznabAttributes().stream().filter(x -> x.getName().equals("category")).map(x -> Integer.valueOf(x.getValue())).collect(Collectors.toList()));
-        List<Integer> categoriesInPredefinedRange = foundCategories.stream().filter(x -> x <= 9999).collect(Collectors.toList());
-        if (!categoriesInPredefinedRange.isEmpty()) {
-            return categoriesInPredefinedRange;
-        }
-        List<Integer> categoriesInCustomRange = foundCategories.stream().filter(x -> x > 9999).collect(Collectors.toList());
-        return categoriesInCustomRange;
+        return new ArrayList<>(foundCategories);
     }
 
     @Override

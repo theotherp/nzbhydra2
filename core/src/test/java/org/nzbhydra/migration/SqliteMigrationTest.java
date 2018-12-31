@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.*;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerRepository;
 import org.nzbhydra.indexers.IndexerSearchRepository;

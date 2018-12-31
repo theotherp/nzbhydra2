@@ -1,6 +1,6 @@
 package org.nzbhydra.api;
 
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.searching.CategoryProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

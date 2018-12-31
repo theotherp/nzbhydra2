@@ -9,7 +9,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.*;
-import org.nzbhydra.config.Category;
+import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.config.auth.AuthType;
+import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.config.category.CategoriesConfig;
+import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.downloading.*;
+import org.nzbhydra.config.indexer.IndexerCategoryConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
@@ -173,7 +181,11 @@ public class JsonConfigMigration {
                 newCategory.setForbiddenWords(oldCat.getForbiddenWords() == null ? new ArrayList<>() : oldCat.getForbiddenWords());
                 newCategory.setMinSizePreset(oldCat.getMin());
                 newCategory.setMaxSizePreset(oldCat.getMax());
-                newCategory.setNewznabCategories(oldCat.getNewznabCategories() == null ? new ArrayList<>() : oldCat.getNewznabCategories());
+                if (oldCat.getNewznabCategories() == null) {
+                    newCategory.setNewznabCategories(new ArrayList<>());
+                } else {
+                    newCategory.setNewznabCategories(oldCat.getNewznabCategories().stream().map(Collections::singletonList).collect(Collectors.toList()));
+                }
                 newCategory.setRequiredRegex(oldCat.getRequiredRegex());
                 if (oldCat.getRequiredWords() != null && !oldCat.getRequiredWords().isEmpty()) {
                     newCategory.setRequiredWords(oldCat.getRequiredWords());

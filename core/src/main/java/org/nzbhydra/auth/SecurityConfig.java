@@ -1,9 +1,9 @@
 package org.nzbhydra.auth;
 
 import org.nzbhydra.NzbHydra;
-import org.nzbhydra.config.AuthType;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.auth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
