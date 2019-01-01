@@ -180,7 +180,7 @@ public class Newznab extends Indexer<Xml> {
             } else if (searchRequest.getCategory().getSubtype() == Subtype.MAGAZINE && config.getCategoryMapping().getMagazine().isPresent()) {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getMagazine().get());
             } else if (!searchRequest.getCategory().getNewznabCategories().isEmpty()) {
-                categoryIds = searchRequest.getCategory().getNewznabCategories().stream().filter(x -> x.size() == 1).map(x -> x.get(0)).collect(Collectors.toList());
+                categoryIds = searchRequest.getCategory().getNewznabCategories().stream().flatMap(Collection::stream).collect(Collectors.toList());
             } else if (searchRequest.getIdentifiers().isEmpty() && isIndexerNotSupportingEmptyTypeSearch()) {
                 if (searchRequest.getSearchType() == SearchType.MOVIE) {
                     debug("Adding newznab category 2000 because this indexer doesn't allow using search type MOVIE without identifiers or category");

@@ -643,6 +643,11 @@ public class NewznabTest {
         uri = testee.buildSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040&limit=100&offset=0"));
 
+        otherCategory.setNewznabCategories(Arrays.asList(Arrays.asList(2030, 10_000), Collections.singletonList(2040)));
+        request.setCategory(otherCategory);
+        uri = testee.buildSearchUrl(request, 0, 100).toUriString();
+        assertThat(uri, is("http://127.0.0.1:1234/api?t=search&extended=1&cat=2030,2040,10000&limit=100&offset=0"));
+
         animeCategory.setSubtype(Subtype.ANIME);
         request.setCategory(animeCategory);
         testee.getConfig().getCategoryMapping().setAnime(9090);
