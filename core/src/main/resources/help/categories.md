@@ -14,7 +14,8 @@ Example: If an API search is done with a catagory that matches those of "Movies 
 Otherwise it checks if it matches the "Movies" category and, if yes, uses that one. If that one doesn't match no category settings are used.
  
 Related to that you must also define the newznab categories for every Hydra category, e.g. decide if the category for foreign 
-movies (2010) is used for movie searches. This also controls the category mapping described above.
+movies (2010) is used for movie searches. This also controls the category mapping described above. You may combine newznab categories using "&" to 
+require multiple numbers to be present in a result. For example "2010&11000" would require a search result to contain both 2010 and 11000 for that category to match.
 
 Note: When an API search defines categories the internal mapping is only used for the forbidden and required words. The search 
 requests to your newznab indexers will still use the categories from the original request, not the ones configured here.
