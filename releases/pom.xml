@@ -9,6 +9,7 @@
 
     <artifactId>releases</artifactId>
     <packaging>pom</packaging>
+    <version>2.1.8-SNAPSHOT</version>
 
     <modules>
         <module>windows-release</module>
