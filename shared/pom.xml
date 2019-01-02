@@ -9,6 +9,7 @@
 	
     <artifactId>shared</artifactId>
     <packaging>pom</packaging>
+    <version>2.1.8-SNAPSHOT</version>
 
     <modules>
         <module>mapping</module>
