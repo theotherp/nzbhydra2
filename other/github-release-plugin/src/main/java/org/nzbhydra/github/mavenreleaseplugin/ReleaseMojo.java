@@ -119,7 +119,7 @@ public class ReleaseMojo extends AbstractMojo {
 
     protected void setChangelogBody(ReleaseRequest releaseRequest) throws MojoExecutionException {
         ChangelogVersionEntry latestEntry = getChangelogVersionEntry();
-        releaseRequest.setBody(Joiner.on("\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
+        releaseRequest.setBody(Joiner.on("\n\n").join(ChangelogGeneratorMojo.getMarkdownLinesFromEntry(latestEntry)));
     }
 
     protected ChangelogVersionEntry getChangelogVersionEntry() throws MojoExecutionException {
