@@ -13,6 +13,10 @@
       {
         "type": "feature",
         "text": "Related to above: The categories on the caps page are created from the configured categories. To keep this clean only one newznab category will be used for every category (e.g. Movies HD using 2040,2050 will only be included once with 2040 as ID."
+      },
+      {
+        "type": "fix",
+        "text": "Use dereferer for /details/<guid>"
       }
     ]
   },
