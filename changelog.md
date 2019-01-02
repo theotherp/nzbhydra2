@@ -1,3 +1,17 @@
+### v2.2.0
+
+Note: This release brings some major changes regarding categories and the handling of newznab categories. Please let me know if it breaks anything or has unexpected side effects (or if you love what I've done ;-))
+
+Feature: Allow combinations of newznab categories which must all be found in a search result for that category to be applied. For example 4090&11000 will only match items with both 4090 and 11000. This should allow for even finer category tuning with trackers accessed via Jackett.
+
+Feature: Replace newznab categories incoming API searches with newznab categories of mapped category. For example when you have 2040,2050 configured for Movies HD and a search comes in using 2040 then indexers will be queried using 2040,2050. Until now only the supplied category was used (2040 in the example). This should result in more results to be found and so far I can't tell if it will return just better results or more crap. You can disable this with the 'Transform newznab categories' setting in the searching config.
+
+Feature: Related to above: The categories on the caps page are created from the configured categories. To keep this clean only one newznab category will be used for every category (e.g. Movies HD using 2040,2050 will only be included once with 2040 as ID.
+
+Fix: Use dereferer for NZB details site
+
+
+
 ### v2.1.7
 
 Fix: Fix/improve category mapping introduced in 2.1.6. Use custom newznab categories if none from the predefined range are provided.
