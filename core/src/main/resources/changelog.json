@@ -16,7 +16,7 @@
       },
       {
         "type": "fix",
-        "text": "Use dereferer for /details/<guid>"
+        "text": "Use dereferer for NZB details site"
       }
     ]
   },
