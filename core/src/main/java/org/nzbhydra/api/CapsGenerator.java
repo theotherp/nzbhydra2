@@ -16,6 +16,8 @@
 
 package org.nzbhydra.api;
 
+import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.json.caps.*;
 import org.nzbhydra.mapping.newznab.xml.caps.*;
@@ -27,15 +29,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class CapsGenerator {
 
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private ConfigProvider configProvider;
 
     ResponseEntity<?> getCaps(OutputType o) {
         if (o == OutputType.XML) {
@@ -108,70 +111,112 @@ public class CapsGenerator {
         capsSearching.setAudioSearch(new CapsXmlSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
-        List<CapsXmlCategory> mainCategories = new ArrayList<>();
-        mainCategories.add(new CapsXmlCategory(1000, "Console", Arrays.asList(
-                new CapsXmlCategory(1010, "NDS"),
-                new CapsXmlCategory(1020, "PSP"),
-                new CapsXmlCategory(1030, "Wii"),
-                new CapsXmlCategory(1040, "XBox"),
-                new CapsXmlCategory(1050, "Xbox 360"),
-                new CapsXmlCategory(1060, "Wiiware"),
-                new CapsXmlCategory(1070, "Xbox 360 DLC")
-        )));
-        mainCategories.add(new CapsXmlCategory(2000, "Movies", Arrays.asList(
-                new CapsXmlCategory(2010, "Foreign"),
-                new CapsXmlCategory(2020, "Other"),
-                new CapsXmlCategory(2030, "SD"),
-                new CapsXmlCategory(2040, "HD"),
-                new CapsXmlCategory(2045, "UHD"),
-                new CapsXmlCategory(2050, "Bluray"),
-                new CapsXmlCategory(2060, "3D")
-        )));
-        mainCategories.add(new CapsXmlCategory(3000, "Audio", Arrays.asList(
-                new CapsXmlCategory(3010, "MP3"),
-                new CapsXmlCategory(3020, "Video"),
-                new CapsXmlCategory(3030, "Audiobook"),
-                new CapsXmlCategory(3040, "Lossless")
-        )));
-        mainCategories.add(new CapsXmlCategory(4000, "PC", Arrays.asList(
-                new CapsXmlCategory(4010, "0day"),
-                new CapsXmlCategory(4020, "ISO"),
-                new CapsXmlCategory(4030, "Mac"),
-                new CapsXmlCategory(4040, "Mobile Oher"),
-                new CapsXmlCategory(4050, "Games"),
-                new CapsXmlCategory(4060, "Mobile IOS"),
-                new CapsXmlCategory(4070, "Mobile Android")
-        )));
-        mainCategories.add(new CapsXmlCategory(5000, "TV", Arrays.asList(
-                new CapsXmlCategory(5020, "Foreign"),
-                new CapsXmlCategory(5030, "SD"),
-                new CapsXmlCategory(5040, "HD"),
-                new CapsXmlCategory(5045, "UHD"),
-                new CapsXmlCategory(5050, "Other"),
-                new CapsXmlCategory(5060, "Sport"),
-                new CapsXmlCategory(5070, "Anime"),
-                new CapsXmlCategory(5080, "Documentary")
-        )));
-        mainCategories.add(new CapsXmlCategory(6000, "XXX", Arrays.asList(
-                new CapsXmlCategory(6010, "DVD"),
-                new CapsXmlCategory(6020, "WMV"),
-                new CapsXmlCategory(6030, "XviD"),
-                new CapsXmlCategory(6040, "x264"),
-                new CapsXmlCategory(6050, "Pack"),
-                new CapsXmlCategory(6060, "Imgset"),
-                new CapsXmlCategory(6070, "Other")
-        )));
-        mainCategories.add(new CapsXmlCategory(7000, "Books", Arrays.asList(
-                new CapsXmlCategory(7010, "Mags"),
-                new CapsXmlCategory(7020, "Ebook"),
-                new CapsXmlCategory(7030, "COmics")
-        )));
-        mainCategories.add(new CapsXmlCategory(8000, "Other", Arrays.asList(
-                new CapsXmlCategory(8010, "Misc")
-        )));
-
-
-        capsRoot.setCategories(new CapsXmlCategories(mainCategories));
+        capsRoot.setCategories(getCapsXmlCategories());
         return capsRoot;
+    }
+
+    CapsXmlCategories getCapsXmlCategories() {
+        if (configProvider.getBaseConfig().getSearching().isTransformNewznabCategories()) {
+            Map<Integer, CapsXmlCategory> mainXmlCategoriesMap = new HashMap<>();
+            Set<String> alreadyAdded = new HashSet<>();
+            for (Category category : configProvider.getBaseConfig().getCategoriesConfig().getCategories()) {
+                category.getNewznabCategories().stream().flatMap(Collection::stream).sorted(Comparator.naturalOrder()).filter(x -> x % 1000 == 0).forEach(x -> {
+                    CapsXmlCategory xmlCategory = new CapsXmlCategory(x, category.getName(), new ArrayList<>());
+                    mainXmlCategoriesMap.put(x, xmlCategory);
+                    alreadyAdded.add(category.getName());
+                });
+            }
+            for (Category category : configProvider.getBaseConfig().getCategoriesConfig().getCategories()) {
+                List<Integer> subCategories = category.getNewznabCategories().stream().flatMap(Collection::stream).filter(x -> x % 1000 != 0)
+                        //Lower numbers first so that predefined category numbers take precedence over custom ones
+                        .sorted(Comparator.naturalOrder())
+                        .collect(Collectors.toList());
+                //Use lowest category first
+                for (Integer subCategory : subCategories) {
+                    if (alreadyAdded.contains(category.getName())) {
+                        continue;
+                    }
+                    int itsMainCategoryNumber = subCategory / 1000 * 1000;
+                    if (mainXmlCategoriesMap.containsKey(itsMainCategoryNumber)) {
+                        //Assign this category to existing main category
+                        boolean alreadyPresent = mainXmlCategoriesMap.get(itsMainCategoryNumber).getSubCategories().stream().anyMatch(x -> x.getName().equals(category.getName()));
+                        if (!alreadyPresent) {
+                            mainXmlCategoriesMap.get(itsMainCategoryNumber).getSubCategories().add(new CapsXmlCategory(subCategory, category.getName(), new ArrayList<>()));
+                        }
+                    } else {
+                        mainXmlCategoriesMap.put(subCategory, new CapsXmlCategory(subCategory, category.getName(), new ArrayList<>()));
+                    }
+                    alreadyAdded.add(category.getName());
+                }
+            }
+
+            ArrayList<CapsXmlCategory> categories = new ArrayList<>(mainXmlCategoriesMap.values());
+            categories.sort(Comparator.comparing(CapsXmlCategory::getId));
+            return new CapsXmlCategories(categories);
+        } else {
+            List<CapsXmlCategory> mainCategories = new ArrayList<>();
+            mainCategories.add(new CapsXmlCategory(1000, "Console", Arrays.asList(
+                    new CapsXmlCategory(1010, "NDS"),
+                    new CapsXmlCategory(1020, "PSP"),
+                    new CapsXmlCategory(1030, "Wii"),
+                    new CapsXmlCategory(1040, "XBox"),
+                    new CapsXmlCategory(1050, "Xbox 360"),
+                    new CapsXmlCategory(1060, "Wiiware"),
+                    new CapsXmlCategory(1070, "Xbox 360 DLC")
+            )));
+            mainCategories.add(new CapsXmlCategory(2000, "Movies", Arrays.asList(
+                    new CapsXmlCategory(2010, "Foreign"),
+                    new CapsXmlCategory(2020, "Other"),
+                    new CapsXmlCategory(2030, "SD"),
+                    new CapsXmlCategory(2040, "HD"),
+                    new CapsXmlCategory(2045, "UHD"),
+                    new CapsXmlCategory(2050, "Bluray"),
+                    new CapsXmlCategory(2060, "3D")
+            )));
+            mainCategories.add(new CapsXmlCategory(3000, "Audio", Arrays.asList(
+                    new CapsXmlCategory(3010, "MP3"),
+                    new CapsXmlCategory(3020, "Video"),
+                    new CapsXmlCategory(3030, "Audiobook"),
+                    new CapsXmlCategory(3040, "Lossless")
+            )));
+            mainCategories.add(new CapsXmlCategory(4000, "PC", Arrays.asList(
+                    new CapsXmlCategory(4010, "0day"),
+                    new CapsXmlCategory(4020, "ISO"),
+                    new CapsXmlCategory(4030, "Mac"),
+                    new CapsXmlCategory(4040, "Mobile Oher"),
+                    new CapsXmlCategory(4050, "Games"),
+                    new CapsXmlCategory(4060, "Mobile IOS"),
+                    new CapsXmlCategory(4070, "Mobile Android")
+            )));
+            mainCategories.add(new CapsXmlCategory(5000, "TV", Arrays.asList(
+                    new CapsXmlCategory(5020, "Foreign"),
+                    new CapsXmlCategory(5030, "SD"),
+                    new CapsXmlCategory(5040, "HD"),
+                    new CapsXmlCategory(5045, "UHD"),
+                    new CapsXmlCategory(5050, "Other"),
+                    new CapsXmlCategory(5060, "Sport"),
+                    new CapsXmlCategory(5070, "Anime"),
+                    new CapsXmlCategory(5080, "Documentary")
+            )));
+            mainCategories.add(new CapsXmlCategory(6000, "XXX", Arrays.asList(
+                    new CapsXmlCategory(6010, "DVD"),
+                    new CapsXmlCategory(6020, "WMV"),
+                    new CapsXmlCategory(6030, "XviD"),
+                    new CapsXmlCategory(6040, "x264"),
+                    new CapsXmlCategory(6050, "Pack"),
+                    new CapsXmlCategory(6060, "Imgset"),
+                    new CapsXmlCategory(6070, "Other")
+            )));
+            mainCategories.add(new CapsXmlCategory(7000, "Books", Arrays.asList(
+                    new CapsXmlCategory(7010, "Mags"),
+                    new CapsXmlCategory(7020, "Ebook"),
+                    new CapsXmlCategory(7030, "COmics")
+            )));
+            mainCategories.add(new CapsXmlCategory(8000, "Other", Arrays.asList(
+                    new CapsXmlCategory(8010, "Misc")
+            )));
+            return new CapsXmlCategories(mainCategories);
+        }
+
     }
 }

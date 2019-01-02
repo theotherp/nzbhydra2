@@ -90,9 +90,11 @@ public class NewznabChecker {
 
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
                 if (indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB && isTorznabResult(rssRoot)) {
+                    logger.error("Indexer added as newznab but returns torznab results");
                     return GenericResponse.notOk("You added the indexer as newznab indexer but the results indicate a torznab indexer");
                 }
                 if (indexerConfig.getSearchModuleType() == SearchModuleType.TORZNAB && isNewznabResult(rssRoot)) {
+                    logger.error("Indexer added as torznab but returns newznab results");
                     return GenericResponse.notOk("You added the indexer as torznab indexer but the results indicate a newznab indexer");
                 }
 

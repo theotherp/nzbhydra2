@@ -328,6 +328,7 @@ searching:
   requiredWords: []
   showQuickFilterButtons: true
   timeout: 20
+  transformNewznabCategories: true
   userAgent: "NZBHydra2"
   userAgents: ["Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"]
   useOriginalCategories: false

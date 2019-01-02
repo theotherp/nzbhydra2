@@ -168,7 +168,7 @@ public class Newznab extends Indexer<Xml> {
 
 
         List<Integer> categoryIds = new ArrayList<>();
-        if (searchRequest.getInternalData().getNewznabCategories().isEmpty()) {
+        if (searchRequest.getInternalData().getNewznabCategories().isEmpty() || configProvider.getBaseConfig().getSearching().isTransformNewznabCategories()) {
             if (searchRequest.getCategory().getSubtype() == Subtype.ANIME && config.getCategoryMapping().getAnime().isPresent()) {
                 categoryIds = Arrays.asList(config.getCategoryMapping().getAnime().get());
             } else if (searchRequest.getCategory().getSubtype() == Subtype.AUDIOBOOK && config.getCategoryMapping().getAudiobook().isPresent()) {

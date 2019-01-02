@@ -23,4 +23,5 @@ fi
 echo -n "Enter version"
 read VERSION
 docker build -t theotherp/nzbhydra2:${VERSION} -t theotherp/nzbhydra2:latest .
+#docker build -t theotherp/nzbhydra2:${VERSION} .
 docker push theotherp/nzbhydra2

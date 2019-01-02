@@ -46,6 +46,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> requiredWords = new ArrayList<>();
     private boolean showQuickFilterButtons = true;
     private Integer timeout = 30;
+    private boolean transformNewznabCategories = true;
     private String userAgent = "NZBHydra2";
     private List<String> userAgents = new ArrayList<>(Arrays.asList("Mozilla", "Sonarr", "Radarr", "CouchPotato", "LazyLibrarian", "NZBGet", "sabNZBd"));
     private boolean useOriginalCategories = false;

@@ -537,6 +537,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'transformNewznabCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Transform newznab categories',
+                                help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches'
+                            }
+                        },
+                        {
                             key: 'language',
                             type: 'horizontalSelect',
                             templateOptions: {
