@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.StringJoiner;
 
 @XmlRootElement(name = "error")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -38,5 +39,11 @@ public class NewznabXmlError extends Xml {
     @XmlAttribute
     private String description;
 
-
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", NewznabXmlError.class.getSimpleName() + "[", "]")
+                .add("code='" + code + "'")
+                .add("message='" + description + "'")
+                .toString();
+    }
 }

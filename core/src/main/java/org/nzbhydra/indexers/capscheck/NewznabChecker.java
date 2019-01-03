@@ -272,7 +272,17 @@ public class NewznabChecker {
             supportedSearchTypes.add(ActionAttribute.MOVIE);
         }
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
-        CapsXmlRoot capsRoot = indexerWebAccess.get(uri, indexerConfig);
+        Object response = indexerWebAccess.get(uri, indexerConfig);
+        if (!(response instanceof CapsXmlRoot)) {
+            if (response instanceof NewznabXmlRoot) {
+                NewznabXmlError error = ((NewznabXmlRoot) response).getError();
+                if (error != null) {
+                    throw new IndexerAccessException("Indexer reported error during caps check: " + error);
+                }
+            }
+            throw new IndexerAccessException("Unexpected indexer response");
+        }
+        CapsXmlRoot capsRoot = (CapsXmlRoot) response;
         if (capsRoot.getSearching().getAudioSearch() != null) {
             supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
