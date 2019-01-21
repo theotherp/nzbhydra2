@@ -1,3 +1,9 @@
+### v2.2.1
+
+Feature: Improve logging of unparseable indexer responses
+
+
+
 ### v2.2.0
 
 Note: This release brings some major changes regarding categories and the handling of newznab categories. Please let me know if it breaks anything or has unexpected side effects (or if you love what I've done ;-))
