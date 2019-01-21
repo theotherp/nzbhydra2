@@ -1,5 +1,7 @@
 package org.nzbhydra.mockserver;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabParameters;
@@ -104,6 +106,11 @@ public class MockNewznab {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("offsettest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        if (params.getQ() != null && params.getQ().equals("invalidxml")) {
+            String invalidXml = Resources.toString(Resources.getResource(MockNewznab.class, "invalidXml.xml"), Charsets.UTF_8);
+            return new ResponseEntity<Object>(invalidXml, HttpStatus.OK);
         }
 
         if (params.getQ() != null && params.getQ().equals("slash")) {

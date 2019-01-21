@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="https://drunkenslug.com/api" rel="self" type="application/rss+xml"/>
+        <title>DS</title>
+        <description>DS API Details</description>
+        <link>https://drunkenslug.com/</link>
+        <language>en-gb</language>
+        <webMaster>admin@drunkenslug.com DS</webMaster>
+        <category>drunkenslug, usenet indexer, nzb, search nzb, newznab, nzedb, newsgroups, giganews, astraweb, sabnzbd, sonarr, nzbget, usenet, free open, search usenet&#13;
+        </category>
+        <generator>nZEDb</generator>
+        <ttl>10</ttl>
+        <docs>https://drunkenslug.com/apihelp/</docs>
+        <image url="https://drunkenslug.com/themes/shared/img/logo.png" title="DS" link="https://drunkenslug.com/" description="Visit DS - DrunkenSlug usenet indexer"/>
+        <newznab:response offset="0" total="125000"/>
+        <item>
+            <title>Supernatural S12E15 nl-subs ingebakken</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/73fe2a160db9cc5d6de2ce4371215540aa37bde1</guid>
+            <link>https://drunkenslug.com/getnzb/73fe2a160db9cc5d6de2ce4371215540aa37bde1.nzb&amp;i=1882&amp;r=APIKEY</link>
+            <comments>https://drunkenslug.com/details/73fe2a160db9cc5d6de2ce4371215540aa37bde1#comments</comments>
+            <pubDate>Wed, 05 Apr 2017 12:06:54 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>Supernatural S12E15 nl-subs ingebakken</description>
+            <enclosure url="https://drunkenslug.com/getnzb/73fe2a160db9cc5d6de2ce4371215540aa37bde1.nzb&amp;i=1882&amp;r=0a2ebe38be1cebc17c9cc101db9ee830" length="474957072" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="474957072"/>
+            <newznab:attr name="files" value="17"/>
+            <newznab:attr name="poster" value="Havefunteam@info.com (Havefunteam)"/>
+            <newznab:attr name="title" value="Somewhere Between Heaven and Hell"/>
+            <newznab:attr name="season" value="12"/>
+            <newznab:attr name="episode" value="15"/>
+            <newznab:attr name="tvairdate" value="2017-03-09"/>
+            <newznab:attr name="tvdbid" value="78901"/>
+            <newznab:attr name="traktid" value="1611"/>
+            <newznab:attr name="tvrageid" value="5410"/>
+            <newznab:attr name="rageid" value="5410"/>
+            <newznab:attr name="tvmazeid" value="19"/>
+            <newznab:attr name="imdbid" value="0460681"/>
+            <newznab:attr name="tmdbid" value="1622"/>
+            <newznab:attr name="grabs" value="1"/>
+            <newznab:attr name="comments" value="0"/>
+            <newznab:attr name="password" value="0"/>
+            <newznab:attr name="usenetdate" value="Wed, 05 Apr 2017 13:02:16 +0100"/>
+            <newznab:attr name="group" value="alt.binaries.boneless0a2ebe38be1cebc17c9cc101db9ee830"/>
+        </itemx>
+    </channel>
+</rss>

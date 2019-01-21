@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.2.1",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Improve logging of unparseable indexer responses"
+      }
+    ]
+  },
+  {
     "version": "v2.2.0",
     "changes": [
       {
