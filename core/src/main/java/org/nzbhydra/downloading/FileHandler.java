@@ -7,8 +7,7 @@ import okhttp3.ResponseBody;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.NfoResult;
+import org.nzbhydra.indexers.*;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
@@ -48,6 +47,8 @@ public class FileHandler {
     protected SearchResultRepository searchResultRepository;
     @Autowired
     protected FileDownloadRepository downloadRepository;
+    @Autowired
+    private IndexerApiAccessEntityShortRepository shortRepository;
     @Autowired
     protected SearchModuleProvider searchModuleProvider;
     @Autowired
@@ -94,6 +95,8 @@ public class FileHandler {
             FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_ERROR, e.getMessage());
 
             downloadRepository.save(downloadEntity);
+            shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
+
             eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
             return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), downloadEntity);
         }
@@ -104,6 +107,7 @@ public class FileHandler {
 
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, null);
         downloadRepository.save(downloadEntity);
+        shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
 
         return DownloadResult.createSuccessfulDownloadResult(result.getTitle(), fileContent, downloadEntity);
@@ -113,6 +117,7 @@ public class FileHandler {
         logger.debug("Redirecting to " + result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
         downloadRepository.save(downloadEntity);
+        shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
         return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
     }
@@ -217,12 +222,11 @@ public class FileHandler {
         return indexer.getNfo(result.getIndexerGuid());
     }
 
-    public boolean updateStatusByEntity(FileDownloadEntity entity, FileDownloadStatus status) {
+    public void updateStatusByEntity(FileDownloadEntity entity, FileDownloadStatus status) {
         FileDownloadStatus oldStatus = entity.getStatus();
         entity.setStatus(status);
         downloadRepository.save(entity);
         logger.info("Updated download status of \"{}\" from {} to {}", entity.getSearchResult().getTitle(), oldStatus, status);
-        return true;
     }
 
 

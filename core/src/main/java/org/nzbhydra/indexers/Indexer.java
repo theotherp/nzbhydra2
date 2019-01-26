@@ -278,7 +278,7 @@ public abstract class Indexer<T> {
         apiAccess.setTime(Instant.now());
         indexerApiAccessRepository.save(apiAccess);
 
-        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, successful));
+        indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, successful, accessType));
     }
 
     protected void handleIndexerAccessException(IndexerAccessException e, IndexerApiAccessType accessType) {

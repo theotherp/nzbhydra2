@@ -3,13 +3,13 @@ package org.nzbhydra.historystats;
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.historystats.stats.*;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerAccessResult;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.*;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
@@ -37,6 +38,32 @@ public class Stats {
     private IndexerRepository indexerRepository;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private IndexerApiAccessEntityShortRepository shortRepository;
+    @Autowired
+    private FileDownloadRepository fileDownloadRepository;
+    @Autowired
+    private SearchResultRepository searchResultRepository;
+
+    //@PostConstruct
+    @Transactional
+    public void bla() {
+        List<IndexerEntity> indexerEntities = indexerRepository.findAll();
+        IndexerEntity indexerEntity = indexerEntities.stream().filter(x -> x.getId() == 3206748).findFirst().get();
+        Random random = new Random();
+        List<SearchResultEntity> searchResults = searchResultRepository.findAll();
+        SearchResultEntity searchResultEntity = searchResults.stream().filter(x -> x.getIndexer().getId() == 3206748).findFirst().get();
+        for (int i = 0; i < 1000; i++) {
+            logger.info("Adding 4000 entries");
+            for (int j = 0; j < 10; j++) {
+//                IndexerApiAccessEntityShort accessEntity = new IndexerApiAccessEntityShort(indexerEntities.get(random.nextInt(indexerEntities.size() - 1)), true, IndexerApiAccessType.NZB);
+                IndexerApiAccessEntityShort accessEntity = new IndexerApiAccessEntityShort(indexerEntity, true, IndexerApiAccessType.NZB);
+                accessEntity.setTime(Instant.now().minusSeconds(random.nextInt(6 * 60 * 60)));
+                shortRepository.save(accessEntity);
+                //fileDownloadRepository.save(new FileDownloadEntity(searchResultEntity, FileDownloadAccessType.PROXY, SearchRequest.SearchSource.INTERNAL, FileDownloadStatus.NONE, null));
+            }
+        }
+    }
 
     @Transactional(readOnly = true)
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {

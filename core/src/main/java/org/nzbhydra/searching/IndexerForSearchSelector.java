@@ -12,9 +12,10 @@ import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -26,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
@@ -59,6 +58,8 @@ public class IndexerForSearchSelector {
     private SearchModuleProvider searchModuleProvider;
     @Autowired
     private FileDownloadRepository nzbDownloadRepository;
+    @Autowired
+    private IndexerApiAccessEntityShortRepository shortRepository;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
@@ -240,35 +241,44 @@ public class IndexerForSearchSelector {
             comparisonTime = now.minus(1, ChronoUnit.DAYS);
         }
         if (indexerConfig.getHitLimit().isPresent()) {
-            Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) ORDER BY TIME DESC LIMIT (:hitLimit)");
-            query.setParameter("indexerId", indexer.getIndexerEntity().getId());
-            query.setParameter("hitLimit", indexerConfig.getHitLimit().get());
-            List resultList = query.getResultList();
-
-            if (resultList.size() == indexerConfig.getHitLimit().get()) { //Found as many as we want, so now we must check if they're all in the time window
-                Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
-                if (earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
-                    LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
-
-                    String message = String.format("Not using %s because all %d allowed API hits were already made. The next API hit should be possible at %s", indexerConfig.getName(), indexerConfig.getHitLimit().get(), nextPossibleHit);
-                    logger.debug(LoggingMarkers.PERFORMANCE, "Detection of API limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    return handleIndexerNotSelected(indexer, message, "API hit limit reached");
-                }
+            boolean limitExceeded = checkIfHitLimitIsExceeded(indexer, indexerConfig, comparisonTime, IndexerApiAccessType.SEARCH, indexerConfig.getHitLimit().get(), "API hit");
+            if (limitExceeded) {
+                return false;
             }
         }
         if (indexerConfig.getDownloadLimit().isPresent()) {
-            Page<FileDownloadEntity> page = nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(indexer.getIndexerEntity(), new PageRequest(0, indexerConfig.getDownloadLimit().get()));
-            if (page.getContent().size() == indexerConfig.getDownloadLimit().get() && Iterables.getLast(page.getContent()).getTime().isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
-                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, page.getContent().get(page.getContent().size() - 1).getTime());
-
-                String message = String.format("Not using %s because all %d allowed download were already made. The next download should be possible at %s", indexerConfig.getName(), indexerConfig.getDownloadLimit().get(), nextPossibleHit);
-                logger.debug(LoggingMarkers.PERFORMANCE, "Detection of download limit reached took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                return handleIndexerNotSelected(indexer, message, "Download limit reached");
+            boolean limitExceeded = checkIfHitLimitIsExceeded(indexer, indexerConfig, comparisonTime, IndexerApiAccessType.NZB, indexerConfig.getDownloadLimit().get(), "download");
+            if (limitExceeded) {
+                return false;
             }
         }
 
-        logger.debug(LoggingMarkers.PERFORMANCE, "Detection if hit limits were reached for indexer {} took {}ms", indexer.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        logger.debug(LoggingMarkers.PERFORMANCE, "Detection that hit limits were not reached for indexer {} took {}ms", indexer.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return true;
+    }
+
+    /**
+     * @return false if limit not exceeded, true if exceeded
+     */
+    private boolean checkIfHitLimitIsExceeded(Indexer indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND x.API_ACCESS_TYPE = (:accessType) ORDER BY TIME DESC LIMIT (:hitLimit)");
+        query.setParameter("indexerId", indexer.getIndexerEntity().getId());
+        query.setParameter("accessType", accessType.name());
+        query.setParameter("hitLimit", limit);
+        List resultList = query.getResultList();
+
+        if (resultList.size() == limit) { //Found as many as we want, so now we must check if they're all in the time window
+            Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
+            if (earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
+                LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
+
+                String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextPossibleHit);
+                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+            }
+        }
+        return false;
     }
 
     LocalDateTime calculateNextPossibleHit(IndexerConfig indexerConfig, Instant firstInWindowAccessTime) {

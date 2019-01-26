@@ -21,17 +21,23 @@ public class IndexerApiAccessEntityShort {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     protected int id;
 
-    private int indexer_id;
+    @Column(name = "INDEXER_ID")
+    private int indexerId;
 
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     private Instant time;
 
     private boolean successful;
 
-    public IndexerApiAccessEntityShort(IndexerEntity indexerEntity, boolean successsful) {
-        this.indexer_id = indexerEntity.getId();
+    @Enumerated(EnumType.STRING)
+    @Column(name = "API_ACCESS_TYPE")
+    private IndexerApiAccessType apiAccessType;
+
+    public IndexerApiAccessEntityShort(IndexerEntity indexerEntity, boolean successsful, IndexerApiAccessType apiAccessType) {
+        this.indexerId = indexerEntity.getId();
         time = Instant.now();
         this.successful = successsful;
+        this.apiAccessType = apiAccessType;
     }
 
 
