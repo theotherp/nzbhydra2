@@ -22,10 +22,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -168,18 +165,22 @@ public class TorznabTest {
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "10000")));
         integers = testee.tryAndGetCategoryAsNumber(item);
-        assertThat(integers.size(), is(1));
+        integers.sort(Comparator.naturalOrder());
+        assertThat(integers.size(), is(2));
         assertThat(integers.get(0), is(2000));
+        assertThat(integers.get(1), is(10000));
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040")));
         integers = testee.tryAndGetCategoryAsNumber(item);
+        integers.sort(Comparator.naturalOrder());
         assertThat(integers.size(), is(2));
         assertThat(integers.get(0), is(2000));
         assertThat(integers.get(1), is(2040));
 
         item.setTorznabAttributes(Arrays.asList(new NewznabAttribute("category", "2000"), new NewznabAttribute("category", "2040"), new NewznabAttribute("category", "10000")));
         integers = testee.tryAndGetCategoryAsNumber(item);
-        assertThat(integers.size(), is(2));
+        integers.sort(Comparator.naturalOrder());
+        assertThat(integers.size(), is(3));
         assertThat(integers.get(0), is(2000));
         assertThat(integers.get(1), is(2040));
     }
