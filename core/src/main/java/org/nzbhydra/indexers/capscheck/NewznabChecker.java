@@ -17,6 +17,7 @@
 package org.nzbhydra.indexers.capscheck;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -57,9 +58,18 @@ import java.util.stream.Collectors;
 public class NewznabChecker {
 
     private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
-    public static final int MAX_CONNECTIONS = 2;
-    public static final int ID_THRESHOLD_PERCENT = 85;
     static int PAUSE_BETWEEN_CALLS = 1000;
+    public static final int MAX_CONNECTIONS = 2;
+    /**
+     * Percentage of results that must be correct so that the search with an ID is interpreted as correct
+     */
+    public static final int ID_THRESHOLD_PERCENT = 85;
+
+    /**
+     * Host/Indexer specific limits
+     */
+    private static final Set<CapsCheckLimit> CAPS_CHECK_LIMITS = Sets.newHashSet(new CapsCheckLimit(1, 2000, "rarbg"));
+
     @Autowired
     protected ConfigProvider configProvider;
     @Autowired
@@ -145,12 +155,13 @@ public class NewznabChecker {
 
         boolean allChecked = true;
         boolean configComplete = true;
-        Integer timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1;
+        int timeout = indexerConfig.getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout()) + 1;
+        CapsCheckLimit capsCheckLimit = CAPS_CHECK_LIMITS.stream().filter(x -> indexerConfig.getHost().toLowerCase().contains(x.urlContains)).findFirst().orElse(new CapsCheckLimit(MAX_CONNECTIONS, PAUSE_BETWEEN_CALLS, null));
         List<Callable<SingleCheckCapsResponse>> callables = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
             CheckCapsRequest request = requests.get(i);
             callables.add(() -> {
-                Thread.sleep(PAUSE_BETWEEN_CALLS); //Give indexer some time to breathe
+                Thread.sleep(capsCheckLimit.delayInMiliseconds); //Give indexer some time to breathe
                 return singleCheckCaps(request, indexerConfig);
             });
         }
@@ -158,9 +169,9 @@ public class NewznabChecker {
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
         Set<IdType> supportedIds;
         String backend = null;
-        ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(MAX_CONNECTIONS);
+        ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(capsCheckLimit.maxConnections);
         try {
-            logger.info("Will check capabilities of indexer {} using {} concurrent connections", indexerConfig.getName(), MAX_CONNECTIONS);
+            logger.info("Will check capabilities of indexer {} using {} concurrent connections and a delay of {}ms", indexerConfig.getName(), capsCheckLimit.maxConnections, capsCheckLimit.delayInMiliseconds);
             List<Future<SingleCheckCapsResponse>> futures = executor.invokeAll(callables);
             for (Future<SingleCheckCapsResponse> future : futures) {
                 try {
@@ -403,6 +414,13 @@ public class NewznabChecker {
         private String key;
         private boolean supported;
         private String backend;
+    }
+
+    @AllArgsConstructor
+    private static class CapsCheckLimit {
+        private int maxConnections;
+        private int delayInMiliseconds;
+        private String urlContains;
     }
 
 
