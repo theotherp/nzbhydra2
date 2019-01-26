@@ -1,3 +1,9 @@
+### v2.2.3
+
+Feature: Include database metadata in debug infos
+
+
+
 ### v2.2.2
 
 Feature: Minor improvements to performance logging
