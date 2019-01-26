@@ -152,6 +152,7 @@ public abstract class Indexer<T> {
         stopwatch.start();
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(this, true);
         List<SearchResultItem> searchResultItems = getSearchResultItems(response);
+        debug(LoggingMarkers.PERFORMANCE, "Parsing of results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         info("Successfully executed search call in {}ms with {} results", responseTime, searchResultItems.size());
         AcceptorResult acceptorResult = resultAcceptor.acceptResults(searchResultItems, searchRequest, config);
         searchResultItems = acceptorResult.getAcceptedResults();
@@ -234,7 +235,7 @@ public abstract class Indexer<T> {
             }
         }
 
-        getLogger().debug(LoggingMarkers.PERFORMANCE, "Handling of {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        getLogger().debug(LoggingMarkers.PERFORMANCE, "Persisting {} search results took {}ms", searchResultItems.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return searchResultItems;
     }
 
@@ -333,6 +334,7 @@ public abstract class Indexer<T> {
             throw e;
         }
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        logger.debug(LoggingMarkers.PERFORMANCE, "Call to {} took {}ms", uri, responseTime);
         handleSuccess(apiAccessType, responseTime);
         return result;
     }

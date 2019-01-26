@@ -68,18 +68,7 @@ public class IndexerWebAccess {
                     T unmarshalled = (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
                     return unmarshalled;
                 } catch (UnmarshallingFailureException e) {
-                    Optional<Throwable> saxParseExceptionOptional = Throwables.getCausalChain(e).stream().filter(x -> x instanceof SAXParseException).findFirst();
-                    if (saxParseExceptionOptional.isPresent()) {
-                        int lineNumber = ((SAXParseException) saxParseExceptionOptional.get()).getLineNumber();
-                        int columnNumber = ((SAXParseException) saxParseExceptionOptional.get()).getColumnNumber();
-                        String message = ((SAXParseException) saxParseExceptionOptional.get()).getMessage();
-                        String[] lines = response.split("\\r?\\n");
-                        int from = Math.max(0, lineNumber - 5);
-                        int to = Math.min(lines.length, lineNumber + 5);
-                        String excerpt = String.join("\r\n", Arrays.asList(lines).subList(from, to));
-                        logger.error("Unable to parse indexer output at line {} and column {} with error message: {}. Excerpt:\r\n{}", lineNumber, columnNumber, message, excerpt);
-                    }
-
+                    logParseException(response, e);
                     throw e;
                 }
             });
@@ -104,6 +93,20 @@ public class IndexerWebAccess {
             throw new IndexerAccessException("Indexer did not complete request within " + timeout + " seconds");
         } catch (Exception e) {
             throw new RuntimeException("Unexpected error while accessing indexer", e);
+        }
+    }
+
+    protected void logParseException(String response, UnmarshallingFailureException e) {
+        Optional<Throwable> saxParseExceptionOptional = Throwables.getCausalChain(e).stream().filter(x -> x instanceof SAXParseException).findFirst();
+        if (saxParseExceptionOptional.isPresent()) {
+            int lineNumber = ((SAXParseException) saxParseExceptionOptional.get()).getLineNumber();
+            int columnNumber = ((SAXParseException) saxParseExceptionOptional.get()).getColumnNumber();
+            String message = ((SAXParseException) saxParseExceptionOptional.get()).getMessage();
+            String[] lines = response.split("\\r?\\n");
+            int from = Math.max(0, lineNumber - 5);
+            int to = Math.min(lines.length, lineNumber + 5);
+            String excerpt = String.join("\r\n", Arrays.asList(lines).subList(from, to));
+            logger.error("Unable to parse indexer output at line {} and column {} with error message: {}. Excerpt:\r\n{}", lineNumber, columnNumber, message, excerpt);
         }
     }
 

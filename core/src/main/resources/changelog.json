@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.2.2",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Minor improvements to performance logging"
+      }
+    ]
+  },
+  {
     "version": "v2.2.1",
     "changes": [
       {

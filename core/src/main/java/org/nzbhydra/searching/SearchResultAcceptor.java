@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -27,6 +28,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ public class SearchResultAcceptor {
     private ConfigProvider configProvider;
 
     public AcceptorResult acceptResults(List<SearchResultItem> items, SearchRequest searchRequest, IndexerConfig indexerConfig) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         BaseConfig baseConfig = configProvider.getBaseConfig();
         titleWordCache = new HashMap<>();
         List<SearchResultItem> acceptedResults = new ArrayList<>();
@@ -130,6 +133,7 @@ public class SearchResultAcceptor {
             }
         }
 
+        logger.debug(LoggingMarkers.PERFORMANCE, "Check of {} search results took {}ms", items.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return new AcceptorResult(acceptedResults, reasonsForRejection);
     }
 
