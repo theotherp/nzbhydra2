@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.2.3",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Include database metadata in debug infos"
+      }
+    ]
+  },
+  {
     "version": "v2.2.2",
     "changes": [
       {

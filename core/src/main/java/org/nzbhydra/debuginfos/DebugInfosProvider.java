@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -45,6 +46,13 @@ public class DebugInfosProvider {
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
+        logNumberOfTableRows("SEARCH");
+        logNumberOfTableRows("SEARCHRESULT");
+        logNumberOfTableRows("INDEXERSEARCH");
+        logNumberOfTableRows("INDEXERAPIACCESS");
+        logNumberOfTableRows("INDEXERAPIACCESS_SHORT");
+        logNumberOfTableRows("INDEXERNZBDOWNLOAD");
+        logDatabaseFolderSize();
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
         }
@@ -77,6 +85,29 @@ public class DebugInfosProvider {
             }
         }
         return Files.readAllBytes(tempFile.toPath());
+    }
+
+    protected void logDatabaseFolderSize() {
+        File databaseFolder = new File(NzbHydra.getDataFolder(), "database");
+        if (!databaseFolder.exists()) {
+            logger.warn("Database folder not found");
+            return;
+        }
+        File[] databaseFiles = databaseFolder.listFiles();
+        if (databaseFiles == null) {
+            logger.warn("No database files found");
+            return;
+        }
+        long databaseFolderSize = Stream.of(databaseFiles).mapToLong(File::length).sum();
+        logger.info("Size of database folder: {}MB", databaseFolderSize / (1024 * 1024));
+    }
+
+    protected void logNumberOfTableRows(final String tableName) {
+        try {
+            logger.info("Number of rows in table " + tableName + ": " + entityManager.createNativeQuery("select count(*) from " + tableName).getSingleResult());
+        } catch (Exception e) {
+            logger.error("Unable to get number of rows in table " + tableName, e);
+        }
     }
 
     public static boolean isRunInDocker() {
