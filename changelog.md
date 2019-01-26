@@ -1,3 +1,9 @@
+### v2.2.4
+
+Feature: Add indexer specific limit to caps check. Background: RARBG only allows one request every two seconds so the caps check, which until now used two concurrent threads and a delay of 1 second, would result in errors. The limits are hard coded. Hydra will not attempt to do any rate limiting for regular search requests.
+
+
+
 ### v2.2.3
 
 Feature: Include database metadata in debug infos
