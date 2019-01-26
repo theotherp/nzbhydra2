@@ -1,3 +1,9 @@
+### v2.2.2
+
+Feature: Minor improvements to performance logging
+
+
+
 ### v2.2.1
 
 Feature: Improve logging of unparseable indexer responses
