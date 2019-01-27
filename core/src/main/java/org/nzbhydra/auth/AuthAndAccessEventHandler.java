@@ -33,7 +33,7 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
         Object userName = event.getAuthentication().getPrincipal();
         String ip = SessionStorage.IP.get();
         if (ip == null) { //Might not always be set
-            ip = ((HydraWebAuthenticationDetails)event.getAuthentication().getDetails()).getFilteredIp();
+            ip = ((HydraWebAuthenticationDetails) event.getAuthentication().getDetails()).getFilteredIp();
             SessionStorage.IP.set(ip);
         }
         logger.warn("Failed login with username {} from IP {}", userName, SessionStorage.IP.get());
@@ -44,8 +44,11 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
     public void onApplicationEvent(AuthenticationSuccessEvent event) {
         String ip = SessionStorage.IP.get();
         if (ip == null) { //Might not always be set
-            ip = ((HydraWebAuthenticationDetails)event.getAuthentication().getDetails()).getFilteredIp();
-            SessionStorage.IP.set(ip);
+            if (event.getAuthentication().getDetails() instanceof HydraWebAuthenticationDetails) {
+                //In rare cases the details were not set properly, e.g. when the user enables auth and then opens the page in the same session
+                ip = ((HydraWebAuthenticationDetails) event.getAuthentication().getDetails()).getFilteredIp();
+                SessionStorage.IP.set(ip);
+            }
         }
         if (attemptService.wasUnsuccessfulBefore(SessionStorage.IP.get())) {
             User user;
@@ -53,7 +56,7 @@ public class AuthAndAccessEventHandler extends AccessDeniedHandlerImpl {
                 user = (User) event.getAuthentication().getPrincipal();
                 logger.info("Successful login with username {} from IP {}. Removing previous unsuccessful events from block log", user.getUsername(), SessionStorage.IP.get());
             } catch (ClassCastException e) {
-                logger.info("Successful login from IP {}. Removing previous unsuccessful events from block log",SessionStorage.IP.get());
+                logger.info("Successful login from IP {}. Removing previous unsuccessful events from block log", SessionStorage.IP.get());
             }
         }
         attemptService.accessSucceeded(SessionStorage.IP.get());

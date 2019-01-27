@@ -54,6 +54,7 @@ import java.util.Map;
         //WebSocketServletAutoConfiguration.class,
         AopAutoConfiguration.class, org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class})
 @ComponentScan
+//(excludeFilters = {@ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {GlobalMethodSecurityConfiguration.class})})
 @RestController
 @EnableCaching
 @EnableScheduling

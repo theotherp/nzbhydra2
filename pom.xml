@@ -70,15 +70,22 @@
     </profiles>
   
   <properties>
-        <spring.boot.version>2.0.4.RELEASE</spring.boot.version>
-        <spring.oxm.version>5.0.8.RELEASE</spring.oxm.version>
-        <spring.test.version>4.3.10.RELEASE</spring.test.version>
-        <spring.security.test.version>5.0.7.RELEASE</spring.security.test.version>
+        <spring.boot.version>2.1.2.RELEASE</spring.boot.version>
+        <spring.oxm.version>5.1.4.RELEASE</spring.oxm.version>
+        <spring.test.version>5.1.4.RELEASE</spring.test.version>
+        <spring.security.test.version>5.1.3.RELEASE</spring.security.test.version>
         <jackson.version>2.9.8</jackson.version>
         <lombok.version>1.18.2</lombok.version>
         <logback.version>1.2.3</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.12</junit.version>
+        <okhttp.version>3.11.0</okhttp.version>
+        <logstash-logback-encoder.version>5.1</logstash-logback-encoder.version>
+        <commons-lang3.version>3.7</commons-lang3.version>
+        <commons-io.version>2.6</commons-io.version>
+        <flyway-core.version>5.2.4</flyway-core.version>
+        <jaxb.sun.core.version>2.3.0</jaxb.sun.core.version>
+        <jaxb.sun.impl.version>2.3.0</jaxb.sun.impl.version>
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.javadoc.skip>true</maven.javadoc.skip>

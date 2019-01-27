@@ -10,7 +10,6 @@ import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -21,7 +20,7 @@ import java.util.Optional;
 import java.util.Random;
 
 @ConfigurationProperties("main")
-@Component
+//@Component
 @Data
 public class MainConfig extends ValidatingConfig<MainConfig> {
 
