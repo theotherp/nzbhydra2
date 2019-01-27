@@ -24,15 +24,17 @@ See some [screenshots](https://imgur.com/a/ePxwj).
 
 ## How to Run
 
-You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both at leat >=8u101).
+You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both at least >=8u101).
+You can also use [OpenJDK with J9](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9) for lower memory consumption but the installation requires more manual steps and I do not provide any support for it.   
 
 Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases) for your platform ("linux" is any platform but windows). Extract it anywhere and start using the appropriate way:
 * On Windows (64-bit) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window. Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
 * On Linux start `nzbhydra2` (currently working only on x64)
 * On Mac: No executable yet, see next point
 * If you cannot run the executables for some reason, there's another way (the executables are just compiled Java):
-  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7; or
-  * Alternatively you can use Docker. You might want to use [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [LinuxServer.io](https://github.com/linuxserver/docker-hydra2).
+  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7
+  * Or you can use...
+* Docker. You might want to use [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [LinuxServer.io](https://github.com/linuxserver/docker-hydra2).
 
 After a while your browser should open to http://127.0.0.1:5076.
 
@@ -89,7 +91,7 @@ If you'd like to send other coins like Monero, Litecoin, etc. please contact me.
 
 <img src="https://github.com/theotherp/nzbhydra/raw/gh-pages/images/logo.png" width="60px"/> To Jetbrains for kindly providing me a license for IntelliJ - I can't imagine developing without it
 
-To all testers, bug reporters, donators, all around awesome people; especially judhat2 for beta testing and loads of helpful feedback
+To all testers, bug reporters, donators, all around awesome people; especially judhat2 for beta testing and loads of helpful feedback. Thanks to all the folk on reddit for helping out.
 
 ## License
 
