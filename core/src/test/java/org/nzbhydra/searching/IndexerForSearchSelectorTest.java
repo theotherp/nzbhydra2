@@ -24,7 +24,6 @@ import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -126,20 +125,6 @@ public class IndexerForSearchSelectorTest {
         indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
         assertFalse(testee.checkIndexerStatus(indexer));
 
-        when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(true);
-
-        indexerConfigMock.setState(IndexerConfig.State.ENABLED);
-        indexerConfigMock.setDisabledUntil(null);
-        assertTrue(testee.checkIndexerStatus(indexer));
-
-        indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
-        assertTrue(testee.checkIndexerStatus(indexer));
-
-        indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigMock.setDisabledUntil(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
-        assertTrue(testee.checkIndexerStatus(indexer));
-
         indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM);
         assertFalse(testee.checkIndexerStatus(indexer));
     }
@@ -240,10 +225,9 @@ public class IndexerForSearchSelectorTest {
     @Test
     public void shouldIgnoreDownloadLimitIfNotYetReached() {
         indexerConfigMock.setDownloadLimit(10);
-        when(nzbDownloadRepository.findBySearchResultIndexerOrderByTimeDesc(any(), any())).thenReturn(new PageImpl<>(Collections.emptyList()));
+        when(queryMock.getResultList()).thenReturn(Arrays.asList(Timestamp.from(Instant.now().minus(10, ChronoUnit.MILLIS))));
         boolean result = testee.checkIndexerHitLimit(indexer);
         assertTrue(result);
-        verify(nzbDownloadRepository).findBySearchResultIndexerOrderByTimeDesc(any(), any());
     }
 
     @Test
