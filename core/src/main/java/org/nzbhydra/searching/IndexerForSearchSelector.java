@@ -183,10 +183,6 @@ public class IndexerForSearchSelector {
             if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(clock.instant())) {
                 return true;
             }
-            if (configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
-                logger.debug("{} is marked as disabled until {} but user chose to ignore this", indexer.getName(), indexer.getConfig().getDisabledUntil());
-                return true;
-            }
             String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()));
             return handleIndexerNotSelected(indexer, message, "Disabled temporarily because of previous errors");
         }
@@ -220,7 +216,7 @@ public class IndexerForSearchSelector {
             return true;
         }
 
-        return indexer.getConfig().isEligibleForInternalSearch(configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled());
+        return indexer.getConfig().isEligibleForInternalSearch();
     }
 
     protected boolean checkIndexerHitLimit(Indexer indexer) {

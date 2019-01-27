@@ -156,14 +156,13 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     }
 
     @JsonIgnore
-    public boolean isEligibleForInternalSearch(boolean isIgnoreTemporarilyDisabled) {
+    public boolean isEligibleForInternalSearch() {
         return showOnSearch
                 && configComplete
                 && (
                 state == State.ENABLED
                         || (state == State.DISABLED_SYSTEM_TEMPORARY
-                        && (
-                        isIgnoreTemporarilyDisabled || disabledUntil == null || Instant.ofEpochMilli(disabledUntil).isBefore(Instant.now())
+                        && (disabledUntil == null || Instant.ofEpochMilli(disabledUntil).isBefore(Instant.now())
                 )));
     }
 

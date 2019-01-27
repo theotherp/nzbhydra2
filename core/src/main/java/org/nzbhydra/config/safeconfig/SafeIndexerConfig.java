@@ -20,7 +20,7 @@ public class SafeIndexerConfig {
         this.name = indexerConfig.getName();
         this.preselect = indexerConfig.isPreselect();
         this.categories = indexerConfig.getEnabledCategories();
-        this.showOnSearch = indexerConfig.isEligibleForInternalSearch(baseConfig.getSearching().isIgnoreTemporarilyDisabled());
+        this.showOnSearch = indexerConfig.isEligibleForInternalSearch();
         this.enabledForSearchSource = indexerConfig.getEnabledForSearchSource().name();
         this.searchModuleType = indexerConfig.getSearchModuleType().name();
     }

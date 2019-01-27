@@ -504,8 +504,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Ignore temporarily disabled',
-                                help: "If enabled access to indexers will never be paused after an error occurred"
+                                label: 'Ignore temporary errors',
+                                help: "If enabled indexers will not be temporarily disabled after an error. Unrecoverable errors (e.g. wrong API key) will still disable the indexer"
                             }
                         },
                         {
