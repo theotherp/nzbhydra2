@@ -271,7 +271,7 @@
         <dependency>
             <groupId>com.github.beothorn</groupId>
             <artifactId>URISchemeHandler</artifactId>
-            <version>1.7</version>
+            <version>${uri-scheme-handler.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>

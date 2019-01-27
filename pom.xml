@@ -10,15 +10,15 @@
         <module>shared</module>
         <module>other</module>
         <module>core</module>
-		<module>tests</module>
-		<module>releases</module>
+        <module>tests</module>
+        <module>releases</module>
     </modules>
 
     <scm>
         <connection>scm:git:git@github.com:theotherp/nzbhydra2.git</connection>
         <developerConnection>scm:git:git@github.com:theotherp/nzbhydra2.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
     <build>
         <plugins>
             <plugin>
@@ -49,11 +49,11 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>2.4</version>
             </plugin>
-			 <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M2</version>
-			  </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M2</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -68,8 +68,8 @@
             </properties>
         </profile>
     </profiles>
-  
-  <properties>
+
+    <properties>
         <spring.boot.version>2.1.2.RELEASE</spring.boot.version>
         <spring.oxm.version>5.1.4.RELEASE</spring.oxm.version>
         <spring.test.version>5.1.4.RELEASE</spring.test.version>
@@ -91,7 +91,8 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <uri-scheme-handler.version>2.0.0</uri-scheme-handler.version>
     </properties>
 
-    
+
 </project>

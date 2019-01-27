@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Java 11 is now supported. This required an update of the internal framework which might have some unforseen side effects (bugs), especially regarding authentification and handling of reverse proxies. Let me know if something doesn't work as expected."
+      },
+      {
+        "type": "fix",
+        "text": "Opening magnet links under Windows 7 doesn't require administrator rights anymore."
       }
     ]
   },
