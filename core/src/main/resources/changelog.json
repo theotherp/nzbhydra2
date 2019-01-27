@@ -1,14 +1,5 @@
 [
   {
-    "version": "v2.2.5",
-    "changes": [
-      {
-        "type": "fix",
-        "text": "In some cases (with really big databases) the check of the API hit limit could take very long. This was hopefully improved. Migration to this version might take a bit for such instances."
-      }
-    ]
-  },
-  {
     "version": "v2.2.4",
     "changes": [
       {
