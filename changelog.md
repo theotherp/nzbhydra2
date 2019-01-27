@@ -1,3 +1,13 @@
+### v2.3.0
+
+Feature: Java 11 is now supported. This required an update of the internal framework which might have some unforseen side effects (bugs), especially regarding authentification and handling of reverse proxies. Let me know if something doesn't work as expected.
+
+Feature: Rename searching option 'Ignore temporarily disabled' to 'Ignore temporary errors'. If enabled indexers will not be temporarily disabled at all if a recoverable error occurs.
+
+Fix: Opening magnet links under Windows 7 doesn't require administrator rights anymore.
+
+
+
 ### v2.2.5
 
 Fix: In some cases (with really big databases) the check of the API hit limit could take very long. This was hopefully improved. Migration to this version might take a bit for such instances.
