@@ -1,3 +1,9 @@
+### v2.3.2
+
+Fix: 2.3.1 didn't start for users updating from 2.2.5 to 2.3.0. Fuck this shit
+
+
+
 ### v2.3.1
 
 Fix: 2.2.5 unfortunately may have caused database corruption in some cases. Hopefully no more... The fix may need some time the first time this new version is started.
