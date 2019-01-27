@@ -1,3 +1,9 @@
+### v2.3.1
+
+Fix: 2.2.5 unfortunately may have caused database corruption in some cases. Hopefully no more... The fix may need some time the first time this new version is started.
+
+
+
 ### v2.3.0
 
 Feature: Java 11 is now supported. This required an update of the internal framework which might have some unforseen side effects (bugs), especially regarding authentification and handling of reverse proxies. Let me know if something doesn't work as expected.
