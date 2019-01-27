@@ -24,6 +24,8 @@ import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.sql.SQLException;
+
 @Configuration
 public class FlywayMigration {
 
@@ -41,6 +43,11 @@ public class FlywayMigration {
                     if (e.getMessage().contains("1.15")) {
                         logger.info("Found failed database migration. Attempting repair");
                         flyway.repair();
+                        try {
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                        } catch (SQLException e1) {
+                            logger.error("Error while deleting old migration steps", e);
+                        }
                         flyway.migrate();
                     } else {
                         logger.error("Unable to migrate", e);

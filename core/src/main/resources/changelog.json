@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "2.3.1 didn't start for users updating from 2.2.5 to 2.3.0. Fuck this shit"
+      }
+    ]
+  },
+  {
     "version": "v2.3.1",
     "changes": [
       {
