@@ -1,6 +1,12 @@
+### v2.3.3
+
+Fix: Connection to hosts like 'sabnzd' would fail
+
+
+
 ### v2.3.2
 
-Fix: 2.3.1 didn't start for users updating from 2.2.5 to 2.3.0. Fuck this shit
+Fix: 2.3.1 didn't start for users updating from 2.2.5 to 2.3.1. Fuck this shit
 
 
 
