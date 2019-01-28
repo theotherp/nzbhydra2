@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Connection to hosts like 'sabnzd' would fail"
+      }
+    ]
+  },
+  {
     "version": "v2.3.2",
     "changes": [
       {

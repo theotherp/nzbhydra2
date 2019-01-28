@@ -284,13 +284,13 @@ public class HydraOkHttp3ClientHttpRequestFactory
         if (a == null || b == null) {
             return false;
         }
+        if (a.equalsIgnoreCase(b)) {
+            return true;
+        }
         Matcher aMatcher = HOST_PATTERN.matcher(a);
         Matcher bMatcher = HOST_PATTERN.matcher(b);
-        if (!aMatcher.matches()) {
-            logger.warn("Unable to parse host {}", a);
-        }
-        if (!bMatcher.matches()) {
-            logger.warn("Unable to parse host {}", b);
+        if (!aMatcher.matches() || !bMatcher.matches()) {
+            return false;
         }
 
         return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());

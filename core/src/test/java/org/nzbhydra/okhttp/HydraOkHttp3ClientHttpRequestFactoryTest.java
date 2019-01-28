@@ -62,6 +62,13 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     }
 
     @Test
+    public void shouldRecognizeSameHost() {
+        assertThat(testee.isSameHost("localhost", "localhost"), is(true));
+        assertThat(testee.isSameHost("www.google.com", "google.com"), is(true));
+        assertThat(testee.isSameHost("www.google.com", "localhost"), is(false));
+    }
+
+    @Test
     public void shouldNotUseProxyIfNotConfigured() throws URISyntaxException {
         baseConfig.getMain().setProxyType(ProxyType.NONE);
         OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
