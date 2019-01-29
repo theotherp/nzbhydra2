@@ -29,7 +29,7 @@ import javax.persistence.EntityManager;
 import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.function.Predicate;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 @Component
@@ -66,20 +66,18 @@ public class OldResultsCleanup {
     }
 
     protected void cleanupGcLogs() {
-        File[] logFiles = new File(NzbHydra.getDataFolder(), "logs").listFiles();
+        File[] logFiles = new File(NzbHydra.getDataFolder(), "logs").listFiles((dir, name) -> name.toLowerCase().startsWith("gclog"));
         if (logFiles == null) {
             return;
         }
-        Predicate<File> filePredicate = x -> x.getName().toLowerCase().endsWith("log.0.current") || x.getName().toLowerCase().endsWith("log.0");
-        Stream.of(logFiles).filter(filePredicate).forEach(x -> {
-            if (Instant.ofEpochMilli(x.lastModified()).isBefore(Instant.now().minus(30, ChronoUnit.DAYS))) {
-                try {
-                    x.delete();
-                } catch (Exception e) {
-                    //Swallow
-                }
+        Stream.of(logFiles).sorted(Comparator.comparingLong(File::lastModified).reversed()).skip(5).forEach(x -> {
+            try {
+                x.delete();
+            } catch (Exception e) {
+                logger.warn("Unable to delete old GC log: " + e.getMessage());
             }
         });
     }
+
 
 }
