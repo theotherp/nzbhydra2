@@ -1,3 +1,13 @@
+### v2.3.4
+
+Fix: Move cancel button in dialog shown while searching because you're all too slow to click it.
+
+Fix: Prevent database trace file becoming too large
+
+Fix: Keep less gclog files in the log folder
+
+
+
 ### v2.3.3
 
 Fix: Connection to hosts like 'sabnzd' would fail
