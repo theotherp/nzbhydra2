@@ -1,5 +1,12 @@
 <div class="modal-header">
-    <h3 class="modal-title">Searching... Please wait</h3>
+    <h3 style="display: inline-block" class="modal-title">Searching... Please wait</h3>
+    <button class="btn btn-danger" type="button" ng-click="cancelSearch()"
+            uib-tooltip="Will not actually cancel the search but just go back to the search page. Any remaining indexer calls will be continued in the background"
+            tooltip-placement="top"
+            tooltip-trigger="mouseenter"
+            style="position: absolute; right: 18px"
+    >Cancel
+    </button>
 </div>
 <div class="modal-body" style="text-align: left;">
     <img src="static/img/spinner.gif" ng-if="!messages && !indexerSelectionFinished"/>
@@ -28,10 +35,4 @@
     <span style="float: left; margin-top: 5px">
         This window will close automatically when searching is finished
     </span>
-    <button class="btn btn-danger" type="button" ng-click="cancelSearch()"
-            uib-tooltip="Will not actually cancel the search but just go back to the search page. Any remaining indexer calls will be continued in the background"
-            tooltip-placement="top"
-            tooltip-trigger="mouseenter"
-    >Cancel
-    </button>
 </div>

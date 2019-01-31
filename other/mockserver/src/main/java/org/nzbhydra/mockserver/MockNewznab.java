@@ -172,7 +172,10 @@ public class MockNewznab {
         }
 
         if (params.getQ() != null && params.getQ().equals("sleep10")) {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
+        }
+        if (params.getQ() != null && params.getQ().equals("sleepforever")) {
+            Thread.sleep(10000 * 10000);
         }
 
 

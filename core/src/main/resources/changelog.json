@@ -4,6 +4,10 @@
     "changes": [
       {
         "type": "fix",
+        "text": "Move cancel button in dialog shown while searching because you're all too slow to click it."
+      },
+      {
+        "type": "fix",
         "text": "Prevent database trace file becoming too large"
       },
       {
