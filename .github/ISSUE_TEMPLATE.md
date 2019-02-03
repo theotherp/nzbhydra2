@@ -7,6 +7,7 @@
 * Have you searched for this problem? You don't have to answer, just make sure.
 * Can the problem be reproduced? How?
 * Use a proper title. Describe the problem succinctly, don't just copy and paste the error message.
+* If you use a docker container please tell me which one.
 
 **I will close your issues if I you didn't provide proper information as described as above**
 
