@@ -3494,7 +3494,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         },
         {
             name: "6box spotweb",
-            host: "https://6box.me/spotweb"
+            host: "https://spotweb.6box.me"
         },
         {
             name: "altHUB",
