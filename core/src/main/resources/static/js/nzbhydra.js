@@ -953,6 +953,7 @@ function searchResult() {
     function handleDisplay($scope, localStorageService) {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
+        $scope.foo.showPosters = localStorageService.get("showPosters") !== null ? localStorageService.get("showPosters") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = false;
 
@@ -7574,7 +7575,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         duplicatesDisplayed: localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false,
         groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false,
         sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true,
-        scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true
+        scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true,
+        showPosters: localStorageService.get("showPosters") !== null ? localStorageService.get("showPosters") : true
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
@@ -7583,7 +7585,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "duplicatesDisplayed", label: "Show duplicate display triggers"},
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
         {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"},
-        {id: "scrollToResults", label: "Scroll to results when finished"}
+        {id: "scrollToResults", label: "Scroll to results when finished"},
+        {id: "showPosters", label: "Show movie posters in results"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -7610,6 +7613,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleSumGrabs(newValue);
             } else if (item.id === "scrollToResults") {
                 toggleScrollToResults(newValue);
+            } else if (item.id === "showPosters") {
+                toggleShowPosters(newValue);
             }
         }
     };
@@ -7635,6 +7640,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function toggleScrollToResults(value) {
         localStorageService.set("scrollToResults", value);
         $scope.foo.scrollToResults = value;
+    }
+
+    function toggleShowPosters(value) {
+        localStorageService.set("showPosters", value);
+        $scope.foo.showPosters = value;
     }
 
 

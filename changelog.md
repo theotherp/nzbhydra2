@@ -1,3 +1,9 @@
+### v2.3.5
+
+Feature: Show posters for movie results. Can be toggled in the display options.
+
+
+
 ### v2.3.4
 
 Fix: Move cancel button in dialog shown while searching because you're all too slow to click it.

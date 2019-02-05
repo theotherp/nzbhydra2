@@ -59,7 +59,7 @@ public class HistoryCleanup {
 
         try (Connection connection = dataSource.getConnection()) {
             Instant deleteOlderThan = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
-            Optional<Integer> optionalHighestId = getIdBefore(deleteOlderThan, "SEARCH", ASC_DESC.DESC, connection);
+            Optional<Integer> optionalHighestId = getIdBefore(deleteOlderThan, "SEARCH", connection);
             if (optionalHighestId.isPresent()) {
                 int highestId = optionalHighestId.get();
                 logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Will delete all entries for search IDs lower than {}", highestId);
@@ -73,6 +73,12 @@ public class HistoryCleanup {
             if (optionalHighestId.isPresent()) {
                 deleteOldSearches(optionalHighestId.get(), connection);
             }
+
+            optionalHighestId = getIdBefore(deleteOlderThan, "INDEXERNZBDOWNLOAD", connection);
+            if (optionalHighestId.isPresent()) {
+                deleteOldDownloads(optionalHighestId.get(), connection);
+            }
+
         } catch (SQLException e) {
             logger.error("Error while executing SQL", e);
         }
@@ -108,7 +114,7 @@ public class HistoryCleanup {
 
     public void deleteOldIndexerApiAccesses(Instant deleteOlderThan, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old indexer API accesses");
-        Optional<Integer> optionalId = getIdBefore(deleteOlderThan, "INDEXERAPIACCESS", ASC_DESC.DESC, connection);
+        Optional<Integer> optionalId = getIdBefore(deleteOlderThan, "INDEXERAPIACCESS", connection);
         if (!optionalId.isPresent()) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No older indexer API accesses to delete");
             return;
@@ -122,8 +128,13 @@ public class HistoryCleanup {
         deleteOldEntries(searchId, "delete from SEARCH where ID < ? and rownum() < 10000", "Deleted {} searches from database", connection);
     }
 
-    private Optional<Integer> getIdBefore(Instant deleteOlderThan, final String tableName, ASC_DESC ascDesc, Connection connection) {
-        try (PreparedStatement statement = connection.prepareStatement("select t.id from " + tableName + " t where t.time < ? order by id " + ascDesc + " limit 1")) {
+    public void deleteOldDownloads(Integer searchId, Connection connection) {
+        logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old downloads");
+        deleteOldEntries(searchId, "delete from INDEXERNZBDOWNLOAD where ID < ?", "Deleted {} downloads from database", connection);
+    }
+
+    private Optional<Integer> getIdBefore(Instant deleteOlderThan, final String tableName, Connection connection) {
+        try (PreparedStatement statement = connection.prepareStatement("select max(t.id) from " + tableName + " t where t.time < ? order by id desc")) {
             statement.setTimestamp(1, new Timestamp(deleteOlderThan.toEpochMilli()));
             ResultSet resultSet = statement.executeQuery();
             if (!resultSet.next()) {
