@@ -22,6 +22,8 @@ NZBHydra 2 is a meta search for NZB indexers. It provides easy access to a numbe
 
 See some [screenshots](https://imgur.com/a/ePxwj).
 
+Honest recommendation: If you don't understand what any or most of that means this might not be for you. The program is designed to be very configurable and can be a bit intimidating at first. If you're just starting with usenet and its automation tools you might want to wait a bit until you use this. That being said, although there are a lot of options you'll likely never need most of them. I (the developer) use only half of the stuff that NZBHydra can do.
+
 ## How to Run
 
 You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both at least >=8u101).
