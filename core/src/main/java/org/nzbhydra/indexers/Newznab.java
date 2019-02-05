@@ -476,12 +476,12 @@ public class Newznab extends Indexer<Xml> {
             //Info attribute is always a link to an NFO
             searchResultItem.setHasNfo(HasNfo.YES);
         }
-        if (attributes.containsKey("poster") && !attributes.get("poster").equals("not available")) {
-            searchResultItem.setPoster(attributes.get("poster"));
-        }
-        if (attributes.containsKey("group") && !attributes.get("group").equals("not available")) {
-            searchResultItem.setGroup(attributes.get("group"));
-        }
+        Arrays.asList("poster", "coverurl", "cover").forEach(x -> {
+            if (attributes.containsKey(x) && !attributes.get(x).equals("not available")) {
+                searchResultItem.setPoster(attributes.get(x));
+            }
+
+        });
         if (attributes.containsKey("files")) {
             searchResultItem.setFiles(Integer.valueOf(attributes.get("files")));
         }

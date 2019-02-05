@@ -44,6 +44,7 @@ public class SearchResultWebTO {
     private Integer indexerscore;
     private String link;
     private String originalCategory;
+    private String poster;
     private String searchResultId;
     private Long size;
     private String title;

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.5",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Show posters for movie results. Can be toggled in the display options."
+      }
+    ]
+  },
+  {
     "version": "v2.3.4",
     "changes": [
       {

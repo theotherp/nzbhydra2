@@ -25,7 +25,10 @@
                ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
         </a>
         <span class="title">
-                <span ng-if="result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0">{{ ::result.title }}</span>
+                <span ng-if="result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0">
+                    <img ng-if="result.poster && foo.showPosters" src="{{::result.poster}}" width="128px" style="margin-right: 5px"/>
+                    {{ ::result.title }}
+                </span>
             </span>
     </td>
     <td class="col-md-1 search-results-cell result-indexer" style="text-align: right">

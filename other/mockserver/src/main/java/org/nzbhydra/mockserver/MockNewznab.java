@@ -182,6 +182,7 @@ public class MockNewznab {
         if (params.getQ() != null && params.getQ().contains("movies")) {
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
+            rssRoot.getRssChannel().getItems().forEach(x -> x.getNewznabAttributes().add(new NewznabAttribute("coverurl", "https://i.omgwtfnzbs.me/tvdb/697fdaeb0fb1ac87d4d6af684b20593a/697fdaeb0fb1ac87d4d6af684b20593a.jpg")));
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
