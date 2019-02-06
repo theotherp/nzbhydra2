@@ -1,3 +1,13 @@
+### v2.3.6
+
+Fix: The audio category was preconfigured to require both mp3 and flac in the results which doesn't make any sense. You might want to remove them in your category config.
+
+Fix: Old downloads were not removed from history even if the option to only keep them for a certain time was set.
+
+Fix: Check cover/poster URLs provided by indexers to catch some invalid URLs.
+
+
+
 ### v2.3.5
 
 Feature: Show posters for movie results. Can be toggled in the display options.
