@@ -477,7 +477,7 @@ public class Newznab extends Indexer<Xml> {
             searchResultItem.setHasNfo(HasNfo.YES);
         }
         Arrays.asList("poster", "coverurl", "cover").forEach(x -> {
-            if (attributes.containsKey(x) && !attributes.get(x).equals("not available")) {
+            if (attributes.containsKey(x) && !attributes.get(x).equals("not available") && (attributes.get(x).toLowerCase().endsWith(".jpg") || attributes.get(x).toLowerCase().endsWith(".jpeg") || attributes.get(x).toLowerCase().endsWith(".png"))) {
                 searchResultItem.setPoster(attributes.get(x));
             }
 

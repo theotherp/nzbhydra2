@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Old downloads were not removed from history even if the option to only keep them for a certain time was set."
+      },
+      {
+        "type": "fix",
+        "text": "Check cover/poster URLs provided by indexers to catch some invalid URLs."
       }
     ]
   },
