@@ -65,10 +65,10 @@ public class HistoryCleanup {
                 logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Will delete all entries for search IDs lower than {}", highestId);
                 deleteOldIdentifiers(highestId, connection);
 
-                //deleteOldIndexerSearches(highestId, connection);
+                deleteOldIndexerSearches(highestId, connection);
             }
 
-            //deleteOldIndexerApiAccesses(deleteOlderThan, connection);
+            deleteOldIndexerApiAccesses(deleteOlderThan, connection);
 
             if (optionalHighestId.isPresent()) {
                 deleteOldSearches(optionalHighestId.get(), connection);
