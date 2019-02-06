@@ -3,8 +3,12 @@
     "version": "v2.3.6",
     "changes": [
       {
-        "type": "feature",
-        "text": "The audio category was preconfigured to require both mp3 and flac in the results which doesn't make any sense. You might want to remove them in your category config"
+        "type": "fix",
+        "text": "The audio category was preconfigured to require both mp3 and flac in the results which doesn't make any sense. You might want to remove them in your category config."
+      },
+      {
+        "type": "fix",
+        "text": "Old downloads were not removed from history even if the option to only keep them for a certain time was set."
       }
     ]
   },
