@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.6",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "The audio category was preconfigured to require both mp3 and flac in the results which doesn't make any sense. You might want to remove them in your category config"
+      }
+    ]
+  },
+  {
     "version": "v2.3.5",
     "changes": [
       {

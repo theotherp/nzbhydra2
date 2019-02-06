@@ -39,7 +39,7 @@ categoriesConfig:
           newznabCategories:
           - "3000"
           requiredRegex: null
-          requiredWords: ["mp3", "flac"]
+          requiredWords: []
           preselect: true
           searchType: MUSIC
           subtype: NONE

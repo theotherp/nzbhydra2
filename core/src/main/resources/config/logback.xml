@@ -79,6 +79,7 @@
     <logger name="org.thymeleaf" level="WARN"/>
     <logger name="org.eclipse" level="WARN"/>
     <logger name="okhttp3.OkHttpClient" level="DEBUG"/>
+    <logger name="org.apache.catalina.util" level="ERROR"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
