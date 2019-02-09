@@ -227,7 +227,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         if (!cacerts.exists()) {
             Files.copy(NzbHydra.class.getResource("/cacerts").openStream(), cacerts.toPath());
         }
-        trustStore.load(new FileInputStream(System.getenv("JAVA_HOME") + "/lib/security/cacerts"), "changeit".toCharArray());
+        trustStore.load(new FileInputStream(cacerts), null);
     }
 
     public static class StrictCTPolicy implements CTPolicy {
@@ -258,7 +258,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 try {
                     CTLogInfo logInfo = new CTLogInfo(getKey(key), description, logUrl);
                     // reflection needed, because the CTLogInfo caculates the logID incorrectly
-                    field.set(logInfo, Hashing.sha256().hashBytes(Base64.getDecoder().decode(key)));
+                    field.set(logInfo, Hashing.sha256().hashBytes(Base64.getDecoder().decode(key)).asBytes());
                     this.logs.put(Base64.getEncoder().encodeToString(logInfo.getID()), logInfo);
                 } catch (Exception ex) {
                     ex.printStackTrace();

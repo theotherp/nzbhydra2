@@ -43,7 +43,7 @@ public class MockNewznab {
 
     @RequestMapping(value = "/nzb/{nzbId}", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> nzbDownload(@PathVariable String nzbId) throws Exception {
-        if(nzbId.contains("11")) {
+        if (nzbId.contains("11")) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
@@ -217,6 +217,11 @@ public class MockNewznab {
 
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
+        if ("error".equals(params.getQ())) {
+            NewznabXmlError rssError = new NewznabXmlError("123", "description");
+            return new ResponseEntity<Object>(rssError, HttpStatus.OK);
         }
 
         if (params.getImdbid() != null) {
