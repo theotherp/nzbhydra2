@@ -1,3 +1,13 @@
+### v2.3.7
+
+Fix: Changed the way SSL certificates are checked. Connection to indexers like NZBGeek or althub should now work as expected. Removed the option 'Disable SNI'.
+
+Fix: Count API hits used for connection and caps checks when calculating hit limits.
+
+Fix: When results are sorted by title the title groups are now sorted by indexer score instead of age, meaning results from the indexer with the highest score are shown when the title group is collapsed.
+
+
+
 ### v2.3.6
 
 Fix: The audio category was preconfigured to require both mp3 and flac in the results which doesn't make any sense. You might want to remove them in your category config.

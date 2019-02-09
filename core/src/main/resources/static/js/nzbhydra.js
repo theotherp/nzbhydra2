@@ -7880,7 +7880,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 if (sortPredicateKey === "title") {
                     //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
-                    return((10000000000 * hashGroup[0]["indexerscore"]) + hashGroup[0]["epoch"]) * -1;
+                    return ((10000000000 * hashGroup[0]["indexerscore"]) + hashGroup[0]["epoch"]) * -1;
                 }
                 var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortPredicateValue;
