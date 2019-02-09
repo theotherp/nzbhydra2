@@ -1,3 +1,9 @@
+### v2.3.8
+
+Fix: Updated executable to provide a java flag which should fix SSL related problems introduced with 2.3.7. If you're not running Hydra inside a container you may need to manually update the binary (nzbhydra*.exe or just nzbhydra on linux)
+
+
+
 ### v2.3.7
 
 Fix: Changed the way SSL certificates are checked. Connection to indexers like NZBGeek or althub should now work as expected. Removed the option 'Disable SNI'.

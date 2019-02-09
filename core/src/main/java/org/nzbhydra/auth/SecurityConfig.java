@@ -179,8 +179,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         try {
 
             // Configure Conscrypt to enable and enforce certificate transparencey checks
-            Security.setProperty("conscrypt.ct.enable", "true");
-            Security.setProperty("conscrypt.ct.enforce.*", "true");
+            Security.setProperty("conscrypt.ct.enable", "false");
+            Security.setProperty("conscrypt.ct.enforce.*", "false");
 
             Security.addProvider(new BouncyCastleProvider());
 
