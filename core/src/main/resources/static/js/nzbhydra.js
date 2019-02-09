@@ -5135,14 +5135,6 @@ function ConfigFields($injector) {
                                 label: 'Use CSRF protection',
                                 help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>'
                             }
-                        },
-                        {
-                            key: 'usePackagedCaCerts',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                label: 'Use packaged CA certs',
-                                help: 'Disable if you want to use the CA certs file of the JRE instead of the packaged one'
-                            }
                         }
                     ]
                 },
@@ -7888,7 +7880,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             function getHashGroupFirstElementSortPredicate(hashGroup) {
                 if (sortPredicateKey === "title") {
                     //Sorting a title group internally by title doesn't make sense so fall back to sorting by age so that newest result is at the top
-                    return hashGroup[0]["epoch"] * -1;
+                    return((10000000000 * hashGroup[0]["indexerscore"]) + hashGroup[0]["epoch"]) * -1;
                 }
                 var sortPredicateValue = getSortPredicateValue(hashGroup[0]);
                 return sortPredicateValue;
@@ -7920,6 +7912,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             }
             return sortPredicateValue
         }
+
 
         var filtered = _.filter(results, filter);
         var newSelected = $scope.selected;

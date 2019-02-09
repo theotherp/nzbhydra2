@@ -30,6 +30,7 @@ public class MockNewznab {
 
     private static HashMap<Integer, Integer> apikeyToResultCount = new HashMap<>();
     private static HashMap<Integer, NewznabXmlRoot> responsesPerApikey = new HashMap<>();
+    private Random random = new Random();
 
     static {
         apikeyToResultCount.put(0, 10);
@@ -252,6 +253,13 @@ public class MockNewznab {
             }
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
+
+            if ("randomage".equalsIgnoreCase(params.getQ())) {
+                for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
+                    item.setPubDate(item.getPubDate().minus(random.nextInt(300) * 24, ChronoUnit.HOURS));
+                }
+
+            }
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

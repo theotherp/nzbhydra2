@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Count API hits used for connection and caps checks when calculating hit limits."
+      },
+      {
+        "type": "fix",
+        "text": "When results are sorted by title the title groups are now sorted by indexer score instead of age, meaning results from the indexer with the highest score are shown when the title group is collapsed."
       }
     ]
   },
