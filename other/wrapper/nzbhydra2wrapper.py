@@ -379,6 +379,7 @@ def startup():
                        "-XX:+UseGCLogFileRotation",
                        "-XX:NumberOfGCLogFiles=10",
                        "-XX:GCLogFileSize=5M",
+                       "-Dcom.sun.net.ssl.enableECC=false"
                        ]
     else:
         gcArguments = [
@@ -389,6 +390,7 @@ def startup():
                       "-XX:TieredStopAtLevel=1",
                       "-noverify",
                       "-XX:+HeapDumpOnOutOfMemoryError",
+                      "-Dcom.sun.net.ssl.enableECC=false",
                       "-XX:HeapDumpPath=" + os.path.join(args.datafolder, "logs")
                       ]
     java_arguments.extend(gcArguments)
