@@ -1,23 +1,5 @@
 package org.nzbhydra.auth;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.base.Strings;
-import com.google.common.hash.Hashing;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.ECPublicKeyParameters;
-import org.bouncycastle.crypto.params.RSAKeyParameters;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.conscrypt.Conscrypt;
-import org.conscrypt.TrustManagerImpl;
-import org.conscrypt.ct.CTLogInfo;
-import org.conscrypt.ct.CTLogStore;
-import org.conscrypt.ct.CTPolicy;
-import org.conscrypt.ct.CTVerificationResult;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
@@ -44,21 +26,18 @@ import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.URL;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @Order
@@ -177,128 +156,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void usePackagedCaCerts() {
         //Use packaged CA certs file because in some cases it might be missing. Also allows to keep this updated
         try {
+            if (!configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
+                return;
+            }
+            logger.debug("Using packaged cacerts file");
 
-            // Configure Conscrypt to enable and enforce certificate transparencey checks
-            Security.setProperty("conscrypt.ct.enable", "false");
-            Security.setProperty("conscrypt.ct.enforce.*", "false");
-
-            Security.addProvider(new BouncyCastleProvider());
-
-            LogStore logStore = new LogStore();
-            logStore.init("https://www.gstatic.com/ct/log_list/log_list.json");
-
-            Security.insertProviderAt(Conscrypt.newProvider(), 1);
-
-            SSLContext ctx = SSLContext.getInstance("TLS");
-
-            KeyStore trustStore = KeyStore.getInstance("JKS");
-
-            String javaHome = System.getenv("JAVA_HOME");
-            if (Strings.isNullOrEmpty(javaHome)) {
-                logger.warn("JAVA_HOME environment variable not set. Using packaged cacerts file for now");
-                initializeKeystoreFromPackagedCaCertFile(trustStore);
-            } else {
-                File cacertFile = new File(javaHome + "/lib/security/cacerts");
-                if (!cacertFile.exists()) {
-                    if (javaHome.toLowerCase().contains("jdk")) {
-                        javaHome = javaHome + "/jre/";
-                        cacertFile = new File(javaHome + "/lib/security/cacerts");
-                    }
-                    if (!cacertFile.exists()) {
-                        logger.warn("Unable to find file {}. Using packaged cacerts file for now", cacertFile.getAbsolutePath());
-                        initializeKeystoreFromPackagedCaCertFile(trustStore);
-                    } else {
-                        trustStore.load(new FileInputStream(javaHome + "/lib/security/cacerts"), "changeit".toCharArray());
-                    }
-                } else {
-                    trustStore.load(new FileInputStream(javaHome + "/lib/security/cacerts"), "changeit".toCharArray());
+            File cacerts = new File(NzbHydra.getDataFolder(), "cacerts");
+            if (cacerts.exists()) {
+                //Overwrite, might be older
+                boolean deleted = cacerts.delete();
+                if (!deleted) {
+                    logger.warn("Unable to delete old cacerts file {}", cacerts.getAbsolutePath());
                 }
             }
-
-            ctx.init(null, new TrustManager[]{new TrustManagerImpl(
-                    trustStore, null, null, null, logStore, null,
-                    new StrictCTPolicy())}, new SecureRandom());
-        } catch (Exception e) {
-            logger.error("Error while initializing certificate settings", e);
-        }
-    }
-
-    protected void initializeKeystoreFromPackagedCaCertFile(KeyStore trustStore) throws IOException, NoSuchAlgorithmException, CertificateException {
-        File cacerts = new File(NzbHydra.getDataFolder(), "cacerts");
-        if (cacerts.exists()) {
-            //Overwrite, might be older
-            boolean deleted = cacerts.delete();
-            if (!deleted) {
-                logger.warn("Unable to delete old cacerts file {}", cacerts.getAbsolutePath());
+            if (!cacerts.exists()) {
+                Files.copy(NzbHydra.class.getResource("/cacerts").openStream(), cacerts.toPath());
             }
-        }
-        if (!cacerts.exists()) {
-            Files.copy(NzbHydra.class.getResource("/cacerts").openStream(), cacerts.toPath());
-        }
-        trustStore.load(new FileInputStream(cacerts), null);
-    }
-
-    public static class StrictCTPolicy implements CTPolicy {
-
-        @Override
-        public boolean doesResultConformToPolicy(CTVerificationResult result, String hostname,
-                                                 X509Certificate[] chain) {
-            return !result.getValidSCTs().isEmpty() && result.getInvalidSCTs().isEmpty();
-        }
-
-    }
-
-    public static class LogStore implements CTLogStore {
-        private Map<String, CTLogInfo> logs = new HashMap<>();
-
-        public void init(String url) throws Exception {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(new URL(url).openStream());
-            ArrayNode logs = (ArrayNode) root.get("logs");
-
-            Field field = CTLogInfo.class.getDeclaredField("logId");
-            field.setAccessible(true);
-
-            for (JsonNode log : logs) {
-                String logUrl = log.get("url").asText();
-                String key = log.get("key").asText();
-                String description = log.get("description").asText();
-                try {
-                    CTLogInfo logInfo = new CTLogInfo(getKey(key), description, logUrl);
-                    // reflection needed, because the CTLogInfo caculates the logID incorrectly
-                    field.set(logInfo, Hashing.sha256().hashBytes(Base64.getDecoder().decode(key)).asBytes());
-                    this.logs.put(Base64.getEncoder().encodeToString(logInfo.getID()), logInfo);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
-
-        }
-
-        @Override
-        public CTLogInfo getKnownLog(byte[] logId) {
-            // using base64 form for key, as byte arrays are not fit for that
-            return logs.get(Base64.getEncoder().encodeToString(logId));
-        }
-
-        private PublicKey getKey(String key) throws Exception {
-            AsymmetricKeyParameter keyParams = PublicKeyFactory.createKey(Base64.getDecoder().decode(key));
-            if (keyParams instanceof ECPublicKeyParameters) {
-                ECPublicKeyParameters ecParams = (ECPublicKeyParameters) keyParams;
-                KeyFactory eckf = KeyFactory.getInstance("EC", "BC");
-                ECParameterSpec spec = new ECParameterSpec(ecParams.getParameters().getCurve(),
-                        ecParams.getParameters().getG(),
-                        ecParams.getParameters().getN(),
-                        ecParams.getParameters().getH());
-
-                return eckf.generatePublic(new ECPublicKeySpec(ecParams.getQ(), spec));
-            } else if (keyParams instanceof RSAKeyParameters) {
-                RSAKeyParameters rsaParams = (RSAKeyParameters) keyParams;
-                KeyFactory rsakf = KeyFactory.getInstance("RSA", "BC");
-                return rsakf.generatePublic(new RSAPublicKeySpec(rsaParams.getModulus(), rsaParams.getExponent()));
-            } else {
-                return null;
-            }
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
+            keystore.load(keystoreStream, null);
+            trustManagerFactory.init(keystore);
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustManagers, null);
+            SSLContext.setDefault(sc);
+        } catch (IOException | KeyStoreException | CertificateException | NoSuchAlgorithmException | KeyManagementException e) {
+            logger.error("Unable to write packaged cacerts file", e);
         }
     }
 

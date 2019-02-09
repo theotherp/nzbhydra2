@@ -5120,6 +5120,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'sniDisabledFor',
+                            type: 'horizontalChips',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Disable SNI',
+                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
+                            }
+                        },
+                        {
                             key: 'useCsrf',
                             type: 'horizontalSwitch',
                             templateOptions: {
@@ -5137,6 +5146,7 @@ function ConfigFields($injector) {
                         }
                     ]
                 },
+
                 {
                     wrapper: 'fieldset',
                     key: 'logging',

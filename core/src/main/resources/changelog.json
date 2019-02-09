@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.9",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Revert SSL changes made in 2.3.7 as Hydra didn't start for some users. I give up."
+      }
+    ]
+  },
+  {
     "version": "v2.3.8",
     "changes": [
       {
