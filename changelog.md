@@ -1,3 +1,9 @@
+### v2.3.10
+
+Fix: Fix another issue with SSL. I should probably pause development until I'm fit of mind enough to do this properly...
+
+
+
 ### v2.3.9
 
 Fix: Revert SSL changes made in 2.3.7 as Hydra didn't start for some users. I give up.
