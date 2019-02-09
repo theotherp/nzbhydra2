@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.8",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Updated executable to provide a java flag which should fix SSL related problems introduced with 2.3.7. If you're not running Hydra inside a container you may need to manually update the binary (nzbhydra*.exe or just nzbhydra on linux)"
+      }
+    ]
+  },
+  {
     "version": "v2.3.7",
     "changes": [
       {

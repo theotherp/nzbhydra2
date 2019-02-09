@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders.nzbget;
 
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
@@ -95,8 +96,12 @@ public class NzbGet extends Downloader {
             logger.info("Connection check to NZBGet using URL {} successful", downloaderConfig.getUrl());
             return new GenericResponse(successful, null);
         } catch (Throwable e) {
-            logger.error("Connection check to NZBGet using URL {} failed", downloaderConfig.getUrl());
-            return new GenericResponse(false, e.getMessage());
+            String message = e.getMessage();
+            if (e.getMessage() != null && e.getMessage().contains("Caught error with no response body") && e.getCause() != null && !Strings.isNullOrEmpty(e.getCause().getMessage())) {
+                message = e.getCause().getMessage();
+            }
+            logger.error("Connection check to NZBGet using URL {} failed: {}", downloaderConfig.getUrl(), message);
+            return new GenericResponse(false, message);
         }
     }
 
