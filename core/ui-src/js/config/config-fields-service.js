@@ -279,25 +279,23 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'sniDisabledFor',
-                            type: 'horizontalChips',
-                            templateOptions: {
-                                type: 'text',
-                                label: 'Disable SNI',
-                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
-                            }
-                        },
-                        {
                             key: 'useCsrf',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Use CSRF protection',
                                 help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>'
                             }
+                        },
+                        {
+                            key: 'usePackagedCaCerts',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                label: 'Use packaged CA certs',
+                                help: 'Disable if you want to use the CA certs file of the JRE instead of the packaged one'
+                            }
                         }
                     ]
                 },
-
                 {
                     wrapper: 'fieldset',
                     key: 'logging',
