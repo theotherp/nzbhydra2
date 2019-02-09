@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.10",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix another issue with SSL. I should probably pause development until I'm fit of mind enough to do this properly..."
+      }
+    ]
+  },
+  {
     "version": "v2.3.9",
     "changes": [
       {

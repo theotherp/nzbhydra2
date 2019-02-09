@@ -134,6 +134,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
                 SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
                         getDefaultX509TrustManager()
                 });
+                builder = builder.sslSocketFactory(new SniWhitelistingSocketFactory(sslSocketFactory), getDefaultX509TrustManager());
             } catch (NoSuchAlgorithmException | KeyManagementException e) {
                 throw new RuntimeException("Unable to create SSLSocketFactory", e);
             }
@@ -222,7 +223,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
                     getAllTrustingX509TrustManager()
             };
 
-            final SSLSocketFactory sslSocketFactory = new DelegatingSSLSocketFactory(getSslSocketFactory(trustAllCerts));
+            final SSLSocketFactory sslSocketFactory = new SniWhitelistingSocketFactory(getSslSocketFactory(trustAllCerts));
 
             return builder
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
@@ -293,6 +294,26 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
 
         return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());
+    }
+
+
+    protected class SniWhitelistingSocketFactory extends DelegatingSSLSocketFactory {
+
+        public SniWhitelistingSocketFactory(SSLSocketFactory delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
+            String newHost = host;
+
+            if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
+                newHost = null;
+            }
+            return super.createSocket(socket, newHost, port, autoClose);
+        }
+
+
     }
 
     protected class SockProxySocketFactory extends SocketFactory {
