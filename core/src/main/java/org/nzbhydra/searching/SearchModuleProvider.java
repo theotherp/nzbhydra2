@@ -1,10 +1,7 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerHandlingStrategy;
-import org.nzbhydra.indexers.IndexerRepository;
+import org.nzbhydra.indexers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 public class SearchModuleProvider {
@@ -25,8 +23,11 @@ public class SearchModuleProvider {
 
     @Autowired
     private IndexerRepository indexerRepository;
+    @Autowired
+    private IndexerApiAccessEntityShortRepository shortRepository;
 
     private Map<String, Indexer> searchModuleInstances = new HashMap<>();
+    private Map<String, Integer> apiHitsToStoreInitially = new HashMap<>();
 
     @Autowired
     private List<IndexerHandlingStrategy> indexerHandlingStrategies;
@@ -78,6 +79,12 @@ public class SearchModuleProvider {
                     indexerEntity.setName(config.getName());
                     indexerEntity = indexerRepository.save(indexerEntity);
                     logger.info("Now {} indexers in database", indexerRepository.count());
+
+                }
+                if (apiHitsToStoreInitially.containsKey(config.getName())) {
+                    IndexerEntity finalIndexerEntity = indexerEntity;
+                    shortRepository.saveAll(IntStream.range(0, apiHitsToStoreInitially.get(config.getName())).mapToObj(x -> new IndexerApiAccessEntityShort(finalIndexerEntity, true, IndexerApiAccessType.SEARCH)).collect(Collectors.toList()));
+                    apiHitsToStoreInitially.remove(config.getName());
                 }
 
                 searchModule.initialize(config, indexerEntity);
@@ -96,5 +103,9 @@ public class SearchModuleProvider {
         if (searchModuleInstances.isEmpty()) {
             logger.warn("No indexers configured");
         }
+    }
+
+    public void registerApiHitLimits(String indexerName, int hits) {
+        apiHitsToStoreInitially.put(indexerName, apiHitsToStoreInitially.getOrDefault(indexerName, 0) + hits);
     }
 }

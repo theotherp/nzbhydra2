@@ -41,6 +41,7 @@ import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,8 @@ public class NewznabChecker {
     protected IndexerWebAccess indexerWebAccess;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+    @Autowired
+    private SearchModuleProvider searchModuleProvider;
 
 
     protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
@@ -97,6 +100,7 @@ public class NewznabChecker {
                 return GenericResponse.notOk("Indexer returned message: " + ((NewznabXmlError) xmlResponse).getDescription());
             }
             NewznabXmlRoot rssRoot = (NewznabXmlRoot) xmlResponse;
+            searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
             if (!rssRoot.getRssChannel().getItems().isEmpty()) {
                 if (indexerConfig.getSearchModuleType() == SearchModuleType.NEWZNAB && isTorznabResult(rssRoot)) {
@@ -346,6 +350,7 @@ public class NewznabChecker {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         logger.debug("Calling URL {}", uri);
         Xml response = indexerWebAccess.get(uri, indexerConfig);
+        searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
         if (response instanceof NewznabXmlError) {
             String errorDescription = ((NewznabXmlError) response).getDescription();

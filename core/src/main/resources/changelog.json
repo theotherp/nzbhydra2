@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Changed the way SSL certificates are checked. Connection to indexers like NZBGeek or althub should now work as expected. Removed the option 'Disable SNI'."
+      },
+      {
+        "type": "fix",
+        "text": "Count API hits used for connection and caps checks when calculating hit limits."
       }
     ]
   },
