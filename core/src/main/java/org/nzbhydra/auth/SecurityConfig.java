@@ -198,12 +198,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 logger.warn("JAVA_HOME environment variable not set. Using packaged cacerts file for now");
                 initializeKeystoreFromPackagedCaCertFile(trustStore);
             } else {
-                File cacertFile = new File(System.getenv("JAVA_HOME") + "/lib/security/cacerts");
+                File cacertFile = new File(javaHome + "/lib/security/cacerts");
                 if (!cacertFile.exists()) {
-                    logger.warn("Unable to find file {}. Using packaged cacerts file for now", cacertFile.getAbsolutePath());
-                    initializeKeystoreFromPackagedCaCertFile(trustStore);
+                    if (javaHome.toLowerCase().contains("jdk")) {
+                        javaHome = javaHome + "/jre/";
+                        cacertFile = new File(javaHome + "/lib/security/cacerts");
+                    }
+                    if (!cacertFile.exists()) {
+                        logger.warn("Unable to find file {}. Using packaged cacerts file for now", cacertFile.getAbsolutePath());
+                        initializeKeystoreFromPackagedCaCertFile(trustStore);
+                    } else {
+                        trustStore.load(new FileInputStream(javaHome + "/lib/security/cacerts"), "changeit".toCharArray());
+                    }
                 } else {
-                    trustStore.load(new FileInputStream(System.getenv("JAVA_HOME") + "/lib/security/cacerts"), "changeit".toCharArray());
+                    trustStore.load(new FileInputStream(javaHome + "/lib/security/cacerts"), "changeit".toCharArray());
                 }
             }
 
