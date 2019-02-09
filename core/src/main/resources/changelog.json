@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.7",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Changed the way SSL certificates are checked. Connection to indexers like NZBGeek or althub should now work as expected. Removed the option 'Disable SNI'."
+      }
+    ]
+  },
+  {
     "version": "v2.3.6",
     "changes": [
       {
