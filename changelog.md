@@ -1,3 +1,9 @@
+### v2.3.9
+
+Fix: Revert SSL changes made in 2.3.7 as Hydra didn't start for some users. I give up.
+
+
+
 ### v2.3.8
 
 Fix: Updated executable to provide a java flag which should fix SSL related problems introduced with 2.3.7. If you're not running Hydra inside a container you may need to manually update the binary (nzbhydra*.exe or just nzbhydra on linux)
