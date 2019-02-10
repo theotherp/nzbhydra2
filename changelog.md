@@ -1,3 +1,11 @@
+### v2.3.11
+
+Fix: Cautiously optimistic that *some* SSL issues have been solved... ;-)
+
+Fix: When implementing the display of covers I managed to mistakenly think that posters and covers are the same. Actually the poster in this context is the uploader but my code used the poster (username) as cover URL. If you've disabled the display of 'posters' in the search results you'll have to disable it again.
+
+
+
 ### v2.3.10
 
 Fix: Fix another issue with SSL. I should probably pause development until I'm fit of mind enough to do this properly...
