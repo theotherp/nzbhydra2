@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.11",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Cautiously optimistic that some SSL issues have been solved... ;-)"
+      }
+    ]
+  },
+  {
     "version": "v2.3.10",
     "changes": [
       {

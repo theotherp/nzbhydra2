@@ -26,7 +26,6 @@ import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -63,7 +62,7 @@ import java.util.regex.Pattern;
 @Component
 @Primary
 public class HydraOkHttp3ClientHttpRequestFactory
-        implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory, DisposableBean {
+        implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory {
 
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
@@ -71,7 +70,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
     private static Pattern HOST_PATTERN = Pattern.compile("(\\w+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
 
-    private OkHttpClient client;
     @Autowired
     private ConfigProvider configProvider;
     private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
@@ -84,20 +82,6 @@ public class HydraOkHttp3ClientHttpRequestFactory
     @Override
     public AsyncClientHttpRequest createAsyncRequest(URI uri, HttpMethod httpMethod) {
         return new OkHttp3AsyncClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
-    }
-
-
-    @Override
-    public void destroy() throws IOException {
-        // Clean up the client if we created it in the constructor
-        try {
-            if (this.client.cache() != null) {
-                this.client.cache().close();
-            }
-            this.client.dispatcher().executorService().shutdown();
-        } catch (NullPointerException e) {
-            //Ignore
-        }
     }
 
 
@@ -170,7 +154,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     protected Builder getBaseBuilder() {
-        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
+        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS).connectionSpecs(Arrays.asList(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT));
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {
