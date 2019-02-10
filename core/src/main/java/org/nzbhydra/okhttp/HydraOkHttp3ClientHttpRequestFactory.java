@@ -154,7 +154,9 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     protected Builder getBaseBuilder() {
-        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS).connectionSpecs(Arrays.asList(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT));
+        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS)
+                //.connectionSpecs(Arrays.asList(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
+                ;
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {

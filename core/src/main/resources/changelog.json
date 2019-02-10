@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.12",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "I don't know if I should laugh or cry, but the last version actually made matters worse as 2.3.11 is unable to connect to GitHub (among others) which disables the built in update function. So if you read this and don't run docker, you'll have to update manually."
+      }
+    ]
+  },
+  {
     "version": "v2.3.11",
     "changes": [
       {
