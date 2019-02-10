@@ -49,6 +49,7 @@ public class SearchResultItem  {
     private Category category;
     private Integer commentsCount;
     private String commentsLink;
+    private String cover;
     private String description;
     private String details;
     private DownloadType downloadType;
@@ -70,14 +71,14 @@ public class SearchResultItem  {
     private String originalCategory;
     private boolean passworded;
     private Integer peers;
-    private String poster = null;
-    private Instant pubDate = null;
+    private String poster;
+    private Instant pubDate;
     private Long searchResultId;
     private Integer seeders;
     private Long size;
     @NotNull
     private String title;
-    private Instant usenetDate = null;
+    private Instant usenetDate;
 
     public Optional<Instant> getUsenetDate() {
         return Optional.ofNullable(usenetDate);

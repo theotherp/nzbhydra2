@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Cautiously optimistic that some SSL issues have been solved... ;-)"
+      },
+      {
+        "type": "fix",
+        "text": "When implementing the display of covers I managed to mistakenly think that posters and covers are the same. Actually the poster in this context is the uploader but my code used the poster (username) as cover URL. If you've disabled the display of 'posters' in the search results you'll have to disable it again."
       }
     ]
   },

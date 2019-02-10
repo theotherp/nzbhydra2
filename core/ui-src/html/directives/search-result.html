@@ -26,7 +26,7 @@
         </a>
         <span class="title">
                 <span ng-if="result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0">
-                    <img ng-if="result.poster && foo.showPosters" src="{{::result.poster}}" width="128px" style="margin-right: 5px"/>
+                    <img ng-if="result.cover && foo.showCovers" src="{{::result.cover}}" width="128px" style="margin-right: 5px"/>
                     {{ ::result.title }}
                 </span>
             </span>
@@ -105,5 +105,4 @@
             </span>
         </span>
     </td>
-
 </tr>

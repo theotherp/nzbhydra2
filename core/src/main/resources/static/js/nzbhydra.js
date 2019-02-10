@@ -953,7 +953,7 @@ function searchResult() {
     function handleDisplay($scope, localStorageService) {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
-        $scope.foo.showPosters = localStorageService.get("showPosters") !== null ? localStorageService.get("showPosters") : true;
+        $scope.foo.showCovers = localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = false;
 
@@ -7576,7 +7576,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false,
         sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true,
         scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true,
-        showPosters: localStorageService.get("showPosters") !== null ? localStorageService.get("showPosters") : true
+        showCovers: localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true
     };
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
@@ -7586,7 +7586,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
         {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"},
         {id: "scrollToResults", label: "Scroll to results when finished"},
-        {id: "showPosters", label: "Show movie posters in results"}
+        {id: "showCovers", label: "Show movie covers in results"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -7613,8 +7613,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleSumGrabs(newValue);
             } else if (item.id === "scrollToResults") {
                 toggleScrollToResults(newValue);
-            } else if (item.id === "showPosters") {
-                toggleShowPosters(newValue);
+            } else if (item.id === "showCovers") {
+                toggleshowCovers(newValue);
             }
         }
     };
@@ -7642,9 +7642,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.foo.scrollToResults = value;
     }
 
-    function toggleShowPosters(value) {
-        localStorageService.set("showPosters", value);
-        $scope.foo.showPosters = value;
+    function toggleshowCovers(value) {
+        localStorageService.set("showCovers", value);
+        $scope.foo.showCovers = value;
     }
 
 

@@ -86,6 +86,7 @@ public class InternalSearchResultProcessor {
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
                     .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
                     .comments(item.getCommentsCount())
+                    .cover(item.getCover())
                     .details_link(item.getDetails())
                     .downloadType(item.getDownloadType().name())
                     .files(item.getFiles())

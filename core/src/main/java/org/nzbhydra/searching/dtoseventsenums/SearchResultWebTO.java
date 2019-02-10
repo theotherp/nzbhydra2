@@ -28,6 +28,7 @@ public class SearchResultWebTO {
     private String age;
     private Boolean age_precise;
     private String category;
+    private String cover;
     private String date;
     private Integer comments;
     private String details_link;

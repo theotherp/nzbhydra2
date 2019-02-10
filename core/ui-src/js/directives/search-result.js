@@ -17,7 +17,7 @@ function searchResult() {
     function handleDisplay($scope, localStorageService) {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
-        $scope.foo.showPosters = localStorageService.get("showPosters") !== null ? localStorageService.get("showPosters") : true;
+        $scope.foo.showCovers = localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = false;
 
