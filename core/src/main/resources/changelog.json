@@ -4,7 +4,7 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Cautiously optimistic that some SSL issues have been solved... ;-)"
+        "text": "Cautiously optimistic that *some* SSL issues have been solved... ;-)"
       },
       {
         "type": "fix",
