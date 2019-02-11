@@ -7,6 +7,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.okhttp.WebAccess;
 import org.nzbhydra.web.WebConfiguration;
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class IndexerWebAccess {
         }
 
         Future<T> future;
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = MdcThreadPoolExecutor.newWithInheritedMdc(1);
         try {
             future = executorService.submit(() -> {
                 String response = webAccess.callUrl(uri.toString(), headers, timeout);

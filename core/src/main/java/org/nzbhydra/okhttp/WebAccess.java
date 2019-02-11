@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("ConstantConditions")
 @Component
@@ -52,7 +51,6 @@ public class WebAccess {
         Request request = builder.build();
 
         OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
-        logger.debug(LoggingMarkers.HTTP, "Calling URL {} with headers {} and timeout {}", url, headers.entrySet().stream().map(x -> x.getKey() + ":" + x.getValue()).collect(Collectors.joining(", ")), timeout);
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
@@ -60,7 +58,6 @@ public class WebAccess {
                 throw new IOException(error);
             }
             String body = response.body().string();
-            logger.debug(LoggingMarkers.HTTP, "Call to {} successful with content length {} and headers {}", url, body.length(), response.headers());
             response.body().close();
             return body;
         }

@@ -20,9 +20,11 @@ import com.google.common.net.InetAddresses;
 import joptsimple.internal.Strings;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
+import okhttp3.logging.HttpLoggingInterceptor;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.ProxyType;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,9 +156,16 @@ public class HydraOkHttp3ClientHttpRequestFactory
     }
 
     protected Builder getBaseBuilder() {
-        return new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS)
-                //.connectionSpecs(Arrays.asList(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
-                ;
+        Builder builder = new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
+        if (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTP.getName())) {
+            HttpLoggingInterceptor.Logger httpLogger = message -> logger.debug(LoggingMarkers.HTTP, message);
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(httpLogger);
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+            loggingInterceptor.redactHeader("Authorization");
+            loggingInterceptor.redactHeader("Cookie");
+            builder.addInterceptor(loggingInterceptor);
+        }
+        return builder;
     }
 
     protected boolean isUriToBeIgnoredByProxy(String host) {
