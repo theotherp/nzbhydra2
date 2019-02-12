@@ -1,3 +1,11 @@
+### v2.3.13
+
+Feature: Improve HTTP debug logging
+
+Fix: Revert some more SSL related changes
+
+
+
 ### v2.3.12
 
 Fix: I don't know if I should laugh or cry, but the last version actually made matters worse as 2.3.11 is unable to connect to GitHub (among others) which disables the built in update function. So if you read this and don't run docker, you'll have to update manually.
