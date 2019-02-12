@@ -8,7 +8,7 @@
       },
       {
         "type": "fix",
-        "text": "Revert some more SSL related changes"
+        "text": "Revert some more SSL related changes. If you still have problems connecting to indexer please manually update the binaries. Unfortunately the update process can't do that."
       }
     ]
   },
