@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2.3.13",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Improve HTTP debug logging"
+      },
+      {
+        "type": "fix",
+        "text": "Revert some more SSL related changes"
+      }
+    ]
+  },
+  {
     "version": "v2.3.12",
     "changes": [
       {
