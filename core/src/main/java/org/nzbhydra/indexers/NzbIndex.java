@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 public class NzbIndex extends Indexer<NewznabXmlRoot> {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbIndex.class);
-    private static final Pattern GUID_PATTERN = Pattern.compile(".*/release/(\\d+).*", Pattern.DOTALL);
+    private static final Pattern GUID_PATTERN = Pattern.compile(".*/download/(\\d+).*", Pattern.DOTALL);
     private static final Pattern NFO_PATTERN = Pattern.compile(".*<pre id=\"nfo0\">(.*)</pre>.*", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 
     @Override
@@ -56,9 +56,11 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
             SearchResultItem item = new SearchResultItem();
             item.setPubDate(rssItem.getPubDate());
             String nzbIndexLink = rssItem.getLink();
-            item.setTitle(nzbIndexLink.substring(nzbIndexLink.lastIndexOf('/') + 1, nzbIndexLink.length() - 4)); //Use the NZB name as title because it's already somewhat cleaned up
+            item.setTitle(nzbIndexLink.substring(nzbIndexLink.lastIndexOf("/",nzbIndexLink.length()-2)+1, nzbIndexLink.length() - 1)); //Use the NZB name as title because it's already somewhat cleaned up
             item.setAgePrecise(true);
-            item.setGroup(rssItem.getCategory().replace("a.b", "alt.binaries"));
+            if (rssItem.getCategory()!=null) {
+                item.setGroup(rssItem.getCategory().replace("a.b", "alt.binaries"));
+            }
             item.setLink(rssItem.getEnclosure().getUrl());
             item.setSize(rssItem.getEnclosure().getLength());
             Matcher matcher = GUID_PATTERN.matcher(nzbIndexLink);
@@ -71,7 +73,11 @@ public class NzbIndex extends Indexer<NewznabXmlRoot> {
             item.setCategory(categoryProvider.getNotAvailable());
             item.setOriginalCategory("N/A");
             item.setIndexerScore(config.getScore().orElse(0));
-            item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
+            if (item.getDescription()!=null) {
+                item.setHasNfo(rssItem.getDescription().contains("1 NFO") ? HasNfo.YES : HasNfo.NO);
+            }else {
+                item.setHasNfo(HasNfo.NO);
+            }
             item.setIndexer(this);
             item.setDownloadType(DownloadType.NZB);
             items.add(item);
