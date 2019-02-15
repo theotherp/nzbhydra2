@@ -1,8 +1,16 @@
+### v2.3.14
+
+Fix: Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+
+
+Fix: Fix NZBIndex parsing. Thanks to BenoitCharret.
+
+
+
 ### v2.3.13
 
 Feature: Improve HTTP debug logging
 
-Fix: Revert some more SSL related changes
+Fix: Revert some more SSL related changes. If you still have problems connecting to indexer please manually update the binaries. Unfortunately the update process can't do that.
 
 
 
