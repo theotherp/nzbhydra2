@@ -55,6 +55,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -300,15 +301,14 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
         @Override
         public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
-            String newHost = host;
-
+            SSLSocket newSocket = super.createSocket(socket, host, port, autoClose);
             if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
-                newHost = null;
+                SSLParameters sslParameters = newSocket.getSSLParameters();
+                sslParameters.setServerNames(Collections.emptyList());
+                newSocket.setSSLParameters(sslParameters);
             }
-            return super.createSocket(socket, newHost, port, autoClose);
+            return newSocket;
         }
-
-
     }
 
     protected class SockProxySocketFactory extends SocketFactory {

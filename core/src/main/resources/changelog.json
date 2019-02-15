@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.14",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+"
+      }
+    ]
+  },
+  {
     "version": "v2.3.13",
     "changes": [
       {

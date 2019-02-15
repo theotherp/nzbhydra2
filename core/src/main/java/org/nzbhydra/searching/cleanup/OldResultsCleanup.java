@@ -44,7 +44,6 @@ public class OldResultsCleanup {
 
     private static final long HOUR = 1000 * 60 * 60;
 
-    //@Scheduled(initialDelay = HOUR, fixedRate = HOUR)
     @HydraTask(configId = "deleteOldSearchResults", name = "Delete old search results", interval = HOUR)
     @Transactional
     public void deleteOldResults() {
@@ -68,13 +67,18 @@ public class OldResultsCleanup {
     protected void cleanupGcLogs() {
         File[] logFiles = new File(NzbHydra.getDataFolder(), "logs").listFiles((dir, name) -> name.toLowerCase().startsWith("gclog"));
         if (logFiles == null) {
+            logger.debug("No GC logs found to delete");
             return;
         }
         Stream.of(logFiles).sorted(Comparator.comparingLong(File::lastModified).reversed()).skip(5).forEach(x -> {
             try {
-                x.delete();
+                logger.debug("Deleting old GC log file {}", x);
+                boolean deleted = x.delete();
+                if (!deleted) {
+                    logger.warn("Unable to delete old GC log {}", x);
+                }
             } catch (Exception e) {
-                logger.warn("Unable to delete old GC log: " + e.getMessage());
+                logger.warn("Unable to delete old GC log " + x + ": " + e.getMessage());
             }
         });
     }

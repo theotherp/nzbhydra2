@@ -40,6 +40,7 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
@@ -90,7 +91,7 @@ public class Experiments {
 
     @Test
     @Ignore
-    public void connectToAlthub() throws Exception {
+    public void connectToNzbGeek() throws Exception {
 
         SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
                 getDefaultX509TrustManager()
@@ -100,11 +101,11 @@ public class Experiments {
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://api.althub.co.za")
-
+                .url("https://api.nzbgeek.info")
                 .build();
 
         Response response = client.newCall(request).execute();
+        System.out.println(response.body().string());
         assertTrue(response.isSuccessful());
 
     }
@@ -141,7 +142,11 @@ public class Experiments {
 
         @Override
         public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
-            return super.createSocket(socket, null, port, autoClose);
+            SSLSocket newSocket = super.createSocket(socket, host, port, autoClose);
+            SSLParameters sslParameters = newSocket.getSSLParameters();
+            sslParameters.setServerNames(Collections.emptyList());
+            newSocket.setSSLParameters(sslParameters);
+            return newSocket;
         }
     }
 
