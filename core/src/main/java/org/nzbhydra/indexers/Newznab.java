@@ -480,8 +480,13 @@ public class Newznab extends Indexer<Xml> {
             if (attributes.containsKey(x) && !attributes.get(x).equals("not available") && (attributes.get(x).toLowerCase().endsWith(".jpg") || attributes.get(x).toLowerCase().endsWith(".jpeg") || attributes.get(x).toLowerCase().endsWith(".png"))) {
                 searchResultItem.setCover(attributes.get(x));
             }
-
         });
+        if (attributes.containsKey("poster") && !attributes.get("poster").equals("not available")) {
+            searchResultItem.setPoster(attributes.get("poster"));
+        }
+        if (attributes.containsKey("group") && !attributes.get("group").equals("not available")) {
+            searchResultItem.setGroup(attributes.get("group"));
+        }
         if (attributes.containsKey("files")) {
             searchResultItem.setFiles(Integer.valueOf(attributes.get("files")));
         }

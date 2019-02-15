@@ -39,6 +39,7 @@ import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
+import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.web.WebConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.oxm.Unmarshaller;
@@ -70,6 +71,8 @@ public class NewznabCheckerTest {
     private ConfigProvider configProviderMock;
     @Mock
     private ApplicationEventPublisher publisherMock;
+    @Mock
+    private SearchModuleProvider searchModuleProviderMock;
     @InjectMocks
     private NewznabChecker testee = new NewznabChecker();
     private Unmarshaller unmarshaller = new WebConfiguration().marshaller();
