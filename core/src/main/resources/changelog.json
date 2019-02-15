@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+"
+      },
+      {
+        "type": "fix",
+        "text": "Fix NZBIndex parsing. Thanks to BenoitCharret."
       }
     ]
   },

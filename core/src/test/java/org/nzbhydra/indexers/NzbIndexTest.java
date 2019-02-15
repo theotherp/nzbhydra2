@@ -41,12 +41,12 @@ public class NzbIndexTest {
     @Test
     public void shouldParseRows() throws Exception {
         Instant now = Instant.now();
-        String enclosureUrl = "http://nzbindex.com/download/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb";
-        String link = "http://nzbindex.com/release/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb";
+        String enclosureUrl = "https://beta.nzbindex.com/collection/164950363";
+        String link = "https://beta.nzbindex.com/download/164950363/";
         NewznabXmlRoot root = RssBuilder.builder().items(
                 Arrays.asList(
                         RssItemBuilder
-                                .builder("[ Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN ] - [00/30] - \"Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN.nzb\" yEnc\n")
+                                .builder("Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL")
                                 .link(link)
                                 .description("<![CDATA[\n" +
                                         "<p><font color=\"gray\">alt.binaries.hdtv.x264</font><br /> <b>1.01 GB</b><br /> 7 hours<br /> <font color=\"#3DA233\">31 files (1405 parts)</font> <font color=\"gray\">by s@nd.p (SP)</font><br /> <font color=\"#E2A910\"> 1 NFO | 9 PAR2 | 1 NZB | 19 ARCHIVE</font> - <a href=\"http://nzbindex.com/nfo/164950363/Watchers.of.the.Universe.S02E09.1080p.WEB-DL.DD5.1.AAC2.0.H.264-YFN-0030-Watchers.of.the.Universe.S02E09.Cant.Get.You.out.of.My.Head.1080p.WEB-DL.nzb/?q=\" target=\"_blank\">View NFO</a></p>\n" +
@@ -67,7 +67,7 @@ public class NzbIndexTest {
         assertThat(item.getSize(), is(1089197181L));
         assertThat(item.getIndexerGuid(), is("164950363"));
         assertThat(item.getDownloadType(), is(DownloadType.NZB));
-        assertThat(item.getHasNfo(), is(HasNfo.YES));
+        assertThat(item.getHasNfo(), is(HasNfo.NO));
 
     }
 
