@@ -9,15 +9,25 @@ import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = NzbHydra.class)
-@DataJpaTest
+@Transactional
+@AutoConfigureCache
+@AutoConfigureDataJpa
+@AutoConfigureTestDatabase
+@AutoConfigureTestEntityManager
+@ImportAutoConfiguration
 public class SearchResultIdCalculatorTest {
 
     @Autowired

@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = NzbHydra.class)
 @WebAppConfiguration
 @TestPropertySource(locations = "classpath:/org/nzbhydra/tests/auth/allRestrictedWithBasicStatsAndAdminUser.properties")
-@Import(HttpBasicAuthTest.Config.class)
+@Import(HttpBasicAuthTest.HttpBasicAuthTestBaseConfig.class)
 @DirtiesContext
 public class HttpBasicAuthTest {
 
@@ -58,7 +58,7 @@ public class HttpBasicAuthTest {
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build(
                 );
-        baseConfig.setAuth(Config.getBasicAuthConfig());
+        baseConfig.setAuth(HttpBasicAuthTestBaseConfig.getBasicAuthConfig());
         userDetailsManager.handleConfigChangedEvent(new ConfigChangedEvent(this, new BaseConfig(), baseConfig));
     }
 
@@ -100,10 +100,10 @@ public class HttpBasicAuthTest {
         mvc.perform(MockMvcRequestBuilders.get("/stats").with(csrf()).with(httpBasic(username, password))).andExpect(status().is(statusStats));
     }
 
-    public static class Config {
+    public static class HttpBasicAuthTestBaseConfig {
 
 
-        @Bean
+        @Bean(name = "Bla")
         @Primary
         public BaseConfig baseConfig() {
             BaseConfig baseConfig = new BaseConfig();
