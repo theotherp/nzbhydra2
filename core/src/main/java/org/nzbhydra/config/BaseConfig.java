@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import lombok.*;
 import org.nzbhydra.NzbHydra;
+import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -114,16 +116,11 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         delayedSaveTimerTask = new TimerTask() {
             @Override
             public void run() {
-                saveLock.lock();
-                if (toSave != null) {
-                    configReaderWriter.save(toSave);
-                    toSave = null;
-                }
-                saveLock.unlock();
+                saveToSave();
             }
         };
         Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
-        delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 1000, 1000);
+        delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 10000, 10000);
 
         initialized = true;
     }
@@ -132,6 +129,20 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         replace(configReaderWriter.loadSavedConfig());
     }
 
+
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        saveToSave();
+    }
+
+    private void saveToSave() {
+        saveLock.lock();
+        if (toSave != null) {
+            configReaderWriter.save(toSave);
+            toSave = null;
+        }
+        saveLock.unlock();
+    }
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, BaseConfig newConfig) {
