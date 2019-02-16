@@ -48,6 +48,10 @@ If you get SSL errors when contacting indexers please update your Java runtime.
 
 Please see the [wiki](https://github.com/theotherp/nzbhydra2/wiki/Windows-service-and-Linux-start-scripts).
 
+### Stuff you should know
+* Without a "proper" indexer that supports media ID based searches (anything unlike Binsearch, NZBINdex, Anizb, etc) automation tools like Sonarr or Radarr will not work properly
+* Hydra queries indexers for the latest 100 results for a given search query and aggregates them on the GUI. That means that even if you sort the results by, say, the name then older results not yet loaded may be missing. You will never know if a certain result is available unless you click the "Load more / Load all" buttons. This may require many API hits and take some time. I recommend using queries that are specific enough to return less than 100 results.
+
 ### A Note on Memory
 
 The memory usage mainly depends on the database size which depends on the amount of indexers you use, how long you've been running NZBHydra and how many queries are done.
