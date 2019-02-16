@@ -14,6 +14,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.reflections.Reflections;
 
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -138,7 +139,8 @@ public class BaseConfigTest {
     }
 
     protected void validateListsNotNull(ValidatingConfig config) throws IntrospectionException, IllegalAccessException, InvocationTargetException {
-        for (PropertyDescriptor pd : Introspector.getBeanInfo(config.getClass()).getPropertyDescriptors()) {
+        BeanInfo beanInfo = Introspector.getBeanInfo(config.getClass());
+        for (PropertyDescriptor pd : beanInfo.getPropertyDescriptors()) {
             if (pd.getReadMethod().getReturnType().isAssignableFrom(List.class)) {
                 List list = (List) pd.getReadMethod().invoke(config);
                 assertNotNull("Property of " + config.getClass().getName() + "#" + pd.getReadMethod().getName() + " should be initialized as empty list", list);

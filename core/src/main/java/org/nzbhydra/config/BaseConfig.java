@@ -46,10 +46,16 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
     @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private Lock saveLock = new ReentrantLock();
     @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private BaseConfig toSave;
     @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private TimerTask delayedSaveTimerTask;
 
 
