@@ -388,17 +388,17 @@ function ConfigFields($injector) {
                                 label: 'Log markers',
                                 help: 'Select certain sections for more output on debug level',
                                 options: [
-                                    {label: 'Removed trailing words', id: 'TRAILING'},
-                                    {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
-                                    {label: 'Performance', id: 'PERFORMANCE'},
-                                    {label: 'Duplicate detection', id: 'DUPLICATES'},
-                                    {label: 'Indexer scheduler', id: 'SCHEDULER'},
-                                    {label: 'User agent mapping', id: 'USER_AGENT'},
+                                    {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
-                                    {label: 'URL calculation', id: 'URL_CALCULATION'},
-                                    {label: 'HTTP', id: 'HTTP'},
+                                    {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'History cleanup', id: 'HISTORY_CLEANUP'},
-                                    {label: 'Config file handling', id: 'CONFIG_READ_WRITE'}
+                                    {label: 'HTTP', id: 'HTTP'},
+                                    {label: 'Indexer scheduler', id: 'SCHEDULER'},
+                                    {label: 'Performance', id: 'PERFORMANCE'},
+                                    {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
+                                    {label: 'Removed trailing words', id: 'TRAILING'},
+                                    {label: 'URL calculation', id: 'URL_CALCULATION'},
+                                    {label: 'User agent mapping', id: 'USER_AGENT'}
                                 ],
                                 hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"
@@ -1479,7 +1479,6 @@ function ConfigFields($injector) {
         }
     }
 }
-
 
 function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferred) {
     var message;
