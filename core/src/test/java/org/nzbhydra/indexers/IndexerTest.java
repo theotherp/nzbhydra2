@@ -39,7 +39,6 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -195,9 +194,9 @@ public class IndexerTest {
 
         testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
 
-        assertThat(indexerConfig.getState(), is(IndexerState.ENABLED));
-        assertThat(indexerConfig.getDisabledLevel(), is(0));
-        assertThat(indexerConfig.getDisabledUntil(), is(nullValue()));
+        verify(indexerEntityMock).setState(IndexerState.ENABLED);
+        verify(indexerEntityMock).setDisabledLevel(0);
+        verify(indexerEntityMock).setDisabledUntil(null);
     }
 
     @Test
@@ -208,19 +207,15 @@ public class IndexerTest {
 
         testee.handleFailure("reason", false, null, null, null);
 
-        assertThat(indexerConfig.getState(), is(IndexerState.DISABLED_SYSTEM_TEMPORARY));
-        assertThat(indexerConfig.getDisabledLevel(), is(1));
-        long disabledPeriod = Math.abs(indexerConfig.getDisabledUntil().getEpochSecond() - Instant.now().getEpochSecond());
-        long delta = Math.abs(Indexer.DISABLE_PERIODS.get(1) * 60 - disabledPeriod);
-        org.assertj.core.api.Assertions.assertThat(delta).isLessThan(5);
+        verify(indexerEntityMock).setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+        verify(indexerEntityMock).setDisabledLevel(1);
 
         indexerConfig.setState(IndexerState.ENABLED);
         indexerConfig.setDisabledLevel(0);
         indexerConfig.setDisabledUntil(null);
 
         testee.handleFailure("reason", true, null, null, null);
-
-        assertThat(indexerConfig.getState(), is(IndexerState.DISABLED_SYSTEM));
+        verify(indexerEntityMock).setState(IndexerState.DISABLED_SYSTEM);
     }
 
     @Test

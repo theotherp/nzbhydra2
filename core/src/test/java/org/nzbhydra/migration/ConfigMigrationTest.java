@@ -17,6 +17,7 @@ import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.downloading.*;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerConfigSynchronizer;
 import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
@@ -47,6 +48,8 @@ public class ConfigMigrationTest {
     private BaseConfig baseConfig;
     @Mock
     private MainConfig mainConfigMock;
+    @Mock
+    private IndexerConfigSynchronizer indexerConfigSynchronizerMock;
     @Mock
     private CategoriesConfig categoriesConfigMock;
     @Mock

@@ -118,15 +118,15 @@ public class IndexerForSearchSelectorTest {
     public void shouldCheckIfDisabledBySystem() {
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(false);
 
-        indexerConfigMock.setState(IndexerState.ENABLED);
-        indexerConfigMock.setDisabledUntil(null);
+        when(indexerEntity.getState()).thenReturn(IndexerState.ENABLED);
+        indexerEntity.setDisabledUntil(null);
         assertTrue(testee.checkIndexerStatus(indexer));
 
-        indexerConfigMock.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS));
+        when(indexerEntity.getState()).thenReturn(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+        when(indexerEntity.getDisabledUntil()).thenReturn(Instant.now().plus(1, ChronoUnit.DAYS));
         assertFalse(testee.checkIndexerStatus(indexer));
 
-        indexerConfigMock.setState(IndexerState.DISABLED_SYSTEM);
+        when(indexerEntity.getState()).thenReturn(IndexerState.DISABLED_SYSTEM);
         assertFalse(testee.checkIndexerStatus(indexer));
     }
 
