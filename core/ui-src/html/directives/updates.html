@@ -1,38 +1,45 @@
 <div cg-busy="{promise:loadingPromise,message:'Loading versions and changelog'}">
-    Current version: {{ currentVersion }}
+  Current version: {{ currentVersion }}
+  <br>
+  Latest version: {{ repVersion }}
+  <div ng-if="runInDocker" class="alert alert-warning" role="alert"
+       style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
     <br>
-    Latest version: {{ repVersion }}
-    <div ng-if="runInDocker" class="alert alert-warning" role="alert"
-         style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
-        <br>
-        You seem to be running Hydra inside docker. It's recommended to update the container instead of using Hydra's
-        update mechanism.
-    </div>
-    <br>
-    <span ng-if="updateAvailable">
+    You seem to be running Hydra inside docker. It's recommended to update the container instead of using Hydra's
+    update mechanism.
+  </div>
+  <br>
+  <span ng-if="updateAvailable">
         <button class="btn btn-default" type="button" ng-click="showChangelog()">See what's new!</button>
         <button class="btn btn-default" type="button" ng-click="update()">Update!</button>
         </span>
-    <span ng-if="!updateAvailable && !latestVersionIgnored">You're up to date!</span>
-    <span ng-if="latestVersionIgnored">The latest version was ignored by you.</span>
-    <button ng-if="!updateAvailable" class="btn btn-default" type="button" ng-click="forceUpdate()">Force update
-    </button>
-
-    <div class="panel panel-default" style="margin-top: 50px; text-align: left">
-        <div class="panel-heading"><h3>Version history</h3></div>
-        <div class="list-group">
-            <li ng-repeat="entry in versionHistory" class="list-group-item"
-                style="padding-top: 20px; padding-bottom: 20px;">
-                <h3 style="margin-top: 0">{{::entry.version}}</h3>
-                <div ng-repeat="change in entry.changes" style="margin-bottom: 5px">
-                <span ng-switch="change.type" style="margin-right: 5px">
+  <span ng-if="!updateAvailable && !latestVersionIgnored">You're up to date!</span>
+  <span ng-if="latestVersionIgnored">The latest version was ignored by you.</span>
+  <button ng-if="!updateAvailable" class="btn btn-default" type="button" ng-click="forceUpdate()">Force update
+  </button>
+  
+  <div class="panel panel-default" style="margin-top: 50px; text-align: left">
+    <div class="panel-heading"><h3>Version history</h3></div>
+    <div class="list-group">
+      <li ng-repeat="entry in versionHistory" class="list-group-item"
+          style="padding-top: 20px; padding-bottom: 20px;">
+        <h3 style="margin-top: 0">{{::entry.version}}</h3>
+        <table>
+          <tr ng-repeat="change in entry.changes" style="margin-bottom: 5px">
+            
+            <td style="margin-right: 5px; padding-bottom: 10px">
+                <span ng-switch="change.type" style="margin-right: 5px; vertical-align: top;">
                     <span class="label label-primary" ng-switch-when="note">Note</span>
                     <span class="label label-warning" ng-switch-when="fix">Fix</span>
                     <span class="label label-success" ng-switch-when="feature">Feature</span>
                 </span>
-                    <span ng-bind-html="change.text  | unsafe"></span>
-                </div>
-            </li>
-        </div>
+            </td>
+            <td style="padding-left: 5px; padding-bottom: 10px">
+              <span ng-bind-html="change.text  | unsafe"></span>
+            </td>
+          </tr>
+        </table>
+      </li>
     </div>
+  </div>
 </div>
