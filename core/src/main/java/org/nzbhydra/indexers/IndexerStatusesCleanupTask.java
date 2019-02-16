@@ -53,6 +53,6 @@ public class IndexerStatusesCleanupTask {
                 config.setLastError(null);
             }
         }
-        configReaderWriter.save(configProvider.getBaseConfig());
+        configProvider.getBaseConfig().save(false);
     }
 }

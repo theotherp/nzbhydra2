@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,6 +45,12 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
+    @JsonIgnore
+    private Lock saveLock = new ReentrantLock();
+    @JsonIgnore
+    private BaseConfig toSave;
+    @JsonIgnore
+    private TimerTask delayedSaveTimerTask;
 
 
     public void replace(BaseConfig newConfig) {
@@ -64,8 +72,15 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         }
     }
 
-    public void save() {
-        configReaderWriter.save(this);
+    public void save(boolean saveInstantly) {
+        saveLock.lock();
+        if (saveInstantly) {
+            configReaderWriter.save(this);
+            toSave = null;
+        } else {
+            toSave = this;
+        }
+        saveLock.unlock();
     }
 
 
@@ -89,6 +104,21 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         }
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         configReaderWriter.save(this);
+
+        delayedSaveTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                saveLock.lock();
+                if (toSave != null) {
+                    configReaderWriter.save(toSave);
+                    toSave = null;
+                }
+                saveLock.unlock();
+            }
+        };
+        Timer delayedSaveTimer = new Timer("delayedConfigSave", false);
+        delayedSaveTimer.scheduleAtFixedRate(delayedSaveTimerTask, 1000, 1000);
+
         initialized = true;
     }
 

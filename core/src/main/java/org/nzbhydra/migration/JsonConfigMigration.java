@@ -129,7 +129,7 @@ public class JsonConfigMigration {
         }
 
         configProvider.getBaseConfig().replace(newConfig);
-        configProvider.getBaseConfig().save();
+        configProvider.getBaseConfig().save(true);
         eventPublisher.publishEvent(new MigrationMessageEvent("Completed migrating config with " + messages.size() + " messages"));
         return new ConfigMigrationResult(newConfig, messages);
     }

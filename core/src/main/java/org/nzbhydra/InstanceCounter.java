@@ -51,7 +51,7 @@ public class InstanceCounter {
                 if (response.getStatusCode().is2xxSuccessful()) {
                     logger.info("Instance counted");
                     configProvider.getBaseConfig().getMain().setInstanceCounterDownloaded(true);
-                    configProvider.getBaseConfig().save();
+                    configProvider.getBaseConfig().save(false);
                 } else {
                     logger.error("Unable to count instance. Response: " + response.getStatusText());
                 }

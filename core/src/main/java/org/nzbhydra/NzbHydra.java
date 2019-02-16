@@ -298,7 +298,7 @@ public class NzbHydra {
             if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
-                configProvider.getBaseConfig().save();
+                configProvider.getBaseConfig().save(false);
             }
 
             if (DebugInfosProvider.isRunInDocker()) {

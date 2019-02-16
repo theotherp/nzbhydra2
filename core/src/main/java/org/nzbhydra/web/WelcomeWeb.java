@@ -31,7 +31,7 @@ public class WelcomeWeb {
     public void setWelcomeShown() throws IOException {
         logger.debug("Welcome screen was shown");
         configProvider.getBaseConfig().getMain().setWelcomeShown(true);
-        configProvider.getBaseConfig().save();
+        configProvider.getBaseConfig().save(true);
     }
 
 }

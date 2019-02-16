@@ -72,7 +72,7 @@ public class ConfigWeb {
         ConfigValidationResult result = newConfig.validateConfig(configProvider.getBaseConfig(), newConfig);
         if (result.isOk()) {
             configProvider.getBaseConfig().replace(newConfig);
-            configProvider.getBaseConfig().save();
+            configProvider.getBaseConfig().save(true);
             result.setNewConfig(configProvider.getBaseConfig());
         }
         return result;
