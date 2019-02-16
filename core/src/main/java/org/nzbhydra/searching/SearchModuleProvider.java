@@ -78,6 +78,7 @@ public class SearchModuleProvider {
                     logger.info("Indexer with name {} not yet in database. Adding it", config.getName());
                     indexerEntity = new IndexerEntity();
                     indexerEntity.setName(config.getName());
+                    indexerEntity.setState(IndexerState.ENABLED);
                     indexerEntity = indexerRepository.save(indexerEntity);
                     logger.info("Now {} indexers in database", indexerRepository.count());
 
