@@ -16,9 +16,7 @@
 
 package org.nzbhydra.indexers;
 
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.ConfigReaderWriter;
-import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,26 +31,21 @@ public class IndexerStatusesCleanupTask {
 
     private static final long MINUTE = 1000 * 60;
 
-    private ConfigProvider configProvider;
-    ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
-
     @Autowired
-    public IndexerStatusesCleanupTask(ConfigProvider configProvider) {
-        this.configProvider = configProvider;
-    }
+    protected IndexerRepository indexerRepository;
 
     @HydraTask(configId = "cleanUpIndexerStatuses", name = "Clean up indexer statuses", interval = MINUTE)
     public void cleanup() {
-        for (IndexerConfig config : configProvider.getBaseConfig().getIndexers()) {
-            if (config.getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY && config.getDisabledUntil() != null && Instant.ofEpochMilli(config.getDisabledUntil()).isBefore(Instant.now())) {
+        for (IndexerEntity entity : indexerRepository.findAll()) {
+            if (entity.getState() == IndexerState.DISABLED_SYSTEM_TEMPORARY && entity.getDisabledUntil() != null && entity.getDisabledUntil().isBefore(Instant.now())) {
                 //Do not reset the level. When the indexer is called the next time (when disabledUntil is in the past)
                 //and an error occurs the level is increased and the indexer gets disabled for a longer time
-                logger.debug("Setting indexer {} back to enabled after having been temporarily disabled until {}", config.getName(), Instant.ofEpochMilli(config.getDisabledUntil()));
-                config.setState(IndexerConfig.State.ENABLED);
-                config.setDisabledUntil(null);
-                config.setLastError(null);
+                logger.debug("Setting indexer {} back to enabled after having been temporarily disabled until {}", entity.getName(), entity.getDisabledUntil());
+                entity.setState(IndexerState.ENABLED);
+                entity.setDisabledUntil(null);
+                entity.setLastError(null);
+                indexerRepository.save(entity);
             }
         }
-        configReaderWriter.save(configProvider.getBaseConfig());
     }
 }

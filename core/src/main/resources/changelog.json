@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.15",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Moved indexer status from config to database. This reduces how often the config file is written which should reduce the risk of corruption of the confg file."
+      }
+    ]
+  },
+  {
     "version": "v2.3.14",
     "changes": [
       {

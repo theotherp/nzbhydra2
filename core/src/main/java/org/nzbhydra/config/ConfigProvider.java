@@ -19,5 +19,4 @@ public class ConfigProvider {
         return baseConfig;
     }
 
-
 }

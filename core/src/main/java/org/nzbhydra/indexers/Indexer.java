@@ -5,6 +5,7 @@ import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -241,33 +242,31 @@ public abstract class Indexer<T> {
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
         //New state can only be enabled, if the user has disabled the indexer it wouldn't've been called
-        if (getConfig().getDisabledLevel() > 0) {
-            debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
+        if (getIndexerEntity().getDisabledLevel() > 0) {
+            debug("Indexer was successfully called after {} failed attempts in a row", getIndexerEntity().getDisabledLevel());
         }
-        getConfig().setState(IndexerConfig.State.ENABLED);
-        getConfig().setLastError(null);
-        getConfig().setDisabledUntil(null);
-        getConfig().setDisabledLevel(0);
-        configProvider.getBaseConfig().save();
+        indexer.setState(IndexerState.ENABLED);
+        indexer.setLastError(null);
+        indexer.setDisabledUntil(null);
+        indexer.setDisabledLevel(0);
+        indexerRepository.save(indexer);
         saveApiAccess(accessType, responseTime, IndexerAccessResult.SUCCESSFUL, true);
     }
 
     protected void handleFailure(String reason, Boolean disablePermanently, IndexerApiAccessType accessType, Long responseTime, IndexerAccessResult accessResult) {
         if (disablePermanently) {
             getLogger().warn("Because an unrecoverable error occurred {} will be permanently disabled until reenabled by the user", indexer.getName());
-            getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM);
+            getIndexerEntity().setState(IndexerState.DISABLED_SYSTEM);
         } else if (!configProvider.getBaseConfig().getSearching().isIgnoreTemporarilyDisabled()) {
-
-            getConfig().setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-            getConfig().setDisabledLevel(getConfig().getDisabledLevel() + 1);
-            long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getConfig().getDisabledLevel()));
+            indexer.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+            indexer.setDisabledLevel(getIndexerEntity().getDisabledLevel() + 1);
+            long minutesToAdd = DISABLE_PERIODS.get(Math.min(DISABLE_PERIODS.size() - 1, getIndexerEntity().getDisabledLevel()));
             Instant disabledUntil = Instant.now().plus(minutesToAdd, ChronoUnit.MINUTES);
-            getConfig().setDisabledUntil(disabledUntil.toEpochMilli());
-            getLogger().warn("Because an error occurred {} will be temporarily disabled until {}. This is error number {} in a row", indexer.getName(), disabledUntil, getConfig().getDisabledLevel());
+            indexer.setDisabledUntil(disabledUntil);
+            getLogger().warn("Because an error occurred {} will be temporarily disabled until {}. This is error number {} in a row", indexer.getName(), disabledUntil, getIndexerEntity().getDisabledLevel());
         }
-        getConfig().setLastError(reason);
-        configProvider.getBaseConfig().save();
-
+        indexer.setLastError(reason);
+        indexerRepository.save(indexer);
         saveApiAccess(accessType, responseTime, accessResult, false);
     }
 

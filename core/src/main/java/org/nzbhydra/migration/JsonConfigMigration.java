@@ -15,9 +15,7 @@ import org.nzbhydra.config.auth.UserAuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.downloading.*;
-import org.nzbhydra.config.indexer.IndexerCategoryConfig;
-import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.config.indexer.*;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
@@ -60,6 +58,8 @@ public class JsonConfigMigration {
     private ConfigProvider configProvider;
     @Autowired
     private NewznabChecker newznabChecker;
+    @Autowired
+    private IndexerConfigSynchronizer indexerConfigSynchronizer;
     @Autowired
     protected ApplicationEventPublisher eventPublisher;
 
@@ -131,6 +131,7 @@ public class JsonConfigMigration {
         configProvider.getBaseConfig().replace(newConfig);
         configProvider.getBaseConfig().save();
         eventPublisher.publishEvent(new MigrationMessageEvent("Completed migrating config with " + messages.size() + " messages"));
+        indexerConfigSynchronizer.synchronizeFromConfig(newConfig);
         return new ConfigMigrationResult(newConfig, messages);
     }
 
@@ -374,7 +375,7 @@ public class JsonConfigMigration {
                     continue;
                 }
                 IndexerConfig newIndexer = new IndexerConfig();
-                newIndexer.setState(oldIndexer.isEnabled() ? IndexerConfig.State.ENABLED : IndexerConfig.State.DISABLED_USER);
+                newIndexer.setState(oldIndexer.isEnabled() ? IndexerState.ENABLED : IndexerState.DISABLED_USER);
                 originalEnabledState.put(oldIndexer.getName(), oldIndexer.isEnabled());
                 newIndexer.setHost(oldIndexer.getHost());
                 newIndexer.setTimeout(oldIndexer.getTimeout());
@@ -471,7 +472,7 @@ public class JsonConfigMigration {
                     }
                 }
                 if (newIndexer.getSearchModuleType() == SearchModuleType.NEWZNAB || newIndexer.getSearchModuleType() == SearchModuleType.TORZNAB) {
-                    newIndexer.setState(IndexerConfig.State.DISABLED_USER);
+                    newIndexer.setState(IndexerState.DISABLED_USER);
                     newIndexer.setConfigComplete(false);
                     logger.info("Adding {} disabled for now because the config is incomplete", newIndexer.getName());
                 } else {
@@ -510,7 +511,7 @@ public class JsonConfigMigration {
                         IndexerConfig indexerConfig = checkCapsRespone.getIndexerConfig();
                         if (checkCapsRespone.isConfigComplete()) {
                             logger.info("Successfully checked caps of {}. Setting it enabled now", indexerConfig.getName());
-                            indexerConfig.setState(IndexerConfig.State.ENABLED);
+                            indexerConfig.setState(IndexerState.ENABLED);
                             indexerConfig = checkCapsRespone.getIndexerConfig();
                             enabledNewznabIndexers.set(enabledNewznabIndexers.indexOf(indexerConfig), indexerConfig);
                             if (!checkCapsRespone.isAllCapsChecked()) {

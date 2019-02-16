@@ -13,6 +13,7 @@ import org.nzbhydra.config.SearchingConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
@@ -117,15 +118,15 @@ public class IndexerForSearchSelectorTest {
     public void shouldCheckIfDisabledBySystem() {
         when(searchingConfig.isIgnoreTemporarilyDisabled()).thenReturn(false);
 
-        indexerConfigMock.setState(IndexerConfig.State.ENABLED);
+        indexerConfigMock.setState(IndexerState.ENABLED);
         indexerConfigMock.setDisabledUntil(null);
         assertTrue(testee.checkIndexerStatus(indexer));
 
-        indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        indexerConfigMock.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfigMock.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS));
         assertFalse(testee.checkIndexerStatus(indexer));
 
-        indexerConfigMock.setState(IndexerConfig.State.DISABLED_SYSTEM);
+        indexerConfigMock.setState(IndexerState.DISABLED_SYSTEM);
         assertFalse(testee.checkIndexerStatus(indexer));
     }
 

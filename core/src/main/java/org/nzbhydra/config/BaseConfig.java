@@ -8,6 +8,7 @@ import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         //Always save config to keep it in sync with base config (remove obsolete settings and add new ones)
         configReaderWriter.save(this);
         initialized = true;
+
     }
 
     public void load() throws IOException {
@@ -134,7 +136,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         }
 
         if (!newConfig.getIndexers().isEmpty()) {
-            if (newConfig.getIndexers().stream().noneMatch(x -> x.getState() == IndexerConfig.State.ENABLED)) {
+            if (newConfig.getIndexers().stream().noneMatch(x -> x.getState() == IndexerState.ENABLED)) {
                 configValidationResult.getWarningMessages().add("No indexers enabled. Searches will return empty results");
             } else if (newConfig.getIndexers().stream().allMatch(x -> x.getSupportedSearchIds().isEmpty())) {
                 if (newConfig.getSearching().getGenerateQueries() == SearchSourceRestriction.NONE) {

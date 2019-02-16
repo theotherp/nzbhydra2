@@ -45,6 +45,7 @@ public abstract class ValidatingConfig<T> {
         }
     }
 
+
     protected void checkRegex(List<String> errorMessages, String regex, String errorMessage) {
         if (!Strings.isNullOrEmpty(regex)) {
             try {
@@ -97,8 +98,6 @@ public abstract class ValidatingConfig<T> {
      * Called for a new config to initialize itself
      */
     public abstract T initializeNewConfig();
-
-
 
 
 }

@@ -7,6 +7,7 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.FileSystemBrowser.DirectoryListingRequest;
 import org.nzbhydra.config.FileSystemBrowser.FileSystemEntry;
 import org.nzbhydra.config.ValidatingConfig.ConfigValidationResult;
+import org.nzbhydra.config.indexer.IndexerConfigSynchronizer;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.nzbhydra.web.UrlCalculator;
 import org.slf4j.Logger;
@@ -41,13 +42,17 @@ public class ConfigWeb {
     @Autowired
     private FileSystemBrowser fileSystemBrowser;
     @Autowired
+    private IndexerConfigSynchronizer indexerConfigSynchronizer;
+    @Autowired
     private UrlCalculator urlCalculator;
     private ConfigReaderWriter configReaderWriter = new ConfigReaderWriter();
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/config", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public BaseConfig getConfig(HttpSession session) throws IOException {
-        return configReaderWriter.loadSavedConfig().updateAfterLoading();
+        BaseConfig baseConfig = configReaderWriter.loadSavedConfig().updateAfterLoading();
+        baseConfig = indexerConfigSynchronizer.synchronizeFromDatabase(baseConfig);
+        return baseConfig;
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -75,6 +80,8 @@ public class ConfigWeb {
             configProvider.getBaseConfig().save();
             result.setNewConfig(configProvider.getBaseConfig());
         }
+
+        indexerConfigSynchronizer.synchronizeFromConfig(newConfig);
         return result;
     }
 
@@ -84,6 +91,9 @@ public class ConfigWeb {
         logger.info("Reloading config from file");
         try {
             configProvider.getBaseConfig().load();
+            configProvider.getBaseConfig().getIndexers().clear();
+            BaseConfig newBaseConfig = indexerConfigSynchronizer.synchronizeFromDatabase(configProvider.getBaseConfig());
+            configProvider.getBaseConfig().getIndexers().addAll(newBaseConfig.getIndexers());
         } catch (IOException e) {
             return new GenericResponse(false, e.getMessage());
         }

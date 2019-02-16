@@ -19,8 +19,6 @@ package org.nzbhydra.indexers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.indexer.IndexerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,12 +31,12 @@ import java.util.stream.Collectors;
 public class IndexerStatuses {
 
     @Autowired
-    private ConfigProvider configProvider;
+    private IndexerRepository indexerRepository;
 
     public List<IndexerStatus> getSortedStatuses() {
-        return configProvider.getBaseConfig().getIndexers().stream()
+        return indexerRepository.findAll().stream()
                 .sorted(
-                        Comparator.comparing(IndexerConfig::getState)
+                        Comparator.comparing(IndexerEntity::getState)
                                 .thenComparing(o -> o.getName().toLowerCase())
                 )
                 .map(
@@ -46,7 +44,7 @@ public class IndexerStatuses {
                                 x.getName(),
                                 x.getState().name(),
                                 x.getDisabledLevel(),
-                                (x.getDisabledUntil() == null ? null : Instant.ofEpochMilli(x.getDisabledUntil())),
+                                x.getDisabledUntil(),
                                 x.getLastError()
                         )
                 )

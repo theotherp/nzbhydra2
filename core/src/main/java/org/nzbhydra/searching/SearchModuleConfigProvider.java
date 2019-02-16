@@ -46,5 +46,6 @@ public class SearchModuleConfigProvider implements InitializingBean {
     public void afterPropertiesSet() {
         indexers = baseConfig.getIndexers();
         searchModuleProvider.loadIndexers(indexers);
+
     }
 }

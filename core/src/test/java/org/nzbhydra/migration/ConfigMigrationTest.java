@@ -17,6 +17,7 @@ import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.downloading.*;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.capscheck.CheckCapsResponse;
 import org.nzbhydra.indexers.capscheck.NewznabChecker;
@@ -141,14 +142,14 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getIndexers().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getName(), is("Binsearch"));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getEnabledForSearchSource(), is(SearchSourceRestriction.INTERNAL));
-        assertThat(result.getMigratedConfig().getIndexers().get(0).getState(), is(IndexerConfig.State.DISABLED_USER));
+        assertThat(result.getMigratedConfig().getIndexers().get(0).getState(), is(IndexerState.DISABLED_USER));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getTimeout().get(), is(9));
         assertThat(result.getMigratedConfig().getIndexers().get(0).getSearchModuleType(), is(SearchModuleType.BINSEARCH));
         assertThat(result.getMigratedConfig().getIndexers().get(0).isConfigComplete(), is(true));
 
         assertThat(result.getMigratedConfig().getIndexers().get(1).getSearchModuleType(), is(SearchModuleType.NZBINDEX));
         assertThat(result.getMigratedConfig().getIndexers().get(1).getEnabledForSearchSource(), is(SearchSourceRestriction.BOTH));
-        assertThat(result.getMigratedConfig().getIndexers().get(1).getState(), is(IndexerConfig.State.ENABLED));
+        assertThat(result.getMigratedConfig().getIndexers().get(1).getState(), is(IndexerState.ENABLED));
         assertThat(result.getMigratedConfig().getIndexers().get(1).isConfigComplete(), is(true));
 
         assertThat(result.getMigratedConfig().getIndexers().get(2).getSearchModuleType(), is(SearchModuleType.NEWZNAB));
@@ -166,15 +167,15 @@ public class ConfigMigrationTest {
         assertThat(result.getMigratedConfig().getIndexers().get(2).getHitLimitResetTime().get(), is(3));
         assertThat(result.getMigratedConfig().getIndexers().get(2).isPreselect(), is(true));
         assertThat(result.getMigratedConfig().getIndexers().get(2).getScore().get(), is(10));
-        assertThat("Previously disabled indexer should still be disabled", result.getMigratedConfig().getIndexers().get(2).getState(), is(IndexerConfig.State.DISABLED_USER));
+        assertThat("Previously disabled indexer should still be disabled", result.getMigratedConfig().getIndexers().get(2).getState(), is(IndexerState.DISABLED_USER));
         assertThat("Previously disabled indexer should have incomplete config because its caps were not checked", result.getMigratedConfig().getIndexers().get(2).isConfigComplete(), is(false));
-        assertThat("Newznab indexers should be disabled until caps were checked", result.getMigratedConfig().getIndexers().get(2).getState(), is(IndexerConfig.State.DISABLED_USER));
+        assertThat("Newznab indexers should be disabled until caps were checked", result.getMigratedConfig().getIndexers().get(2).getState(), is(IndexerState.DISABLED_USER));
         assertThat("Newznab indexers should be marked with config incomplete", result.getMigratedConfig().getIndexers().get(2).isConfigComplete(), is(false));
 
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().size(), is(4));
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().contains("Movies"), is(true));
         assertThat(result.getMigratedConfig().getIndexers().get(3).getEnabledCategories().contains("Movies HD"), is(true));
-        assertThat("Previously enabled indexer should still be enabled", result.getMigratedConfig().getIndexers().get(3).getState(), is(IndexerConfig.State.ENABLED));
+        assertThat("Previously enabled indexer should still be enabled", result.getMigratedConfig().getIndexers().get(3).getState(), is(IndexerState.ENABLED));
         assertThat("Previously enabled indexer should have ccomplete config because its caps were checked", result.getMigratedConfig().getIndexers().get(3).isConfigComplete(), is(true));
         verify(newznabCheckerMock, times(1)).checkCaps(indexerConfigsCaptor.capture());
         assertThat(indexerConfigsCaptor.getValue().getName(), is("Drunken Slug"));

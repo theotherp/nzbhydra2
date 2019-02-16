@@ -27,6 +27,7 @@ import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.MainCategory;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig.SubCategory;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.indexers.IndexerWebAccess;
@@ -238,14 +239,14 @@ public class NewznabChecker {
         indexerConfig.setBackend(backendType);
         indexerConfig.setConfigComplete(configComplete);
         indexerConfig.setAllCapsChecked(allChecked);
-        indexerConfig.setState(configComplete ? IndexerConfig.State.ENABLED : IndexerConfig.State.DISABLED_SYSTEM);
+        indexerConfig.setState(configComplete ? IndexerState.ENABLED : IndexerState.DISABLED_SYSTEM);
 
         return new CheckCapsResponse(indexerConfig, allChecked, configComplete);
     }
 
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
         Predicate<IndexerConfig> isToBeCheckedPredicate = x ->
-                x.getState() == IndexerConfig.State.ENABLED
+                x.getState() == IndexerState.ENABLED
                         && (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)
                         && x.isConfigComplete()
                         && (checkType == CheckType.ALL || !x.isAllCapsChecked());

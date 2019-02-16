@@ -23,8 +23,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.ConfigReaderWriter;
-import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -40,13 +39,13 @@ public class IndexerStatusesCleanupTaskTest {
     @Mock
     private BaseConfig baseConfig;
     @Mock
-    private ConfigReaderWriter configReaderWriterMock;
+    private IndexerRepository indexerRepositoryMock;
 
-    IndexerConfig indexerConfigEnabled = new IndexerConfig();
-    IndexerConfig indexerConfigDisabledSystem = new IndexerConfig();
-    IndexerConfig indexerConfigDisabledTempInTimeWindow = new IndexerConfig();
-    IndexerConfig indexerConfigDisabledTempOutsideTimeWindow = new IndexerConfig();
-    IndexerConfig indexerConfigUserDisabled = new IndexerConfig();
+    IndexerEntity indexerConfigEnabled = new IndexerEntity();
+    IndexerEntity indexerConfigDisabledSystem = new IndexerEntity();
+    IndexerEntity indexerConfigDisabledTempInTimeWindow = new IndexerEntity();
+    IndexerEntity indexerConfigDisabledTempOutsideTimeWindow = new IndexerEntity();
+    IndexerEntity indexerConfigUserDisabled = new IndexerEntity();
 
     @InjectMocks
     private IndexerStatusesCleanupTask testee;
@@ -55,23 +54,23 @@ public class IndexerStatusesCleanupTaskTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        testee = new IndexerStatusesCleanupTask(configProvider);
-        indexerConfigEnabled.setState(IndexerConfig.State.ENABLED);
-        indexerConfigUserDisabled.setState(IndexerConfig.State.DISABLED_USER);
-        indexerConfigDisabledSystem.setState(IndexerConfig.State.DISABLED_SYSTEM);
+        testee = new IndexerStatusesCleanupTask();
+        indexerConfigEnabled.setState(IndexerState.ENABLED);
+        indexerConfigUserDisabled.setState(IndexerState.DISABLED_USER);
+        indexerConfigDisabledSystem.setState(IndexerState.DISABLED_SYSTEM);
 
-        indexerConfigDisabledTempInTimeWindow.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigDisabledTempInTimeWindow.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS).toEpochMilli());
+        indexerConfigDisabledTempInTimeWindow.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfigDisabledTempInTimeWindow.setDisabledUntil(Instant.now().plus(1, ChronoUnit.DAYS));
         indexerConfigDisabledTempInTimeWindow.setLastError("someerror");
         indexerConfigDisabledTempInTimeWindow.setDisabledLevel(1);
 
-        indexerConfigDisabledTempOutsideTimeWindow.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
-        indexerConfigDisabledTempOutsideTimeWindow.setDisabledUntil(Instant.now().minus(1, ChronoUnit.DAYS).toEpochMilli());
+        indexerConfigDisabledTempOutsideTimeWindow.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfigDisabledTempOutsideTimeWindow.setDisabledUntil(Instant.now().minus(1, ChronoUnit.DAYS));
         indexerConfigDisabledTempOutsideTimeWindow.setLastError("someerror");
         indexerConfigDisabledTempOutsideTimeWindow.setDisabledLevel(1);
-        when(baseConfig.getIndexers()).thenReturn(Arrays.asList(indexerConfigDisabledSystem, indexerConfigDisabledTempInTimeWindow, indexerConfigDisabledTempOutsideTimeWindow, indexerConfigEnabled, indexerConfigUserDisabled));
+        when(indexerRepositoryMock.findAll()).thenReturn(Arrays.asList(indexerConfigDisabledSystem, indexerConfigDisabledTempInTimeWindow, indexerConfigDisabledTempOutsideTimeWindow, indexerConfigEnabled, indexerConfigUserDisabled));
         when(configProvider.getBaseConfig()).thenReturn(baseConfig);
-        testee.configReaderWriter = configReaderWriterMock;
+        testee.indexerRepository = indexerRepositoryMock;
     }
 
     @Test
@@ -79,18 +78,18 @@ public class IndexerStatusesCleanupTaskTest {
         testee.cleanup();
 
         //Was reenabled
-        assertThat(indexerConfigDisabledTempOutsideTimeWindow.getState()).isEqualTo(IndexerConfig.State.ENABLED);
+        assertThat(indexerConfigDisabledTempOutsideTimeWindow.getState()).isEqualTo(IndexerState.ENABLED);
         assertThat(indexerConfigDisabledTempOutsideTimeWindow.getDisabledUntil()).isNull();
         assertThat(indexerConfigDisabledTempOutsideTimeWindow.getLastError()).isNull();
         assertThat(indexerConfigDisabledTempOutsideTimeWindow.getDisabledLevel()).isEqualTo(1); //was not reset, is only reset when an indexer is accessed successfully
 
         //Rest stayed the same
-        assertThat(indexerConfigDisabledTempInTimeWindow.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        assertThat(indexerConfigDisabledTempInTimeWindow.getState()).isEqualTo(IndexerState.DISABLED_SYSTEM_TEMPORARY);
         assertThat(indexerConfigDisabledTempInTimeWindow.getDisabledUntil()).isNotNull();
         assertThat(indexerConfigDisabledTempInTimeWindow.getLastError()).isEqualTo("someerror");
         assertThat(indexerConfigDisabledTempInTimeWindow.getDisabledLevel()).isEqualTo(1);
-        assertThat(indexerConfigEnabled.getState()).isEqualTo(IndexerConfig.State.ENABLED);
-        assertThat(indexerConfigUserDisabled.getState()).isEqualTo(IndexerConfig.State.DISABLED_USER);
-        assertThat(indexerConfigDisabledSystem.getState()).isEqualTo(IndexerConfig.State.DISABLED_SYSTEM);
+        assertThat(indexerConfigEnabled.getState()).isEqualTo(IndexerState.ENABLED);
+        assertThat(indexerConfigUserDisabled.getState()).isEqualTo(IndexerState.DISABLED_USER);
+        assertThat(indexerConfigDisabledSystem.getState()).isEqualTo(IndexerState.DISABLED_SYSTEM);
     }
 }

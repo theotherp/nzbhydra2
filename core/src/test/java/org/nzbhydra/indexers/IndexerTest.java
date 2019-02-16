@@ -11,6 +11,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.indexers.exceptions.*;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -188,38 +189,38 @@ public class IndexerTest {
 
     @Test
     public void handleSuccess() throws Exception {
-        indexerConfig.setState(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY);
+        indexerConfig.setState(IndexerState.DISABLED_SYSTEM_TEMPORARY);
         indexerConfig.setDisabledLevel(1);
-        indexerConfig.setDisabledUntil(Instant.now().toEpochMilli());
+        indexerConfig.setDisabledUntil(Instant.now());
 
         testee.handleSuccess(IndexerApiAccessType.SEARCH, 0L);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.ENABLED));
+        assertThat(indexerConfig.getState(), is(IndexerState.ENABLED));
         assertThat(indexerConfig.getDisabledLevel(), is(0));
         assertThat(indexerConfig.getDisabledUntil(), is(nullValue()));
     }
 
     @Test
     public void handleFailure() throws Exception {
-        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setState(IndexerState.ENABLED);
         indexerConfig.setDisabledLevel(0);
         indexerConfig.setDisabledUntil(null);
 
         testee.handleFailure("reason", false, null, null, null);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY));
+        assertThat(indexerConfig.getState(), is(IndexerState.DISABLED_SYSTEM_TEMPORARY));
         assertThat(indexerConfig.getDisabledLevel(), is(1));
-        long disabledPeriod = Math.abs(Instant.ofEpochMilli(indexerConfig.getDisabledUntil()).getEpochSecond() - Instant.now().getEpochSecond());
+        long disabledPeriod = Math.abs(indexerConfig.getDisabledUntil().getEpochSecond() - Instant.now().getEpochSecond());
         long delta = Math.abs(Indexer.DISABLE_PERIODS.get(1) * 60 - disabledPeriod);
         org.assertj.core.api.Assertions.assertThat(delta).isLessThan(5);
 
-        indexerConfig.setState(IndexerConfig.State.ENABLED);
+        indexerConfig.setState(IndexerState.ENABLED);
         indexerConfig.setDisabledLevel(0);
         indexerConfig.setDisabledUntil(null);
 
         testee.handleFailure("reason", true, null, null, null);
 
-        assertThat(indexerConfig.getState(), is(IndexerConfig.State.DISABLED_SYSTEM));
+        assertThat(indexerConfig.getState(), is(IndexerState.DISABLED_SYSTEM));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.indexers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +39,7 @@ public class SearchModuleProvider {
     }
 
     public List<Indexer> getEnabledIndexers() {
-        return searchModuleInstances.values().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED).collect(Collectors.toList());
+        return searchModuleInstances.values().stream().filter(x -> x.getIndexerEntity().getState() == IndexerState.ENABLED).collect(Collectors.toList());
     }
 
     public Indexer getIndexerByName(String indexerName) {

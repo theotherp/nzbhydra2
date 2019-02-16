@@ -11,10 +11,9 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -57,10 +56,6 @@ public class IndexerForSearchSelector {
     @Autowired
     private SearchModuleProvider searchModuleProvider;
     @Autowired
-    private FileDownloadRepository nzbDownloadRepository;
-    @Autowired
-    private IndexerApiAccessEntityShortRepository shortRepository;
-    @Autowired
     private ConfigProvider configProvider;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -76,7 +71,7 @@ public class IndexerForSearchSelector {
     public IndexerForSearchSelection pickIndexers(SearchRequest searchRequest) {
         this.searchRequest = searchRequest;
         //Check any indexer that's not disabled by the user. If it's disabled by the system it will be deselected with a proper message later
-        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() != IndexerConfig.State.DISABLED_USER).collect(Collectors.toList());
+        List<Indexer> eligibleIndexers = searchModuleProvider.getIndexers().stream().filter(x -> x.getIndexerEntity().getState() != IndexerState.DISABLED_USER).collect(Collectors.toList());
         if (eligibleIndexers.isEmpty()) {
             logger.warn("You don't have any enabled indexers");
             return new IndexerForSearchSelection();
@@ -179,14 +174,14 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkIndexerStatus(Indexer indexer) {
-        if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
-            if (indexer.getConfig().getDisabledUntil() == null || Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()).isBefore(clock.instant())) {
+        if (indexer.getIndexerEntity().getState() == IndexerState.DISABLED_SYSTEM_TEMPORARY) {
+            if (indexer.getIndexerEntity().getDisabledUntil() == null || indexer.getIndexerEntity().getDisabledUntil().isBefore(clock.instant())) {
                 return true;
             }
-            String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), Instant.ofEpochMilli(indexer.getConfig().getDisabledUntil()));
+            String message = String.format("Not using %s because it's disabled until %s due to a previous error ", indexer.getName(), indexer.getIndexerEntity().getDisabledUntil());
             return handleIndexerNotSelected(indexer, message, "Disabled temporarily because of previous errors");
         }
-        if (indexer.getConfig().getState() == IndexerConfig.State.DISABLED_SYSTEM) {
+        if (indexer.getIndexerEntity().getState() == IndexerState.DISABLED_SYSTEM) {
             String message = String.format("Not using %s because it's disabled due to a previous unrecoverable error", indexer.getName());
             return handleIndexerNotSelected(indexer, message, "Disabled permanently because of previous unrecoverable error");
         }
@@ -216,7 +211,14 @@ public class IndexerForSearchSelector {
             return true;
         }
 
-        return indexer.getConfig().isEligibleForInternalSearch();
+
+        return indexer.getConfig().isShowOnSearch()
+                && indexer.getConfig().isConfigComplete()
+                && (
+                indexer.getIndexerEntity().getState() == IndexerState.ENABLED
+                        || (indexer.getIndexerEntity().getState() == IndexerState.DISABLED_SYSTEM_TEMPORARY
+                        && (indexer.getIndexerEntity().getDisabledUntil() == null || indexer.getIndexerEntity().getDisabledUntil().isBefore(Instant.now())
+                )));
     }
 
     protected boolean checkIndexerHitLimit(Indexer indexer) {

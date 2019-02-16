@@ -2,6 +2,7 @@ package org.nzbhydra.web;
 
 import org.nzbhydra.auth.UserInfosProvider;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.indexer.IndexerConfigSynchronizer;
 import org.nzbhydra.config.safeconfig.SafeConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -22,9 +23,11 @@ public class MainWeb {
     private ConfigurableEnvironment environment;
     @Autowired
     private UserInfosProvider userInfos;
+    @Autowired
+    private IndexerConfigSynchronizer indexerConfigSynchronizer;
 
     private SafeConfig getSafeConfig() {
-        return new SafeConfig(configProvider.getBaseConfig());
+        return new SafeConfig(indexerConfigSynchronizer.synchronizeFromDatabase(configProvider.getBaseConfig()));
     }
 
 

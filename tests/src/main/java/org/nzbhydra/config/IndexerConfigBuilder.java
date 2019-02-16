@@ -18,6 +18,7 @@ package org.nzbhydra.config;
 
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.IndexerState;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -34,7 +35,7 @@ public final class IndexerConfigBuilder {
     private boolean configComplete = true;
     private List<String> enabledCategories = new ArrayList<>();
     private Integer downloadLimit = null;
-    private IndexerConfig.State state = IndexerConfig.State.ENABLED;
+    private IndexerState state = IndexerState.ENABLED;
     private SearchSourceRestriction enabledForSearchSource = SearchSourceRestriction.BOTH;
     private Integer generalMinSize = null;
     private Integer hitLimit = null;
@@ -96,7 +97,7 @@ public final class IndexerConfigBuilder {
         return this;
     }
 
-    public IndexerConfigBuilder state(IndexerConfig.State state) {
+    public IndexerConfigBuilder state(IndexerState state) {
         this.state = state;
         return this;
     }
