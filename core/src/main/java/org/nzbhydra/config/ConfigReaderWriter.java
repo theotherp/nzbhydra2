@@ -42,7 +42,7 @@ public class ConfigReaderWriter {
 
     public static final TypeReference<HashMap<String, Object>> MAP_TYPE_REFERENCE = new TypeReference<HashMap<String, Object>>() {
     };
-    private final RetryPolicy saveRetryPolicy = new RetryPolicy().retryOn(IOException.class).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(3);
+    private final RetryPolicy saveRetryPolicy = new RetryPolicy().retryOn(IOException.class).withDelay(1000, TimeUnit.MILLISECONDS).withMaxRetries(3);
 
 
     public void save(BaseConfig baseConfig) {
@@ -94,12 +94,20 @@ public class ConfigReaderWriter {
         }
 
 
+        //Write to temp file and make sure it can be read correctly
         File tempFile = new File(targetFile.getCanonicalPath() + ".bak");
         logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
         Files.write(tempFile.toPath(), configAsYamlString.getBytes(Charsets.UTF_8));
+        try {
+            Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
+        } catch (IOException e) {
+            logger.warn("Written temporary config file {} corrupted", e);
+            throw e;
+        }
+
+        //Copy temp file to target file and verify again it's correct
         logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying temporary file to {}", targetFile);
         Files.copy(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
         try {
             Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
         } catch (IOException e) {
@@ -165,7 +173,7 @@ public class ConfigReaderWriter {
                 Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
             } catch (IOException e2) {
                 logger.error("Config backup file corrupted: {}", e.getMessage());
-                throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " and its backup are corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'öö have to delete the file and start over. Please contact the developer when you have it running.");
+                throw new RuntimeException("Config file " + configFile.getAbsolutePath() + " and its backup are corrupted. If you find a ZIP in your backup folder restore it from there. Otherwise you'll have to delete the file and start over. Please contact the developer when you have it running.");
             }
 
             logger.warn("Invalid config file found. Will try to restore from backup. Error message: {}", e.getMessage());

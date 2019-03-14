@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Add database index to improve loading of search history on initial page load"
+      },
+      {
+        "type": "fix",
+        "text": "Try to prevent config file from being corrupted"
       }
     ]
   },
