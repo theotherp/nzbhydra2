@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.16",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Add database index to improve loading of search history on initial page load"
+      }
+    ]
+  },
+  {
     "version": "v2.3.15",
     "changes": [
       {
