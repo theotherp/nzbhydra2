@@ -1,8 +1,16 @@
+### v2.3.16
+
+Fix: Add database index to improve loading of search history on initial page load
+
+Fix: Try to prevent config file from being corrupted
+
+
+
 ### v2.3.15
 
 Note: I need to make something clear: If Hydra shows you 100 results on the GUI and says that x results are not yet loaded then that means that some results you're looking for may be missing. You will always only get the newest 100 results from any indexer at first. Even if you sort by name then other results which should be somewhere in that list may be 'hidden' because they were not yet retrieved from the indexer.
 
-Fix: Delay writing of config file so that not too many concurrent writes occur. This should hopefully reduce the risk of file corruption.
+null: Delay writing of config file so that not too many concurrent writes occur. This should hopefully reduce the risk of file corruption.
 
 
 
