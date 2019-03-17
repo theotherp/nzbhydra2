@@ -1,7 +1,10 @@
 package org.nzbhydra.indexers;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import joptsimple.internal.Strings;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.RetryPolicy;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -34,6 +37,7 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +54,8 @@ public class Binsearch extends Indexer<String> {
     private static final Pattern PUBDATE_PATTERN = Pattern.compile("(\\d{1,2}\\-\\w{3}\\-\\d{4})", Pattern.CASE_INSENSITIVE);
     private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder().appendPattern("dd-MMM-yyyy").parseDefaulting(ChronoField.NANO_OF_DAY, 0).toFormatter().withZone(ZoneId.of("UTC"));
     private static final Pattern NFO_PATTERN = Pattern.compile("<pre>(?<nfo>.*)<\\/pre>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+
+    private final RetryPolicy retry503policy = new RetryPolicy().retryOn(x -> x instanceof IndexerAccessException && Throwables.getStackTraceAsString(x).contains("503")).withDelay(500, TimeUnit.MILLISECONDS).withMaxRetries(2);
 
 
     //LATER It's not ideal that currently the web response needs to be parsed twice, once for the search results and once for the completion of the indexer search result. Will need to check how much that impacts performance
@@ -242,7 +248,9 @@ public class Binsearch extends Indexer<String> {
 
     @Override
     protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
-        return getAndStoreResultToDatabase(uri, String.class, apiAccessType);
+        return Failsafe.with(retry503policy)
+                .onFailedAttempt(throwable -> logger.warn("Encountered 503 error. Will retry"))
+                .get(() -> getAndStoreResultToDatabase(uri, String.class, apiAccessType));
     }
 
     @Override

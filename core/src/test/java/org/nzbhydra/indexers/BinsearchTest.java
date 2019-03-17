@@ -8,6 +8,7 @@ import org.mockito.*;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
@@ -146,6 +147,16 @@ public class BinsearchTest {
         assertThat(nfoResult.isHasNfo(), is(true));
         assertThat(nfoResult.getContent(), is("nfocontent"));
         assertThat(uriCaptor.getValue().toString(), is("https://www.binsearch.info/viewNFO.php?oid=1234"));
+    }
+
+    @Test
+    public void shouldRetryOn503() throws Exception {
+        testee = spy(testee);
+//        doReturn(nfoHtml).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());
+        doThrow(new IndexerAccessException("503")).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());
+
+        testee.getAndStoreResultToDatabase(null, IndexerApiAccessType.NFO);
+
     }
 
 

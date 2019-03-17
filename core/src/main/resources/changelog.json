@@ -3,8 +3,12 @@
     "version": "v2.3.17",
     "changes": [
       {
+        "type": "feature",
+        "text": "Binsearch is knowing for returning a 503 error every now and then. In that case Hydra will retry the search up to two times."
+      },
+      {
         "type": "fix",
-        "text": "An indexer selected due to load limiting was displayed as being disabled in the GUI"
+        "text": "An indexer selected due to load limiting was displayed as being disabled in the GUI."
       }
     ]
   },
@@ -13,11 +17,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Add database index to improve loading of search history on initial page load"
+        "text": "Add database index to improve loading of search history on initial page load."
       },
       {
         "type": "fix",
-        "text": "Try to prevent config file from being corrupted"
+        "text": "Try to prevent config file from being corrupted."
       }
     ]
   },
@@ -38,7 +42,7 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+"
+        "text": "Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+."
       },
       {
         "type": "fix",
