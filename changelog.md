@@ -1,8 +1,18 @@
+### v2.3.17
+
+Feature: Binsearch is knowing for returning a 503 error every now and then. In that case Hydra will retry the search up to two times.
+
+Fix: An indexer not selected due to load limiting was displayed as being disabled in the GUI.
+
+Fix: Reduce frequency of config file being written.
+
+
+
 ### v2.3.16
 
-Fix: Add database index to improve loading of search history on initial page load
+Fix: Add database index to improve loading of search history on initial page load.
 
-Fix: Try to prevent config file from being corrupted
+Fix: Try to prevent config file from being corrupted.
 
 
 
@@ -16,7 +26,7 @@ null: Delay writing of config file so that not too many concurrent writes occur.
 
 ### v2.3.14
 
-Fix: Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+
+Fix: Change how SNI verification is disabled so that nzbgeek.info should work with Java 10+.
 
 Fix: Fix NZBIndex parsing. Thanks to BenoitCharret.
 
