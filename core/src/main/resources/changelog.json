@@ -8,7 +8,7 @@
       },
       {
         "type": "fix",
-        "text": "An indexer selected due to load limiting was displayed as being disabled in the GUI."
+        "text": "An indexer not selected due to load limiting was displayed as being disabled in the GUI."
       },
       {
         "type": "fix",
