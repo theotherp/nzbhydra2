@@ -9,6 +9,7 @@ import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.config.category.CategoriesConfig;
 import org.nzbhydra.config.downloading.DownloadingConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     @JsonIgnore
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
+    @ToString.Exclude
     private BaseConfig toSave;
     @JsonIgnore
     @Getter(AccessLevel.NONE)
@@ -83,9 +85,11 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     public void save(boolean saveInstantly) {
         saveLock.lock();
         if (saveInstantly) {
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Saving instantly");
             configReaderWriter.save(this);
             toSave = null;
         } else {
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Delaying save");
             toSave = this;
         }
         saveLock.unlock();
@@ -138,6 +142,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private void saveToSave() {
         saveLock.lock();
         if (toSave != null) {
+            logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Executing delayed save");
             configReaderWriter.save(toSave);
             toSave = null;
         }
@@ -247,5 +252,6 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         getAuth().initializeNewConfig();
         return this;
     }
+
 
 }

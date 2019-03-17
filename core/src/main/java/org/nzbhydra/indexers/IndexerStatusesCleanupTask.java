@@ -43,6 +43,7 @@ public class IndexerStatusesCleanupTask {
 
     @HydraTask(configId = "cleanUpIndexerStatuses", name = "Clean up indexer statuses", interval = MINUTE)
     public void cleanup() {
+        boolean anyChanges = false;
         for (IndexerConfig config : configProvider.getBaseConfig().getIndexers()) {
             if (config.getState() == IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY && config.getDisabledUntil() != null && Instant.ofEpochMilli(config.getDisabledUntil()).isBefore(Instant.now())) {
                 //Do not reset the level. When the indexer is called the next time (when disabledUntil is in the past)
@@ -51,8 +52,11 @@ public class IndexerStatusesCleanupTask {
                 config.setState(IndexerConfig.State.ENABLED);
                 config.setDisabledUntil(null);
                 config.setLastError(null);
+                anyChanges = true;
             }
         }
-        configProvider.getBaseConfig().save(false);
+        if (anyChanges) {
+            configProvider.getBaseConfig().save(false);
+        }
     }
 }
