@@ -161,7 +161,7 @@ public class IndexerForSearchSelector {
         boolean preventedByLoadLimiting = indexer.getConfig().getLoadLimitOnRandom().isPresent() && random.nextInt(indexer.getConfig().getLoadLimitOnRandom().get()) + 1 != 1;
         if (preventedByLoadLimiting) {
             String message = String.format("Not using %s because load limiting prevented it. Chances of it being picked: 1/%d", indexer.getName(), indexer.getConfig().getLoadLimitOnRandom().get());
-            return handleIndexerNotSelected(indexer, message, "Disabled temporarily");
+            return handleIndexerNotSelected(indexer, message, "Load limiting");
         }
         return true;
     }

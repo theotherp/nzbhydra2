@@ -166,7 +166,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 type: 'number',
                 label: 'Timeout',
-                help: 'Supercedes the general timeout in "Searching". A value above 25 is not recommended.'
+                help: 'Supercedes the general timeout in "Searching".'
             }
         },
         {
