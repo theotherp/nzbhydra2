@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.17",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "An indexer selected due to load limiting was displayed as being disabled in the GUI"
+      }
+    ]
+  },
+  {
     "version": "v2.3.16",
     "changes": [
       {
