@@ -1,3 +1,9 @@
+### v2.3.18
+
+Fix: Not all API keys were anonymized when creating the debug infos.
+
+
+
 ### v2.3.17
 
 Feature: Binsearch is knowing for returning a 503 error every now and then. In that case Hydra will retry the search up to two times.
