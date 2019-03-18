@@ -1,7 +1,9 @@
 package org.nzbhydra.logging;
 
+import com.google.common.base.Strings;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,14 @@ public class LogAnonymizer {
             logger.debug("Removing username from log");
             log = log.replaceAll("(?i)(user|username)([=:])" + userAuthConfig.getUsername(), "$1$2<USERNAME>");
         }
+        for (IndexerConfig indexerConfig : configProvider.getBaseConfig().getIndexers()) {
+            if (Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
+                continue;
+            }
+            logger.debug("Removing API key for indexer {} from log", indexerConfig.getName());
+            log = log.replaceAll(indexerConfig.getApiKey(), "<APIKEY>");
+        }
+
         logger.debug("Removing IPs from log");
         log = log.replaceAll("\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b", "<IP>");
         log = log.replaceAll("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(%\\d+)?", "<IP>");

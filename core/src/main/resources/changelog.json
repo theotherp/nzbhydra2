@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.18",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Not all API keys were anonymized when creating the debug infos."
+      }
+    ]
+  },
+  {
     "version": "v2.3.17",
     "changes": [
       {

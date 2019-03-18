@@ -8,6 +8,7 @@ import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.UserAuthConfig;
+import org.nzbhydra.config.indexer.IndexerConfig;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -31,6 +32,9 @@ public class LogAnonymizerTest {
         UserAuthConfig user = new UserAuthConfig();
         user.setUsername("someusername");
         baseConfig.getAuth().getUsers().add(user);
+        IndexerConfig indexerConfig = new IndexerConfig();
+        indexerConfig.setApiKey("apikey");
+        baseConfig.getIndexers().add(indexerConfig);
     }
 
     @Test
@@ -58,6 +62,15 @@ public class LogAnonymizerTest {
         String anonymized = testee.getAnonymizedLog();
 
         assertThat(anonymized, is("user=<USERNAME> USER:<USERNAME> username=<USERNAME> username:<USERNAME>"));
+    }
+
+    @Test
+    public void shouldAnonymizeApikeysFromConfig() throws Exception {
+        when(logContentProviderMock.getLog()).thenReturn("r=apikey");
+
+        String anonymized = testee.getAnonymizedLog();
+
+        assertThat(anonymized, is("r=<APIKEY>"));
     }
 
 
