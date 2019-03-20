@@ -1,3 +1,9 @@
+### v2.3.19
+
+Fix: Revert update of database library as it caused errors on startup in some issues.
+
+
+
 ### v2.3.18
 
 Fix: Not all API keys were anonymized when creating the debug infos.
