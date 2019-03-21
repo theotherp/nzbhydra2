@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.20",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Revert revert because, as it turns out, it wasn't the libary at fault but the new version just failed to read a file already corrupted."
+      }
+    ]
+  },
+  {
     "version": "v2.3.19",
     "changes": [
       {
