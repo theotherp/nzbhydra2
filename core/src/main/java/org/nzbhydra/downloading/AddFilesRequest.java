@@ -23,6 +23,7 @@ public class AddFilesRequest {
 
         private String searchResultId;
         private String originalCategory;
+        private String mappedCategory;
 
     }
 

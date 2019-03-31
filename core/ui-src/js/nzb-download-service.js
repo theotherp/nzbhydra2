@@ -15,14 +15,14 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
         var params = {
             downloaderName: downloader.name,
             searchResults: searchResults,
-            category: category === "No category" ? "" : category
+            category: category
         };
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function download(downloader, searchResults, alwaysAsk) {
         var category = downloader.defaultCategory;
-        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "No category")) {
+        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "Use original category") && category !== "Use mapped category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {

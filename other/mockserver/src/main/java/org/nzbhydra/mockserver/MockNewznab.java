@@ -258,8 +258,8 @@ public class MockNewznab {
                 for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
                     item.setPubDate(item.getPubDate().minus(random.nextInt(300) * 24, ChronoUnit.HOURS));
                 }
-
             }
+
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

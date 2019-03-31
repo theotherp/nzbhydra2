@@ -3,6 +3,10 @@
     "version": "v2.3.21",
     "changes": [
       {
+        "type": "feature",
+        "text": "Option to send the mapped category name to downloaders."
+      },
+      {
         "type": "fix",
         "text": "/api/stats/indexers endpoint was accessible without authorization."
       }

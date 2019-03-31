@@ -25,7 +25,8 @@ function addableNzb(DebugService) {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [{
                 searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
-                originalCategory: $scope.searchresult.originalCategory
+                originalCategory: $scope.searchresult.originalCategory,
+                mappedCategory: $scope.searchresult.category
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {

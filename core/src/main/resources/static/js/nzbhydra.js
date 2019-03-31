@@ -2890,7 +2890,8 @@ function addableNzb(DebugService) {
             $scope.cssClass = "nzb-spinning";
             NzbDownloadService.download($scope.downloader, [{
                 searchResultId: $scope.searchresult.searchResultId ? $scope.searchresult.searchResultId : $scope.searchresult.id,
-                originalCategory: $scope.searchresult.originalCategory
+                originalCategory: $scope.searchresult.originalCategory,
+                mappedCategory: $scope.searchresult.category
             }], $scope.alwaysAsk).then(function (response) {
                 if (response !== "dismissed") {
                     if (response.data.successful && (response.data.addedIds != null && response.data.addedIds.indexOf(Number($scope.searchresult.searchResultId)) > -1)) {
@@ -4148,7 +4149,7 @@ angular
                             templateOptions: {
                                 type: 'text',
                                 label: 'Default category',
-                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "No category" to let the downloader decide.',
+                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category" or "Use mapped category" to not be asked.',
                                 placeholder: 'Ask when downloading'
                             }
                         },
@@ -9105,14 +9106,14 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
         var params = {
             downloaderName: downloader.name,
             searchResults: searchResults,
-            category: category === "No category" ? "" : category
+            category: category
         };
         return $http.put("internalapi/downloader/addNzbs", params);
     }
 
     function download(downloader, searchResults, alwaysAsk) {
         var category = downloader.defaultCategory;
-        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "No category")) {
+        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "Use original category") && category !== "Use mapped category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {

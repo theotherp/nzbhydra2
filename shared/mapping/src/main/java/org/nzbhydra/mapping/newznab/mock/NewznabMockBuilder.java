@@ -13,7 +13,7 @@ import java.util.Random;
 public class NewznabMockBuilder {
 
     static Random random = new Random();
-    private static final List<Integer> newznabCategories = Arrays.asList(1000, 2000, 5000, 5040, 5035, 9090, 9000, 7020, 2030);
+    private static final List<Integer> newznabCategories = Arrays.asList(1000, 7020, 7020);
 
     public static CapsXmlRoot getCaps() {
         CapsXmlRoot capsRoot = new CapsXmlRoot();

@@ -215,7 +215,7 @@ angular
                             templateOptions: {
                                 type: 'text',
                                 label: 'Default category',
-                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "No category" to let the downloader decide.',
+                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category" or "Use mapped category" to not be asked.',
                                 placeholder: 'Ask when downloading'
                             }
                         },

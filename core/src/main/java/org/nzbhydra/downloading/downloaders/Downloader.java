@@ -18,7 +18,6 @@ package org.nzbhydra.downloading.downloaders;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
@@ -82,11 +81,20 @@ public abstract class Downloader {
             for (AddFilesRequest.SearchResult entry : searchResults) {
                 Long guid = Long.valueOf(entry.getSearchResultId());
                 String categoryToSend;
-                if (Strings.isNullOrEmpty(category) && !"N/A".equals(entry.getOriginalCategory())) {
-                    categoryToSend = entry.getOriginalCategory();
+
+                if ("Use original category".equals(category)) {
+                    if ("N/A".equals(entry.getOriginalCategory())) {
+                        logger.info("Using mapped category {} because the original category is N/A", entry.getMappedCategory());
+                        categoryToSend = entry.getMappedCategory();
+                    } else {
+                        categoryToSend = entry.getOriginalCategory();
+                    }
+                } else if ("Use mapped category".equals(category)) {
+                    categoryToSend = entry.getMappedCategory();
                 } else {
                     categoryToSend = category;
                 }
+
                 if (addingType == NzbAddingType.UPLOAD) {
                     DownloadResult result = nzbHandler.getFileByGuid(guid, FileDownloadAccessType.PROXY, SearchSource.INTERNAL); //Uploading NZBs can only be done via proxying
                     if (result.isSuccessful()) {
@@ -103,7 +111,8 @@ public abstract class Downloader {
                     addedNzbs.add(guid);
                 }
             }
-        } catch (InvalidSearchResultIdException | DownloaderException | EntityNotFoundException e) {
+        } catch (InvalidSearchResultIdException | DownloaderException |
+                EntityNotFoundException e) {
             String message;
             if (e instanceof EntityNotFoundException) {
                 message = "Unable to find the search result in the database. Unable to download";
@@ -209,7 +218,6 @@ public abstract class Downloader {
     protected abstract FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType);
 
     protected abstract boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry);
-
 
 
     @Data
