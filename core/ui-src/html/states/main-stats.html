@@ -53,17 +53,17 @@
                 <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgResponseTimes" switch-size="mini"
                        ng-change="onStatsSwitchToggle('avgResponseTimes')">
                 </span>
-
-
-                Avg. response times <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                          uib-tooltip="Response time is the time an API request takes, from start to completion of the web call"></span>
+    
+    
+                Avg. response times (in ms) <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                  uib-tooltip="Response time is the time an API request takes, from start to completion of the web call"></span>
             </div>
             <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgResponseTimes">
                 <table class="table">
                     <thead>
                     <tr>
                         <th>Indexer</th>
-                        <th>Avg. response time</th>
+                        <th>Avg. response time (ms)</th>
                         <th>Delta</th>
                     </tr>
                     </thead>

@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "/api/stats/indexers endpoint was accessible without authorization."
+      },
+      {
+        "type": "fix",
+        "text": "Show unit for average response times in stats (ms)."
       }
     ]
   },

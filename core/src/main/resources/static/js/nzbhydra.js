@@ -7107,7 +7107,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         });
 
         if ($scope.stats.avgResponseTimes) {
-            $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.stats.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time");
+            $scope.avgResponseTimesChart = getChart("multiBarHorizontalChart", $scope.stats.avgResponseTimes, "indexer", "avgResponseTime", "", "Response time (ms)");
             $scope.avgResponseTimesChart.options.chart.margin.left = 100;
             $scope.avgResponseTimesChart.options.chart.yAxis.rotateLabels = -30;
             $scope.avgResponseTimesChart.options.chart.height = Math.max($scope.stats.avgResponseTimes.length * 30, 350);
