@@ -61,7 +61,9 @@ public class ExternalApiStats {
     }
 
     @RequestMapping(value = "/api/stats/indexers", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<IndexerStatuses.IndexerStatus> indexerStatuses() {
+    public List<IndexerStatuses.IndexerStatus> indexerStatuses(ApiHistoryRequest request) throws Exception {
+        verifyAccessAllowed(request.getApikey());
+
         return indexerStatuses.getSortedStatuses();
     }
 
