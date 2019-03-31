@@ -1,3 +1,19 @@
+### v2.3.21
+
+Feature: Option to send the mapped category name to downloaders.
+
+Fix: /api/stats/indexers endpoint was accessible without authorization.
+
+Fix: Show unit for average response times in stats (ms).
+
+
+
+### v2.3.20
+
+Fix: Revert revert because, as it turns out, it wasn't the libary at fault but the new version just failed to read a file already corrupted.
+
+
+
 ### v2.3.19
 
 Fix: Revert update of database library as it caused errors on startup in some issues.
