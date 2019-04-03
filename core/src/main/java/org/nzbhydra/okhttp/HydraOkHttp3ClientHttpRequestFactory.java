@@ -52,7 +52,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -114,9 +113,14 @@ public class HydraOkHttp3ClientHttpRequestFactory
     public Builder getOkHttpClientBuilder(URI requestUri) {
         Builder builder = getBaseBuilder();
         String host = requestUri.getHost();
-        if (!configProvider.getBaseConfig().getMain().isVerifySsl() || (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x)))) {
+        if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
+            logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set");
+            builder = getUnsafeOkHttpClientBuilder(builder);
+        } else if (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
+            logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set for host {}", host);
             builder = getUnsafeOkHttpClientBuilder(builder);
         } else {
+            logger.debug(LoggingMarkers.HTTPS, "Not ignoring SSL certificates");
             try {
                 SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
                         getDefaultX509TrustManager()
@@ -166,6 +170,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             loggingInterceptor.redactHeader("Cookie");
             builder.addInterceptor(loggingInterceptor);
         }
+
         return builder;
     }
 
@@ -223,11 +228,9 @@ public class HydraOkHttp3ClientHttpRequestFactory
 
             return builder
                     .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
-                    .hostnameVerifier(new HostnameVerifier() {
-                        @Override
-                        public boolean verify(String hostname, SSLSession session) {
-                            return true;
-                        }
+                    .hostnameVerifier((hostname, session) -> {
+                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
+                        return true;
                     });
 
         } catch (Exception e) {
@@ -261,12 +264,12 @@ public class HydraOkHttp3ClientHttpRequestFactory
         return new X509TrustManager() {
             @Override
             public void checkClientTrusted(X509Certificate[] chain,
-                                           String authType) throws CertificateException {
+                                           String authType) {
             }
 
             @Override
             public void checkServerTrusted(X509Certificate[] chain,
-                                           String authType) throws CertificateException {
+                                           String authType) {
             }
 
             @Override
@@ -303,6 +306,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
         public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
             SSLSocket newSocket = super.createSocket(socket, host, port, autoClose);
             if (host != null && configProvider.getBaseConfig().getMain().getSniDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
+                logger.debug(LoggingMarkers.HTTPS, "Ignoring SNI for  host name {}", host);
                 SSLParameters sslParameters = newSocket.getSSLParameters();
                 sslParameters.setServerNames(Collections.emptyList());
                 newSocket.setSSLParameters(sslParameters);

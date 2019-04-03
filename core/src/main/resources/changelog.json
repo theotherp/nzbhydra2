@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.22",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Logging marker to log HTTPS related stuff on debug level."
+      }
+    ]
+  },
+  {
     "version": "v2.3.21",
     "changes": [
       {

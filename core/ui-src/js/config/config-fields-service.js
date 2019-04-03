@@ -393,6 +393,7 @@ function ConfigFields($injector) {
                                     {label: 'Duplicate detection', id: 'DUPLICATES'},
                                     {label: 'History cleanup', id: 'HISTORY_CLEANUP'},
                                     {label: 'HTTP', id: 'HTTP'},
+                                    {label: 'HTTPS', id: 'HTTPS'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},
