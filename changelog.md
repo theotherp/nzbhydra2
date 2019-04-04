@@ -1,3 +1,11 @@
+### v2.3.22
+
+Feature: Logging marker to log HTTPS related stuff on debug level.
+
+Fix: Removed an SSL related parameter from the wrapper. I already did this months ago but forgot to update the binary for linux. So if you have problems with SSL and are running Hydra on linux (not in docker) you might want to update the binary. This needs to be done manually.
+
+
+
 ### v2.3.21
 
 Feature: Option to send the mapped category name to downloaders.
