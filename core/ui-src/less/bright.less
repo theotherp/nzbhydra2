@@ -97,3 +97,12 @@
 @chart-text-color: @text-color;
 @chart-bar-color: lighten(@brand-primary, 10%);
 @chart-bar-color-alt: darken(@brand-primary, 3%);
+
+#loading-bar .bar {
+  background-color: @text-color !important;
+}
+
+#loading-bar-spinner .spinner-icon {
+  border-top-color: @text-color !important;
+  border-left-color: @text-color !important;
+}

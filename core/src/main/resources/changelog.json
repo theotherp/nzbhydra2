@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.3.23",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Minor improvements to colors in bright theme."
+      }
+    ]
+  },
+  {
     "version": "v2.3.22",
     "changes": [
       {
