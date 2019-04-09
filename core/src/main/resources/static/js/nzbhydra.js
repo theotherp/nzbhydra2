@@ -944,7 +944,8 @@ function searchResult() {
         require: '^result',
         replace: false,
         scope: {
-            result: "<"
+            result: "<",
+            searchResultsControllerShared: "<"
         },
         controller: controller
     };
@@ -7543,9 +7544,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     var sortModel = {};
     $scope.filterModel = {};
 
-    $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
-    $scope.isShowFilterButtonsMovie = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("movie") > -1;
-    $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
+
     $scope.filterButtonsModel = {
         source: {},
         quality: {}
@@ -7577,8 +7576,19 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         groupTorrentAndNewznabResults: localStorageService.get("groupTorrentAndNewznabResults") !== null ? localStorageService.get("groupTorrentAndNewznabResults") : false,
         sumGrabs: localStorageService.get("sumGrabs") !== null ? localStorageService.get("sumGrabs") : true,
         scrollToResults: localStorageService.get("scrollToResults") !== null ? localStorageService.get("scrollToResults") : true,
-        showCovers: localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true
+        showCovers: localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true,
+        groupEpisodes: localStorageService.get("groupEpisodes") !== null ? localStorageService.get("groupEpisodes") : true
     };
+
+
+    $scope.isShowFilterButtons = ConfigService.getSafe().searching.showQuickFilterButtons;
+    $scope.isShowFilterButtonsMovie = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("movie") > -1;
+    $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
+
+    $scope.shared = {
+        isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1
+    };
+
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
     $scope.expandedTitlegroups = [];
@@ -7587,7 +7597,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         {id: "groupTorrentAndNewznabResults", label: "Group torrent and usenet results"},
         {id: "sumGrabs", label: "Use sum of grabs / seeders for filtering / sorting of groups"},
         {id: "scrollToResults", label: "Scroll to results when finished"},
-        {id: "showCovers", label: "Show movie covers in results"}
+        {id: "showCovers", label: "Show movie covers in results"},
+        {id: "groupEpisodes", label: "Group TV results by season/episode"}
     ];
     $scope.optionsSelectedModel = [];
     for (var key in $scope.optionsOptions) {
@@ -7616,6 +7627,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 toggleScrollToResults(newValue);
             } else if (item.id === "showCovers") {
                 toggleshowCovers(newValue);
+            } else if (item.id === "groupEpisodes") {
+                togglesGroupEpisodes(newValue);
             }
         }
     };
@@ -7646,6 +7659,11 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function toggleshowCovers(value) {
         localStorageService.set("showCovers", value);
         $scope.foo.showCovers = value;
+    }
+
+    function togglesGroupEpisodes(value) {
+        localStorageService.set("groupEpisodes", value);
+        $scope.foo.groupEpisodes = value;
     }
 
 
@@ -7743,9 +7761,14 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function getGroupingString(element) {
-        var groupingString = getCleanedTitle(element);
-        if (!$scope.foo.groupTorrentAndNewznabResults) {
-            groupingString = groupingString + element.downloadType;
+        var groupingString;
+        if ($scope.shared.isGroupEpisodes) {
+            groupingString = element.season + "x" + element.episode;
+        } else {
+            groupingString = getCleanedTitle(element)
+            if (!$scope.foo.groupTorrentAndNewznabResults) {
+                groupingString = groupingString + element.downloadType;
+            }
         }
         return groupingString;
     }
@@ -8006,8 +8029,8 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         });
 
         if (!$scope.foo.indexerStatusesExpanded && _.any(data.indexerSearchMetaDatas, function (x) {
-                return !x.wasSuccessful;
-            })) {
+            return !x.wasSuccessful;
+        })) {
             growl.info("Errors occurred during searching, Check indexer statuses")
         }
         //Only show those categories in filter that are actually present in the results

@@ -1,3 +1,11 @@
+### v2.4.0
+
+Feature: When searching in the TV categories in the GUI by default the results will be grouped by season & episode instead of by title. This should make it easier to select one result for every episode which is usually what you want. This behavior can be switched off in the display options (do a new search after the switch).
+
+Fix: Minor improvements to colors in bright theme.
+
+
+
 ### v2.3.22
 
 Feature: Logging marker to log HTTPS related stuff on debug level.
