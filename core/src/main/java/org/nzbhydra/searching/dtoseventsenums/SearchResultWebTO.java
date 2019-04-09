@@ -49,5 +49,7 @@ public class SearchResultWebTO {
     private String searchResultId;
     private Long size;
     private String title;
+    private Integer season;
+    private Integer episode;
 
 }

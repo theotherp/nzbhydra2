@@ -8,7 +8,8 @@ function searchResult() {
         require: '^result',
         replace: false,
         scope: {
-            result: "<"
+            result: "<",
+            searchResultsControllerShared: "<"
         },
         controller: controller
     };

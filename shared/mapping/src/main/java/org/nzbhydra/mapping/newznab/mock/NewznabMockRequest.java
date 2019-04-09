@@ -17,6 +17,7 @@ public class NewznabMockRequest {
     private int numberOfResults;
     private boolean generateDuplicates;
     private boolean generateOneDuplicate;
+    private String newznabCategory;
     @Builder.Default
     private List<String> titleWords = new ArrayList<>();
 

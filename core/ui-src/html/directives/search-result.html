@@ -25,7 +25,7 @@
                ng-class="{'glyphicon-minus': duplicatesExpanded, 'glyphicon-plus': !duplicatesExpanded}"></span>
         </a>
         <span class="title">
-                <span ng-if="result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0">
+                <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes">
                     <img ng-if="result.cover && foo.showCovers" src="{{::result.cover}}" width="128px" style="margin-right: 5px"/>
                     {{ ::result.title }}
                 </span>

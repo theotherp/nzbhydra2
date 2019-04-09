@@ -1,7 +1,11 @@
 [
   {
-    "version": "v2.3.23",
+    "version": "v2.4.0",
     "changes": [
+      {
+        "type": "feature",
+        "text": "When searching in the TV categories in the GUI by default the results will be grouped by season & episode instead of by title. This should make it easier to select one result for every episode which is usually what you want. This behavior can be switched off in the display options (do a new search after the switch)."
+      },
       {
         "type": "fix",
         "text": "Minor improvements to colors in bright theme."

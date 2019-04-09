@@ -61,6 +61,8 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "nzbs.org");
 
+    private static final Pattern TV_PATTERN = Pattern.compile("s(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})");
+
 
     static {
         idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
@@ -515,6 +517,32 @@ public class Newznab extends Indexer<Xml> {
             if (matcher.matches() && !Objects.equals(matcher.group(1), "not available")) {
                 searchResultItem.setGroup(matcher.group(1));
             }
+        }
+
+        if (searchResultItem.getCategory().getSearchType() == SearchType.TVSEARCH) {
+            if (searchResultItem.getAttributes().containsKey("season")) {
+                searchResultItem.getAttributes().put("season", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("season").replaceAll("[sS]", ""))));
+            }
+            if (searchResultItem.getAttributes().containsKey("episode")) {
+                searchResultItem.getAttributes().put("episode", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""))));
+            }
+            if (!attributes.containsKey("season") || !attributes.containsKey("episode")) {
+                Matcher matcher = TV_PATTERN.matcher(item.getTitle());
+                if (matcher.find()) {
+                    putGroupMatchIfFound(searchResultItem, matcher, "season");
+                    putGroupMatchIfFound(searchResultItem, matcher, "season2");
+                    putGroupMatchIfFound(searchResultItem, matcher, "episode");
+                    putGroupMatchIfFound(searchResultItem, matcher, "episode2");
+                }
+            }
+        }
+
+
+    }
+
+    private void putGroupMatchIfFound(SearchResultItem searchResultItem, Matcher matcher, String groupName) {
+        if (matcher.group(groupName) != null) {
+            searchResultItem.getAttributes().put(groupName, matcher.group(groupName));
         }
     }
 

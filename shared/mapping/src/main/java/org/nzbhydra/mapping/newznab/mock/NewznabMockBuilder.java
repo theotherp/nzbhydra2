@@ -65,7 +65,7 @@ public class NewznabMockBuilder {
             item.setRssGuid(new NewznabXmlGuid(guid, true));
 
             List<NewznabAttribute> attributes = new ArrayList<>();
-            attributes.add(new NewznabAttribute("category", String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
+            attributes.add(new NewznabAttribute("category", request.getNewznabCategory() != null ? request.getNewznabCategory() : String.valueOf(newznabCategories.get(random.nextInt(newznabCategories.size())))));
             attributes.add(new NewznabAttribute("size", size));
             attributes.add(new NewznabAttribute("guid", guid));
 

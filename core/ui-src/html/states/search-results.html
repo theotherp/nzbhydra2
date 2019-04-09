@@ -323,7 +323,7 @@
 
        <tbody dir-paginate-start="result in filteredResults | itemsPerPage:limitTo track by result.searchResultId"
               ng-show="0"></tbody>
-        <tbody search-result result="result" on-finish-render class="search-result-tbody"></tbody>
+        <tbody search-result result="result" on-finish-render search-results-controller-shared="shared" class="search-result-tbody"></tbody>
         <tbody dir-paginate-end ng-show="0"></tbody>
 
     </table>

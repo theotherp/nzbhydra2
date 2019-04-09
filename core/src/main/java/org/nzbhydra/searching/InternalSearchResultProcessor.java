@@ -105,6 +105,12 @@ public class InternalSearchResultProcessor {
                     .size(item.getSize())
                     .title(item.getTitle());
             builder = setSearchResultDateRelatedValues(builder, item);
+            if (item.getAttributes().containsKey("season")) {
+                builder.season(Integer.valueOf(item.getAttributes().get("season")));
+            }
+            if (item.getAttributes().containsKey("episode")) {
+                builder.episode(Integer.valueOf(item.getAttributes().get("episode")));
+            }
 
             transformedSearchResults.add(builder.build());
         }
