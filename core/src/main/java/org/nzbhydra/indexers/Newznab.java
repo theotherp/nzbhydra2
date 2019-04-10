@@ -519,22 +519,26 @@ public class Newznab extends Indexer<Xml> {
             }
         }
 
-        if (searchResultItem.getCategory().getSearchType() == SearchType.TVSEARCH) {
-            if (searchResultItem.getAttributes().containsKey("season")) {
-                searchResultItem.getAttributes().put("season", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("season").replaceAll("[sS]", ""))));
-            }
-            if (searchResultItem.getAttributes().containsKey("episode")) {
-                searchResultItem.getAttributes().put("episode", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""))));
-            }
-            if (!attributes.containsKey("season") || !attributes.containsKey("episode")) {
-                Matcher matcher = TV_PATTERN.matcher(item.getTitle());
-                if (matcher.find()) {
-                    putGroupMatchIfFound(searchResultItem, matcher, "season");
-                    putGroupMatchIfFound(searchResultItem, matcher, "season2");
-                    putGroupMatchIfFound(searchResultItem, matcher, "episode");
-                    putGroupMatchIfFound(searchResultItem, matcher, "episode2");
+        try {
+            if (searchResultItem.getCategory().getSearchType() == SearchType.TVSEARCH) {
+                if (searchResultItem.getAttributes().containsKey("season")) {
+                    searchResultItem.getAttributes().put("season", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("season").replaceAll("[sS]", ""))));
+                }
+                if (searchResultItem.getAttributes().containsKey("episode")) {
+                    searchResultItem.getAttributes().put("episode", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""))));
+                }
+                if (!attributes.containsKey("season") || !attributes.containsKey("episode")) {
+                    Matcher matcher = TV_PATTERN.matcher(item.getTitle());
+                    if (matcher.find()) {
+                        putGroupMatchIfFound(searchResultItem, matcher, "season");
+                        putGroupMatchIfFound(searchResultItem, matcher, "season2");
+                        putGroupMatchIfFound(searchResultItem, matcher, "episode");
+                        putGroupMatchIfFound(searchResultItem, matcher, "episode2");
+                    }
                 }
             }
+        } catch (NumberFormatException e) {
+            //Daily release or such, just ignore
         }
 
 

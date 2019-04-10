@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.4.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Daily episodes (like 04/08) were not parsed correctly, resulting in an error (see 2.4.0 feature)."
+      }
+    ]
+  },
+  {
     "version": "v2.4.0",
     "changes": [
       {
