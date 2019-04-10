@@ -51,6 +51,6 @@ public class SearchResultWebTO {
     private String title;
     private String season;
     private String episode;
-    private String tvtitle;
+    private String showtitle;
 
 }

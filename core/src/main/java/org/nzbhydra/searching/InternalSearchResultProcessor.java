@@ -111,8 +111,8 @@ public class InternalSearchResultProcessor {
             if (item.getAttributes().containsKey("episode")) {
                 builder.episode(item.getAttributes().get("episode"));
             }
-            if (item.getAttributes().containsKey("tvtitle")) {
-                builder.tvtitle(item.getAttributes().get("tvtitle"));
+            if (item.getAttributes().containsKey("showtitle")) {
+                builder.showtitle(item.getAttributes().get("showtitle"));
             }
 
             transformedSearchResults.add(builder.build());
