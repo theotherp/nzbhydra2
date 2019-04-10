@@ -110,22 +110,18 @@ public class MockNewznab {
         }
 
         if (params.getQ() != null && params.getQ().equals("tv")) {
-            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(15).titleBase("tv").newznabCategory("5040").offset(0).total(15).build();
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1000).titleBase("tv").newznabCategory("5040").offset(0).total(15).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
             List<NewznabXmlItem> items = rssRoot.getRssChannel().getItems();
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 1000; i++) {
                 NewznabXmlItem item = items.get(i);
                 item.setTitle("s0" + i * 1 + "e0" + i + "-" + random.nextInt());
+                item.getNewznabAttributes().add(new NewznabAttribute("showtitle", "showtitle"));
                 item.getNewznabAttributes().add(new NewznabAttribute("ctageory", "5000"));
-            }
-
-            for (int i = 10; i < items.size(); i++) {
-                NewznabXmlItem item = items.get(i);
-                item.setTitle("s0" + i * 1 + "e0" + i + "-" + random.nextInt());
                 item.getNewznabAttributes().add(new NewznabAttribute("season", "S" + i * 1));
                 item.getNewznabAttributes().add(new NewznabAttribute("episode", "E" + i));
-                item.getNewznabAttributes().add(new NewznabAttribute("ctageory", "5000"));
             }
+
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }

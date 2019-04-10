@@ -458,6 +458,9 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.selected = newSelected;
 
         var grouped = _.groupBy(filtered, getGroupingString);
+        console.log(grouped);
+        console.log(Object.keys(grouped).length);
+
         var mapped = _.map(grouped, createSortedHashgroups);
         var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);
         if (sortModel.sortMode === 2) {
@@ -467,8 +470,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.lastClickedRowIndex = null;
 
         var filteredResults = [];
+        var countTitleGroups = 0;
+        var countResultsUntilTitleGroupLimitReached = 0;
         _.forEach(sorted, function (titleGroup) {
             var titleGroupIndex = 0;
+            countTitleGroups++;
+
             _.forEach(titleGroup, function (duplicateGroup) {
                 var duplicateIndex = 0;
                 _.forEach(duplicateGroup, function (result) {
@@ -479,15 +486,18 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     result.titlesLength = titleGroup.length;
                     filteredResults.push(result);
                     duplicateIndex += 1;
+                    if (countTitleGroups <= 100) {
+                        countResultsUntilTitleGroupLimitReached++;
+                    }
                 });
                 titleGroupIndex += 1;
+
             });
         });
+        $scope.limitTo = Math.max(100, countResultsUntilTitleGroupLimitReached);
 
         $scope.$broadcast("calculateDisplayState");
 
-        // console.timeEnd("sortAndFilter");
-        console.log(filteredResults);
         return filteredResults;
     }
 

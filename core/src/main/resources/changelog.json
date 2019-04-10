@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.4.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Make sure that 100 rows are shown when grouping results (either by season/episode or by title)."
+      }
+    ]
+  },
+  {
     "version": "v2.4.2",
     "changes": [
       {
