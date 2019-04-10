@@ -24,6 +24,9 @@ function searchResult() {
 
         function calculateDisplayState() {
             $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
+            if ($scope.resultDisplayed) {
+
+            }
         }
 
         calculateDisplayState();

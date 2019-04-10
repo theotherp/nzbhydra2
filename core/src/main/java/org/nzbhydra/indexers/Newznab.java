@@ -61,7 +61,7 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "nzbs.org");
 
-    private static final Pattern TV_PATTERN = Pattern.compile("s(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})");
+    private static final Pattern TV_PATTERN = Pattern.compile("(?<tvtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
 
     static {
@@ -527,13 +527,21 @@ public class Newznab extends Indexer<Xml> {
                 if (searchResultItem.getAttributes().containsKey("episode")) {
                     searchResultItem.getAttributes().put("episode", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""))));
                 }
-                if (!attributes.containsKey("season") || !attributes.containsKey("episode")) {
+                if (searchResultItem.getAttributes().containsKey("tvtitle")) {
+                    searchResultItem.getAttributes().put("tvtitle", searchResultItem.getAttributes().get("tvtitle"));
+                }
+                if (searchResultItem.getAttributes().containsKey("title")) {
+                    searchResultItem.getAttributes().put("tvtitle", searchResultItem.getAttributes().get("title"));
+                }
+
+                if (!attributes.containsKey("season") || !attributes.containsKey("episode") || !attributes.containsKey("tvtitle")) {
                     Matcher matcher = TV_PATTERN.matcher(item.getTitle());
                     if (matcher.find()) {
-                        putGroupMatchIfFound(searchResultItem, matcher, "season");
-                        putGroupMatchIfFound(searchResultItem, matcher, "season2");
-                        putGroupMatchIfFound(searchResultItem, matcher, "episode");
-                        putGroupMatchIfFound(searchResultItem, matcher, "episode2");
+                        putGroupMatchIfFound(searchResultItem, matcher, "season", "season");
+                        putGroupMatchIfFound(searchResultItem, matcher, "season2", "season");
+                        putGroupMatchIfFound(searchResultItem, matcher, "episode", "episode");
+                        putGroupMatchIfFound(searchResultItem, matcher, "episode2", "episode");
+                        putGroupMatchIfFound(searchResultItem, matcher, "tvtitle", "tvtitle");
                     }
                 }
             }
@@ -544,9 +552,9 @@ public class Newznab extends Indexer<Xml> {
 
     }
 
-    private void putGroupMatchIfFound(SearchResultItem searchResultItem, Matcher matcher, String groupName) {
-        if (matcher.group(groupName) != null) {
-            searchResultItem.getAttributes().put(groupName, matcher.group(groupName));
+    private void putGroupMatchIfFound(SearchResultItem searchResultItem, Matcher matcher, String groupName, String attributeName) {
+        if (matcher.group(groupName) != null && !searchResultItem.getAttributes().containsKey(attributeName)) {
+            searchResultItem.getAttributes().put(attributeName, matcher.group(groupName));
         }
     }
 

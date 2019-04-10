@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.4.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "As is tradition every feature release (2.4.0) is followed by a couple of bug fix releases... The tv episode sorting should not throw any errors now and actually work properly :-)"
+      }
+    ]
+  },
+  {
     "version": "v2.4.1",
     "changes": [
       {

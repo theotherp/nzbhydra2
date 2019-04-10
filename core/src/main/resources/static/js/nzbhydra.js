@@ -960,6 +960,9 @@ function searchResult() {
 
         function calculateDisplayState() {
             $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
+            if ($scope.resultDisplayed) {
+
+            }
         }
 
         calculateDisplayState();
@@ -7763,7 +7766,10 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function getGroupingString(element) {
         var groupingString;
         if ($scope.shared.isGroupEpisodes) {
-            groupingString = element.season + "x" + element.episode;
+            groupingString = (element.tvtitle + "x" + element.season + "x" + element.episode).toLowerCase().replace(/[\._\-]/ig, "");
+            if (groupingString === "nullxnullxnull") {
+                groupingString = getCleanedTitle(element);
+            }
         } else {
             groupingString = getCleanedTitle(element)
             if (!$scope.foo.groupTorrentAndNewznabResults) {
@@ -7990,6 +7996,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.$broadcast("calculateDisplayState");
 
         // console.timeEnd("sortAndFilter");
+        console.log(filteredResults);
         return filteredResults;
     }
 
