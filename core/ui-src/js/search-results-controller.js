@@ -257,7 +257,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function getGroupingString(element) {
         var groupingString;
         if ($scope.shared.isGroupEpisodes) {
-            groupingString = (element.tvtitle + "x" + element.season + "x" + element.episode).toLowerCase().replace(/[\._\-]/ig, "");
+            groupingString = (element.showtitle + "x" + element.season + "x" + element.episode).toLowerCase().replace(/[\._\-]/ig, "");
             if (groupingString === "nullxnullxnull") {
                 groupingString = getCleanedTitle(element);
             }

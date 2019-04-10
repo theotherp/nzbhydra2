@@ -61,7 +61,7 @@ public class Newznab extends Indexer<Xml> {
 
     private static final List<String> HOSTS_NOT_SUPPORTING_EMPTY_TYPE_SEARCH = Arrays.asList("nzbgeek", "nzbs.org");
 
-    private static final Pattern TV_PATTERN = Pattern.compile("(?<tvtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TV_PATTERN = Pattern.compile("(?<showtitle>[\\w\\.\\-_]+)S(?<season>\\d+)e(?<episode>\\d+)|(?<season2>\\d{1,2})x(?<episode2>\\d{1,2})", Pattern.CASE_INSENSITIVE);
 
 
     static {
@@ -522,27 +522,33 @@ public class Newznab extends Indexer<Xml> {
         try {
             if (searchResultItem.getCategory().getSearchType() == SearchType.TVSEARCH) {
                 if (searchResultItem.getAttributes().containsKey("season")) {
-                    searchResultItem.getAttributes().put("season", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("season").replaceAll("[sS]", ""))));
+                    searchResultItem.getAttributes().put("season", searchResultItem.getAttributes().get("season").replaceAll("[sS]", ""));
                 }
                 if (searchResultItem.getAttributes().containsKey("episode")) {
-                    searchResultItem.getAttributes().put("episode", String.valueOf(Integer.valueOf(searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""))));
+                    searchResultItem.getAttributes().put("episode", searchResultItem.getAttributes().get("episode").replaceAll("[eE]", ""));
                 }
-                if (searchResultItem.getAttributes().containsKey("tvtitle")) {
-                    searchResultItem.getAttributes().put("tvtitle", searchResultItem.getAttributes().get("tvtitle"));
-                }
-                if (searchResultItem.getAttributes().containsKey("title")) {
-                    searchResultItem.getAttributes().put("tvtitle", searchResultItem.getAttributes().get("title"));
+                if (searchResultItem.getAttributes().containsKey("showtitle")) {
+                    searchResultItem.getAttributes().put("showtitle", searchResultItem.getAttributes().get("showtitle"));
                 }
 
-                if (!attributes.containsKey("season") || !attributes.containsKey("episode") || !attributes.containsKey("tvtitle")) {
+                if (!attributes.containsKey("season") || !attributes.containsKey("episode") || !attributes.containsKey("showtitle")) {
                     Matcher matcher = TV_PATTERN.matcher(item.getTitle());
                     if (matcher.find()) {
                         putGroupMatchIfFound(searchResultItem, matcher, "season", "season");
                         putGroupMatchIfFound(searchResultItem, matcher, "season2", "season");
                         putGroupMatchIfFound(searchResultItem, matcher, "episode", "episode");
                         putGroupMatchIfFound(searchResultItem, matcher, "episode2", "episode");
-                        putGroupMatchIfFound(searchResultItem, matcher, "tvtitle", "tvtitle");
+                        putGroupMatchIfFound(searchResultItem, matcher, "showtitle", "showtitle");
                     }
+                }
+                if (attributes.containsKey("season")) {
+                    attributes.put("season", tryParseInt(attributes.get("season").replaceAll("\\D", "").toLowerCase()));
+                }
+                if (attributes.containsKey("episode")) {
+                    attributes.put("episode", tryParseInt(attributes.get("episode").replaceAll("\\D", "").toLowerCase()));
+                }
+                if (attributes.containsKey("showtitle")) {
+                    attributes.put("showtitle", attributes.get("showtitle").replaceAll("\\W", "").toLowerCase());
                 }
             }
         } catch (NumberFormatException e) {
@@ -550,6 +556,14 @@ public class Newznab extends Indexer<Xml> {
         }
 
 
+    }
+
+    private String tryParseInt(String string) {
+        try {
+            return String.valueOf(Integer.valueOf(string));
+        } catch (NumberFormatException e) {
+            return string;
+        }
     }
 
     private void putGroupMatchIfFound(SearchResultItem searchResultItem, Matcher matcher, String groupName, String attributeName) {
