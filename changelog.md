@@ -1,3 +1,9 @@
+### v2.4.2
+
+Fix: As is tradition every feature release (2.4.0) is followed by a couple of bug fix releases... The tv episode sorting should not throw any errors now and actually work properly :-)
+
+
+
 ### v2.4.1
 
 Fix: Daily episodes (like 04/08) were not parsed correctly, resulting in an error (see 2.4.0 feature).
