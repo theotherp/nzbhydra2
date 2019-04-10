@@ -155,8 +155,9 @@ public class JsonConfigMigrationTest {
         assertThat(newConfig.getIndexers().size(), is(1));
         assertThat(newConfig.getIndexers().get(0).getDownloadLimit().isPresent(), is(false));
         assertThat(newConfig.getIndexers().get(0).getHitLimit().isPresent(), is(false));
-
     }
+
+
 
 
 

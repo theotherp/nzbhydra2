@@ -111,7 +111,7 @@ public class ConfigMigrationTest {
         assertThat(auth.getUsers().get(0).isMaySeeDetailsDl(), is(true));
         assertThat(auth.getUsers().get(0).isShowIndexerSelection(), is(true));
         assertThat(auth.getUsers().get(0).getUsername(), is("auser"));
-        assertThat(auth.getUsers().get(0).getPassword(), is("apass"));
+        assertThat(auth.getUsers().get(0).getPassword(), is("{noop}apass"));
 
 
         assertThat(result.getMigratedConfig().getDownloading().getDownloaders().size(), is(3));

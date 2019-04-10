@@ -231,7 +231,7 @@ public class JsonConfigMigration {
             newUserConfig.setMaySeeDetailsDl(user.isMaySeeDetailsDl());
             newUserConfig.setShowIndexerSelection(user.isShowIndexerSelection());
             newUserConfig.setUsername(user.getUsername());
-            newUserConfig.setPassword(user.getPassword());
+            newUserConfig.setPassword("{noop}" + user.getPassword());
             newUserConfigs.add(newUserConfig);
         }
         newAuth.setUsers(newUserConfigs);
