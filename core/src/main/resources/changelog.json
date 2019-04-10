@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Make sure that 100 rows are shown when grouping results (either by season/episode or by title)."
+      },
+      {
+        "type": "fix",
+        "text": "Passwords for users were not properly migrated from v1."
       }
     ]
   },
