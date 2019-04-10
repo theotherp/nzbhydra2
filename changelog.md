@@ -1,3 +1,9 @@
+### v2.4.1
+
+Fix: Daily episodes (like 04/08) were not parsed correctly, resulting in an error (see 2.4.0 feature).
+
+
+
 ### v2.4.0
 
 Feature: When searching in the TV categories in the GUI by default the results will be grouped by season & episode instead of by title. This should make it easier to select one result for every episode which is usually what you want. This behavior can be switched off in the display options (do a new search after the switch).
