@@ -1,3 +1,11 @@
+### v2.4.3
+
+Fix: Make sure that 100 rows are shown when grouping results (either by season/episode or by title).
+
+Fix: Passwords for users were not properly migrated from v1.
+
+
+
 ### v2.4.2
 
 Fix: As is tradition every feature release (2.4.0) is followed by a couple of bug fix releases... The tv episode sorting should not throw any errors now and actually work properly :-)
