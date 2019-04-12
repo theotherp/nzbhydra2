@@ -1,3 +1,11 @@
+### v2.4.4
+
+Feature: Reduced font size across the board to fit more results / buttons / whatever on the page. Let me know if it's too tiny :-)
+
+Fix: Add 6box and NZBPlanet to list of indexers which do not support TV or movie searches without identifiers.
+
+
+
 ### v2.4.3
 
 Fix: Make sure that 100 rows are shown when grouping results (either by season/episode or by title).
