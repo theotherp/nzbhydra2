@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.4.4",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Reduced font size across the board to fit more results / buttons / whatever on the page. Let me know if it's too tiny :-)"
+      }
+    ]
+  },
+  {
     "version": "v2.4.3",
     "changes": [
       {

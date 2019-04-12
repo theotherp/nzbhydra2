@@ -7,6 +7,7 @@
 @font-family-sans-serif: "Roboto", "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 @headings-font-weight: 400;
 @line-height-large: 1.33;
+@font-size-base: 13px;
 @border-radius-large: 5px;
 @border-radius-small: 2px;
 @zindex-popover: 1010;
@@ -735,7 +736,7 @@ input:focus + .input-group-addon {
   display: inline;
   width: 300px;
   padding-left: 5px;
-  font-size: 13px;
+  font-size: @font-size-base;
   height: 24px;
   margin-left: 5px;
 }
@@ -984,7 +985,7 @@ chip-tmpl:focus .default-chip {
 .chips > div > input {
   height: 100%;
   border: none;
-  font-size: 14px;
+  font-size: @font-size-base;
 }
 
 .chips > div > input:focus {
