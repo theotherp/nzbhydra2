@@ -2010,7 +2010,9 @@ function footer() {
         $scope.updateFooterBottom = 0;
 
         var safeConfig = bootstrapped.safeConfig;
-        $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus && _.filter(safeConfig.downloading.downloaders, function(x) {return x.enabled}).length > 0;
+        $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus && _.filter(safeConfig.downloading.downloaders, function (x) {
+            return x.enabled
+        }).length > 0;
         $scope.showUpdateFooter = false;
 
         $scope.$on("showDownloaderStatus", function (event, doShow) {

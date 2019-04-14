@@ -1,5 +1,5 @@
 [  {
-  "showForVersion" : "2.5.0",
+  "showForVersion" : "2.5.1",
   "newsAsMarkdown" : "<p>I was told I could or should not expect everyone to read the changelog and that I should inform of more... drastic changes another way. So I will inform you about new features or important bugfixes this way. If you don't want to see these news you can disable them in the main config but be warned that you may also miss some important... well, news.</p><p>I have added a footer that displays the status of your configured downloader (i.e. SABnzbd or NZBGet). The footer can be disabled in the config. For now it's non-interactive, so you cannot control the downloader. The button does not link to the downloader's URL because it wouldn't work with a lot of configurations and I didn't consider this usecase important enough to warrant a new config property with the actual URL of the downloader.</p>\n"
 
 },
