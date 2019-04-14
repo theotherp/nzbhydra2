@@ -1,3 +1,11 @@
+### v2.5.0
+
+Feature: Display status of configured downloader on the bottom of the page. This can be disabled in the downloading config. If multiple downloaders are configured the first one is used.
+
+Fix: Toggling the grouping of TV episodes or the display of TV/movie covers will take effect without having to reload the search.
+
+
+
 ### v2.4.4
 
 Feature: Reduced font size across the board to fit more results / buttons / whatever on the page. Let me know if it's too tiny :-)
