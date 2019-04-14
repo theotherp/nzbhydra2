@@ -2010,7 +2010,7 @@ function footer() {
         $scope.updateFooterBottom = 0;
 
         var safeConfig = bootstrapped.safeConfig;
-        $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus;
+        $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus && _.filter(safeConfig.downloading.downloaders, function(x) {return x.enabled}).length > 0;
         $scope.showUpdateFooter = false;
 
         $scope.$on("showDownloaderStatus", function (event, doShow) {
@@ -2168,9 +2168,9 @@ function downloaderStatusFooter() {
                         }
                         if ($scope.foo.state === "DOWNLOADING") {
                             $scope.foo.buttonClass = "play";
-                        } else if ($scope.state === "PAUSED") {
+                        } else if ($scope.foo.state === "PAUSED") {
                             $scope.foo.buttonClass = "pause";
-                        } else if ($scope.state === "OFFLINE") {
+                        } else if ($scope.foo.state === "OFFLINE") {
                             $scope.foo.buttonClass = "off";
                         } else {
                             $scope.foo.buttonClass = "time";

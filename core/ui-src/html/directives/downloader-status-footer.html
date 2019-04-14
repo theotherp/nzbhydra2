@@ -8,7 +8,8 @@
       </div>
       <div class="col-md-3" style="padding-top: 10px; line-height: 15px; margin-left: 15px; text-align: left">
         <span class="glyphicon glyphicon-{{foo.buttonClass}}" tooltip-placement="auto top" uib-tooltip="{{foo.state}}" style="margin-right: 10px"></span>
-          <span ng-show="foo.state === 'Downloading' && foo.downloadRateFormatted">{{foo.downloadRateFormatted}} &bull; {{foo.remainingTimeFormatted}}  &bull; </span>{{foo.elementsInQueue}} in queue
+        <span ng-show="foo.state === 'Downloading' && foo.downloadRateFormatted">{{foo.downloadRateFormatted}} &bull; {{foo.remainingTimeFormatted}}  &bull; </span><span
+        ng-show="foo.state !== 'Offline'">{{foo.elementsInQueue}} in queue</span>
       </div>
       <div class="col-md-10">
         <div style="padding-top: 10px; line-height: 15px; margin-left: 15px;" ng-show="foo.downloadingTitle">
@@ -22,4 +23,5 @@
       </div>
     </span>
   </nav>
+
 </div>

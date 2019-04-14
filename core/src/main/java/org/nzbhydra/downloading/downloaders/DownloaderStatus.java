@@ -31,7 +31,8 @@ public class DownloaderStatus {
         IDLE,
         DOWNLOADING,
         PAUSED,
-        OFFLINE
+        OFFLINE,
+        NONE_ENABLED
     }
 
     private String downloaderName;
