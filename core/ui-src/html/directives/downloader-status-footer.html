@@ -15,7 +15,7 @@
           {{foo.downloadingTitle}} ({{foo.downloadingTitlePercentFinished}}%<span ng-show="foo.downloadingTitleRemainingTimeFormatted"> &bull; {{foo.downloadingTitleRemainingTimeFormatted}}</span>)
         </div>
       </div>
-      <div class="col-md-5 downloader-status" style="width: 24%; float: right">
+      <div class="col-md-5 downloader-status" style="width: 24%; float: right" ng-show="foo.state !== 'Offline'">
         <chart>
           <nvd3 options="downloaderChart.options" data="downloaderChart.data" api="api" config="downloaderChart.config"></nvd3>
         </chart>
