@@ -110,7 +110,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     $scope.optionsEvents = {
         onToggleItem: function (item, newValue) {
-            console.log(item.id + ": " + newValue);
             if (item.id === "duplicatesDisplayed") {
                 toggleDuplicatesDisplayed(newValue);
             } else if (item.id === "groupTorrentAndNewznabResults") {
@@ -153,11 +152,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function toggleshowCovers(value) {
         localStorageService.set("showCovers", value);
         $scope.foo.showCovers = value;
+        $scope.$broadcast("toggleShowCovers", value);
     }
 
     function togglesGroupEpisodes(value) {
         localStorageService.set("groupEpisodes", value);
-        $scope.foo.groupEpisodes = value;
+        $scope.shared.isGroupEpisodes = value;
+        blockAndUpdate();
     }
 
 
@@ -458,8 +459,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.selected = newSelected;
 
         var grouped = _.groupBy(filtered, getGroupingString);
-        console.log(grouped);
-        console.log(Object.keys(grouped).length);
 
         var mapped = _.map(grouped, createSortedHashgroups);
         var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);

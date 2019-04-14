@@ -32,12 +32,12 @@ function footer() {
         $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus;
         $scope.showUpdateFooter = false;
 
-        $scope.$on("showDownloaderStatus", function (doShow) {
+        $scope.$on("showDownloaderStatus", function (event, doShow) {
             $scope.showDownloaderStatus = doShow;
             updateFooterBottom();
             updatePaddingBottom();
         });
-        $scope.$on("showUpdateFooter", function (doShow) {
+        $scope.$on("showUpdateFooter", function (event, doShow) {
             $scope.showUpdateFooter = doShow;
             updateFooterBottom();
             updatePaddingBottom();

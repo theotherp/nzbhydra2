@@ -55,6 +55,14 @@ function searchResult() {
             }
         });
 
+        $scope.$on("toggleShowCovers", function ($event, value) {
+            $scope.foo.showCovers = value;
+            $scope.foo.showCovers = value;
+            console.log($scope.foo.showCovers);
+            $scope.foo.selected = true;
+
+        });
+
         $scope.$on("duplicatesDisplayed", function ($event, value) {
             $scope.foo.duplicatesDisplayed = value;
             if (!value) {

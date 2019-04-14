@@ -991,6 +991,14 @@ function searchResult() {
             }
         });
 
+        $scope.$on("toggleShowCovers", function ($event, value) {
+            $scope.foo.showCovers = value;
+            $scope.foo.showCovers = value;
+            console.log($scope.foo.showCovers);
+            $scope.foo.selected = true;
+
+        });
+
         $scope.$on("duplicatesDisplayed", function ($event, value) {
             $scope.foo.duplicatesDisplayed = value;
             if (!value) {
@@ -2005,12 +2013,12 @@ function footer() {
         $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus;
         $scope.showUpdateFooter = false;
 
-        $scope.$on("showDownloaderStatus", function (doShow) {
+        $scope.$on("showDownloaderStatus", function (event, doShow) {
             $scope.showDownloaderStatus = doShow;
             updateFooterBottom();
             updatePaddingBottom();
         });
-        $scope.$on("showUpdateFooter", function (doShow) {
+        $scope.$on("showUpdateFooter", function (event, doShow) {
             $scope.showUpdateFooter = doShow;
             updateFooterBottom();
             updatePaddingBottom();
@@ -2019,6 +2027,7 @@ function footer() {
         function updateFooterBottom() {
             $scope.updateFooterBottom = $scope.showDownloaderStatus ? 35 : 0;
         }
+
         function updatePaddingBottom() {
             var paddingBottom = 0;
             if ($scope.showDownloaderStatus) {
@@ -2028,10 +2037,10 @@ function footer() {
                 paddingBottom += 40;
             }
             $scope.paddingBottom = paddingBottom;
-            document.getElementById("wrap").classList.remove("padding-bottom-0" );
-            document.getElementById("wrap").classList.remove("padding-bottom-30" );
-            document.getElementById("wrap").classList.remove("padding-bottom-40" );
-            document.getElementById("wrap").classList.remove("padding-bottom-70" );
+            document.getElementById("wrap").classList.remove("padding-bottom-0");
+            document.getElementById("wrap").classList.remove("padding-bottom-30");
+            document.getElementById("wrap").classList.remove("padding-bottom-40");
+            document.getElementById("wrap").classList.remove("padding-bottom-70");
             var paddingBottomClass = "padding-bottom-" + paddingBottom;
             document.getElementById("wrap").classList.add(paddingBottomClass);
         }
@@ -2141,7 +2150,7 @@ function downloaderStatusFooter() {
                             return;
                         }
                         $scope.foo = response.data;
-                        $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ?  'nzbgetlogo' : 'sabnzbdlogo';
+                        $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
                         //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
                         var maxEntriesHistory = 200;
                         if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
@@ -2150,12 +2159,12 @@ function downloaderStatusFooter() {
                                 if (i >= response.data.downloadingRatesInKilobytes.length) {
                                     break;
                                 }
-                                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y:response.data.downloadingRatesInKilobytes[i]});
+                                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.downloadingRatesInKilobytes[i]});
                             }
                         } else {
                             //Remove first one, add to the end
                             $scope.downloaderChart.data[0].values.splice(0, 1);
-                            $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y:response.data.lastDownloadRate});
+                            $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
                         }
                         if ($scope.foo.state === "DOWNLOADING") {
                             $scope.foo.buttonClass = "play";
@@ -2167,7 +2176,7 @@ function downloaderStatusFooter() {
                             $scope.foo.buttonClass = "time";
                         }
                         $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-                    }catch (e) {
+                    } catch (e) {
                         console.error(e);
                         clearInterval(timer);
                     }
@@ -2183,7 +2192,6 @@ function downloaderStatusFooter() {
         var timer = setInterval(function () {
             update();
         }, 1000);
-
 
 
     }
@@ -7841,7 +7849,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
     $scope.optionsEvents = {
         onToggleItem: function (item, newValue) {
-            console.log(item.id + ": " + newValue);
             if (item.id === "duplicatesDisplayed") {
                 toggleDuplicatesDisplayed(newValue);
             } else if (item.id === "groupTorrentAndNewznabResults") {
@@ -7884,11 +7891,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     function toggleshowCovers(value) {
         localStorageService.set("showCovers", value);
         $scope.foo.showCovers = value;
+        $scope.$broadcast("toggleShowCovers", value);
     }
 
     function togglesGroupEpisodes(value) {
         localStorageService.set("groupEpisodes", value);
-        $scope.foo.groupEpisodes = value;
+        $scope.shared.isGroupEpisodes = value;
+        blockAndUpdate();
     }
 
 
@@ -8189,8 +8198,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         $scope.selected = newSelected;
 
         var grouped = _.groupBy(filtered, getGroupingString);
-        console.log(grouped);
-        console.log(Object.keys(grouped).length);
 
         var mapped = _.map(grouped, createSortedHashgroups);
         var sorted = _.sortBy(mapped, getTitleGroupFirstElementsSortPredicate);
