@@ -71,7 +71,7 @@ function downloaderStatusFooter() {
         };
 
         function update() {
-            $http.get("internalapi/downloader/getStatus").then(function (response) {
+            $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
                     try {
                         if (!response) {
                             console.error("No downloader status response from server");
