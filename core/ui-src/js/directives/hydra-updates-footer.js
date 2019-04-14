@@ -46,11 +46,16 @@ function hydraUpdatesFooter() {
         function retrieveUpdateInfos() {
             $scope.checked = true;
             UpdateService.getInfos().then(function (response) {
-                $scope.currentVersion = response.data.currentVersion;
-                $scope.latestVersion = response.data.latestVersion;
-                $scope.updateAvailable = response.data.updateAvailable;
-                $scope.changelog = response.data.changelog;
-                $scope.runInDocker = response.data.runInDocker;
+                if (response) {
+                    $scope.currentVersion = response.data.currentVersion;
+                    $scope.latestVersion = response.data.latestVersion;
+                    $scope.updateAvailable = response.data.updateAvailable;
+                    $scope.changelog = response.data.changelog;
+                    $scope.runInDocker = response.data.runInDocker;
+                    $scope.$emit("showUpdateFooter", $scope.updateAvailable);
+                } else {
+                    $scope.$emit("showUpdateFooter", false);
+                }
             });
         }
 
@@ -62,6 +67,7 @@ function hydraUpdatesFooter() {
         $scope.ignore = function () {
             UpdateService.ignore($scope.latestVersion);
             $scope.updateAvailable = false;
+            $scope.$emit("showUpdateFooter", $scope.updateAvailable);
         };
 
         $scope.showChangelog = function () {

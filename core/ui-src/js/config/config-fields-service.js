@@ -1268,6 +1268,15 @@ function ConfigFields($injector) {
                                 label: 'Update statuses',
                                 help: "Query your downloader for status updates of downloads"
                             }
+                        },
+                        {
+                            key: 'showDownloaderStatus',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show downloader footer',
+                                help: "Show footer with downloader status"
+                            }
                         }
                     ]
                 },

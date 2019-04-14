@@ -19,13 +19,15 @@ package org.nzbhydra.downloading.downloaders;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
-import org.nzbhydra.downloading.downloaders.Downloader.AddNzbsResponse;
+import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class DownloaderWeb {
@@ -37,6 +39,17 @@ public class DownloaderWeb {
     @RequestMapping(value = "/internalapi/downloader/checkConnection", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GenericResponse checkConnection(@RequestBody DownloaderConfig downloaderConfig) {
         return downloaderProvider.checkConnection(downloaderConfig);
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public DownloaderStatus getStatus() throws DownloaderException {
+        Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
+        List<Downloader> enabledDownloaders = allDownloaders.stream().filter(Downloader::isEnabled).collect(Collectors.toList());
+        if (enabledDownloaders.isEmpty()) {
+            return new DownloaderStatus();
+        }
+        return enabledDownloaders.get(0).getStatus();
     }
 
     @Secured({"ROLE_USER"})

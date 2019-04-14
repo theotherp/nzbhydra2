@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.4.5",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Display status of configured downloader on the bottom of the page. This can be disabled in the downloading config. If multiple downloaders are configured the first one is used."
+      }
+    ]
+  },
+  {
     "version": "v2.4.4",
     "changes": [
       {

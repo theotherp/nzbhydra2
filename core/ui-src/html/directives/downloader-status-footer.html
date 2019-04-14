@@ -1,0 +1,25 @@
+<div id="downloader-status-footer"
+     style="margin-bottom: 0; padding-top: 0; margin-top: 5px">
+  
+  <nav class="row navbar-default" style="margin-left: 0; margin-right: 0">
+    <span ng-show="foo">
+      <div class="col-md-2">
+        <img ng-src="static/img/{{::foo.downloaderImage}}.png" style=""/>
+      </div>
+      <div class="col-md-3" style="padding-top: 10px; line-height: 15px; margin-left: 15px; text-align: left">
+        <span class="glyphicon glyphicon-{{foo.buttonClass}}" tooltip-placement="auto top" uib-tooltip="{{foo.state}}" style="margin-right: 10px"></span>
+          <span ng-show="foo.state === 'Downloading' && foo.downloadRateFormatted">{{foo.downloadRateFormatted}} &bull; {{foo.remainingTimeFormatted}}  &bull; </span>{{foo.elementsInQueue}} in queue
+      </div>
+      <div class="col-md-10">
+        <div style="padding-top: 10px; line-height: 15px; margin-left: 15px;" ng-show="foo.downloadingTitle">
+          {{foo.downloadingTitle}} ({{foo.downloadingTitlePercentFinished}}%<span ng-show="foo.downloadingTitleRemainingTimeFormatted"> &bull; {{foo.downloadingTitleRemainingTimeFormatted}}</span>)
+        </div>
+      </div>
+      <div class="col-md-5 downloader-status" style="width: 24%; float: right">
+        <chart>
+          <nvd3 options="downloaderChart.options" data="downloaderChart.data" api="api" config="downloaderChart.config"></nvd3>
+        </chart>
+      </div>
+    </span>
+  </nav>
+</div>

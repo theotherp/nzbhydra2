@@ -30,23 +30,42 @@ body {
   background: @body-bg;
 }
 
-#wrap {
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  /* Negative indent footer by it's height */
-  margin: 0 auto -75px;
+.padding-bottom-70 {
+  padding-bottom: 70px;
 }
 
-/* Set the fixed height of the footer here */
+.padding-bottom-40 {
+  padding-bottom: 40px;
+}
+
+.padding-bottom-30 {
+  padding-bottom: 30px;
+}
+
+.padding-bottom-0 {
+  padding-bottom: 0;
+}
+
 #push,
 #footer {
   height: 70px;
+  z-index: 100;
 }
 
-#footer {
-  //background-color: @brand-primary;
-  //color: @body-bg;
+#update-footer {
+  position: fixed;
+  left: 0;
+  //bottom:35px;
+  height: 70px;
+  width: 100%;
+}
+
+#downloader-status-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 35px;
+  width: 100%;
 }
 
 /* ------ featurette */
@@ -1149,4 +1168,29 @@ a.glyph-link, a.glyph-link:hover {
   padding-top: 5px !important;
   padding-bottom: 5px !important;
   font-size: small;
+}
+
+.downloader-status {
+
+  padding-right: 0;
+  .nvd3 text {
+    display: none;
+  }
+
+  .nvd3 {
+    .nv-bars {
+      rect {
+        width: 1px !important;
+      }
+    }
+  }
+
+  chart {
+    float: right;
+  }
+
+}
+
+.pagination > .active > a {
+  z-index: -1 !important;
 }

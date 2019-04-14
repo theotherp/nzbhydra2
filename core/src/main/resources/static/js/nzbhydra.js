@@ -1654,11 +1654,16 @@ function hydraUpdatesFooter() {
         function retrieveUpdateInfos() {
             $scope.checked = true;
             UpdateService.getInfos().then(function (response) {
-                $scope.currentVersion = response.data.currentVersion;
-                $scope.latestVersion = response.data.latestVersion;
-                $scope.updateAvailable = response.data.updateAvailable;
-                $scope.changelog = response.data.changelog;
-                $scope.runInDocker = response.data.runInDocker;
+                if (response) {
+                    $scope.currentVersion = response.data.currentVersion;
+                    $scope.latestVersion = response.data.latestVersion;
+                    $scope.updateAvailable = response.data.updateAvailable;
+                    $scope.changelog = response.data.changelog;
+                    $scope.runInDocker = response.data.runInDocker;
+                    $scope.$emit("showUpdateFooter", $scope.updateAvailable);
+                } else {
+                    $scope.$emit("showUpdateFooter", false);
+                }
             });
         }
 
@@ -1670,6 +1675,7 @@ function hydraUpdatesFooter() {
         $scope.ignore = function () {
             UpdateService.ignore($scope.latestVersion);
             $scope.updateAvailable = false;
+            $scope.$emit("showUpdateFooter", $scope.updateAvailable);
         };
 
         $scope.showChangelog = function () {
@@ -1964,6 +1970,81 @@ function formatClassname() {
 
     }
 }
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .directive('footer', footer);
+
+function footer() {
+    controller.$inject = ["$scope", "$interval", "$http", "ConfigService", "bootstrapped"];
+    return {
+        templateUrl: 'static/html/directives/footer.html',
+        controller: controller
+    };
+
+    function controller($scope, $interval, $http, ConfigService, bootstrapped) {
+
+        $scope.updateFooterBottom = 0;
+
+        var safeConfig = bootstrapped.safeConfig;
+        $scope.showDownloaderStatus = safeConfig.downloading.showDownloaderStatus;
+        $scope.showUpdateFooter = false;
+
+        $scope.$on("showDownloaderStatus", function (doShow) {
+            $scope.showDownloaderStatus = doShow;
+            updateFooterBottom();
+            updatePaddingBottom();
+        });
+        $scope.$on("showUpdateFooter", function (doShow) {
+            $scope.showUpdateFooter = doShow;
+            updateFooterBottom();
+            updatePaddingBottom();
+        });
+
+        function updateFooterBottom() {
+            $scope.updateFooterBottom = $scope.showDownloaderStatus ? 35 : 0;
+        }
+        function updatePaddingBottom() {
+            var paddingBottom = 0;
+            if ($scope.showDownloaderStatus) {
+                paddingBottom += 30;
+            }
+            if ($scope.showUpdateFooter) {
+                paddingBottom += 40;
+            }
+            $scope.paddingBottom = paddingBottom;
+            document.getElementById("wrap").classList.remove("padding-bottom-0" );
+            document.getElementById("wrap").classList.remove("padding-bottom-30" );
+            document.getElementById("wrap").classList.remove("padding-bottom-40" );
+            document.getElementById("wrap").classList.remove("padding-bottom-70" );
+            var paddingBottomClass = "padding-bottom-" + paddingBottom;
+            document.getElementById("wrap").classList.add(paddingBottomClass);
+        }
+
+        updatePaddingBottom();
+
+        updateFooterBottom();
+
+
+    }
+}
+
+
 angular
     .module('nzbhydraApp').directive('focusOn', focusOn);
 
@@ -1978,6 +2059,136 @@ function focusOn() {
         });
     }
 }
+
+/*
+ *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+angular
+    .module('nzbhydraApp')
+    .directive('downloaderStatusFooter', downloaderStatusFooter);
+
+function downloaderStatusFooter() {
+    controller.$inject = ["$scope", "$interval", "$http"];
+    return {
+        templateUrl: 'static/html/directives/downloader-status-footer.html',
+        controller: controller
+    };
+
+    function controller($scope, $interval, $http) {
+
+        $scope.$emit("showDownloaderStatus", true);
+        var downloadRateCounter = 0;
+
+        $scope.downloaderChart = {
+            options: {
+                chart: {
+                    type: 'historicalBarChart',
+                    height: 35,
+                    width: 300,
+                    margin: {
+                        top: 5,
+                        right: 0,
+                        bottom: 0,
+                        left: 0
+                    },
+                    x: function (d) {
+                        return d.x;
+                    },
+                    y: function (d) {
+                        return d.y;
+                    },
+                    interactive: true,
+                    useInteractiveGuideline: false,
+                    showControls: false,
+                    showLegend: false,
+                    showValues: false,
+                    tooltip: {
+                        valueFormatter: function (d, i) {
+                            return d + " kb/s";
+                        },
+                        keyFormatter: function () {
+                            return "";
+                        },
+                        id: "downloader-status-tooltip"
+                    },
+                    css: "float:right;"
+                }
+            },
+            data: [{values: [], key: "Bla", color: '#00a950'}],
+            config: {
+                refreshDataOnly: true
+            }
+        };
+
+        function update() {
+            $http.get("internalapi/downloader/getStatus").then(function (response) {
+                    try {
+                        if (!response) {
+                            console.error("No downloader status response from server");
+                            return;
+                        }
+                        $scope.foo = response.data;
+                        $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ?  'nzbgetlogo' : 'sabnzbdlogo';
+                        //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
+                        var maxEntriesHistory = 200;
+                        if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
+                            //Not yet full, just fill up
+                            for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
+                                if (i >= response.data.downloadingRatesInKilobytes.length) {
+                                    break;
+                                }
+                                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y:response.data.downloadingRatesInKilobytes[i]});
+                            }
+                        } else {
+                            //Remove first one, add to the end
+                            $scope.downloaderChart.data[0].values.splice(0, 1);
+                            $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y:response.data.lastDownloadRate});
+                        }
+                        if ($scope.foo.state === "DOWNLOADING") {
+                            $scope.foo.buttonClass = "play";
+                        } else if ($scope.state === "PAUSED") {
+                            $scope.foo.buttonClass = "pause";
+                        } else if ($scope.state === "OFFLINE") {
+                            $scope.foo.buttonClass = "off";
+                        } else {
+                            $scope.foo.buttonClass = "time";
+                        }
+                        $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
+                    }catch (e) {
+                        console.error(e);
+                        clearInterval(timer);
+                    }
+                },
+                function () {
+                    console.error("Error while loading downloader status");
+                    clearInterval(timer);
+                }
+            );
+        }
+
+        update();
+        var timer = setInterval(function () {
+            update();
+        }, 1000);
+
+
+
+    }
+}
+
 
 angular
     .module('nzbhydraApp')
@@ -6114,6 +6325,15 @@ function ConfigFields($injector) {
                                 label: 'Update statuses',
                                 help: "Query your downloader for status updates of downloads"
                             }
+                        },
+                        {
+                            key: 'showDownloaderStatus',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show downloader footer',
+                                help: "Show footer with downloader status"
+                            }
                         }
                     ]
                 },
@@ -6707,6 +6927,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     latestVersionIgnored = response.data.latestVersionIgnored;
                     runInDocker = response.data.runInDocker;
                     return response;
+                }, function () {
+
                 }
             );
         });

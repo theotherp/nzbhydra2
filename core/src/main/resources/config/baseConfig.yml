@@ -261,6 +261,7 @@ downloading:
     saveTorrentsTo: null
     sendMagnetLinks: true
     updateStatuses: true
+    showDownloaderStatus: true
 indexers: []
 main:
   apiKey: null

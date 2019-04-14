@@ -23,7 +23,10 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
+import org.nzbhydra.downloading.downloaders.DownloaderEntry;
+import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
@@ -33,6 +36,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.MalformedURLException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,6 +73,8 @@ public class NzbGet extends Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbGet.class);
     private JsonRpcHttpClient client;
+    private Instant lastErrorLogged;
+
 
     //LATER Handle username / password and failed auth, return codes
 
@@ -146,6 +152,95 @@ public class NzbGet extends Downloader {
             }
             throw new DownloaderException("Unknown error while adding NZB to NZBGet");
         }
+    }
+
+    @Override
+    public DownloaderStatus getStatus() throws DownloaderException {
+        LinkedHashMap<String, Object> statusMap;
+        try {
+            statusMap = client.invoke("status", new Object[]{}, LinkedHashMap.class);
+            lastErrorLogged = null;
+        } catch (Throwable e) {
+            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
+                logger.error("Error contacting NZBGet", e);
+                lastErrorLogged = Instant.now();
+            }
+            DownloaderStatus status = new DownloaderStatus();
+            status.setState(DownloaderStatus.State.OFFLINE);
+            addDownloadRate(0);
+            return status;
+        }
+        DownloaderStatus status = getStatusFromMap(statusMap);
+
+        fillStatusFromQueue(status);
+
+        return status;
+    }
+
+    protected void fillStatusFromQueue(DownloaderStatus status) throws DownloaderException {
+        ArrayList<LinkedHashMap<String, Object>> queue = callNzbget("listgroups", new Object[]{0});
+        List<LinkedHashMap<String, Object>> nzbs = queue.stream().filter(x -> "NZB".equals(x.get("Kind"))).collect(Collectors.toList());
+        if (!nzbs.isEmpty()) {
+
+            status.setElementsInQueue(queue.size());
+            if (queue.size() > 0) {
+                LinkedHashMap<String, Object> map = queue.get(0);
+                status.setDownloadingTitle((String) map.get("NZBName"));
+                Integer fileSizeMb = (Integer) map.get("FileSizeMB");
+                Integer downloadedMb = (Integer) map.get("DownloadedSizeMB");
+                int actualRemainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
+                if (fileSizeMb == 0) {
+                    status.setDownloadingTitlePercentFinished(0);
+                } else {
+                    status.setDownloadingTitlePercentFinished(Math.round((100F * downloadedMb) / fileSizeMb));
+                }
+                if (status.getState() == DownloaderStatus.State.DOWNLOADING && status.getDownloadRateInKilobytes() > 0) {
+                    status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(actualRemainingMb, status.getDownloadRateInKilobytes() * 1024));
+                }
+            }
+        }
+    }
+
+    private String calculateTimeLeft(int remainingMb, long downloadRateBytesPerSecond) {
+        int secondsLeft = (int) ((remainingMb * 1024F) / (downloadRateBytesPerSecond / 1024F));
+        return Converters.formatTime(secondsLeft);
+    }
+
+    private DownloaderStatus getStatusFromMap(LinkedHashMap<String, Object> statusMap) {
+        DownloaderStatus status = new DownloaderStatus();
+
+        status.setDownloaderName(downloaderConfig.getName());
+        status.setDownloaderType(downloaderConfig.getDownloaderType());
+        Integer remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB");
+        status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
+        status.setRemainingSizeInMegaBytes(remainingSizeMB);
+
+        Integer downloadRateInBytes = (Integer) statusMap.get("DownloadRate");
+        status.setDownloadRateFormatted(downloadRateInBytes > 0 ? (Converters.formatBytesPerSecond(downloadRateInBytes, true)) : "");
+        int downloadRateInKilobytes = downloadRateInBytes / 1024;
+        status.setDownloadRateInKilobytes(downloadRateInKilobytes);
+        addDownloadRate(downloadRateInKilobytes);
+        status.setDownloadingRatesInKilobytes(downloadRates);
+
+        Boolean downloadPaused = (Boolean) statusMap.get("DownloadPaused");
+        if (downloadPaused) {
+            status.setState(DownloaderStatus.State.PAUSED);
+        } else if (remainingSizeMB > 0) {
+            status.setState(DownloaderStatus.State.DOWNLOADING);
+        } else {
+            status.setState(DownloaderStatus.State.IDLE);
+        }
+        if (downloadRateInBytes > 0) {
+            int mb;
+            if (downloadPaused) {
+                mb = (int) statusMap.get("ForcedSizeMB");
+            } else {
+                mb = (int) statusMap.get("RemainingSizeMB");
+            }
+            status.setRemainingSeconds((long) ((mb * 1024F) / (downloadRateInBytes / 1024F)));
+            status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
+        }
+        return status;
     }
 
 

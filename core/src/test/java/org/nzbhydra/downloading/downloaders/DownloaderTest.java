@@ -25,7 +25,6 @@ import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
-import org.nzbhydra.downloading.downloaders.Downloader.DownloaderEntry;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;

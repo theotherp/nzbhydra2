@@ -36,6 +36,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     private String saveTorrentsTo;
     private boolean sendMagnetLinks;
     private boolean updateStatuses;
+    private boolean showDownloaderStatus;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig) {

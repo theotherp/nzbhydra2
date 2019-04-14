@@ -13,10 +13,12 @@ public class SafeDownloadingConfig {
     private String saveTorrentsTo;
     private boolean sendMagnetLinks;
     private List<SafeDownloaderConfig> downloaders;
+    private boolean showDownloaderStatus;
 
     public SafeDownloadingConfig(DownloadingConfig downloadingConfig) {
         saveTorrentsTo = downloadingConfig.getSaveTorrentsTo().orElse(null);
         sendMagnetLinks = downloadingConfig.isSendMagnetLinks();
+        showDownloaderStatus = downloadingConfig.isShowDownloaderStatus();
         downloaders = downloadingConfig.getDownloaders().stream().map(SafeDownloaderConfig::new).collect(Collectors.toList());
     }
 

@@ -16,13 +16,9 @@
 
 package org.nzbhydra.downloading.downloaders;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
@@ -51,6 +47,8 @@ public abstract class Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
+    protected long downloadRateCounter = 0;
+
     public enum StatusCheckType {
         QUEUE,
         HISTORY
@@ -63,6 +61,7 @@ public abstract class Downloader {
     protected SearchResultRepository searchResultRepository;
 
     protected DownloaderConfig downloaderConfig;
+    protected List<Long> downloadRates = new ArrayList<>();
 
     public void intialize(DownloaderConfig downloaderConfig) {
         this.downloaderConfig = downloaderConfig;
@@ -160,6 +159,8 @@ public abstract class Downloader {
      */
     public abstract String addNzb(byte[] content, String title, String category) throws DownloaderException;
 
+    public abstract DownloaderStatus getStatus() throws DownloaderException;
+
     public List<FileDownloadEntity> checkForStatusUpdates(List<FileDownloadEntity> downloads, StatusCheckType statusCheckType) {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -211,6 +212,13 @@ public abstract class Downloader {
         return updatedDownloads;
     }
 
+    protected void addDownloadRate(long downloadRate) {
+        if (downloadRates.size() >= 300) {
+            downloadRates.remove(0);
+        }
+        downloadRates.add(downloadRate == 0 ? 1 : downloadRate);
+    }
+
     public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException;
 
     public abstract List<DownloaderEntry> getQueue(Instant earliestDownload) throws DownloaderException;
@@ -218,38 +226,6 @@ public abstract class Downloader {
     protected abstract FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType);
 
     protected abstract boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry);
-
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public class AddNzbsResponse {
-        /**
-         * Determines if the communication with the downloader was successful, not if all (or any) NZBs were successfully downloaded
-         */
-        private boolean successful;
-        private String message;
-        private Collection<Long> addedIds;
-        private Collection<Long> missedIds;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DownloaderEntry {
-        private String nzbId;
-        private String nzbName;
-        private String status;
-        private Instant time;
-
-        @Override
-        public String toString() {
-            return MoreObjects.toStringHelper(this)
-                    .add("nzbId", nzbId)
-                    .add("nzbName", nzbName)
-                    .toString();
-        }
-    }
 
 
 }

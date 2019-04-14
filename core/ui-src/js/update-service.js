@@ -30,6 +30,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     latestVersionIgnored = response.data.latestVersionIgnored;
                     runInDocker = response.data.runInDocker;
                     return response;
+                }, function () {
+
                 }
             );
         });

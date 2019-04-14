@@ -2,11 +2,18 @@ package org.nzbhydra.downloading.downloaders.sabnzbd;
 
 import com.google.common.base.Strings;
 import okhttp3.*;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.format.PeriodFormatter;
+import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
+import org.nzbhydra.config.downloading.DownloaderType;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
+import org.nzbhydra.downloading.downloaders.DownloaderEntry;
+import org.nzbhydra.downloading.downloaders.DownloaderStatus;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.downloading.exceptions.DownloaderUnreachableException;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -25,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +44,8 @@ public class Sabnzbd extends Downloader {
     private static final Logger logger = LoggerFactory.getLogger(Sabnzbd.class);
 
     private static final Map<String, FileDownloadStatus> SABNZBD_STATUS_TO_HYDRA_STATUS = new HashMap<>();
+    private static final PeriodFormatter PERIOD_FORMATTER_HOURS = new PeriodFormatterBuilder().appendHours().appendSeparator(":").appendMinutes().appendSeparator(":").appendSeconds().toFormatter();
+    private static final PeriodFormatter PERIOD_FORMATTER_DAYS = new PeriodFormatterBuilder().appendDays().appendSeparator(":").appendHours().appendSeparator(":").appendMinutes().appendSeparator(":").appendSeconds().toFormatter();
 
     static {
         //TODO Get feedback from Safihre how well mapping would work and how/if any NZBs would be reported which were rejected
@@ -55,6 +65,7 @@ public class Sabnzbd extends Downloader {
         SABNZBD_STATUS_TO_HYDRA_STATUS.put("Failed", FileDownloadStatus.CONTENT_DOWNLOAD_ERROR);
     }
 
+    private Instant lastErrorLogged;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -144,6 +155,59 @@ public class Sabnzbd extends Downloader {
     }
 
     @Override
+    public DownloaderStatus getStatus() throws DownloaderException {
+        UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "queue");
+        QueueResponse queueResponse = null;
+        try {
+            queueResponse = callSabnzb(uriBuilder.build().toUri(), QueueResponse.class);
+            lastErrorLogged = null;
+        } catch (DownloaderException e) {
+            if (lastErrorLogged == null || lastErrorLogged.isBefore(Instant.now().minus(10, ChronoUnit.MINUTES))) {
+                logger.error("Error contacting NZBGet", e);
+                lastErrorLogged = Instant.now();
+            }
+            DownloaderStatus status = new DownloaderStatus();
+            status.setState(DownloaderStatus.State.OFFLINE);
+            addDownloadRate(0);
+            return status;
+        }
+        DownloaderStatus status = new DownloaderStatus();
+        if (queueResponse.getQueue().getPaused()) {
+            status.setState(DownloaderStatus.State.PAUSED);
+        } else if ("Downloading".equals(queueResponse.getQueue().getStatus())) {
+            status.setState(DownloaderStatus.State.DOWNLOADING);
+        } else {
+            status.setState(DownloaderStatus.State.IDLE);
+        }
+        status.setDownloaderType(DownloaderType.SABNZBD);
+        status.setDownloaderName(downloaderConfig.getName());
+
+        status.setDownloadRateInKilobytes((long) Float.parseFloat(queueResponse.getQueue().getKbpersec()));
+        addDownloadRate(status.getDownloadRateInKilobytes());
+        status.setElementsInQueue(queueResponse.getQueue().getSlots().size());
+        status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queueResponse.getQueue().getMbleft()));
+        status.setRemainingTimeFormatted(parseRemainingTime(queueResponse.getQueue().getTimeleft()));
+
+        if (!queueResponse.getQueue().getSlots().isEmpty()) {
+            QueueEntry currentEntry = queueResponse.getQueue().getSlots().get(0);
+            status.setDownloadingTitle(currentEntry.getFilename());
+            status.setDownloadingTitleRemainingTimeFormatted(parseRemainingTime(currentEntry.getTimeleft()));
+            status.setDownloadingTitleRemainingSizeFormatted(Converters.formatMegabytes((long) Float.parseFloat(currentEntry.getMbleft()), false));
+            status.setDownloadingTitlePercentFinished(Integer.parseInt(currentEntry.getPercentage()));
+        }
+
+        status.setDownloadingRatesInKilobytes(downloadRates);
+        return status;
+    }
+
+    private String parseRemainingTime(String timeleft) {
+        if (StringUtils.countMatches(timeleft, ":") == 3) {
+            return Converters.formatTime(PERIOD_FORMATTER_DAYS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+        }
+        return Converters.formatTime(PERIOD_FORMATTER_HOURS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+    }
+
+    @Override
     public List<DownloaderEntry> getHistory(Instant earliestDownloadTime) throws DownloaderException {
         //TODO: Store and use last_history_update? See https://sabnzbd.org/wiki/advanced/api#history_main
         UriComponentsBuilder uriBuilder = getBaseUrl().queryParam("mode", "history");
@@ -181,7 +245,7 @@ public class Sabnzbd extends Downloader {
         return historyEntries;
     }
 
-    protected <T> T callSabnzb(URI uri, Class<T> responseType) throws DownloaderException{
+    protected <T> T callSabnzb(URI uri, Class<T> responseType) throws DownloaderException {
         try {
             return restTemplate.getForObject(uri, responseType);
         } catch (RestClientException e) {
