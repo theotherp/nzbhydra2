@@ -1,3 +1,9 @@
+### v2.5.2
+
+Fix: Minor downloader status bar related fixes.
+
+
+
 ### v2.5.1
 
 Feature: Display status of configured downloader on the bottom of the page. This can be disabled in the downloading config. If multiple downloaders are configured the first one is used.
