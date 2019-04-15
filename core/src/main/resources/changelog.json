@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Minor downloader status bar related fixes."
+      }
+    ]
+  },
+  {
     "version": "v2.5.1",
     "changes": [
       {

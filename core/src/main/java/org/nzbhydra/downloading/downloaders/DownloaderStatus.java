@@ -69,6 +69,20 @@ public class DownloaderStatus {
     }
 
 
+    public List<Long> getDownloadingRatesInKilobytes() {
+        if (downloadingRatesInKilobytes.isEmpty() || downloadingRatesInKilobytes.size() < 5) {
+            return downloadingRatesInKilobytes;
+        }
+        if (downloadingRatesInKilobytes.get(downloadingRatesInKilobytes.size() - 1) / (float) 10 > downloadingRatesInKilobytes.get(downloadingRatesInKilobytes.size() - 2)) {
+            //Latest rate is a lot larger than the one before
+            //If it's also a lot larger than the third last we ignore the last one we don't return the latest one
+            if (downloadingRatesInKilobytes.get(downloadingRatesInKilobytes.size() - 1) / (float) 10 > downloadingRatesInKilobytes.get(downloadingRatesInKilobytes.size() - 3)) {
+                return downloadingRatesInKilobytes.subList(0, downloadingRatesInKilobytes.size() - 1);
+            }
+        }
+        return downloadingRatesInKilobytes;
+    }
+
     @Data
     @AllArgsConstructor
     static class DownloadRate {

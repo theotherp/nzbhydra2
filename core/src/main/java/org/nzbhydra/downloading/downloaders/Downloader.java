@@ -216,7 +216,7 @@ public abstract class Downloader {
         if (downloadRates.size() >= 300) {
             downloadRates.remove(0);
         }
-        downloadRates.add(downloadRate == 0 ? 1 : downloadRate);
+        downloadRates.add(downloadRate);
     }
 
     public abstract List<DownloaderEntry> getHistory(Instant earliestDownload) throws DownloaderException;

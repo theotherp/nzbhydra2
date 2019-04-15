@@ -32,6 +32,9 @@ public class Converters {
         long seconds = secs % 60;
         if (days == 0) {
             if (hours == 0) {
+                if (minutes == 0) {
+                    return String.format("%02ds", seconds);
+                }
                 return String.format("%02dm %02ds", minutes, seconds);
             }
             return String.format("%02dh %02dm", hours, minutes);

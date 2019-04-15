@@ -2106,7 +2106,7 @@ function downloaderStatusFooter() {
         $scope.downloaderChart = {
             options: {
                 chart: {
-                    type: 'historicalBarChart',
+                    type: 'stackedAreaChart',
                     height: 35,
                     width: 300,
                     margin: {

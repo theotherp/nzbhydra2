@@ -186,16 +186,15 @@ public class NzbGet extends Downloader {
             if (queue.size() > 0) {
                 LinkedHashMap<String, Object> map = queue.get(0);
                 status.setDownloadingTitle((String) map.get("NZBName"));
-                Integer fileSizeMb = (Integer) map.get("FileSizeMB");
-                Integer downloadedMb = (Integer) map.get("DownloadedSizeMB");
-                int actualRemainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
-                if (fileSizeMb == 0) {
+                int totalMb = (Integer) map.get("FileSizeMB") - (Integer) map.get("PausedSizeMB");
+                int remainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
+                if (totalMb == 0) {
                     status.setDownloadingTitlePercentFinished(0);
                 } else {
-                    status.setDownloadingTitlePercentFinished(Math.round((100F * downloadedMb) / fileSizeMb));
+                    status.setDownloadingTitlePercentFinished(Math.round(((totalMb - remainingMb) / (float) (totalMb)) * 100));
                 }
                 if (status.getState() == DownloaderStatus.State.DOWNLOADING && status.getDownloadRateInKilobytes() > 0) {
-                    status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(actualRemainingMb, status.getDownloadRateInKilobytes() * 1024));
+                    status.setDownloadingTitleRemainingTimeFormatted(calculateTimeLeft(remainingMb, status.getDownloadRateInKilobytes() * 1024));
                 }
             }
         }
@@ -211,7 +210,8 @@ public class NzbGet extends Downloader {
 
         status.setDownloaderName(downloaderConfig.getName());
         status.setDownloaderType(downloaderConfig.getDownloaderType());
-        Integer remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB");
+
+        int remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB") - (Integer) statusMap.getOrDefault("PausedSizeMB", 0);
         status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
         status.setRemainingSizeInMegaBytes(remainingSizeMB);
 
@@ -246,7 +246,7 @@ public class NzbGet extends Downloader {
 
     protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
         boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(String.valueOf(entry.getNzbId()));
-        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
+        boolean nameMatches = download.getSearchResult().getTitle().equals(entry.getNzbName());
         return idMatches || nameMatches;
     }
 

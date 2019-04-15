@@ -49,7 +49,8 @@ public class DownloaderWeb {
         if (enabledDownloaders.isEmpty()) {
             return new DownloaderStatus();
         }
-        return enabledDownloaders.get(0).getStatus();
+        DownloaderStatus status = enabledDownloaders.get(0).getStatus();
+        return status;
     }
 
     @Secured({"ROLE_USER"})
@@ -65,7 +66,6 @@ public class DownloaderWeb {
         Downloader downloader = downloaderProvider.getDownloaderByName(downloaderName);
         return downloader.getCategories();
     }
-
 
 
 }
