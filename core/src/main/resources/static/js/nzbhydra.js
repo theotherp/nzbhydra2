@@ -2092,13 +2092,13 @@ angular
     .directive('downloaderStatusFooter', downloaderStatusFooter);
 
 function downloaderStatusFooter() {
-    controller.$inject = ["$scope", "$interval", "$http"];
+    controller.$inject = ["$scope", "$interval", "$http", "RequestsErrorHandler"];
     return {
         templateUrl: 'static/html/directives/downloader-status-footer.html',
         controller: controller
     };
 
-    function controller($scope, $interval, $http) {
+    function controller($scope, $interval, $http, RequestsErrorHandler) {
 
         $scope.$emit("showDownloaderStatus", true);
         var downloadRateCounter = 0;
@@ -2145,56 +2145,57 @@ function downloaderStatusFooter() {
         };
 
         function update() {
-            $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
-                    try {
-                        if (!response) {
-                            console.error("No downloader status response from server");
-                            return;
-                        }
-                        $scope.foo = response.data;
-                        $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
-                        //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
-                        var maxEntriesHistory = 200;
-                        if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
-                            //Not yet full, just fill up
-                            for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
-                                if (i >= response.data.downloadingRatesInKilobytes.length) {
-                                    break;
-                                }
-                                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.downloadingRatesInKilobytes[i]});
+            RequestsErrorHandler.specificallyHandled(function () {
+                $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
+                        try {
+                            if (!response) {
+                                console.error("No downloader status response from server");
+                                return;
                             }
-                        } else {
-                            //Remove first one, add to the end
-                            $scope.downloaderChart.data[0].values.splice(0, 1);
-                            $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
+                            $scope.foo = response.data;
+                            $scope.foo.downloaderImage = response.data.downloaderType === 'NZBGET' ? 'nzbgetlogo' : 'sabnzbdlogo';
+                            //We need to splice the variable with the rates because it's watched by angular and when overwriting it we would lose the watch and it wouldn't be updated
+                            var maxEntriesHistory = 200;
+                            if ($scope.downloaderChart.data[0].values.length < maxEntriesHistory) {
+                                //Not yet full, just fill up
+                                for (var i = $scope.downloaderChart.data[0].values.length; i < maxEntriesHistory; i++) {
+                                    if (i >= response.data.downloadingRatesInKilobytes.length) {
+                                        break;
+                                    }
+                                    $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.downloadingRatesInKilobytes[i]});
+                                }
+                            } else {
+                                //Remove first one, add to the end
+                                $scope.downloaderChart.data[0].values.splice(0, 1);
+                                $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
+                            }
+                            if ($scope.foo.state === "DOWNLOADING") {
+                                $scope.foo.buttonClass = "play";
+                            } else if ($scope.foo.state === "PAUSED") {
+                                $scope.foo.buttonClass = "pause";
+                            } else if ($scope.foo.state === "OFFLINE") {
+                                $scope.foo.buttonClass = "off";
+                            } else {
+                                $scope.foo.buttonClass = "time";
+                            }
+                            $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
+                        } catch (e) {
+                            console.error(e);
+                            clearInterval(timer);
                         }
-                        if ($scope.foo.state === "DOWNLOADING") {
-                            $scope.foo.buttonClass = "play";
-                        } else if ($scope.foo.state === "PAUSED") {
-                            $scope.foo.buttonClass = "pause";
-                        } else if ($scope.foo.state === "OFFLINE") {
-                            $scope.foo.buttonClass = "off";
-                        } else {
-                            $scope.foo.buttonClass = "time";
-                        }
-                        $scope.foo.state = $scope.foo.state.substr(0, 1) + $scope.foo.state.substr(1).toLowerCase();
-                    } catch (e) {
-                        console.error(e);
+                    },
+                    function () {
+                        console.error("Error while loading downloader status");
                         clearInterval(timer);
                     }
-                },
-                function () {
-                    console.error("Error while loading downloader status");
-                    clearInterval(timer);
-                }
-            );
+                );
+            });
         }
 
         update();
         var timer = setInterval(function () {
             update();
         }, 1000);
-
 
     }
 }
