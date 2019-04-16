@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.3",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Update of downloader status failed with sabnzbd for some reason."
+      }
+    ]
+  },
+  {
     "version": "v2.5.2",
     "changes": [
       {

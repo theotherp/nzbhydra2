@@ -172,9 +172,13 @@ public class Sabnzbd extends Downloader {
             return status;
         }
         DownloaderStatus status = new DownloaderStatus();
-        if (queueResponse.getQueue().getPaused()) {
+        if (queueResponse == null || queueResponse.getQueue() == null || queueResponse.getQueue().getSlots() == null) {
+            throw new DownloaderException("Sanzbd returned empty respone");
+        }
+        Queue queue = queueResponse.getQueue();
+        if (queue.getPaused()) {
             status.setState(DownloaderStatus.State.PAUSED);
-        } else if ("Downloading".equals(queueResponse.getQueue().getStatus())) {
+        } else if ("Downloading".equals(queue.getStatus())) {
             status.setState(DownloaderStatus.State.DOWNLOADING);
         } else {
             status.setState(DownloaderStatus.State.IDLE);
@@ -182,14 +186,18 @@ public class Sabnzbd extends Downloader {
         status.setDownloaderType(DownloaderType.SABNZBD);
         status.setDownloaderName(downloaderConfig.getName());
 
-        status.setDownloadRateInKilobytes((long) Float.parseFloat(queueResponse.getQueue().getKbpersec()));
-        addDownloadRate(status.getDownloadRateInKilobytes());
-        status.setElementsInQueue(queueResponse.getQueue().getSlots().size());
-        status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queueResponse.getQueue().getMbleft()));
-        status.setRemainingTimeFormatted(parseRemainingTime(queueResponse.getQueue().getTimeleft()));
+        if (queue.getKbpersec() != null) {
+            status.setDownloadRateInKilobytes((long) Float.parseFloat(queue.getKbpersec()));
+            addDownloadRate(status.getDownloadRateInKilobytes());
+        }
+        status.setElementsInQueue(queue.getSlots().size());
+        if (queue.getMbleft() != null) {
+            status.setRemainingSizeInMegaBytes((long) Float.parseFloat(queue.getMbleft()));
+        }
+        status.setRemainingTimeFormatted(parseRemainingTime(queue.getTimeleft()));
 
-        if (!queueResponse.getQueue().getSlots().isEmpty()) {
-            QueueEntry currentEntry = queueResponse.getQueue().getSlots().get(0);
+        if (!queue.getSlots().isEmpty()) {
+            QueueEntry currentEntry = queue.getSlots().get(0);
             status.setDownloadingTitle(currentEntry.getFilename());
             status.setDownloadingTitleRemainingTimeFormatted(parseRemainingTime(currentEntry.getTimeleft()));
             status.setDownloadingTitleRemainingSizeFormatted(Converters.formatMegabytes((long) Float.parseFloat(currentEntry.getMbleft()), false));
@@ -201,6 +209,9 @@ public class Sabnzbd extends Downloader {
     }
 
     private String parseRemainingTime(String timeleft) {
+        if (Strings.isNullOrEmpty(timeleft)) {
+            return null;
+        }
         if (StringUtils.countMatches(timeleft, ":") == 3) {
             return Converters.formatTime(PERIOD_FORMATTER_DAYS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
         }

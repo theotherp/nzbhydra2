@@ -20,6 +20,8 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.downloading.AddFilesRequest;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 
 @RestController
 public class DownloaderWeb {
+    private static final Logger logger = LoggerFactory.getLogger(DownloaderWeb.class);
+
 
     @Autowired
     private DownloaderProvider downloaderProvider;
@@ -49,7 +53,12 @@ public class DownloaderWeb {
         if (enabledDownloaders.isEmpty()) {
             return new DownloaderStatus();
         }
-        DownloaderStatus status = enabledDownloaders.get(0).getStatus();
+        DownloaderStatus status = null;
+        try {
+            status = enabledDownloaders.get(0).getStatus();
+        } catch (Exception e) {
+            logger.error("Error while retrieving downloader status", e);
+        }
         return status;
     }
 
