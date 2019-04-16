@@ -1,3 +1,9 @@
+### v2.5.3
+
+Fix: Update of downloader status failed with sabnzbd for some reason.
+
+
+
 ### v2.5.2
 
 Fix: Minor downloader status bar related fixes.
