@@ -1,6 +1,12 @@
+### v2.5.4
+
+Fix: Allow empty movie searches for NZBPlanet which should result in covers being shown.
+
+
+
 ### v2.5.3
 
-Fix: Update of downloader status failed with sabnzbd for some reason.
+Fix: Update of downloader status failed with newsbin (which claims to be compatible with the sabnzbd API).
 
 
 
