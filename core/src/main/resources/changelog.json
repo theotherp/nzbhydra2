@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.5",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Option to log/display hosts instead of IP addresses. I haven't found a proper way of testing this so let me know if it works ;-)"
+      }
+    ]
+  },
+  {
     "version": "v2.5.4",
     "changes": [
       {

@@ -278,6 +278,7 @@ main:
     logfilelevel: "INFO"
     logMaxHistory: 30
     logIpAddresses: true
+    mapIpToHost: true
     logUsername: false
     markersToLog: []
   port: 5076

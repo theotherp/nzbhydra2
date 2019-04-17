@@ -15,7 +15,7 @@ public class MdcLogConverter extends ClassicConverter {
             elements.add("Search: " + event.getMDCPropertyMap().get("SEARCH"));
         }
         if (event.getMDCPropertyMap().containsKey("IPADDRESS")) {
-            elements.add("IP: " + event.getMDCPropertyMap().get("IPADDRESS"));
+            elements.add("Host: " + event.getMDCPropertyMap().get("IPADDRESS"));
         }
         if (event.getMDCPropertyMap().containsKey("USERNAME")) {
             elements.add("User: " + event.getMDCPropertyMap().get("USERNAME"));

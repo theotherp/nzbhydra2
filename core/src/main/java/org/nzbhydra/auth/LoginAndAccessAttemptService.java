@@ -29,7 +29,7 @@ public class LoginAndAccessAttemptService {
 
     public void accessSucceeded(String key) {
         if (key == null) {
-            logger.warn("Unable to log successul login by empty IP");
+            logger.warn("Unable to log successul login by empty IP/host");
             return;
         }
         attemptsCache.invalidate(key);
@@ -38,13 +38,13 @@ public class LoginAndAccessAttemptService {
     public void accessFailed(String key) {
         synchronized (attemptsCache) {
             if (key == null) {
-                logger.warn("Unable to log failed login by empty IP");
+                logger.warn("Unable to log failed login by empty IP/host");
                 return;
             }
             int attempts = attemptsCache.getUnchecked(key);
             attempts++;
             attemptsCache.put(key, attempts);
-            logger.warn("{} failed access attempts from IP {} in the last 24 hours. Will block access after {} failed attempts", attempts, SessionStorage.IP.get(), MAX_ATTEMPTS);
+            logger.warn("{} failed access attempts from IP/host {} in the last 24 hours. Will block access after {} failed attempts", attempts, SessionStorage.IP.get(), MAX_ATTEMPTS);
         }
     }
 
@@ -54,7 +54,7 @@ public class LoginAndAccessAttemptService {
 
     public boolean wasUnsuccessfulBefore(String key) {
         if (key == null) {
-            logger.warn("Unable to determine unsuccessul login by empty IP. Will assume this access is OK");
+            logger.warn("Unable to determine unsuccessul login by empty IP/host. Will assume this access is OK");
             return true;
         }
         return attemptsCache.getUnchecked(key) > 0;

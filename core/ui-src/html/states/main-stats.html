@@ -347,14 +347,14 @@
                     <input bs-switch type="checkbox" ng-model="foo.statsSwichState.searchSharesPerIp" switch-size="mini"
                            ng-change="onStatsSwitchToggle('searchSharesPerIp')">
                     </span>
-
-                Searches per IP
+    
+                Searches per host
             </div>
             <tab-or-chart display="chart" ng-show="foo.statsSwichState.searchSharesPerIp">
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>IP</th>
+                        <th>Host</th>
                         <th>Percentage</th>
                         <th>Count</th>
                     </tr>
@@ -381,13 +381,13 @@
                     <input bs-switch type="checkbox" ng-model="foo.statsSwichState.downloadSharesPerIp"
                            switch-size="mini" ng-change="onStatsSwitchToggle('downloadSharesPerIp')">
                 </span>
-                Downloads per IP
+                Downloads per host
             </div>
             <tab-or-chart display="chart" ng-show="foo.statsSwichState.downloadSharesPerIp">
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>IP</th>
+                        <th>Host</th>
                         <th>Percentage</th>
                         <th>Count</th>
                     </tr>

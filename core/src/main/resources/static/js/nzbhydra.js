@@ -5425,6 +5425,15 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Log IP addresses'
                             }
+                        },{
+                            key: 'mapIpToHost',
+                            type: 'horizontalSwitch',
+                            hideExpression: '!model.logIpAddresses',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Map hosts',
+                                help: 'Try to map logged IP addresses to host names'
+                            }
                         },
                         {
                             key: 'logUsername',
