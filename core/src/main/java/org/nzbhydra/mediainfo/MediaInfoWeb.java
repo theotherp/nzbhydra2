@@ -73,7 +73,7 @@ public class MediaInfoWeb {
 
 
     @RequestMapping(value = "/internalapi/redirectRid/{rid}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public void redirectTvRageId(@PathVariable("rid") String tvRageId, HttpServletResponse response) throws IOException {
+    public String redirectTvRageId(@PathVariable("rid") String tvRageId, HttpServletResponse response) throws IOException {
 
         String url = null;
         try {
@@ -91,8 +91,9 @@ public class MediaInfoWeb {
         if (url != null) {
             logger.info("Redirecting to URL {}", url);
             response.sendRedirect(url);
+            return "";
         } else {
-            response.sendError(400, "Unable to find TVRage entry for ID " + tvRageId);
+            return "TVMaze doesn't know this show and as TVRage doesn't exist anymore I can't provide you with infos on this show :-(";
         }
 
     }

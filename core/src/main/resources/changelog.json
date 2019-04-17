@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.6",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Provide a (better) error message when clicking the infos for a show with TVRage ID for which no infos could be found."
+      }
+    ]
+  },
+  {
     "version": "v2.5.5",
     "changes": [
       {

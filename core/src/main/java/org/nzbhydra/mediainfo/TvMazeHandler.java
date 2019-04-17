@@ -9,6 +9,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -44,7 +46,14 @@ public class TvMazeHandler {
                 throw new InfoProviderException("Unable to handle " + idType);
         }
 
-        ResponseEntity<TvmazeShow> showLookupResponse = restTemplate.getForEntity(builder.build().encode().toUri(), TvmazeShow.class);
+        ResponseEntity<TvmazeShow> showLookupResponse = null;
+        try {
+            showLookupResponse = restTemplate.getForEntity(builder.build().encode().toUri(), TvmazeShow.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new InfoNotFoundException("TVMaze doesn't know " + idType.name() + " ID " + id);
+        } catch (RestClientException e) {
+            throw new InfoProviderException("Error while accessing TVMaze", e);
+        }
 
         if (!showLookupResponse.getStatusCode().is2xxSuccessful()) {
             throw new InfoProviderException("TVMaze lookup returned wrong status: " + showLookupResponse.getStatusCode());
