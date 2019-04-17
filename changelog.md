@@ -1,3 +1,9 @@
+### v2.5.5
+
+Feature: Option to log/display hosts instead of IP addresses. I haven't found a proper way of testing this so let me know if it works ;-)
+
+
+
 ### v2.5.4
 
 Fix: Allow empty movie searches for NZBPlanet which should result in covers being shown.
