@@ -1,3 +1,13 @@
+### v2.5.8
+
+Feature: Recognize when an outdated wrapper is being used and ask the user to update it manually.
+
+Fix: Don't complain about mixed newznab and torznab results when adding Anime Tosho.
+
+Fix: Removed nzbs.org from the presets :-( RIP
+
+
+
 ### v2.5.7
 
 Feature: Attempt to automatically detect certain problems and inform the user (admin) about it. For now this will only detect OutOfMemory errors which cannot be properly handled when they occur.
