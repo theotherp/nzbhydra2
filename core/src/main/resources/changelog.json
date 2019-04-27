@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.8",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Don't complain about mixed newznab and torznab results when adding Anime Tosho."
+      }
+    ]
+  },
+  {
     "version": "v2.5.7",
     "changes": [
       {
