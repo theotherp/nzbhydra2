@@ -1,3 +1,21 @@
+### v2.5.7
+
+Feature: Attempt to automatically detect certain problems and inform the user (admin) about it. For now this will only detect OutOfMemory errors which cannot be properly handled when they occur.
+
+Fix: Disable the grouping of TV results by episode when searching for a specific episode. Also show information about the grouping the first time it is used.
+
+Note: The python wrapper nzbhydra2wrapper.py which is the main entry point for the program is now included in the linux release. If you start Hydra using that python file it will be updated automatically although changes will only take effect after the next restart of the main process.
+
+Note: I was asked for a discord channel. This is it: [https://discord.gg/rMywHv](https://discord.gg/rMywHv). I can't promise I'll be the regularly but feel free to join. Some users there and on reddit are always willing to help (thanks, guys!).
+
+
+
+### v2.5.6
+
+Fix: Provide a (better) error message when clicking the infos for a show with TVRage ID for which no infos could be found.
+
+
+
 ### v2.5.5
 
 Feature: Option to log/display hosts instead of IP addresses. I haven't found a proper way of testing this so let me know if it works ;-)
