@@ -646,10 +646,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://nzbplanet.net"
         },
         {
-            name: "NZBs.org",
-            host: "https://nzbs.org"
-        },
-        {
             name: "NZBs.io",
             host: "https://www.nzbs.io"
         },

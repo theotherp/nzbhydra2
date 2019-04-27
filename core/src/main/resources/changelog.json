@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Don't complain about mixed newznab and torznab results when adding Anime Tosho."
+      },
+      {
+        "type": "fix",
+        "text": "Removed nzbs.org from the presets :-( RIP"
       }
     ]
   },
