@@ -24,7 +24,7 @@ function hydraUpdatesFooter() {
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService) {
 
         $scope.updateAvailable = false;
         $scope.checked = false;
@@ -41,6 +41,17 @@ function hydraUpdatesFooter() {
 
         if ($scope.mayUpdate) {
             retrieveUpdateInfos();
+
+            GenericStorageService.get("outOfMemoryDetected", false).then(function (response) {
+                if (response.data !== "" && response.data) {
+                    ModalService.open("Out of memory error detected", 'The log indicates that the process ran out of memory. Please increase the XMX value in the main config and restart.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    });
+                    GenericStorageService.put("outOfMemoryDetected", false, false);
+                }
+            });
         }
 
         function retrieveUpdateInfos() {

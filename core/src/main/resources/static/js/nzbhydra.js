@@ -1634,13 +1634,13 @@ angular
     .directive('hydraUpdatesFooter', hydraUpdatesFooter);
 
 function hydraUpdatesFooter() {
-    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService"];
+    controller.$inject = ["$scope", "UpdateService", "RequestsErrorHandler", "HydraAuthService", "$http", "$uibModal", "ConfigService", "GenericStorageService", "ModalService"];
     return {
         templateUrl: 'static/html/directives/updates-footer.html',
         controller: controller
     };
 
-    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService) {
+    function controller($scope, UpdateService, RequestsErrorHandler, HydraAuthService, $http, $uibModal, ConfigService, GenericStorageService, ModalService) {
 
         $scope.updateAvailable = false;
         $scope.checked = false;
@@ -1657,6 +1657,17 @@ function hydraUpdatesFooter() {
 
         if ($scope.mayUpdate) {
             retrieveUpdateInfos();
+
+            GenericStorageService.get("outOfMemoryDetected", false).then(function (response) {
+                if (response.data !== "" && response.data) {
+                    ModalService.open("Out of memory error detected", 'The log indicates that the process ran out of memory. Please increase the XMX value in the main config and restart.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    });
+                    GenericStorageService.put("outOfMemoryDetected", false, false);
+                }
+            });
         }
 
         function retrieveUpdateInfos() {
@@ -7835,7 +7846,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
     if ($scope.shared.isGroupEpisodes) {
-        GenericStorageService.get("isGroupEpisodesHelpShown", true).then(function(response) {
+        GenericStorageService.get("isGroupEpisodesHelpShown", true).then(function (response) {
             if (!response.data) {
                 ModalService.open("Sorting of TV episodes", 'When searching in the TV categories results are automatically grouped by episodes. This makes it easier to download one episode each. You can disable this feature any time using the "Display options" button to the upper left.', {
                     yes: {
@@ -10113,7 +10124,7 @@ function GenericStorageService($http) {
         return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser}});
     }
 
-    function put(key, value, forUser) {
+    function put(key, forUser, value) {
         return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser}});
     }
 

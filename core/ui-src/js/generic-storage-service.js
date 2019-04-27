@@ -30,7 +30,7 @@ function GenericStorageService($http) {
         return $http.get("internalapi/genericstorage/" + key, {params: {forUser: forUser}});
     }
 
-    function put(key, value, forUser) {
+    function put(key, forUser, value) {
         return $http.put("internalapi/genericstorage/" + key, value, {params: {forUser: forUser}});
     }
 

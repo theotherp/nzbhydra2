@@ -3,6 +3,10 @@
     "version": "v2.5.7",
     "changes": [
       {
+        "type": "feature",
+        "text": "Attempt to automatically detect certain problems and inform the user (admin) about it. For now this will only detect OutOfMemory errors which cannot be properly handled when they occur."
+      },
+      {
         "type": "fix",
         "text": "Disable the grouping of TV results by episode when searching for a specific episode. Also show information about the grouping the first time it is used."
       },
