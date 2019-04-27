@@ -3,6 +3,10 @@
     "version": "v2.5.8",
     "changes": [
       {
+        "type": "feature",
+        "text": "Recognize when an outdated wrapper is being used and ask the user to update it manually."
+      },
+      {
         "type": "fix",
         "text": "Don't complain about mixed newznab and torznab results when adding Anime Tosho."
       },

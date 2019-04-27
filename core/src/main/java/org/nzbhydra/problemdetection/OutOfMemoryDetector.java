@@ -14,11 +14,10 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.debuginfos;
+package org.nzbhydra.problemdetection;
 
 import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.logging.LogContentProvider;
-import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,19 +29,17 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class ProblemDetectorTask {
+public class OutOfMemoryDetector implements ProblemDetector {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProblemDetectorTask.class);
-
-    private static final long HOUR = 1000 * 60 * 60;
+    private static final Logger logger = LoggerFactory.getLogger(OutOfMemoryDetector.class);
 
     @Autowired
     private GenericStorage genericStorage;
     @Autowired
     private LogContentProvider logContentProvider;
 
-    @HydraTask(configId = "ProblemDetector", name = "Problem detector", interval = HOUR)
-    public void detectProblems() {
+    @Override
+    public void executeCheck() {
         try {
             List<String> logLines = Files.readAllLines(logContentProvider.getCurrentLogfile(false).toPath());
             for (int i = logLines.size() - 1; i >= 0; i--) {
@@ -68,6 +65,5 @@ public class ProblemDetectorTask {
             logger.warn("Unable to detect problems in log file", e);
         }
     }
-
 
 }

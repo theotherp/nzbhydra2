@@ -69,6 +69,13 @@ if not "%ERRORLEVEL%" == "0" (
     goto error
 )
 
+echo Generating wrapper hashes
+call mvn org.nzbhydra:github-release-plugin:1.0.0:generate-wrapper-hashes
+if not "%ERRORLEVEL%" == "0" (
+    echo Error generating wrapper hashes
+    goto error
+)
+
 echo Running install
 if "%3" == "skiptests" (
     call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true

@@ -17,3 +17,4 @@ nzbhydra.yml
 sql notes.sql
 /static
 /cacerts
+/nzbhydra2wrapper.py

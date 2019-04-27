@@ -1654,20 +1654,37 @@ function hydraUpdatesFooter() {
             }
         });
 
-
-        if ($scope.mayUpdate) {
-            retrieveUpdateInfos();
-
+        function checkForOutOfMemoryException() {
             GenericStorageService.get("outOfMemoryDetected", false).then(function (response) {
                 if (response.data !== "" && response.data) {
+                    //headline, message, params, size, textAlign
                     ModalService.open("Out of memory error detected", 'The log indicates that the process ran out of memory. Please increase the XMX value in the main config and restart.', {
                         yes: {
                             text: "OK"
                         }
-                    });
+                    }, undefined, "left");
                     GenericStorageService.put("outOfMemoryDetected", false, false);
                 }
             });
+        }
+
+        function checkForOutdatedWrapper() {
+            GenericStorageService.get("outdatedWrapperDetected", false).then(function (response) {
+                if (response.data !== "" && response.data) {
+                    ModalService.open("Outdated wrapper detected", 'The NZBHydra wrapper (i.e. the executable or python script you use to run NZBHydra) seems to be outdated. Please update it:<br>Shut down NZBHydra, <a href="https://github.com/theotherp/nzbhydra2/releases/latest">download the latest version</a> and extract it into your main NZBHydra folder. Start NZBHydra again.', {
+                        yes: {
+                            text: "OK"
+                        }
+                    }, undefined, "left");
+                    GenericStorageService.put("outdatedWrapperDetected", false, false);
+                }
+            });
+        }
+
+        if ($scope.mayUpdate) {
+            retrieveUpdateInfos();
+            checkForOutOfMemoryException();
+            checkForOutdatedWrapper();
         }
 
         function retrieveUpdateInfos() {
@@ -3798,10 +3815,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
         {
             name: "nzbplanet",
             host: "https://nzbplanet.net"
-        },
-        {
-            name: "NZBs.org",
-            host: "https://nzbs.org"
         },
         {
             name: "NZBs.io",

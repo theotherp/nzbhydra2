@@ -41,6 +41,13 @@
                     <windowsAsset>${basedir}/releases/windows-release/target/nzbhydra2-${project.version}-windows.zip</windowsAsset>
                     <changelogJsonFile>${basedir}/core/src/main/resources/changelog.json</changelogJsonFile>
                     <changelogMdFile>${basedir}/changelog.md</changelogMdFile>
+
+                    <wrapperFile1>${basedir}/releases/linux-release/include/nzbhydra2</wrapperFile1>
+                    <wrapperFile2>${basedir}/releases/windows-release/include/NZBHydra2 Console.exe</wrapperFile2>
+                    <wrapperFile3>${basedir}/releases/windows-release/include/NZBHydra2.exe</wrapperFile3>
+                    <wrapperFile4>${basedir}/other/wrapper/nzbhydra2wrapper.py</wrapperFile4>
+                    <wrapperHashesJsonFile>${basedir}/core/src/main/resources/wrapperHashes.json</wrapperHashesJsonFile>
+
                     <tagName>v${project.version}</tagName>
                 </configuration>
             </plugin>
