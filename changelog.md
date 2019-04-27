@@ -1,3 +1,9 @@
+### v2.5.9
+
+Fix: I used a discord invitation link that expires after one day. Use this one: [https://discord.gg/uh9W3rd](https://discord.gg/uh9W3rd).
+
+
+
 ### v2.5.8
 
 Feature: Recognize when an outdated wrapper is being used and ask the user to update it manually.
@@ -16,7 +22,7 @@ Fix: Disable the grouping of TV results by episode when searching for a specific
 
 Note: The python wrapper nzbhydra2wrapper.py which is the main entry point for the program is now included in the linux release. If you start Hydra using that python file it will be updated automatically although changes will only take effect after the next restart of the main process.
 
-Note: I was asked for a discord channel. This is it: [https://discord.gg/rMywHv](https://discord.gg/rMywHv). I can't promise I'll be the regularly but feel free to join. Some users there and on reddit are always willing to help (thanks, guys!).
+Note: I was asked for a discord channel. This is it: [https://discord.gg/uh9W3rd](https://discord.gg/uh9W3rd). I can't promise I'll be the regularly but feel free to join. Some users there and on reddit are always willing to help (thanks, guys!).
 
 
 
