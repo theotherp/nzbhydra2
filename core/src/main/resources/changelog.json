@@ -3,6 +3,10 @@
     "version": "v2.5.7",
     "changes": [
       {
+        "type": "fix",
+        "text": "Disable the grouping of TV results by episode when searching for a specific episode. Also show information about the grouping the first time it is used."
+      },
+      {
         "type": "note",
         "text": "The python wrapper nzbhydra2wrapper.py which is the main entry point for the program is now included in the linux release. If you start Hydra using that python file it will be updated automatically although changes will only take effect after the next restart of the main process."
       }

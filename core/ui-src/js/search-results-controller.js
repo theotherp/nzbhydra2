@@ -3,7 +3,7 @@ angular
     .controller('SearchResultsController', SearchResultsController);
 
 //SearchResultsController.$inject = ['blockUi'];
-function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService) {
+function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService) {
     // console.time("Presenting");
     DebugService.log("foobar");
     $scope.limitTo = 100;
@@ -80,8 +80,22 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     $scope.isShowFilterButtonsTv = $scope.isShowFilterButtons && $stateParams.category.toLowerCase().indexOf("tv") > -1;
 
     $scope.shared = {
-        isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1
+        isGroupEpisodes: $scope.foo.groupEpisodes && $stateParams.category.toLowerCase().indexOf("tv") > -1 && $stateParams.episode === undefined
     };
+
+    if ($scope.shared.isGroupEpisodes) {
+        GenericStorageService.get("isGroupEpisodesHelpShown", true).then(function (response) {
+            if (!response.data) {
+                ModalService.open("Sorting of TV episodes", 'When searching in the TV categories results are automatically grouped by episodes. This makes it easier to download one episode each. You can disable this feature any time using the "Display options" button to the upper left.', {
+                    yes: {
+                        text: "OK"
+                    }
+                });
+                GenericStorageService.put("isGroupEpisodesHelpShown", true, true);
+            }
+
+        })
+    }
 
     $scope.loadMoreEnabled = false;
     $scope.totalAvailableUnknown = false;
@@ -256,6 +270,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function getGroupingString(element) {
+
         var groupingString;
         if ($scope.shared.isGroupEpisodes) {
             groupingString = (element.showtitle + "x" + element.season + "x" + element.episode).toLowerCase().replace(/[\._\-]/ig, "");
