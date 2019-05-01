@@ -21,9 +21,9 @@
       <span class="glyphicon glyphicon-plus" style="margin-right: 10px"></span>Add new indexer
     </button>
 </div>
-
-
-<div ng-repeat="entry in model | orderBy: ['-score', 'name'] track by entry.name">
+  
+  
+  <div ng-repeat="entry in model | orderBy: ['-state', '-score', 'name'] : false track by entry.name">
   <div class="row">
     <div style="margin-left: auto; margin-right: auto; float:none !important;">
       <indexer-input indexer="entry" model="model" on-click="showBox"></indexer-input>

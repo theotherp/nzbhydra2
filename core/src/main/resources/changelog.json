@@ -15,6 +15,10 @@
         "text": "Add option to ignore load limiting for internal searches."
       },
       {
+        "type": "feature",
+        "text": "Sort indexers in config by state first, then score, then name."
+      },
+      {
         "type": "fix",
         "text": "NZBHydra used to always report all ID types (e.g. IMDB IDs) in the caps to be supported. Now IDs will only be reported as supported if either at least one configured indexer supports it or query generation is enabled."
       },
