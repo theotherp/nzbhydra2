@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Prevent log file download from accessing files outside data folder."
+      },
+      {
+        "type": "fix",
+        "text": "Parse indexer results with provided passwords correctly (although they don't follow the spec...)."
       }
     ]
   },

@@ -468,7 +468,7 @@ public class Newznab extends Indexer<Xml> {
                     searchResultItem.setPassworded(true);
                 }
             } catch (NumberFormatException e) {
-                error("Unable to parse password value " + passwordValue);
+                searchResultItem.setPassworded(true);
             }
         }
         if (attributes.containsKey("nfo")) {
