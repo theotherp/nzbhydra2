@@ -67,7 +67,7 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         List<String> lines = new ArrayList<>();
         lines.add("### " + entry.getVersion());
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
-            lines.add(StringUtils.capitalise(changeEntry.getType()) + ": " + changeEntry.getText());
+            lines.add("**" + StringUtils.capitalise(changeEntry.getType()) + "** " + changeEntry.getText());
         }
         lines.add("");
         return lines;

@@ -42,7 +42,7 @@ if not "%ERRORLEVEL%" == "0" (
 )
 
 echo Running clean
-call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" clean
+call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" clean
 if not "%ERRORLEVEL%" == "0" (
     echo Error during clean
     goto error
@@ -78,9 +78,9 @@ if not "%ERRORLEVEL%" == "0" (
 
 echo Running install
 if "%3" == "skiptests" (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 ) else (
-    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install
+    call mvn -pl "!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install
 )
 if not "%ERRORLEVEL%" == "0" (
     echo Error during install
@@ -144,7 +144,7 @@ if not "%ERRORLEVEL%" == "0" (
 
 :buildnewversions
 echo Building new versions ***********************************************************************
-call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin" install -DskipTests=true
+call mvn -T 2 -pl "!org.nzbhydra:tests,!org.nzbhydra:linux-release,!org.nzbhydra:windows-release,!org.nzbhydra:sockslib,!org.nzbhydra:mockserver,!org.nzbhydra:github-release-plugin,!org.nzbhydra:discordbot" install -DskipTests=true
 if not "%ERRORLEVEL%" == "0" (
     echo Error building new versions
     goto error

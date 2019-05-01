@@ -13,6 +13,7 @@
         <module>mockserver</module>
         <module>sockslib</module>
         <module>github-release-plugin</module>
+        <module>discordbot</module>
     </modules>
 
     <properties>
