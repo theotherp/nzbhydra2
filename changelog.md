@@ -1,3 +1,21 @@
+### v2.6.0
+
+Feature: Warn when using config that violates indexer rules and that will result in your API account being disabled.
+
+Feature: Support IMDB IDs for TV search. This seems to be supported by few indexers but by many trackers.
+
+Feature: Add option to ignore load limiting for internal searches.
+
+Feature: Sort indexers in config by state first, then score, then name.
+
+Fix: NZBHydra used to always report all ID types (e.g. IMDB IDs) in the caps to be supported. Now IDs will only be reported as supported if either at least one configured indexer supports it or query generation is enabled.
+
+Fix: Prevent log file download from accessing files outside data folder.
+
+Fix: Parse indexer results with provided passwords correctly (although they don't follow the spec...).
+
+
+
 ### v2.5.9
 
 Fix: I used a discord invitation link that expires after one day. Use this one: [https://discord.gg/uh9W3rd](https://discord.gg/uh9W3rd).
