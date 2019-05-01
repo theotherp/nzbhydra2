@@ -36,12 +36,12 @@ public class IndexerConfigTest {
         testee.setName("indexer");
         BaseConfig baseConfig = new BaseConfig();
         baseConfig.setIndexers(Arrays.asList(testee));
-        ConfigValidationResult result = testee.validateConfig(baseConfig, testee);
+        ConfigValidationResult result = testee.validateConfig(baseConfig, testee, null);
 
         assertThat(result.getErrorMessages()).containsExactly("Indexer indexer contains an invalid schedule: blabla");
 
         testee.setSchedule(Arrays.asList("mo8-10"));
-        result = testee.validateConfig(baseConfig, testee);
+        result = testee.validateConfig(baseConfig, testee, null);
         assertThat(result.getErrorMessages()).isEmpty();
     }
 

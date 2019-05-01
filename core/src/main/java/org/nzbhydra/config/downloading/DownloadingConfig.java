@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +40,7 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
     private boolean showDownloaderStatus = true;
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloadingConfig newConfig, BaseConfig newBaseConfig) {
         List<String> errors = new ArrayList<>();
         if (getSaveTorrentsTo().isPresent()) {
             File file = new File(getSaveTorrentsTo().get());
@@ -56,11 +57,11 @@ public class DownloadingConfig extends ValidatingConfig<DownloadingConfig> {
                 }
             }
         }
-        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig, downloaderConfig)).collect(Collectors.toList());
-        List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(List::stream).collect(Collectors.toList());
+        List<ConfigValidationResult> validationResults = downloaders.stream().map(downloaderConfig -> downloaderConfig.validateConfig(oldConfig, downloaderConfig, newBaseConfig)).collect(Collectors.toList());
+        List<String> downloaderErrors = validationResults.stream().map(ConfigValidationResult::getErrorMessages).flatMap(Collection::stream).collect(Collectors.toList());
         errors.addAll(downloaderErrors);
 
-        List<String> warnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(List::stream).collect(Collectors.toList());
+        List<String> warnings = validationResults.stream().map(ConfigValidationResult::getWarningMessages).flatMap(Collection::stream).collect(Collectors.toList());
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);
     }

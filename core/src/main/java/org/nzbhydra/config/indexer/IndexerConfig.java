@@ -167,7 +167,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, IndexerConfig newIndexerConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, IndexerConfig newIndexerConfig, BaseConfig newBaseConfig) {
         ConfigValidationResult validationResult = new ConfigValidationResult();
 
         for (String schedule : getSchedule()) {

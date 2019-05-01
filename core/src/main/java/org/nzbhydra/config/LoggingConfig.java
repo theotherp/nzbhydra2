@@ -22,10 +22,10 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
 
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, LoggingConfig newLoggingConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, LoggingConfig newLoggingConfig, BaseConfig newBaseConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
 
-        result.setRestartNeeded(isRestartNeeded(oldConfig.getMain().getLogging()));
+        result.setRestartNeeded(isRestartNeeded(newBaseConfig.getMain().getLogging()));
 
         return result;
     }

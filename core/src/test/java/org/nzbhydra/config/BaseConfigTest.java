@@ -93,10 +93,10 @@ public class BaseConfigTest {
     @Test
     public void shouldValidateIndexers() {
         IndexerConfig indexerConfigMock = mock(IndexerConfig.class);
-        when(indexerConfigMock.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        when(indexerConfigMock.validateConfig(any(), any(), null)).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
         testee.getIndexers().add(indexerConfigMock);
-        testee.validateConfig(new BaseConfig(), testee);
-        verify(indexerConfigMock).validateConfig(any(), any());
+        testee.validateConfig(new BaseConfig(), testee, null);
+        verify(indexerConfigMock).validateConfig(any(), any(), null);
     }
 
     @Test
@@ -105,11 +105,11 @@ public class BaseConfigTest {
         when(indexerConfigMock.getName()).thenReturn("name");
         IndexerConfig indexerConfigMock2 = mock(IndexerConfig.class);
         when(indexerConfigMock2.getName()).thenReturn("name");
-        when(indexerConfigMock.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
-        when(indexerConfigMock2.validateConfig(any(), any())).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        when(indexerConfigMock.validateConfig(any(), any(), null)).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
+        when(indexerConfigMock2.validateConfig(any(), any(), null)).thenReturn(new ValidatingConfig.ConfigValidationResult(true, false, new ArrayList<String>(), new ArrayList<String>()));
         testee.getIndexers().add(indexerConfigMock);
         testee.getIndexers().add(indexerConfigMock2);
-        ValidatingConfig.ConfigValidationResult result = testee.validateConfig(new BaseConfig(), testee);
+        ValidatingConfig.ConfigValidationResult result = testee.validateConfig(new BaseConfig(), testee, null);
         assertEquals(3, result.getErrorMessages().size());
         assertTrue(result.getErrorMessages().get(2).contains("Duplicate"));
     }

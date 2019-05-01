@@ -79,7 +79,7 @@ public class Category extends ValidatingConfig<Category> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, Category newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, Category newConfig, BaseConfig newBaseConfig) {
         return new ConfigValidationResult();
     }
 

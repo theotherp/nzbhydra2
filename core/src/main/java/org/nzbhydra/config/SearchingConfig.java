@@ -78,7 +78,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, SearchingConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, SearchingConfig newConfig, BaseConfig newBaseConfig) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         checkRegex(errors, requiredRegex, "The required regex in \"Searching\" is invalid");
@@ -91,6 +91,10 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
             if (getRequiredRegex().isPresent() || getForbiddenRegex().isPresent()) {
                 warnings.add("You selected not to apply any word restrictions in \"Searching\" but supplied a forbidden or required regex there");
             }
+        }
+
+        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newConfig.getNzbAccessType() != FileDownloadAccessType.REDIRECT) {
+            warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB access type in the searching config to \"Redirect to indexer\".");
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);

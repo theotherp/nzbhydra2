@@ -57,7 +57,7 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, AuthConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, AuthConfig newConfig, BaseConfig newBaseConfig) {
         List<String> errors = new ArrayList<>();
         List<String> warnings = new ArrayList<>();
         if (authType != AuthType.NONE && users.isEmpty()) {

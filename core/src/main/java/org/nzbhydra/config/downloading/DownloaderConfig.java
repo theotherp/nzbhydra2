@@ -23,6 +23,9 @@ import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Data
@@ -58,8 +61,13 @@ public class DownloaderConfig extends ValidatingConfig<DownloaderConfig> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig) {
-        return new ConfigValidationResult();
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, DownloaderConfig newDownloaderConfig, BaseConfig newBaseConfig) {
+        List<String> warnings = new ArrayList<>();
+
+        if (newBaseConfig.getIndexers().stream().anyMatch(x -> x.getHost().toLowerCase().contains("nzbs.in")) && newDownloaderConfig.getNzbAddingType() != NzbAddingType.SEND_LINK) {
+            warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB adding type in the downloader config to \"Send link\".");
+        }
+        return new ConfigValidationResult(true, false, Collections.emptyList(), warnings);
     }
 
     @Override

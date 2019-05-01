@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -23,15 +24,16 @@ public abstract class ValidatingConfig<T> {
     /**
      * @param oldConfig old config state (e.g. to compare what has changed)
      * @param newConfig the new config. Will always be the same object as the one on which the method was called
+     * @param newBaseConfig
      * @return a list of error messages or an empty list when everything is fine
      */
-    public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig, T newConfig);
+    public abstract ConfigValidationResult validateConfig(BaseConfig oldConfig, T newConfig, BaseConfig newBaseConfig);
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ConfigValidationResult {
-        private boolean ok;
+        private boolean ok = true;
         private boolean restartNeeded;
         private List<String> errorMessages = new ArrayList<>();
         private List<String> warningMessages = new ArrayList<>();
@@ -40,8 +42,8 @@ public abstract class ValidatingConfig<T> {
         public ConfigValidationResult(boolean ok, boolean restartNeeded, List<String> errorMessages, List<String> warningMessages) {
             this.ok = ok;
             this.restartNeeded = restartNeeded;
-            this.errorMessages = errorMessages;
-            this.warningMessages = warningMessages;
+            this.errorMessages.addAll(new HashSet<>(errorMessages));
+            this.warningMessages.addAll(new HashSet<>(warningMessages));
         }
     }
 

@@ -37,7 +37,7 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
     private String password;
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, UserAuthConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, UserAuthConfig newConfig, BaseConfig newBaseConfig) {
         return new ConfigValidationResult();
     }
 

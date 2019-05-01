@@ -91,7 +91,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, MainConfig newMainConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, MainConfig newMainConfig, BaseConfig newBaseConfig) {
         ConfigValidationResult result = new ConfigValidationResult();
         MainConfig oldMain = oldConfig.getMain();
         boolean portChanged = oldMain.getPort() != port;
@@ -120,7 +120,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
             result.getErrorMessages().add("The JVM memory must be set to at least 128");
         }
 
-        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging());
+        ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging(), newBaseConfig);
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());
         result.getErrorMessages().addAll(loggingResult.getErrorMessages());
 

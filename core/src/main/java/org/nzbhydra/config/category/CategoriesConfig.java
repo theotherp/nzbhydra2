@@ -46,7 +46,7 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
     private List<Category> categories = new ArrayList<>();
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, CategoriesConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, CategoriesConfig newConfig, BaseConfig newBaseConfig) {
         ArrayList<String> errors = new ArrayList<>();
         ArrayList<String> warnings = new ArrayList<>();
         for (Category category : categories) {

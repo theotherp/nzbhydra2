@@ -3,6 +3,10 @@
     "version": "v2.5.10",
     "changes": [
       {
+        "type": "feature",
+        "text": "Warn when using config that violates indexer rules and that will result in your API account being disabled."
+      },
+      {
         "type": "fix",
         "text": "Prevent log file download from accessing files outside data folder."
       },

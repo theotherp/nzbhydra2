@@ -150,36 +150,36 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     }
 
     @Override
-    public ConfigValidationResult validateConfig(BaseConfig oldConfig, BaseConfig newConfig) {
+    public ConfigValidationResult validateConfig(BaseConfig oldConfig, BaseConfig newConfig, BaseConfig newBaseConfig) {
         ConfigValidationResult configValidationResult = new ConfigValidationResult();
 
-        ConfigValidationResult authValidation = newConfig.getAuth().validateConfig(oldConfig, newConfig.getAuth());
+        ConfigValidationResult authValidation = newConfig.getAuth().validateConfig(oldConfig, newConfig.getAuth(), newBaseConfig);
         configValidationResult.getErrorMessages().addAll(authValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(authValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || authValidation.isRestartNeeded());
 
-        ConfigValidationResult categoriesValidation = newConfig.getCategoriesConfig().validateConfig(oldConfig, newConfig.getCategoriesConfig());
+        ConfigValidationResult categoriesValidation = newConfig.getCategoriesConfig().validateConfig(oldConfig, newConfig.getCategoriesConfig(), newBaseConfig);
         configValidationResult.getErrorMessages().addAll(categoriesValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(categoriesValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || categoriesValidation.isRestartNeeded());
 
-        ConfigValidationResult mainValidation = newConfig.getMain().validateConfig(oldConfig, newConfig.getMain());
+        ConfigValidationResult mainValidation = newConfig.getMain().validateConfig(oldConfig, newConfig.getMain(), newBaseConfig);
         configValidationResult.getErrorMessages().addAll(mainValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(mainValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || mainValidation.isRestartNeeded());
 
-        ConfigValidationResult searchingValidation = newConfig.getSearching().validateConfig(oldConfig, newConfig.getSearching());
+        ConfigValidationResult searchingValidation = newConfig.getSearching().validateConfig(oldConfig, newConfig.getSearching(), newBaseConfig);
         configValidationResult.getErrorMessages().addAll(searchingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(searchingValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || searchingValidation.isRestartNeeded());
 
-        ConfigValidationResult downloadingValidation = newConfig.getDownloading().validateConfig(oldConfig, newConfig.getDownloading());
+        ConfigValidationResult downloadingValidation = newConfig.getDownloading().validateConfig(oldConfig, newConfig.getDownloading(), newBaseConfig);
         configValidationResult.getErrorMessages().addAll(downloadingValidation.getErrorMessages());
         configValidationResult.getWarningMessages().addAll(downloadingValidation.getWarningMessages());
         configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || downloadingValidation.isRestartNeeded());
 
         for (IndexerConfig indexer : newConfig.getIndexers()) {
-            ConfigValidationResult indexerValidation = indexer.validateConfig(oldConfig, indexer);
+            ConfigValidationResult indexerValidation = indexer.validateConfig(oldConfig, indexer, newBaseConfig);
             configValidationResult.getErrorMessages().addAll(indexerValidation.getErrorMessages());
             configValidationResult.getWarningMessages().addAll(indexerValidation.getWarningMessages());
             configValidationResult.setRestartNeeded(configValidationResult.isRestartNeeded() || indexerValidation.isRestartNeeded());
