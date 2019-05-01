@@ -806,6 +806,15 @@ function ConfigFields($injector) {
                                 label: 'Map user agents',
                                 help: 'Used to map the user agent from accessing services to the service names. Apply words with return key.'
                             }
+                        },
+                        {
+                            key: 'ignoreLoadLimitingForInternalSearches',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Ignore load limiting internally',
+                                help: 'When enabled load limiting defined for indexers will be ignored for internal searches.'
+                            }
                         }
                     ]
                 },

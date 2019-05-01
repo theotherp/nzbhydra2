@@ -33,6 +33,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private SearchSourceRestriction idFallbackToQueryGeneration = SearchSourceRestriction.NONE;
     private boolean ignorePassworded = false;
     private boolean ignoreTemporarilyDisabled = false;
+    private boolean ignoreLoadLimitingForInternalSearches = false;
     private int keepSearchResultsForDays = 14;
     private Integer keepHistoryForWeeks = null;
     private String language = "en";

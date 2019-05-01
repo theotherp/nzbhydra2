@@ -11,6 +11,10 @@
         "text": "Support IMDB IDs for TV search. This seems to be supported by few indexers but by many trackers."
       },
       {
+        "type": "feature",
+        "text": "Add option to ignore load limiting for internal searches."
+      },
+      {
         "type": "fix",
         "text": "NZBHydra used to always report all ID types (e.g. IMDB IDs) in the caps to be supported. Now IDs will only be reported as supported if either at least one configured indexer supports it or query generation is enabled."
       },
