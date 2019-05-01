@@ -17,10 +17,12 @@
 package org.nzbhydra.api;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.json.caps.*;
 import org.nzbhydra.mapping.newznab.xml.caps.*;
+import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -105,14 +107,32 @@ public class CapsGenerator {
 
         CapsXmlSearching capsSearching = new CapsXmlSearching();
         capsSearching.setSearch(new CapsXmlSearch("yes", "q,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setTvSearch(new CapsXmlSearch("yes", "q,rid,tvdbid,tvmazeid,traktid,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize"));
-        capsSearching.setMovieSearch(new CapsXmlSearch("yes", "q,imdbid,tmdbid,cat,limit,offset,minage,maxage,minsize,maxsize"));
+
+        String tvSupportedParams = "q,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize";
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVRAGE, "rid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.IMDB, "imdbid");
+        capsSearching.setTvSearch(new CapsXmlSearch("yes", tvSupportedParams));
+
+        String supportedMovieParams = "q,cat,limit,offset,minage,maxage,minsize,maxsize";
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.IMDB, "imdbid");
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.TMDB, "tmdbid");
+        capsSearching.setMovieSearch(new CapsXmlSearch("yes", supportedMovieParams));
+
         capsSearching.setBookSearch(new CapsXmlSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
         capsSearching.setAudioSearch(new CapsXmlSearch("no", ""));
         capsRoot.setSearching(capsSearching);
 
         capsRoot.setCategories(getCapsXmlCategories());
         return capsRoot;
+    }
+
+    private String addIdIfSupported(String tvSupportedParams, InfoProvider.IdType idType, String id) {
+        if (configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> x.getSupportedSearchIds().contains(idType))) {
+            tvSupportedParams += "," + id;
+        }
+        return tvSupportedParams;
     }
 
     CapsXmlCategories getCapsXmlCategories() {

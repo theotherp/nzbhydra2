@@ -8,6 +8,10 @@
       },
       {
         "type": "fix",
+        "text": "NZBHydra used to always report all ID types (e.g. IMDB IDs) in the caps to be supported. Now IDs will only be reported as supported if either at least one configured indexer supports it or query generation is enabled."
+      },
+      {
+        "type": "fix",
         "text": "Prevent log file download from accessing files outside data folder."
       },
       {
