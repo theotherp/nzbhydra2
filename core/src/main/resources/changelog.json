@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.5.10",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Prevent log file download from accessing files outside data folder."
+      }
+    ]
+  },
+  {
     "version": "v2.5.9",
     "changes": [
       {
