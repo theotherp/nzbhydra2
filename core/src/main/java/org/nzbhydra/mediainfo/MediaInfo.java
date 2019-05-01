@@ -20,7 +20,7 @@ public class MediaInfo {
 
 
     public Optional<String> getImdbId() {
-        return Optional.ofNullable(imdbId);
+        return Optional.ofNullable(Imdb.withTt(imdbId));
     }
 
     public Optional<String> getTmdbId() {
@@ -55,6 +55,7 @@ public class MediaInfo {
     public Optional<String> getByIdType(InfoProvider.IdType idType) {
         switch (idType) {
             case IMDB:
+            case TVIMDB:
                 return getImdbId();
             case TMDB:
                 return getTmdbId();
@@ -80,13 +81,14 @@ public class MediaInfo {
         tvrageId = searchResult.getTvrageId();
         tvmazeId = searchResult.getTvmazeId();
         tvdbId = searchResult.getTvdbId();
+        imdbId = Imdb.withTt(searchResult.getImdbId());
         title = searchResult.getTitle();
         year = searchResult.getYear();
         posterUrl = searchResult.getPosterUrl();
     }
 
     public MediaInfo(TmdbSearchResult searchResult) {
-        imdbId = searchResult.getImdbId();
+        imdbId = Imdb.withTt(searchResult.getImdbId());
         tmdbId = searchResult.getTmdbId();
         title = searchResult.getTitle();
         year = searchResult.getYear();
@@ -105,6 +107,7 @@ public class MediaInfo {
         tvrageId = tvInfo.getTvrageId().orElse(null);
         tvmazeId = tvInfo.getTvmazeId().orElse(null);
         tvdbId = tvInfo.getTvdbId().orElse(null);
+        imdbId = tvInfo.getImdbId().orElse(null);
         title = tvInfo.getTitle();
         year = tvInfo.getYear();
         posterUrl = tvInfo.getPosterUrl().orElse(null);

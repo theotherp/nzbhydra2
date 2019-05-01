@@ -39,6 +39,10 @@ public class TvMazeHandler {
             case TVDB:
                 builder = builder.pathSegment("lookup", "shows").queryParam("thetvdb", id);
                 break;
+            case TVIMDB:
+            case IMDB:
+                builder = builder.pathSegment("lookup", "shows").queryParam("imdb", id.startsWith("tt") ? id : "tt" + id);
+                break;
             case TVMAZE:
                 builder = builder.pathSegment("shows", id);
                 break;
@@ -73,7 +77,7 @@ public class TvMazeHandler {
 
     private TvMazeSearchResult getSearchResultFromShow(TvmazeShow show) {
         Integer year = show.premiered != null ? Integer.valueOf(show.premiered.substring(0, 4)) : null;
-        return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getName(), year, makePosterLinksSecure(show).getMediumPosterUrl());
+        return new TvMazeSearchResult(String.valueOf(show.getId()), show.getExternals().getTvrage(), show.getExternals().getThetvdb(), show.getExternals().getImdb(), show.getName(), year, makePosterLinksSecure(show).getMediumPosterUrl());
     }
 
     public List<TvMazeSearchResult> search(String title) throws InfoProviderException {

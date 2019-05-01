@@ -13,7 +13,9 @@ public interface TvInfoRepository extends JpaRepository<TvInfo, Integer> {
 
     TvInfo findByTvdbId(String tvdbId);
 
+    TvInfo findByImdbId(String imdbId);
+
     TvInfo findByTitle(String title);
 
-    Collection<TvInfo> findByTvrageIdOrTvmazeIdOrTvdbId(String tvrageId, String tvmazeId, String tvdbId);
+    Collection<TvInfo> findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(String tvrageId, String tvmazeId, String tvdbId, String imdbId);
 }

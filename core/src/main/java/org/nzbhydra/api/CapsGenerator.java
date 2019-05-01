@@ -112,7 +112,9 @@ public class CapsGenerator {
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVRAGE, "rid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVIMDB, "imdbid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.IMDB, "imdbid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TRAKT, "traktid");
         capsSearching.setTvSearch(new CapsXmlSearch("yes", tvSupportedParams));
 
         String supportedMovieParams = "q,cat,limit,offset,minage,maxage,minsize,maxsize";

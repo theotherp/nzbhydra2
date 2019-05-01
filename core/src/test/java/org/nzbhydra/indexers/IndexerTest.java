@@ -145,7 +145,7 @@ public class IndexerTest {
             }
         });
 
-        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", "title", 2017, "")));
+        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", null, "title", 2017, "")));
 
         testee = spy(testee);
     }
@@ -287,7 +287,7 @@ public class IndexerTest {
 
     @Test
     public void shouldSanitizeQuery() throws IndexerSearchAbortedException, InfoProviderException {
-        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", "title()':", 2017, "")));
+        when(infoProviderMock.convert(anyString(), any())).thenReturn(new MediaInfo(new TvInfo("tvdbid", "tvrageid", "tvmazeid", null, "title()':", 2017, "")));
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);

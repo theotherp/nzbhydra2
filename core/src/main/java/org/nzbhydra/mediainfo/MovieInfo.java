@@ -23,7 +23,7 @@ public class MovieInfo implements Comparable<MovieInfo> {
     private String posterUrl;
 
     public MovieInfo(String imdbId, String tmdbId, String title, Integer year, String posterUrl) {
-        this.imdbId = imdbId;
+        this.imdbId = Imdb.withTt(imdbId);
         this.tmdbId = tmdbId;
         this.title = title;
         this.year = year;
@@ -42,7 +42,7 @@ public class MovieInfo implements Comparable<MovieInfo> {
     }
 
     public Optional<String> getImdbId() {
-        return Optional.ofNullable(Strings.emptyToNull(imdbId));
+        return Optional.ofNullable(Imdb.withTt(Strings.emptyToNull(imdbId)));
     }
 
     public Optional<String> getTmdbId() {

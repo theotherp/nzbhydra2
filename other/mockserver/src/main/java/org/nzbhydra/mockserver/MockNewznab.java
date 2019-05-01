@@ -109,6 +109,14 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getT() == ActionAttribute.TVSEARCH && params.getImdbid() != null) {
+            NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(15).titleBase("tv").newznabCategory("5040").offset(0).total(15).titleBase("game of thrones").build();
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);
+            List<NewznabXmlItem> items = rssRoot.getRssChannel().getItems();
+
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         if (params.getQ() != null && params.getQ().equals("tv")) {
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(1000).titleBase("tv").newznabCategory("5040").offset(0).total(15).build();
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(mockRequest);

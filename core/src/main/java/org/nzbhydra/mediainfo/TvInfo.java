@@ -21,14 +21,17 @@ public class TvInfo implements Comparable<TvInfo> {
     private String tvrageId;
     @Column(unique = true)
     private String tvmazeId;
+    @Column(unique = true)
+    private String imdbId;
     private String title;
     private Integer year;
     private String posterUrl;
 
-    public TvInfo(String tvdbId, String tvrageId, String tvmazeId, String title, Integer year, String posterUrl) {
+    public TvInfo(String tvdbId, String tvrageId, String tvmazeId, String imdbId, String title, Integer year, String posterUrl) {
         this.tvdbId = tvdbId;
         this.tvrageId = tvrageId;
         this.tvmazeId = tvmazeId;
+        this.imdbId = Imdb.withTt(imdbId);
         this.title = title;
         this.year = year;
         this.posterUrl = posterUrl;
@@ -38,6 +41,7 @@ public class TvInfo implements Comparable<TvInfo> {
         this.tvdbId = mediaInfo.getTvDbId().orElse(null);
         this.tvrageId = mediaInfo.getTvRageId().orElse(null);
         this.tvmazeId = mediaInfo.getTvMazeId().orElse(null);
+        this.imdbId = mediaInfo.getImdbId().orElse(null);
         this.title = mediaInfo.getTitle().orElse(null);
         this.year = mediaInfo.getYear().orElse(null);
         this.posterUrl = mediaInfo.getPosterUrl().orElse(null);
@@ -56,6 +60,10 @@ public class TvInfo implements Comparable<TvInfo> {
 
     public Optional<String> getTvmazeId() {
         return Optional.ofNullable(Strings.emptyToNull(tvmazeId));
+    }
+
+    public Optional<String> getImdbId() {
+        return Optional.ofNullable(Imdb.withTt(imdbId));
     }
 
     public Optional<String> getPosterUrl() {
@@ -79,6 +87,9 @@ public class TvInfo implements Comparable<TvInfo> {
             countContainedIds++;
         }
         if (getTvdbId().isPresent()) {
+            countContainedIds++;
+        }
+        if (getImdbId().isPresent()) {
             countContainedIds++;
         }
         return countContainedIds;

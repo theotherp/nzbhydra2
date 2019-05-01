@@ -2,6 +2,7 @@ package org.nzbhydra.searching.searchrequests;
 
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MovieInfo;
@@ -42,13 +43,14 @@ public class SearchRequestFactory {
                     tvInfo.getTvmazeId().ifPresent(x -> request.getIdentifiers().put(IdType.TVMAZE, x));
                     tvInfo.getTvdbId().ifPresent(x -> request.getIdentifiers().put(IdType.TVDB, x));
                     tvInfo.getTvrageId().ifPresent(x -> request.getIdentifiers().put(IdType.TVRAGE, x));
+                    tvInfo.getImdbId().ifPresent(x -> request.getIdentifiers().put(IdType.TVIMDB, Imdb.withTt(x)));
                 }
             }
             if (request.getIdentifiers().keySet().stream().anyMatch(x -> InfoProvider.MOVIE_ID_TYPES.contains(x))) {
                 MovieInfo movieInfo = infoProvider.findMovieInfoInDatabase(request.getIdentifiers());
                 if (movieInfo != null) {
                     movieInfo.getTmdbId().ifPresent(x -> request.getIdentifiers().put(IdType.TMDB, x));
-                    movieInfo.getImdbId().ifPresent(x -> request.getIdentifiers().put(IdType.IMDB, x));
+                    movieInfo.getImdbId().ifPresent(x -> request.getIdentifiers().put(IdType.IMDB, Imdb.withTt(x)));
                 }
             }
         }

@@ -22,25 +22,27 @@ public class InfoProvider {
         TVMAZE,
         TRAKT,
         IMDB,
+        TVIMDB,
         TMDB,
         TVTITLE,
         MOVIETITLE
     }
 
-    public static Set<IdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE);
+    public static Set<IdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE, TVIMDB);
     public static Set<IdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
     public static Set<IdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
 
     private static Map<IdType, Set<IdType>> canConvertMap = new HashMap<>();
 
     static {
-        canConvertMap.put(TVDB, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
-        canConvertMap.put(TVMAZE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
-        canConvertMap.put(TVRAGE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
+        canConvertMap.put(TVDB, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
+        canConvertMap.put(TVMAZE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
+        canConvertMap.put(TVRAGE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
+        canConvertMap.put(TVIMDB, Sets.newHashSet(TVIMDB, TVMAZE, TVRAGE, TVDB, TVTITLE));
         canConvertMap.put(TRAKT, Sets.newHashSet(TRAKT)); //Currently no conversion supported
-        canConvertMap.put(TVTITLE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVTITLE));
+        canConvertMap.put(TVTITLE, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
 
-        canConvertMap.put(TMDB, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
+        canConvertMap.put(TMDB, Sets.newHashSet(IMDB, TMDB, TVDB, TVMAZE, TVRAGE, MOVIETITLE));
         canConvertMap.put(IMDB, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
         canConvertMap.put(MOVIETITLE, Sets.newHashSet(IMDB, TMDB, MOVIETITLE));
 
@@ -119,6 +121,7 @@ public class InfoProvider {
                 case TVDB:
                 case TVRAGE:
                 case TVTITLE:
+                case TVIMDB:
                     TvInfo tvInfo;
                     if (fromType == TVMAZE) {
                         tvInfo = tvInfoRepository.findByTvmazeId(value);
@@ -126,6 +129,8 @@ public class InfoProvider {
                         tvInfo = tvInfoRepository.findByTvdbId(value);
                     } else if (fromType == TVRAGE) {
                         tvInfo = tvInfoRepository.findByTvrageId(value);
+                    } else if (fromType == TVIMDB) {
+                        tvInfo = tvInfoRepository.findByImdbId(Imdb.withTt(value));
                     } else {
                         tvInfo = tvInfoRepository.findByTitle(value);
                     }
@@ -134,7 +139,7 @@ public class InfoProvider {
                     } else {
                         TvMazeSearchResult result = tvMazeHandler.getInfos(value, fromType);
                         info = new MediaInfo(result);
-                        tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
+                        tvInfo = new TvInfo(info.getTvDbId().orElse(null), info.getTvRageId().orElse(null), info.getTvMazeId().orElse(null), info.getImdbId().orElse(null), info.getTitle().orElse(null), info.getYear().orElse(null), info.getPosterUrl().orElse(null));
                         tvInfoRepository.save(tvInfo);
                     }
                     break;
@@ -151,7 +156,7 @@ public class InfoProvider {
     }
 
     public TvInfo findTvInfoInDatabase(Map<IdType, String> ids) {
-        Collection<TvInfo> matchingInfos = tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"));
+        Collection<TvInfo> matchingInfos = tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"), ids.getOrDefault(IMDB, "-1"));
         return matchingInfos.stream().max(TvInfo::compareTo).orElse(null);
     }
 
@@ -171,7 +176,7 @@ public class InfoProvider {
                     infos = results.stream().map(MediaInfo::new).collect(Collectors.toList());
                     for (MediaInfo mediaInfo : infos) {
                         TvInfo tvInfo = new TvInfo(mediaInfo);
-                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbId(tvInfo.getTvrageId().orElse("-1"), tvInfo.getTvmazeId().orElse("-1"), tvInfo.getTvdbId().orElse("-1")) == null) {
+                        if (tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(tvInfo.getTvrageId().orElse("-1"), tvInfo.getTvmazeId().orElse("-1"), tvInfo.getTvdbId().orElse("-1"), tvInfo.getImdbId().orElse("-1")) == null) {
                             tvInfoRepository.save(tvInfo);
                         }
                     }

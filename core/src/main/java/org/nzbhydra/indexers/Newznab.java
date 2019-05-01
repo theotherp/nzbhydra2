@@ -53,7 +53,6 @@ public class Newznab extends Indexer<Xml> {
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
     static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
-    public static Map<String, IdType> paramValueToIdMap = new HashMap<>();
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
@@ -66,18 +65,12 @@ public class Newznab extends Indexer<Xml> {
 
     static {
         idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
+        idTypeToParamValueMap.put(IdType.TVIMDB, "imdbid");
         idTypeToParamValueMap.put(IdType.TMDB, "tmdbid");
         idTypeToParamValueMap.put(IdType.TVRAGE, "rid");
         idTypeToParamValueMap.put(IdType.TVDB, "tvdbid");
         idTypeToParamValueMap.put(IdType.TVMAZE, "tvmazeid");
         idTypeToParamValueMap.put(IdType.TRAKT, "traktid");
-
-        paramValueToIdMap.put("imdbid", IdType.IMDB);
-        paramValueToIdMap.put("tmdbid", IdType.TMDB);
-        paramValueToIdMap.put("rid", IdType.TVRAGE);
-        paramValueToIdMap.put("tvdbid", IdType.TVDB);
-        paramValueToIdMap.put("tvmazeid", IdType.TVMAZE);
-        paramValueToIdMap.put("traktid", IdType.TRAKT);
     }
 
     @Autowired
@@ -261,7 +254,13 @@ public class Newznab extends Indexer<Xml> {
                         MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
 
                         if (info.getImdbId().isPresent()) {
-                            params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                            if (searchRequest.getSearchType() == SearchType.MOVIE && config.getSupportedSearchIds().contains(IdType.IMDB)) {
+                                params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                            }
+                            //Most indexers don't actually support IMDB IDs for tv searches and would return unrelevant results
+                            if (searchRequest.getSearchType() == SearchType.TVSEARCH && config.getSupportedSearchIds().contains(IdType.TVIMDB)) {
+                                params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                            }
                         }
                         if (info.getTmdbId().isPresent()) {
                             params.put(IdType.TMDB, info.getTmdbId().get());

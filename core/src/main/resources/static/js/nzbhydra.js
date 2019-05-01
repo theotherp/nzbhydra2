@@ -3537,11 +3537,12 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     label: 'Search IDs',
                     options: [
+                        {label: 'IMDB (TV)', id: 'TVIMDB'},
                         {label: 'TVDB', id: 'TVDB'},
                         {label: 'TVRage', id: 'TVRAGE'},
-                        {label: 'IMDB', id: 'IMDB'},
                         {label: 'Trakt', id: 'TRAKT'},
                         {label: 'TVMaze', id: 'TVMAZE'},
+                        {label: 'IMDB', id: 'IMDB'},
                         {label: 'TMDB', id: 'TMDB'}
                     ],
                     noSelectedText: "None"
@@ -3555,10 +3556,10 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     label: 'Search types',
                     options: [
-                        {label: 'Movies', id: 'MOVIE'},
-                        {label: 'TV', id: 'TVSEARCH'},
+                        {label: 'Audio', id: 'AUDIO'},
                         {label: 'Ebooks', id: 'BOOK'},
-                        {label: 'Audio', id: 'AUDIO'}
+                        {label: 'Movies', id: 'MOVIE'},
+                        {label: 'TV', id: 'TVSEARCH'}
                     ],
                     buttonText: "None"
                 }

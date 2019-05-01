@@ -13,6 +13,7 @@ class TvMazeSearchResult {
     private String tvmazeId;
     private String tvrageId;
     private String tvdbId;
+    private String imdbId;
     private String title;
     private Integer year;
     private String posterUrl;
@@ -23,6 +24,7 @@ class TvMazeSearchResult {
                 .add("tvmazeId", tvmazeId)
                 .add("tvrageId", tvrageId)
                 .add("tvdbId", tvdbId)
+                .add("imdbId", imdbId)
                 .add("title", title)
                 .add("year", year)
                 .add("posterUrl", posterUrl)

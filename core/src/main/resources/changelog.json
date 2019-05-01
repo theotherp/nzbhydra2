@@ -1,10 +1,14 @@
 [
   {
-    "version": "v2.5.10",
+    "version": "v2.6.0",
     "changes": [
       {
         "type": "feature",
         "text": "Warn when using config that violates indexer rules and that will result in your API account being disabled."
+      },
+      {
+        "type": "feature",
+        "text": "Support IMDB IDs for TV search. This seems to be supported by few indexers but by many trackers."
       },
       {
         "type": "fix",
