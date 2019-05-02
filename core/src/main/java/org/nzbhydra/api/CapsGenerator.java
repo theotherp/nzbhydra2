@@ -16,13 +16,18 @@
 
 package org.nzbhydra.api;
 
+import com.google.common.collect.Sets;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.config.indexer.SearchModuleType;
+import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.json.caps.*;
 import org.nzbhydra.mapping.newznab.xml.caps.*;
 import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -42,16 +47,16 @@ public class CapsGenerator {
     @Autowired
     private ConfigProvider configProvider;
 
-    ResponseEntity<?> getCaps(OutputType o) {
+    ResponseEntity<?> getCaps(OutputType o, boolean torznabCall) {
         if (o == OutputType.XML) {
-            return getXmlCaps();
+            return getXmlCaps(torznabCall);
         } else {
-            return getJsonCaps();
+            return getJsonCaps(torznabCall);
         }
     }
 
-    private ResponseEntity<?> getJsonCaps() {
-        CapsXmlRoot xmlCapsRoot = getXmlCapsRoot();
+    private ResponseEntity<?> getJsonCaps(boolean torznabCall) {
+        CapsXmlRoot xmlCapsRoot = getXmlCapsRoot(torznabCall);
         CapsJsonRoot capsRoot = new CapsJsonRoot();
         capsRoot.setLimits(new CapsJsonLimits(new CapsJsonLimitsAttributes(String.valueOf(xmlCapsRoot.getLimits().getMax()), String.valueOf(xmlCapsRoot.getLimits().getDefaultValue()))));
         capsRoot.setRegistration(new CapsJsonRegistration(new CapsJsonRegistrationAttributes("no", "no")));
@@ -86,14 +91,14 @@ public class CapsGenerator {
         return new ResponseEntity<>(capsRoot, headers, HttpStatus.OK);
     }
 
-    private ResponseEntity<?> getXmlCaps() {
-        CapsXmlRoot capsRoot = getXmlCapsRoot();
+    private ResponseEntity<?> getXmlCaps(boolean torznabCall) {
+        CapsXmlRoot capsRoot = getXmlCapsRoot(torznabCall);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
         return new ResponseEntity<>(capsRoot, headers, HttpStatus.OK);
     }
 
-    private CapsXmlRoot getXmlCapsRoot() {
+    private CapsXmlRoot getXmlCapsRoot(boolean torznabCall) {
         CapsXmlRoot capsRoot = new CapsXmlRoot();
         capsRoot.setRetention(new CapsXmlRetention(3000));
         capsRoot.setLimits(new CapsXmlLimits(100, 100)); //later link to global setting when implemented
@@ -109,16 +114,16 @@ public class CapsGenerator {
         capsSearching.setSearch(new CapsXmlSearch("yes", "q,cat,limit,offset,minage,maxage,minsize,maxsize"));
 
         String tvSupportedParams = "q,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize";
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVRAGE, "rid");
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid");
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid");
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVIMDB, "imdbid");
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TRAKT, "traktid");
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVRAGE, "rid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVIMDB, "imdbid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TRAKT, "traktid", torznabCall);
         capsSearching.setTvSearch(new CapsXmlSearch("yes", tvSupportedParams));
 
         String supportedMovieParams = "q,cat,limit,offset,minage,maxage,minsize,maxsize";
-        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.IMDB, "imdbid");
-        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.TMDB, "tmdbid");
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.IMDB, "imdbid", torznabCall);
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.TMDB, "tmdbid", torznabCall);
         capsSearching.setMovieSearch(new CapsXmlSearch("yes", supportedMovieParams));
 
         capsSearching.setBookSearch(new CapsXmlSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
@@ -129,9 +134,43 @@ public class CapsGenerator {
         return capsRoot;
     }
 
-    private String addIdIfSupported(String tvSupportedParams, InfoProvider.IdType idType, String id) {
-        if (configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration() == SearchSourceRestriction.API || configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> x.getSupportedSearchIds().contains(idType))) {
+    private String addIdIfSupported(String tvSupportedParams, InfoProvider.IdType idType, String id, boolean torznabCall) {
+        boolean anyQueryGenerationPossible = configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration() == SearchSourceRestriction.API;
+        if (anyQueryGenerationPossible) {
             tvSupportedParams += "," + id;
+            return tvSupportedParams;
+        }
+
+        boolean supportedByAnyIndexer = configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> {
+            if (x.getState() != IndexerConfig.State.ENABLED && x.getState() != IndexerConfig.State.DISABLED_SYSTEM_TEMPORARY) {
+                return false;
+            }
+            if (!x.getEnabledForSearchSource().meets(SearchRequest.SearchSource.API)) {
+                //Indexer will not be picked for API searches
+                return false;
+            }
+            if (Sets.intersection(new HashSet<>(x.getSupportedSearchIds()), InfoProvider.getConvertibleFrom(idType)).isEmpty()) {
+                //Indexer does not support the ID type or any of the ones the ID type can potentially be converted to
+                return false;
+            }
+            if (!x.getSupportedSearchTypes().contains(ActionAttribute.TVSEARCH) && InfoProvider.TV_ID_TYPES.contains(idType)) {
+                //Indexer doesn't allow TV searches but this is a TV ID
+                return false;
+            }
+            if (!x.getSupportedSearchTypes().contains(ActionAttribute.MOVIE) && InfoProvider.MOVIE_ID_TYPES.contains(idType)) {
+                //Indexer doesn't allow movie searches but this is a movie ID
+                return false;
+            }
+            if (torznabCall) {
+                return x.getSearchModuleType() == SearchModuleType.TORZNAB;
+            } else {
+                return true;
+            }
+
+        });
+        if (supportedByAnyIndexer) {
+            tvSupportedParams += "," + id;
+            return tvSupportedParams;
         }
         return tvSupportedParams;
     }

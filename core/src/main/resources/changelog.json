@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Allow indexers to be enabled for all searches but API update searches, i.e. those periodically done by Sonarr and others to get the latest releases."
+      },
+      {
+        "type": "fix",
+        "text": "Correctly report torznab caps (taking into regard only torznab indexers). Also disregard any disabled indexers or those not enabled for API searches and include IDs convertible to any of the supported IDs."
       }
     ]
   },

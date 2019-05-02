@@ -13,6 +13,10 @@ public enum SearchSourceRestriction {
         if (this == ALL_BUT_RSS && searchRequest.getSource() == SearchRequest.SearchSource.API) {
             return searchRequest.getQuery().isPresent() || !searchRequest.getIdentifiers().isEmpty();
         }
-        return searchRequest.getSource().name().equals(this.name()) || this == BOTH || this == ALL_BUT_RSS;
+        return meets(searchRequest.getSource());
+    }
+
+    public boolean meets(SearchRequest.SearchSource searchSource) {
+        return searchSource.name().equals(this.name()) || this == BOTH || this == ALL_BUT_RSS;
     }
 }

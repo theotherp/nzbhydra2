@@ -63,6 +63,10 @@ public class InfoProvider {
         return canConvertMap.get(from).contains(to);
     }
 
+    public static Set<IdType> getConvertibleFrom(IdType from) {
+        return canConvertMap.get(from);
+    }
+
     public boolean canConvertAny(Set<IdType> from, Set<IdType> to) {
         return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
     }

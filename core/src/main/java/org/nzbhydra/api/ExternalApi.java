@@ -113,7 +113,7 @@ public class ExternalApi {
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
-            return capsGenerator.getCaps(params.getO());
+            return capsGenerator.getCaps(params.getO(), isTorznabCall());
         }
 
         logger.error("Incorrect API request: {}", params);
