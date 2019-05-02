@@ -113,7 +113,6 @@ public class CapsGenerator {
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVIMDB, "imdbid");
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.IMDB, "imdbid");
         tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TRAKT, "traktid");
         capsSearching.setTvSearch(new CapsXmlSearch("yes", tvSupportedParams));
 
@@ -131,7 +130,7 @@ public class CapsGenerator {
     }
 
     private String addIdIfSupported(String tvSupportedParams, InfoProvider.IdType idType, String id) {
-        if (configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> x.getSupportedSearchIds().contains(idType))) {
+        if (configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration() == SearchSourceRestriction.API || configProvider.getBaseConfig().getIndexers().stream().anyMatch(x -> x.getSupportedSearchIds().contains(idType))) {
             tvSupportedParams += "," + id;
         }
         return tvSupportedParams;

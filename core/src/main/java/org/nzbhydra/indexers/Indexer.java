@@ -93,7 +93,7 @@ public abstract class Indexer<T> {
         try {
             indexerSearchResult = searchInternal(searchRequest, offset, limit);
 
-            boolean fallbackNeeded = indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest.getSource());
+            boolean fallbackNeeded = indexerSearchResult.getTotalResults() == 0 && !searchRequest.getIdentifiers().isEmpty() && searchRequest.getInternalData().getFallbackState() != FallbackState.USED && configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration().meets(searchRequest);
             if (fallbackNeeded) {
                 info("No results found for ID based search. Will do a fallback search using a generated query");
 
@@ -352,7 +352,7 @@ public abstract class Indexer<T> {
         boolean indexerDoesntSupportRequiredSearchType = config.getSupportedSearchTypes().stream().noneMatch(x -> searchRequest.getSearchType().matches(x));
         boolean indexerDoesntSupportAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().noneMatch(x -> config.getSupportedSearchIds().contains(x));
         boolean queryGenerationPossible = !searchRequest.getIdentifiers().isEmpty() || searchRequest.getTitle().isPresent();
-        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+        boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
         boolean fallbackRequested = searchRequest.getInternalData().getFallbackState() == FallbackState.REQUESTED;
 
         if (!(fallbackRequested || (queryGenerationPossible && queryGenerationEnabled && (indexerDoesntSupportAnyOfTheProvidedIds || indexerDoesntSupportRequiredSearchType)))) {

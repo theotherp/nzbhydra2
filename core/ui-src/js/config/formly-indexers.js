@@ -155,7 +155,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 type: 'number',
                 label: 'Priority',
                 required: true,
-                help: 'When duplicate search results are found the result from the indexer with the highest number will be selected'
+                help: 'When duplicate search results are found the result from the indexer with the highest number will be selected.'
             }
         });
 
@@ -188,7 +188,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'API hit limit',
-                    help: 'Maximum number of API hits since "API hit reset time"'
+                    help: 'Maximum number of API hits since "API hit reset time".'
                 },
                 validators: {
                     greaterThanZero: {
@@ -226,7 +226,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'Load limiting',
-                    help: 'If set indexer will only be picked for one out of x API searches (on average)'
+                    help: 'If set indexer will only be picked for one out of x API searches (on average).'
                 },
                 validators: {
                     greaterThanZero: {
@@ -245,7 +245,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 templateOptions: {
                     type: 'number',
                     label: 'Hit reset time',
-                    help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter'
+                    help: 'UTC hour of day at which the API hit counter is reset (0-23). Leave empty for a rolling reset counter.'
                 },
                 validators: {
                     timeOfDay: {
@@ -267,7 +267,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     required: false,
                     label: 'Username',
-                    help: 'Only needed if indexer requires HTTP auth for API access (rare)'
+                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
                 },
                 watcher: {
                     listener: function (field, newValue, oldValue, scope) {
@@ -287,7 +287,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     required: false,
                     label: 'Password',
-                    help: 'Only needed if indexer requires HTTP auth for API access (rare)'
+                    help: 'Only needed if indexer requires HTTP auth for API access (rare).'
                 }
             }
         )
@@ -302,7 +302,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     type: 'text',
                     required: false,
                     label: 'User agent',
-                    help: 'Rarely needed. Will supercede the one in the main searching settings'
+                    help: 'Rarely needed. Will supercede the one in the main searching settings.'
                 }
             }
         )
@@ -317,7 +317,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             templateOptions: {
                 type: 'switch',
                 label: 'Preselect',
-                help: 'Preselect this indexer on the search page'
+                help: 'Preselect this indexer on the search page.'
             }
         }
     );
@@ -330,8 +330,10 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 options: [
                     {name: 'Internal searches only', value: 'INTERNAL'},
                     {name: 'API searches only', value: 'API'},
-                    {name: 'Internal and API searches', value: 'BOTH'}
-                ]
+                    {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
+                    {name: 'Internal and any API searches', value: 'BOTH'}
+                ],
+                help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).'
             }
         }
     );
@@ -347,7 +349,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                 type: 'horizontalMultiselect',
                 templateOptions: {
                     label: 'Categories',
-                    help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all',
+                    help: 'Only use indexer when searching for these and also reject results from others. Selecting none equals selecting all.',
                     options: options,
                     settings: {
                         showSelectedValues: false,

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.1",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Allow indexers to be enabled for all searches but API update searches, i.e. those periodically done by Sonarr and others to get the latest releases."
+      }
+    ]
+  },
+  {
     "version": "v2.6.0",
     "changes": [
       {

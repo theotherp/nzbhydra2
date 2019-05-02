@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
@@ -148,7 +147,7 @@ public class IndexerForSearchSelector {
         if (needToSearchById) {
             boolean canUseAnyProvidedId = !Collections.disjoint(searchRequest.getIdentifiers().keySet(), indexer.getConfig().getSupportedSearchIds());
             boolean cannotSearchProvidedOrConvertableId = !canUseAnyProvidedId && !infoProvider.canConvertAny(searchRequest.getIdentifiers().keySet(), Sets.newHashSet(indexer.getConfig().getSupportedSearchIds()));
-            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest.getSource());
+            boolean queryGenerationEnabled = configProvider.getBaseConfig().getSearching().getGenerateQueries().meets(searchRequest);
             if (cannotSearchProvidedOrConvertableId && !queryGenerationEnabled) {
                 String message = String.format("Not using %s because the search did not provide any ID that the indexer can handle and query generation is disabled", indexer.getName());
                 return handleIndexerNotSelected(indexer, message, "No usable ID");
@@ -299,7 +298,7 @@ public class IndexerForSearchSelector {
     }
 
     protected boolean checkSearchSource(Indexer indexer) {
-        boolean wrongSearchSource = indexer.getConfig().getEnabledForSearchSource() != SearchSourceRestriction.BOTH && !searchRequest.getSource().name().equals(indexer.getConfig().getEnabledForSearchSource().name());
+        boolean wrongSearchSource = !indexer.getConfig().getEnabledForSearchSource().meets(searchRequest);
         if (wrongSearchSource) {
             String message = String.format("Not using %s because the search source is %s but the indexer is only enabled for %s searches", indexer.getName(), searchRequest.getSource(), indexer.getConfig().getEnabledForSearchSource());
             return handleIndexerNotSelected(indexer, message, "Not enabled for this search context");

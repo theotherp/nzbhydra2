@@ -164,7 +164,7 @@ public class SearchResultAcceptor {
     }
 
     protected boolean checkForCategoryShouldBeIgnored(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
-        if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest.getSource())) {
+        if (item.getCategory().getIgnoreResultsFrom().meets(searchRequest)) {
             logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "{} is in forbidden category", item.getTitle(), searchRequest.getCategory().getName());
             reasonsForRejection.add("In forbidden category");
             return false;
