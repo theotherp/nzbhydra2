@@ -1,3 +1,11 @@
+### v2.6.1
+
+Feature: Allow indexers to be enabled for all searches but API update searches, i.e. those periodically done by Sonarr and others to get the latest releases.
+
+Fix: Correctly report torznab caps (taking into regard only torznab indexers). Also disregard any disabled indexers or those not enabled for API searches and include IDs convertible to any of the supported IDs.
+
+
+
 ### v2.6.0
 
 Feature: Warn when using config that violates indexer rules and that will result in your API account being disabled.
