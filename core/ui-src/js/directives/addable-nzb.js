@@ -14,7 +14,7 @@ function addableNzb(DebugService) {
     };
 
     function controller($scope, NzbDownloadService, growl) {
-        if ($scope.downloader.iconCssClass) {
+        if ($scope.downloader.iconCssClass !== undefined && $scope.downloader.iconCssClass !== '') {
             $scope.cssClass = "fa fa-" + $scope.downloader.iconCssClass.replace("fa-", "").replace("fa ", "");
         } else {
             $scope.cssClass = $scope.downloader.downloaderType === "SABNZBD" ? "sabnzbd" : "nzbget";
