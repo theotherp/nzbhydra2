@@ -1,3 +1,11 @@
+### v2.6.2
+
+Fix: The warning that the wrapper is outdated will be also displayed in the updates section. You can also choose to be reminded again.
+
+Fix: Update link to Font Awesome in downloader config to the version actually supported.
+
+
+
 ### v2.6.1
 
 Feature: Allow indexers to be enabled for all searches but API update searches, i.e. those periodically done by Sonarr and others to get the latest releases.
