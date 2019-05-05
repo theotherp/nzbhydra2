@@ -36,7 +36,10 @@ import java.util.Map;
 
 @Component
 public class OutdatedWrapperDetector implements ProblemDetector {
+
     private static final Logger logger = LoggerFactory.getLogger(OutdatedWrapperDetector.class);
+    public static final String KEY_OUTDATED_WRAPPER_DETECTED = "outdatedWrapperDetected";
+    private static final String KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED = "outdatedWrapperDetectedWarningDisplayed";
 
     @Autowired
     private GenericStorage genericStorage;
@@ -46,11 +49,23 @@ public class OutdatedWrapperDetector implements ProblemDetector {
         detectOutdatedWrapper();
     }
 
+    public boolean isOutdatedWrapperDetected() {
+        return genericStorage.get(KEY_OUTDATED_WRAPPER_DETECTED, Boolean.class).orElse(false);
+    }
+
+    public boolean isOutdatedWrapperDetectedWarningNotYetShown() {
+        return !genericStorage.get(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, Boolean.class).orElse(false);
+    }
+
+    public void setOutdatedWrapperDetectedWarningShown() {
+        genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, true);
+    }
+
     private void detectOutdatedWrapper() {
         List<String> wrapperFilenames = Arrays.asList("NZBHydra2.exe", "NZBHydra2 Console.exe", "nzbhydra2", "nzbhydra2wrapper.py");
-        Map<String, String> filenamesToHashes;
+        Map<String, String> filenamesToExpectedHashes;
         try {
-            filenamesToHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes.json"), new TypeReference<Map<String, String>>() {
+            filenamesToExpectedHashes = Jackson.JSON_MAPPER.readValue(OutdatedWrapperDetector.class.getResource("/wrapperHashes.json"), new TypeReference<Map<String, String>>() {
             });
         } catch (IOException e) {
             logger.error("Error while trying to read wrapper hashes", e);
@@ -67,13 +82,14 @@ public class OutdatedWrapperDetector implements ProblemDetector {
             if (wrapperFile.exists()) {
                 try {
                     HashCode hash = Files.hash(wrapperFile, Hashing.crc32());
-                    if (!filenamesToHashes.get(filename).equals(hash.toString())) {
+                    if (!filenamesToExpectedHashes.get(filename).equals(hash.toString())) {
                         String key = "outdatedWrapper-" + hash.toString();
                         boolean alreadyDetected = genericStorage.get(key, String.class).isPresent();
                         if (!alreadyDetected) {
                             logger.warn("Detected outdated wrapper. Please make sure you update your wrapper (i.e. the executables or python file you use to start NZBHydra): Shut down NZBHydra, download the latest version from GitHub and extract it into your main NZBHydra folder. Start NZBHydra again.");
                             genericStorage.save(key, true);
-                            genericStorage.save("outdatedWrapperDetected", true);
+                            genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, true);
+                            genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED_WARNING_DISPLAYED, false);
                             //Finding any outdated wrapper is enough.
                             return;
                         }
@@ -82,6 +98,7 @@ public class OutdatedWrapperDetector implements ProblemDetector {
                     logger.error("Unable to hash file " + wrapperFile, e);
                     return;
                 }
+                genericStorage.save(KEY_OUTDATED_WRAPPER_DETECTED, false);
             }
         }
     }

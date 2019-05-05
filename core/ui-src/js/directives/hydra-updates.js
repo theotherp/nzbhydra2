@@ -17,6 +17,7 @@ function hydraupdates() {
             $scope.latestVersionIgnored = response.data.latestVersionIgnored;
             $scope.changelog = response.data.changelog;
             $scope.runInDocker = response.data.runInDocker;
+            $scope.wrapperOutdated = response.data.wrapperOutdated;
         });
 
         UpdateService.getVersionHistory().then(function (response) {

@@ -10,6 +10,7 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
+import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.update.UpdateManager.UpdateEvent;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ public class UpdatesWeb {
     private ConfigProvider configProvider;
     @Autowired
     private ConfigurableEnvironment environment;
+    @Autowired
+    private OutdatedWrapperDetector outdatedWrapperDetector;
 
     protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
 
@@ -57,14 +60,15 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false);
+                    return new VersionsInfo("", "", false, false, false, false);
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
                 boolean isUpdateAvailable = updateManager.isUpdateAvailable();
                 boolean latestVersionIgnored = updateManager.latestVersionIgnored();
                 boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker);
+                boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, outdatedWrapperDetected);
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -106,6 +110,18 @@ public class UpdatesWeb {
         return updateMessages;
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/isDisplayWrapperOutdated", method = RequestMethod.GET)
+    public boolean isWrapperOutdated() {
+        return outdatedWrapperDetector.isOutdatedWrapperDetected() && outdatedWrapperDetector.isOutdatedWrapperDetectedWarningNotYetShown();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/setOutdatedWrapperDetectedWarningShown", method = RequestMethod.PUT)
+    public void setWrapperOutdatedWarningShown() {
+        outdatedWrapperDetector.setOutdatedWrapperDetectedWarningShown();
+    }
+
     @ExceptionHandler(value = {UpdateException.class})
     protected ResponseEntity<ExceptionInfo> handleUpdateException(UpdateException ex) {
         String error = "An error occurred while updating or getting update infos: " + ex.getMessage();
@@ -127,6 +143,7 @@ public class UpdatesWeb {
         private boolean updateAvailable;
         private boolean latestVersionIgnored;
         private boolean runInDocker;
+        private boolean wrapperOutdated;
     }
 
 

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "The warning that the wrapper is outdated will be also displayed in the updates section. You can also choose to be reminded again."
+      }
+    ]
+  },
+  {
     "version": "v2.6.1",
     "changes": [
       {
