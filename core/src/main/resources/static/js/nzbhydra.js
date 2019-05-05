@@ -1590,6 +1590,7 @@ function hydraupdates() {
             $scope.latestVersionIgnored = response.data.latestVersionIgnored;
             $scope.changelog = response.data.changelog;
             $scope.runInDocker = response.data.runInDocker;
+            $scope.wrapperOutdated = response.data.wrapperOutdated;
         });
 
         UpdateService.getVersionHistory().then(function (response) {
@@ -1669,14 +1670,21 @@ function hydraUpdatesFooter() {
         }
 
         function checkForOutdatedWrapper() {
-            GenericStorageService.get("outdatedWrapperDetected", false).then(function (response) {
-                if (response.data !== "" && response.data) {
+            $http.get("internalapi/updates/isDisplayWrapperOutdated").then(function (response) {
+                var data = response.data;
+                if (data !== undefined && data !== null && data) {
                     ModalService.open("Outdated wrapper detected", 'The NZBHydra wrapper (i.e. the executable or python script you use to run NZBHydra) seems to be outdated. Please update it:<br>Shut down NZBHydra, <a href="https://github.com/theotherp/nzbhydra2/releases/latest">download the latest version</a> and extract it into your main NZBHydra folder. Start NZBHydra again.', {
                         yes: {
-                            text: "OK"
+                            text: "OK",
+                            onYes: function () {
+                                $http.put("internalapi/updates/setOutdatedWrapperDetectedWarningShown")
+                            }
+                        },
+                        cancel: {
+                            text: "Remind me again"
                         }
                     }, undefined, "left");
-                    GenericStorageService.put("outdatedWrapperDetected", false, false);
+
                 }
             });
         }
@@ -1702,7 +1710,6 @@ function hydraUpdatesFooter() {
                 }
             });
         }
-
 
         $scope.update = function () {
             UpdateService.update();
@@ -4424,7 +4431,7 @@ angular
                             templateOptions: {
                                 type: 'text',
                                 label: 'Icon CSS class',
-                                help: 'Copy an icon name from http://fontawesome.io/examples/ (e.g. "film")',
+                                help: 'Copy an icon name from https://fontawesome.com/v4.7.0/icons/ (e.g. "film")',
                                 placeholder: 'Default'
                             }
                         }

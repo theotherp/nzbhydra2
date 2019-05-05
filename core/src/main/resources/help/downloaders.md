@@ -9,5 +9,5 @@ You can define a directory where torrents can be saved by clicking a search resu
 You can select if you want to upload the NZB to the downloader or send a Hydra link. The downloader will do the download itself. This is a matter of taste, 
 but adding a link and redirecting the downloader is the fastest way.
  
-If you have multiple downloaders of the same type you can select an icon from the [Font Awesome library](http://fontawesome.io/examples/). This icon will be 
+If you have multiple downloaders of the same type you can select an icon from the [Font Awesome library](https://fontawesome.com/v4.7.0/icons/). This icon will be 
 shown in the search results and the NZB download history instead of the default downloader icon.

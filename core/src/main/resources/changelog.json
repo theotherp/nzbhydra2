@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "The warning that the wrapper is outdated will be also displayed in the updates section. You can also choose to be reminded again."
+      },
+      {
+        "type": "fix",
+        "text": "Update link to Font Awesome in downloader config to the version actually supported."
       }
     ]
   },

@@ -238,7 +238,7 @@ angular
                             templateOptions: {
                                 type: 'text',
                                 label: 'Icon CSS class',
-                                help: 'Copy an icon name from http://fontawesome.io/examples/ (e.g. "film")',
+                                help: 'Copy an icon name from https://fontawesome.com/v4.7.0/icons/ (e.g. "film")',
                                 placeholder: 'Default'
                             }
                         }
