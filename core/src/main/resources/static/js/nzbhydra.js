@@ -6078,7 +6078,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Remove trailing...',
-                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Apply words with return key.'
+                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Allows wildcards ("*"). Apply words with return key.'
                             }
                         },
                         {
@@ -10036,11 +10036,11 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
 
 }
 
-HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "$state"];angular
+HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService"];angular
     .module('nzbhydraApp')
     .controller('HeaderController', HeaderController);
 
-function HeaderController($scope, $state, growl, HydraAuthService, $state) {
+function HeaderController($scope, $state, growl, HydraAuthService) {
 
 
     $scope.showLoginout = false;
