@@ -111,6 +111,7 @@ public class DownloadStatusUpdater {
             return;
         }
         List<FileDownloadEntity> updatedDownloads = new ArrayList<>();
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "{} downloads waiting for {} update", downloadsWaitingForUpdate.size(), statusCheckType);
         for (Downloader downloader : downloaderProvider.getAllDownloaders()) {
             if (downloader.isEnabled()) {
                 updatedDownloads.addAll(downloader.checkForStatusUpdates(downloadsWaitingForUpdate, statusCheckType));

@@ -2,11 +2,7 @@ package org.nzbhydra.backup;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
@@ -21,9 +17,7 @@ import java.util.Optional;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BackupTaskTest {
 

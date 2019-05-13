@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading.downloaders;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -165,6 +166,7 @@ public abstract class Downloader {
         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Checking {} history for updates to downloaded statuses", downloaderConfig.getName());
         Stopwatch stopwatch = Stopwatch.createStarted();
         if (downloads.isEmpty()) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "No downloades in history");
             return Collections.emptyList();
         }
         Instant earliestDownload = Iterables.getLast(downloads).getTime();
@@ -176,12 +178,17 @@ public abstract class Downloader {
             } else {
                 downloaderEntries = getQueue(earliestDownload);
             }
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Found {} downloader history entries", downloaderEntries.size());
+            Set<FileDownloadEntity> matchedDownloads = new HashSet<>();
+            Set<DownloaderEntry> matchedEntries = new HashSet<>();
             for (FileDownloadEntity download : downloads) {
                 for (DownloaderEntry entry : downloaderEntries) {
                     if (download.getSearchResult() == null) {
                         continue;
                     }
                     if (isDownloadMatchingDownloaderEntry(download, entry)) {
+                        matchedDownloads.add(download);
+                        matchedEntries.add(entry);
                         logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Found match between download and downloader entry with title", entry.getNzbName());
                         FileDownloadStatus newStatus = getDownloadStatusFromDownloaderEntry(entry, statusCheckType);
                         if (newStatus == null) {
@@ -201,6 +208,15 @@ public abstract class Downloader {
                         }
                     }
                 }
+
+            }
+            Sets.SetView<FileDownloadEntity> unmatchedDownloads = Sets.difference(new HashSet<>(downloads), matchedDownloads);
+            if (!unmatchedDownloads.isEmpty()) {
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloader entries for these downloads: {]", Joiner.on(", ").join(unmatchedDownloads));
+            }
+            Sets.SetView<DownloaderEntry> unmatchedEntries = Sets.difference(new HashSet<>(downloaderEntries), matchedEntries);
+            if (!unmatchedEntries.isEmpty()) {
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloads for these downloader entries: {]", Joiner.on(", ").join(unmatchedEntries));
             }
 
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName(), statusCheckType);

@@ -83,5 +83,8 @@
   "bugs": {
     "url": "https://github.com/theotherp/nzbhydra2/issues"
   },
-  "homepage": "https://github.com/theotherp/nzbhydra2#readme"
+  "homepage": "https://github.com/theotherp/nzbhydra2#readme",
+  "resolutions": {
+    "natives": "1.1.3"
+  }
 }
