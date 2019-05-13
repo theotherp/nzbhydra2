@@ -313,6 +313,10 @@ public class IndexerTest {
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         result = testee.cleanUpTitle("abc");
         assertThat(result, is("abc"));
+
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
+        result = testee.cleanUpTitle("abc trailing1 trailing2");
+        assertThat(result, is("abc"));
     }
 
 

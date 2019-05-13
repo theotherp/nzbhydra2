@@ -977,7 +977,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Remove trailing...',
-                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Apply words with return key.'
+                                help: 'Removed from title if it ends with either of these. Case insensitive and disregards leading/trailing spaces. Allows wildcards ("*"). Apply words with return key.'
                             }
                         },
                         {

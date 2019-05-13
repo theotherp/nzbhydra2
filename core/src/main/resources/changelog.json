@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Extended logging for download status updates."
+      },
+      {
+        "type": "feature",
+        "text": "Allow wildcards in \"Remove trailing...\""
       }
     ]
   },

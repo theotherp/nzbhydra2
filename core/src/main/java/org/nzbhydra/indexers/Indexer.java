@@ -442,7 +442,9 @@ public abstract class Indexer<T> {
         do {
             removed = false;
             for (String word : removeTrailing) {
-                if (title.toLowerCase().endsWith(word.trim().toLowerCase())) {
+                String pattern = word.trim().toLowerCase().replace("*", "WILDCARDXXX");
+                pattern = "^.*"+ pattern.replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#\\\\s]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$";
+                if (title.toLowerCase().matches(pattern)) {
                     debug(LoggingMarkers.TRAILING, "Removing trailing {} from title {}", word, title);
                     title = title.substring(0, title.length() - word.length()).trim();
                     removed = true;
