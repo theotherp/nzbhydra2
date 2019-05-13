@@ -9,6 +9,10 @@
       {
         "type": "feature",
         "text": "Allow wildcards in \"Remove trailing...\""
+      },
+      {
+        "type": "fix",
+        "text": "Disable HSTS security header"
       }
     ]
   },
