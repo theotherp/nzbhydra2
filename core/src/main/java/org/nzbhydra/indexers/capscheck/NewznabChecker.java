@@ -192,7 +192,7 @@ public class NewznabChecker {
                     }
                     allChecked = false;
                 } catch (TimeoutException e) {
-                    logger.error("Indexer {] failed to answer in {} seconds", indexerConfig.getName(), timeout);
+                    logger.error("Indexer {} failed to answer in {} seconds", indexerConfig.getName(), timeout);
                     allChecked = false;
                 }
             }

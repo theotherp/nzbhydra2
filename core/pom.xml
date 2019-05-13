@@ -154,7 +154,7 @@
         <dependency>
             <groupId>com.github.marschall</groupId>
             <artifactId>threeten-jpa</artifactId>
-            <version>1.11</version>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>org.xerial</groupId>
@@ -426,6 +426,12 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.10.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
             <scope>compile</scope>
         </dependency>
 

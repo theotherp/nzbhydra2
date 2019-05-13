@@ -189,7 +189,7 @@ public abstract class Downloader {
                     if (isDownloadMatchingDownloaderEntry(download, entry)) {
                         matchedDownloads.add(download);
                         matchedEntries.add(entry);
-                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Found match between download and downloader entry with title", entry.getNzbName());
+                        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Found match between download and downloader entry with title {}", entry.getNzbName());
                         FileDownloadStatus newStatus = getDownloadStatusFromDownloaderEntry(entry, statusCheckType);
                         if (newStatus == null) {
                             //Could be any status that we're not prepared for
@@ -212,16 +212,16 @@ public abstract class Downloader {
             }
             Sets.SetView<FileDownloadEntity> unmatchedDownloads = Sets.difference(new HashSet<>(downloads), matchedDownloads);
             if (!unmatchedDownloads.isEmpty()) {
-                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloader entries for these downloads: {]", Joiner.on(", ").join(unmatchedDownloads));
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloader entries for these downloads: {}", Joiner.on(", ").join(unmatchedDownloads));
             }
             Sets.SetView<DownloaderEntry> unmatchedEntries = Sets.difference(new HashSet<>(downloaderEntries), matchedEntries);
             if (!unmatchedEntries.isEmpty()) {
-                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloads for these downloader entries: {]", Joiner.on(", ").join(unmatchedEntries));
+                logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to find downloads for these downloader entries: {}", Joiner.on(", ").join(unmatchedEntries));
             }
 
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to check download status updates for {} downloads in the database and {} entries from {} {}", stopwatch.elapsed(TimeUnit.MILLISECONDS), downloads.size(), downloaderEntries.size(), downloaderConfig.getName(), statusCheckType);
         } catch (DownloaderException e) {
-            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to contact downloader {}: ", downloaderConfig.getName(), e.getMessage());
+            logger.warn(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Unable to contact downloader {}: {}", downloaderConfig.getName(), e.getMessage());
         } catch (Throwable throwable) {
             logger.error("Error while trying to update download statuses", throwable);
         }

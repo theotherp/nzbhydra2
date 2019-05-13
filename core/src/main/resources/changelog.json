@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.3",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Extended logging for download status updates."
+      }
+    ]
+  },
+  {
     "version": "v2.6.2",
     "changes": [
       {

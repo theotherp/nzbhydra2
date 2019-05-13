@@ -368,7 +368,7 @@ public abstract class Indexer<T> {
             debug("Search request provided title {}. Using that as query base.", query);
         } else if (searchRequest.getInternalData().getTitle().isPresent()) {
             query = searchRequest.getInternalData().getTitle().get();
-            debug("Using internally provided title {]", query);
+            debug("Using internally provided title {}", query);
         } else {
             Optional<Entry<IdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
             if (!firstIdentifierEntry.isPresent()) {

@@ -312,7 +312,7 @@ public class SearchResultAcceptor {
             if (forbiddenWord.contains("-") || forbiddenWord.contains(".") || indexerConfig.getHost().toLowerCase().contains("nzbgeek")) {
                 if (item.getTitle().toLowerCase().contains(forbiddenWord.toLowerCase())) {
                     reasonsForRejection.add("Forbidden word");
-                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} in title {]", forbiddenWord, item.getTitle());
+                    logger.debug(LoggingMarkers.RESULT_ACCEPTOR, "Found forbidden word {} in title {}", forbiddenWord, item.getTitle());
                     return false;
                 }
             } else {
