@@ -284,7 +284,9 @@ public class Newznab extends Indexer<Xml> {
                     warn("Didn't find any usable IDs to add to search request");
                 }
             }
-            searchRequest.getIdentifiers().putAll(params);
+
+            //Don't overwrite IDs provided by the calling instance, only add missing ones
+            params.forEach((key, value) -> searchRequest.getIdentifiers().putIfAbsent(key, value));
 
             for (Map.Entry<IdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
                 //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other

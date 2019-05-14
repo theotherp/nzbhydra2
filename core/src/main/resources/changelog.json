@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Searches will always use the IDs provided in API calls and not replace them by different IDs provided by IMDB or TVMaze. In very few instances TVMaze had wrong IDs mapped which resulted in wrong searches."
+      }
+    ]
+  },
+  {
     "version": "v2.6.3",
     "changes": [
       {
