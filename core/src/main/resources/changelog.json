@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix shift-click for selecting multiple results."
+      }
+    ]
+  },
+  {
     "version": "v2.6.4",
     "changes": [
       {
