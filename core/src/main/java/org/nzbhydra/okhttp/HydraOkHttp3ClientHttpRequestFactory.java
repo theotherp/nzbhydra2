@@ -163,12 +163,16 @@ public class HydraOkHttp3ClientHttpRequestFactory
     protected Builder getBaseBuilder() {
         Builder builder = new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
         if (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTP.getName())) {
-            HttpLoggingInterceptor.Logger httpLogger = message -> logger.debug(LoggingMarkers.HTTP, message);
-            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(httpLogger);
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-            loggingInterceptor.redactHeader("Authorization");
-            loggingInterceptor.redactHeader("Cookie");
-            builder.addInterceptor(loggingInterceptor);
+            try {
+                HttpLoggingInterceptor.Logger httpLogger = message -> logger.debug(LoggingMarkers.HTTP, message);
+                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(httpLogger);
+                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+                loggingInterceptor.redactHeader("Authorization");
+                loggingInterceptor.redactHeader("Cookie");
+                builder.addInterceptor(loggingInterceptor);
+            } catch (Exception e) {
+                logger.error("Unable to log HTTP", e);
+            }
         }
 
         return builder;
