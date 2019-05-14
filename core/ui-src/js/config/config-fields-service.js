@@ -202,11 +202,11 @@ function ConfigFields($injector) {
                                 },
                                 {
                                     key: 'proxyIgnoreDomains',
-                                    type: 'horizontalInput',
+                                    type: 'horizontalChips',
                                     hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'text',
-                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive',
+                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key.',
                                         label: 'Bypass domains'
                                     }
                                 }

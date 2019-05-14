@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Searches will always use the IDs provided in API calls and not replace them by different IDs provided by IMDB or TVMaze. In very few instances TVMaze had wrong IDs mapped which resulted in wrong searches."
+      },
+      {
+        "type": "fix",
+        "text": "Entering domains to bypass when using proxy didn't work."
       }
     ]
   },

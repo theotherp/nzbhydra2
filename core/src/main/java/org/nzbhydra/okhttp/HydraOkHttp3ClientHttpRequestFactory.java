@@ -203,7 +203,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return false;
         }
 
-        return mainConfig.getProxyIgnoreDomains().stream().anyMatch(x -> host.toLowerCase().matches(("\\Q" + x.toLowerCase() + "\\E").replace("*", "\\E.*\\Q")));
+        return mainConfig.getProxyIgnoreDomains().stream().anyMatch(x -> isSameHost(x, host));
     }
 
     private static long ipToLong(InetAddress ip) {
