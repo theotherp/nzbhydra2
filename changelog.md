@@ -1,3 +1,13 @@
+### v2.6.4
+
+**Fix** Searches will always use the IDs provided in API calls and not replace them by different IDs provided by IMDB or TVMaze. In very few instances TVMaze had wrong IDs mapped which resulted in wrong searches.
+
+**Fix** Entering domains to bypass when using proxy didn't work.
+
+**Fix** Selecting multiple results in the same title group was not accepted.
+
+
+
 ### v2.6.3
 
 **Feature** Extended logging for download status updates.

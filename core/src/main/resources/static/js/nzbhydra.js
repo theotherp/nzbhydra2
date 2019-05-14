@@ -1016,12 +1016,12 @@ function searchResult() {
     function handleSelection($scope, $element) {
         $scope.foo.selected = false;
 
-        function sendSelectionEvent() {
-            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
+        function sendSelectionEvent(isSelected) {
+            $scope.$emit("selectionUp", $scope.result, isSelected);
         }
 
         $scope.clickCheckbox = function (event, result) {
-            sendSelectionEvent();
+            sendSelectionEvent(event.currentTarget.checked);
             $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
         };
 
@@ -5303,11 +5303,11 @@ function ConfigFields($injector) {
                                 },
                                 {
                                     key: 'proxyIgnoreDomains',
-                                    type: 'horizontalInput',
+                                    type: 'horizontalChips',
                                     hideExpression: 'model.proxyType==="NONE"',
                                     templateOptions: {
                                         type: 'text',
-                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive',
+                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key.',
                                         label: 'Bypass domains'
                                     }
                                 }
