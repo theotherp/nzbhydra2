@@ -1,3 +1,9 @@
+### v2.6.5
+
+**Fix** Fix shift-click for selecting multiple results.
+
+
+
 ### v2.6.4
 
 **Fix** Searches will always use the IDs provided in API calls and not replace them by different IDs provided by IMDB or TVMaze. In very few instances TVMaze had wrong IDs mapped which resulted in wrong searches.
