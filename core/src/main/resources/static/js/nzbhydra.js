@@ -993,10 +993,6 @@ function searchResult() {
 
         $scope.$on("toggleShowCovers", function ($event, value) {
             $scope.foo.showCovers = value;
-            $scope.foo.showCovers = value;
-            console.log($scope.foo.showCovers);
-            $scope.foo.selected = true;
-
         });
 
         $scope.$on("duplicatesDisplayed", function ($event, value) {
@@ -1021,8 +1017,9 @@ function searchResult() {
         }
 
         $scope.clickCheckbox = function (event, result) {
-            sendSelectionEvent(event.currentTarget.checked);
-            $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
+            var isSelected = event.currentTarget.checked;
+            sendSelectionEvent(isSelected);
+            $scope.$emit("checkboxClicked", event, $scope.rowIndex, isSelected, event.currentTarget);
         };
 
         function isBetween(num, betweena, betweenb) {
@@ -1036,14 +1033,10 @@ function searchResult() {
             if (!$scope.resultDisplayed) {
                 return;
             }
-            //if (isBetween($scope.rowIndex, startIndex, endIndex)) {
+
             if (isBetween(elementYlocation, fromYlocation, newYlocation)) {
-                if (newValue) {
-                    $scope.foo.selected = true;
-                } else {
-                    $scope.foo.selected = false;
-                }
-                sendSelectionEvent();
+                sendSelectionEvent(newValue);
+                $scope.foo.selected = newValue === 1;
             }
         });
         $scope.$on("invertSelection", function () {
@@ -8259,7 +8252,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 return;
             }
             if (filtered.indexOf(x) === -1) {
-                console.log("Removing " + x.title + " from selected results because it's being hidden");
                 $scope.$broadcast("toggleSelection", x, false);
                 newSelected.splice($scope.selected.indexOf(x), 1);
             }
@@ -8447,7 +8439,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         } else if (!value && index > -1) {
             $scope.selected.splice(index, 1);
         }
-        $scope.$broadcast("selectionDown", result, value);
     });
 
     $scope.downloadNzbsCallback = function (addedIds) {
@@ -8473,7 +8464,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     };
 
     $scope.$on("onFinishRender", function () {
-        // console.log("Last rendered");
         $scope.doShowResults = true;
         $timeout(function () {
             if ($scope.foo.scrollToResults) {
