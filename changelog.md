@@ -1,3 +1,9 @@
+### v2.6.6
+
+**Fix** Fix NoClassDefFoundError (only occurred with HTTP logging marker enabled)
+
+
+
 ### v2.6.5
 
 **Fix** Fix shift-click for selecting multiple results.
