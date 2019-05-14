@@ -9,6 +9,10 @@
       {
         "type": "fix",
         "text": "Entering domains to bypass when using proxy didn't work."
+      },
+      {
+        "type": "fix",
+        "text": "Selecting multiple results in the same title group was not accepted."
       }
     ]
   },

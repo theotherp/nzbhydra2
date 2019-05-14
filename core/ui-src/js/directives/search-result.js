@@ -80,12 +80,12 @@ function searchResult() {
     function handleSelection($scope, $element) {
         $scope.foo.selected = false;
 
-        function sendSelectionEvent() {
-            $scope.$emit("selectionUp", $scope.result, $scope.foo.selected);
+        function sendSelectionEvent(isSelected) {
+            $scope.$emit("selectionUp", $scope.result, isSelected);
         }
 
         $scope.clickCheckbox = function (event, result) {
-            sendSelectionEvent();
+            sendSelectionEvent(event.currentTarget.checked);
             $scope.$emit("checkboxClicked", event, $scope.rowIndex, $scope.foo.selected, event.currentTarget);
         };
 
