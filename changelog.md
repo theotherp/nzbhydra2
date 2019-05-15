@@ -1,3 +1,9 @@
+### v2.6.7
+
+**Fix** Hopefully fix corruption of nzbhydra.yml when machine crashes (or user switches off power deliberately -.-)
+
+
+
 ### v2.6.6
 
 **Fix** Fix NoClassDefFoundError (only occurred with HTTP logging marker enabled)
