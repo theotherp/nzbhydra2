@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.7",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Hopefully fix corruption of nzbhydra.yml when machine crashes (or user switches off power deliberately -.-)"
+      }
+    ]
+  },
+  {
     "version": "v2.6.6",
     "changes": [
       {

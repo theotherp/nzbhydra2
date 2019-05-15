@@ -22,6 +22,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
+import org.apache.commons.io.IOUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.logging.LoggingMarkers;
@@ -97,21 +98,32 @@ public class ConfigReaderWriter {
         //Write to temp file and make sure it can be read correctly
         File tempFile = new File(targetFile.getCanonicalPath() + ".bak");
         logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
-        Files.write(tempFile.toPath(), configAsYamlString.getBytes(Charsets.UTF_8));
+        try (final FileOutputStream fos = new FileOutputStream(tempFile)) {
+            IOUtils.write(configAsYamlString.getBytes(Charsets.UTF_8), fos);
+            fos.flush();
+            fos.getFD().sync();
+        }
+
         try {
             Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
         } catch (IOException e) {
-            logger.warn("Written temporary config file {} corrupted", e);
+            logger.warn("Written temporary config file corrupted", e);
             throw e;
         }
 
         //Copy temp file to target file and verify again it's correct
         logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying temporary file to {}", targetFile);
         Files.copy(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        try (final FileInputStream fis = new FileInputStream(tempFile); final FileOutputStream fos = new FileOutputStream(targetFile)) {
+            IOUtils.copy(fis, fos);
+            fos.flush();
+            fos.getFD().sync();
+        }
+
         try {
             Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
         } catch (IOException e) {
-            logger.warn("Written target config file {} corrupted", e);
+            logger.warn("Written target config file corrupted", e);
             throw e;
         }
     }
