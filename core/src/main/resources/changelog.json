@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.8",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "IMDB link in search history was invalid"
+      }
+    ]
+  },
+  {
     "version": "v2.6.7",
     "changes": [
       {

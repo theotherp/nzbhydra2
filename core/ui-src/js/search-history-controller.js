@@ -142,7 +142,7 @@ function SearchHistoryController($scope, $state, SearchHistoryService, ConfigSer
             });
             if (angular.isDefined(pair)) {
                 key = "IMDB ID";
-                href = "https://www.imdb.com/title/tt" + pair.identifierValue;
+                href = ("https://www.imdb.com/title/tt" + pair.identifierValue).replace("tttt", "tt");
                 href = $filter("dereferer")(href);
                 value = pair.identifierValue;
             }
