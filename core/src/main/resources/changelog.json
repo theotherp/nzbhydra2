@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.9",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Remove trailing didn't work with words containing \"s\"... How do you explain stuff to that to non-programmers..."
+      }
+    ]
+  },
+  {
     "version": "v2.6.8",
     "changes": [
       {

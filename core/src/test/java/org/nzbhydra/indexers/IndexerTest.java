@@ -39,12 +39,7 @@ import java.util.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class IndexerTest {
@@ -316,6 +311,10 @@ public class IndexerTest {
 
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
         result = testee.cleanUpTitle("abc trailing1 trailing2");
+        assertThat(result, is("abc"));
+
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated"));
+        result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result, is("abc"));
     }
 
