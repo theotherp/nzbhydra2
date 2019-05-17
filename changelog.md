@@ -1,3 +1,17 @@
+### v2.6.9
+
+**Fix** Remove trailing didn't work with words containing "s"... How do you explain stuff to that to non-programmers...
+
+**Fix** USe localhost:8080 as preset sabNZBd URL
+
+
+
+### v2.6.8
+
+**Fix** IMDB link in search history was invalid
+
+
+
 ### v2.6.7
 
 **Fix** Hopefully fix corruption of nzbhydra.yml when machine crashes (or user switches off power deliberately -.-)
