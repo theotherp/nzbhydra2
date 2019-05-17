@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Remove trailing didn't work with words containing \"s\"... How do you explain stuff to that to non-programmers..."
+      },
+      {
+        "type": "fix",
+        "text": "USe localhost:8080 as preset sabNZBd URL"
       }
     ]
   },

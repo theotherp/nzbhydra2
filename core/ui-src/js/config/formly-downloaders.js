@@ -37,7 +37,7 @@ angular
                         url: "http://nzbget:tegbzn6789@localhost:6789"
                     },
                     {
-                        url: "http://localhost:8086",
+                        url: "http://localhost:8080",
                         downloaderType: "SABNZBD",
                         name: "SABnzbd",
                         nzbAddingType: "UPLOAD",
