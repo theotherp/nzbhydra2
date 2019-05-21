@@ -1,3 +1,11 @@
+### v2.6.10
+
+**Fix** Changing result selection using "Invert selection" and "Select/deselect all" wasn't properly registered, making mass download buttons unusable
+
+**Fix** Error on startup on headless windows server
+
+
+
 ### v2.6.9
 
 **Fix** Remove trailing didn't work with words containing "s"... How do you explain stuff to that to non-programmers...
