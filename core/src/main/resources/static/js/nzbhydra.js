@@ -1039,27 +1039,32 @@ function searchResult() {
                 $scope.foo.selected = newValue === 1;
             }
         });
+
         $scope.$on("invertSelection", function () {
             if (!$scope.resultDisplayed) {
                 return;
             }
             $scope.foo.selected = !$scope.foo.selected;
-            sendSelectionEvent();
+            sendSelectionEvent($scope.foo.selected);
         });
+
         $scope.$on("deselectAll", function () {
             if (!$scope.resultDisplayed) {
                 return;
             }
             $scope.foo.selected = false;
-            sendSelectionEvent();
+            sendSelectionEvent($scope.foo.selected);
         });
+
         $scope.$on("selectAll", function () {
             if (!$scope.resultDisplayed) {
                 return;
             }
             $scope.foo.selected = true;
-            sendSelectionEvent();
+
+            sendSelectionEvent($scope.foo.selected);
         });
+
         $scope.$on("toggleSelection", function ($event, result, value) {
             if (!$scope.resultDisplayed || result !== $scope.result) {
                 return;

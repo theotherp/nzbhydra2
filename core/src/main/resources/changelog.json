@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.10",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Changing result selection using \"Invert selection\" and \"Select/deselect all\" wasn't properly registered, making mass download buttons unusable"
+      }
+    ]
+  },
+  {
     "version": "v2.6.9",
     "changes": [
       {
