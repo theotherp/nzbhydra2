@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Changing result selection using \"Invert selection\" and \"Select/deselect all\" wasn't properly registered, making mass download buttons unusable"
+      },
+      {
+        "type": "fix",
+        "text": "Error on startup on headless windows server"
       }
     ]
   },

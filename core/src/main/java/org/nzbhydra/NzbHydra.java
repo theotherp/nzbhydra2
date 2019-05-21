@@ -252,7 +252,7 @@ public class NzbHydra {
             logger.info("Adding windows system tray icon");
             try {
                 new WindowsTrayIcon();
-            } catch (HeadlessException e) {
+            } catch (Throwable e) {
                 logger.error("Can't add a windows tray icon because running headless");
             }
         }
