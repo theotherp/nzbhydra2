@@ -45,7 +45,7 @@
     "gulp-less-sourcemap": "^1.4.3",
     "gulp-livereload": "^3.8.1",
     "gulp-newer": "^0.5.1",
-    "gulp-load-plugins": "^1.0.0",
+    "gulp-load-plugins": "^1.6.0",
     "gulp-merge": "^0.1.1",
     "gulp-ng-annotate": "^1.1.0",
     "gulp-print": "^2.0.1",
