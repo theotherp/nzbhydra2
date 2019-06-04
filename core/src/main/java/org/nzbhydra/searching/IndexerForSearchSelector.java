@@ -11,9 +11,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
 import org.nzbhydra.indexers.IndexerApiAccessType;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -55,10 +53,6 @@ public class IndexerForSearchSelector {
     private InfoProvider infoProvider;
     @Autowired
     private SearchModuleProvider searchModuleProvider;
-    @Autowired
-    private FileDownloadRepository nzbDownloadRepository;
-    @Autowired
-    private IndexerApiAccessEntityShortRepository shortRepository;
     @Autowired
     private ConfigProvider configProvider;
     @Autowired

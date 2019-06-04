@@ -33,6 +33,8 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;
     private String dereferer = null;
+    @RestartRequired
+    private int databaseCompactTime = 15_000;
     private boolean instanceCounterDownloaded = false;
     @RestartRequired
     private String host = "0.0.0.0";

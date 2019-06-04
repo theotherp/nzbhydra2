@@ -484,6 +484,19 @@ function ConfigFields($injector) {
                                 min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
                             }
+                        },
+                        {
+                            key: 'databaseCompactTime',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Database compact time',
+                                addonRight: {
+                                    text: 'ms'
+                                },
+                                min: 200,
+                                help: 'The time the database is given to compact (reduce size) when shutting down. Reduce this if shutting down NZBHydra takes too long (database size may increase). Takes effect on next restart.'
+                            }
                         }
                     ]
 

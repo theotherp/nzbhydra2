@@ -175,6 +175,7 @@ public class NzbHydra {
         setApplicationProperty("main.ssl", "MAIN_SSL", String.valueOf(baseConfig.getMain().isSsl()));
         setApplicationProperty("main.sslKeyStore", "MAIN_SSL_KEY_STORE", baseConfig.getMain().getSslKeyStore());
         setApplicationProperty("main.sslKeyStorePassword", "MAIN_SSL_KEY_STORE_PASSWORD", baseConfig.getMain().getSslKeyStorePassword());
+        setApplicationProperty("main.databaseCompactTime", "MAIN_DATABASE_COMPACT_TIME", String.valueOf(baseConfig.getMain().getDatabaseCompactTime()));
         setApplicationProperty("main.logging.consolelevel", "MAIN_LOGGING_CONSOLELEVEL", baseConfig.getMain().getLogging().getConsolelevel());
         setApplicationProperty("main.logging.logfilelevel", "MAIN_LOGGING_LOGFILELEVEL", baseConfig.getMain().getLogging().getLogfilelevel());
         setApplicationProperty("main.logging.logMaxHistory", "MAIN_LOGGING_LOG_MAX_HISTORY", String.valueOf(baseConfig.getMain().getLogging().getLogMaxHistory()));
@@ -183,6 +184,7 @@ public class NzbHydra {
     private static void setApplicationProperty(String key, String envKey, String value) {
         if (value != null && System.getProperty(key) == null && System.getenv(envKey) == null) {
             System.setProperty(key, value);
+            logger.debug("Setting {} to {}", key, value);
         }
     }
 
@@ -293,7 +295,7 @@ public class NzbHydra {
 
     @SuppressWarnings("unused")
     @EventListener
-    protected void startupDone(ApplicationReadyEvent event) {
+    public void startupDone(ApplicationReadyEvent event) {
         try {
             if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
                 logger.info("First start of NZBHydra detected");
@@ -330,7 +332,7 @@ public class NzbHydra {
             }
         }
         applicationEventPublisher.publishEvent(new ShutdownEvent());
-        logger.info("Shutting down");
+        logger.info("Shutting down and using up to {}ms to compact database", configProvider.getBaseConfig().getMain().getDatabaseCompactTime());
     }
 
 
