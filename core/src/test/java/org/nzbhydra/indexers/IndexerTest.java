@@ -1,5 +1,6 @@
 package org.nzbhydra.indexers;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -35,6 +36,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -84,42 +88,47 @@ public class IndexerTest {
     private List<SearchResultItem> searchResultItemsToReturn = Collections.emptyList();
 
     @InjectMocks
-    private Indexer testee = new Indexer<String>() {
-        @Override
-        protected Logger getLogger() {
-            return LoggerFactory.getLogger("test");
-        }
+    private Indexer testee = getTestee();
+
+    private Indexer<String> getTestee() {
+        return new Indexer<String>() {
+            @Override
+            protected Logger getLogger() {
+                return LoggerFactory.getLogger("test");
+            }
 
 
-        @Override
-        protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
-            indexerSearchResult.setTotalResults(searchResultItemsToReturn.size());
-            indexerSearchResult.setHasMoreResults(false);
-        }
+            @Override
+            protected void completeIndexerSearchResult(String response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
+                indexerSearchResult.setTotalResults(searchResultItemsToReturn.size());
+                indexerSearchResult.setHasMoreResults(false);
+            }
 
-        @Override
-        protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse) {
-            return searchResultItemsToReturn;
-        }
+            @Override
+            protected List<SearchResultItem> getSearchResultItems(String searchRequestResponse) {
+                return searchResultItemsToReturn;
+            }
 
-        @Override
-        protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
-            return UriComponentsBuilder.fromHttpUrl("http://127.0.0.1");
-        }
+            @Override
+            protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
+                return UriComponentsBuilder.fromHttpUrl("http://127.0.0.1");
+            }
 
-        @Override
-        public NfoResult getNfo(String guid) {
-            return null;
-        }
+            @Override
+            public NfoResult getNfo(String guid) {
+                return null;
+            }
 
-        @Override
-        protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
-            return null;
-        }
-    };
+            @Override
+            protected String getAndStoreResultToDatabase(URI uri, IndexerApiAccessType apiAccessType) throws IndexerAccessException {
+                return null;
+            }
+        };
+    }
 
     @Before
     public void setUp() throws Exception {
+
         MockitoAnnotations.initMocks(this);
         when(indexerMock.getIndexerEntity()).thenReturn(indexerEntityMock);
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
@@ -294,28 +303,68 @@ public class IndexerTest {
     }
 
     @Test
-    public void shouldRemoveTrailing() {
+    public void shouldRemoveTrailing() throws Exception {
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing1", "trailing2"));
         String result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result, is("abc"));
 
+        testee.handleNewConfig(null);
         result = testee.cleanUpTitle("abc trailing1 trailing2 def");
         assertThat(result, is("abc trailing1 trailing2 def"));
 
+        testee.handleNewConfig(null);
         result = testee.cleanUpTitle("abc");
         assertThat(result, is("abc"));
 
+        testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
         result = testee.cleanUpTitle("abc");
         assertThat(result, is("abc"));
 
+        testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("trailing*"));
         result = testee.cleanUpTitle("abc trailing1 trailing2");
         assertThat(result, is("abc"));
 
+        testee.handleNewConfig(null);
         baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated"));
         result = testee.cleanUpTitle("abc-obfuscated");
         assertThat(result, is("abc"));
+
+        testee.handleNewConfig(null);
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("-obfuscated******"));
+        result = testee.cleanUpTitle("abc-obfuscated");
+        assertThat(result, is("abc"));
+
+        testee.handleNewConfig(null);
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
+        result = testee.cleanUpTitle("abc [obfuscated]");
+        assertThat(result, is("abc"));
+
+        testee.handleNewConfig(null);
+        baseConfig.getSearching().setRemoveTrailing(Arrays.asList("[*]"));
+        result = testee.cleanUpTitle("abc [obfuscated] def");
+        assertThat(result, is("abc [obfuscated] def"));
+    }
+
+    @Test
+    public void shouldRemoveTrailing2() {
+        List<String> collect = IntStream.range(1, 100).mapToObj(x -> "trailing" + x + "*********").collect(Collectors.toList());
+        List<String> all = new ArrayList<>();
+        all.addAll(collect);
+        all.add("trailing*");
+        baseConfig.getSearching().setRemoveTrailing(all);
+
+        testee.cleanUpTitle("abc trailing1 trailing2");
+        testee.cleanUpTitle("abc trailing1 trailing2");
+        testee.cleanUpTitle("abc trailing1 trailing2");
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        for (int i = 0; i < 100; i++) {
+            testee.cleanUpTitle("abc trailing1 trailing2");
+        }
+        System.out.println(stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+
     }
 
 

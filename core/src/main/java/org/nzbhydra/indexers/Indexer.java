@@ -3,6 +3,7 @@ package org.nzbhydra.indexers;
 import com.google.common.base.Objects;
 import com.google.common.base.Stopwatch;
 import joptsimple.internal.Strings;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.*;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -39,6 +41,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -59,6 +63,7 @@ public abstract class Indexer<T> {
 
     protected IndexerEntity indexer;
     protected IndexerConfig config;
+    private Pattern cleanupPattern;
 
     @Autowired
     protected ConfigProvider configProvider;
@@ -85,7 +90,11 @@ public abstract class Indexer<T> {
     public void initialize(IndexerConfig config, IndexerEntity indexer) {
         this.indexer = indexer;
         this.config = config;
+    }
 
+    @EventListener
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) throws Exception {
+        cleanupPattern = null;
     }
 
     public IndexerSearchResult search(SearchRequest searchRequest, int offset, Integer limit) {
@@ -428,6 +437,7 @@ public abstract class Indexer<T> {
         return indexer;
     }
 
+
     public String cleanUpTitle(String title) {
         if (Strings.isNullOrEmpty(title)) {
             return title;
@@ -438,19 +448,19 @@ public abstract class Indexer<T> {
         if (removeTrailing.isEmpty()) {
             return title;
         }
-        boolean removed;
-        do {
-            removed = false;
-            for (String word : removeTrailing) {
-                String pattern = word.trim().toLowerCase().replace("*", "WILDCARDXXX");
-                pattern = "^.*" + pattern.replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$";
-                if (title.toLowerCase().matches(pattern)) {
-                    debug(LoggingMarkers.TRAILING, "Removing trailing {} from title {}", word, title);
-                    title = title.substring(0, title.length() - word.length()).trim();
-                    removed = true;
-                }
-            }
-        } while (removed);
+
+        //Tests need to reset pattern or something
+
+        if (cleanupPattern == null) {
+            String allPattern = "^(?<keep>.*)(" + removeTrailing.stream().map(x -> x.replace("*", "WILDCARDXXX").replaceAll("[-\\[\\]{}()*+?.,\\\\\\\\^$|#]", "\\\\$0").replace("WILDCARDXXX", ".*") + "$").collect(Collectors.joining("|")) + ")";
+            cleanupPattern = Pattern.compile(allPattern, Pattern.CASE_INSENSITIVE);
+        }
+        Matcher matcher = cleanupPattern.matcher(title);
+        while (matcher.matches()) {
+            title = matcher.replaceAll("$1").trim();
+            matcher = cleanupPattern.matcher(title);
+        }
+
         return title;
     }
 
