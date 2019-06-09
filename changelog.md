@@ -1,3 +1,11 @@
+### v2.6.11
+
+**Fix** Improve handling and performance of wildcards for removal of trailing words
+
+**Fix** Added option to define how long Hydra will try to compress the database file when shutting down. With big databases shutting down may take up to 15 seconds by default. I'm still working on analyzing why some databases grow very large. Until I've found a way to prevent the root cause this option may help a bit but it will still require Hydra to shut down (or restart)
+
+
+
 ### v2.6.10
 
 **Fix** Changing result selection using "Invert selection" and "Select/deselect all" wasn't properly registered, making mass download buttons unusable
