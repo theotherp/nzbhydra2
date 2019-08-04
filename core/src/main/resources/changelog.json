@@ -5,6 +5,10 @@
       {
         "type": "features",
         "text": "Allow limiting the indexers to be used via API. Use \"&indexers=<name1>,<name2>\"."
+      },
+      {
+        "type": "fix",
+        "text": "Reduce how long sessions are kept open, possible reducing memory usage in some cases"
       }
     ]
   },

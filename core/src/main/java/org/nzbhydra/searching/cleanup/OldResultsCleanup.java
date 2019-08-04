@@ -48,20 +48,21 @@ public class OldResultsCleanup {
     @Transactional
     public void deleteOldResults() {
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
+        String sqlString = "delete from SEARCHRESULT where FIRST_FOUND "
+                + " < DATEADD('SECOND', :epochSecond, DATE '1970-01-01') " +
+                "AND ID not in (select SEARCH_RESULT_ID from INDEXERNZBDOWNLOAD where SEARCH_RESULT_ID is not null)";
+        sqlString = sqlString.replace(":epochSecond", String.valueOf(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond()));
         int deletedResults = entityManager.createNativeQuery(
-                "delete from SEARCHRESULT where FIRST_FOUND "
-                        + " < DATEADD('SECOND', :epochSecond, DATE '1970-01-01') " +
-                        "AND ID not in (select SEARCH_RESULT_ID from INDEXERNZBDOWNLOAD  where SEARCH_RESULT_ID is not null)")
-                .setParameter("epochSecond", Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond())
+                sqlString)
+//                .setParameter("epochSecond", Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond())
                 .executeUpdate();
         if (deletedResults > 0) {
             logger.debug("Deleted {} unused search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);
+        } else {
+            logger.debug("No unused search results to delete");
         }
 
-
         cleanupGcLogs();
-
-
     }
 
     protected void cleanupGcLogs() {

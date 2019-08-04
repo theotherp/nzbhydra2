@@ -47,15 +47,19 @@ public class HydraUserDetailsManager implements UserDetailsManager {
             List<GrantedAuthority> userRoles = new ArrayList<>();
             if (userAuthConfig.isMaySeeAdmin() || !authConfig.isRestrictAdmin()) {
                 userRoles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            }
-            if (userAuthConfig.isMaySeeStats() || !authConfig.isRestrictStats()) {
                 userRoles.add(new SimpleGrantedAuthority("ROLE_STATS"));
-            }
-            if (userAuthConfig.isMaySeeDetailsDl() || !authConfig.isRestrictDetailsDl()) {
                 userRoles.add(new SimpleGrantedAuthority("ROLE_DETAILS"));
-            }
-            if (userAuthConfig.isShowIndexerSelection() || !authConfig.isRestrictIndexerSelection()) {
                 userRoles.add(new SimpleGrantedAuthority("ROLE_SHOW_INDEXERS"));
+            } else {
+                if (userAuthConfig.isMaySeeStats() || !authConfig.isRestrictStats()) {
+                    userRoles.add(new SimpleGrantedAuthority("ROLE_STATS"));
+                }
+                if (userAuthConfig.isMaySeeDetailsDl() || !authConfig.isRestrictDetailsDl()) {
+                    userRoles.add(new SimpleGrantedAuthority("ROLE_DETAILS"));
+                }
+                if (userAuthConfig.isShowIndexerSelection() || !authConfig.isRestrictIndexerSelection()) {
+                    userRoles.add(new SimpleGrantedAuthority("ROLE_SHOW_INDEXERS"));
+                }
             }
             userRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
             User user = new User(userAuthConfig.getUsername(), userAuthConfig.getPassword(), userRoles);
