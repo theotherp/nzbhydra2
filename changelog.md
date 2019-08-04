@@ -1,3 +1,11 @@
+### v2.6.12
+
+**Features** Allow limiting the indexers to be used via API. Use "&indexers=<name1>,<name2>".
+
+**Fix** Reduce how long sessions are kept open, possible reducing memory usage in some cases
+
+
+
 ### v2.6.11
 
 **Fix** Improve handling and performance of wildcards for removal of trailing words
