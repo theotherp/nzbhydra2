@@ -193,8 +193,7 @@ public class IndexerForSearchSelector {
 
     protected boolean checkIndexerSelectedByUser(Indexer indexer) {
         boolean indexerNotSelectedByUser =
-                searchRequest.getSource() == SearchSource.INTERNAL
-                        && (searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().isEmpty())
+                (searchRequest.getIndexers().isPresent() && !searchRequest.getIndexers().get().isEmpty())
                         && !searchRequest.getIndexers().get().contains(indexer.getName());
         if (indexerNotSelectedByUser) {
             //Don't send a search log message for this because showing it to the leader would be useless. He knows he hasn't selected it

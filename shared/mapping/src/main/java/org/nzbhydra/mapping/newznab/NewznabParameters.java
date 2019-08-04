@@ -8,7 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -57,6 +59,9 @@ public class NewznabParameters {
     @Builder.Default
     private List<String> attrs = new ArrayList<>();
     private boolean extended;
+
+    //Hydra-specific
+    private Set<String> indexers = new HashSet<>();
 
 
     @Override

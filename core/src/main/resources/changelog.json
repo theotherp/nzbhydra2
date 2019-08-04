@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.12",
+    "changes": [
+      {
+        "type": "features",
+        "text": "Allow limiting the indexers to be used via API. Use \"&indexers=<name1>,<name2>\"."
+      }
+    ]
+  },
+  {
     "version": "v2.6.11",
     "changes": [
       {

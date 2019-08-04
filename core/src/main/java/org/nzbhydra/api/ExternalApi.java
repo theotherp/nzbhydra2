@@ -243,6 +243,9 @@ public class ExternalApi {
         searchRequest.setTitle(params.getTitle());
         searchRequest.setSeason(params.getSeason());
         searchRequest.setEpisode(params.getEp());
+        if (params.getIndexers() != null && !params.getIndexers().isEmpty()) {
+            searchRequest.setIndexers(params.getIndexers());
+        }
         if (params.getCat() != null) {
             searchRequest.getInternalData().setNewznabCategories(params.getCat());
         }
