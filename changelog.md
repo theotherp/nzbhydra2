@@ -1,3 +1,9 @@
+### v2.6.13
+
+**Fix** Hopefully fix error with CookieTheftException introduced with v2.6.12
+
+
+
 ### v2.6.12
 
 **Features** Allow limiting the indexers to be used via API. Use "&indexers=<name1>,<name2>".
