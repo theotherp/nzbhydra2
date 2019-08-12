@@ -37,8 +37,8 @@ public class UserInfosProvider {
         if (user.isPresent()) {
             maySeeAdmin = user.get().isMaySeeAdmin();
             maySeeStats = user.get().isMaySeeStats() || user.get().isMaySeeAdmin();
-            maySeeDetailsDl = user.get().isMaySeeDetailsDl() || !detailsDlRestricted;
-            showIndexerSelection = user.get().isShowIndexerSelection() || !indexerSelectionRestricted;
+            maySeeDetailsDl = user.get().isMaySeeDetailsDl() || !detailsDlRestricted || maySeeAdmin;
+            showIndexerSelection = user.get().isShowIndexerSelection() || !indexerSelectionRestricted || maySeeAdmin;
             username = user.get().getUsername();
         } else if (!authConfigured) {
             maySeeAdmin = true;
@@ -60,7 +60,6 @@ public class UserInfosProvider {
         bootstrappedData.setSearchRestricted(searchRestricted);
         bootstrappedData.setStatsRestricted(statsRestricted);
         bootstrappedData.setShowIndexerSelection(showIndexerSelection);
-        bootstrappedData.setMaySeeDetailsDl(maySeeDetailsDl);
         bootstrappedData.setMaySeeAdmin(maySeeAdmin);
         bootstrappedData.setMaySeeStats(maySeeStats);
         bootstrappedData.setMaySeeDetailsDl(maySeeDetailsDl);
