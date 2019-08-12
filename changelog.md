@@ -1,3 +1,9 @@
+### v2.6.14
+
+**Fix** Minor changes
+
+
+
 ### v2.6.13
 
 **Fix** Hopefully fix error with CookieTheftException introduced with v2.6.12
