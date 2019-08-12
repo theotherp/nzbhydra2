@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.13",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Hopefully fix error with CookieTheftException introduced with v2.6.12"
+      }
+    ]
+  },
+  {
     "version": "v2.6.12",
     "changes": [
       {

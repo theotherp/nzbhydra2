@@ -96,7 +96,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                     })
                     .and()
-                    .logout().permitAll().logoutUrl("/logout").deleteCookies("rememberMe")
+                    .logout().permitAll().logoutUrl("/logout").deleteCookies("rememberMe", "remember-me")
                     .and();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
@@ -108,9 +108,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 if (rememberMeValidityDays == 0) {
                     rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
                 }
-                http = http.rememberMe().alwaysRemember(true).tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY).tokenRepository(tokenRepository).and();
+                http = http
+                        .rememberMe()
+                        .alwaysRemember(true)
+                        .tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY)
+                        .tokenRepository(tokenRepository)
+                        .rememberMeServices(new HydraPersistentTokenBasedRememberMeServices("someKeykgkigkjczu657ichyl78xjk", userDetailsService(), tokenRepository))
+                        .and();
             }
-            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("rememberMe");
+            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("rememberMe", "remember-me");
 
         }
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
