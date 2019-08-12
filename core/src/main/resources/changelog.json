@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.14",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Minor changes"
+      }
+    ]
+  },
+  {
     "version": "v2.6.13",
     "changes": [
       {

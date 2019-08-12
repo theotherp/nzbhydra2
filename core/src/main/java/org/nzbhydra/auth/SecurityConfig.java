@@ -113,6 +113,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .alwaysRemember(true)
                         .tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY)
                         .tokenRepository(tokenRepository)
+                        .key("someKeykgkigkjczu657ichyl78xjk")
                         .rememberMeServices(new HydraPersistentTokenBasedRememberMeServices("someKeykgkigkjczu657ichyl78xjk", userDetailsService(), tokenRepository))
                         .and();
             }
