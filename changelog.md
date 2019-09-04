@@ -1,3 +1,9 @@
+### v2.6.15
+
+**Fix** Fix form auth and remember-me cookies
+
+
+
 ### v2.6.14
 
 **Fix** Minor changes
