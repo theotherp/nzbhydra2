@@ -19,7 +19,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
@@ -96,14 +95,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                     })
                     .and()
-                    .logout().permitAll().logoutUrl("/logout").deleteCookies("rememberMe", "remember-me")
+                    .logout().permitAll().logoutUrl("/logout").deleteCookies("remember-me")
                     .and();
         }
         if (baseConfig.getAuth().isAuthConfigured()) {
             enableAnonymousAccessIfConfigured(http);
             if (baseConfig.getAuth().isRememberUsers()) {
-                JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-                tokenRepository.setDataSource(dataSource);
                 int rememberMeValidityDays = configProvider.getBaseConfig().getAuth().getRememberMeValidityDays();
                 if (rememberMeValidityDays == 0) {
                     rememberMeValidityDays = 1000; //Can't be disabled, three years should be enough
@@ -112,12 +109,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .rememberMe()
                         .alwaysRemember(true)
                         .tokenValiditySeconds(rememberMeValidityDays * SECONDS_PER_DAY)
-                        .tokenRepository(tokenRepository)
-                        .key("someKeykgkigkjczu657ichyl78xjk")
-                        .rememberMeServices(new HydraPersistentTokenBasedRememberMeServices("someKeykgkigkjczu657ichyl78xjk", userDetailsService(), tokenRepository))
+                        .userDetailsService(userDetailsService())
                         .and();
             }
-            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("rememberMe", "remember-me");
+            http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
 
         }
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.15",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix form auth and remember-me cookies"
+      }
+    ]
+  },
+  {
     "version": "v2.6.14",
     "changes": [
       {
