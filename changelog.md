@@ -1,3 +1,9 @@
+### v2.6.16
+
+**Fix** Fix problems with special characters when using autocomplete
+
+
+
 ### v2.6.15
 
 **Fix** Fix form auth and remember-me cookies
