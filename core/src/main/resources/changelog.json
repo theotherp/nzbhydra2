@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.6.16",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix problems with special characters when using autocomplete"
+      }
+    ]
+  },
+  {
     "version": "v2.6.15",
     "changes": [
       {

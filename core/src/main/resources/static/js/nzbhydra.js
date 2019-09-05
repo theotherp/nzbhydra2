@@ -9034,7 +9034,6 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         $scope.availableIndexers = getAvailableIndexers();
     };
 
-
     // Any function returning a promise object can be used to load values asynchronously
     $scope.getAutocomplete = function (val) {
         $scope.autocompleteLoading = true;
@@ -9050,12 +9049,12 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         }
 
         if ($scope.category.searchType === "MOVIE") {
-            return $http.get('internalapi/autocomplete/MOVIE/' + val).then(function (response) {
+            return $http.get('internalapi/autocomplete/MOVIE/', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });
         } else if ($scope.category.searchType === "TVSEARCH") {
-            return $http.get('internalapi/autocomplete/TV/' + val).then(function (response) {
+            return $http.get('internalapi/autocomplete/TV/', {params: {input: val}}).then(function (response) {
                 $scope.autocompleteLoading = false;
                 return response.data;
             });

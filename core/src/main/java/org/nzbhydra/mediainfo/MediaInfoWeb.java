@@ -13,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -61,8 +58,8 @@ public class MediaInfoWeb {
                         }
                     });
 
-    @RequestMapping(value = "/internalapi/autocomplete/{type}/{input}", produces = "application/json")
-    public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @PathVariable("input") String input) throws ExecutionException {
+    @RequestMapping(value = "/internalapi/autocomplete/{type}", produces = "application/json")
+    public List<MediaInfoTO> autocomplete(@PathVariable("type") AutocompleteType type, @RequestParam("input") String input) throws ExecutionException {
         try {
             return autocompleteCache.get(new CacheKey(type, input));
         } catch (ExecutionException e) {
