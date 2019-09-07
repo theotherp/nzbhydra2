@@ -8140,7 +8140,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             if ("title" in $scope.filterModel) {
                 var ok;
                 if (query.startsWith("/") && query.endsWith("/")) {
-                    ok = item.title.toLowerCase().match(new RegExp(query.substr(1, query.length-2), "gi"));
+                    ok = item.title.toLowerCase().match(new RegExp(query.substr(1, query.length - 2), "gi"));
                 } else {
                     ok = _.every(words, function (word) {
                         if (word.startsWith("!")) {

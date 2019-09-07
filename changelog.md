@@ -1,3 +1,11 @@
+### v2.6.17
+
+**Feature** Allow users to be used only for API update queries
+
+**Feature** Allow regular expressions to be used in the search results title filter
+
+
+
 ### v2.6.16
 
 **Fix** Fix problems with special characters when using autocomplete
