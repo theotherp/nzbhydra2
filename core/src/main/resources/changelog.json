@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Allow users to be used only for API update queries"
+      },
+      {
+        "type": "feature",
+        "text": "Allow regular expressions to be used in the search results title filter"
       }
     ]
   },

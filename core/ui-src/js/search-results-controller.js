@@ -287,12 +287,13 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
 
     function sortAndFilter(results) {
-        // console.time("sortAndFilter");
         var query;
         var words;
         if ("title" in $scope.filterModel) {
             query = $scope.filterModel.title.filterValue;
-            words = query.toLowerCase().split(/[\s.\-]+/);
+            if (!(query.startsWith("/") && query.endsWith("/"))) {
+                words = query.toLowerCase().split(/[\s.\-]+/);
+            }
         }
 
         function filter(item) {
@@ -332,15 +333,20 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             }
 
             if ("title" in $scope.filterModel) {
-                var ok = _.every(words, function (word) {
-                    if (word.startsWith("!")) {
-                        if (word.length === 1) {
-                            return true;
+                var ok;
+                if (query.startsWith("/") && query.endsWith("/")) {
+                    ok = item.title.toLowerCase().match(new RegExp(query.substr(1, query.length - 2), "gi"));
+                } else {
+                    ok = _.every(words, function (word) {
+                        if (word.startsWith("!")) {
+                            if (word.length === 1) {
+                                return true;
+                            }
+                            return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
                         }
-                        return item.title.toLowerCase().indexOf(word.substring(1)) === -1;
-                    }
-                    return item.title.toLowerCase().indexOf(word) > -1;
-                });
+                        return item.title.toLowerCase().indexOf(word) > -1;
+                    });
+                }
                 if (!ok) return false;
             }
             if ("indexer" in $scope.filterModel) {
