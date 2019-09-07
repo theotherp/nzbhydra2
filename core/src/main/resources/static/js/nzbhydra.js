@@ -3506,6 +3506,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                     {name: 'Internal searches only', value: 'INTERNAL'},
                     {name: 'API searches only', value: 'API'},
                     {name: 'All but API update queries ', value: 'ALL_BUT_RSS'},
+                    {name: 'Only API update queries ', value: 'ONLY_RSS'},
                     {name: 'Internal and any API searches', value: 'BOTH'}
                 ],
                 help: 'Select for which searches this indexer will be used. "Update queries" are searches without query or ID (e.g. done by Sonarr periodically).'
