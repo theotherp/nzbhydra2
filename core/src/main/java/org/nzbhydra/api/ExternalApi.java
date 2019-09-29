@@ -93,7 +93,7 @@ public class ExternalApi {
         }
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
-            if (params.getCachetime() != null) {
+            if (params.getCachetime() != null || configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().isPresent()) {
                 return handleCachingSearch(params);
             }
             NewznabResponse searchResult = search(params);
@@ -126,8 +126,9 @@ public class ExternalApi {
         CacheEntryValue cacheEntryValue;
         if (cache.containsKey(params.cacheKey())) {
             cacheEntryValue = cache.get(params.cacheKey());
-            if (cacheEntryValue.getLastUpdate().isAfter(clock.instant().minus(params.getCachetime(), ChronoUnit.MINUTES))) {
-                Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(params.getCachetime(), ChronoUnit.MINUTES);
+            Integer cachetime = params.getCachetime() == null ? configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().get() : params.getCachetime();
+            if (cacheEntryValue.getLastUpdate().isAfter(clock.instant().minus(cachetime, ChronoUnit.MINUTES))) {
+                Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(cachetime, ChronoUnit.MINUTES);
                 logger.info("Returning cached search result. Next update of search will be done at {}", nextUpdate);
                 return new ResponseEntity<>(cacheEntryValue.getSearchResult(), HttpStatus.OK);
             } else {

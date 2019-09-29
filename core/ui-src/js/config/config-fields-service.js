@@ -1020,8 +1020,20 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Load all cached results',
-                                help: 'Show all cached results when searching internally. Might make sorting / filtering slower'
+                                label: 'Load all results',
+                                help: 'Show all results when searching internally. Might make sorting / filtering slower'
+                            }
+                        },
+                        {
+                            key: 'globalCacheTimeMinutes',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Results cache time',
+                                help: 'When set search results will be cached for this time. Any search with the same parameters will return the cached results. API cache time parameters will be preferred. See <a href="https://github.com/theotherp/nzbhydra2/wiki/External-API,-RSS-and-cached-queries" target="_blank">wiki</a>.',
+                                addonRight: {
+                                    text: 'minutes'
+                                }
                             }
                         },
                         {

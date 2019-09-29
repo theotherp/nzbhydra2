@@ -1,10 +1,19 @@
 [
   {
+    "version": "v2.6.18",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Add global cache time config parameter"
+      }
+    ]
+  },
+  {
     "version": "v2.6.17",
     "changes": [
       {
         "type": "feature",
-        "text": "Allow users to be used only for API update queries"
+        "text": "Allow indexers to be used only for API update queries"
       },
       {
         "type": "feature",
