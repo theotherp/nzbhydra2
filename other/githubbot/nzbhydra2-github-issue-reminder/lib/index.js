@@ -5,7 +5,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             resolve(value);
         });
     }
-
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) {
             try {
@@ -26,7 +25,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function step(result) {
             result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
         }
-
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -46,7 +44,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
             return step([n, v]);
         };
     }
-
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
@@ -109,25 +106,21 @@ var IssueType;
     IssueType["ENHANCEMENT"] = "enhancement";
     IssueType["BUG"] = "bug";
 })(IssueType || (IssueType = {}));
-
 function removeIssueTitlePrefix(context, repo, issueNumber, title) {
-    var newTitle = title.substr(3);
-    appG.log("Renaming issue" + title + " to  " + newTitle);
+    var newTitle = title.substr(4).trim();
+    appG.log('Renaming issue "' + title + '" to  "' + newTitle + '"');
     context.github.issues.update({owner: 'theotherp', repo: repo, number: issueNumber, title: newTitle});
 }
-
 function addLabel(context, repoName, issueNumber, label) {
     context.github.issues.addLabels({owner: 'theotherp', repo: repoName, number: issueNumber, labels: [label]});
 }
-
 function convertTitleToLabel(context, type) {
     var payload = context.payload;
     var issueTitle = payload.issue.title;
     addLabel(context, payload.repository.name, payload.issue.number, type);
-    appG.log("Adding label " + type + " to issue with title " + issueTitle);
+    appG.log('Adding label ' + type + ' to issue with title "' + issueTitle + '"');
     removeIssueTitlePrefix(context, payload.repository.name, payload.issue.number, issueTitle);
 }
-
 function checkForDebugInfos(context) {
     return __awaiter(this, void 0, void 0, function () {
         var body, containsDebugInfos, containsZip, issueComment;
@@ -138,14 +131,14 @@ function checkForDebugInfos(context) {
                     containsDebugInfos = body.toLowerCase().replace(" ", "").indexOf("debuginfos") > -1;
                     containsZip = body.toLowerCase().replace(" ", "").indexOf(".zip") > -1;
                     if (!(!containsDebugInfos && !containsZip)) return [3 /*break*/, 2];
-                    appG.log("Issue " + context.payload.issue.title + " does not contain any debug infos");
+                    appG.log('Issue "' + context.payload.issue.title + '" does not contain any debug infos');
                     issueComment = context.issue({body: 'Thanks for opening this issue. Unfortunately it looks like you forgot to attach your debug infos ZIP.\r\n\r\nSet your log file level to debug, repeat the steps that cause the problem and attach the debug infos ZIP which can be retrieved in the [System / Bugreport section](http://127.0.0.1:5076/system/bugreport).'});
                     return [4 /*yield*/, context.github.issues.createComment(issueComment)];
                 case 1:
                     _a.sent();
                     return [3 /*break*/, 3];
                 case 2:
-                    appG.log("Issue " + context.payload.issue.title + " contains  debug infos. Yay!");
+                    appG.log("Issue " + context.payload.issue.title + " contains debug infos. Yay!");
                     _a.label = 3;
                 case 3:
                     return [2 /*return*/];
@@ -153,7 +146,6 @@ function checkForDebugInfos(context) {
         });
     });
 }
-
 module.exports = function (app) {
     appG = app;
     app.on('issues.opened', function (context) {
@@ -163,17 +155,17 @@ module.exports = function (app) {
                 switch (_a.label) {
                     case 0:
                         issueTitle = context.payload.issue.title;
-                        appG.log('Found issue opened with title ' + issueTitle);
+                        appG.log('Found issue opened with title "' + issueTitle + '"');
                         issueDescription = context.payload.issue.body;
                         issueNumber = context.payload.issue.number;
                         repoName = context.payload.repository.name;
                         if (!issueTitle.toLowerCase().startsWith("bug")) return [3 /*break*/, 1];
-                        appG.log('Recognized bug with ' + issueTitle);
+                        appG.log('Recognized bug with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.BUG);
                         return [3 /*break*/, 5];
                     case 1:
                         if (!issueTitle.toLowerCase().startsWith("req")) return [3 /*break*/, 3];
-                        appG.log('Recognized enhancement with ' + issueTitle);
+                        appG.log('Recognized enhancement with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.ENHANCEMENT);
                         return [4 /*yield*/, checkForDebugInfos(context)];
                     case 2:
@@ -203,12 +195,12 @@ module.exports = function (app) {
                             appG.log('Ignoring issue edits by Bot');
                             return [2 /*return*/];
                         }
-                        appG.log('Issue ' + issueTitle + ' edited  by ' + issue.user.login);
+                        appG.log('Issue "' + issueTitle + '" edited by ' + issue.user.login);
                         if (!('title' in context.payload.changes)) return [3 /*break*/, 3];
                         oldTitle = context.payload.changes.title.from;
-                        appG.log("Found renamed issue from " + oldTitle + " to " + issueTitle);
-                        addedBugToTitle = oldTitle.toLowerCase().indexOf('bug') == -1 && issueTitle.toLowerCase().indexOf('bug') > -1;
-                        addedReqToTitle = oldTitle.toLowerCase().indexOf('req') == -1 && issueTitle.toLowerCase().indexOf('req') > -1;
+                        appG.log('Found renamed issue from "' + oldTitle + '" to ' + issueTitle);
+                        addedBugToTitle = issueTitle.toLowerCase().startsWith('bug');
+                        addedReqToTitle = issueTitle.toLowerCase().startsWith('req');
                         if (!addedBugToTitle) return [3 /*break*/, 2];
                         convertTitleToLabel(context, IssueType.BUG);
                         return [4 /*yield*/, checkForDebugInfos(context)];
