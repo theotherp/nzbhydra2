@@ -1,0 +1,4 @@
+/bower_components
+/node_modules
+/nzbhydra2-github-issue-reminder/node_modules
+.env

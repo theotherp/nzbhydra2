@@ -1,0 +1,56 @@
+{
+  "name": "nzbhydra-2-github-issue-reminder",
+  "version": "1.0.0",
+  "description": "Handles new issues",
+  "author": "TheOtherP <theotherp@gmx.de>",
+  "license": "ISC",
+  "repository": "https://github.com//nzbhydra-2-github-issue-reminder.git",
+  "homepage": "https://github.com//nzbhydra-2-github-issue-reminder",
+  "bugs": "https://github.com//nzbhydra-2-github-issue-reminder/issues",
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "nodemon --exec \"npm start\"",
+    "start": "probot run ./lib/index.js",
+    "lint": "standard **/*.ts --fix",
+    "test": "jest && standard **/*.ts",
+    "test:watch": "jest --watch --notify --notifyMode=change --coverage"
+  },
+  "dependencies": {
+    "@types/nock": "^9.3.0",
+    "acorn": "^6.0.0",
+    "nock": "^10.0.0",
+    "probot": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.0",
+    "@types/node": "^11.9.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "jest": "^24.0.0",
+    "nodemon": "^1.17.2",
+    "smee-client": "^1.0.2",
+    "standard": "^12.0.1",
+    "ts-jest": "^24.0.0",
+    "typescript": "^3.3.1",
+    "typescript-eslint-parser": "^22.0.0"
+  },
+  "engines": {
+    "node": ">= 8.3.0"
+  },
+  "standard": {
+    "parser": "typescript-eslint-parser",
+    "env": [
+      "jest"
+    ],
+    "plugins": [
+      "typescript"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
