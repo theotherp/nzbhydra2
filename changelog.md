@@ -1,6 +1,12 @@
+### v2.6.18
+
+**Feature** Add global cache time config parameter
+
+
+
 ### v2.6.17
 
-**Feature** Allow users to be used only for API update queries
+**Feature** Allow indexers to be used only for API update queries
 
 **Feature** Allow regular expressions to be used in the search results title filter
 
