@@ -77,7 +77,7 @@ export = (app: Application) => {
             //User may have added REQ or BUG belatedly
 
             let oldTitle: string = context.payload.changes.title.from;
-            appG.log('Found renamed issue from "' + oldTitle + '" to ' + issueTitle);
+            appG.log('Found renamed issue from "' + oldTitle + '" to "' + issueTitle + '"');
             let addedBugToTitle = issueTitle.toLowerCase().startsWith('bug');
             let addedReqToTitle = issueTitle.toLowerCase().startsWith('req');
             if (addedBugToTitle) {
