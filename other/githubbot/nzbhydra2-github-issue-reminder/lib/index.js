@@ -150,15 +150,12 @@ module.exports = function (app) {
     appG = app;
     app.on('issues.opened', function (context) {
         return __awaiter(void 0, void 0, void 0, function () {
-            var issueTitle, issueDescription, issueNumber, repoName, issueComment;
+            var issueTitle, issueComment;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         issueTitle = context.payload.issue.title;
                         appG.log('Found issue opened with title "' + issueTitle + '"');
-                        issueDescription = context.payload.issue.body;
-                        issueNumber = context.payload.issue.number;
-                        repoName = context.payload.repository.name;
                         if (!issueTitle.toLowerCase().startsWith("bug")) return [3 /*break*/, 1];
                         appG.log('Recognized bug with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.BUG);

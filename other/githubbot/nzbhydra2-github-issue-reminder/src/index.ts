@@ -46,9 +46,6 @@ export = (app: Application) => {
 
         const issueTitle = context.payload.issue.title;
         appG.log('Found issue opened with title "' + issueTitle + '"');
-        const issueDescription = context.payload.issue.body;
-        const issueNumber = context.payload.issue.number;
-        const repoName = context.payload.repository.name;
 
         if (issueTitle.toLowerCase().startsWith("bug")) {
             appG.log('Recognized bug with title "' + issueTitle + '"');
