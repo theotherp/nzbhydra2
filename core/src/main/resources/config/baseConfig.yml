@@ -317,6 +317,7 @@ searching:
   forbiddenRegex: null
   forbiddenWords: []
   generateQueries: "NONE"
+  globalCacheTimeMinutes: null
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
