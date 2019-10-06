@@ -7,10 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IndexerSearchResultsShare {
+public class IndexerUniquenessScore {
 
     private String indexerName;
-    private Float totalShare;
-    private Float uniqueShare;
+    private int uniquenessScore;
 
 }

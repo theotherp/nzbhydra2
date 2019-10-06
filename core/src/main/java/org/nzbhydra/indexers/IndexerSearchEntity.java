@@ -24,6 +24,7 @@ public class IndexerSearchEntity {
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     private SearchEntity searchEntity;
+
     private Boolean successful;
 
     /**

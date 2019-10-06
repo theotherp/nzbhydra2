@@ -84,41 +84,33 @@
 
 
         <div class="col-md-10 stat-box">
-            Indexer search stats are currently disabled due to performance issues. They will be reenabled in a later
-            version.
-            <!--
             <div class="caption">
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
-                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgIndexerSearchResultsShares" switch-size="mini" ng-change="onStatsSwitchToggle('avgIndexerSearchResultsShares')">
+                <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgIndexerUniquenessScore" switch-size="mini" ng-change="onStatsSwitchToggle('avgIndexerUniquenessScore')">
                 </span>
-                Average results <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                      uib-tooltip="How many results the indexer on average contributed to specific searches (i.e. update queries e.g. for the latest releases in a specific category are ignored)"></span>
-                and average unique results <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top-right"
-                                                 uib-tooltip-html="'How many of the results the indexer contributed to searches were unique (only returned by this indexer). <br>Results from raw search engines are excluded because they would be misleading.'"></span>
+                Average indexer results uniqueness score <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                      uib-tooltip="The results uniqueness score determines how unique a downloaded result is to the indexer. A high score means that the indexer often returned results which were either downloaded from that indexer or *could've been' downloaded from it. See also https://github.com/theotherp/nzbhydra2/wiki/Indexer-results-uniqueness-score"></span>
             </div>
-            <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgIndexerSearchResultsShares">
+            <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgIndexerUniquenessScore">
                 <table class="table">
                     <thead>
                     <tr>
                         <th>Indexer</th>
-                        <th>Avg. results (%)
-                        </th>
-                        <th>Avg. unique results (%)</th>
+                        <th>Uniqueness score</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="avgIndexerSearchResultsShare in stats.avgIndexerSearchResultsShares">
-                        <td>{{ avgIndexerSearchResultsShare.indexerName }}</td>
-                        <td>{{ avgIndexerSearchResultsShare.totalShare | number: 1}}</td>
-                        <td>{{ avgIndexerSearchResultsShare.uniqueShare | number: 1}}</td>
+                    <tr ng-repeat="entry in stats.avgIndexerUniquenessScore">
+                        <td>{{ entry.indexerName }}</td>
+                        <td>{{ entry.uniquenessScore | number: 1}}</td>
                     </tr>
                     </tbody>
                 </table>
                 <chart>
-                    <nvd3 options="resultsSharesChart.options" data="resultsSharesChart.data"></nvd3>
+                    <nvd3 options="uniquenessScoresChart.options" data="uniquenessScoresChart.data"></nvd3>
                 </chart>
             </tab-or-chart>
--->
+
         </div>
     </div>
 

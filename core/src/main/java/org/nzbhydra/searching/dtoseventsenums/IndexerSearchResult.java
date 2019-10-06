@@ -22,10 +22,13 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.Data;
 import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.searching.db.SearchResultEntity;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 public class IndexerSearchResult {
@@ -34,6 +37,7 @@ public class IndexerSearchResult {
     private boolean wasSuccessful = false;
     private String errorMessage;
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
+    private Set<SearchResultEntity> searchResultEntities = new HashSet<>();
     private int totalResults;
     private int offset;
     private int limit;

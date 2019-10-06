@@ -162,7 +162,7 @@ public class IndexerTest {
         item.setDetails("details");
         item.setIndexerGuid("guid");
 
-        testee.persistSearchResults(Collections.singletonList(item));
+        testee.persistSearchResults(Collections.singletonList(item), null);
 
         verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 
@@ -181,7 +181,7 @@ public class IndexerTest {
         when(searchResultEntityMock.getIndexerGuid()).thenReturn("guid");
         when(searchResultRepositoryMock.findAllIdsByIdIn(anyList())).thenReturn(Sets.newHashSet(299225959498991027L));
 
-        testee.persistSearchResults(Collections.singletonList(item));
+        testee.persistSearchResults(Collections.singletonList(item), null);
 
         verify(searchResultRepositoryMock).saveAll(searchResultEntitiesCaptor.capture());
 

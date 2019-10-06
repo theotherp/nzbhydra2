@@ -14,7 +14,7 @@ public class StatsResponse {
 
     private List<IndexerApiAccessStatsEntry> indexerApiAccessStats;
 
-    private List<IndexerSearchResultsShare> avgIndexerSearchResultsShares;
+    private List<IndexerUniquenessScore> avgIndexerUniquenessScore;
 
     private List<AverageResponseTime> avgResponseTimes;
 

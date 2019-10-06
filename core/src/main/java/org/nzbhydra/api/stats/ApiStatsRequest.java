@@ -28,7 +28,7 @@ public class ApiStatsRequest {
     public ApiStatsRequest() {
         request.setIncludeDisabled(false);
         request.setIndexerApiAccessStats(true);
-        request.setAvgIndexerSearchResultsShares(true);
+        request.setAvgIndexerUniquenessScore(true);
         request.setAvgResponseTimes(true);
         request.setIndexerDownloadShares(true);
         request.setDownloadsPerDayOfWeek(true);

@@ -23,4 +23,8 @@ public enum SearchSourceRestriction {
     public boolean meets(SearchRequest.SearchSource searchSource) {
         return searchSource.name().equals(this.name()) || this == BOTH || this == ALL_BUT_RSS || (this == ONLY_RSS && searchSource == SearchRequest.SearchSource.API);
     }
+
+    public boolean isEnabled() {
+        return this != NONE;
+    }
 }

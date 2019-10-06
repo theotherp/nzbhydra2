@@ -1,3 +1,9 @@
+### v2.7.0
+
+**Feature** I've added a new statistics value called "Indexer result uniqueness score" (which is is a mouthful, if you have a better name please let me know). This score attempts to answer the question: Which indexer should I keep and which can I let go? See <a href="https://github.com/theotherp/nzbhydra2/wiki/Indexer-results-uniqueness-score">the wiki for more information</a>. The score will only work for new downloads.
+
+
+
 ### v2.6.18
 
 **Feature** Add global cache time config parameter

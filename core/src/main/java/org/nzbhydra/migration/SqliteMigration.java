@@ -138,7 +138,7 @@ public class SqliteMigration {
             if (title == null) {
                 logger.warn("Skipping migration of download without title");
             }
-            String randomIntSTring = String.valueOf(random.nextInt()) + indexerEntity.getName();
+            String randomIntSTring = random.nextInt() + indexerEntity.getName();
             SearchResultEntity searchResultEntity = new SearchResultEntity(indexerEntity, dummyTime, title, "guid"+randomIntSTring, "link" + randomIntSTring,  "details"+ randomIntSTring, null, dummyTime);//Must set a random link because the calculator would always return the same ID
             entity.setSearchResult(searchResultEntity);
             dummySearchResultEntities.add(searchResultEntity);

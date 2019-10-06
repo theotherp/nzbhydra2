@@ -167,7 +167,7 @@ public abstract class Indexer<T> {
         searchResultItems = acceptorResult.getAcceptedResults();
         indexerSearchResult.setReasonsForRejection(acceptorResult.getReasonsForRejection());
 
-        searchResultItems = persistSearchResults(searchResultItems);
+        searchResultItems = persistSearchResults(searchResultItems, indexerSearchResult);
         indexerSearchResult.setSearchResultItems(searchResultItems);
         indexerSearchResult.setResponseTime(responseTime);
 
@@ -212,7 +212,7 @@ public abstract class Indexer<T> {
     }
 
     @Transactional
-    protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems) {
+    protected List<SearchResultItem> persistSearchResults(List<SearchResultItem> searchResultItems, IndexerSearchResult indexerSearchResult) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         synchronized (lock) { //Locking per indexer prevents multiple threads trying to save the same "new" results to the database
             ArrayList<SearchResultEntity> searchResultEntities = new ArrayList<>();
@@ -239,6 +239,7 @@ public abstract class Indexer<T> {
             }
             try {
                 searchResultRepository.saveAll(searchResultEntities);
+                indexerSearchResult.setSearchResultEntities(new HashSet<>(searchResultEntities));
             } catch (EntityExistsException e) {
                 logger.error("Unable to save the search results to the database", e);
             }

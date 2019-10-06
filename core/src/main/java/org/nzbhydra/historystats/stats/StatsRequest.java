@@ -17,7 +17,7 @@ public class StatsRequest {
     protected boolean includeDisabled;
 
     protected boolean indexerApiAccessStats;
-    protected boolean avgIndexerSearchResultsShares;
+    protected boolean avgIndexerUniquenessScore;
     protected boolean avgResponseTimes;
     protected boolean indexerDownloadShares;
     protected boolean downloadsPerDayOfWeek;

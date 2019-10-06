@@ -25,6 +25,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 
 import javax.persistence.*;
@@ -78,6 +79,10 @@ public class SearchResultEntity {
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     protected Instant pubDate;
 
+    @OneToOne
+    @JoinColumn(name="indexersearchentity")
+    private IndexerSearchEntity indexerSearchEntity;
+
     public SearchResultEntity() {
     }
 
@@ -126,6 +131,14 @@ public class SearchResultEntity {
 
     public void setPubDate(Instant pubDate) {
         this.pubDate = pubDate;
+    }
+
+    public IndexerSearchEntity getIndexerSearchEntity() {
+        return indexerSearchEntity;
+    }
+
+    public void setIndexerSearchEntity(IndexerSearchEntity indexerSearchEntity) {
+        this.indexerSearchEntity = indexerSearchEntity;
     }
 
     @Override

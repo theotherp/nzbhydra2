@@ -31,7 +31,7 @@ public class DuplicateDetector {
 
     public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().replaceFirst("[ .\\-_]", "")));
+        Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().toLowerCase().replaceAll("[ .\\-_]", "")));
         Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();
         List<LinkedHashSet<SearchResultItem>> duplicateGroups = new ArrayList<>();
 

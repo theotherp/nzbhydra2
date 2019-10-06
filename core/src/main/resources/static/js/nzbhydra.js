@@ -7306,7 +7306,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         statsSwichState: localStorageService.get("statsSwitchState") !== null ? localStorageService.get("statsSwitchState") :
             {
                 indexerApiAccessStats: true,
-                avgIndexerSearchResultsShares: true,
+                avgIndexerUniquenessScore: true,
                 avgResponseTimes: true,
                 indexerDownloadShares: true,
                 downloadsPerDayOfWeek: true,
@@ -7426,16 +7426,8 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.avgResponseTimesChart.options.chart.height = Math.max($scope.stats.avgResponseTimes.length * 30, 350);
         }
 
-        if ($scope.stats.avgIndexerSearchResultsShares) {
-            $scope.resultsSharesChart = getResultsSharesChart();
-
-            var rotation = 30;
-            var numberOfDisplayedIndexers = $scope.foo.includeDisabledIndexersInStats ? stats.numberOfConfiguredIndexers : stats.numberOfEnabledIndexers;
-            if (numberOfDisplayedIndexers > 30) {
-                rotation = 70;
-            }
-            $scope.resultsSharesChart.options.chart.xAxis.rotateLabels = rotation;
-            $scope.resultsSharesChart.options.chart.height = 350;
+        if ($scope.stats.avgIndexerUniquenessScore) {
+            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Hour of day", 'Searches');
         }
 
         if ($scope.stats.downloadsPerHourOfDay) {
@@ -7642,68 +7634,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
                 "bar": true,
                 "values": values
             }]
-        };
-    }
-
-    //Was unable to use the function above for this and gave up
-    function getResultsSharesChart() {
-        return {
-            options: {
-                chart: {
-                    type: 'multiBarChart',
-                    height: 350,
-                    margin: {
-                        top: 20,
-                        right: 20,
-                        bottom: 100,
-                        left: 45
-                    },
-
-                    clipEdge: true,
-                    duration: 500,
-                    stacked: false,
-                    reduceXTicks: false,
-                    showValues: true,
-                    tooltip: {
-                        enabled: true,
-                        valueFormatter: function (d) {
-                            return $filter('number')(d, 2) + "%";
-                        }
-                    },
-                    showControls: false,
-                    xAxis: {
-                        axisLabel: '',
-                        showMaxMin: false,
-                        rotateLabels: 30,
-                        axisLabelDistance: 30,
-                        tickFormat: function (d) {
-                            return d;
-                        }
-                    },
-                    yAxis: {
-                        axisLabel: 'Share (%)',
-                        axisLabelDistance: -20,
-                        tickFormat: function (d) {
-                            return $filter('number')(d, 0) + "%";
-                        }
-                    }
-                }
-            },
-
-            data: [
-                {
-                    key: "Results",
-                    values: _.map($scope.stats.avgIndexerSearchResultsShares, function (stats) {
-                        return {series: 0, y: stats.totalShare, x: stats.indexerName}
-                    })
-                },
-                {
-                    key: "Unique results",
-                    values: _.map($scope.stats.avgIndexerSearchResultsShares, function (stats) {
-                        return {series: 1, y: stats.uniqueShare, x: stats.indexerName}
-                    })
-                }
-            ]
         };
     }
 }

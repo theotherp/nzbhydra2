@@ -14,9 +14,7 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
-import org.nzbhydra.searching.db.IdentifierKeyValuePair;
-import org.nzbhydra.searching.db.SearchEntity;
-import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.searching.db.*;
 import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
@@ -47,6 +45,8 @@ public class Searcher {
     @Autowired
     private SearchRepository searchRepository;
     @Autowired
+    private SearchResultRepository searchResultRepository;
+    @Autowired
     protected IndexerForSearchSelector indexerPicker;
     @Autowired
     private ApplicationEventPublisher eventPublisher;
@@ -62,9 +62,7 @@ public class Searcher {
             if (executors.size() > 0) {
                 logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
             }
-            Iterator<ExecutorService> iterator = executors.iterator();
-            while (iterator.hasNext()) {
-                ExecutorService executorService = iterator.next();
+            for (ExecutorService executorService : executors) {
                 executorService.shutdown();
                 try {
                     executorService.awaitTermination(10, TimeUnit.SECONDS);
@@ -144,7 +142,7 @@ public class Searcher {
             searchCacheEntry.setSearchResultItems(searchResultItems);
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
-        searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerSearchResultsByIndexer().entrySet().stream().map(x -> Iterables.getLast(x.getValue())).collect(Collectors.toList()));
+        searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerSearchResultsByIndexer().values().stream().map(Iterables::getLast).collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
         searchResultItems.sort(Comparator.comparingLong(x -> x.getBestDate().getEpochSecond()));
         Collections.reverse(searchResultItems);
@@ -220,9 +218,14 @@ public class Searcher {
                 entity.setResultsCount(indexerSearchResult.getTotalResults());
                 entity.setSuccessful(indexerSearchResult.isWasSuccessful());
             }
+            for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
+                x.setIndexerSearchEntity(entity);
+            }
+
             entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
             entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer()));
             entity = indexerSearchRepository.save(entity);
+            searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
             searchCacheEntry.getIndexerSearchEntitiesByIndexer().put(indexerSearchResult.getIndexer().getIndexerEntity(), entity);
             countEntities++;
         }
