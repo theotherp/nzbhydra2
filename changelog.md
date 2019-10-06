@@ -1,3 +1,9 @@
+### v2.7.2
+
+**Fix** I had to revert the changes from 2.7.0 because for some reason some databases could not be migrated. I'll need to take a closer look first, sorry.
+
+
+
 ### v2.7.1
 
 **Fix** Hopefully fix a problem which might prevent a successful database migration for some instances.
