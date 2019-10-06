@@ -107,7 +107,8 @@ var IssueType;
     IssueType["BUG"] = "bug";
 })(IssueType || (IssueType = {}));
 function removeIssueTitlePrefix(context, repo, issueNumber, title) {
-    var newTitle = title.substr(4).trim();
+    var index = title.startsWith("[") ? 6 : 4;
+    var newTitle = title.substr(index).trim();
     appG.log('Renaming issue "' + title + '" to  "' + newTitle + '"');
     context.github.issues.update({owner: 'theotherp', repo: repo, number: issueNumber, title: newTitle});
 }
@@ -156,12 +157,12 @@ module.exports = function (app) {
                     case 0:
                         issueTitle = context.payload.issue.title;
                         appG.log('Found issue opened with title "' + issueTitle + '"');
-                        if (!issueTitle.toLowerCase().startsWith("bug")) return [3 /*break*/, 1];
+                        if (!(issueTitle.toLowerCase().startsWith("bug") || issueTitle.toLowerCase().startsWith("[bug]"))) return [3 /*break*/, 1];
                         appG.log('Recognized bug with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.BUG);
                         return [3 /*break*/, 5];
                     case 1:
-                        if (!issueTitle.toLowerCase().startsWith("req")) return [3 /*break*/, 3];
+                        if (!(issueTitle.toLowerCase().startsWith("req") || issueTitle.toLowerCase().startsWith("[req]"))) return [3 /*break*/, 3];
                         appG.log('Recognized enhancement with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.ENHANCEMENT);
                         return [4 /*yield*/, checkForDebugInfos(context)];

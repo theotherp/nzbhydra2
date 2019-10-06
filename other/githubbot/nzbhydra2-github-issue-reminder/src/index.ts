@@ -8,7 +8,8 @@ enum IssueType {
 }
 
 function removeIssueTitlePrefix(context: any, repo: string, issueNumber: number, title: string) {
-    let newTitle: string = title.substr(4).trim();
+    let index = title.startsWith("[") ? 6 : 4;
+    let newTitle: string = title.substr(index).trim();
 
     appG.log('Renaming issue "' + title + '" to  "' + newTitle + '"');
     context.github.issues.update({owner: 'theotherp', repo: repo, number: issueNumber, title: newTitle})
@@ -47,11 +48,11 @@ export = (app: Application) => {
         const issueTitle = context.payload.issue.title;
         appG.log('Found issue opened with title "' + issueTitle + '"');
 
-        if (issueTitle.toLowerCase().startsWith("bug")) {
+        if (issueTitle.toLowerCase().startsWith("bug") || issueTitle.toLowerCase().startsWith("[bug]")) {
             appG.log('Recognized bug with title "' + issueTitle + '"');
             convertTitleToLabel(context, IssueType.BUG);
 
-        } else if (issueTitle.toLowerCase().startsWith("req")) {
+        } else if (issueTitle.toLowerCase().startsWith("req") || issueTitle.toLowerCase().startsWith("[req]")) {
             appG.log('Recognized enhancement with title "' + issueTitle + '"');
             convertTitleToLabel(context, IssueType.ENHANCEMENT);
 
