@@ -2,14 +2,11 @@ package org.nzbhydra.historystats;
 
 import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.historystats.stats.*;
 import org.nzbhydra.indexers.*;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
-import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +38,8 @@ public class Stats {
     private IndexerApiAccessEntityShortRepository shortRepository;
     @Autowired
     private SearchResultRepository searchResultRepository;
-    @Autowired
-    private IndexerUniquenessScoreEntityRepository uniquenessScoreEntityRepository;
+//    @Autowired
+//    private IndexerUniquenessScoreEntityRepository uniquenessScoreEntityRepository;
 
     @Transactional(readOnly = true)
     public StatsResponse getAllStats(StatsRequest statsRequest) throws InterruptedException {
@@ -244,21 +241,21 @@ public class Stats {
         logger.debug("Calculating indexer result uniqueness scores");
         List<IndexerUniquenessScore> scores = new ArrayList<>();
 
-        List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
-        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
-
-        Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = uniquenessScoreEntityRepository.findAll().stream()
-                .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
-                .filter(IndexerUniquenessScoreEntity::isHasResult)
-                .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
-        for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
-            OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
-            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble()));
-        }
-
-        scores.sort(Comparator.comparing(IndexerUniquenessScore::getUniquenessScore).reversed());
-
-        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+//        List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
+//        final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
+//
+//        Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = uniquenessScoreEntityRepository.findAll().stream()
+//                .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
+//                .filter(IndexerUniquenessScoreEntity::isHasResult)
+//                .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
+//        for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
+//            OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
+//            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble()));
+//        }
+//
+//        scores.sort(Comparator.comparing(IndexerUniquenessScore::getUniquenessScore).reversed());
+//
+//        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return scores;
     }
 

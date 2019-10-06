@@ -54,7 +54,10 @@ public class FlywayMigration {
                         logger.info("Fixing checksum for changed migration step 1.21");
                         flyway.repair();
                         try {
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("update PUBLIC.\"schema_version\" set \"checksum\" = '922727728' where \"checksum\" = '-1662006701'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"checksum\" = '922727728'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"checksum\" = '-1662006701'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"script\" = '21__LINK_SEARCHENTITY_TO_INDEXERSEARCHENTITY.sql'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"script\" = 'V1.22__INDEXERUNIQUENESSSCORE.sql'");
                         } catch (SQLException e1) {
                             logger.error("Error while deleting old migration steps", e);
                         }

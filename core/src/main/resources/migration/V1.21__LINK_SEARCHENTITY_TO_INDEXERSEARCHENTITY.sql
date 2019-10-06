@@ -1,2 +1,0 @@
-ALTER TABLE SEARCHRESULT
-  ADD indexerSearchEntity INTEGER;

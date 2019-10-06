@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.7.2",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "I had to revert the changes from 2.7.0 because for some reason some databases could not be migrated. I'll need to take a closer look first, sorry."
+      }
+    ]
+  },
+  {
     "version": "v2.7.1",
     "changes": [
       {
