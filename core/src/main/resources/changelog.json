@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.7.1",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Hopefully fix a problem which might prevent a successful database migration for some instances."
+      }
+    ]
+  },
+  {
     "version": "v2.7.0",
     "changes": [
       {

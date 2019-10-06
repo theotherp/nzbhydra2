@@ -49,6 +49,16 @@ public class FlywayMigration {
                             logger.error("Error while deleting old migration steps", e);
                         }
                         flyway.migrate();
+                    }
+                    if (e.getMessage().contains("1.21")) {
+                        logger.info("Fixing checksum for changed migration step 1.21");
+                        flyway.repair();
+                        try {
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("update PUBLIC.\"schema_version\" set \"checksum\" = '922727728' where \"checksum\" = '-1662006701'");
+                        } catch (SQLException e1) {
+                            logger.error("Error while deleting old migration steps", e);
+                        }
+                        flyway.migrate();
                     } else {
                         logger.error("Unable to migrate", e);
                         throw e;
