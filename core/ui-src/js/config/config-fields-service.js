@@ -258,7 +258,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                help: 'Redirect external links to hide your instance. Insert $s for target URL.'
+                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Empty to disable.'
                             }
                         },
                         {
