@@ -21,6 +21,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
 
     @JsonFormat(shape = Shape.STRING)
     private SearchSourceRestriction applyRestrictions = SearchSourceRestriction.BOTH;
+    private int coverSize = 128;
     private Integer globalCacheTimeMinutes;
     private float duplicateAgeThreshold = 2.0F;
     private float duplicateSizeThresholdInPercent = 1.0F;

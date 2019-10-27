@@ -26,7 +26,7 @@
         </a>
         <span class="title">
                 <span ng-if="(result.titleGroupIndex === 0 && result.duplicateGroupIndex === 0) || searchResultsControllerShared.isGroupEpisodes">
-                    <img ng-if="result.cover && foo.showCovers" src="{{::result.cover}}" width="128px" style="margin-right: 5px"/>
+                    <img ng-if="result.cover && foo.showCovers" src="{{::result.cover}}" width="{{::coverSize}}px" style="margin-right: 5px"/>
                     {{ ::result.title }}
                 </span>
             </span>

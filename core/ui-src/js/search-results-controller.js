@@ -121,7 +121,6 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         buttonText: "Display options"
     };
 
-
     $scope.optionsEvents = {
         onToggleItem: function (item, newValue) {
             if (item.id === "duplicatesDisplayed") {

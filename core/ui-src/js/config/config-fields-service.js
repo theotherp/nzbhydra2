@@ -1074,6 +1074,19 @@ function ConfigFields($injector) {
                                         label: 'Show quick filter',
                                         help: 'Show quick filter buttons for movie and TV results'
                                     }
+                                },
+                                {
+                                    key: 'coverSize',
+                                    type: 'horizontalInput',
+                                    templateOptions: {
+                                        type: 'number',
+                                        label: 'Cover width',
+                                        addonRight: {
+                                            text: 'px'
+                                        },
+                                        required: true,
+                                        help: 'Determines width of covers in search results (when enabled in display options)'
+                                    }
                                 }
                             ]
                         }

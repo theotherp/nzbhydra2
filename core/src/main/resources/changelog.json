@@ -3,6 +3,10 @@
     "version": "v2.7.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Added option to configure cover width in search results."
+      },
+      {
         "type": "fix",
         "text": "TMDB capabilities were not correctly checked."
       },

@@ -15,12 +15,13 @@ function searchResult() {
     };
 
 
-    function handleDisplay($scope, localStorageService) {
+    function handleDisplay($scope, localStorageService, ConfigService) {
         //Display state / expansion
         $scope.foo.duplicatesDisplayed = localStorageService.get("duplicatesDisplayed") !== null ? localStorageService.get("duplicatesDisplayed") : false;
         $scope.foo.showCovers = localStorageService.get("showCovers") !== null ? localStorageService.get("showCovers") : true;
         $scope.duplicatesExpanded = false;
         $scope.titlesExpanded = false;
+        $scope.coverSize = ConfigService.getSafe().searching.coverSize;
 
         function calculateDisplayState() {
             $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
@@ -198,9 +199,9 @@ function searchResult() {
     }
 
 
-    function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService) {
+    function controller($scope, $element, $http, growl, $attrs, $uibModal, $window, DebugService, localStorageService, HydraAuthService, ConfigService) {
         $scope.foo = {};
-        handleDisplay($scope, localStorageService);
+        handleDisplay($scope, localStorageService, ConfigService);
         handleSelection($scope, $element);
         handleNfoDisplay($scope, $http, growl, $uibModal, HydraAuthService);
         handleNzbDownload($scope, $window);
