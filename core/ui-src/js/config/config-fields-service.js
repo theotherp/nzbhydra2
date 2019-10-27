@@ -19,7 +19,6 @@ angular
     .factory('ConfigFields', ConfigFields);
 
 function ConfigFields($injector) {
-
     return {
         getFields: getFields
     };
@@ -258,7 +257,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Dereferer',
-                                help: 'Redirect external links to hide your instance. Insert $s for target URL.'
+                                help: 'Redirect external links to hide your instance. Insert $s for target URL. Use empty value to disable.'
                             }
                         },
                         {

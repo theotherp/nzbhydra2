@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "TMDB capabilities were not correctly checked."
+      },
+      {
+        "type": "note",
+        "text": "I've added instructions to send one-time donations via PayPal and recurring donations via Github Sponsors."
       }
     ]
   },
