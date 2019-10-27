@@ -1,3 +1,13 @@
+### v2.7.3
+
+**Feature** Added option to configure cover width in search results.
+
+**Fix** TMDB capabilities were not correctly checked.
+
+**Note** I've added instructions to send one-time donations via PayPal and recurring donations via Github Sponsors.
+
+
+
 ### v2.7.2
 
 **Fix** I had to revert the changes from 2.7.0 because for some reason some databases could not be migrated. I'll need to take a closer look first, sorry.
