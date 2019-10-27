@@ -153,7 +153,7 @@ public class NewznabChecker {
                 new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVMAZE, "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
                 new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TRAKT, "traktid", "1390", Arrays.asList("Thrones", "GOT")),
                 new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVIMDB, "imdbid", "0944947", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "movie", IdType.TMDB, "tmdbid", "1399", Arrays.asList("Avengers", "Vengadores")),
+                new CheckCapsRequest(indexerConfig, "movie", IdType.TMDB, "tmdbid", "24428", Arrays.asList("Avengers", "Vengadores")),
                 new CheckCapsRequest(indexerConfig, "movie", IdType.IMDB, "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
         );
 
