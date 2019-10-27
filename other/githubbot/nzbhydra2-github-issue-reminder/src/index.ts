@@ -1,6 +1,7 @@
 import {Application} from 'probot' // eslint-disable-line no-unused-vars
 
 let appG: Application;
+let titleRegex = /(\[?Bug|Req\]?):? ?(.*)/gmi;
 
 enum IssueType {
     ENHANCEMENT = 'enhancement',
@@ -8,8 +9,7 @@ enum IssueType {
 }
 
 function removeIssueTitlePrefix(context: any, repo: string, issueNumber: number, title: string) {
-    let index = title.startsWith("[") ? 6 : 4;
-    let newTitle: string = title.substr(index).trim();
+    let newTitle: string = title.replace(titleRegex, "$2");
 
     appG.log('Renaming issue "' + title + '" to  "' + newTitle + '"');
     context.github.issues.update({owner: 'theotherp', repo: repo, number: issueNumber, title: newTitle})
@@ -41,6 +41,7 @@ async function checkForDebugInfos(context: any) {
     }
 }
 
+
 export = (app: Application) => {
     appG = app;
     app.on('issues.opened', async (context) => {
@@ -48,16 +49,21 @@ export = (app: Application) => {
         const issueTitle = context.payload.issue.title;
         appG.log('Found issue opened with title "' + issueTitle + '"');
 
-        if (issueTitle.toLowerCase().startsWith("bug") || issueTitle.toLowerCase().startsWith("[bug]")) {
-            appG.log('Recognized bug with title "' + issueTitle + '"');
-            convertTitleToLabel(context, IssueType.BUG);
+        let regexGroup = titleRegex.exec(issueTitle);
 
-        } else if (issueTitle.toLowerCase().startsWith("req") || issueTitle.toLowerCase().startsWith("[req]")) {
-            appG.log('Recognized enhancement with title "' + issueTitle + '"');
-            convertTitleToLabel(context, IssueType.ENHANCEMENT);
+        if (regexGroup != null && regexGroup.length == 3) {
 
-            await checkForDebugInfos(context);
+            if (regexGroup[1].toUpperCase() === "BUG") {
+                appG.log('Recognized bug with title "' + issueTitle + '"');
+                convertTitleToLabel(context, IssueType.BUG);
+            } else {
+                appG.log('Recognized enhancement with title "' + issueTitle + '"');
+                convertTitleToLabel(context, IssueType.ENHANCEMENT);
+
+                await checkForDebugInfos(context);
+            }
         } else {
+
             const issueComment = context.issue({body: 'Thanks for opening this issue. Unfortunately it looks like you forgot to prefix the issue title either with BUG (for a bug) or REQ (for a feature request). Please change the title of the issue accordingly.'});
             await context.github.issues.createComment(issueComment)
         }
@@ -79,16 +85,19 @@ export = (app: Application) => {
 
             let oldTitle: string = context.payload.changes.title.from;
             appG.log('Found renamed issue from "' + oldTitle + '" to "' + issueTitle + '"');
-            let addedBugToTitle = issueTitle.toLowerCase().startsWith('bug');
-            let addedReqToTitle = issueTitle.toLowerCase().startsWith('req');
-            if (addedBugToTitle) {
-                convertTitleToLabel(context, IssueType.BUG);
 
+            let regexGroup = titleRegex.exec(issueTitle);
+            if (regexGroup == null || regexGroup.length != 3) {
+                appG.log("New title doesn't match expected regex");
+                return;
+            }
+            appG.log("Matched group: " + regexGroup[1]);
+            if (regexGroup[1].toUpperCase() === "BUG") {
+                convertTitleToLabel(context, IssueType.BUG);
                 await checkForDebugInfos(context);
-            } else if (addedReqToTitle) {
+            } else if (regexGroup[1].toUpperCase() === "REQ") {
                 convertTitleToLabel(context, IssueType.ENHANCEMENT);
             }
-
         }
     });
 }

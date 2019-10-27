@@ -101,14 +101,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var appG;
+var titleRegex = /(\[?Bug|Req\]?):? ?(.*)/gmi;
 var IssueType;
 (function (IssueType) {
     IssueType["ENHANCEMENT"] = "enhancement";
     IssueType["BUG"] = "bug";
 })(IssueType || (IssueType = {}));
 function removeIssueTitlePrefix(context, repo, issueNumber, title) {
-    var index = title.startsWith("[") ? 6 : 4;
-    var newTitle = title.substr(index).trim();
+    var newTitle = title.replace(titleRegex, "$2");
     appG.log('Renaming issue "' + title + '" to  "' + newTitle + '"');
     context.github.issues.update({owner: 'theotherp', repo: repo, number: issueNumber, title: newTitle});
 }
@@ -151,31 +151,34 @@ module.exports = function (app) {
     appG = app;
     app.on('issues.opened', function (context) {
         return __awaiter(void 0, void 0, void 0, function () {
-            var issueTitle, issueComment;
+            var issueTitle, regexGroup, issueComment;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         issueTitle = context.payload.issue.title;
                         appG.log('Found issue opened with title "' + issueTitle + '"');
-                        if (!(issueTitle.toLowerCase().startsWith("bug") || issueTitle.toLowerCase().startsWith("[bug]"))) return [3 /*break*/, 1];
+                        regexGroup = titleRegex.exec(issueTitle);
+                        if (!(regexGroup != null && regexGroup.length == 3)) return [3 /*break*/, 4];
+                        if (!(regexGroup[1].toUpperCase() === "BUG")) return [3 /*break*/, 1];
                         appG.log('Recognized bug with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.BUG);
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 3];
                     case 1:
-                        if (!(issueTitle.toLowerCase().startsWith("req") || issueTitle.toLowerCase().startsWith("[req]"))) return [3 /*break*/, 3];
                         appG.log('Recognized enhancement with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.ENHANCEMENT);
                         return [4 /*yield*/, checkForDebugInfos(context)];
                     case 2:
                         _a.sent();
-                        return [3 /*break*/, 5];
+                        _a.label = 3;
                     case 3:
+                        return [3 /*break*/, 6];
+                    case 4:
                         issueComment = context.issue({body: 'Thanks for opening this issue. Unfortunately it looks like you forgot to prefix the issue title either with BUG (for a bug) or REQ (for a feature request). Please change the title of the issue accordingly.'});
                         return [4 /*yield*/, context.github.issues.createComment(issueComment)];
-                    case 4:
-                        _a.sent();
-                        _a.label = 5;
                     case 5:
+                        _a.sent();
+                        _a.label = 6;
+                    case 6:
                         return [2 /*return*/];
                 }
             });
@@ -183,7 +186,7 @@ module.exports = function (app) {
     });
     app.on('issues.edited', function (context) {
         return __awaiter(void 0, void 0, void 0, function () {
-            var issue, issueTitle, oldTitle, addedBugToTitle, addedReqToTitle;
+            var issue, issueTitle, oldTitle, regexGroup;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -197,16 +200,20 @@ module.exports = function (app) {
                         if (!('title' in context.payload.changes)) return [3 /*break*/, 3];
                         oldTitle = context.payload.changes.title.from;
                         appG.log('Found renamed issue from "' + oldTitle + '" to "' + issueTitle + '"');
-                        addedBugToTitle = issueTitle.toLowerCase().startsWith('bug');
-                        addedReqToTitle = issueTitle.toLowerCase().startsWith('req');
-                        if (!addedBugToTitle) return [3 /*break*/, 2];
+                        regexGroup = titleRegex.exec(issueTitle);
+                        if (regexGroup == null || regexGroup.length != 3) {
+                            appG.log("New title doesn't match expected regex");
+                            return [2 /*return*/];
+                        }
+                        appG.log("Matched group: " + regexGroup[1]);
+                        if (!(regexGroup[1].toUpperCase() === "BUG")) return [3 /*break*/, 2];
                         convertTitleToLabel(context, IssueType.BUG);
                         return [4 /*yield*/, checkForDebugInfos(context)];
                     case 1:
                         _a.sent();
                         return [3 /*break*/, 3];
                     case 2:
-                        if (addedReqToTitle) {
+                        if (regexGroup[1].toUpperCase() === "REQ") {
                             convertTitleToLabel(context, IssueType.ENHANCEMENT);
                         }
                         _a.label = 3;
