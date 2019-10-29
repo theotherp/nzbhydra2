@@ -1,3 +1,9 @@
+### v2.7.4
+
+**Fix** Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hin
+
+
+
 ### v2.7.3
 
 **Feature** Added option to configure cover width in search results.
