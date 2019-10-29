@@ -27,7 +27,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,15 +54,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private HydraUserDetailsManager hydraUserDetailsManager;
     @Autowired
     private AuthAndAccessEventHandler authAndAccessEventHandler;
-    @Autowired
-    private DataSource dataSource;
-
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
-            http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+            CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+            csrfTokenRepository.setCookiePath("/hydra");
+            http.csrf().csrfTokenRepository(csrfTokenRepository);
         } else {
             http.csrf().disable();
         }

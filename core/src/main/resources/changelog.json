@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2.7.4",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hin"
+      }
+    ]
+  },
+  {
     "version": "v2.7.3",
     "changes": [
       {
