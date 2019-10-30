@@ -1,6 +1,12 @@
+### v2.7.5
+
+**Fix** Fix 'You're not allowed...' error caused by the fix in 2.7.4... :-/
+
+
+
 ### v2.7.4
 
-**Fix** Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hin
+**Fix** Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hint.
 
 
 
