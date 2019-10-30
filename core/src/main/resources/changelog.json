@@ -1,10 +1,19 @@
 [
   {
+    "version": "v2.7.5",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Fix 'You're not allowed...' error caused by the fix in 2.7.4... :-/"
+      }
+    ]
+  },
+  {
     "version": "v2.7.4",
     "changes": [
       {
         "type": "fix",
-        "text": "Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hin"
+        "text": "Fix 'You're not allowed...' error related to security cookie. Thanks to /u/routhinator for the hint."
       }
     ]
   },

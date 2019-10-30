@@ -60,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         BaseConfig baseConfig = configProvider.getBaseConfig();
         if (configProvider.getBaseConfig().getMain().isUseCsrf()) {
             CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-            csrfTokenRepository.setCookiePath("/hydra");
+            csrfTokenRepository.setCookieName("HYDRA-XSRF-TOKEN");
             http.csrf().csrfTokenRepository(csrfTokenRepository);
         } else {
             http.csrf().disable();

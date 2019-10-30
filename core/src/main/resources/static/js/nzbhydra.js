@@ -754,6 +754,7 @@ nzbhydraapp.factory('sessionInjector', ["$injector", function ($injector) {
 
 nzbhydraapp.config(['$httpProvider', function ($httpProvider) {
     $httpProvider.interceptors.push('sessionInjector');
+    $httpProvider.defaults.xsrfCookieName = 'HYDRA-XSRF-TOKEN';
 }]);
 
 nzbhydraapp.directive('autoFocus', ["$timeout", function ($timeout) {
@@ -769,7 +770,6 @@ nzbhydraapp.directive('autoFocus', ["$timeout", function ($timeout) {
         }
     };
 }]);
-
 
 nzbhydraapp.factory('responseObserver', ["$q", "$window", "growl", function responseObserver($q, $window, growl) {
     return {
