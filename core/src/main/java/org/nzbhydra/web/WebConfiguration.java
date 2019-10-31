@@ -11,6 +11,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -20,12 +21,14 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.accept.ContentNegotiationManager;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamResult;
@@ -33,11 +36,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 @Configuration
 public class WebConfiguration extends WebMvcConfigurationSupport {
 
@@ -75,8 +80,9 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
     }
 
     @Bean
-    public RequestMappingHandlerMapping requestMappingHandlerMapping() {
-        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping();
+    public RequestMappingHandlerMapping requestMappingHandlerMapping(ContentNegotiationManager mvcContentNegotiationManager,
+                                                                     FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
+        RequestMappingHandlerMapping handler = super.requestMappingHandlerMapping(mvcContentNegotiationManager, mvcConversionService, mvcResourceUrlProvider);
         handler.setOrder(1);
         return handler;
     }
@@ -156,7 +162,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         }
 
         @Override
-        public Object read(Class<?> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+        public Object read(Class<?> clazz, HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
             logger.error("Didn't expect to have to read anything. Implementation error");
             return null;
         }
@@ -166,7 +172,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
             NewznabResponse newznabResponse = (NewznabResponse) o;
             if ("json".equalsIgnoreCase(((NewznabResponse) o).getSearchType())) {
                 jacksonConverter.setPrettyPrint(true);
-                jacksonConverter.write(o, MediaType.APPLICATION_JSON_UTF8, outputMessage);
+                jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);
             } else {
                 outputMessage.getHeaders().setContentType(MediaType.APPLICATION_XML);
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -177,7 +183,7 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 } else {
                     result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
                 }
-                outputMessage.getBody().write(result.getBytes("UTF-8"));
+                outputMessage.getBody().write(result.getBytes(StandardCharsets.UTF_8));
             }
         }
 

@@ -19,8 +19,8 @@ import javax.persistence.Query;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
+@SuppressWarnings("unchecked")
 @Component
 public class History {
 
@@ -85,7 +85,7 @@ public class History {
 
         String whereConditions = "";
         if (!wheres.isEmpty()) {
-            whereConditions = " WHERE " + wheres.stream().collect(Collectors.joining(" AND "));
+            whereConditions = " WHERE " + String.join(" AND ", wheres);
         }
 
         String paging = String.format(" LIMIT %d OFFSET %d", requestData.getLimit(), (requestData.getPage() - 1) * requestData.getLimit());
@@ -115,7 +115,7 @@ public class History {
 
     public List<SearchEntity> getHistoryForSearching() {
         String currentUserName = SessionStorage.username.get();
-        Page<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(new PageRequest(0, 100)) : searchRepository.findForUserSearchHistory(currentUserName, new PageRequest(0, 100));
+        Page<SearchEntity> history = currentUserName == null ? searchRepository.findForUserSearchHistory(PageRequest.of(0, 100)) : searchRepository.findForUserSearchHistory(currentUserName, PageRequest.of(0, 100));
         List<SearchEntity> entities = new ArrayList<>();
         Set<Integer> contained = new HashSet<>();
         for (SearchEntity searchEntity : history.getContent()) {
@@ -143,7 +143,6 @@ public class History {
         }
         return new SearchDetails(search.getUsername(), search.getIp(), search.getUserAgent(), search.getSource().name(), details);
     }
-
 
     @Data
     @AllArgsConstructor

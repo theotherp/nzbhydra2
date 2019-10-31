@@ -6,8 +6,6 @@ import com.google.common.collect.Sets;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.flywaydb.core.Flyway;
-import org.h2.jdbcx.JdbcDataSource;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
@@ -100,7 +98,6 @@ public class NzbHydra {
         parser.accepts("nobrowser", "Don't open browser to Hydra");
         parser.accepts("port", "Run on this port (default: 5076)").withOptionalArg();
         parser.accepts("baseurl", "Set base URL (e.g. /nzbhydra)").withOptionalArg();
-        parser.accepts("repairdb", "Repair database. Add database file path as argument").withRequiredArg();
         parser.accepts("help", "Print help");
         parser.accepts("version", "Print version");
 
@@ -118,9 +115,6 @@ public class NzbHydra {
         } else if (options.has("version")) {
             String version = new UpdateManager().getCurrentVersionChanges().get(0).getVersion();
             logger.info("NZBHydra 2 version: " + version);
-        } else if (options.has("repairdb")) {
-            String databaseFilePath = (String) options.valueOf("repairdb");
-            repairDb(databaseFilePath);
         } else {
             startup(args, options);
         }
@@ -163,7 +157,7 @@ public class NzbHydra {
 
             SpringApplication hydraApplication = new SpringApplication(NzbHydra.class);
             NzbHydra.originalArgs = args;
-            wasRestarted = Arrays.stream(args).anyMatch(x -> x.equals("restarted"));
+            wasRestarted = Arrays.asList(args).contains("restarted");
             if (!options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false);
             }
@@ -200,7 +194,6 @@ public class NzbHydra {
             HashSet<Resource> resources = Sets.newHashSet(resolver.getResources("classpath:/migration/*"));
             if (resources.stream().allMatch(x -> executedScripts.contains(x.getFilename()))) {
                 logger.debug("No migration scripts found to run. Skipping database recreation");
-                System.out.println("No migration script");
                 return;
             }
         } catch (IOException e) {
@@ -306,25 +299,6 @@ public class NzbHydra {
         throw e;
     }
 
-    protected static void repairDb(String databaseFilePath) throws ClassNotFoundException {
-        if (!databaseFilePath.contains("mv.db")) {
-            databaseFilePath = databaseFilePath + ".mv.db";
-        }
-        File file = new File(databaseFilePath);
-        if (!file.exists()) {
-            logger.error("File {} doesn't exist", file.getAbsolutePath());
-        }
-        databaseFilePath = file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - 6);
-        Flyway flyway = new Flyway();
-        flyway.setLocations("classpath:migration");
-        Class.forName("org.h2.Driver");
-        JdbcDataSource dataSource = new JdbcDataSource();
-        dataSource.setURL("jdbc:h2:file:" + databaseFilePath);
-        dataSource.setUser("sa");
-
-        flyway.setDataSource(dataSource);
-        flyway.repair();
-    }
 
     @PostConstruct
     private void addTrayIconIfApplicable() {
