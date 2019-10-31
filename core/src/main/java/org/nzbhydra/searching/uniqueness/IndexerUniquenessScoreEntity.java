@@ -24,9 +24,9 @@ import org.nzbhydra.indexers.IndexerEntity;
 import javax.persistence.*;
 
 
-//@Entity
+@Entity
 @Data
-//@Table(name = "indexeruniquenessscore")
+@Table(name = "indexeruniquenessscore")
 public class IndexerUniquenessScoreEntity {
 
     @Id

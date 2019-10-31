@@ -17,9 +17,9 @@
 package org.nzbhydra.searching.uniqueness;
 
 
-public interface IndexerUniquenessScoreEntityRepository
-//        extends JpaRepository<IndexerUniquenessScoreEntity, Long>
-{
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IndexerUniquenessScoreEntityRepository extends JpaRepository<IndexerUniquenessScoreEntity, Long> {
 
 
 }

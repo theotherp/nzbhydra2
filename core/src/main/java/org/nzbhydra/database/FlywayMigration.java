@@ -49,22 +49,16 @@ public class FlywayMigration {
                             logger.error("Error while deleting old migration steps", e);
                         }
                         flyway.migrate();
-                    }
-                    if (e.getMessage().contains("1.21")) {
-                        logger.info("Fixing checksum for changed migration step 1.21");
+                    } else if (e.getMessage().contains("1.21")) {
+                        logger.info("Found failed database migration. Attempting repair");
                         flyway.repair();
                         try {
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"checksum\" = '922727728'");
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"checksum\" = '-1662006701'");
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"script\" = '21__LINK_SEARCHENTITY_TO_INDEXERSEARCHENTITY.sql'");
-                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"script\" = 'V1.22__INDEXERUNIQUENESSSCORE.sql'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().execute("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().executeUpdate("delete from PUBLIC.\"schema_version\" where \"version\" = '1.15' or \"version\" = '1.16'");
                         } catch (SQLException e1) {
                             logger.error("Error while deleting old migration steps", e);
                         }
                         flyway.migrate();
-                    } else {
-                        logger.error("Unable to migrate", e);
-                        throw e;
                     }
                 }
             }

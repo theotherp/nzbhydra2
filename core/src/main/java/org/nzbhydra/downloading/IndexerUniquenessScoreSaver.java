@@ -22,9 +22,11 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntity;
+import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -42,10 +44,10 @@ public class IndexerUniquenessScoreSaver {
     private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
-//    @Autowired
-//    private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
+    @Autowired
+    private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
 
-    //    @EventListener
+    @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         try {
             SearchResultEntity searchResultEntity = downloadEvent.getDownloadEntity().getSearchResult();
@@ -75,7 +77,7 @@ public class IndexerUniquenessScoreSaver {
 
         scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, allIndexerSearchesInvolved.size(), indexersContainingSameResult.size(), true)).collect(Collectors.toList()));
         scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), allIndexerSearchesInvolved.size(), indexersContainingSameResult.size(), false)).collect(Collectors.toList()));
-//        indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
+        indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
     }
 
     private Set<IndexerSearchEntity> getIndexersInvolved(SearchResultEntity searchResultEntity) {
