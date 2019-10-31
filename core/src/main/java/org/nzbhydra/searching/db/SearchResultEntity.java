@@ -79,9 +79,9 @@ public class SearchResultEntity {
     @Convert(converter = org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters.InstantConverter.class)
     protected Instant pubDate;
 
-//    @OneToOne
-//    @JoinColumn(name="indexersearchentity")
-//    private IndexerSearchEntity indexerSearchEntity;
+    @OneToOne
+    @JoinColumn(name = "indexersearchentity")
+    private IndexerSearchEntity indexerSearchEntity;
 
     public SearchResultEntity() {
     }
@@ -134,12 +134,11 @@ public class SearchResultEntity {
     }
 
     public IndexerSearchEntity getIndexerSearchEntity() {
-        return null;
-//        return indexerSearchEntity;
+        return indexerSearchEntity;
     }
 
     public void setIndexerSearchEntity(IndexerSearchEntity indexerSearchEntity) {
-//        this.indexerSearchEntity = indexerSearchEntity;
+        this.indexerSearchEntity = indexerSearchEntity;
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,6 +74,8 @@ public class UpdateManager implements InitializingBean {
     private ConfigProvider configProvider;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    private DataSource dataSource;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -228,7 +231,7 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
-            applicationEventPublisher.publishEvent(new UpdateEvent("Downloading update file"));
+            applicationEventPublisher.publishEvent(new UpdateEvent("Downloading update file."));
             webAccess.downloadToFile(url, updateZip);
         } catch (RestClientException | IOException e) {
             logger.error("Error while download or saving ZIP", e);
@@ -238,15 +241,19 @@ public class UpdateManager implements InitializingBean {
         if (configProvider.getBaseConfig().getMain().isBackupBeforeUpdate()) {
             try {
                 logger.info("Creating backup before shutting down");
-                applicationEventPublisher.publishEvent(new UpdateEvent("Creating backup before update"));
+                applicationEventPublisher.publishEvent(new UpdateEvent("Creating backup before update."));
                 backupAndRestore.backup();
             } catch (Exception e) {
                 throw new UpdateException("Unable to create backup before update", e);
             }
         }
 
+        if (latestRelease.getTagName().equals("v2.7.6")) {
+            applicationEventPublisher.publishEvent(new UpdateEvent(" NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
+        }
+
         logger.info("Shutting down to let wrapper execute the update");
-        applicationEventPublisher.publishEvent(new UpdateEvent("Shutting down to let wrapper execute update"));
+        applicationEventPublisher.publishEvent(new UpdateEvent("Shutting down to let wrapper execute update."));
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 

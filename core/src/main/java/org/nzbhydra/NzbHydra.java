@@ -2,6 +2,7 @@ package org.nzbhydra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -34,6 +35,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
@@ -45,10 +48,17 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @Configuration
 @EnableAutoConfiguration(exclude = {
         //WebSocketServletAutoConfiguration.class,
@@ -158,9 +168,76 @@ public class NzbHydra {
             if (!options.has("quiet") && !options.has("nobrowser")) {
                 hydraApplication.setHeadless(false);
             }
+
+            runDatabaseScript();
+
             applicationContext = hydraApplication.run(args);
         } catch (Exception e) {
             handleException(e);
+        }
+    }
+
+    private static void runDatabaseScript() throws ClassNotFoundException, SQLException {
+        if (Thread.currentThread().getName().equals("main")) {
+            //During development this class is called twice (cause of the Spring developer tools)
+            return;
+        }
+        File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
+        File databaseScriptFile = new File(NzbHydra.getDataFolder(), "databaseScript.sql");
+        Class.forName("org.h2.Driver");
+        String url = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
+
+        logger.debug("Determining if database recreation is needed");
+        Set<String> executedScripts = new HashSet<>();
+        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
+            ResultSet resultSet = conn.createStatement().executeQuery("select \"script\" from \"schema_version\";");
+            while (resultSet.next()) {
+                executedScripts.add(resultSet.getString(1));
+            }
+        }
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        try {
+            HashSet<Resource> resources = Sets.newHashSet(resolver.getResources("classpath:/migration/*"));
+            if (resources.stream().allMatch(x -> executedScripts.contains(x.getFilename()))) {
+                logger.debug("No migration scripts found to run. Skipping database recreation");
+                return;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to find migration scripts", e);
+        }
+
+        if (databaseScriptFile.exists()) {
+            databaseScriptFile.delete();
+        }
+
+        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
+            logger.info("Creating database script {} from database", databaseScriptFile.getAbsolutePath());
+            conn.createStatement().execute(String.format("script to '%s'", databaseScriptFile));
+            if (!databaseScriptFile.exists()) {
+                throw new RuntimeException("Database script file was not created at " + databaseScriptFile.getAbsolutePath());
+            }
+        }
+
+        if (!databaseFile.exists()) {
+            throw new RuntimeException("Unable to find database file at " + databaseFile.getAbsolutePath());
+        }
+        boolean deleted = databaseFile.delete();
+        if (!deleted) {
+            throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
+        }
+
+        try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
+            logger.info("Running database script {} for reimport of old database", databaseScriptFile.getAbsolutePath());
+            try {
+                conn.createStatement().execute("runscript from '" + databaseScriptFile.getAbsolutePath() + "'");
+            } catch (SQLException e) {
+                throw new RuntimeException("Unable to import database script", e);
+            }
+            logger.info("Successfully recreated database");
+        }
+        deleted = databaseScriptFile.delete();
+        if (!deleted) {
+            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually and restart NZBHYdra.");
         }
     }
 
