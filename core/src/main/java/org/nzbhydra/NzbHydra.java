@@ -210,6 +210,7 @@ public class NzbHydra {
         if (databaseScriptFile.exists()) {
             databaseScriptFile.delete();
         }
+        logger.info("Recreating database to ensure successful migration. This may take a couple of minutes...");
 
         try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
             logger.info("Creating database script {} from database", databaseScriptFile.getAbsolutePath());
