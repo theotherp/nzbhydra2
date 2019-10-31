@@ -9,7 +9,6 @@ var livereload = require('gulp-livereload');
 var concat = require('gulp-concat');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
-var runSequence = require('run-sequence');
 var cleancss = require('gulp-clean-css');
 var cached = require('gulp-cached');
 var angularTemplateCache = require('gulp-angular-templatecache');
@@ -157,11 +156,11 @@ gulp.task('copyStaticToClasses', function () {
         .pipe(gulp.dest('target/classes/static'));
 });
 
-gulp.task('index', function () {
-    runSequence(
-        ['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets'],
-        ['copyStaticToClasses']
-    );
+gulp.task('index',
+    gulp.series(
+        gulp.series(['scripts', 'less', 'templates', 'vendor-scripts', 'vendor-css', 'copy-assets']),
+        gulp.series(['copyStaticToClasses'])
+    )
 });
 
 function swallowError(error) {
@@ -173,6 +172,6 @@ function swallowError(error) {
 gulp.task('default', function () {
     //livereload.listen();
     log("Will build files into folder '" + staticFolder + "'");
-    gulp.watch(['ui-src/less/nzbhydra.less'], ['delMainLessCache']);
-    gulp.watch(['ui-src/**/*'], ['index']);
+    gulp.watch(['ui-src/less/nzbhydra.less'], gulp.series(['delMainLessCache']));
+    gulp.watch(['ui-src/**/*'], gulp.series(['index']));
 });
