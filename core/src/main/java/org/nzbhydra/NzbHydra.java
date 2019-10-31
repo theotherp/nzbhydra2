@@ -123,7 +123,6 @@ public class NzbHydra {
             repairDb(databaseFilePath);
         } else {
             startup(args, options);
-
         }
     }
 
@@ -178,8 +177,9 @@ public class NzbHydra {
     }
 
     private static void runDatabaseScript() throws ClassNotFoundException, SQLException {
-        if (Thread.currentThread().getName().equals("main")) {
+        if (!Thread.currentThread().getName().equals("main")) {
             //During development this class is called twice (cause of the Spring developer tools)
+            logger.debug("Skipping database script check for thread {}", Thread.currentThread().getName());
             return;
         }
         File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
@@ -200,6 +200,7 @@ public class NzbHydra {
             HashSet<Resource> resources = Sets.newHashSet(resolver.getResources("classpath:/migration/*"));
             if (resources.stream().allMatch(x -> executedScripts.contains(x.getFilename()))) {
                 logger.debug("No migration scripts found to run. Skipping database recreation");
+                System.out.println("No migration script");
                 return;
             }
         } catch (IOException e) {
