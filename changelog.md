@@ -1,3 +1,9 @@
+### v2.7.7
+
+**Fix** Indexer uniqueness score had wrong axis labels in the stats page.
+
+
+
 ### v2.7.6
 
 **Feature** Restore the indexer uniqueness score introduced with 2.7.0 and then rolled back due to database migration problems. The database is now restored on startup which should prevent any migration errors. The startup will take a while for this update.
