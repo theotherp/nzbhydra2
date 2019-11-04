@@ -961,9 +961,6 @@ function searchResult() {
 
         function calculateDisplayState() {
             $scope.resultDisplayed = ($scope.result.titleGroupIndex === 0 || $scope.titlesExpanded) && ($scope.duplicatesExpanded || $scope.result.duplicateGroupIndex === 0);
-            if ($scope.resultDisplayed) {
-
-            }
         }
 
         calculateDisplayState();
@@ -7440,7 +7437,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         }
 
         if ($scope.stats.avgIndexerUniquenessScore) {
-            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Hour of day", 'Searches');
+            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Indexer", 'score');
         }
 
         if ($scope.stats.downloadsPerHourOfDay) {
@@ -7650,6 +7647,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         };
     }
 }
+
 //
 SearchService.$inject = ["$http"];
 angular

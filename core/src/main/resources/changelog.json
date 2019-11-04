@@ -1,14 +1,23 @@
 [
   {
-    "version": "v2.7.6",
+      "version": "v2.7.7",
     "changes": [
       {
-        "type": "feature",
-        "text": "Restore the indexer uniqueness score introduced with 2.7.0 and then rolled back due to database migration problems. The database is now restored on startup which should prevent any migration errors. The startup will take a while for this update."
+          "type": "fix",
+          "text": "Indexer uniqueness score had wrong axis labels in the stats page."
       }
     ]
   },
   {
+      "version": "v2.7.6",
+      "changes": [
+          {
+              "type": "feature",
+              "text": "Restore the indexer uniqueness score introduced with 2.7.0 and then rolled back due to database migration problems. The database is now restored on startup which should prevent any migration errors. The startup will take a while for this update."
+          }
+      ]
+  },
+    {
     "version": "v2.7.5",
     "changes": [
       {

@@ -141,7 +141,7 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
         }
 
         if ($scope.stats.avgIndexerUniquenessScore) {
-            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Hour of day", 'Searches');
+            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Indexer", 'score');
         }
 
         if ($scope.stats.downloadsPerHourOfDay) {
