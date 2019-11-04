@@ -1,3 +1,9 @@
+### v2.7.6
+
+**Feature** Restore the indexer uniqueness score introduced with 2.7.0 and then rolled back due to database migration problems. The database is now restored on startup which should prevent any migration errors. The startup will take a while for this update.
+
+
+
 ### v2.7.5
 
 **Fix** Fix 'You're not allowed...' error caused by the fix in 2.7.4... :-/
