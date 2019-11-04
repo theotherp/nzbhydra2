@@ -59,6 +59,18 @@ public class FlywayMigration {
                             logger.error("Error while deleting old migration steps", e);
                         }
                         flyway.migrate();
+                    } else if (e.getMessage().contains("Applied to database : 182559665")) {
+                        //Script had to be changed because with update to SB 2.2 and Flyway 6.0 a comment using // was not properly read in the file V1.0__INITIAL.sql
+                        logger.debug("Reparing changed initial migration SQL checksum");
+//                        flyway.repair();
+                        try {
+                            flyway.getConfiguration().getDataSource().getConnection().createStatement().execute("update \"schema_version\" x set x.\"checksum\" = 1776042577 where x.\"script\" = 'V1.0__INITIAL.sql'");
+                        } catch (SQLException e1) {
+                            logger.error("Error while changing initial migration SQL checksum", e);
+                        }
+                        flyway.migrate();
+                    } else {
+                        throw new RuntimeException("Error while migrating database", e);
                     }
                 }
             }
