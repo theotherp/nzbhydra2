@@ -178,6 +178,12 @@ public class NzbHydra {
         }
         File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
         File databaseScriptFile = new File(NzbHydra.getDataFolder(), "databaseScript.sql");
+
+        if (!databaseFile.exists()) {
+            logger.debug("No database file found - no recreation needed");
+            return;
+        }
+
         Class.forName("org.h2.Driver");
         String url = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
 
