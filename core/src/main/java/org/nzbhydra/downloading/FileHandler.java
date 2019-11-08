@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -89,16 +90,16 @@ public class FileHandler {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             fileContent = downloadFile(result);
-        } catch (IOException e) {
+        } catch (DownloadException e) {
             //LATER get status code and use that
-            logger.error("Error while downloading NZB from URL {}: {}", result.getLink(), e.getMessage());
+            logger.error("Error while downloading NZB from URL {}: Status code: {}. Message: {}", result.getLink(), e.getStatus(), e.getMessage());
             FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_ERROR, e.getMessage());
 
             downloadRepository.save(downloadEntity);
             shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
 
             eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
-            return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), downloadEntity);
+            return DownloadResult.createErrorResult("An error occurred while downloading " + result.getTitle() + " from indexer " + result.getIndexer().getName(), HttpStatus.valueOf(e.getStatus()), downloadEntity);
         }
 
         long responseTime = stopwatch.elapsed(TimeUnit.MILLISECONDS);
@@ -230,7 +231,7 @@ public class FileHandler {
     }
 
 
-    protected byte[] downloadFile(SearchResultEntity result) throws IOException, MagnetLinkRedirectException {
+    protected byte[] downloadFile(SearchResultEntity result) throws MagnetLinkRedirectException, DownloadException {
         Request request = new Request.Builder().url(result.getLink()).build();
         Indexer indexerByName = searchModuleProvider.getIndexerByName(result.getIndexer().getName());
         Integer timeout = indexerByName.getConfig().getTimeout().orElse(configProvider.getBaseConfig().getSearching().getTimeout());
@@ -239,17 +240,20 @@ public class FileHandler {
                 return handleRedirect(result, response);
             }
             if (!response.isSuccessful()) {
-                throw new IOException("Unsuccessful NZB download from URL " + result.getLink() + ". Code: " + response.code() + ". Message: " + response.message());
+                throw new DownloadException(result.getLink(), response.code(), response.message());
             }
             ResponseBody body = response.body();
             if (body == null) {
-                throw new IOException("NZB downloaded from " + result.getLink() + " is empty");
+                throw new DownloadException(result.getLink(), 500, "NZB downloaded is empty");
             }
             return body.bytes();
+        } catch (IOException e) {
+            logger.error("Error downloading result", e);
+            throw new DownloadException(result.getLink(), 500, "IOException: " + e.getMessage());
         }
     }
 
-    private byte[] handleRedirect(SearchResultEntity result, Response response) throws MagnetLinkRedirectException, IOException {
+    private byte[] handleRedirect(SearchResultEntity result, Response response) throws MagnetLinkRedirectException, DownloadException {
         String locationHeader = response.header("location");
         if (locationHeader != null) {
             if (locationHeader.startsWith("magnet:")) {
@@ -260,7 +264,8 @@ public class FileHandler {
                 return downloadFile(result);
             }
         }
-        throw new IOException("Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
+        logger.error("Unable to handle redirect from URL {} because no redirection location is set", result.getLink());
+        throw new DownloadException(result.getLink(), 500, "Unable to handle redirect from URL " + result.getLink() + " because no redirection location is set");
     }
 
 

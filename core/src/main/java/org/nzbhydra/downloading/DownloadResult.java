@@ -35,7 +35,7 @@ public class DownloadResult {
     private boolean successful;
     private String error;
     private FileDownloadEntity downloadEntity;
-    private int statusCode;
+    private HttpStatus statusCode;
 
     private static final Pattern URL_PARAM_PATTERN = Pattern.compile("dn=([^&$]+)");
 
@@ -46,9 +46,10 @@ public class DownloadResult {
         this.successful = successful;
         this.error = error;
         this.downloadEntity = downloadEntity;
+        this.statusCode = HttpStatus.OK;
     }
 
-    protected DownloadResult(String title, byte[] content, String url, boolean successful, String error, int statusCode, FileDownloadEntity downloadEntity) {
+    protected DownloadResult(String title, byte[] content, String url, boolean successful, String error, HttpStatus statusCode, FileDownloadEntity downloadEntity) {
         this(title, content, url, successful, error, downloadEntity);
         this.statusCode = statusCode;
     }
@@ -69,7 +70,17 @@ public class DownloadResult {
 
     public ResponseEntity<Object> getAsResponseEntity() {
         ResponseEntity<Object> response;
-        if (isRedirect()) {
+        if (statusCode != HttpStatus.OK) {
+            if (statusCode == HttpStatus.TOO_MANY_REQUESTS || statusCode == HttpStatus.INTERNAL_SERVER_ERROR) {
+                //In case of an internal server error we just hope that it works later again...
+                HttpHeaders headers = new HttpHeaders();
+                //Retry after 4 hours by default. Ideally we would know this (see IndexerForSearchSelector), but that would require a DB access and so on. This hardcoded value should be good enough for most cases.
+                headers.add(HttpHeaders.RETRY_AFTER, String.valueOf(60 * 60 * 4));
+                response = new ResponseEntity<>(error, headers, HttpStatus.TOO_MANY_REQUESTS);
+            } else {
+                response = new ResponseEntity<>(error, statusCode);
+            }
+        } else if (isRedirect()) {
             HttpHeaders headers = new HttpHeaders();
             //Jackett doesn't properly encode magnet URLs. Completely encoding it would  destroy the magnet link
             String url = getCleanedUrl();
@@ -112,8 +123,8 @@ public class DownloadResult {
         return new DownloadResult(null, null, null, false, error, null);
     }
 
-    public static DownloadResult createErrorResult(String error, int statusCode, FileDownloadEntity entity) {
-        return new DownloadResult(null, null, null, false, error, statusCode, entity);
+    public static DownloadResult createErrorResult(String error, HttpStatus httpStatus, FileDownloadEntity entity) {
+        return new DownloadResult(null, null, null, false, error, httpStatus, entity);
     }
 
 
