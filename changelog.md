@@ -1,3 +1,11 @@
+### v2.8.0
+
+**Fix** Hydra will use proper HTTP status codes when NZB download fails to signal that an indexer's API limit is reached. This will be recognized by *arr, which will skip the release and try another one. This will also prevent *arr from disabling NZBHydra in such cases.
+
+**Fix** Fix minor issue in indexer uniqueness score calculation.
+
+
+
 ### v2.7.7
 
 **Fix** Indexer uniqueness score had wrong axis labels in the stats page.
