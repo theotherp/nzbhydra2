@@ -89,7 +89,7 @@ public class IndexerUniquenessScoreSaver {
         Set<SearchResultEntity> resultsWithSameTitle = searchResultRepository.findAllByTitleLikeIgnoreCase(searchResultEntity.getTitle().replaceAll("[ .\\-_]", "_"));
         Set<IndexerEntity> indexersContainingSameResult = new HashSet<>();
         for (SearchResultEntity searchResult : resultsWithSameTitle) {
-            if (searchResult == searchResultEntity) {
+            if (searchResult.equals(searchResultEntity)) {
                 continue;
             }
             if (!searchResult.getIndexerSearchEntity().getSuccessful()) {

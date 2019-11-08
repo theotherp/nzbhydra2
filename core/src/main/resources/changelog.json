@@ -5,6 +5,10 @@
             {
                 "type": "fix",
                 "text": "Hydra will use proper HTTP status codes when NZB download fails to signal that an indexer's API limit is reached. This will be recognized by *arr, which will skip the release and try another one. This will also prevent *arr from disabling NZBHydra in such cases."
+            },
+            {
+                "type": "fix",
+                "text": "Fix minor issue in indexer uniqueness score calculation."
             }
         ]
     },
