@@ -1,5 +1,14 @@
 [
     {
+        "version": "v2.8.1",
+        "changes": [
+            {
+                "type": "feature",
+                "text": "Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will ake preference to the sorting settings saved in a cookie but not overwrite them."
+            }
+        ]
+    },
+    {
         "version": "v2.8.0",
         "changes": [
             {

@@ -493,7 +493,7 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
         })
 
         .state("root.search", {
-            url: "/?category&query&imdbId&tvdbId&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageId&mode&tmdbId&indexers&tvmazeId",
+            url: "/?category&query&imdbId&tvdbId&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageId&mode&tmdbId&indexers&tvmazeId&sortby&sortdirection",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/search.html",

@@ -493,7 +493,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
         })
 
         .state("root.search", {
-            url: "/?category&query&imdbId&tvdbId&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageId&mode&tmdbId&indexers&tvmazeId",
+            url: "/?category&query&imdbId&tvdbId&title&season&episode&minsize&maxsize&minage&maxage&offsets&tvrageId&mode&tmdbId&indexers&tvmazeId&sortby&sortdirection",
             views: {
                 'container@': {
                     templateUrl: "static/html/states/search.html",
@@ -7808,7 +7808,57 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         dvd: ['dvd'],
         bluray: ['bluray', 'blu-ray']
     };
-    if (localStorageService.get("sorting") !== null) {
+    if ($stateParams.sortby !== undefined) {
+        $stateParams.sortby = $stateParams.sortby.toLowerCase();
+        sortModel = {};
+        sortModel.reversed = false;
+        if ($stateParams.sortby === "title") {
+            sortModel.column = "title";
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 1;
+            } else {
+                sortModel.sortMode = 2;
+            }
+        } else if ($stateParams.sortby === "indexer") {
+            sortModel.column = "indexer";
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 1;
+            } else {
+                sortModel.sortMode = 2;
+            }
+        } else if ($stateParams.sortby === "category") {
+            sortModel.column = "category";
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 1;
+            } else {
+                sortModel.sortMode = 2;
+            }
+        } else if ($stateParams.sortby === "size") {
+            sortModel.column = "size";
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 1;
+            } else {
+                sortModel.sortMode = 2;
+            }
+        } else if ($stateParams.sortby === "details") {
+            sortModel.column = "grabs";
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 1;
+            } else {
+                sortModel.sortMode = 2;
+            }
+        } else if ($stateParams.sortby === "age") {
+            sortModel.column = "epoch";
+            sortModel.reversed = true;
+            if ($stateParams.sortdirection === "asc" || $stateParams.sortdirection === undefined) {
+                sortModel.sortMode = 2;
+            } else {
+                sortModel.sortMode = 1;
+            }
+        }
+
+
+    } else if (localStorageService.get("sorting") !== null) {
         sortModel = localStorageService.get("sorting");
     } else {
         sortModel = {
@@ -7954,7 +8004,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
     }
     //stopBlocking();
 
-    //Returns the content of the property (defined by the current sortPredicate) of the first group element 
+    //Returns the content of the property (defined by the current sortPredicate) of the first group element
     $scope.firstResultPredicate = firstResultPredicate;
 
     function firstResultPredicate(item) {
