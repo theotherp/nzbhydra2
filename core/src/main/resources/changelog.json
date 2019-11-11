@@ -4,7 +4,7 @@
         "changes": [
             {
                 "type": "feature",
-                "text": "Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will ake preference to the sorting settings saved in a cookie but not overwrite them."
+                "text": "Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will take preference to the sorting settings saved in a cookie but not overwrite them."
             }
         ]
     },

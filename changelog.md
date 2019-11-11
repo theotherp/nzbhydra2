@@ -1,3 +1,9 @@
+### v2.8.1
+
+**Feature** Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will ake preference to the sorting settings saved in a cookie but not overwrite them.
+
+
+
 ### v2.8.0
 
 **Fix** Hydra will use proper HTTP status codes when NZB download fails to signal that an indexer's API limit is reached. This will be recognized by *arr, which will skip the release and try another one. This will also prevent *arr from disabling NZBHydra in such cases.
