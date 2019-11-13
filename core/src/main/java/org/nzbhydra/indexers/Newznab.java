@@ -505,6 +505,9 @@ public class Newznab extends Indexer<Xml> {
         if (attributes.containsKey("size")) {
             searchResultItem.setSize(Long.valueOf(attributes.get("size")));
         }
+        if (attributes.containsKey("source")) {
+            searchResultItem.setSource(attributes.get("source"));
+        }
 
         computeCategory(searchResultItem, newznabCategories);
 

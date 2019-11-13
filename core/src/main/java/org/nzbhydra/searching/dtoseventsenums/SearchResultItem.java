@@ -76,6 +76,7 @@ public class SearchResultItem  {
     private Long searchResultId;
     private Integer seeders;
     private Long size;
+    private String source;
     @NotNull
     private String title;
     private Instant usenetDate;
@@ -92,6 +93,10 @@ public class SearchResultItem  {
         return Optional.ofNullable(poster);
     }
 
+    public Optional<String> getSource() {
+        return Optional.ofNullable(source);
+    }
+
     public long getAgeInDays() {
         return getBestDate().until(Instant.now(), ChronoUnit.DAYS);
     }
@@ -99,7 +104,6 @@ public class SearchResultItem  {
     public Instant getBestDate() {
         return getUsenetDate().orElse(getPubDate());
     }
-
 
     public static Comparator<SearchResultItem> comparator() {
         return (o1, o2) -> {

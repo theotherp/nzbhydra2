@@ -713,6 +713,12 @@ nzbhydraapp.filter('dereferer', function (ConfigService) {
     }
 });
 
+nzbhydraapp.filter('binsearch', function (ConfigService) {
+    return function (url) {
+        return "http://binsearch.info/?q=" + encodeURIComponent(url) + "&max=100&adv_age=3000&server=";
+    }
+});
+
 nzbhydraapp.config(function ($provide) {
     $provide.decorator("$exceptionHandler", ['$delegate', '$injector', function ($delegate, $injector) {
         return function (exception, cause) {

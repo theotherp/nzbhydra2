@@ -84,26 +84,27 @@ public class InternalSearchResultProcessor {
 
         for (SearchResultItem item : searchResultItems) {
             SearchResultWebTOBuilder builder = SearchResultWebTO.builder()
-                    .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
-                    .comments(item.getCommentsCount())
-                    .cover(item.getCover())
-                    .details_link(item.getDetails())
-                    .downloadType(item.getDownloadType().name())
-                    .files(item.getFiles())
-                    .grabs(item.getGrabs())
-                    .seeders(item.getSeeders())
-                    .peers(item.getPeers())
-                    .hasNfo(item.getHasNfo().name())
-                    .hash(item.getDuplicateIdentifier())
-                    .indexer(item.getIndexer().getName())
-                    .indexerguid(item.getIndexerGuid())
-                    .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
-                    .link(nzbHandler.getDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
-                    .originalCategory(item.getOriginalCategory())
-                    .poster(item.getPoster().orElse(null))
-                    .searchResultId(item.getSearchResultId().toString())
-                    .size(item.getSize())
-                    .title(item.getTitle());
+                .category(configProvider.getBaseConfig().getSearching().isUseOriginalCategories() ? item.getOriginalCategory() : item.getCategory().getName())
+                .comments(item.getCommentsCount())
+                .cover(item.getCover())
+                .details_link(item.getDetails())
+                .downloadType(item.getDownloadType().name())
+                .files(item.getFiles())
+                .grabs(item.getGrabs())
+                .seeders(item.getSeeders())
+                .peers(item.getPeers())
+                .hasNfo(item.getHasNfo().name())
+                .hash(item.getDuplicateIdentifier())
+                .indexer(item.getIndexer().getName())
+                .indexerguid(item.getIndexerGuid())
+                .indexerscore(item.getIndexer().getConfig().getScore().orElse(null))
+                .link(nzbHandler.getDownloadLink(item.getSearchResultId(), true, item.getDownloadType()))
+                .originalCategory(item.getOriginalCategory())
+                .poster(item.getPoster().orElse(null))
+                .searchResultId(item.getSearchResultId().toString())
+                .size(item.getSize())
+                .title(item.getTitle())
+                .source(item.getSource().orElse(null));
             builder = setSearchResultDateRelatedValues(builder, item);
             if (item.getAttributes().containsKey("season")) {
                 builder.season(item.getAttributes().get("season"));
@@ -140,9 +141,9 @@ public class InternalSearchResultProcessor {
             }
         }
         builder = builder
-                .age_precise(item.isAgePrecise())
-                .date(LocalDateTime.ofInstant(date, ZoneId.of("UTC")).format(item.isAgePrecise() ? DATE_TIME_FORMATTER : DATE_FORMATTER))
-                .epoch(date.getEpochSecond());
+            .age_precise(item.isAgePrecise())
+            .date(LocalDateTime.ofInstant(date, ZoneId.of("UTC")).format(item.isAgePrecise() ? DATE_TIME_FORMATTER : DATE_FORMATTER))
+            .epoch(date.getEpochSecond());
         return builder;
     }
 }

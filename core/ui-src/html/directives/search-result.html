@@ -66,13 +66,22 @@
                style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
         <span ng-if="::showDetailsDl">
-        <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link | dereferer}}" target="_blank"
+        <a ng-if="result.source" target="_blank" href="{{ ::result.source | binsearch | dereferer}}"
+           style="vertical-align: middle" class="no-underline result-details-link"
+           uib-tooltip="Search via Binsearch"
+           tooltip-placement="top"
+           tooltip-trigger="mouseenter">
+            <i class="fa fa-search" aria-hidden="true" style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
+        </a>
+        
+            <a ng-class="::{'no-nfo': !result.comments}" href="{{::result.details_link | dereferer}}" target="_blank"
            class="no-underline result-comments-link"
            uib-tooltip="Comments"
            tooltip-placement="top"
            tooltip-trigger="mouseenter">
             <i class="fa fa-comment" aria-hidden="true" style="margin-left:0; margin-right:3px;"></i>
         </a>
+        
         <a target="_blank" href="{{ ::result.details_link | dereferer}}" ng-class="::{'no-nfo': !result.details_link}"
            style="vertical-align: middle" class="no-underline result-details-link"
            uib-tooltip="Details"
@@ -81,6 +90,8 @@
             <i class="fa fa-info" aria-hidden="true"
                style="margin-left:3px; margin-right:3px; vertical-align: middle"></i>
         </a>
+    
+            </a>
     </span>
         <span ng-switch on="::result.downloadType">
             <span ng-switch-when="TORRENT">
