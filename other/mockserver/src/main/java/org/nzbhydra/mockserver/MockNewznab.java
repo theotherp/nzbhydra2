@@ -317,6 +317,7 @@ public class MockNewznab {
                 item.getTorznabAttributes().add(new NewznabAttribute("grabs", String.valueOf(random.nextInt(30000))));
             }
             item.setCategory("5000");
+
             item.setGrabs(null);
         }
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

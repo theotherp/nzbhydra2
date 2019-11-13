@@ -1,5 +1,14 @@
 [
     {
+        "version": "v2.8.2",
+        "changes": [
+            {
+                "type": "fix",
+                "text": "Fix pagination display error with."
+            }
+        ]
+    },
+    {
         "version": "v2.8.1",
         "changes": [
             {
