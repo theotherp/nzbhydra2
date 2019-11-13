@@ -1,6 +1,14 @@
+### v2.8.2
+
+**Feature** Support for pourcesoir.in, a french indexer. Their dev approached me with an idea on how to work around laws forbidding hosting NZB files. The indexer provides a certain text for each result using which you will find the result using a raw search engine like binsearch. NZBHydra will display a search icon in the search results GUI via which you can search for the result on Binsearch. I'll be honest, I'm not sure how viable that approach is, but I'm open to new ideas.
+
+**Fix** Fix pagination display error with.
+
+
+
 ### v2.8.1
 
-**Feature** Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will ake preference to the sorting settings saved in a cookie but not overwrite them.
+**Feature** Allow to define sorting for the search results via URL parameters. Use &sortby=<column> and, optionally, &sortdirection=asc or &sortdirection=desc. This will take preference to the sorting settings saved in a cookie but not overwrite them.
 
 
 
