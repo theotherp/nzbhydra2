@@ -146,7 +146,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         assertTrue(bodyJson.isDraft());
         assertEquals("v1.0.0", bodyJson.getName());
         assertEquals("### v1.0.0\n\n" +
-                "Note: First major release\n\n", bodyJson.getBody());
+            "**Note** First major release\n\n", bodyJson.getBody());
     }
 
 

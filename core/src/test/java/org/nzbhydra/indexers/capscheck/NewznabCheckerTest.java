@@ -108,9 +108,11 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&tvmazeid=82"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&imdbid=0944947"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "GOT", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=24428"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
@@ -118,12 +120,13 @@ public class NewznabCheckerTest {
         capsRoot.getSearching().setAudioSearch(new CapsXmlSearch("yes", "q"));
 
         CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
+        assertEquals(7, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVDB));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVRAGE));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVMAZE));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TRAKT));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(IMDB));
+        assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TVIMDB));
         assertTrue(checkCapsRespone.getIndexerConfig().getSupportedSearchIds().contains(TMDB));
 
         assertEquals(3, checkCapsRespone.getIndexerConfig().getSupportedSearchTypes().size());
@@ -135,7 +138,7 @@ public class NewznabCheckerTest {
 
         assertTrue(checkCapsRespone.isAllCapsChecked());
 
-        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
+        verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
     }
 
     @Test
@@ -175,14 +178,16 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=24428"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "somethingElse", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&imdbid=0944947"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
 
         CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(0, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
-        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
+        assertEquals(1, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
+        verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
     }
 
     @Test
@@ -196,16 +201,18 @@ public class NewznabCheckerTest {
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&traktid=1390"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
-        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=1399"), indexerConfig))
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=tvsearch&imdbid=0944947"), indexerConfig))
+            .thenReturn(builder.getTestResult(1, 100, "Thrones", 0, 100));
+        when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&tmdbid=24428"), indexerConfig))
                 .thenReturn(builder.getTestResult(1, 100, "Avengers", 0, 100));
 
         when(indexerWebAccess.get(new URI("http://127.0.0.1:1234/api?apikey=apikey&t=movie&imdbid=0848228"), indexerConfig))
                 .thenThrow(new IndexerAccessException("some error"));
 
         CheckCapsResponse checkCapsRespone = testee.checkCaps(indexerConfig);
-        assertEquals(5, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
+        assertEquals(6, checkCapsRespone.getIndexerConfig().getSupportedSearchIds().size());
         assertFalse(checkCapsRespone.isAllCapsChecked());
-        verify(indexerWebAccess, times(7)).get(any(), eq(indexerConfig));
+        verify(indexerWebAccess, times(8)).get(any(), eq(indexerConfig));
     }
 
 

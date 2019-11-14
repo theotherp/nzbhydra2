@@ -603,7 +603,11 @@ public class Newznab extends Indexer<Xml> {
                 //Use the indexer's own category mapping to build the category name
                 searchResultItem.setOriginalCategory(mapping.getNameFromId(mostSpecific));
             }
-            searchResultItem.setCategory(category);
+            if (category == null) {
+                searchResultItem.setCategory(categoryProvider.getNotAvailable());
+            } else {
+                searchResultItem.setCategory(category);
+            }
         } else {
             searchResultItem.setCategory(categoryProvider.getNotAvailable());
         }

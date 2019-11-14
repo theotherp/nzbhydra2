@@ -101,8 +101,7 @@ public class IndexerForSearchSelectorTest {
         assertFalse(testee.checkIndexerSelectedByUser(indexer));
 
         when(searchRequest.getSource()).thenReturn(SearchSource.API);
-        assertTrue(testee.checkIndexerSelectedByUser(indexer));
-
+        assertFalse(testee.checkIndexerSelectedByUser(indexer));
 
         when(searchRequest.getIndexers()).thenReturn(Optional.of(Sets.newSet("indexer")));
 

@@ -2,6 +2,7 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import net.jodah.failsafe.FailsafeException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
@@ -149,7 +150,7 @@ public class BinsearchTest {
         assertThat(uriCaptor.getValue().toString(), is("https://www.binsearch.info/viewNFO.php?oid=1234"));
     }
 
-    @Test
+    @Test(expected = FailsafeException.class)
     public void shouldRetryOn503() throws Exception {
         testee = spy(testee);
 //        doReturn(nfoHtml).when(testee).getAndStoreResultToDatabase(uriCaptor.capture(), any(), any());

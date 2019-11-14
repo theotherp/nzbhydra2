@@ -105,6 +105,10 @@ public class SearchResultItem  {
         return getUsenetDate().orElse(getPubDate());
     }
 
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     public static Comparator<SearchResultItem> comparator() {
         return (o1, o2) -> {
             if (o2 == null) {

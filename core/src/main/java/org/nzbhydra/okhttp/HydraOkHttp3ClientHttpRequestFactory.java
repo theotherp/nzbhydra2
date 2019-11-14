@@ -70,7 +70,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
     private int timeout;
 
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
-    private static Pattern HOST_PATTERN = Pattern.compile("(\\w+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
+    private static Pattern HOST_PATTERN = Pattern.compile("((\\w|\\*)+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
 
     @Autowired
     private ConfigProvider configProvider;
@@ -296,7 +296,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return false;
         }
 
-        return aMatcher.group(2).toLowerCase().equals(bMatcher.group(2).toLowerCase());
+        return aMatcher.group(3).toLowerCase().equals(bMatcher.group(3).toLowerCase());
     }
 
 

@@ -79,6 +79,7 @@ public class TorznabTest {
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.NONE);
         baseConfig.getSearching().setRemoveTrailing(Collections.emptyList());
+        when(categoryProviderMock.getNotAvailable()).thenReturn(CategoryProvider.naCategory);
     }
 
 
@@ -123,8 +124,6 @@ public class TorznabTest {
         rssItem.setCategory("5070");
         item = testee.createSearchResultItem(rssItem);
         assertThat(item.getCategory(), is(categoryMock));
-
-
     }
 
     private NewznabXmlItem buildBasicRssItem() {

@@ -322,6 +322,7 @@ searching:
   idFallbackToQueryGeneration: "NONE"
   ignorePassworded: false
   ignoreTemporarilyDisabled: false
+  ignoreLoadLimitingForInternalSearches: false
   keepSearchResultsForDays: 14
   keepHistoryForWeeks: null
   language: "en"

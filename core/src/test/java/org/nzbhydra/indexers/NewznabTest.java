@@ -51,12 +51,9 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("ALL")
 public class NewznabTest {
@@ -482,6 +479,9 @@ public class NewznabTest {
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5040"));
         rssItem.getNewznabAttributes().add(new NewznabAttribute("category", "5000"));
         SearchResultItem searchResultItem = new SearchResultItem();
+        Category category = new Category();
+        category.setSearchType(SearchType.TVSEARCH);
+        searchResultItem.setCategory(category);
 
         testee.parseAttributes(rssItem, searchResultItem);
         assertThat(searchResultItem.getOriginalCategory(), is("TV HD"));

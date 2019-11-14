@@ -18,6 +18,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
@@ -62,6 +63,8 @@ public class SearcherUnitTest {
     private SearchRepository searchRepositoryMock;
     @Mock
     private IndexerEntity indexerEntity;
+    @Mock
+    private SearchResultRepository searchResultRepositoryMock;
     @Mock
     private SearchResultEntity searchResultEntityMock;
     @Mock

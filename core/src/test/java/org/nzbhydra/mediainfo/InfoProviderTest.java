@@ -14,10 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class InfoProviderTest {
@@ -95,7 +92,7 @@ public class InfoProviderTest {
     @Test
     public void shouldCallTvMaze() throws Exception {
         ArgumentCaptor<TvInfo> tvInfoArgumentCaptor = ArgumentCaptor.forClass(TvInfo.class);
-        for (InfoProvider.IdType type : Arrays.asList(InfoProvider.IdType.TVMAZE, InfoProvider.IdType.TVDB, InfoProvider.IdType.TVRAGE, InfoProvider.IdType.TVTITLE)) {
+        for (InfoProvider.IdType type : Arrays.asList(InfoProvider.IdType.TVMAZE, InfoProvider.IdType.TVDB, InfoProvider.IdType.TVRAGE, InfoProvider.IdType.TVTITLE, IdType.TVIMDB)) {
             reset(tvMazeHandlerMock);
             when(tvMazeHandlerMock.getInfos(anyString(), any(InfoProvider.IdType.class))).thenReturn(new TvMazeSearchResult("tvmazeId", "tvrageId", "tvdbId", "imdbId", "title", 0, "posterUrl"));
             testee.convert("value", type);
@@ -105,14 +102,14 @@ public class InfoProviderTest {
         verify(tvInfoRepositoryMock).findByTvdbId("value");
         verify(tvInfoRepositoryMock).findByTvrageId("value");
         verify(tvInfoRepositoryMock).findByTvmazeId("value");
-        verify(tvInfoRepositoryMock).findByImdbId("value");
-        verify(tvInfoRepositoryMock, times(4)).save(tvInfoArgumentCaptor.capture());
-        assertEquals(4, tvInfoArgumentCaptor.getAllValues().size());
+        verify(tvInfoRepositoryMock).findByImdbId("ttvalue");
+        verify(tvInfoRepositoryMock, times(5)).save(tvInfoArgumentCaptor.capture());
+        assertEquals(5, tvInfoArgumentCaptor.getAllValues().size());
         assertEquals("title", tvInfoArgumentCaptor.getValue().getTitle());
         assertEquals("tvdbId", tvInfoArgumentCaptor.getValue().getTvdbId().get());
         assertEquals("tvmazeId", tvInfoArgumentCaptor.getValue().getTvmazeId().get());
         assertEquals("tvrageId", tvInfoArgumentCaptor.getValue().getTvrageId().get());
-        assertEquals("imdbId", tvInfoArgumentCaptor.getValue().getImdbId().get());
+        assertEquals("ttimdbId", tvInfoArgumentCaptor.getValue().getImdbId().get());
         assertEquals(Integer.valueOf(0), tvInfoArgumentCaptor.getValue().getYear());
     }
 
