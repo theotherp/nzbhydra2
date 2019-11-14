@@ -1,3 +1,9 @@
+### v2.8.4
+
+**Fix** Cached torznab results were returned as wrong XML. Also cached torznab and newznab queries could conflict.
+
+
+
 ### v2.8.3
 
 **Fix** Improve logging and handling of torznab/newznab XML transformation.
