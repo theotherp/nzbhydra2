@@ -26,3 +26,4 @@ nbdist/
 *.log
 nzbhydra.yml
 logs/
+cacerts
