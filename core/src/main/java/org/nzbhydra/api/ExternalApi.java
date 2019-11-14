@@ -85,7 +85,8 @@ public class ExternalApi {
 
     @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
-        logger.info("Received external {}API call: {}", (isTorznabCall() ? "torznab " : ""), params);
+        NewznabResponse.SearchType searchType = getSearchType();
+        logger.info("Received external {}API call: {}", searchType.name().toLowerCase(), params);
 
         if (!noApiKeyNeeded && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
@@ -94,14 +95,10 @@ public class ExternalApi {
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             if (params.getCachetime() != null || configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().isPresent()) {
-                return handleCachingSearch(params);
+                return handleCachingSearch(params, searchType);
             }
             NewznabResponse searchResult = search(params);
-            HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
-            if (params.getO() != OutputType.JSON) {
-                searchResult.setSearchType(isTorznabCall() ? NewznabResponse.SearchType.TORZNAB : NewznabResponse.SearchType.NEWZNAB);
-            }
+            HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
             return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
 
         }
@@ -111,7 +108,7 @@ public class ExternalApi {
         }
 
         if (params.getT() == ActionAttribute.CAPS) {
-            return capsGenerator.getCaps(params.getO(), isTorznabCall());
+            return capsGenerator.getCaps(params.getO(), searchType);
         }
 
         logger.error("Incorrect API request: {}", params);
@@ -119,18 +116,29 @@ public class ExternalApi {
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
 
-    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params) {
+    private HttpHeaders setSearchTypeAndGetHeaders(NewznabParameters params, NewznabResponse searchResult) {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
+        if (params.getO() != OutputType.JSON && searchResult.getSearchType() == null) {
+            searchResult.setSearchType(getSearchType());
+        }
+        return httpHeaders;
+    }
+
+    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params, NewznabResponse.SearchType searchType) {
         //Remove old entries
         cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
 
         CacheEntryValue cacheEntryValue;
-        if (cache.containsKey(params.cacheKey())) {
-            cacheEntryValue = cache.get(params.cacheKey());
+        if (cache.containsKey(params.cacheKey(searchType))) {
+            cacheEntryValue = cache.get(params.cacheKey(searchType));
             Integer cachetime = params.getCachetime() == null ? configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().get() : params.getCachetime();
             if (cacheEntryValue.getLastUpdate().isAfter(clock.instant().minus(cachetime, ChronoUnit.MINUTES))) {
                 Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(cachetime, ChronoUnit.MINUTES);
                 logger.info("Returning cached search result. Next update of search will be done at {}", nextUpdate);
-                return new ResponseEntity<>(cacheEntryValue.getSearchResult(), HttpStatus.OK);
+                NewznabResponse searchResult = cacheEntryValue.getSearchResult();
+                HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
+                return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
             } else {
                 logger.info("Updating search because cache time is exceeded");
             }
@@ -145,8 +153,9 @@ public class ExternalApi {
 
         NewznabResponse searchResult = search(params);
         logger.info("Putting search result into cache");
-        cache.put(params.cacheKey(), new CacheEntryValue(params, clock.instant(), searchResult));
-        return new ResponseEntity<>(searchResult, HttpStatus.OK);
+        cache.put(params.cacheKey(searchType), new CacheEntryValue(params, clock.instant(), searchResult));
+        HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
+        return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
     }
 
 
@@ -171,7 +180,7 @@ public class ExternalApi {
     protected NewznabResponse search(NewznabParameters params) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         SearchRequest searchRequest = buildBaseSearchRequest(params);
-        if (isTorznabCall()) {
+        if (getSearchType() == NewznabResponse.SearchType.TORZNAB) {
             searchRequest.setDownloadType(DownloadType.TORRENT);
         } else {
             searchRequest.setDownloadType(DownloadType.NZB);
@@ -183,10 +192,9 @@ public class ExternalApi {
         return transformedResults;
     }
 
-    private boolean isTorznabCall() {
+    private NewznabResponse.SearchType getSearchType() {
         boolean torznab = SessionStorage.requestUrl.get() != null && SessionStorage.requestUrl.get().toLowerCase().contains("/torznab");
-        logger.debug("Determined to be {} call from URL \"{}\"", (torznab ? "torznab" : "newznab"), SessionStorage.requestUrl.get());
-        return torznab;
+        return torznab ? NewznabResponse.SearchType.TORZNAB : NewznabResponse.SearchType.NEWZNAB;
     }
 
     @ExceptionHandler(value = ExternalApiException.class)

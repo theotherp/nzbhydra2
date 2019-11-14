@@ -16,10 +16,11 @@ public class NewznabParametersTest {
         NewznabParameters testee2 = new NewznabParameters();
         testee2.setQ("q");
 
-        assertEquals(testee1.cacheKey(), testee2.cacheKey());
+        assertEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.TORZNAB));
+        assertNotEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.NEWZNAB));
 
         testee2.setQ("anotherQ");
-        assertNotEquals(testee1.cacheKey(), testee2.cacheKey());
+        assertNotEquals(testee1.cacheKey(NewznabResponse.SearchType.TORZNAB), testee2.cacheKey(NewznabResponse.SearchType.TORZNAB));
     }
 
 

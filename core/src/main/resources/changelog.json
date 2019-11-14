@@ -1,5 +1,14 @@
 [
     {
+        "version": "v2.8.4",
+        "changes": [
+            {
+                "type": "fix",
+                "text": "Cached torznab results were returned as wrong XML. Also cached torznab and newznab queries could conflict."
+            }
+        ]
+    },
+    {
         "version": "v2.8.3",
         "changes": [
             {

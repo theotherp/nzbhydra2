@@ -171,7 +171,6 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
             NewznabResponse newznabResponse = (NewznabResponse) o;
             NewznabResponse.SearchType searchType = ((NewznabResponse) o).getSearchType();
-            logger.debug("Search type: {}", searchType);
             if (searchType == NewznabResponse.SearchType.JSON) {
                 jacksonConverter.setPrettyPrint(true);
                 jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);

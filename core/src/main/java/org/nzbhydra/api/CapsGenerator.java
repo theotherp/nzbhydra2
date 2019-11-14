@@ -23,6 +23,7 @@ import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.json.caps.*;
 import org.nzbhydra.mapping.newznab.xml.caps.*;
@@ -47,11 +48,11 @@ public class CapsGenerator {
     @Autowired
     private ConfigProvider configProvider;
 
-    ResponseEntity<?> getCaps(OutputType o, boolean torznabCall) {
+    ResponseEntity<?> getCaps(OutputType o, NewznabResponse.SearchType searchType) {
         if (o == OutputType.XML) {
-            return getXmlCaps(torznabCall);
+            return getXmlCaps(searchType == NewznabResponse.SearchType.TORZNAB);
         } else {
-            return getJsonCaps(torznabCall);
+            return getJsonCaps(searchType == NewznabResponse.SearchType.TORZNAB);
         }
     }
 
