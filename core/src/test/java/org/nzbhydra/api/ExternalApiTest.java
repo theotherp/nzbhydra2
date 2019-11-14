@@ -36,9 +36,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -98,6 +96,8 @@ public class ExternalApiTest {
             }
         }).when(jaxb2MarshallerMock).marshal(any(), any());
         when(indexerMock.getConfig()).thenReturn(indexerConfig);
+
+        when(newznabXmlTransformerMock.getRssRoot(any(), anyInt(), anyInt(), any())).thenReturn(new NewznabXmlRoot());
     }
 
     @Test

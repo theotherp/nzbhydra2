@@ -116,11 +116,11 @@ public class ExternalApi {
         return new ResponseEntity<Object>(error, HttpStatus.OK);
     }
 
-    private HttpHeaders setSearchTypeAndGetHeaders(NewznabParameters params, NewznabResponse searchResult) {
+    private HttpHeaders setSearchTypeAndGetHeaders(NewznabParameters params, NewznabResponse newznabResponse) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
-        if (params.getO() != OutputType.JSON && searchResult.getSearchType() == null) {
-            searchResult.setSearchType(getSearchType());
+        httpHeaders.set(HttpHeaders.CONTENT_TYPE, newznabResponse.getContentHeader());
+        if (params.getO() != OutputType.JSON && newznabResponse.getSearchType() == null) {
+            newznabResponse.setSearchType(getSearchType());
         }
         return httpHeaders;
     }
