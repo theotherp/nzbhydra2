@@ -22,9 +22,18 @@ import java.io.StringWriter;
 
 public abstract class NewznabResponse {
 
+    public enum SearchType {
+        JSON,
+        NEWZNAB,
+        TORZNAB
+
+    }
+
     public abstract String getContentHeader();
-    public abstract String getSearchType();
-    public abstract void setSearchType(String searchType);
+
+    public abstract SearchType getSearchType();
+
+    public abstract void setSearchType(NewznabResponse.SearchType searchType);
 
     public String toXmlString() {
         try (StringWriter writer = new StringWriter()) {

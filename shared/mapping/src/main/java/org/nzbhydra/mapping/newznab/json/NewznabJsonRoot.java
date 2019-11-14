@@ -28,12 +28,12 @@ public class NewznabJsonRoot extends NewznabResponse {
 
     @Override
     @JsonIgnore
-    public String getSearchType() {
-        return "json";
+    public NewznabResponse.SearchType getSearchType() {
+        return SearchType.JSON;
     }
 
     @Override
-    public void setSearchType(String searchType) {
+    public void setSearchType(NewznabResponse.SearchType searchType) {
         //Not needed, always JSON (unless at some point torznab supports JSON)
     }
 

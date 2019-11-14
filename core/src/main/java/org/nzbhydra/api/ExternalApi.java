@@ -100,7 +100,7 @@ public class ExternalApi {
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set(HttpHeaders.CONTENT_TYPE, searchResult.getContentHeader());
             if (params.getO() != OutputType.JSON) {
-                searchResult.setSearchType(isTorznabCall() ? "torznab" : "newznab");
+                searchResult.setSearchType(isTorznabCall() ? NewznabResponse.SearchType.TORZNAB : NewznabResponse.SearchType.NEWZNAB);
             }
             return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
 
@@ -150,7 +150,6 @@ public class ExternalApi {
     }
 
 
-
     protected ResponseEntity<?> getNzb(NewznabParameters params) throws MissingParameterException, UnknownErrorException {
         if (Strings.isNullOrEmpty(params.getId())) {
             throw new MissingParameterException("Missing ID/GUID");
@@ -185,7 +184,9 @@ public class ExternalApi {
     }
 
     private boolean isTorznabCall() {
-        return SessionStorage.requestUrl.get() != null && SessionStorage.requestUrl.get().toLowerCase().contains("torznab");
+        boolean torznab = SessionStorage.requestUrl.get() != null && SessionStorage.requestUrl.get().toLowerCase().contains("/torznab");
+        logger.debug("Determined to be {} call from URL \"{}\"", (torznab ? "torznab" : "newznab"), SessionStorage.requestUrl.get());
+        return torznab;
     }
 
     @ExceptionHandler(value = ExternalApiException.class)
@@ -295,8 +296,8 @@ public class ExternalApi {
             }
             CacheEntryValue that = (CacheEntryValue) o;
             return com.google.common.base.Objects.equal(params, that.params) &&
-                    com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
-                    com.google.common.base.Objects.equal(searchResult, that.searchResult);
+                com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&
+                com.google.common.base.Objects.equal(searchResult, that.searchResult);
         }
 
         @Override

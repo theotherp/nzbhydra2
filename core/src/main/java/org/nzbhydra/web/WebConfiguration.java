@@ -170,7 +170,9 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
         @Override
         public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
             NewznabResponse newznabResponse = (NewznabResponse) o;
-            if ("json".equalsIgnoreCase(((NewznabResponse) o).getSearchType())) {
+            NewznabResponse.SearchType searchType = ((NewznabResponse) o).getSearchType();
+            logger.debug("Search type: {}", searchType);
+            if (searchType == NewznabResponse.SearchType.JSON) {
                 jacksonConverter.setPrettyPrint(true);
                 jacksonConverter.write(o, MediaType.APPLICATION_JSON, outputMessage);
             } else {
@@ -178,11 +180,13 @@ public class WebConfiguration extends WebMvcConfigurationSupport {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 marshaller.marshal(newznabResponse, new StreamResult(bos));
                 String result;
-                if ("torznab".equalsIgnoreCase(newznabResponse.getSearchType())) {
-                    result = bos.toString().replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
+                String originalXml = bos.toString();
+                if (newznabResponse.getSearchType() == NewznabResponse.SearchType.TORZNAB) {
+                    result = originalXml.replace("xmlns:newznab=\"http://www.newznab.com/DTD/2010/feeds/attributes/\"", "");
                 } else {
-                    result = bos.toString().replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
+                    result = originalXml.replace("xmlns:torznab=\"http://torznab.com/schemas/2015/feed\"", "");
                 }
+                result = result.replace("<searchType>TORZNAB</searchType>", "").replace("<searchType>NEWZNAB</searchType>", "");
                 outputMessage.getBody().write(result.getBytes(StandardCharsets.UTF_8));
             }
         }

@@ -19,11 +19,7 @@ package org.nzbhydra.mapping.newznab.xml;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 
 import javax.xml.bind.JAXB;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.*;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -33,7 +29,7 @@ import java.io.StringWriter;
 public abstract class Xml extends NewznabResponse {
 
     @XmlTransient
-    private String searchType;
+    private NewznabResponse.SearchType searchType;
 
     @Override
     public String getContentHeader() {
@@ -41,12 +37,12 @@ public abstract class Xml extends NewznabResponse {
     }
 
     @Override
-    public String getSearchType() {
+    public NewznabResponse.SearchType getSearchType() {
         return searchType;
     }
 
     @Override
-    public void setSearchType(String searchType) {
+    public void setSearchType(NewznabResponse.SearchType searchType) {
         this.searchType = searchType;
     }
 
