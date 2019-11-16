@@ -87,9 +87,9 @@ public class MockGithub {
     @RequestMapping(value = "/changelog", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> changelog() throws Exception {
         return Arrays.asList(
-                new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
-                new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
-                new ChangelogVersionEntry("0.1.0", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+            new ChangelogVersionEntry("3.0.0", null, Arrays.asList(new ChangelogChangeEntry("note", "a note"), new ChangelogChangeEntry("note", "another note"), new ChangelogChangeEntry("note", "yet another note"))),
+            new ChangelogVersionEntry("0.0.1", null, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+            new ChangelogVersionEntry("0.1.0", null, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
         );
     }
 
