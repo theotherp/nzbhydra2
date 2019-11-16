@@ -13,6 +13,7 @@ import java.util.List;
 public class ChangelogVersionEntry implements Comparable<ChangelogVersionEntry> {
 
     private String version;
+    private String date;
     private List<ChangelogChangeEntry> changes;
 
     @Override

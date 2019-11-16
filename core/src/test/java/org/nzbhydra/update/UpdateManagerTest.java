@@ -72,9 +72,9 @@ public class UpdateManagerTest {
 
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"), any(TypeReference.class))).thenReturn(
                 Arrays.asList(
-                        new ChangelogVersionEntry("3.0.0", Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
-                        new ChangelogVersionEntry("2.0.0", Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
-                        new ChangelogVersionEntry("0.0.1", Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+                    new ChangelogVersionEntry("3.0.0", null, Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
+                    new ChangelogVersionEntry("2.0.0", null, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
+                    new ChangelogVersionEntry("0.0.1", null, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
 
                 ));
 

@@ -1,6 +1,16 @@
 [
     {
+        "version": "v2.8.5",
+        "changes": [
+            {
+                "type": "feature",
+                "text": "The changelog now contains release dates along with the version."
+            }
+        ]
+    },
+    {
         "version": "v2.8.4",
+        "date": "2019-11-14",
         "changes": [
             {
                 "type": "fix",
@@ -10,6 +20,7 @@
     },
     {
         "version": "v2.8.3",
+        "date": "2019-11-14",
         "changes": [
             {
                 "type": "fix",
@@ -19,6 +30,7 @@
     },
     {
         "version": "v2.8.2",
+        "date": "2019-11-13",
         "changes": [
             {
                 "type": "feature",
@@ -32,6 +44,7 @@
     },
     {
         "version": "v2.8.1",
+        "date": "2019-11-11",
         "changes": [
             {
                 "type": "feature",
@@ -41,6 +54,7 @@
     },
     {
         "version": "v2.8.0",
+        "date": "2019-11-08",
         "changes": [
             {
                 "type": "fix",
@@ -54,6 +68,7 @@
     },
     {
         "version": "v2.7.7",
+        "date": "2019-11-04",
         "changes": [
             {
                 "type": "fix",
@@ -63,6 +78,7 @@
     },
     {
         "version": "v2.7.6",
+        "date": "2019-11-04",
         "changes": [
             {
                 "type": "feature",
@@ -72,6 +88,7 @@
     },
     {
         "version": "v2.7.5",
+        "date": "2019-10-30",
         "changes": [
             {
                 "type": "fix",
@@ -81,6 +98,7 @@
     },
     {
         "version": "v2.7.4",
+        "date": "2019-10-29",
         "changes": [
             {
                 "type": "fix",
@@ -90,6 +108,7 @@
     },
     {
         "version": "v2.7.3",
+        "date": "2019-10-27",
         "changes": [
             {
                 "type": "feature",
@@ -107,6 +126,7 @@
     },
     {
         "version": "v2.7.2",
+        "date": "2019-10-06",
         "changes": [
             {
                 "type": "fix",
@@ -116,6 +136,7 @@
     },
     {
         "version": "v2.7.1",
+        "date": "2019-10-06",
         "changes": [
             {
                 "type": "fix",
@@ -125,6 +146,7 @@
     },
     {
         "version": "v2.7.0",
+        "date": "2019-10-06",
         "changes": [
             {
                 "type": "feature",
@@ -134,6 +156,7 @@
     },
     {
         "version": "v2.6.18",
+        "date": "2019-09-29",
         "changes": [
             {
                 "type": "feature",
@@ -143,6 +166,7 @@
     },
     {
         "version": "v2.6.17",
+        "date": "2019-09-07",
         "changes": [
             {
                 "type": "feature",
@@ -156,6 +180,7 @@
     },
     {
         "version": "v2.6.16",
+        "date": "2019-09-05",
         "changes": [
             {
                 "type": "fix",
@@ -165,6 +190,7 @@
     },
     {
         "version": "v2.6.15",
+        "date": "2019-09-04",
         "changes": [
             {
                 "type": "fix",
@@ -174,6 +200,7 @@
     },
     {
         "version": "v2.6.14",
+        "date": "2019-08-12",
         "changes": [
             {
                 "type": "fix",
@@ -183,6 +210,7 @@
     },
     {
         "version": "v2.6.13",
+        "date": "2019-08-12",
         "changes": [
             {
                 "type": "fix",
@@ -192,6 +220,7 @@
     },
     {
         "version": "v2.6.12",
+        "date": "2019-08-04",
         "changes": [
             {
                 "type": "features",
@@ -205,6 +234,7 @@
     },
     {
         "version": "v2.6.11",
+        "date": "2019-06-09",
         "changes": [
             {
                 "type": "fix",
@@ -218,6 +248,7 @@
     },
     {
         "version": "v2.6.10",
+        "date": "2019-05-21",
         "changes": [
             {
                 "type": "fix",
@@ -231,6 +262,7 @@
     },
     {
         "version": "v2.6.9",
+        "date": "2019-05-17",
         "changes": [
             {
                 "type": "fix",
@@ -244,6 +276,7 @@
     },
     {
         "version": "v2.6.8",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -253,6 +286,7 @@
     },
     {
         "version": "v2.6.7",
+        "date": "2019-05-15",
         "changes": [
             {
                 "type": "fix",
@@ -262,6 +296,7 @@
     },
     {
         "version": "v2.6.6",
+        "date": "2019-05-14",
         "changes": [
             {
                 "type": "fix",
@@ -271,6 +306,7 @@
     },
     {
         "version": "v2.6.5",
+        "date": "2019-05-14",
         "changes": [
             {
                 "type": "fix",
@@ -280,6 +316,7 @@
     },
     {
         "version": "v2.6.4",
+        "date": "2019-05-14",
         "changes": [
             {
                 "type": "fix",
@@ -297,6 +334,7 @@
     },
     {
         "version": "v2.6.3",
+        "date": "2019-05-13",
         "changes": [
             {
                 "type": "feature",
@@ -314,6 +352,7 @@
     },
     {
         "version": "v2.6.2",
+        "date": "2019-05-05",
         "changes": [
             {
                 "type": "fix",
@@ -327,6 +366,7 @@
     },
     {
         "version": "v2.6.1",
+        "date": "2019-05-02",
         "changes": [
             {
                 "type": "feature",
@@ -340,6 +380,7 @@
     },
     {
         "version": "v2.6.0",
+        "date": "2019-05-01",
         "changes": [
             {
                 "type": "feature",
@@ -373,6 +414,7 @@
     },
     {
         "version": "v2.5.9",
+        "date": "2019-04-27",
         "changes": [
             {
                 "type": "fix",
@@ -382,6 +424,7 @@
     },
     {
         "version": "v2.5.8",
+        "date": "2019-04-27",
         "changes": [
             {
                 "type": "feature",
@@ -399,6 +442,7 @@
     },
     {
         "version": "v2.5.7",
+        "date": "2019-04-27",
         "changes": [
             {
                 "type": "feature",
@@ -420,6 +464,7 @@
     },
     {
         "version": "v2.5.6",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -429,6 +474,7 @@
     },
     {
         "version": "v2.5.5",
+        "date": "2019-04-17",
         "changes": [
             {
                 "type": "feature",
@@ -438,6 +484,7 @@
     },
     {
         "version": "v2.5.4",
+        "date": "2019-04-16",
         "changes": [
             {
                 "type": "fix",
@@ -447,6 +494,7 @@
     },
     {
         "version": "v2.5.3",
+        "date": "2019-04-16",
         "changes": [
             {
                 "type": "fix",
@@ -456,6 +504,7 @@
     },
     {
         "version": "v2.5.2",
+        "date": "2019-04-15",
         "changes": [
             {
                 "type": "fix",
@@ -465,6 +514,7 @@
     },
     {
         "version": "v2.5.1",
+        "date": "2019-04-14",
         "changes": [
             {
                 "type": "feature",
@@ -478,6 +528,7 @@
     },
     {
         "version": "v2.4.4",
+        "date": "2019-04-12",
         "changes": [
             {
                 "type": "feature",
@@ -491,6 +542,7 @@
     },
     {
         "version": "v2.4.3",
+        "date": "2019-04-10",
         "changes": [
             {
                 "type": "fix",
@@ -504,6 +556,7 @@
     },
     {
         "version": "v2.4.2",
+        "date": "2019-04-10",
         "changes": [
             {
                 "type": "fix",
@@ -513,6 +566,7 @@
     },
     {
         "version": "v2.4.1",
+        "date": "2019-04-10",
         "changes": [
             {
                 "type": "fix",
@@ -522,6 +576,7 @@
     },
     {
         "version": "v2.4.0",
+        "date": "2019-04-09",
         "changes": [
             {
                 "type": "feature",
@@ -535,6 +590,7 @@
     },
     {
         "version": "v2.3.22",
+        "date": "2019-04-04",
         "changes": [
             {
                 "type": "feature",
@@ -548,6 +604,7 @@
     },
     {
         "version": "v2.3.21",
+        "date": "2019-03-31",
         "changes": [
             {
                 "type": "feature",
@@ -565,6 +622,7 @@
     },
     {
         "version": "v2.3.20",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -574,6 +632,7 @@
     },
     {
         "version": "v2.3.19",
+        "date": "2019-03-20",
         "changes": [
             {
                 "type": "fix",
@@ -583,6 +642,7 @@
     },
     {
         "version": "v2.3.18",
+        "date": "2019-03-18",
         "changes": [
             {
                 "type": "fix",
@@ -592,6 +652,7 @@
     },
     {
         "version": "v2.3.17",
+        "date": "2019-03-17",
         "changes": [
             {
                 "type": "feature",
@@ -609,6 +670,7 @@
     },
     {
         "version": "v2.3.16",
+        "date": "2019-03-14",
         "changes": [
             {
                 "type": "fix",
@@ -622,18 +684,21 @@
     },
     {
         "version": "v2.3.15",
+        "date": "2019-02-16",
         "changes": [
             {
                 "type": "note",
                 "text": "I need to make something clear: If Hydra shows you 100 results on the GUI and says that x results are not yet loaded then that means that some results you're looking for may be missing. You will always only get the newest 100 results from any indexer at first. Even if you sort by name then other results which should be somewhere in that list may be 'hidden' because they were not yet retrieved from the indexer."
             },
             {
+                "type": null,
                 "text": "Delay writing of config file so that not too many concurrent writes occur. This should hopefully reduce the risk of file corruption."
             }
         ]
     },
     {
         "version": "v2.3.14",
+        "date": "2019-02-15",
         "changes": [
             {
                 "type": "fix",
@@ -647,6 +712,7 @@
     },
     {
         "version": "v2.3.13",
+        "date": "2019-02-12",
         "changes": [
             {
                 "type": "feature",
@@ -660,6 +726,7 @@
     },
     {
         "version": "v2.3.12",
+        "date": "2019-02-10",
         "changes": [
             {
                 "type": "fix",
@@ -669,6 +736,7 @@
     },
     {
         "version": "v2.3.11",
+        "date": "2019-02-10",
         "changes": [
             {
                 "type": "fix",
@@ -682,6 +750,7 @@
     },
     {
         "version": "v2.3.10",
+        "date": "2019-02-09",
         "changes": [
             {
                 "type": "fix",
@@ -691,6 +760,7 @@
     },
     {
         "version": "v2.3.9",
+        "date": "2019-02-09",
         "changes": [
             {
                 "type": "fix",
@@ -700,6 +770,7 @@
     },
     {
         "version": "v2.3.8",
+        "date": "2019-02-09",
         "changes": [
             {
                 "type": "fix",
@@ -709,6 +780,7 @@
     },
     {
         "version": "v2.3.7",
+        "date": "2019-02-09",
         "changes": [
             {
                 "type": "fix",
@@ -726,6 +798,7 @@
     },
     {
         "version": "v2.3.6",
+        "date": "2019-02-06",
         "changes": [
             {
                 "type": "fix",
@@ -743,6 +816,7 @@
     },
     {
         "version": "v2.3.5",
+        "date": "2019-02-05",
         "changes": [
             {
                 "type": "feature",
@@ -752,6 +826,7 @@
     },
     {
         "version": "v2.3.4",
+        "date": "2019-01-31",
         "changes": [
             {
                 "type": "fix",
@@ -769,6 +844,7 @@
     },
     {
         "version": "v2.3.3",
+        "date": "2019-01-28",
         "changes": [
             {
                 "type": "fix",
@@ -778,6 +854,7 @@
     },
     {
         "version": "v2.3.2",
+        "date": "2019-01-27",
         "changes": [
             {
                 "type": "fix",
@@ -787,6 +864,7 @@
     },
     {
         "version": "v2.3.1",
+        "date": "2019-01-27",
         "changes": [
             {
                 "type": "fix",
@@ -796,6 +874,7 @@
     },
     {
         "version": "v2.3.0",
+        "date": "2019-01-27",
         "changes": [
             {
                 "type": "feature",
@@ -813,6 +892,7 @@
     },
     {
         "version": "v2.2.5",
+        "date": "2019-01-26",
         "changes": [
             {
                 "type": "fix",
@@ -822,6 +902,7 @@
     },
     {
         "version": "v2.2.4",
+        "date": "2019-01-26",
         "changes": [
             {
                 "type": "feature",
@@ -831,6 +912,7 @@
     },
     {
         "version": "v2.2.3",
+        "date": "2019-01-26",
         "changes": [
             {
                 "type": "feature",
@@ -840,6 +922,7 @@
     },
     {
         "version": "v2.2.2",
+        "date": "2019-01-26",
         "changes": [
             {
                 "type": "feature",
@@ -849,6 +932,7 @@
     },
     {
         "version": "v2.2.1",
+        "date": "2019-01-21",
         "changes": [
             {
                 "type": "feature",
@@ -858,6 +942,7 @@
     },
     {
         "version": "v2.2.0",
+        "date": "2019-01-02",
         "changes": [
             {
                 "type": "note",
@@ -883,6 +968,7 @@
     },
     {
         "version": "v2.1.7",
+        "date": "2018-12-30",
         "changes": [
             {
                 "type": "fix",
@@ -892,6 +978,7 @@
     },
     {
         "version": "v2.1.6",
+        "date": "2018-12-30",
         "changes": [
             {
                 "type": "fix",
@@ -905,6 +992,7 @@
     },
     {
         "version": "v2.1.5",
+        "date": "2018-12-29",
         "changes": [
             {
                 "type": "fix",
@@ -922,6 +1010,7 @@
     },
     {
         "version": "v2.1.4",
+        "date": "2018-12-28",
         "changes": [
             {
                 "type": "feature",
@@ -939,6 +1028,7 @@
     },
     {
         "version": "v2.1.3",
+        "date": "2018-12-27",
         "changes": [
             {
                 "type": "fix",
@@ -952,6 +1042,7 @@
     },
     {
         "version": "v2.1.2",
+        "date": "2018-12-18",
         "changes": [
             {
                 "type": "fix",
@@ -961,6 +1052,7 @@
     },
     {
         "version": "v2.1.1",
+        "date": "2018-12-18",
         "changes": [
             {
                 "type": "fix",
@@ -974,6 +1066,7 @@
     },
     {
         "version": "v2.1.0",
+        "date": "2018-12-15",
         "changes": [
             {
                 "type": "fix",
@@ -987,6 +1080,7 @@
     },
     {
         "version": "v2.0.24",
+        "date": "2018-12-14",
         "changes": [
             {
                 "type": "note",
@@ -996,6 +1090,7 @@
     },
     {
         "version": "v2.0.23",
+        "date": "2018-12-11",
         "changes": [
             {
                 "type": "note",
@@ -1009,6 +1104,7 @@
     },
     {
         "version": "v2.0.22",
+        "date": "2018-12-09",
         "changes": [
             {
                 "type": "fix",
@@ -1018,6 +1114,7 @@
     },
     {
         "version": "v2.0.21",
+        "date": "2018-12-09",
         "changes": [
             {
                 "type": "feature",
@@ -1031,6 +1128,7 @@
     },
     {
         "version": "v2.0.20",
+        "date": "2018-12-08",
         "changes": [
             {
                 "type": "feature",
@@ -1040,6 +1138,7 @@
     },
     {
         "version": "v2.0.19",
+        "date": "2018-12-08",
         "changes": [
             {
                 "type": "fix",
@@ -1049,6 +1148,7 @@
     },
     {
         "version": "v2.0.18",
+        "date": "2018-12-05",
         "changes": [
             {
                 "type": "fix",
@@ -1070,6 +1170,7 @@
     },
     {
         "version": "v2.0.17",
+        "date": "2018-11-22",
         "changes": [
             {
                 "type": "feature",
@@ -1087,6 +1188,7 @@
     },
     {
         "version": "v2.0.16",
+        "date": "2018-11-21",
         "changes": [
             {
                 "type": "fix",
@@ -1096,6 +1198,7 @@
     },
     {
         "version": "v2.0.15",
+        "date": "2018-11-02",
         "changes": [
             {
                 "type": "fix",
@@ -1105,6 +1208,7 @@
     },
     {
         "version": "v2.0.14",
+        "date": "2018-11-02",
         "changes": [
             {
                 "type": "note",
@@ -1118,6 +1222,7 @@
     },
     {
         "version": "v2.0.13",
+        "date": "2018-10-26",
         "changes": [
             {
                 "type": "feature",
@@ -1131,6 +1236,7 @@
     },
     {
         "version": "v2.0.12",
+        "date": "2018-10-24",
         "changes": [
             {
                 "type": "fix",
@@ -1144,6 +1250,7 @@
     },
     {
         "version": "v2.0.11",
+        "date": "2018-10-23",
         "changes": [
             {
                 "type": "feature",
@@ -1157,6 +1264,7 @@
     },
     {
         "version": "v2.0.10",
+        "date": "2018-10-20",
         "changes": [
             {
                 "type": "fix",
@@ -1166,6 +1274,7 @@
     },
     {
         "version": "v2.0.9",
+        "date": "2018-10-06",
         "changes": [
             {
                 "type": "fix",
@@ -1175,6 +1284,7 @@
     },
     {
         "version": "v2.0.8",
+        "date": "2018-10-01",
         "changes": [
             {
                 "type": "fix",
@@ -1184,6 +1294,7 @@
     },
     {
         "version": "v2.0.7",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -1193,6 +1304,7 @@
     },
     {
         "version": "v2.0.6",
+        "date": "2018-09-26",
         "changes": [
             {
                 "type": "fix",
@@ -1202,6 +1314,7 @@
     },
     {
         "version": "v2.0.5",
+        "date": "2018-09-14",
         "changes": [
             {
                 "type": "fix",
@@ -1211,6 +1324,7 @@
     },
     {
         "version": "v2.0.4",
+        "date": "2018-09-13",
         "changes": [
             {
                 "type": "fix",
@@ -1220,6 +1334,7 @@
     },
     {
         "version": "v2.0.3",
+        "date": "2018-09-05",
         "changes": [
             {
                 "type": "fix",
@@ -1241,6 +1356,7 @@
     },
     {
         "version": "v2.0.2",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -1250,6 +1366,7 @@
     },
     {
         "version": "v2.0.1",
+        "date": "2018-08-19",
         "changes": [
             {
                 "type": "fix",
@@ -1259,6 +1376,7 @@
     },
     {
         "version": "v2.0.0",
+        "date": "2018-08-18",
         "changes": [
             {
                 "type": "feature",
@@ -1292,6 +1410,7 @@
     },
     {
         "version": "v1.5.2",
+        "date": "2018-07-31",
         "changes": [
             {
                 "type": "fix",
@@ -1305,6 +1424,7 @@
     },
     {
         "version": "v1.5.1",
+        "date": "2018-06-11",
         "changes": [
             {
                 "type": "fix",
@@ -1314,6 +1434,7 @@
     },
     {
         "version": "v1.5.0",
+        "date": "2018-06-10",
         "changes": [
             {
                 "type": "feature",
@@ -1335,6 +1456,7 @@
     },
     {
         "version": "v1.4.18",
+        "date": "2018-05-22",
         "changes": [
             {
                 "type": "fix",
@@ -1344,6 +1466,7 @@
     },
     {
         "version": "v1.4.16",
+        "date": "2018-05-22",
         "changes": [
             {
                 "type": "fix",
@@ -1353,6 +1476,7 @@
     },
     {
         "version": "v1.4.15",
+        "date": "2018-05-22",
         "changes": [
             {
                 "type": "feature",
@@ -1366,6 +1490,7 @@
     },
     {
         "version": "v1.4.14",
+        "date": "2018-05-21",
         "changes": [
             {
                 "type": "fix",
@@ -1379,6 +1504,7 @@
     },
     {
         "version": "v1.4.13",
+        "date": "2018-05-12",
         "changes": [
             {
                 "type": "fix",
@@ -1388,6 +1514,7 @@
     },
     {
         "version": "v1.4.12",
+        "date": "2018-05-05",
         "changes": [
             {
                 "type": "fix",
@@ -1397,6 +1524,7 @@
     },
     {
         "version": "v1.4.11",
+        "date": "2018-05-05",
         "changes": [
             {
                 "type": "fix",
@@ -1410,6 +1538,7 @@
     },
     {
         "version": "v1.4.10",
+        "date": "2018-05-05",
         "changes": [
             {
                 "type": "feature",
@@ -1419,6 +1548,7 @@
     },
     {
         "version": "v1.4.9",
+        "date": null,
         "changes": [
             {
                 "type": "fix",
@@ -1428,6 +1558,7 @@
     },
     {
         "version": "v1.4.8",
+        "date": "2018-03-17",
         "changes": [
             {
                 "type": "note",
@@ -1437,6 +1568,7 @@
     },
     {
         "version": "v1.4.7",
+        "date": "2018-03-14",
         "changes": [
             {
                 "type": "fix",
@@ -1458,6 +1590,7 @@
     },
     {
         "version": "v1.4.6",
+        "date": "2018-03-08",
         "changes": [
             {
                 "type": "feature",
@@ -1471,6 +1604,7 @@
     },
     {
         "version": "v1.4.5",
+        "date": "2018-03-05",
         "changes": [
             {
                 "type": "fix",
@@ -1480,6 +1614,7 @@
     },
     {
         "version": "v1.4.4",
+        "date": "2018-02-27",
         "changes": [
             {
                 "type": "fix",
@@ -1489,6 +1624,7 @@
     },
     {
         "version": "v1.4.3",
+        "date": "2018-02-23",
         "changes": [
             {
                 "type": "fix",
@@ -1498,6 +1634,7 @@
     },
     {
         "version": "v1.4.2",
+        "date": "2018-02-17",
         "changes": [
             {
                 "type": "fix",
@@ -1507,6 +1644,7 @@
     },
     {
         "version": "v1.4.1",
+        "date": "2018-02-13",
         "changes": [
             {
                 "type": "fix",
@@ -1524,6 +1662,7 @@
     },
     {
         "version": "v1.4.0",
+        "date": "2018-02-10",
         "changes": [
             {
                 "type": "feature",
@@ -1541,6 +1680,7 @@
     },
     {
         "version": "v1.3.3",
+        "date": "2018-02-08",
         "changes": [
             {
                 "type": "feature",
@@ -1558,6 +1698,7 @@
     },
     {
         "version": "v1.3.2",
+        "date": "2018-02-05",
         "changes": [
             {
                 "type": "fix",
@@ -1575,6 +1716,7 @@
     },
     {
         "version": "v1.3.1",
+        "date": "2018-02-04",
         "changes": [
             {
                 "type": "feature",
@@ -1596,6 +1738,7 @@
     },
     {
         "version": "v1.3.0",
+        "date": "2018-02-03",
         "changes": [
             {
                 "type": "feature",
@@ -1617,6 +1760,7 @@
     },
     {
         "version": "v1.2.6",
+        "date": "2018-02-02",
         "changes": [
             {
                 "type": "fix",
@@ -1626,6 +1770,7 @@
     },
     {
         "version": "v1.2.5",
+        "date": "2018-01-31",
         "changes": [
             {
                 "type": "fix",
@@ -1635,6 +1780,7 @@
     },
     {
         "version": "v1.2.4",
+        "date": "2018-01-31",
         "changes": [
             {
                 "type": "fix",
@@ -1648,6 +1794,7 @@
     },
     {
         "version": "v1.2.3",
+        "date": "2018-01-30",
         "changes": [
             {
                 "type": "fix",
@@ -1657,6 +1804,7 @@
     },
     {
         "version": "v1.2.2",
+        "date": "2018-01-29",
         "changes": [
             {
                 "type": "note",
@@ -1678,6 +1826,7 @@
     },
     {
         "version": "v1.2.1",
+        "date": "2018-01-27",
         "changes": [
             {
                 "type": "note",
@@ -1699,6 +1848,7 @@
     },
     {
         "version": "v1.2.0",
+        "date": "2018-01-25",
         "changes": [
             {
                 "type": "feature",
@@ -1712,6 +1862,7 @@
     },
     {
         "version": "v1.1.4",
+        "date": "2018-01-22",
         "changes": [
             {
                 "type": "fix",
@@ -1725,6 +1876,7 @@
     },
     {
         "version": "v1.1.3",
+        "date": "2018-01-21",
         "changes": [
             {
                 "type": "fix",
@@ -1734,6 +1886,7 @@
     },
     {
         "version": "v1.1.2",
+        "date": "2018-01-21",
         "changes": [
             {
                 "type": "feature",
@@ -1771,6 +1924,7 @@
     },
     {
         "version": "v1.1.1",
+        "date": "2018-01-17",
         "changes": [
             {
                 "type": "fix",
@@ -1784,6 +1938,7 @@
     },
     {
         "version": "v1.1.0",
+        "date": "2018-01-15",
         "changes": [
             {
                 "type": "feature",
@@ -1797,6 +1952,7 @@
     },
     {
         "version": "v1.0.18",
+        "date": "2018-01-13",
         "changes": [
             {
                 "type": "fix",
@@ -1806,6 +1962,7 @@
     },
     {
         "version": "v1.0.17",
+        "date": "2018-01-13",
         "changes": [
             {
                 "type": "feature",
@@ -1831,6 +1988,7 @@
     },
     {
         "version": "v1.0.16",
+        "date": "2018-01-11",
         "changes": [
             {
                 "type": "fix",
@@ -1848,6 +2006,7 @@
     },
     {
         "version": "v1.0.15",
+        "date": "2018-01-10",
         "changes": [
             {
                 "type": "feature",
@@ -1869,6 +2028,7 @@
     },
     {
         "version": "v1.0.14",
+        "date": "2018-01-09",
         "changes": [
             {
                 "type": "fix",
@@ -1878,6 +2038,7 @@
     },
     {
         "version": "v1.0.13",
+        "date": "2018-01-09",
         "changes": [
             {
                 "type": "fix",
@@ -1887,6 +2048,7 @@
     },
     {
         "version": "v1.0.12",
+        "date": "2018-01-07",
         "changes": [
             {
                 "type": "feature",
@@ -1896,6 +2058,7 @@
     },
     {
         "version": "v1.0.11",
+        "date": "2018-01-07",
         "changes": [
             {
                 "type": "fix",
@@ -1905,6 +2068,7 @@
     },
     {
         "version": "v1.0.10",
+        "date": "2018-01-07",
         "changes": [
             {
                 "type": "feature",
@@ -1922,6 +2086,7 @@
     },
     {
         "version": "v1.0.9",
+        "date": "2018-01-07",
         "changes": [
             {
                 "type": "fix",
@@ -1931,6 +2096,7 @@
     },
     {
         "version": "v1.0.8",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "fix",
@@ -1940,6 +2106,7 @@
     },
     {
         "version": "v1.0.7",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "fix",
@@ -1949,6 +2116,7 @@
     },
     {
         "version": "v1.0.6",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "note",
@@ -1962,6 +2130,7 @@
     },
     {
         "version": "v1.0.5",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "note",
@@ -1975,6 +2144,7 @@
     },
     {
         "version": "v1.0.4",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "note",
@@ -1984,6 +2154,7 @@
     },
     {
         "version": "v1.0.3",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "note",
@@ -1993,6 +2164,7 @@
     },
     {
         "version": "v1.0.2",
+        "date": "2018-01-06",
         "changes": [
             {
                 "type": "note",

@@ -1,20 +1,22 @@
 [
-  {
-    "version": "v1.0.0",
-    "changes": [
-      {
-        "type": "note",
-        "text": "First major release"
-      }
-    ]
-  },
-  {
-    "version": "v0.0.1",
-    "changes": [
-      {
-        "type": "note",
-        "text": "First version"
-      }
-    ]
-  }
+    {
+        "version": "v1.0.0",
+        "date": "2019-11-16",
+        "changes": [
+            {
+                "type": "note",
+                "text": "First major release"
+            }
+        ]
+    },
+    {
+        "version": "v0.0.1",
+        "date": null,
+        "changes": [
+            {
+                "type": "note",
+                "text": "First version"
+            }
+        ]
+    }
 ]

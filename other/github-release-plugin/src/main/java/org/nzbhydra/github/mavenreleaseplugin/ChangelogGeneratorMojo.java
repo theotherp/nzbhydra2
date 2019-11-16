@@ -11,7 +11,9 @@ import org.codehaus.plexus.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,13 +52,23 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
         }
         Collections.sort(entries);
         Collections.reverse(entries);
+
+        if (entries.get(0).getDate() == null) {
+            entries.get(0).setDate(LocalDate.now().toString());
+        }
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(changelogJsonFile, entries);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Unable to update json file " + changelogJsonFile.getAbsolutePath(), e);
+        }
+
         List<String> lines = new ArrayList<>();
         for (ChangelogVersionEntry entry : entries) {
             lines.addAll(getMarkdownLinesFromEntry(entry));
         }
 
         try {
-            Files.write(changelogMdFile.toPath(), Joiner.on("\n\n").join(lines).getBytes("UTF-8"));
+            Files.write(changelogMdFile.toPath(), Joiner.on("\n\n").join(lines).getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new MojoExecutionException("Unable to write lines to MD file " + changelogMdFile.getAbsolutePath(), e);
         }
@@ -65,7 +77,11 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
 
     static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) {
         List<String> lines = new ArrayList<>();
-        lines.add("### " + entry.getVersion());
+        String versionLine = "### " + entry.getVersion();
+        if (entry.getDate() != null) {
+            versionLine += " (" + entry.getDate() + ")";
+        }
+        lines.add(versionLine);
         for (ChangelogChangeEntry changeEntry : entry.getChanges()) {
             lines.add("**" + StringUtils.capitalise(changeEntry.getType()) + "** " + changeEntry.getText());
         }
