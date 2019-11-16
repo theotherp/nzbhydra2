@@ -57,7 +57,7 @@ public class Experiments {
 
     @Test
     public void updateChangelogDates() throws Exception {
-        File jsonFile = new File("C:\\Users\\strat\\IdeaProjects\\nzbhydra2\\core\\src\\main\\resources\\changelog.json");
+        File jsonFile = new File("..\\core\\src\\main\\resources\\changelog.json");
         OkHttpClient client = new OkHttpClient.Builder().build();
         Map<String, String> releaseDates = new HashMap<>();
         for (int i = 1; i <= 6; i++) {
