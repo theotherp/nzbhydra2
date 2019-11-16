@@ -101,7 +101,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var appG;
-var titleRegex = /(\[?Bug|Req\]?):? ?(.*)/gmi;
+var titleRegex = /\[?(Bug|Req\]?):? ?(.*)/gmi;
 var IssueType;
 (function (IssueType) {
     IssueType["ENHANCEMENT"] = "enhancement";
@@ -159,16 +159,16 @@ module.exports = function (app) {
                         appG.log('Found issue opened with title "' + issueTitle + '"');
                         regexGroup = titleRegex.exec(issueTitle);
                         if (!(regexGroup != null && regexGroup.length == 3)) return [3 /*break*/, 4];
-                        if (!(regexGroup[1].toUpperCase() === "BUG")) return [3 /*break*/, 1];
+                        if (!(regexGroup[1].toUpperCase() === "BUG")) return [3 /*break*/, 2];
                         appG.log('Recognized bug with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.BUG);
-                        return [3 /*break*/, 3];
+                        return [4 /*yield*/, checkForDebugInfos(context)];
                     case 1:
+                        _a.sent();
+                        return [3 /*break*/, 3];
+                    case 2:
                         appG.log('Recognized enhancement with title "' + issueTitle + '"');
                         convertTitleToLabel(context, IssueType.ENHANCEMENT);
-                        return [4 /*yield*/, checkForDebugInfos(context)];
-                    case 2:
-                        _a.sent();
                         _a.label = 3;
                     case 3:
                         return [3 /*break*/, 6];

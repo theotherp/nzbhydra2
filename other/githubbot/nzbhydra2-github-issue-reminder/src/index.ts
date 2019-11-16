@@ -1,7 +1,7 @@
 import {Application} from 'probot' // eslint-disable-line no-unused-vars
 
 let appG: Application;
-let titleRegex = /(\[?Bug|Req\]?):? ?(.*)/gmi;
+let titleRegex = /\[?(Bug|Req\]?):? ?(.*)/gmi;
 
 enum IssueType {
     ENHANCEMENT = 'enhancement',
@@ -56,11 +56,11 @@ export = (app: Application) => {
             if (regexGroup[1].toUpperCase() === "BUG") {
                 appG.log('Recognized bug with title "' + issueTitle + '"');
                 convertTitleToLabel(context, IssueType.BUG);
+
+                await checkForDebugInfos(context);
             } else {
                 appG.log('Recognized enhancement with title "' + issueTitle + '"');
                 convertTitleToLabel(context, IssueType.ENHANCEMENT);
-
-                await checkForDebugInfos(context);
             }
         } else {
 
