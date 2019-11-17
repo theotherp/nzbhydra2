@@ -259,7 +259,7 @@ public class Stats {
                 .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
         for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
             OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
-            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble() * indexerEntityListEntry.getValue().size()));
+            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble()));
         }
         scores.sort(Comparator.comparing(IndexerUniquenessScore::getUniquenessScore).reversed());
         return scores;
