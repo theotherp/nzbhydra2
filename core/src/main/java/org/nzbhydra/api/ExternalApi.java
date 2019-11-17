@@ -137,6 +137,7 @@ public class ExternalApi {
                 Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(cachetime, ChronoUnit.MINUTES);
                 logger.info("Returning cached search result. Next update of search will be done at {}", nextUpdate);
                 NewznabResponse searchResult = cacheEntryValue.getSearchResult();
+
                 HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
                 return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
             } else {

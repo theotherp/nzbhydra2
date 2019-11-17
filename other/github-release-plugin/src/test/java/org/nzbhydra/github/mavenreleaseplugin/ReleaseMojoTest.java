@@ -11,7 +11,6 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -146,7 +145,7 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         assertEquals("commitish", bodyJson.getTargetCommitish());
         assertTrue(bodyJson.isDraft());
         assertEquals("v1.0.0", bodyJson.getName());
-        assertEquals("### v1.0.0 (" + LocalDate.now() + ")\n\n" +
+        assertEquals("### v1.0.0 (2019-11-16)\n\n" +
             "**Note** First major release\n\n", bodyJson.getBody());
     }
 
