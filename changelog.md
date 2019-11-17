@@ -1,3 +1,15 @@
+### v2.9.2 (2019-11-17)
+
+**Fix** Actually show version dates in the updates page...
+
+
+
+### v2.9.1 (2019-11-17)
+
+**Fix** Further adjustment to uniqueness score.
+
+
+
 ### v2.9.0 (2019-11-17)
 
 **Feature** I've updated the indexer uniqueness score calculation so that indexers which are often involved in searches get a higher score than those rarely involved. I also found a bug in the way the data was stored to the database so the old values will be removed.
