@@ -1,5 +1,9 @@
 [
     {
+        "showForVersion": "2.8.4",
+        "newsAsMarkdown": "If you're running v2.8.4 or older and not using docker and have automatic updates disabled: The updates page won't load because I've made changes to the changelog file that's loaded on that page and I forgot to consider that that will affect older instances. If you can't update you'll have to do so manually. Shut down Hydra, download the latest release and extract it into your main Hydra folder. Sorry about that! :-/"
+    },
+    {
         "showForVersion": "2.7.5",
         "newsAsMarkdown": "If you're upgrading from v2.7.5 to v2.7.6 expect the restart after the update to take a couple of minutes."
     },
