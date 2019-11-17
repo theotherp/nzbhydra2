@@ -4,6 +4,10 @@
         "changes": [
             {
                 "type": "feature",
+                "text": "I've updated the indexer uniqueness score calculation so that indexers which are often involved in searches get a higher score than those rarely involved. I also found a bug in the way the data was stored to the database so the old values will be removed."
+            },
+            {
+                "type": "feature",
                 "text": "The changelog now contains release dates along with the version."
             },
             {

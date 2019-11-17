@@ -60,23 +60,31 @@ public class IndexerUniquenessScoreSaver {
             Set<IndexerSearchEntity> allIndexerSearchesInvolved = getIndexersInvolved(searchResultEntity);
             Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity);
 
-            Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity())).collect(Collectors.toSet());
+            Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && x.getIndexerEntity() != searchResultEntity.getIndexer()).collect(Collectors.toSet());
 
-            saveScoresToDatabase(indexersContainingSameResult, allIndexerSearchesInvolved, involvedIndexersWithoutResult);
+            saveScoresToDatabase(searchResultEntity.getIndexer(), indexersContainingSameResult, allIndexerSearchesInvolved, involvedIndexersWithoutResult);
 
             String indexerNamesWithResult = indexersContainingSameResult.stream().map(IndexerEntity::getName).collect(Collectors.joining(", "));
             String indexerNamesWithoutResult = involvedIndexersWithoutResult.stream().map(x -> x.getIndexerEntity().getName()).collect(Collectors.joining(", "));
-            logger.info("Title: \"{}\". Indexers with result: {}. Indexers without result: {}", searchResultEntity.getTitle(), indexerNamesWithResult, indexerNamesWithoutResult);
+
+            if (indexersContainingSameResult.isEmpty()) {
+                logger.info("Title: \"{}\". Downloaded unique result from: {}. All other indexers without result: {}", searchResultEntity.getTitle(), indexerNamesWithResult, indexerNamesWithoutResult);
+            } else {
+                logger.info("Title: \"{}\". Downloaded from: {}. Indexers with same result: {}. Indexers without result: {}", searchResultEntity.getTitle(), searchResultEntity.getIndexer().getName(), indexerNamesWithResult, indexerNamesWithoutResult);
+            }
         } catch (Exception e) {
-            logger.error("Error while saving data for uniqueness scores");
+            logger.error("Error while saving data for uniqueness scores", e);
         }
     }
 
-    private void saveScoresToDatabase(Set<IndexerEntity> indexersContainingSameResult, Set<IndexerSearchEntity> allIndexerSearchesInvolved, Set<IndexerSearchEntity> involvedIndexersWithoutResult) {
+    private void saveScoresToDatabase(IndexerEntity indexerDownloadedFrom, Set<IndexerEntity> indexersContainingSameResult, Set<IndexerSearchEntity> allIndexerSearchesInvolved, Set<IndexerSearchEntity> involvedIndexersWithoutResult) {
         List<IndexerUniquenessScoreEntity> scoreEntities = new ArrayList<>();
 
-        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, allIndexerSearchesInvolved.size(), indexersContainingSameResult.size(), true)).collect(Collectors.toList()));
-        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), allIndexerSearchesInvolved.size(), indexersContainingSameResult.size(), false)).collect(Collectors.toList()));
+        int involved = allIndexerSearchesInvolved.size();
+        int haveResult = indexersContainingSameResult.size() + 1;
+        scoreEntities.add(new IndexerUniquenessScoreEntity(indexerDownloadedFrom, involved, haveResult, true));
+        scoreEntities.addAll(indexersContainingSameResult.stream().map(x -> new IndexerUniquenessScoreEntity(x, involved, haveResult, true)).collect(Collectors.toList()));
+        scoreEntities.addAll(involvedIndexersWithoutResult.stream().map(x -> new IndexerUniquenessScoreEntity(x.getIndexerEntity(), involved, haveResult, false)).collect(Collectors.toList()));
         indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
     }
 

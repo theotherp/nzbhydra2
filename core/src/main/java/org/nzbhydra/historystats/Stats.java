@@ -242,23 +242,26 @@ public class Stats {
     List<IndexerUniquenessScore> indexerResultUniquenessScores(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer result uniqueness scores");
-        List<IndexerUniquenessScore> scores = new ArrayList<>();
 
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
         final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
 
-        Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = uniquenessScoreEntityRepository.findAll().stream()
+        List<IndexerUniquenessScore> indexerUniquenessScores = calculateUniquenessScore(indexersToInclude, uniquenessScoreEntityRepository.findAll());
+        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        return indexerUniquenessScores;
+    }
+
+    List<IndexerUniquenessScore> calculateUniquenessScore(Set<String> indexersToInclude, List<IndexerUniquenessScoreEntity> scoreEntities) {
+        List<IndexerUniquenessScore> scores = new ArrayList<>();
+        Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = scoreEntities.stream()
                 .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
                 .filter(IndexerUniquenessScoreEntity::isHasResult)
                 .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
         for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
             OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
-            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble()));
+            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble() * indexerEntityListEntry.getValue().size()));
         }
-
         scores.sort(Comparator.comparing(IndexerUniquenessScore::getUniquenessScore).reversed());
-
-        logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return scores;
     }
 
