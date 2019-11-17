@@ -1,5 +1,14 @@
 [
     {
+        "version": "v2.9.2",
+        "changes": [
+            {
+                "type": "fix",
+                "text": "Actually show version dates in the updates page..."
+            }
+        ]
+    },
+    {
         "version": "v2.9.1",
         "date": "2019-11-17",
         "changes": [
