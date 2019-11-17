@@ -44,6 +44,7 @@ async function checkForDebugInfos(context: any) {
 
 export = (app: Application) => {
     appG = app;
+    appG.log("Running github bot v2");
     app.on('issues.opened', async (context) => {
 
         const issueTitle = context.payload.issue.title;

@@ -292,6 +292,7 @@ main:
   proxyPassword: null
   repositoryBase: "https://github.com/theotherp"
   showNews: true
+  showUpdateBannerOnDocker: true
   shutdownForRestart: false
   sniDisabledFor: ["nzbgeek.info"]
   ssl: false

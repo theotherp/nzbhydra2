@@ -18,6 +18,10 @@ function hydraupdates() {
             $scope.changelog = response.data.changelog;
             $scope.runInDocker = response.data.runInDocker;
             $scope.wrapperOutdated = response.data.wrapperOutdated;
+            $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
+            if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
+                $scope.updateAvailable = false;
+            }
         });
 
         UpdateService.getVersionHistory().then(function (response) {

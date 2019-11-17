@@ -87,6 +87,11 @@ function hydraUpdatesFooter() {
                     $scope.updateAvailable = response.data.updateAvailable;
                     $scope.changelog = response.data.changelog;
                     $scope.runInDocker = response.data.runInDocker;
+                    $scope.showUpdateBannerOnDocker = response.data.showUpdateBannerOnDocker;
+                    if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
+                        $scope.updateAvailable = false;
+                    }
+
                     $scope.$emit("showUpdateFooter", $scope.updateAvailable);
                 } else {
                     $scope.$emit("showUpdateFooter", false);

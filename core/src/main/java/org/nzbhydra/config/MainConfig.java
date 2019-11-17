@@ -54,6 +54,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private String proxyPassword;
     private String repositoryBase;
     private boolean showNews = true;
+    private boolean showUpdateBannerOnDocker = true;
     private boolean shutdownForRestart = false;
     private List<String> sniDisabledFor = new ArrayList<>();
     @RestartRequired

@@ -60,15 +60,16 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false, false);
+                    return new VersionsInfo("", "", false, false, false, false, false);
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
                 boolean isUpdateAvailable = updateManager.isUpdateAvailable();
                 boolean latestVersionIgnored = updateManager.latestVersionIgnored();
                 boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
+                boolean isShowUpdateBannerOnDocker = configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker();
                 boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, outdatedWrapperDetected);
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected);
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -143,6 +144,7 @@ public class UpdatesWeb {
         private boolean updateAvailable;
         private boolean latestVersionIgnored;
         private boolean runInDocker;
+        private boolean showUpdateBannerOnDocker;
         private boolean wrapperOutdated;
     }
 

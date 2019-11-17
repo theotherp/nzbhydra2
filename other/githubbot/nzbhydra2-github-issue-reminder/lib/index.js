@@ -149,6 +149,7 @@ function checkForDebugInfos(context) {
 }
 module.exports = function (app) {
     appG = app;
+    appG.log("Running github bot v2");
     app.on('issues.opened', function (context) {
         return __awaiter(void 0, void 0, void 0, function () {
             var issueTitle, regexGroup, issueComment;

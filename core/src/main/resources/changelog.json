@@ -5,6 +5,10 @@
             {
                 "type": "feature",
                 "text": "The changelog now contains release dates along with the version."
+            },
+            {
+                "type": "feature",
+                "text": "Added option to disable update banner when running docker."
             }
         ]
     },

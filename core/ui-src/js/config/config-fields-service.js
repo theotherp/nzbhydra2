@@ -444,6 +444,14 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'showUpdateBannerOnDocker',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show update banner when running docker'
+                            }
+                        },
+                        {
                             key: 'updateAutomatically',
                             type: 'horizontalSwitch',
                             templateOptions: {
