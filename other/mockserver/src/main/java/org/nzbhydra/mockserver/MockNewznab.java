@@ -249,6 +249,9 @@ public class MockNewznab {
             }
 
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
+            if (params.getApikey().contains("limits")) {
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, 100, 0, 200));
+            }
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 

@@ -4712,14 +4712,14 @@ angular
             name: 'horizontalChips',
             extends: 'horizontalInput',
             template: '<chips ng-model="model[options.key]" class="chips form-control">' +
-            '            <chip-tmpl class="chip-tmp">' +
-            '                <div class="default-chip">' +
-            '                    {{chip}}' +
-            '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>' +
-            '                </div>' +
-            '            </chip-tmpl>' +
-            '            <input chip-control class="chip-control"></input>' +
-            '        </chips>'
+                '            <chip-tmpl class="chip-tmp">' +
+                '                <div class="default-chip">' +
+                '                    {{chip}}' +
+                '                    <span class="glyphicon glyphicon-remove remove-chip" remove-chip></span>' +
+                '                </div>' +
+                '            </chip-tmpl>' +
+                '            <input chip-control class="chip-control"></input>' +
+                '        </chips>'
         });
 
         formlyConfigProvider.setType({
@@ -4785,6 +4785,8 @@ angular
             model.categoryMapping = indexerConfig.categoryMapping;
             model.configComplete = indexerConfig.configComplete;
             model.allCapsChecked = indexerConfig.allCapsChecked;
+            model.hitLimit = indexerConfig.hitLimit;
+            model.downloadLimit = indexerConfig.downloadLimit;
             model.state = indexerConfig.state;
         }
 

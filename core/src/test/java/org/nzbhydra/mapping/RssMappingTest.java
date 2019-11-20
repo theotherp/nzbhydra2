@@ -121,6 +121,27 @@ public class RssMappingTest {
     }
 
     @Test
+    public void shouldParseResponseFromDrunkenSlugWithSomeApilimits() throws Exception {
+        NewznabXmlRoot rssRoot = getRssRootFromXml("drunkenSlug_withSomeLimits.xml");
+
+        assertEquals(Integer.valueOf(44), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
+        assertEquals(Integer.valueOf(50), rssRoot.getRssChannel().getApiLimits().getApiMax());
+        assertNull(rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
+        assertEquals(Integer.valueOf(5), rssRoot.getRssChannel().getApiLimits().getGrabMax());
+    }
+
+    @Test
+    public void shouldParseResponseFromDrunkenSlugWithApilimits() throws Exception {
+        NewznabXmlRoot rssRoot = getRssRootFromXml("drunkenSlug_withLimits.xml");
+
+        assertEquals(Integer.valueOf(44), rssRoot.getRssChannel().getApiLimits().getApiCurrent());
+        assertEquals(Integer.valueOf(50), rssRoot.getRssChannel().getApiLimits().getApiMax());
+        assertEquals(Integer.valueOf(1), rssRoot.getRssChannel().getApiLimits().getGrabCurrent());
+        assertEquals("2019-11-19T09:26:45Z", rssRoot.getRssChannel().getApiLimits().getApiOldestTime().toString());
+        assertEquals("2019-11-19T10:10:10Z", rssRoot.getRssChannel().getApiLimits().getGrabOldestTime().toString());
+    }
+
+    @Test
     public void shouldParseResponseFromNzbFinder() throws Exception {
         NewznabXmlRoot rssRoot = getRssRootFromXml("nzbFinderResponse.xml");
 

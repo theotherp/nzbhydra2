@@ -56,6 +56,7 @@ public class Experiments {
     }
 
     @Test
+    @Ignore
     public void updateChangelogDates() throws Exception {
         File jsonFile = new File("..\\core\\src\\main\\resources\\changelog.json");
         OkHttpClient client = new OkHttpClient.Builder().build();

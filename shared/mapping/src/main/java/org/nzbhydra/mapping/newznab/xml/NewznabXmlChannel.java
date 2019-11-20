@@ -40,6 +40,9 @@ public class NewznabXmlChannel {
     @JsonProperty("response")
     private NewznabXmlResponse newznabResponse;
 
+    @XmlElement(name = "apilimits", namespace = "http://www.newznab.com/DTD/2010/feeds/attributes/")
+    @JsonProperty("apilimits")
+    private NewznabXmlApilimits apiLimits;
 
     @XmlElement(name = "item")
     private List<NewznabXmlItem> items = new ArrayList<>();

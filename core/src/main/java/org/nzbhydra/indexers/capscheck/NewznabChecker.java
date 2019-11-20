@@ -34,6 +34,7 @@ import org.nzbhydra.indexers.capscheck.CapsCheckRequest.CheckType;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlApilimits;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
@@ -148,13 +149,13 @@ public class NewznabChecker {
      */
     public CheckCapsResponse checkCaps(IndexerConfig indexerConfig) {
         List<CheckCapsRequest> requests = Arrays.asList(
-                new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVMAZE, "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TRAKT, "traktid", "1390", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVIMDB, "imdbid", "0944947", Arrays.asList("Thrones", "GOT")),
-                new CheckCapsRequest(indexerConfig, "movie", IdType.TMDB, "tmdbid", "24428", Arrays.asList("Avengers", "Vengadores")),
-                new CheckCapsRequest(indexerConfig, "movie", IdType.IMDB, "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
+            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
+            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
+            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVMAZE, "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
+            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TRAKT, "traktid", "1390", Arrays.asList("Thrones", "GOT")),
+            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVIMDB, "imdbid", "0944947", Arrays.asList("Thrones", "GOT")),
+            new CheckCapsRequest(indexerConfig, "movie", IdType.TMDB, "tmdbid", "24428", Arrays.asList("Avengers", "Vengadores")),
+            new CheckCapsRequest(indexerConfig, "movie", IdType.IMDB, "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
         );
 
         boolean allChecked = true;
@@ -197,6 +198,16 @@ public class NewznabChecker {
                 }
             }
             supportedIds = responses.stream().filter(SingleCheckCapsResponse::isSupported).map(SingleCheckCapsResponse::getIdType).collect(Collectors.toSet());
+            Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
+            if (responseWithLimits.isPresent()) {
+                logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
+                if (!indexerConfig.getHitLimit().isPresent()) {
+                    indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
+                }
+                if (!indexerConfig.getDownloadLimit().isPresent()) {
+                    indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
+                }
+            }
             if (supportedIds.isEmpty()) {
                 logger.info("Indexer {} does not support searching by any IDs", indexerConfig.getName());
             } else {
@@ -245,13 +256,13 @@ public class NewznabChecker {
 
     private List<CheckCapsResponse> checkCaps(CapsCheckRequest.CheckType checkType) {
         Predicate<IndexerConfig> isToBeCheckedPredicate = x ->
-                x.getState() == IndexerConfig.State.ENABLED
-                        && (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)
-                        && x.isConfigComplete()
-                        && (checkType == CheckType.ALL || !x.isAllCapsChecked());
+            x.getState() == IndexerConfig.State.ENABLED
+                && (x.getSearchModuleType() == SearchModuleType.NEWZNAB || x.getSearchModuleType() == SearchModuleType.TORZNAB)
+                && x.isConfigComplete()
+                && (checkType == CheckType.ALL || !x.isAllCapsChecked());
         List<IndexerConfig> configsToCheck = configProvider.getBaseConfig().getIndexers().stream()
-                .filter(isToBeCheckedPredicate)
-                .collect(Collectors.toList());
+            .filter(isToBeCheckedPredicate)
+            .collect(Collectors.toList());
         if (configsToCheck.isEmpty()) {
             logger.info("No indexers to check");
             return Collections.emptyList();
@@ -357,7 +368,7 @@ public class NewznabChecker {
             if (errorDescription.toLowerCase().contains("function not available") || errorDescription.toLowerCase().contains("does not support the requested query")) {
                 logger.error("Indexer {} reports that it doesn't support the ID type {}", request.indexerConfig.getName(), request.getIdType());
                 eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Doesn't support " + request.getIdType()));
-                return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null);
+                return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
             }
             logger.debug("RSS error from indexer {}: {}", request.indexerConfig.getName(), errorDescription);
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "RSS error from indexer: " + errorDescription));
@@ -368,19 +379,27 @@ public class NewznabChecker {
         if (rssRoot.getRssChannel().getItems().isEmpty()) {
             logger.info("Indexer {} probably doesn't support the ID type {}. It returned no results.", request.indexerConfig.getName(), request.getIdType());
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably doesn't support " + request.getIdType()));
-            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, rssRoot.getRssChannel().getGenerator());
+            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, rssRoot.getRssChannel().getGenerator(), null, null);
         }
         long countCorrectResults = rssRoot.getRssChannel().getItems().stream().filter(x -> request.getTitleExpectedToContain().stream().anyMatch(y -> x.getTitle().toLowerCase().contains(y.toLowerCase()))).count();
-        float percentCorrect = (100 * countCorrectResults) / rssRoot.getRssChannel().getItems().size();
+        float percentCorrect = (100 * countCorrectResults) / (float) rssRoot.getRssChannel().getItems().size();
         boolean supported = percentCorrect >= ID_THRESHOLD_PERCENT;
+        Integer maxApi = null;
+        Integer maxDownloads = null;
+        NewznabXmlApilimits apiLimits = rssRoot.getRssChannel().getApiLimits();
+        if (apiLimits != null) {
+            maxApi = apiLimits.getApiMax();
+            maxDownloads = apiLimits.getGrabMax();
+        }
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getIdType(), percentCorrect);
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably supports " + request.getIdType()));
-            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), true, rssRoot.getRssChannel().getGenerator());
+
+            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), true, rssRoot.getRssChannel().getGenerator(), maxApi, maxDownloads);
         } else {
             logger.info("Indexer {} probably doesn't support the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getIdType(), percentCorrect);
             eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Probably doesn't support " + request.getIdType()));
-            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, rssRoot.getRssChannel().getGenerator());
+            return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, rssRoot.getRssChannel().getGenerator(), maxApi, maxDownloads);
         }
     }
 
@@ -421,6 +440,8 @@ public class NewznabChecker {
         private IdType idType;
         private boolean supported;
         private String backend;
+        private Integer apiMax;
+        private Integer downloadsMax;
     }
 
     @AllArgsConstructor

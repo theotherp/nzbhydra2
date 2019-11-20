@@ -1,0 +1,1235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  -->
+
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:newznab="http://www.newznab.com/DTD/2010/feeds/attributes/" encoding="utf-8">
+    <channel>
+        <atom:link href="https://drunkenslug.com/api" rel="self" type="application/rss+xml"/>
+        <title>DS</title>
+        <description>DS API Details</description>
+        <link>https://drunkenslug.com/</link>
+        <language>en-gb</language>
+        <webMaster>ds@drunkenslug.com DS</webMaster>
+        <category>drunkenslug, usenet indexer, nzb, search nzb, newznab, nzedb, newsgroups, giganews, astraweb, sabnzbd, sonarr, nzbget, usenet, search usenet&#13;
+        </category>
+        <generator>nZEDb</generator>
+        <ttl>10</ttl>
+        <docs>https://drunkenslug.com/apihelp/</docs>
+        <image url="https://drunkenslug.com/themes/shared/img/logo.png" title="DS" link="https://drunkenslug.com/" description="Visit DS - DrunkenSlug"/>
+        <newznab:response offset="0" total="7800"/>
+        <newznab:apilimits apiCurrent="44" apiMax="50" grabCurrent="1" grabMax="5" apiOldestTime="Tue, 19 Nov 2019 09:26:45 +0000" grabOldestTime="Tue, 19 Nov 2019 10:10:10 +0000"/>
+        <item>
+            <title>Tyler.Perry's.House.of.Payne.-.S03E02.-.The.Big.Bang.Theory.DVD</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c6387485af5a65eabefa1aa0174bcab34f221ad7</guid>
+            <link>https://drunkenslug.com/getnzb/c6387485af5a65eabefa1aa0174bcab34f221ad7.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/c6387485af5a65eabefa1aa0174bcab34f221ad7#comments</comments>
+            <pubDate>Tue, 19 Nov 2019 09:26:45 +0000</pubDate>
+            <category>TV &gt; Other</category>
+            <description>Tyler.Perry's.House.of.Payne.-.S03E02.-.The.Big.Bang.Theory.DVD</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c6387485af5a65eabefa1aa0174bcab34f221ad7.nzb&amp;i=1882&amp;r=apikey" length="174592184" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="174592184"/>
+        </item>
+        <item>
+            <title>Bye.Bye.Big.Bang.Theory.Das.Special.GERMAN.1080p.HDTV.x264-VoDTv</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/79c38d2aeb227db58f52f25d66b092fd84acfb16</guid>
+            <link>https://drunkenslug.com/getnzb/79c38d2aeb227db58f52f25d66b092fd84acfb16.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/79c38d2aeb227db58f52f25d66b092fd84acfb16#comments</comments>
+            <pubDate>Sat, 16 Nov 2019 19:46:35 +0000</pubDate>
+            <category>Movies &gt; Foreign</category>
+            <description>Bye.Bye.Big.Bang.Theory.Das.Special.GERMAN.1080p.HDTV.x264-VoDTv</description>
+            <enclosure url="https://drunkenslug.com/getnzb/79c38d2aeb227db58f52f25d66b092fd84acfb16.nzb&amp;i=1882&amp;r=apikey" length="732604978" type="application/x-nzb"/>
+            <newznab:attr name="category" value="2010"/>
+            <newznab:attr name="size" value="732604978"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E20.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4212a55a1334d29b87a0e06d40a504b101e037e5</guid>
+            <link>https://drunkenslug.com/getnzb/4212a55a1334d29b87a0e06d40a504b101e037e5.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/4212a55a1334d29b87a0e06d40a504b101e037e5#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:25:31 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E20.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4212a55a1334d29b87a0e06d40a504b101e037e5.nzb&amp;i=1882&amp;r=apikey" length="1771812148" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771812148"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E01.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/c7e655bd2303ee84471082dfed52f818e3051917</guid>
+            <link>https://drunkenslug.com/getnzb/c7e655bd2303ee84471082dfed52f818e3051917.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/c7e655bd2303ee84471082dfed52f818e3051917#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:23:16 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E01.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/c7e655bd2303ee84471082dfed52f818e3051917.nzb&amp;i=1882&amp;r=apikey" length="1770409792" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770409792"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E14.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/8124e8d74d4705dfef2b7b8ac2efb730dd0c2a68</guid>
+            <link>https://drunkenslug.com/getnzb/8124e8d74d4705dfef2b7b8ac2efb730dd0c2a68.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/8124e8d74d4705dfef2b7b8ac2efb730dd0c2a68#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:21:17 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E14.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/8124e8d74d4705dfef2b7b8ac2efb730dd0c2a68.nzb&amp;i=1882&amp;r=apikey" length="1771575581" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771575581"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E02.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/0cda63822430822c585e8b58a5c1823cc07c038a</guid>
+            <link>https://drunkenslug.com/getnzb/0cda63822430822c585e8b58a5c1823cc07c038a.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/0cda63822430822c585e8b58a5c1823cc07c038a#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:21:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E02.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/0cda63822430822c585e8b58a5c1823cc07c038a.nzb&amp;i=1882&amp;r=apikey" length="2662092707" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2662092707"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E08.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5cb957ef36c0ebabb786597a1474c13ecf7f0083</guid>
+            <link>https://drunkenslug.com/getnzb/5cb957ef36c0ebabb786597a1474c13ecf7f0083.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/5cb957ef36c0ebabb786597a1474c13ecf7f0083#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:19:17 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E08.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5cb957ef36c0ebabb786597a1474c13ecf7f0083.nzb&amp;i=1882&amp;r=apikey" length="2661610994" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2661610994"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E07.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/813396ab35310f540f6b915d31c93e89b27edfbf</guid>
+            <link>https://drunkenslug.com/getnzb/813396ab35310f540f6b915d31c93e89b27edfbf.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/813396ab35310f540f6b915d31c93e89b27edfbf#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:17:08 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E07.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/813396ab35310f540f6b915d31c93e89b27edfbf.nzb&amp;i=1882&amp;r=apikey" length="1770480674" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770480674"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E12.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ac8646b0504d720fdb2da8c4b4755295ff55d508</guid>
+            <link>https://drunkenslug.com/getnzb/ac8646b0504d720fdb2da8c4b4755295ff55d508.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ac8646b0504d720fdb2da8c4b4755295ff55d508#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:15:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E12.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ac8646b0504d720fdb2da8c4b4755295ff55d508.nzb&amp;i=1882&amp;r=apikey" length="1771392262" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771392262"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E17.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e904b547cd33575d5b47084a85f2caa5d67a3096</guid>
+            <link>https://drunkenslug.com/getnzb/e904b547cd33575d5b47084a85f2caa5d67a3096.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/e904b547cd33575d5b47084a85f2caa5d67a3096#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:13:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E17.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e904b547cd33575d5b47084a85f2caa5d67a3096.nzb&amp;i=1882&amp;r=apikey" length="1771707501" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771707501"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/8cbc667a92c383346cfb80e632534c35c4d67a13</guid>
+            <link>https://drunkenslug.com/getnzb/8cbc667a92c383346cfb80e632534c35c4d67a13.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/8cbc667a92c383346cfb80e632534c35c4d67a13#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:11:17 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E24.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/8cbc667a92c383346cfb80e632534c35c4d67a13.nzb&amp;i=1882&amp;r=apikey" length="2661571235" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2661571235"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E18.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/32ae6b7927853b6383733676cff682875d33dc5a</guid>
+            <link>https://drunkenslug.com/getnzb/32ae6b7927853b6383733676cff682875d33dc5a.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/32ae6b7927853b6383733676cff682875d33dc5a#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:11:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E18.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/32ae6b7927853b6383733676cff682875d33dc5a.nzb&amp;i=1882&amp;r=apikey" length="2660708469" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2660708469"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E21.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/bd12782a5639670448534047ec4b46ed42ee32e5</guid>
+            <link>https://drunkenslug.com/getnzb/bd12782a5639670448534047ec4b46ed42ee32e5.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/bd12782a5639670448534047ec4b46ed42ee32e5#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:07:24 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E21.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/bd12782a5639670448534047ec4b46ed42ee32e5.nzb&amp;i=1882&amp;r=apikey" length="1770214899" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770214899"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E15.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b12a82f8cd9631b8888eca37f8447ac114d0a579</guid>
+            <link>https://drunkenslug.com/getnzb/b12a82f8cd9631b8888eca37f8447ac114d0a579.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b12a82f8cd9631b8888eca37f8447ac114d0a579#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:07:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E15.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b12a82f8cd9631b8888eca37f8447ac114d0a579.nzb&amp;i=1882&amp;r=apikey" length="2660540856" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2660540856"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E04.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3bafb28c1ba0f55b8c9d7e450ec4f1dc7890c064</guid>
+            <link>https://drunkenslug.com/getnzb/3bafb28c1ba0f55b8c9d7e450ec4f1dc7890c064.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/3bafb28c1ba0f55b8c9d7e450ec4f1dc7890c064#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:05:16 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E04.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3bafb28c1ba0f55b8c9d7e450ec4f1dc7890c064.nzb&amp;i=1882&amp;r=apikey" length="1771402945" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771402945"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E11.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/335d7560c8a198ea1237ddec5359af48770d37aa</guid>
+            <link>https://drunkenslug.com/getnzb/335d7560c8a198ea1237ddec5359af48770d37aa.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/335d7560c8a198ea1237ddec5359af48770d37aa#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:03:16 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E11.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/335d7560c8a198ea1237ddec5359af48770d37aa.nzb&amp;i=1882&amp;r=apikey" length="1771396514" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771396514"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E06.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/56fefd12c37b75aa9df203d60a9ba0587be485ce</guid>
+            <link>https://drunkenslug.com/getnzb/56fefd12c37b75aa9df203d60a9ba0587be485ce.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/56fefd12c37b75aa9df203d60a9ba0587be485ce#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:03:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E06.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/56fefd12c37b75aa9df203d60a9ba0587be485ce.nzb&amp;i=1882&amp;r=apikey" length="1771845572" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771845572"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E19.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ecf38ab5191d1d9c836be79702cb89a6793d29f1</guid>
+            <link>https://drunkenslug.com/getnzb/ecf38ab5191d1d9c836be79702cb89a6793d29f1.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ecf38ab5191d1d9c836be79702cb89a6793d29f1#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:01:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E19.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ecf38ab5191d1d9c836be79702cb89a6793d29f1.nzb&amp;i=1882&amp;r=apikey" length="1771790336" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771790336"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E05.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3248ffdf23f3069e248317c33d0ae20f1b61912e</guid>
+            <link>https://drunkenslug.com/getnzb/3248ffdf23f3069e248317c33d0ae20f1b61912e.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/3248ffdf23f3069e248317c33d0ae20f1b61912e#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 02:01:25 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E05.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3248ffdf23f3069e248317c33d0ae20f1b61912e.nzb&amp;i=1882&amp;r=apikey" length="1771559836" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771559836"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E10.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/15c4840aaf8c0a008e6c8faf102e005e4fa9a867</guid>
+            <link>https://drunkenslug.com/getnzb/15c4840aaf8c0a008e6c8faf102e005e4fa9a867.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/15c4840aaf8c0a008e6c8faf102e005e4fa9a867#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:59:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E10.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/15c4840aaf8c0a008e6c8faf102e005e4fa9a867.nzb&amp;i=1882&amp;r=apikey" length="2661364062" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2661364062"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E16.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b02a2ddbe3925001089fc7c132a02600aa59de0b</guid>
+            <link>https://drunkenslug.com/getnzb/b02a2ddbe3925001089fc7c132a02600aa59de0b.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b02a2ddbe3925001089fc7c132a02600aa59de0b#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:59:16 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E16.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b02a2ddbe3925001089fc7c132a02600aa59de0b.nzb&amp;i=1882&amp;r=apikey" length="1771390395" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771390395"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E03.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b3cdd7140aa88962fc2795551952d2674d0fe4a8</guid>
+            <link>https://drunkenslug.com/getnzb/b3cdd7140aa88962fc2795551952d2674d0fe4a8.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b3cdd7140aa88962fc2795551952d2674d0fe4a8#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:55:16 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E03.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b3cdd7140aa88962fc2795551952d2674d0fe4a8.nzb&amp;i=1882&amp;r=apikey" length="1770414824" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770414824"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E23.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/089d4d7201ff0458144e09fd32895fc767e6d216</guid>
+            <link>https://drunkenslug.com/getnzb/089d4d7201ff0458144e09fd32895fc767e6d216.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/089d4d7201ff0458144e09fd32895fc767e6d216#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:55:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E23.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/089d4d7201ff0458144e09fd32895fc767e6d216.nzb&amp;i=1882&amp;r=apikey" length="1771944646" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771944646"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E13.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ee3f4b39d4cf23ee5cb89f69af8c9d3416cc2150</guid>
+            <link>https://drunkenslug.com/getnzb/ee3f4b39d4cf23ee5cb89f69af8c9d3416cc2150.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ee3f4b39d4cf23ee5cb89f69af8c9d3416cc2150#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:53:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E13.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ee3f4b39d4cf23ee5cb89f69af8c9d3416cc2150.nzb&amp;i=1882&amp;r=apikey" length="1770884367" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770884367"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E09.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/901343d7ce22bd7f035d6bf27b5b01914e1f7dc7</guid>
+            <link>https://drunkenslug.com/getnzb/901343d7ce22bd7f035d6bf27b5b01914e1f7dc7.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/901343d7ce22bd7f035d6bf27b5b01914e1f7dc7#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:53:24 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E09.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/901343d7ce22bd7f035d6bf27b5b01914e1f7dc7.nzb&amp;i=1882&amp;r=apikey" length="1771723604" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771723604"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E22.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/a3dbbc50293adaae896e5e346017b8acf49b736c</guid>
+            <link>https://drunkenslug.com/getnzb/a3dbbc50293adaae896e5e346017b8acf49b736c.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/a3dbbc50293adaae896e5e346017b8acf49b736c#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 01:53:32 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E22.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/a3dbbc50293adaae896e5e346017b8acf49b736c.nzb&amp;i=1882&amp;r=apikey" length="1771504024" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771504024"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/f430e359eea8288c9cb9c7cf25193e0f6e30b448</guid>
+            <link>https://drunkenslug.com/getnzb/f430e359eea8288c9cb9c7cf25193e0f6e30b448.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/f430e359eea8288c9cb9c7cf25193e0f6e30b448#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:17:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E24.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/f430e359eea8288c9cb9c7cf25193e0f6e30b448.nzb&amp;i=1882&amp;r=apikey" length="2661572291" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2661572291"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E21.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4ae1dae4f169014fe29d3966cf73fb2a7a791edd</guid>
+            <link>https://drunkenslug.com/getnzb/4ae1dae4f169014fe29d3966cf73fb2a7a791edd.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/4ae1dae4f169014fe29d3966cf73fb2a7a791edd#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:13:18 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E21.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4ae1dae4f169014fe29d3966cf73fb2a7a791edd.nzb&amp;i=1882&amp;r=apikey" length="1770211233" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770211233"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E14.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/795550e3b5ce1acb71679ad274a78c806960ea1d</guid>
+            <link>https://drunkenslug.com/getnzb/795550e3b5ce1acb71679ad274a78c806960ea1d.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/795550e3b5ce1acb71679ad274a78c806960ea1d#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:11:09 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E14.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/795550e3b5ce1acb71679ad274a78c806960ea1d.nzb&amp;i=1882&amp;r=apikey" length="1771579571" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771579571"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E23.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/28e389bb69d1fdb244d71a038bba76c289b1ed7e</guid>
+            <link>https://drunkenslug.com/getnzb/28e389bb69d1fdb244d71a038bba76c289b1ed7e.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/28e389bb69d1fdb244d71a038bba76c289b1ed7e#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:11:18 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E23.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/28e389bb69d1fdb244d71a038bba76c289b1ed7e.nzb&amp;i=1882&amp;r=apikey" length="1771941947" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771941947"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E17.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/6995edc2c2b93e6601b40f219ec855212bc2f4bf</guid>
+            <link>https://drunkenslug.com/getnzb/6995edc2c2b93e6601b40f219ec855212bc2f4bf.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/6995edc2c2b93e6601b40f219ec855212bc2f4bf#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:03:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E17.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/6995edc2c2b93e6601b40f219ec855212bc2f4bf.nzb&amp;i=1882&amp;r=apikey" length="1771708457" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771708457"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E19.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/17a3e9b922635d1464cb4eb77a9e81558c96f46c</guid>
+            <link>https://drunkenslug.com/getnzb/17a3e9b922635d1464cb4eb77a9e81558c96f46c.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/17a3e9b922635d1464cb4eb77a9e81558c96f46c#comments</comments>
+            <pubDate>Fri, 01 Nov 2019 00:01:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E19.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/17a3e9b922635d1464cb4eb77a9e81558c96f46c.nzb&amp;i=1882&amp;r=apikey" length="1771796458" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771796458"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E13.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/be0179771b246a8ac234394768d304ea36c0c35c</guid>
+            <link>https://drunkenslug.com/getnzb/be0179771b246a8ac234394768d304ea36c0c35c.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/be0179771b246a8ac234394768d304ea36c0c35c#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:57:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E13.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/be0179771b246a8ac234394768d304ea36c0c35c.nzb&amp;i=1882&amp;r=apikey" length="1770878805" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770878805"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E11.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ec12d34002190c30369104beec9efd912eab6c66</guid>
+            <link>https://drunkenslug.com/getnzb/ec12d34002190c30369104beec9efd912eab6c66.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ec12d34002190c30369104beec9efd912eab6c66#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:53:26 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E11.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ec12d34002190c30369104beec9efd912eab6c66.nzb&amp;i=1882&amp;r=apikey" length="1771396323" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771396323"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E09.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/36941f772c30985c24d7fbfb1590d3d950e22d72</guid>
+            <link>https://drunkenslug.com/getnzb/36941f772c30985c24d7fbfb1590d3d950e22d72.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/36941f772c30985c24d7fbfb1590d3d950e22d72#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:53:18 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E09.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/36941f772c30985c24d7fbfb1590d3d950e22d72.nzb&amp;i=1882&amp;r=apikey" length="1771723889" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771723889"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E07.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b81fa2947ca8aca8aa6bb4ae3513afaa17fcfeab</guid>
+            <link>https://drunkenslug.com/getnzb/b81fa2947ca8aca8aa6bb4ae3513afaa17fcfeab.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b81fa2947ca8aca8aa6bb4ae3513afaa17fcfeab#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:51:10 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E07.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b81fa2947ca8aca8aa6bb4ae3513afaa17fcfeab.nzb&amp;i=1882&amp;r=apikey" length="1770479859" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1770479859"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E06.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/360cc2b814b2480a002719f47577d3b6f4f94476</guid>
+            <link>https://drunkenslug.com/getnzb/360cc2b814b2480a002719f47577d3b6f4f94476.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/360cc2b814b2480a002719f47577d3b6f4f94476#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:45:22 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E06.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/360cc2b814b2480a002719f47577d3b6f4f94476.nzb&amp;i=1882&amp;r=apikey" length="1771845222" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771845222"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E05.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/dcff4e9b688197b668b269a35ecc7d449d36551e</guid>
+            <link>https://drunkenslug.com/getnzb/dcff4e9b688197b668b269a35ecc7d449d36551e.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/dcff4e9b688197b668b269a35ecc7d449d36551e#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:45:41 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E05.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/dcff4e9b688197b668b269a35ecc7d449d36551e.nzb&amp;i=1882&amp;r=apikey" length="1771560159" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1771560159"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E02.1080p.BluRay.x264-ROVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/d67a47cb687e0055904b6374ec15b2dc346cfa4d</guid>
+            <link>https://drunkenslug.com/getnzb/d67a47cb687e0055904b6374ec15b2dc346cfa4d.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/d67a47cb687e0055904b6374ec15b2dc346cfa4d#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 23:45:12 +0000</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E02.1080p.BluRay.x264-ROVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/d67a47cb687e0055904b6374ec15b2dc346cfa4d.nzb&amp;i=1882&amp;r=apikey" length="2662086333" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="2662086333"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/dbed963c79a139c451bf28ca27d321ff16ff9c73</guid>
+            <link>https://drunkenslug.com/getnzb/dbed963c79a139c451bf28ca27d321ff16ff9c73.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/dbed963c79a139c451bf28ca27d321ff16ff9c73#comments</comments>
+            <pubDate>Thu, 31 Oct 2019 14:31:41 +0000</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/dbed963c79a139c451bf28ca27d321ff16ff9c73.nzb&amp;i=1882&amp;r=apikey" length="167670989" type="application/x-nzb"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="167670989"/>
+        </item>
+        <item>
+            <title>(????) [30/39] - &quot;The Big Bang Theory S10.vol000+82.par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/a22de7c4675c519bb4fd8073e4f477a378e9bf7d</guid>
+            <link>https://drunkenslug.com/getnzb/a22de7c4675c519bb4fd8073e4f477a378e9bf7d.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/a22de7c4675c519bb4fd8073e4f477a378e9bf7d#comments</comments>
+            <pubDate>Mon, 14 Oct 2019 08:52:06 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>(????) [30/39] - &quot;The Big Bang Theory S10.vol000+82.par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/a22de7c4675c519bb4fd8073e4f477a378e9bf7d.nzb&amp;i=1882&amp;r=apikey" length="22614352731" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="22614352731"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ec0bd66d78a34a9fbe6676d27444dab7f9eda5c3</guid>
+            <link>https://drunkenslug.com/getnzb/ec0bd66d78a34a9fbe6676d27444dab7f9eda5c3.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ec0bd66d78a34a9fbe6676d27444dab7f9eda5c3#comments</comments>
+            <pubDate>Sun, 13 Oct 2019 00:28:38 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ec0bd66d78a34a9fbe6676d27444dab7f9eda5c3.nzb&amp;i=1882&amp;r=apikey" length="167596710" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="167596710"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E16.Die.Prominenten-Peinlichkeit.German.DD51.Dubbed.DL.1080p.AmazonHD.x264-TVS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/6c4488ec56e89fe480b04c074475de7e4c6309b4</guid>
+            <link>https://drunkenslug.com/getnzb/6c4488ec56e89fe480b04c074475de7e4c6309b4.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/6c4488ec56e89fe480b04c074475de7e4c6309b4#comments</comments>
+            <pubDate>Wed, 09 Oct 2019 09:15:31 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E16.Die.Prominenten-Peinlichkeit.German.DD51.Dubbed.DL.1080p.AmazonHD.x264-TVS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/6c4488ec56e89fe480b04c074475de7e4c6309b4.nzb&amp;i=1882&amp;r=apikey" length="204931586" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="204931586"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E18.GERMAN.DUBBED.720p.WEB.h264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/69478a8ec4b21434f884d01f39c313e52235c58e</guid>
+            <link>https://drunkenslug.com/getnzb/69478a8ec4b21434f884d01f39c313e52235c58e.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/69478a8ec4b21434f884d01f39c313e52235c58e#comments</comments>
+            <pubDate>Thu, 03 Oct 2019 18:48:52 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E18.GERMAN.DUBBED.720p.WEB.h264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/69478a8ec4b21434f884d01f39c313e52235c58e.nzb&amp;i=1882&amp;r=apikey" length="772770753" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="772770753"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/490f6e9137e7cad588fa70a20bbf1d722797e6bd</guid>
+            <link>https://drunkenslug.com/getnzb/490f6e9137e7cad588fa70a20bbf1d722797e6bd.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/490f6e9137e7cad588fa70a20bbf1d722797e6bd#comments</comments>
+            <pubDate>Wed, 25 Sep 2019 08:05:57 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E12.GERMAN.DUBBED.WEBRiP.x264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/490f6e9137e7cad588fa70a20bbf1d722797e6bd.nzb&amp;i=1882&amp;r=apikey" length="167625938" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="167625938"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E16.GERMAN.DUBBED.720p.WEB.h264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/45695e1b1819f108ad6ced3a771da27243fdf2e8</guid>
+            <link>https://drunkenslug.com/getnzb/45695e1b1819f108ad6ced3a771da27243fdf2e8.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/45695e1b1819f108ad6ced3a771da27243fdf2e8#comments</comments>
+            <pubDate>Wed, 18 Sep 2019 18:54:48 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E16.GERMAN.DUBBED.720p.WEB.h264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/45695e1b1819f108ad6ced3a771da27243fdf2e8.nzb&amp;i=1882&amp;r=apikey" length="724874725" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="724874725"/>
+        </item>
+        <item>
+            <title>Big.Bang.Theory.A.XXX.Parody.XXX.DVDRip.XVID-DFA</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/4e970ef69f512f324936c7c3139323d09172c8a9</guid>
+            <link>https://drunkenslug.com/getnzb/4e970ef69f512f324936c7c3139323d09172c8a9.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/4e970ef69f512f324936c7c3139323d09172c8a9#comments</comments>
+            <pubDate>Mon, 16 Sep 2019 23:27:23 +0100</pubDate>
+            <category>XXX &gt; XviD</category>
+            <description>Big.Bang.Theory.A.XXX.Parody.XXX.DVDRip.XVID-DFA</description>
+            <enclosure url="https://drunkenslug.com/getnzb/4e970ef69f512f324936c7c3139323d09172c8a9.nzb&amp;i=1882&amp;r=apikey" length="3319947721" type="application/x-nzb"/>
+            <newznab:attr name="category" value="6030"/>
+            <newznab:attr name="size" value="3319947721"/>
+        </item>
+        <item>
+            <title>Big.Bang.Theory.A.XXX.Parody.XXX.DVDRip.XVID-DFA</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/9788ca9fc5f91d2acd94e3b6caaa937eb7e6ca77</guid>
+            <link>https://drunkenslug.com/getnzb/9788ca9fc5f91d2acd94e3b6caaa937eb7e6ca77.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/9788ca9fc5f91d2acd94e3b6caaa937eb7e6ca77#comments</comments>
+            <pubDate>Fri, 13 Sep 2019 16:52:23 +0100</pubDate>
+            <category>XXX &gt; XviD</category>
+            <description>Big.Bang.Theory.A.XXX.Parody.XXX.DVDRip.XVID-DFA</description>
+            <enclosure url="https://drunkenslug.com/getnzb/9788ca9fc5f91d2acd94e3b6caaa937eb7e6ca77.nzb&amp;i=1882&amp;r=apikey" length="3324640945" type="application/x-nzb"/>
+            <newznab:attr name="category" value="6030"/>
+            <newznab:attr name="size" value="3324640945"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E15.GERMAN.DUBBED.720p.WEB.h264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/0608c65078935e277f06a669bfacc10975d53932</guid>
+            <link>https://drunkenslug.com/getnzb/0608c65078935e277f06a669bfacc10975d53932.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/0608c65078935e277f06a669bfacc10975d53932#comments</comments>
+            <pubDate>Wed, 11 Sep 2019 06:20:22 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E15.GERMAN.DUBBED.720p.WEB.h264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/0608c65078935e277f06a669bfacc10975d53932.nzb&amp;i=1882&amp;r=apikey" length="730932331" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="730932331"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E14.GERMAN.DUBBED.720p.WEB.h264-idTV</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/17434baf5324e894a8cdebd43ac72f6ec3aa03c7</guid>
+            <link>https://drunkenslug.com/getnzb/17434baf5324e894a8cdebd43ac72f6ec3aa03c7.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/17434baf5324e894a8cdebd43ac72f6ec3aa03c7#comments</comments>
+            <pubDate>Wed, 04 Sep 2019 06:29:44 +0100</pubDate>
+            <category>TV &gt; Foreign</category>
+            <description>The.Big.Bang.Theory.S12E14.GERMAN.DUBBED.720p.WEB.h264-idTV</description>
+            <enclosure url="https://drunkenslug.com/getnzb/17434baf5324e894a8cdebd43ac72f6ec3aa03c7.nzb&amp;i=1882&amp;r=apikey" length="577410944" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5020"/>
+            <newznab:attr name="size" value="577410944"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E01.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ff8f787e52de07450784ee311e9baea313c9d576</guid>
+            <link>https://drunkenslug.com/getnzb/ff8f787e52de07450784ee311e9baea313c9d576.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ff8f787e52de07450784ee311e9baea313c9d576#comments</comments>
+            <pubDate>Fri, 16 Aug 2019 16:01:19 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E01.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ff8f787e52de07450784ee311e9baea313c9d576.nzb&amp;i=1882&amp;r=apikey" length="655288551" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="655288551"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E18.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/a9c6e522ff32d504c10c798d13ec6dff0aa53804</guid>
+            <link>https://drunkenslug.com/getnzb/a9c6e522ff32d504c10c798d13ec6dff0aa53804.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/a9c6e522ff32d504c10c798d13ec6dff0aa53804#comments</comments>
+            <pubDate>Thu, 08 Aug 2019 09:48:20 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E18.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/a9c6e522ff32d504c10c798d13ec6dff0aa53804.nzb&amp;i=1882&amp;r=apikey" length="1516102386" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1516102386"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E22.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/482daec797d95441ed82ff97d5009f51300ccc55</guid>
+            <link>https://drunkenslug.com/getnzb/482daec797d95441ed82ff97d5009f51300ccc55.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/482daec797d95441ed82ff97d5009f51300ccc55#comments</comments>
+            <pubDate>Thu, 08 Aug 2019 08:56:18 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E22.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/482daec797d95441ed82ff97d5009f51300ccc55.nzb&amp;i=1882&amp;r=apikey" length="1398428215" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1398428215"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E21.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/d1f6846405a2a2212b996226740f4f468d1aa0c8</guid>
+            <link>https://drunkenslug.com/getnzb/d1f6846405a2a2212b996226740f4f468d1aa0c8.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/d1f6846405a2a2212b996226740f4f468d1aa0c8#comments</comments>
+            <pubDate>Tue, 06 Aug 2019 12:56:39 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E21.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/d1f6846405a2a2212b996226740f4f468d1aa0c8.nzb&amp;i=1882&amp;r=apikey" length="1357781767" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1357781767"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E18.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/0fd74460a07967c1d010dfb797a7240730a7cc9d</guid>
+            <link>https://drunkenslug.com/getnzb/0fd74460a07967c1d010dfb797a7240730a7cc9d.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/0fd74460a07967c1d010dfb797a7240730a7cc9d#comments</comments>
+            <pubDate>Thu, 01 Aug 2019 07:56:10 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E18.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/0fd74460a07967c1d010dfb797a7240730a7cc9d.nzb&amp;i=1882&amp;r=apikey" length="1468502031" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1468502031"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S11E09.720p.HDTV.x264-AVS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/747355bb54bfecf0fea89995f867fe6493770dec</guid>
+            <link>https://drunkenslug.com/getnzb/747355bb54bfecf0fea89995f867fe6493770dec.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/747355bb54bfecf0fea89995f867fe6493770dec#comments</comments>
+            <pubDate>Wed, 31 Jul 2019 13:34:25 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S11E09.720p.HDTV.x264-AVS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/747355bb54bfecf0fea89995f867fe6493770dec.nzb&amp;i=1882&amp;r=apikey" length="690286541" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="690286541"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S11E11.720p.HDTV.x264-AVS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b5ad0cfca934a37785a981c360833fb6920fdc7f</guid>
+            <link>https://drunkenslug.com/getnzb/b5ad0cfca934a37785a981c360833fb6920fdc7f.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b5ad0cfca934a37785a981c360833fb6920fdc7f#comments</comments>
+            <pubDate>Wed, 31 Jul 2019 13:34:25 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S11E11.720p.HDTV.x264-AVS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b5ad0cfca934a37785a981c360833fb6920fdc7f.nzb&amp;i=1882&amp;r=apikey" length="689323807" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="689323807"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S11E21.720p.HDTV.x264-AVS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/748180e6bfc2e6fa3ac5306f0959f63b6b2e974b</guid>
+            <link>https://drunkenslug.com/getnzb/748180e6bfc2e6fa3ac5306f0959f63b6b2e974b.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/748180e6bfc2e6fa3ac5306f0959f63b6b2e974b#comments</comments>
+            <pubDate>Wed, 31 Jul 2019 13:26:58 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S11E21.720p.HDTV.x264-AVS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/748180e6bfc2e6fa3ac5306f0959f63b6b2e974b.nzb&amp;i=1882&amp;r=apikey" length="722273291" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="722273291"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E14.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/14ac73334b13e5cdf4a15061d8dc667f10f1f1b0</guid>
+            <link>https://drunkenslug.com/getnzb/14ac73334b13e5cdf4a15061d8dc667f10f1f1b0.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/14ac73334b13e5cdf4a15061d8dc667f10f1f1b0#comments</comments>
+            <pubDate>Sun, 28 Jul 2019 11:36:11 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E14.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/14ac73334b13e5cdf4a15061d8dc667f10f1f1b0.nzb&amp;i=1882&amp;r=apikey" length="1299674981" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1299674981"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E15.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/479c8f8faa106316249154a3dd0b1b2ff984357d</guid>
+            <link>https://drunkenslug.com/getnzb/479c8f8faa106316249154a3dd0b1b2ff984357d.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/479c8f8faa106316249154a3dd0b1b2ff984357d#comments</comments>
+            <pubDate>Sun, 28 Jul 2019 11:36:26 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E15.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/479c8f8faa106316249154a3dd0b1b2ff984357d.nzb&amp;i=1882&amp;r=apikey" length="1444162556" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1444162556"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E12.MULTi.1080p.HDTV.H264-HYBRiS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/300232f5c2d39052746a9ec2da12b827bbe4f91f</guid>
+            <link>https://drunkenslug.com/getnzb/300232f5c2d39052746a9ec2da12b827bbe4f91f.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/300232f5c2d39052746a9ec2da12b827bbe4f91f#comments</comments>
+            <pubDate>Wed, 24 Jul 2019 07:21:29 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E12.MULTi.1080p.HDTV.H264-HYBRiS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/300232f5c2d39052746a9ec2da12b827bbe4f91f.nzb&amp;i=1882&amp;r=apikey" length="1356954322" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1356954322"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12e02.Multi.1080p.Hdtv.H264-hybris</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/6b4dab1f0c077732894b76a10689e2f9294d7e23</guid>
+            <link>https://drunkenslug.com/getnzb/6b4dab1f0c077732894b76a10689e2f9294d7e23.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/6b4dab1f0c077732894b76a10689e2f9294d7e23#comments</comments>
+            <pubDate>Tue, 09 Jul 2019 18:26:31 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12e02.Multi.1080p.Hdtv.H264-hybris</description>
+            <enclosure url="https://drunkenslug.com/getnzb/6b4dab1f0c077732894b76a10689e2f9294d7e23.nzb&amp;i=1882&amp;r=apikey" length="1492091162" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1492091162"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x23-24.La.Costante.Del.Cambiamento.La.Sindrome.Di.Stoccolma.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5d8334487cae3c9c2ee4e9df7ac9911d5400de97</guid>
+            <link>https://drunkenslug.com/getnzb/5d8334487cae3c9c2ee4e9df7ac9911d5400de97.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/5d8334487cae3c9c2ee4e9df7ac9911d5400de97#comments</comments>
+            <pubDate>Sat, 29 Jun 2019 12:26:49 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x23-24.La.Costante.Del.Cambiamento.La.Sindrome.Di.Stoccolma.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5d8334487cae3c9c2ee4e9df7ac9911d5400de97.nzb&amp;i=1882&amp;r=apikey" length="1477903180" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="1477903180"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x23-24.La.Costante.Del.Cambiamento.La.Sindrome.Di.Stoccolma.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/476202b51f04cda2c916a538cfa5db50efad120c</guid>
+            <link>https://drunkenslug.com/getnzb/476202b51f04cda2c916a538cfa5db50efad120c.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/476202b51f04cda2c916a538cfa5db50efad120c#comments</comments>
+            <pubDate>Sat, 29 Jun 2019 12:34:04 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x23-24.La.Costante.Del.Cambiamento.La.Sindrome.Di.Stoccolma.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/476202b51f04cda2c916a538cfa5db50efad120c.nzb&amp;i=1882&amp;r=apikey" length="10157601400" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="10157601400"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x22.La.Conclusione.Materna.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/1af435499b7250bce4c387c31113901466ea46a3</guid>
+            <link>https://drunkenslug.com/getnzb/1af435499b7250bce4c387c31113901466ea46a3.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/1af435499b7250bce4c387c31113901466ea46a3#comments</comments>
+            <pubDate>Sat, 22 Jun 2019 14:25:33 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x22.La.Conclusione.Materna.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/1af435499b7250bce4c387c31113901466ea46a3.nzb&amp;i=1882&amp;r=apikey" length="4989019852" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4989019852"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x22.La.Conclusione.Materna.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e23617761454c74da8aa8736b06a4dc07a11cc39</guid>
+            <link>https://drunkenslug.com/getnzb/e23617761454c74da8aa8736b06a4dc07a11cc39.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/e23617761454c74da8aa8736b06a4dc07a11cc39#comments</comments>
+            <pubDate>Sat, 22 Jun 2019 13:58:01 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x22.La.Conclusione.Materna.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e23617761454c74da8aa8736b06a4dc07a11cc39.nzb&amp;i=1882&amp;r=apikey" length="742368408" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="742368408"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x21.Lo.Scisma.Del.Plagio.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5de149d52edf9b40c21ff9775d08e915237bd799</guid>
+            <link>https://drunkenslug.com/getnzb/5de149d52edf9b40c21ff9775d08e915237bd799.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/5de149d52edf9b40c21ff9775d08e915237bd799#comments</comments>
+            <pubDate>Sat, 22 Jun 2019 14:12:11 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x21.Lo.Scisma.Del.Plagio.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5de149d52edf9b40c21ff9775d08e915237bd799.nzb&amp;i=1882&amp;r=apikey" length="742351776" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="742351776"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x21.Lo.Scisma.Del.Plagio.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/d5dcbcf222fd32f8a6d72a601e1381d57664f577</guid>
+            <link>https://drunkenslug.com/getnzb/d5dcbcf222fd32f8a6d72a601e1381d57664f577.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/d5dcbcf222fd32f8a6d72a601e1381d57664f577#comments</comments>
+            <pubDate>Sat, 22 Jun 2019 13:54:20 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x21.Lo.Scisma.Del.Plagio.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/d5dcbcf222fd32f8a6d72a601e1381d57664f577.nzb&amp;i=1882&amp;r=apikey" length="4689099715" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4689099715"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x20.Il.Riverbero.Della.Decisione.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ca1260046577b8141df2ce2fe7fb9f3c96f59645</guid>
+            <link>https://drunkenslug.com/getnzb/ca1260046577b8141df2ce2fe7fb9f3c96f59645.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ca1260046577b8141df2ce2fe7fb9f3c96f59645#comments</comments>
+            <pubDate>Sat, 15 Jun 2019 21:37:59 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x20.Il.Riverbero.Della.Decisione.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ca1260046577b8141df2ce2fe7fb9f3c96f59645.nzb&amp;i=1882&amp;r=apikey" length="742375512" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="742375512"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x20.Il.Riverbero.Della.Decisione.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/883c1bea94023f54f383af70fe7008a2e20649cd</guid>
+            <link>https://drunkenslug.com/getnzb/883c1bea94023f54f383af70fe7008a2e20649cd.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/883c1bea94023f54f383af70fe7008a2e20649cd#comments</comments>
+            <pubDate>Sat, 15 Jun 2019 21:20:06 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x20.Il.Riverbero.Della.Decisione.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/883c1bea94023f54f383af70fe7008a2e20649cd.nzb&amp;i=1882&amp;r=apikey" length="4431051856" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="4431051856"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 12) [01/64] - &quot;Season 12 (2018-2019).part01.rar&quot; yEnc</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3c9b3e3ec596e20d616545a7600048d121618d4a</guid>
+            <link>https://drunkenslug.com/getnzb/3c9b3e3ec596e20d616545a7600048d121618d4a.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/3c9b3e3ec596e20d616545a7600048d121618d4a#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 23:20:24 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 12) [01/64] - &quot;Season 12 (2018-2019).part01.rar&quot; yEnc</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3c9b3e3ec596e20d616545a7600048d121618d4a.nzb&amp;i=1882&amp;r=apikey" length="34244342528" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="34244342528"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 10) [01/72] - &quot;Season 10 (2016-2017).par2&quot; yEnc</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/99f7ebfc233d800e43e95f43a3afdd3c4317b8db</guid>
+            <link>https://drunkenslug.com/getnzb/99f7ebfc233d800e43e95f43a3afdd3c4317b8db.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/99f7ebfc233d800e43e95f43a3afdd3c4317b8db#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 22:12:19 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 10) [01/72] - &quot;Season 10 (2016-2017).par2&quot; yEnc</description>
+            <enclosure url="https://drunkenslug.com/getnzb/99f7ebfc233d800e43e95f43a3afdd3c4317b8db.nzb&amp;i=1882&amp;r=apikey" length="35643455312" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="35643455312"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 9) [01/26] - &quot;Season 9 (2015-2016).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/25ad2847a03fec1db40c5711390205b6e3138f01</guid>
+            <link>https://drunkenslug.com/getnzb/25ad2847a03fec1db40c5711390205b6e3138f01.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/25ad2847a03fec1db40c5711390205b6e3138f01#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 21:37:15 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 9) [01/26] - &quot;Season 9 (2015-2016).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/25ad2847a03fec1db40c5711390205b6e3138f01.nzb&amp;i=1882&amp;r=apikey" length="9132449818" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="9132449818"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 8) [01/37] - &quot;Season 8 (2014-2015).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/5352d29684c58ae2b7da4c51073bb6d00ca45186</guid>
+            <link>https://drunkenslug.com/getnzb/5352d29684c58ae2b7da4c51073bb6d00ca45186.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/5352d29684c58ae2b7da4c51073bb6d00ca45186#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 21:28:49 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 8) [01/37] - &quot;Season 8 (2014-2015).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/5352d29684c58ae2b7da4c51073bb6d00ca45186.nzb&amp;i=1882&amp;r=apikey" length="15679816238" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="15679816238"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 7) [01/37] - &quot;Season 7 (2013-2014).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/ee9dc3c669ad55de09e840d7367c69e1350e426a</guid>
+            <link>https://drunkenslug.com/getnzb/ee9dc3c669ad55de09e840d7367c69e1350e426a.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/ee9dc3c669ad55de09e840d7367c69e1350e426a#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 21:19:02 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 7) [01/37] - &quot;Season 7 (2013-2014).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/ee9dc3c669ad55de09e840d7367c69e1350e426a.nzb&amp;i=1882&amp;r=apikey" length="16002418758" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="16002418758"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 6) [01/37] - &quot;Season 6 (2012-2013).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/eaf512b51d07ca58241ee2ad02f5409be9a4e9d0</guid>
+            <link>https://drunkenslug.com/getnzb/eaf512b51d07ca58241ee2ad02f5409be9a4e9d0.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/eaf512b51d07ca58241ee2ad02f5409be9a4e9d0#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 21:02:36 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 6) [01/37] - &quot;Season 6 (2012-2013).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/eaf512b51d07ca58241ee2ad02f5409be9a4e9d0.nzb&amp;i=1882&amp;r=apikey" length="15675403462" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="15675403462"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 5) [01/37] - &quot;Season 5 (2011-2012).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/58aa4c805996531d60229d4346da598187b5a015</guid>
+            <link>https://drunkenslug.com/getnzb/58aa4c805996531d60229d4346da598187b5a015.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/58aa4c805996531d60229d4346da598187b5a015#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 20:47:43 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 5) [01/37] - &quot;Season 5 (2011-2012).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/58aa4c805996531d60229d4346da598187b5a015.nzb&amp;i=1882&amp;r=apikey" length="15900921882" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="15900921882"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 4) [01/38] - &quot;Season 4 (2010-2011).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/e34097f6a91c8eb5720fd40ef53a566125b6bd4b</guid>
+            <link>https://drunkenslug.com/getnzb/e34097f6a91c8eb5720fd40ef53a566125b6bd4b.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/e34097f6a91c8eb5720fd40ef53a566125b6bd4b#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 20:34:51 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 4) [01/38] - &quot;Season 4 (2010-2011).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/e34097f6a91c8eb5720fd40ef53a566125b6bd4b.nzb&amp;i=1882&amp;r=apikey" length="16358762620" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="16358762620"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 3) [01/37] - &quot;Season 3 (2009-2010).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/380de8851a3ec26a47beed38cae9fadecf4db1ae</guid>
+            <link>https://drunkenslug.com/getnzb/380de8851a3ec26a47beed38cae9fadecf4db1ae.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/380de8851a3ec26a47beed38cae9fadecf4db1ae#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 20:15:08 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 3) [01/37] - &quot;Season 3 (2009-2010).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/380de8851a3ec26a47beed38cae9fadecf4db1ae.nzb&amp;i=1882&amp;r=apikey" length="15597662738" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="15597662738"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 2) [01/34] - &quot;Season 2 (2008-2009).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/d1b8752415f465050935323894160cf769c54757</guid>
+            <link>https://drunkenslug.com/getnzb/d1b8752415f465050935323894160cf769c54757.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/d1b8752415f465050935323894160cf769c54757#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 20:02:50 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 2) [01/34] - &quot;Season 2 (2008-2009).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/d1b8752415f465050935323894160cf769c54757.nzb&amp;i=1882&amp;r=apikey" length="13851268204" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="13851268204"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Season 1) [01/28] - &quot;Season 1 (2007-2008).par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/158db7d77fe98236d2304a06ef3f49917b517f27</guid>
+            <link>https://drunkenslug.com/getnzb/158db7d77fe98236d2304a06ef3f49917b517f27.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/158db7d77fe98236d2304a06ef3f49917b517f27#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 19:46:58 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Season 1) [01/28] - &quot;Season 1 (2007-2008).par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/158db7d77fe98236d2304a06ef3f49917b517f27.nzb&amp;i=1882&amp;r=apikey" length="10765305046" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="10765305046"/>
+        </item>
+        <item>
+            <title>(The Big Bang Theory - Bonus Material) [01/57] - &quot;Bonus Material.par2&quot;</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/a14f6c786ef9867b4224dd37d721f669f9f9a2d7</guid>
+            <link>https://drunkenslug.com/getnzb/a14f6c786ef9867b4224dd37d721f669f9f9a2d7.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/a14f6c786ef9867b4224dd37d721f669f9f9a2d7#comments</comments>
+            <pubDate>Sun, 09 Jun 2019 19:43:07 +0100</pubDate>
+            <category>Books &gt; Technical</category>
+            <description>(The Big Bang Theory - Bonus Material) [01/57] - &quot;Bonus Material.par2&quot;</description>
+            <enclosure url="https://drunkenslug.com/getnzb/a14f6c786ef9867b4224dd37d721f669f9f9a2d7.nzb&amp;i=1882&amp;r=apikey" length="27235430582" type="application/x-nzb"/>
+            <newznab:attr name="category" value="7040"/>
+            <newznab:attr name="size" value="27235430582"/>
+        </item>
+        <item>
+            <title>The.Curse.of.Oak.Island.S06E01.Ricks.Big.Bang.Theory.720p.WEB-DL.AAC2.0.x264-BTN</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/914aa0f6f1ac8a7ecc3e09555a6fb0fd2f06fb98</guid>
+            <link>https://drunkenslug.com/getnzb/914aa0f6f1ac8a7ecc3e09555a6fb0fd2f06fb98.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/914aa0f6f1ac8a7ecc3e09555a6fb0fd2f06fb98#comments</comments>
+            <pubDate>Wed, 05 Jun 2019 10:46:10 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Curse.of.Oak.Island.S06E01.Ricks.Big.Bang.Theory.720p.WEB-DL.AAC2.0.x264-BTN</description>
+            <enclosure url="https://drunkenslug.com/getnzb/914aa0f6f1ac8a7ecc3e09555a6fb0fd2f06fb98.nzb&amp;i=1882&amp;r=apikey" length="1812816132" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1812816132"/>
+        </item>
+        <item>
+            <title>Big Bang - The Big Bang Theory (Themes From Tv Series) (2011) MP3</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/11938f3f53eb48a293c07b73f3cb697411fce3df</guid>
+            <link>https://drunkenslug.com/getnzb/11938f3f53eb48a293c07b73f3cb697411fce3df.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/11938f3f53eb48a293c07b73f3cb697411fce3df#comments</comments>
+            <pubDate>Mon, 03 Jun 2019 09:00:12 +0100</pubDate>
+            <category>Audio &gt; MP3</category>
+            <description>Big Bang - The Big Bang Theory (Themes From Tv Series) (2011) MP3</description>
+            <enclosure url="https://drunkenslug.com/getnzb/11938f3f53eb48a293c07b73f3cb697411fce3df.nzb&amp;i=1882&amp;r=apikey" length="2096174652" type="application/x-nzb"/>
+            <newznab:attr name="category" value="3010"/>
+            <newznab:attr name="size" value="2096174652"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x18.La.Mobilitazione.Dei.Luminari.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/cf76520ed0e87e7a1b099d49e1cfe3e4805f84a8</guid>
+            <link>https://drunkenslug.com/getnzb/cf76520ed0e87e7a1b099d49e1cfe3e4805f84a8.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/cf76520ed0e87e7a1b099d49e1cfe3e4805f84a8#comments</comments>
+            <pubDate>Thu, 30 May 2019 08:58:15 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x18.La.Mobilitazione.Dei.Luminari.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/cf76520ed0e87e7a1b099d49e1cfe3e4805f84a8.nzb&amp;i=1882&amp;r=apikey" length="741949856" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="741949856"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x18.La.Mobilitazione.Dei.Luminari.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/773dbc05519ae1045cb386fc1ea136e2e561d3a2</guid>
+            <link>https://drunkenslug.com/getnzb/773dbc05519ae1045cb386fc1ea136e2e561d3a2.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/773dbc05519ae1045cb386fc1ea136e2e561d3a2#comments</comments>
+            <pubDate>Thu, 30 May 2019 08:39:53 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x18.La.Mobilitazione.Dei.Luminari.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/773dbc05519ae1045cb386fc1ea136e2e561d3a2.nzb&amp;i=1882&amp;r=apikey" length="5420094400" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5420094400"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/088fe0f50a7b858288e21b3b42c2c617be56729c</guid>
+            <link>https://drunkenslug.com/getnzb/088fe0f50a7b858288e21b3b42c2c617be56729c.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/088fe0f50a7b858288e21b3b42c2c617be56729c#comments</comments>
+            <pubDate>Sat, 25 May 2019 14:14:28 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/088fe0f50a7b858288e21b3b42c2c617be56729c.nzb&amp;i=1882&amp;r=apikey" length="742208650" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="742208650"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df</guid>
+            <link>https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df#comments</comments>
+            <pubDate>Sat, 25 May 2019 14:14:26 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey" length="5191924981" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5191924981"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df</guid>
+            <link>https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df#comments</comments>
+            <pubDate>Sat, 25 May 2019 14:14:26 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey" length="5191924981" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5191924981"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df</guid>
+            <link>https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/be2fc504ac770f90d19e885b56ca8731d8e2b9df#comments</comments>
+            <pubDate>Sat, 25 May 2019 14:14:26 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.12x17.La.Valutazione.Del.Convegno.ITA-ENG.1080p.WEBMux.x264-NovaRip</description>
+            <enclosure url="https://drunkenslug.com/getnzb/be2fc504ac770f90d19e885b56ca8731d8e2b9df.nzb&amp;i=1882&amp;r=apikey" length="5191924981" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="5191924981"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b0465c377de7bb597feb5a3aea6c72b561bb2c23</guid>
+            <link>https://drunkenslug.com/getnzb/b0465c377de7bb597feb5a3aea6c72b561bb2c23.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b0465c377de7bb597feb5a3aea6c72b561bb2c23#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:59:47 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b0465c377de7bb597feb5a3aea6c72b561bb2c23.nzb&amp;i=1882&amp;r=apikey" length="367817956" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="367817956"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/3dee1af8a3d38ae95cad05d115f536398e1caa94</guid>
+            <link>https://drunkenslug.com/getnzb/3dee1af8a3d38ae95cad05d115f536398e1caa94.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/3dee1af8a3d38ae95cad05d115f536398e1caa94#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:45:08 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/3dee1af8a3d38ae95cad05d115f536398e1caa94.nzb&amp;i=1882&amp;r=apikey" length="367011580" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="367011580"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/70bc975f7122f53de2b24ffaa1b5255f2e9fb164</guid>
+            <link>https://drunkenslug.com/getnzb/70bc975f7122f53de2b24ffaa1b5255f2e9fb164.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/70bc975f7122f53de2b24ffaa1b5255f2e9fb164#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:37:45 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.WEB.x264-TBS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/70bc975f7122f53de2b24ffaa1b5255f2e9fb164.nzb&amp;i=1882&amp;r=apikey" length="352772964" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="352772964"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.1080p.WEB.x264-TBS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/6cfd6ead1d7595f788eaed9c2b18599bc013d701</guid>
+            <link>https://drunkenslug.com/getnzb/6cfd6ead1d7595f788eaed9c2b18599bc013d701.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/6cfd6ead1d7595f788eaed9c2b18599bc013d701#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:41:28 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E24.Unraveling.the.Mystery.A.Big.Bang.Farewell.REAL.1080p.WEB.x264-TBS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/6cfd6ead1d7595f788eaed9c2b18599bc013d701.nzb&amp;i=1882&amp;r=apikey" length="734594587" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="734594587"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E24.1080p.HDTV.x264-CRAVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/b1cffc6a9c6892c0bda26b76776c112270f5e779</guid>
+            <link>https://drunkenslug.com/getnzb/b1cffc6a9c6892c0bda26b76776c112270f5e779.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/b1cffc6a9c6892c0bda26b76776c112270f5e779#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:30:19 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E24.1080p.HDTV.x264-CRAVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/b1cffc6a9c6892c0bda26b76776c112270f5e779.nzb&amp;i=1882&amp;r=apikey" length="1004730339" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1004730339"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E23E24.HDTV.x264-SVA</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/813144496126a596cbba15c8629b0564a2e5070f</guid>
+            <link>https://drunkenslug.com/getnzb/813144496126a596cbba15c8629b0564a2e5070f.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/813144496126a596cbba15c8629b0564a2e5070f#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:30:19 +0100</pubDate>
+            <category>TV &gt; SD</category>
+            <description>The.Big.Bang.Theory.S12E23E24.HDTV.x264-SVA</description>
+            <enclosure url="https://drunkenslug.com/getnzb/813144496126a596cbba15c8629b0564a2e5070f.nzb&amp;i=1882&amp;r=apikey" length="330557523" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5030"/>
+            <newznab:attr name="size" value="330557523"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E23.1080p.HDTV.x264-CRAVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/9eb63dcdd0a9dd73ed7d463ba91a9683f7d736f7</guid>
+            <link>https://drunkenslug.com/getnzb/9eb63dcdd0a9dd73ed7d463ba91a9683f7d736f7.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/9eb63dcdd0a9dd73ed7d463ba91a9683f7d736f7#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:26:36 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E23.1080p.HDTV.x264-CRAVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/9eb63dcdd0a9dd73ed7d463ba91a9683f7d736f7.nzb&amp;i=1882&amp;r=apikey" length="954841430" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="954841430"/>
+        </item>
+        <item>
+            <title>The.Big.Bang.Theory.S12E23.1080p.HDTV.x264-CRAVERS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/f96ddcb7ea7ec30aafc2013e3581add97ae2950a</guid>
+            <link>https://drunkenslug.com/getnzb/f96ddcb7ea7ec30aafc2013e3581add97ae2950a.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/f96ddcb7ea7ec30aafc2013e3581add97ae2950a#comments</comments>
+            <pubDate>Thu, 23 May 2019 16:04:33 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>The.Big.Bang.Theory.S12E23.1080p.HDTV.x264-CRAVERS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/f96ddcb7ea7ec30aafc2013e3581add97ae2950a.nzb&amp;i=1882&amp;r=apikey" length="890734489" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="890734489"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2019.05.16.Big.Bang.Theory.Cast.WEB.x264-TBS</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/413739764d0378d9f759c7a520e1099a67cf05b1</guid>
+            <link>https://drunkenslug.com/getnzb/413739764d0378d9f759c7a520e1099a67cf05b1.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/413739764d0378d9f759c7a520e1099a67cf05b1#comments</comments>
+            <pubDate>Thu, 23 May 2019 15:20:22 +0100</pubDate>
+            <category>TV &gt; Other</category>
+            <description>Stephen.Colbert.2019.05.16.Big.Bang.Theory.Cast.WEB.x264-TBS</description>
+            <enclosure url="https://drunkenslug.com/getnzb/413739764d0378d9f759c7a520e1099a67cf05b1.nzb&amp;i=1882&amp;r=apikey" length="692260036" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5999"/>
+            <newznab:attr name="size" value="692260036"/>
+        </item>
+        <item>
+            <title>Stephen.Colbert.2019.05.16.Big.Bang.Theory.Cast.1080p.Web.X264-tbs</title>
+            <guid isPermaLink="true">https://drunkenslug.com/details/902a35908309c2eea79b6bb34fe408b0c6a4cd2f</guid>
+            <link>https://drunkenslug.com/getnzb/902a35908309c2eea79b6bb34fe408b0c6a4cd2f.nzb&amp;i=1882&amp;r=apikey</link>
+            <comments>https://drunkenslug.com/details/902a35908309c2eea79b6bb34fe408b0c6a4cd2f#comments</comments>
+            <pubDate>Thu, 23 May 2019 15:16:36 +0100</pubDate>
+            <category>TV &gt; HD</category>
+            <description>Stephen.Colbert.2019.05.16.Big.Bang.Theory.Cast.1080p.Web.X264-tbs</description>
+            <enclosure url="https://drunkenslug.com/getnzb/902a35908309c2eea79b6bb34fe408b0c6a4cd2f.nzb&amp;i=1882&amp;r=apikey" length="1224205439" type="application/x-nzb"/>
+            <newznab:attr name="category" value="5040"/>
+            <newznab:attr name="size" value="1224205439"/>
+        </item>
+    </channel>
+</rss>

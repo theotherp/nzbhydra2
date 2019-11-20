@@ -31,11 +31,17 @@ public class JaxbPubdateAdapter extends XmlAdapter<String, Instant> {
 
     @Override
     public String marshal(Instant date) {
+        if (date == null) {
+            return null;
+        }
         return FORMAT_INSTANT_TO_STRING.format(date);
     }
 
     @Override
     public Instant unmarshal(String str) {
+        if (str == null) {
+            return null;
+        }
         return OffsetDateTime.parse(str, FORMAT_STRING_TO_INSTANT).toInstant();
     }
 }
