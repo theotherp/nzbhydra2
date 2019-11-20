@@ -60,7 +60,8 @@ public class IndexerUniquenessScoreSaver {
             Set<IndexerSearchEntity> allIndexerSearchesInvolved = getIndexersInvolved(searchResultEntity);
             Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity);
 
-            Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && x.getIndexerEntity() != searchResultEntity.getIndexer()).collect(Collectors.toSet());
+            Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && !x.getIndexerEntity().equals(searchResultEntity.getIndexer()))
+                .collect(Collectors.toSet());
 
             saveScoresToDatabase(searchResultEntity.getIndexer(), indexersContainingSameResult, allIndexerSearchesInvolved, involvedIndexersWithoutResult);
 
@@ -68,7 +69,7 @@ public class IndexerUniquenessScoreSaver {
             String indexerNamesWithoutResult = involvedIndexersWithoutResult.stream().map(x -> x.getIndexerEntity().getName()).collect(Collectors.joining(", "));
 
             if (indexersContainingSameResult.isEmpty()) {
-                logger.info("Title: \"{}\". Downloaded unique result from: {}. All other indexers without result: {}", searchResultEntity.getTitle(), indexerNamesWithResult, indexerNamesWithoutResult);
+                logger.info("Title: \"{}\". Downloaded unique result from: {}. All other indexers without result: {}", searchResultEntity.getTitle(), searchResultEntity.getIndexer().getName(), indexerNamesWithoutResult);
             } else {
                 logger.info("Title: \"{}\". Downloaded from: {}. Indexers with same result: {}. Indexers without result: {}", searchResultEntity.getTitle(), searchResultEntity.getIndexer().getName(), indexerNamesWithResult, indexerNamesWithoutResult);
             }
@@ -97,7 +98,7 @@ public class IndexerUniquenessScoreSaver {
         Set<SearchResultEntity> resultsWithSameTitle = searchResultRepository.findAllByTitleLikeIgnoreCase(searchResultEntity.getTitle().replaceAll("[ .\\-_]", "_"));
         Set<IndexerEntity> indexersContainingSameResult = new HashSet<>();
         for (SearchResultEntity searchResult : resultsWithSameTitle) {
-            if (searchResult.equals(searchResultEntity)) {
+            if (searchResult.getIndexer().equals(searchResultEntity.getIndexer())) {
                 continue;
             }
             if (!searchResult.getIndexerSearchEntity().getSuccessful()) {
