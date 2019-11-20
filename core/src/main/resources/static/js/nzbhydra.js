@@ -2170,9 +2170,11 @@ function downloaderStatusFooter() {
                     },
                     interactive: true,
                     useInteractiveGuideline: false,
+                    transitionDuration: 0,
                     showControls: false,
                     showLegend: false,
                     showValues: false,
+                    duration: 0,
                     tooltip: {
                         valueFormatter: function (d, i) {
                             return d + " kb/s";
@@ -2187,7 +2189,10 @@ function downloaderStatusFooter() {
             },
             data: [{values: [], key: "Bla", color: '#00a950'}],
             config: {
-                refreshDataOnly: true
+                refreshDataOnly: true,
+                deepWatchDataDepth: 0,
+                deepWatchData: false,
+                deepWatchOptions: false
             }
         };
 
@@ -2216,6 +2221,7 @@ function downloaderStatusFooter() {
                                 $scope.downloaderChart.data[0].values.splice(0, 1);
                                 $scope.downloaderChart.data[0].values.push({x: downloadRateCounter++, y: response.data.lastDownloadRate});
                             }
+                            $scope.api.update();
                             if ($scope.foo.state === "DOWNLOADING") {
                                 $scope.foo.buttonClass = "play";
                             } else if ($scope.foo.state === "PAUSED") {
