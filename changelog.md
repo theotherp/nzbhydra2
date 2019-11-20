@@ -1,3 +1,9 @@
+### v2.9.3 (2019-11-20)
+
+**Feature** Some indexers report their API and download limits in their XMLs. NZBHydra will detect that when the indexer's caps are checked and will automatically fill out the config accordingly (keeping already set values as they are).
+
+
+
 ### v2.9.2 (2019-11-17)
 
 **Fix** Actually show version dates in the updates page...

@@ -390,6 +390,7 @@ public class NewznabChecker {
         if (apiLimits != null) {
             maxApi = apiLimits.getApiMax();
             maxDownloads = apiLimits.getGrabMax();
+            eventPublisher.publishEvent(new CheckerEvent(indexerConfig.getName(), "Determined API limit " + maxApi + " and download limit " + maxDownloads));
         }
         if (supported) {
             logger.info("Indexer {} probably supports the ID type {}. {}% of results were correct.", request.indexerConfig.getName(), request.getIdType(), percentCorrect);
