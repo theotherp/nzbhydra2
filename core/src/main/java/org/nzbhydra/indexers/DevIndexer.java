@@ -72,12 +72,12 @@ public class DevIndexer extends Newznab {
             }
 
         }  else if (uri.toString().contains("tworesults")) {
-            rssRoot = NewznabMockBuilder.generateResponse(0, 2, "results", false, Collections.emptyList());
+            rssRoot = NewznabMockBuilder.generateResponse(0, 2, "results", false, Collections.emptyList(), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(2);
         }
 
         else {
-            rssRoot = NewznabMockBuilder.generateResponse(0, 100, "results", false, Collections.emptyList());
+            rssRoot = NewznabMockBuilder.generateResponse(0, 100, "results", false, Collections.emptyList(), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
         }
         if (uri.toString().contains("punkte")) {

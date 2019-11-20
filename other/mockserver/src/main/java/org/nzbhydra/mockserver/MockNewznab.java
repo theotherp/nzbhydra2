@@ -90,7 +90,7 @@ public class MockNewznab {
         }
 
         if (params.getRid() != null && params.getQ() == null) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false);
             logger.info("Returning no results for rid based search without query");
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -104,7 +104,7 @@ public class MockNewznab {
             }
             int start = params.getOffset() == 0 ? 0 : params.getOffset();
             int end = Math.min(start + 10 - 1, 40);
-            rssRoot = NewznabMockBuilder.generateResponse(start, end, "offsetTest", doGenerateDuplicates, Collections.emptyList());
+            rssRoot = NewznabMockBuilder.generateResponse(start, end, "offsetTest", doGenerateDuplicates, Collections.emptyList(), false);
 
             rssRoot.getRssChannel().getNewznabResponse().setTotal(40);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -186,7 +186,7 @@ public class MockNewznab {
 
         if (params.getQ() != null && params.getQ().equals("dognzbtotaltest") && System.getProperty("nomockdognzb") == null) {
             if (params.getOffset() >= 300) {
-                NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
+                NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false);
                 return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
             }
             NewznabMockRequest mockRequest = NewznabMockRequest.builder().numberOfResults(100).titleBase("dognzbtotaltest").offset(params.getOffset()).titleWords(Collections.emptyList()).total(300).build();
@@ -196,7 +196,7 @@ public class MockNewznab {
         }
 
         if ((params.getQ() != null && params.getQ().equals("noresults")) || (params.getTvdbid() != null && params.getTvdbid().equals("329089"))) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
@@ -213,7 +213,7 @@ public class MockNewznab {
 
 
         if (params.getQ() != null && params.getQ().contains("movies")) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"));
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, itemTitleBase, false, Arrays.asList("cam", "ts", "blu-ray 2160p", "web-dl 1080p", "bluray 1080p", "3d bluray"), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(100);
             rssRoot.getRssChannel().getItems().forEach(x -> x.getNewznabAttributes().add(new NewznabAttribute("coverurl", "https://i.omgwtfnzbs.me/tvdb/697fdaeb0fb1ac87d4d6af684b20593a/697fdaeb0fb1ac87d4d6af684b20593a.jpg")));
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -248,7 +248,7 @@ public class MockNewznab {
                 return new ResponseEntity<Object>(rssError, HttpStatus.OK);
             }
 
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false);
             if (params.getApikey().contains("limits")) {
                 rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(0, 100, 0, 200));
             }
@@ -261,7 +261,7 @@ public class MockNewznab {
         }
 
         if (params.getImdbid() != null) {
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, "avengers", doGenerateDuplicates, Collections.emptyList(), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(10);
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
@@ -286,7 +286,7 @@ public class MockNewznab {
             if (params.getOffset() != null && params.getLimit() != null) {
                 endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
             }
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList(), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             if ("randomage".equalsIgnoreCase(params.getQ())) {
@@ -310,7 +310,7 @@ public class MockNewznab {
         if (params.getT() == ActionAttribute.CAPS) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
         }
-        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, params.getApikey(), false, Collections.emptyList());
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, params.getApikey(), false, Collections.emptyList(), true);
         Random random = new Random();
         for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());

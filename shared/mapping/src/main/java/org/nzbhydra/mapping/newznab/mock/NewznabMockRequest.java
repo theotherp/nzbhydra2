@@ -18,6 +18,7 @@ public class NewznabMockRequest {
     private boolean generateDuplicates;
     private boolean generateOneDuplicate;
     private String newznabCategory;
+    private boolean torznab;
     @Builder.Default
     private List<String> titleWords = new ArrayList<>();
 

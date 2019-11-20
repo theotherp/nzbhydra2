@@ -24,9 +24,9 @@ public class NewznabMockBuilder {
         searching.setTvSearch(new CapsXmlSearch("yes", "q,tmdb,tvmazeid"));
         capsRoot.setSearching(searching);
         CapsXmlCategories capsCategories = new CapsXmlCategories(Arrays.asList(
-                new CapsXmlCategory(2000, "Movies", Arrays.asList(new CapsXmlCategory(2030, "Movies HD"))),
-                new CapsXmlCategory(7000, "Other", Arrays.asList(new CapsXmlCategory(7020, "EBook"))),
-                new CapsXmlCategory(9000, "Misc", Arrays.asList(new CapsXmlCategory(9090, "Anime")))
+            new CapsXmlCategory(2000, "Movies", Arrays.asList(new CapsXmlCategory(2030, "Movies HD"))),
+            new CapsXmlCategory(7000, "Other", Arrays.asList(new CapsXmlCategory(7020, "EBook"))),
+            new CapsXmlCategory(9000, "Misc", Arrays.asList(new CapsXmlCategory(9090, "Anime")))
         ));
         capsRoot.setCategories(capsCategories);
         return capsRoot;
@@ -34,7 +34,7 @@ public class NewznabMockBuilder {
 
     public static NewznabXmlRoot generateResponse(NewznabMockRequest request) {
         List<NewznabXmlItem> items = new ArrayList<>();
-        for (int i = request.getOffset()+1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
+        for (int i = request.getOffset() + 1; i <= request.getOffset() + request.getNumberOfResults(); i++) {
 
             NewznabXmlItem item = new NewznabXmlItem();
             String size = String.valueOf(Math.abs(random.nextInt(999999999)));
@@ -77,12 +77,14 @@ public class NewznabMockBuilder {
             }
             item.setNewznabAttributes(attributes);
 
-            item.setGrabs(i * 2);
-            List<NewznabAttribute> torznabAttributes = new ArrayList<>();
-            torznabAttributes.add(new NewznabAttribute("seeders", String.valueOf(i)));
-            torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(i * 2)));
-            torznabAttributes.add(new NewznabAttribute("size", size));
-            item.setTorznabAttributes(torznabAttributes);
+            if (request.isTorznab()) {
+                item.setGrabs(i * 2);
+                List<NewznabAttribute> torznabAttributes = new ArrayList<>();
+                torznabAttributes.add(new NewznabAttribute("seeders", String.valueOf(i)));
+                torznabAttributes.add(new NewznabAttribute("peers", String.valueOf(i * 2)));
+                torznabAttributes.add(new NewznabAttribute("size", size));
+                item.setTorznabAttributes(torznabAttributes);
+            }
 
             items.add(item);
         }
@@ -107,14 +109,15 @@ public class NewznabMockBuilder {
     }
 
 
-    public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords) {
+    public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords, boolean torznab) {
         return generateResponse(
-                NewznabMockRequest.builder()
-                        .numberOfResults(endIndex - startIndex)
-                        .titleBase(itemTitleBase)
-                        .generateDuplicates(generateDuplicates)
-                        .titleWords(titleWords)
-                        .build()
+            NewznabMockRequest.builder()
+                .numberOfResults(endIndex - startIndex)
+                .titleBase(itemTitleBase)
+                .generateDuplicates(generateDuplicates)
+                .titleWords(titleWords)
+                .torznab(torznab)
+                .build()
         );
     }
 
