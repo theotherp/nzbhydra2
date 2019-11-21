@@ -1,3 +1,9 @@
+### v2.9.4 (2019-11-21)
+
+**Fix** Further improvements regarding uniqeness score.
+
+
+
 ### v2.9.3 (2019-11-20)
 
 **Feature** Some indexers report their API and download limits in their XMLs. NZBHydra will detect that when the indexer's caps are checked and will automatically fill out the config accordingly (keeping already set values as they are).
