@@ -55,25 +55,6 @@ public class Searcher {
     private final Set<ExecutorService> executors = Collections.synchronizedSet(new HashSet<>());
     private boolean shutdownRequested = false;
 
-    @EventListener
-    public void onShutdown(ShutdownEvent event) {
-        shutdownRequested = true;
-        synchronized (executors) {
-            if (executors.size() > 0) {
-                logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
-            }
-            for (ExecutorService executorService : executors) {
-                executorService.shutdown();
-                try {
-                    executorService.awaitTermination(10, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.warn("Waited too long for termination of task, interrupting");
-                    Thread.currentThread().interrupt();
-                }
-            }
-        }
-    }
-
     /**
      * Maps a search request's hash to its cache entry
      */
@@ -300,12 +281,12 @@ public class Searcher {
             executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
         }
         executors.remove(executor);
-        indexerSearchResults = handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
+        handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
         return indexerSearchResults;
     }
 
 
-    private Map<Indexer, List<IndexerSearchResult>> handleIndexersWithFailedFutureExecutions(Map<Indexer, List<IndexerSearchResult>> indexersToSearch, Map<Indexer, List<IndexerSearchResult>> indexerSearchResults) {
+    private void handleIndexersWithFailedFutureExecutions(Map<Indexer, List<IndexerSearchResult>> indexersToSearch, Map<Indexer, List<IndexerSearchResult>> indexerSearchResults) {
         for (Entry<Indexer, List<IndexerSearchResult>> entry : indexersToSearch.entrySet()) {
             if (!indexerSearchResults.containsKey(entry.getKey())) {
                 IndexerSearchResult unknownFailureSearchResult = new IndexerSearchResult();
@@ -317,7 +298,6 @@ public class Searcher {
                 indexerSearchResults.put(entry.getKey(), previousIndexerSearchResults);
             }
         }
-        return indexerSearchResults;
     }
 
     private List<Callable<IndexerSearchResult>> getCallables(SearchRequest searchRequest, Map<Indexer, List<IndexerSearchResult>> indexersToSearch) {
@@ -344,14 +324,34 @@ public class Searcher {
         return () -> entry.getKey().search(searchRequest, offset, limit);
     }
 
+    @SuppressWarnings("unused")
+    @EventListener
+    public void onShutdown(ShutdownEvent event) {
+        shutdownRequested = true;
+        synchronized (executors) {
+            if (executors.size() > 0) {
+                logger.debug("Waiting up to 10 seconds for {} background tasks to finish", executors.size());
+            }
+            for (ExecutorService executorService : executors) {
+                executorService.shutdown();
+                try {
+                    executorService.awaitTermination(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    logger.warn("Waited too long for termination of task, interrupting");
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
     @Getter
     public static class SearchEvent {
+
         private SearchRequest searchRequest;
 
         public SearchEvent(SearchRequest searchRequest) {
             this.searchRequest = searchRequest;
         }
-    }
 
+    }
 
 }

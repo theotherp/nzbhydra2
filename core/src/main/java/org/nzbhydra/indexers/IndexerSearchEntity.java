@@ -58,15 +58,12 @@ public class IndexerSearchEntity {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         IndexerSearchEntity entity = (IndexerSearchEntity) o;
         return id == entity.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id);
+        return Objects.hash(id);
     }
 }

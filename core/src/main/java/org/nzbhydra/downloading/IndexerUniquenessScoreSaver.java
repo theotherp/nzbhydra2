@@ -58,6 +58,7 @@ public class IndexerUniquenessScoreSaver {
             }
 
             Set<IndexerSearchEntity> allIndexerSearchesInvolved = getIndexersInvolved(searchResultEntity);
+
             Set<IndexerEntity> indexersContainingSameResult = getIndexersFoundSameResult(searchResultEntity);
 
             Set<IndexerSearchEntity> involvedIndexersWithoutResult = allIndexerSearchesInvolved.stream().filter(x -> !indexersContainingSameResult.contains(x.getIndexerEntity()) && !x.getIndexerEntity().equals(searchResultEntity.getIndexer()))
@@ -67,6 +68,9 @@ public class IndexerUniquenessScoreSaver {
 
             String indexerNamesWithResult = indexersContainingSameResult.stream().map(IndexerEntity::getName).collect(Collectors.joining(", "));
             String indexerNamesWithoutResult = involvedIndexersWithoutResult.stream().map(x -> x.getIndexerEntity().getName()).collect(Collectors.joining(", "));
+            if (indexerNamesWithoutResult.isEmpty()) {
+                indexerNamesWithoutResult = "<None>";
+            }
 
             if (indexersContainingSameResult.isEmpty()) {
                 logger.info("Title: \"{}\". Downloaded unique result from: {}. All other indexers without result: {}", searchResultEntity.getTitle(), searchResultEntity.getIndexer().getName(), indexerNamesWithoutResult);

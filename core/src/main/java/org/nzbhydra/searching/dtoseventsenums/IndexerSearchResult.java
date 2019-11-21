@@ -74,9 +74,6 @@ public class IndexerSearchResult {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         IndexerSearchResult that = (IndexerSearchResult) o;
         return Objects.equal(indexer, that.indexer) &&
                 Objects.equal(time, that.time);

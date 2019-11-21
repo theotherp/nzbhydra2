@@ -42,9 +42,6 @@ public class HydraWebAuthenticationDetails extends WebAuthenticationDetails {
         if (!(o instanceof HydraWebAuthenticationDetails)) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         HydraWebAuthenticationDetails that = (HydraWebAuthenticationDetails) o;
         return Objects.equal(filteredIp, that.filteredIp);
     }

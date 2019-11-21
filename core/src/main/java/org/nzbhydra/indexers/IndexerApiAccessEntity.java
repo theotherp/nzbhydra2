@@ -52,16 +52,13 @@ public class IndexerApiAccessEntity {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         IndexerApiAccessEntity that = (IndexerApiAccessEntity) o;
         return id == that.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id);
+        return Objects.hash(id);
     }
 
     @Override

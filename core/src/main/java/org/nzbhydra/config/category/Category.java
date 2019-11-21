@@ -139,9 +139,6 @@ public class Category extends ValidatingConfig<Category> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         Category category = (Category) o;
         return Objects.equals(name, category.name);
     }
@@ -149,7 +146,7 @@ public class Category extends ValidatingConfig<Category> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), name);
+        return Objects.hash(name);
     }
 
 }

@@ -300,9 +300,6 @@ public class ExternalApi {
             if (o == null || getClass() != o.getClass()) {
                 return false;
             }
-            if (!super.equals(o)) {
-                return false;
-            }
             CacheEntryValue that = (CacheEntryValue) o;
             return com.google.common.base.Objects.equal(params, that.params) &&
                 com.google.common.base.Objects.equal(lastUpdate, that.lastUpdate) &&

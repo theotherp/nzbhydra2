@@ -194,9 +194,6 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         IndexerConfig that = (IndexerConfig) o;
         return Objects.equal(host, that.host) &&
                 Objects.equal(name, that.name);

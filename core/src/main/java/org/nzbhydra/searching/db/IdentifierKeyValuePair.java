@@ -51,9 +51,6 @@ public class IdentifierKeyValuePair {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o)) {
-            return false;
-        }
         IdentifierKeyValuePair that = (IdentifierKeyValuePair) o;
         return Objects.equals(identifierKey, that.identifierKey) &&
                 Objects.equals(identifierValue, that.identifierValue);
