@@ -201,10 +201,10 @@ public class NewznabChecker {
             Optional<SingleCheckCapsResponse> responseWithLimits = responses.stream().filter(x -> x.getApiMax() != null).findFirst();
             if (responseWithLimits.isPresent()) {
                 logger.info("Determined an api hit limit of {} and a download limit of {}", responseWithLimits.get().apiMax, responseWithLimits.get().downloadsMax);
-                if (!indexerConfig.getHitLimit().isPresent()) {
+                if (!indexerConfig.getHitLimit().isPresent() && responseWithLimits.get().apiMax > -1) {
                     indexerConfig.setHitLimit(responseWithLimits.get().apiMax);
                 }
-                if (!indexerConfig.getDownloadLimit().isPresent()) {
+                if (!indexerConfig.getDownloadLimit().isPresent() && responseWithLimits.get().downloadsMax > -1) {
                     indexerConfig.setDownloadLimit(responseWithLimits.get().downloadsMax);
                 }
             }
