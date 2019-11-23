@@ -1,6 +1,7 @@
 package org.nzbhydra.mockserver;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
@@ -289,8 +290,28 @@ public class MockNewznab {
             if (params.getOffset() != null && params.getLimit() != null) {
                 endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
             }
+            if ("paging".equalsIgnoreCase(params.getQ())) {
+                endIndex = 100;
+            }
             NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, itemTitleBase, doGenerateDuplicates, Collections.emptyList(), false);
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
+
+            if ("paging".equalsIgnoreCase(params.getQ())) {
+                List<NewznabXmlItem> items = rssRoot.getRssChannel().getItems();
+                int resultsPerDay = Integer.parseInt(params.getApikey());
+                List<List<NewznabXmlItem>> partitions = Lists.partition(items, resultsPerDay);
+                for (int i = 0; i < partitions.size(); i++) {
+                    List<NewznabXmlItem> partition = partitions.get(i);
+                    for (NewznabXmlItem item : partition) {
+                        int daysToSubtract = i;
+                        if (params.getOffset() > 0) {
+                            daysToSubtract += params.getOffset() / resultsPerDay;
+                        }
+
+                        item.setPubDate(Instant.now().minus(daysToSubtract, ChronoUnit.DAYS));
+                    }
+                }
+            }
 
             if ("randomage".equalsIgnoreCase(params.getQ())) {
                 for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
