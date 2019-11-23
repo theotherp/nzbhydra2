@@ -32,16 +32,6 @@ public class IndexerSearchEntity {
      */
     private Integer resultsCount;
 
-    /**
-     * Number of results that were actually processed (e.g. 100 of 1000 results were loaded for a search, this is 100, {@link #resultsCount} is 1000)
-     */
-    private Integer processedResults;
-
-    /**
-     * Number of results in a search that were only returned by this indexer and one else
-     */
-    private Integer uniqueResults;
-
     public IndexerSearchEntity() {
     }
 

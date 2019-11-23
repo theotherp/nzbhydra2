@@ -231,8 +231,6 @@ public class SqliteMigration {
             newEntity.setSuccessful(oldIndexerSearch.getBoolean("successful"));
             newEntity.setIndexerEntity(oldIdToIndexersMap.get(oldIndexerSearch.getInt("indexer_id")));
             newEntity.setSearchEntity(oldIdToSearchesMap.get(oldIndexerSearch.getInt("search_id")));
-            newEntity.setUniqueResults(oldIndexerSearch.getInt("uniqueResults"));
-            newEntity.setProcessedResults(oldIndexerSearch.getInt("processedResults"));
             newEntity.setResultsCount(oldIndexerSearch.getInt("resultsCount"));
             entityManager.persist(newEntity);
             progressLogger.lightUpdate();

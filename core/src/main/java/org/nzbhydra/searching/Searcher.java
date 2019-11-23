@@ -203,8 +203,6 @@ public class Searcher {
                 x.setIndexerSearchEntity(entity);
             }
 
-            entity.setProcessedResults(indexerSearchResult.getSearchResultItems().size());
-            entity.setUniqueResults(duplicateDetectionResult.getUniqueResultsPerIndexer().count(indexerSearchResult.getIndexer()));
             entity = indexerSearchRepository.save(entity);
             searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
             searchCacheEntry.getIndexerSearchEntitiesByIndexer().put(indexerSearchResult.getIndexer().getIndexerEntity(), entity);
