@@ -1,6 +1,12 @@
+### v2.9.5 (2019-11-23)
+
+**Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of searches which resulted in a download and where an indexer was involved. 
+
+
+
 ### v2.9.4 (2019-11-21)
 
-**Fix** Further improvements regarding uniqeness score.
+**Fix** Further improvements regarding uniqueness score.
 
 
 
