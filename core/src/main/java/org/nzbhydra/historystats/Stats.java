@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 @RestController
 public class Stats {
 
@@ -65,7 +66,7 @@ public class Stats {
             futures.add(executor.submit(() -> statsResponse.setIndexerApiAccessStats(indexerApiAccesses(statsRequest))));
         }
         if (statsRequest.isAvgIndexerUniquenessScore()) {
-            futures.add(executor.submit(() -> statsResponse.setAvgIndexerUniquenessScore(indexerResultUniquenessScores(statsRequest))));
+            futures.add(executor.submit(() -> statsResponse.setIndexerScores(indexerScores(statsRequest))));
         }
 
         if (statsRequest.isSearchesPerDayOfWeek()) {
@@ -165,23 +166,23 @@ public class Stats {
         List<IndexerDownloadShare> indexerDownloadShares = new ArrayList<>();
 
         String sqlQueryByIndexer =
-                "SELECT\n" +
-                        "  indexer.name,\n" +
-                        "  count(*) AS total,\n" +
-                        "  countall.countall\n" +
-                        "FROM\n" +
-                        "  indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
-                        "  LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
-                        "  ,\n" +
-                        "  (SELECT count(*) AS countall\n" +
-                        "   FROM\n" +
-                        "     indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
-                        buildWhereFromStatsRequest(false, statsRequest) +
-                        ")\n" +
-                        "  countall\n" +
-                        buildWhereFromStatsRequest(false, statsRequest) +
-                        "GROUP BY\n" +
-                        "  INDEXER.NAME";
+            "SELECT\n" +
+                "  indexer.name,\n" +
+                "  count(*) AS total,\n" +
+                "  countall.countall\n" +
+                "FROM\n" +
+                "  indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                "  LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+                "  ,\n" +
+                "  (SELECT count(*) AS countall\n" +
+                "   FROM\n" +
+                "     indexernzbdownload dl LEFT JOIN SEARCHRESULT ON dl.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+                buildWhereFromStatsRequest(false, statsRequest) +
+                ")\n" +
+                "  countall\n" +
+                buildWhereFromStatsRequest(false, statsRequest) +
+                "GROUP BY\n" +
+                "  INDEXER.NAME";
 
         Query query = entityManager.createNativeQuery(sqlQueryByIndexer);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
@@ -207,13 +208,13 @@ public class Stats {
         logger.debug("Calculating average response times for indexers");
         List<AverageResponseTime> averageResponseTimes = new ArrayList<>();
         String sql = "SELECT\n" +
-                "  NAME,\n" +
-                "  avg(RESPONSE_TIME) AS avg\n" +
-                "FROM INDEXERAPIACCESS\n" +
-                "  LEFT JOIN indexer i ON INDEXERAPIACCESS.INDEXER_ID = i.ID\n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "GROUP BY INDEXER_ID\n" +
-                "ORDER BY avg ASC";
+            "  NAME,\n" +
+            "  avg(RESPONSE_TIME) AS avg\n" +
+            "FROM INDEXERAPIACCESS\n" +
+            "  LEFT JOIN indexer i ON INDEXERAPIACCESS.INDEXER_ID = i.ID\n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "GROUP BY INDEXER_ID\n" +
+            "ORDER BY avg ASC";
 
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
@@ -236,32 +237,43 @@ public class Stats {
 
     /**
      * Calculates how unique a downloaded result was, i.e. how many other indexers could've (or not could've) provided the same result.
-     *
      */
     @Transactional(readOnly = true)
-    List<IndexerUniquenessScore> indexerResultUniquenessScores(final StatsRequest statsRequest) {
+    List<IndexerScore> indexerScores(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating indexer result uniqueness scores");
 
         List<SearchModuleType> typesToUse = Arrays.asList(SearchModuleType.NEWZNAB, SearchModuleType.TORZNAB, SearchModuleType.ANIZB);
         final Set<String> indexersToInclude = (statsRequest.isIncludeDisabled() ? searchModuleProvider.getIndexers() : searchModuleProvider.getEnabledIndexers().stream().filter(x -> typesToUse.contains(x.getConfig().getSearchModuleType())).collect(Collectors.toList())).stream().map(Indexer::getName).collect(Collectors.toSet());
 
-        List<IndexerUniquenessScore> indexerUniquenessScores = calculateUniquenessScore(indexersToInclude, uniquenessScoreEntityRepository.findAll());
+        List<IndexerScore> indexerUniquenessScores = calculateIndexerScores(indexersToInclude, uniquenessScoreEntityRepository.findAll());
         logger.debug(LoggingMarkers.PERFORMANCE, "Calculated indexer result uniqueness scores. Took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return indexerUniquenessScores;
     }
 
-    List<IndexerUniquenessScore> calculateUniquenessScore(Set<String> indexersToInclude, List<IndexerUniquenessScoreEntity> scoreEntities) {
-        List<IndexerUniquenessScore> scores = new ArrayList<>();
+    List<IndexerScore> calculateIndexerScores(Set<String> indexersToInclude, List<IndexerUniquenessScoreEntity> scoreEntities) {
+        List<IndexerScore> scores = new ArrayList<>();
         Map<IndexerEntity, List<IndexerUniquenessScoreEntity>> entities = scoreEntities.stream()
-                .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
-                .filter(IndexerUniquenessScoreEntity::isHasResult)
-                .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
+            .filter(x -> indexersToInclude.contains(x.getIndexer().getName()))
+            .filter(IndexerUniquenessScoreEntity::isHasResult)
+            .collect(Collectors.groupingBy(IndexerUniquenessScoreEntity::getIndexer));
         for (Entry<IndexerEntity, List<IndexerUniquenessScoreEntity>> indexerEntityListEntry : entities.entrySet()) {
-            OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
-            scores.add(new IndexerUniquenessScore(indexerEntityListEntry.getKey().getName(), (int) average.getAsDouble()));
+            Integer averageScore;
+            if (!indexerEntityListEntry.getValue().isEmpty()) {
+                OptionalDouble average = indexerEntityListEntry.getValue().stream().mapToDouble(x -> (100D * (double) x.getInvolved() / (double) x.getHave())).average();
+                averageScore = (int) average.getAsDouble();
+            } else {
+                averageScore = null;
+            }
+            IndexerScore indexerScore = new IndexerScore();
+            indexerScore.setIndexerName(indexerEntityListEntry.getKey().getName());
+            indexerScore.setAverageUniquenessScore(averageScore);
+            indexerScore.setInvolvedSearches(indexerEntityListEntry.getValue().size());
+            long uniqueDownloads = indexerEntityListEntry.getValue().stream().filter(x -> x.getHave() == 1 && x.getInvolved() > 1).count();
+            indexerScore.setUniqueDownloads(uniqueDownloads);
+            scores.add(indexerScore);
         }
-        scores.sort(Comparator.comparing(IndexerUniquenessScore::getUniquenessScore).reversed());
+        scores.sort(Comparator.comparing(IndexerScore::getAverageUniquenessScore).reversed());
         return scores;
     }
 
@@ -272,17 +284,17 @@ public class Stats {
         Set<Integer> indexerIdsToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(x -> x.getIndexerEntity().getId()).filter(id -> indexerRepository.findById(id) != null).collect(Collectors.toSet());
 
         String averageIndexerAccessesPerDay = "SELECT\n" +
-                "  indexer_id,\n" +
-                "  avg(count)\n" +
-                "FROM (\n" +
-                "  (SELECT\n" +
-                "     INDEXER_ID,\n" +
-                "     cast(count(INDEXER_ID) AS FLOAT) AS count" +
-                "   FROM INDEXERAPIACCESS\n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "   GROUP BY INDEXER_ID,\n" +
-                "     truncate(time)))\n" +
-                "GROUP BY INDEXER_ID";
+            "  indexer_id,\n" +
+            "  avg(count)\n" +
+            "FROM (\n" +
+            "  (SELECT\n" +
+            "     INDEXER_ID,\n" +
+            "     cast(count(INDEXER_ID) AS FLOAT) AS count" +
+            "   FROM INDEXERAPIACCESS\n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "   GROUP BY INDEXER_ID,\n" +
+            "     truncate(time)))\n" +
+            "GROUP BY INDEXER_ID";
 
         Map<Integer, Double> accessesPerDayCountMap = new HashMap<>();
         Query query = entityManager.createNativeQuery(averageIndexerAccessesPerDay);
@@ -302,13 +314,13 @@ public class Stats {
         stopwatch.start();
 
         String countByResultSql = "SELECT\n" +
-                "     INDEXER_ID,\n" +
-                "     RESULT,\n" +
-                "     count(result) AS count\n" +
-                "   FROM INDEXERAPIACCESS\n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "   GROUP BY INDEXER_ID, RESULT\n" +
-                "   ORDER BY INDEXER_ID, RESULT";
+            "     INDEXER_ID,\n" +
+            "     RESULT,\n" +
+            "     count(result) AS count\n" +
+            "   FROM INDEXERAPIACCESS\n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "   GROUP BY INDEXER_ID, RESULT\n" +
+            "   ORDER BY INDEXER_ID, RESULT";
 
         Map<Integer, Integer> successCountMap = new HashMap<>();
         Map<Integer, Integer> connectionErrorCountMap = new HashMap<>();
@@ -368,11 +380,11 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating count for day of week for table {}", table);
         String sql = "SELECT \n" +
-                "  DAYOFWEEK(time) AS dayofweek, \n" +
-                "  count(*)        AS counter \n" +
-                "FROM " + table + " \n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "GROUP BY DAYOFWEEK(time)";
+            "  DAYOFWEEK(time) AS dayofweek, \n" +
+            "  count(*)        AS counter \n" +
+            "FROM " + table + " \n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "GROUP BY DAYOFWEEK(time)";
 
         List<CountPerDayOfWeek> dayOfWeekCounts = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
@@ -403,11 +415,11 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating count for hour of day for table {}", table);
         String sql = "SELECT \n" +
-                "  HOUR(time) AS hourofday, \n" +
-                "  count(*)        AS counter \n" +
-                "FROM " + table + " \n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "GROUP BY HOUR(time)";
+            "  HOUR(time) AS hourofday, \n" +
+            "  count(*)        AS counter \n" +
+            "FROM " + table + " \n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "GROUP BY HOUR(time)";
 
         List<CountPerHourOfDay> hourOfDayCounts = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
@@ -429,41 +441,41 @@ public class Stats {
     List<SuccessfulDownloadsPerIndexer> successfulDownloadsPerIndexer(final StatsRequest statsRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         String sql = "SELECT\n" +
-                "  name1,\n" +
-                "  count_all,\n" +
-                "  count_success,\n" +
-                "  count_error\n" +
-                "FROM\n" +
-                "  (SELECT\n" +
-                "     indexer.NAME AS name1,\n" +
-                "     count(*)   AS count_success\n" +
-                "   FROM INDEXERNZBDOWNLOAD\n" +
-                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
-                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
-                "   WHERE\n" +
-                "     status = 'CONTENT_DOWNLOAD_SUCCESSFUL'\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "   GROUP BY name1)\n" +
-                "  LEFT JOIN\n" +
-                "  (SELECT\n" +
-                "     indexer.NAME AS name2,\n" +
-                "     count(*)   AS count_error\n" +
-                "   FROM INDEXERNZBDOWNLOAD\n" +
-                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
-                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
-                "   WHERE\n" +
-                "     status IN ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING')\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "   GROUP BY name2) ON name1 = name2\n" +
-                "  LEFT JOIN\n" +
-                "  (SELECT\n" +
-                "     indexer.NAME AS name3,\n" +
-                "     count(*)   AS count_all\n" +
-                "   FROM INDEXERNZBDOWNLOAD\n" +
-                "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
-                "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
-                buildWhereFromStatsRequest(false, statsRequest) +
-                "   GROUP BY name3) ON name1 = name3;";
+            "  name1,\n" +
+            "  count_all,\n" +
+            "  count_success,\n" +
+            "  count_error\n" +
+            "FROM\n" +
+            "  (SELECT\n" +
+            "     indexer.NAME AS name1,\n" +
+            "     count(*)   AS count_success\n" +
+            "   FROM INDEXERNZBDOWNLOAD\n" +
+            "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+            "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+            "   WHERE\n" +
+            "     status = 'CONTENT_DOWNLOAD_SUCCESSFUL'\n" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            "   GROUP BY name1)\n" +
+            "  LEFT JOIN\n" +
+            "  (SELECT\n" +
+            "     indexer.NAME AS name2,\n" +
+            "     count(*)   AS count_error\n" +
+            "   FROM INDEXERNZBDOWNLOAD\n" +
+            "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+            "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+            "   WHERE\n" +
+            "     status IN ('CONTENT_DOWNLOAD_ERROR', 'CONTENT_DOWNLOAD_WARNING')\n" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            "   GROUP BY name2) ON name1 = name2\n" +
+            "  LEFT JOIN\n" +
+            "  (SELECT\n" +
+            "     indexer.NAME AS name3,\n" +
+            "     count(*)   AS count_all\n" +
+            "   FROM INDEXERNZBDOWNLOAD\n" +
+            "     LEFT JOIN SEARCHRESULT ON INDEXERNZBDOWNLOAD.SEARCH_RESULT_ID = SEARCHRESULT.ID\n" +
+            "     LEFT JOIN indexer ON SEARCHRESULT.INDEXER_ID = INDEXER.ID\n" +
+            buildWhereFromStatsRequest(false, statsRequest) +
+            "   GROUP BY name3) ON name1 = name3;";
         Query query = entityManager.createNativeQuery(sql);
         Set<String> indexerNamesToInclude = searchModuleProvider.getIndexers().stream().filter(x -> x.getConfig().getState() == IndexerConfig.State.ENABLED || statsRequest.isIncludeDisabled()).map(Indexer::getName).collect(Collectors.toSet());
         List<Object> resultList = query.getResultList();
@@ -506,18 +518,18 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating download or search shares for table {} and column {}", tablename, column);
         String sql = "" +
-                "SELECT\n" +
-                "  " + column + ",\n" +
-                "  count(*) AS peruser,\n" +
-                "  (SELECT count(*)\n" +
-                "   FROM " + tablename + "\n" +
-                "   WHERE " + column + " IS NOT NULL AND " + column + " != ''" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                ") AS countall\n" +
-                "FROM " + tablename + "\n" +
-                " WHERE " + column + " IS NOT NULL AND " + column + " != ''\n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY " + column;
+            "SELECT\n" +
+            "  " + column + ",\n" +
+            "  count(*) AS peruser,\n" +
+            "  (SELECT count(*)\n" +
+            "   FROM " + tablename + "\n" +
+            "   WHERE " + column + " IS NOT NULL AND " + column + " != ''" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            ") AS countall\n" +
+            "FROM " + tablename + "\n" +
+            " WHERE " + column + " IS NOT NULL AND " + column + " != ''\n" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            "GROUP BY " + column;
         Query query = entityManager.createNativeQuery(sql);
         List<Object> resultList = query.getResultList();
         List<DownloadOrSearchSharePerUserOrIp> result = new ArrayList<>();
@@ -537,13 +549,13 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating user agent search shares");
         String sql = "SELECT\n" +
-                "  user_agent,\n" +
-                "  count(*)\n" +
-                "FROM SEARCH\n" +
-                "WHERE user_agent IS NOT NULL\n" +
-                "AND SOURCE = 'API'" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY user_agent";
+            "  user_agent,\n" +
+            "  count(*)\n" +
+            "FROM SEARCH\n" +
+            "WHERE user_agent IS NOT NULL\n" +
+            "AND SOURCE = 'API'" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            "GROUP BY user_agent";
         Query query = entityManager.createNativeQuery(sql);
         List<Object> resultList = query.getResultList();
         List<UserAgentShare> result = new ArrayList<>();
@@ -568,13 +580,13 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating user agent download shares");
         String sql = "SELECT\n" +
-                "  user_agent,\n" +
-                "  count(*)\n" +
-                "FROM INDEXERNZBDOWNLOAD\n" +
-                "WHERE user_agent IS NOT NULL\n" +
-                "and ACCESS_SOURCE = 'API' \n" +
-                buildWhereFromStatsRequest(true, statsRequest) +
-                "GROUP BY user_agent";
+            "  user_agent,\n" +
+            "  count(*)\n" +
+            "FROM INDEXERNZBDOWNLOAD\n" +
+            "WHERE user_agent IS NOT NULL\n" +
+            "and ACCESS_SOURCE = 'API' \n" +
+            buildWhereFromStatsRequest(true, statsRequest) +
+            "GROUP BY user_agent";
         Query query = entityManager.createNativeQuery(sql);
         List<Object> resultList = query.getResultList();
         List<UserAgentShare> result = new ArrayList<>();
@@ -599,14 +611,14 @@ public class Stats {
         Stopwatch stopwatch = Stopwatch.createStarted();
         logger.debug("Calculating downloads per age");
         String sql = "SELECT\n" +
-                "  steps,\n" +
-                "  count(*)\n" +
-                "FROM\n" +
-                "  (SELECT age / 100 AS steps\n" +
-                "   FROM INDEXERNZBDOWNLOAD\n" +
-                "   WHERE age IS NOT NULL)\n" +
-                "GROUP BY steps\n" +
-                "ORDER BY steps ASC";
+            "  steps,\n" +
+            "  count(*)\n" +
+            "FROM\n" +
+            "  (SELECT age / 100 AS steps\n" +
+            "   FROM INDEXERNZBDOWNLOAD\n" +
+            "   WHERE age IS NOT NULL)\n" +
+            "GROUP BY steps\n" +
+            "ORDER BY steps ASC";
         Query query = entityManager.createNativeQuery(sql);
         List resultList = query.getResultList();
         List<DownloadPerAge> results = new ArrayList<>();
@@ -636,15 +648,15 @@ public class Stats {
         logger.debug("Calculating downloads per age percentages");
         DownloadPerAgeStats result = new DownloadPerAgeStats();
         String percentage = "SELECT CASE\n" +
-                "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
-                "             FROM INDEXERNZBDOWNLOAD\n" +
-                "             WHERE AGE > %d) > 0\n" +
-                "         THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)\n" +
-                "FROM INDEXERNZBDOWNLOAD i,\n" +
-                "( SELECT COUNT(*) AS COUNT\n" +
-                "FROM INDEXERNZBDOWNLOAD\n" +
-                "WHERE AGE > %d) AS x\n" +
-                "ELSE 0 END";
+            "       WHEN (SELECT CAST(COUNT(*) AS FLOAT) AS COUNT\n" +
+            "             FROM INDEXERNZBDOWNLOAD\n" +
+            "             WHERE AGE > %d) > 0\n" +
+            "         THEN SELECT CAST(100 AS FLOAT) / (CAST(COUNT(i.*) AS FLOAT)/ x.COUNT)\n" +
+            "FROM INDEXERNZBDOWNLOAD i,\n" +
+            "( SELECT COUNT(*) AS COUNT\n" +
+            "FROM INDEXERNZBDOWNLOAD\n" +
+            "WHERE AGE > %d) AS x\n" +
+            "ELSE 0 END";
         result.setPercentOlder1000(((Double) entityManager.createNativeQuery(String.format(percentage, 1000, 1000)).getResultList().get(0)).intValue());
         result.setPercentOlder2000(((Double) entityManager.createNativeQuery(String.format(percentage, 2000, 2000)).getResultList().get(0)).intValue());
         result.setPercentOlder3000(((Double) entityManager.createNativeQuery(String.format(percentage, 3000, 3000)).getResultList().get(0)).intValue());
@@ -661,9 +673,9 @@ public class Stats {
             return " ";
         }
         return (useAnd ? " AND " : " WHERE ") +
-                (statsRequest.getAfter() != null ? " TIME > DATEADD('SECOND', " + statsRequest.getAfter().getEpochSecond() + ", DATE '1970-01-01') " : "") +
-                ((statsRequest.getBefore() != null && statsRequest.getAfter() != null) ? " AND " : " ") +
-                (statsRequest.getBefore() != null ? " TIME < DATEADD('SECOND', " + statsRequest.getBefore().getEpochSecond() + ", DATE '1970-01-01') " : "");
+            (statsRequest.getAfter() != null ? " TIME > DATEADD('SECOND', " + statsRequest.getAfter().getEpochSecond() + ", DATE '1970-01-01') " : "") +
+            ((statsRequest.getBefore() != null && statsRequest.getAfter() != null) ? " AND " : " ") +
+            (statsRequest.getBefore() != null ? " TIME < DATEADD('SECOND', " + statsRequest.getBefore().getEpochSecond() + ", DATE '1970-01-01') " : "");
     }
 
 

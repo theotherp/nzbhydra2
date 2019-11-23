@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IndexerUniquenessScore {
+public class IndexerScore {
 
     private String indexerName;
-    private int uniquenessScore;
+    private Integer averageUniquenessScore;
+    private long involvedSearches;
+    private long uniqueDownloads;
 
 }

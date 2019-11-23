@@ -27,7 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("SpringJavaAutowiringInspection")
 @RunWith(SpringRunner.class)
@@ -203,23 +204,23 @@ public class StatsComponentTest {
         FileDownloadEntity download1 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity1 = getSearchResultEntity(indexer1, "1");
         download1.setSearchResult(searchResultEntity1);
-        
+
         FileDownloadEntity download2 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity2 = getSearchResultEntity(indexer1, "2");
         download2.setSearchResult(searchResultEntity2);
-        
+
         FileDownloadEntity download3 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity3 = getSearchResultEntity(indexer1, "3");
         download3.setSearchResult(searchResultEntity3);
-        
+
         FileDownloadEntity download4 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity4 = getSearchResultEntity(indexer1, "4");
         download4.setSearchResult(searchResultEntity4);
-        
+
         FileDownloadEntity download5 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity5 = getSearchResultEntity(indexer2, "5");
         download5.setSearchResult(searchResultEntity5);
-        
+
         FileDownloadEntity download6 = new FileDownloadEntity();
         SearchResultEntity searchResultEntity6 = getSearchResultEntity(indexer2, "6");
         download6.setSearchResult(searchResultEntity6);
@@ -352,7 +353,7 @@ public class StatsComponentTest {
 
         StatsRequest statsRequest = new StatsRequest(Instant.now().minus(10, ChronoUnit.DAYS), Instant.now().plus(10, ChronoUnit.DAYS), true);
         statsRequest.setAvgIndexerUniquenessScore(true);
-        List<IndexerUniquenessScore> result = stats.indexerResultUniquenessScores(statsRequest);
+        List<IndexerScore> result = stats.indexerScores(statsRequest);
         assertEquals(2, result.size());
         assertEquals("indexer1", result.get(0).getIndexerName());
 //        assertNotNull(result.get(0).getTotalShare());

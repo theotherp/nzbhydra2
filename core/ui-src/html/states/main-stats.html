@@ -88,28 +88,29 @@
                 <span uib-tooltip="Hiding a stat will disable its calculation and may improve overall loading time" tooltip-placement="auto top">
                 <input bs-switch type="checkbox" ng-model="foo.statsSwichState.avgIndexerUniquenessScore" switch-size="mini" ng-change="onStatsSwitchToggle('avgIndexerUniquenessScore')">
                 </span>
-                Average indexer results uniqueness score <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
-                                      uib-tooltip="The results uniqueness score determines how unique a downloaded result is to the indexer. A high score means that the indexer often returned results which were either downloaded from that indexer or *could've been' downloaded from it. See also https://github.com/theotherp/nzbhydra2/wiki/Indexer-results-uniqueness-score"></span>
+                Indexer scores
             </div>
-            <tab-or-chart display="chart" ng-show="foo.statsSwichState.avgIndexerUniquenessScore">
                 <table class="table">
                     <thead>
                     <tr>
                         <th>Indexer</th>
-                        <th>Uniqueness score</th>
+                        <th>Avg. score <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                             uib-tooltip="The results uniqueness score determines how unique a downloaded result is to the indexer. A high score means that the indexer often returned results which were either downloaded from that indexer or *could've been' downloaded from it. See also https://github.com/theotherp/nzbhydra2/wiki/Indexer-results-uniqueness-score"></span>
+                        </th>
+                        <th># of dl searches <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top" uib-tooltip="Number of searches, which resulted in a download and where this indexer was searched"></span></th>
+                        <th>Unique downloads <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                   uib-tooltip="Number of downloads, where no other indexer provided the same result (i.e. without this indexer you would've missed this particular result)"></span></th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="entry in stats.avgIndexerUniquenessScore">
+                    <tr ng-repeat="entry in stats.indexerScores">
                         <td>{{ entry.indexerName }}</td>
-                        <td>{{ entry.uniquenessScore | number: 1}}</td>
+                        <td>{{ entry.averageUniquenessScore }}</td>
+                        <td>{{ entry.involvedSearches }}</td>
+                        <td>{{ entry.uniqueDownloads }}</td>
                     </tr>
                     </tbody>
                 </table>
-                <chart>
-                    <nvd3 options="uniquenessScoresChart.options" data="uniquenessScoresChart.data"></nvd3>
-                </chart>
-            </tab-or-chart>
 
         </div>
     </div>

@@ -140,10 +140,6 @@ function StatsController($scope, $filter, StatsService, blockUI, localStorageSer
             $scope.avgResponseTimesChart.options.chart.height = Math.max($scope.stats.avgResponseTimes.length * 30, 350);
         }
 
-        if ($scope.stats.avgIndexerUniquenessScore) {
-            $scope.uniquenessScoresChart = getChart("discreteBarChart", $scope.stats.avgIndexerUniquenessScore, "indexerName", "uniquenessScore", "Indexer", 'score');
-        }
-
         if ($scope.stats.downloadsPerHourOfDay) {
             $scope.downloadsPerHourOfDayChart = getChart("discreteBarChart", $scope.stats.downloadsPerHourOfDay, "hour", "count", "Hour of day", 'Downloads');
             $scope.downloadsPerHourOfDayChart.options.chart.xAxis.rotateLabels = 0;
