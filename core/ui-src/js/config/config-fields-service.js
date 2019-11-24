@@ -131,85 +131,86 @@ function ConfigFields($injector) {
                             }
                         },
 
+
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Proxy'
+                    }
+                    ,
+                    fieldGroup: [
                         {
-                            wrapper: 'fieldset',
+                            key: 'proxyType',
+                            type: 'horizontalSelect',
                             templateOptions: {
-                                label: 'Proxy'
+                                type: 'select',
+                                label: 'Use proxy',
+                                options: [
+                                    {name: 'None', value: 'NONE'},
+                                    {name: 'SOCKS', value: 'SOCKS'},
+                                    {name: 'HTTP(S)', value: 'HTTP'}
+                                ]
                             }
-                            ,
-                            fieldGroup: [
-                                {
-                                    key: 'proxyType',
-                                    type: 'horizontalSelect',
-                                    templateOptions: {
-                                        type: 'select',
-                                        label: 'Use proxy',
-                                        options: [
-                                            {name: 'None', value: 'NONE'},
-                                            {name: 'SOCKS', value: 'SOCKS'},
-                                            {name: 'HTTP(S)', value: 'HTTP'}
-                                        ]
-                                    }
-                                },
-                                {
-                                    key: 'proxyHost',
-                                    type: 'horizontalInput',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'text',
-                                        label: 'SOCKS proxy host',
-                                        placeholder: 'Set to use a SOCKS proxy',
-                                        help: "IPv4 only"
-                                    }
-                                },
-                                {
-                                    key: 'proxyPort',
-                                    type: 'horizontalInput',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'number',
-                                        label: 'Proxy port',
-                                        placeholder: '1080'
-                                    }
-                                },
-                                {
-                                    key: 'proxyUsername',
-                                    type: 'horizontalInput',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'text',
-                                        label: 'Proxy username'
-                                    }
-                                },
-                                {
-                                    key: 'proxyPassword',
-                                    type: 'passwordSwitch',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'text',
-                                        label: 'Proxy password'
-                                    }
-                                },
-                                {
-                                    key: 'proxyIgnoreLocal',
-                                    type: 'horizontalSwitch',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'switch',
-                                        label: 'Bypass local addresses'
-                                    }
-                                },
-                                {
-                                    key: 'proxyIgnoreDomains',
-                                    type: 'horizontalChips',
-                                    hideExpression: 'model.proxyType==="NONE"',
-                                    templateOptions: {
-                                        type: 'text',
-                                        help: 'Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key.',
-                                        label: 'Bypass domains'
-                                    }
-                                }
-                            ]
+                        },
+                        {
+                            key: 'proxyHost',
+                            type: 'horizontalInput',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'SOCKS proxy host',
+                                placeholder: 'Set to use a SOCKS proxy',
+                                help: "IPv4 only"
+                            }
+                        },
+                        {
+                            key: 'proxyPort',
+                            type: 'horizontalInput',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Proxy port',
+                                placeholder: '1080'
+                            }
+                        },
+                        {
+                            key: 'proxyUsername',
+                            type: 'horizontalInput',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Proxy username'
+                            }
+                        },
+                        {
+                            key: 'proxyPassword',
+                            type: 'passwordSwitch',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'text',
+                                label: 'Proxy password'
+                            }
+                        },
+                        {
+                            key: 'proxyIgnoreLocal',
+                            type: 'horizontalSwitch',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Bypass local addresses'
+                            }
+                        },
+                        {
+                            key: 'proxyIgnoreDomains',
+                            type: 'horizontalChips',
+                            hideExpression: 'model.proxyType==="NONE"',
+                            templateOptions: {
+                                type: 'text',
+                                help: 'Separate by comma. You can use wildcards (*). Case insensitive. Apply values with enter key.',
+                                label: 'Bypass domains'
+                            }
                         }
                     ]
                 },
@@ -1042,61 +1043,62 @@ function ConfigFields($injector) {
                                     text: 'minutes'
                                 }
                             }
+                        }
+
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {
+                        label: 'Other'
+                    },
+                    fieldGroup: [
+                        {
+                            key: 'keepSearchResultsForDays',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Store results for ...',
+                                addonRight: {
+                                    text: 'days'
+                                },
+                                required: true,
+                                help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
+                            }
                         },
                         {
-                            wrapper: 'fieldset',
+                            key: 'keepHistoryForWeeks',
+                            type: 'horizontalInput',
                             templateOptions: {
-                                label: 'Other'
-                            },
-                            fieldGroup: [
-                                {
-                                    key: 'keepSearchResultsForDays',
-                                    type: 'horizontalInput',
-                                    templateOptions: {
-                                        type: 'number',
-                                        label: 'Store results for ...',
-                                        addonRight: {
-                                            text: 'days'
-                                        },
-                                        required: true,
-                                        help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
-                                    }
+                                type: 'number',
+                                label: 'Keep history for...',
+                                addonRight: {
+                                    text: 'weeks'
                                 },
-                                {
-                                    key: 'keepHistoryForWeeks',
-                                    type: 'horizontalInput',
-                                    templateOptions: {
-                                        type: 'number',
-                                        label: 'Keep history for...',
-                                        addonRight: {
-                                            text: 'weeks'
-                                        },
-                                        help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit'
-                                    }
+                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit'
+                            }
+                        },
+                        {
+                            key: 'showQuickFilterButtons',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show quick filter',
+                                help: 'Show quick filter buttons for movie and TV results'
+                            }
+                        },
+                        {
+                            key: 'coverSize',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Cover width',
+                                addonRight: {
+                                    text: 'px'
                                 },
-                                {
-                                    key: 'showQuickFilterButtons',
-                                    type: 'horizontalSwitch',
-                                    templateOptions: {
-                                        type: 'switch',
-                                        label: 'Show quick filter',
-                                        help: 'Show quick filter buttons for movie and TV results'
-                                    }
-                                },
-                                {
-                                    key: 'coverSize',
-                                    type: 'horizontalInput',
-                                    templateOptions: {
-                                        type: 'number',
-                                        label: 'Cover width',
-                                        addonRight: {
-                                            text: 'px'
-                                        },
-                                        required: true,
-                                        help: 'Determines width of covers in search results (when enabled in display options)'
-                                    }
-                                }
-                            ]
+                                required: true,
+                                help: 'Determines width of covers in search results (when enabled in display options)'
+                            }
                         }
                     ]
                 }

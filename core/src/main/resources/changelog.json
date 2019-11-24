@@ -5,6 +5,10 @@
             {
                 "type": "fix",
                 "text": "Recognize indexers reporting -1 for api or download limit for \"unlimited\"."
+            },
+            {
+                "type": "fix",
+                "text": "Fixed a minor layout issue in the config."
             }
         ]
     },

@@ -1,6 +1,7 @@
 package org.nzbhydra.searching;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.Indexer;
@@ -85,6 +88,8 @@ public class SearcherUnitTest {
     private IndexerSearchEntity indexerSearchEntityMock;
     @Mock
     private ApplicationEventPublisher applicationEventPublisherMock;
+    @Mock
+    private ConfigProvider configProviderMock;
     private Random random = new Random();
 
 
@@ -95,10 +100,11 @@ public class SearcherUnitTest {
         searcher.duplicateDetector = duplicateDetector;
 
         when(indexer1.getName()).thenReturn("indexer1");
-        when(indexer2.getName()).thenReturn("indexer2");
         when(indexer1.getConfig()).thenReturn(indexerConfigMock);
-        when(indexer2.getConfig()).thenReturn(indexerConfigMock);
         when(indexer1.getIndexerEntity()).thenReturn(indexerEntity);
+
+        when(indexer2.getName()).thenReturn("indexer2");
+        when(indexer2.getConfig()).thenReturn(indexerConfigMock);
         Category category = new Category();
         category.setName("cat");
         when(searchRequestMock.getCategory()).thenReturn(category);
@@ -118,6 +124,10 @@ public class SearcherUnitTest {
                 return new DuplicateDetectionResult(sets, HashMultiset.create());
             }
         });
+
+        BaseConfig value = new BaseConfig();
+        value.getSearching().setLoadAllCachedOnInternal(false);
+        when(configProviderMock.getBaseConfig()).thenReturn(value);
     }
 
 
@@ -189,6 +199,53 @@ public class SearcherUnitTest {
 
         verify(indexer1).search(any(), eq(0), any());
         verify(indexer1, times(2)).search(any(), anyInt(), any());
+    }
+
+    @Test
+    public void shouldPageCorrectly() throws Exception {
+
+        IndexerSearchResult result1a = mockIndexerSearchResult(0, 100, true, 200, indexer1);
+        setResultsPerDay(0, result1a);
+        IndexerSearchResult result1b = mockIndexerSearchResult(100, 100, false, 200, indexer1);
+        setResultsPerDay(100, result1b);
+
+        when(indexer1.search(any(), anyInt(), anyInt())).thenReturn(result1b, result1b);
+
+        IndexerSearchResult result2a = mockIndexerSearchResult(0, 100, true, 200, indexer2);
+        setResultsPerDay(0, result2a);
+        IndexerSearchResult result2b = mockIndexerSearchResult(100, 100, false, 200, indexer2);
+        setResultsPerDay(100, result2b);
+
+        when(indexer2.search(any(), anyInt(), anyInt())).thenReturn(result1b, result1b);
+
+        when(pickingResultMock.getSelectedIndexers()).thenReturn(Arrays.asList(indexer1, indexer2));
+
+        SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
+        searchRequest.setTitle("some title so it will be found in the search request cache");
+        SearchResult result = searcher.search(searchRequest);
+        List<SearchResultItem> foundResults = result.getSearchResultItems();
+
+        searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 100, 100);
+        searchRequest.setTitle("some title so it will be found in the search request cache");
+        result = searcher.search(searchRequest);
+        foundResults = result.getSearchResultItems();
+
+    }
+
+    private void setResultsPerDay(int offset, IndexerSearchResult result1) {
+        int resultsPerDay = 100;
+        List<List<SearchResultItem>> partitions = Lists.partition(result1.getSearchResultItems(), resultsPerDay);
+        for (int i = 0; i < partitions.size(); i++) {
+            List<SearchResultItem> partition = partitions.get(i);
+            for (SearchResultItem item : partition) {
+                int daysToSubtract = i;
+                if (offset > 0) {
+                    daysToSubtract += offset / resultsPerDay;
+                }
+
+                item.setPubDate(Instant.now().minus(daysToSubtract, ChronoUnit.DAYS));
+            }
+        }
     }
 
     private IndexerSearchResult mockIndexerSearchResult(int offset, int limit, boolean hasMoreResults, int totalAvailableResults, Indexer indexer) {
