@@ -25,10 +25,8 @@ import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.searching.db.SearchResultEntity;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class IndexerSearchResult {
@@ -52,7 +50,6 @@ public class IndexerSearchResult {
     public IndexerSearchResult() {
     }
 
-
     public IndexerSearchResult(Indexer indexer, boolean wasSuccessful) {
         this.wasSuccessful = wasSuccessful;
         this.indexer = indexer;
@@ -64,6 +61,10 @@ public class IndexerSearchResult {
         this.indexer = indexer;
         this.time = Instant.now();
         this.errorMessage = errorMessage;
+    }
+
+    public List<SearchResultItem> getSearchResultItems() {
+        return searchResultItems.stream().sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
     }
 
     @Override

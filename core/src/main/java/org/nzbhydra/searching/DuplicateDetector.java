@@ -29,7 +29,7 @@ public class DuplicateDetector {
     @Autowired
     protected ConfigProvider configProvider;
 
-    public DuplicateDetectionResult detectDuplicates(List<SearchResultItem> results) {
+    public DuplicateDetectionResult detectDuplicates(Set<SearchResultItem> results) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Map<String, List<SearchResultItem>> groupedByTitle = results.stream().collect(Collectors.groupingBy(x -> x.getTitle().toLowerCase().replaceAll("[ .\\-_]", "")));
         Multiset<Indexer> countUniqueResultsPerIndexer = HashMultiset.create();

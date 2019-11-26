@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -17,7 +18,6 @@ import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +49,7 @@ public class DuplicateDetectorTest {
         SearchResultItem item3 = new SearchResultItem();
         setValues(item3, "3", "poster", "group", Instant.now());
 
-        DuplicateDetectionResult result = testee.detectDuplicates(Arrays.asList(item1, item2, item3));
+        DuplicateDetectionResult result = testee.detectDuplicates(Sets.newHashSet(item1, item2, item3));
         assertThat(result.getDuplicateGroups().size()).isEqualTo(1);
 
         List<SearchResultItem> items = new ArrayList<>(result.getDuplicateGroups().get(0));
@@ -89,7 +89,7 @@ public class DuplicateDetectorTest {
         setValues(item8, "Indexer2", null, null, Instant.ofEpochSecond(1447928088));
         item8.setSize(11566348892L);
 
-        DuplicateDetectionResult result = testee.detectDuplicates(Arrays.asList(item1, item2, item3, item4, item5, item6, item7, item8));
+        DuplicateDetectionResult result = testee.detectDuplicates(Sets.newHashSet(item1, item2, item3, item4, item5, item6, item7, item8));
         assertThat(result.getDuplicateGroups().size()).isEqualTo(6);
         assertThat(result.getDuplicateGroups().get(0).size()).isEqualTo(1);
         assertThat(result.getDuplicateGroups().get(1).size()).isEqualTo(1);
@@ -111,7 +111,7 @@ public class DuplicateDetectorTest {
         SearchResultItem item4 = new SearchResultItem();
         setValues(item4, "4", "poster2", "group", Instant.now());
 
-        DuplicateDetectionResult result = testee.detectDuplicates(Arrays.asList(item1, item2, item3, item4));
+        DuplicateDetectionResult result = testee.detectDuplicates(Sets.newHashSet(item1, item2, item3, item4));
         assertThat(result.getDuplicateGroups().size()).isEqualTo(2);
 
         List<SearchResultItem> items = new ArrayList<>(result.getDuplicateGroups().get(0));

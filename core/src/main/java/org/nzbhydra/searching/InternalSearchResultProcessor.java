@@ -45,7 +45,7 @@ public class InternalSearchResultProcessor {
         searchResponse.setNumberOfRejectedResults(searchResult.getNumberOfRejectedResults());
         searchResponse.setRejectedReasonsMap(searchResult.getReasonsForRejection().entrySet().stream().collect(Collectors.toMap(Multiset.Entry::getElement, Multiset.Entry::getCount)));
         searchResponse.setIndexerSearchMetaDatas(createIndexerSearchMetaDatas(searchResult));
-        searchResponse.setNotPickedIndexersWithReason(searchResult.getPickingResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
+        searchResponse.setNotPickedIndexersWithReason(searchResult.getIndexerSelectionResult().getNotPickedIndexersWithReason().entrySet().stream().collect(Collectors.toMap(x -> x.getKey().getName(), Entry::getValue)));
         searchResponse.setNumberOfProcessedResults(searchResult.getNumberOfProcessedResults());
         searchResponse.setNumberOfAcceptedResults(searchResult.getNumberOfAcceptedResults());
 

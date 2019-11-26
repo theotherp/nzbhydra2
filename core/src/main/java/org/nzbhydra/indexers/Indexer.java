@@ -503,7 +503,7 @@ public abstract class Indexer<T> {
 
     @Override
     public int hashCode() {
-        return config == null ? 0 : Objects.hashCode(config.getName());
+        return (config == null || config.getName() == null) ? 0 : config.getName().hashCode();
     }
 
     @Override

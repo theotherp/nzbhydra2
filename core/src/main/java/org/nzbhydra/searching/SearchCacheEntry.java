@@ -6,11 +6,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
 import lombok.Data;
 import org.nzbhydra.indexers.Indexer;
-import org.nzbhydra.indexers.IndexerEntity;
-import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
 import org.nzbhydra.searching.db.SearchEntity;
-import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
@@ -25,22 +22,24 @@ public class SearchCacheEntry {
 
     private Instant lastAccessed;
     private SearchRequest searchRequest;
-    private Map<Indexer, List<IndexerSearchResult>> indexerSearchResultsByIndexer = new HashMap<>();
-    private Map<IndexerEntity, IndexerSearchEntity> indexerSearchEntitiesByIndexer = new HashMap<>();
+    private Map<Indexer, IndexerSearchCacheEntry> indexerCacheEntries = new HashMap<>();
     private List<SearchResultItem> searchResultItems = new ArrayList<>();
-    private IndexerForSearchSelection pickingResult;
+    private IndexerForSearchSelection indexerSelectionResult;
     private SearchEntity searchEntity;
     private Multiset<String> reasonsForRejection = HashMultiset.create();
     private Integer numberOfAvailableResults = null;
 
-    public SearchCacheEntry(SearchRequest searchRequest, IndexerForSearchSelection pickingResult, SearchEntity searchEntity) {
+    public SearchCacheEntry(SearchRequest searchRequest, IndexerForSearchSelection indexerSelectionResult, SearchEntity searchEntity) {
         this.searchRequest = searchRequest;
         this.searchEntity = searchEntity;
         lastAccessed = Instant.now();
-        for (Indexer indexer : pickingResult.getSelectedIndexers()) {
-            indexerSearchResultsByIndexer.put(indexer, new ArrayList<>());
+        for (Indexer indexer : indexerSelectionResult.getSelectedIndexers()) {
+            IndexerSearchCacheEntry indexerSearchCacheEntry = new IndexerSearchCacheEntry(indexer);
+            indexerSearchCacheEntry.setIndexer(indexer);
+            indexerSearchCacheEntry.setNextResultIndex(0);
+//            indexerCacheEntries.put(indexer, indexerSearchCacheEntry);
         }
-        this.pickingResult = pickingResult;
+        this.indexerSelectionResult = indexerSelectionResult;
     }
 
     public int getNumberOfRejectedResults() {
@@ -48,14 +47,13 @@ public class SearchCacheEntry {
     }
 
     public int getNumberOfTotalAvailableResults() {
-        numberOfAvailableResults = indexerSearchResultsByIndexer.values().stream().mapToInt(x -> Iterables.getLast(x).getTotalResults()).sum();
+        numberOfAvailableResults = indexerCacheEntries.values().stream().mapToInt(x -> Iterables.getLast(x.getIndexerSearchResults()).getTotalResults()).sum();
         return numberOfAvailableResults;
     }
 
     public int getNumberOfFoundResults() {
-        return indexerSearchResultsByIndexer.values().stream().mapToInt(x -> x.stream().mapToInt(y -> y.getSearchResultItems().size()).sum()).sum();
+        return numberOfAvailableResults = indexerCacheEntries.values().stream().mapToInt(x -> x.getSearchResultItems().size()).sum();
     }
-
 
     public boolean equals(Object obj) {
         if (obj == null) {

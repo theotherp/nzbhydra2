@@ -54,7 +54,7 @@ public class NewznabMockBuilder {
                 poster = poster + String.valueOf(random.nextInt());
             }
 
-            item.setDescription("Some longer itemDescription that whatever" + i);
+            item.setDescription("indexer " + request.getTitleBase() + "-" + i + " offset " + request.getOffset());
             item.setTitle(title);
             item.setPubDate(pubDate);
             String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
@@ -109,7 +109,7 @@ public class NewznabMockBuilder {
     }
 
 
-    public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords, boolean torznab) {
+    public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords, boolean torznab, int offset) {
         return generateResponse(
             NewznabMockRequest.builder()
                 .numberOfResults(endIndex - startIndex)
@@ -117,6 +117,7 @@ public class NewznabMockBuilder {
                 .generateDuplicates(generateDuplicates)
                 .titleWords(titleWords)
                 .torznab(torznab)
+                .offset(offset)
                 .build()
         );
     }
