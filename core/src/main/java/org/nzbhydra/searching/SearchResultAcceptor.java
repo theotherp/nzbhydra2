@@ -183,7 +183,11 @@ public class SearchResultAcceptor {
     }
 
     protected boolean checkForSize(SearchRequest searchRequest, Multiset<String> reasonsForRejection, SearchResultItem item) {
+        if (!item.getCategory().isApplySizeLimitsToApi() && searchRequest.getSource() == SearchSource.API) {
+            return true;
+        }
         boolean isApiAndLimitsShouldApply = item.getCategory().isApplySizeLimitsToApi() && searchRequest.getSource() == SearchSource.API;
+
         Integer minSize = searchRequest
                 .getMinsize()
                 .orElse(
