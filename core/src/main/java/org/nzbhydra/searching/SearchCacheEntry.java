@@ -27,6 +27,7 @@ public class SearchCacheEntry {
     private IndexerForSearchSelection indexerSelectionResult;
     private SearchEntity searchEntity;
     private Multiset<String> reasonsForRejection = HashMultiset.create();
+    private int numberOfRemovedDuplicates;
     private Integer numberOfAvailableResults = null;
 
     public SearchCacheEntry(SearchRequest searchRequest, IndexerForSearchSelection indexerSelectionResult, SearchEntity searchEntity) {

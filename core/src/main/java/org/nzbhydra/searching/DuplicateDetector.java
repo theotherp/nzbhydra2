@@ -143,7 +143,7 @@ public class DuplicateDetector {
         long sizeDifference = Math.abs(result1.getSize() - result2.getSize());
         float sizeAverage = (result1.getSize() + result2.getSize()) / 2F;
         float sizeDiffPercent = Math.abs(sizeDifference / sizeAverage) * 100;
-        boolean sameSize = sizeDiffPercent < duplicateSizeDifference;
+        boolean sameSize = sizeDiffPercent <= duplicateSizeDifference;
         logger.debug(LoggingMarkers.DUPLICATES, "Same size: {}", sameSize);
         return sameSize;
     }

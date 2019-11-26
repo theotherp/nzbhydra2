@@ -48,6 +48,7 @@ public class NewznabMockBuilder {
             if (request.isGenerateDuplicates() || request.isGenerateOneDuplicate()) {
                 if (random.nextBoolean() || request.isGenerateOneDuplicate()) {
                     size = "1000000";
+                    pubDate = Instant.now().minus(10, ChronoUnit.DAYS);
                     title = "aDuplicate";
                 }
             } else {

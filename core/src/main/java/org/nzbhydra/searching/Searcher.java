@@ -72,10 +72,11 @@ public class Searcher {
         SearchResult searchResult = new SearchResult();
         int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //LATER default for limit
         searchResult.setIndexerSelectionResult(searchCacheEntry.getIndexerSelectionResult());
+        searchResult.setNumberOfRemovedDuplicates(searchCacheEntry.getNumberOfRemovedDuplicates());
 
         List<IndexerSearchCacheEntry> indexersToSearch = getIndexersToSearch(searchCacheEntry);
         List<IndexerSearchCacheEntry> indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-        Set<SearchResultItem> searchResultItems = new HashSet<>(searchCacheEntry.getSearchResultItems());
+        List<SearchResultItem> searchResultItems = searchCacheEntry.getSearchResultItems();
         while ((!indexersToSearch.isEmpty() || !indexersWithCachedResults.isEmpty()) && (searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll())) {
             if (shutdownRequested) {
                 break;
@@ -98,7 +99,6 @@ public class Searcher {
                 indexersToSearch = getIndexersToSearch(searchCacheEntry);
             }
 
-            //todo: Needs to be adapted to error scenarios and loadAll etc and if any more cached, see above
             indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
             while (searchResultItems.size() < numberOfWantedResults && !indexersWithCachedResults.isEmpty()) {
                 List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
@@ -117,19 +117,20 @@ public class Searcher {
 
             searchRequestCache.put(searchRequest.hashCode(), searchCacheEntry);
 
-            //Use search result items from the cache which contains *all* search searchResults, not just the latest. That allows finding duplicates over multiple searches
-            Set<SearchResultItem> allExistingSearchResultItems = searchCacheEntry.getIndexerCacheEntries().values().stream().flatMap(x -> x.getSearchResultItems().stream()).collect(Collectors.toSet());
-            DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(allExistingSearchResultItems);
+            //todo: Would be better if duplicate detection would be executed when each indexer's search result items are filled from the new indexerSearchResults
+            //That way they wouldn't be considered eligable and this loop wouldn't be executed as often
+
+            DuplicateDetectionResult duplicateDetectionResult = duplicateDetector.detectDuplicates(new HashSet<>(searchResultItems));
 
             //Save to database
             createOrUpdateIndexerSearchEnties(searchCacheEntry);
 
             //Remove duplicates for external searches
-//            if (searchRequest.getSource() == SearchSource.API) {
-//                int beforeDuplicateRemoval = searchResultItems.size();
-//                searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
-//                searchResult.setNumberOfRemovedDuplicates(beforeDuplicateRemoval - searchResultItems.size());
-//            }
+            if (searchRequest.getSource() == SearchSource.API) {
+                int beforeDuplicateRemoval = searchResultItems.size();
+                searchResultItems = getNewestSearchResultItemFromEachDuplicateGroup(duplicateDetectionResult.getDuplicateGroups());
+                searchResult.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates() + (beforeDuplicateRemoval - searchResultItems.size()));
+            }
 
             //Set the rejection counts from all searches, this and previous
             searchCacheEntry.getReasonsForRejection().clear();
@@ -141,7 +142,6 @@ public class Searcher {
                 }
             }
 
-
             //todo:
             searchCacheEntry.setSearchResultItems(new ArrayList<>(searchResultItems));
 //            searchCacheEntry.setSearchResultItems(new ArrayList<>(allExistingSearchResultItems));
@@ -149,6 +149,7 @@ public class Searcher {
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream().map(x -> Iterables.getLast(x.getIndexerSearchResults())).collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
+        searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 
         List<SearchResultItem> searchResultItemsToReturn = new ArrayList<>(searchResultItems);
         searchResultItemsToReturn.sort(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed());
@@ -202,7 +203,7 @@ public class Searcher {
         }
     }
 
-    protected Set<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<LinkedHashSet<SearchResultItem>> duplicateGroups) {
+    protected List<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<LinkedHashSet<SearchResultItem>> duplicateGroups) {
         //Sort duplicate groups internally, map to list, sort the results
         return duplicateGroups.stream().map(x -> x.stream()
             .sorted(Comparator.comparingInt((SearchResultItem searchResultItem) -> searchResultItem.getIndexerScore() == null ? 0 : searchResultItem.getIndexerScore())
@@ -215,7 +216,7 @@ public class Searcher {
             sorted(Comparator.comparingLong((SearchResultItem x) -> x.getBestDate().getEpochSecond())
                 .reversed()
             )
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     private void createOrUpdateIndexerSearchEnties(SearchCacheEntry searchCacheEntry) {
