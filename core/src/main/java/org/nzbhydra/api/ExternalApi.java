@@ -30,6 +30,7 @@ import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -85,8 +86,12 @@ public class ExternalApi {
 
     @RequestMapping(value = {"/api", "/rss", "/torznab/api"}, consumes = MediaType.ALL_VALUE)
     public ResponseEntity<? extends Object> api(NewznabParameters params) throws Exception {
+        int searchRequestId = random.nextInt(1000000);
+        if (params.getT() != null && params.getT().isSearch()) {
+            MDC.put("SEARCH", String.valueOf(searchRequestId));
+        }
         NewznabResponse.SearchType searchType = getSearchType();
-        logger.info("Received external {}API call: {}", searchType.name().toLowerCase(), params);
+        logger.info("Received external {} API call: {}", searchType.name().toLowerCase(), params);
 
         if (!noApiKeyNeeded && !Objects.equals(params.getApikey(), configProvider.getBaseConfig().getMain().getApiKey())) {
             logger.error("Received API call with wrong API key");
@@ -95,9 +100,9 @@ public class ExternalApi {
 
         if (Stream.of(ActionAttribute.SEARCH, ActionAttribute.BOOK, ActionAttribute.TVSEARCH, ActionAttribute.MOVIE).anyMatch(x -> x == params.getT())) {
             if (params.getCachetime() != null || configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().isPresent()) {
-                return handleCachingSearch(params, searchType);
+                return handleCachingSearch(params, searchType, searchRequestId);
             }
-            NewznabResponse searchResult = search(params);
+            NewznabResponse searchResult = search(params, searchRequestId);
             HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
             return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
 
@@ -125,7 +130,7 @@ public class ExternalApi {
         return httpHeaders;
     }
 
-    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params, NewznabResponse.SearchType searchType) {
+    protected ResponseEntity<?> handleCachingSearch(NewznabParameters params, NewznabResponse.SearchType searchType, int searchRequestId) {
         //Remove old entries
         cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
 
@@ -152,7 +157,7 @@ public class ExternalApi {
             keyToEvict.ifPresent(newznabParametersCacheEntryValueEntry -> cache.remove(newznabParametersCacheEntryValueEntry.getKey()));
         }
 
-        NewznabResponse searchResult = search(params);
+        NewznabResponse searchResult = search(params, searchRequestId);
         logger.info("Putting search result into cache");
         cache.put(params.cacheKey(searchType), new CacheEntryValue(params, clock.instant(), searchResult));
         HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
@@ -178,9 +183,9 @@ public class ExternalApi {
         return downloadResult.getAsResponseEntity();
     }
 
-    protected NewznabResponse search(NewznabParameters params) {
+    protected NewznabResponse search(NewznabParameters params, int searchRequestId) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        SearchRequest searchRequest = buildBaseSearchRequest(params);
+        SearchRequest searchRequest = buildBaseSearchRequest(params, searchRequestId);
         if (getSearchType() == NewznabResponse.SearchType.TORZNAB) {
             searchRequest.setDownloadType(DownloadType.TORRENT);
         } else {
@@ -239,9 +244,9 @@ public class ExternalApi {
     }
 
 
-    private SearchRequest buildBaseSearchRequest(NewznabParameters params) {
+    private SearchRequest buildBaseSearchRequest(NewznabParameters params, int searchRequestId) {
         SearchType searchType = SearchType.valueOf(params.getT().name());
-        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromSearchNewznabCategories(params.getCat(), CategoriesConfig.allCategory), random.nextInt(1000000), params.getOffset(), params.getLimit());
+        SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.API, categoryProvider.fromSearchNewznabCategories(params.getCat(), CategoriesConfig.allCategory), searchRequestId, params.getOffset(), params.getLimit());
         logger.info("Executing new search");
         searchRequest.setQuery(params.getQ());
         searchRequest.setLimit(params.getLimit());

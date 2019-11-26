@@ -1,5 +1,6 @@
 package org.nzbhydra.searching;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
@@ -89,7 +90,7 @@ public class Searcher {
                     break;
                 }
             } else {
-                logger.debug("Going to call {} indexers because {} of {} wanted results were loaded yet", indexersToSearch.size(), searchCacheEntry.getNumberOfFoundResults(), numberOfWantedResults);
+                logger.debug("Going to call {} because their cache is exhausted", Joiner.on(", ").join(indexersToSearch));
             }
 
             //Do the actual search
@@ -142,9 +143,7 @@ public class Searcher {
                 }
             }
 
-            //todo:
             searchCacheEntry.setSearchResultItems(new ArrayList<>(searchResultItems));
-//            searchCacheEntry.setSearchResultItems(new ArrayList<>(allExistingSearchResultItems));
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream().map(x -> Iterables.getLast(x.getIndexerSearchResults())).collect(Collectors.toList()));

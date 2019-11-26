@@ -11,5 +11,10 @@ public enum ActionAttribute {
     GET,
     DETAILS,
     GETNFO,
-    STATS
+    STATS;
+
+    public boolean isSearch() {
+        return this.equals(SEARCH) || this.equals(TVSEARCH) || this.equals(MOVIE) || this.equals(BOOK) || this.equals(AUDIO);
+    }
+
 }
