@@ -23,7 +23,10 @@ import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 @Data
 public class IndexerSearchCacheEntry {
@@ -51,7 +54,6 @@ public class IndexerSearchCacheEntry {
 
     public void addIndexerSearchResult(IndexerSearchResult newIndexerSearchResult) {
         indexerSearchResults.add(newIndexerSearchResult);
-        indexerSearchResults = new ArrayList<>(new HashSet<>(indexerSearchResults));
         searchResultItems.clear();
         for (IndexerSearchResult indexerSearchResult : indexerSearchResults) {
             searchResultItems.addAll(indexerSearchResult.getSearchResultItems());
