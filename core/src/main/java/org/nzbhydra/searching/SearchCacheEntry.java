@@ -48,7 +48,7 @@ public class SearchCacheEntry {
     }
 
     public int getNumberOfTotalAvailableResults() {
-        numberOfAvailableResults = indexerCacheEntries.values().stream().mapToInt(x -> Iterables.getLast(x.getIndexerSearchResults()).getTotalResults()).sum();
+        numberOfAvailableResults = indexerCacheEntries.values().stream().filter(x -> !x.getIndexerSearchResults().isEmpty()).mapToInt(x -> Iterables.getLast(x.getIndexerSearchResults()).getTotalResults()).sum();
         return numberOfAvailableResults;
     }
 

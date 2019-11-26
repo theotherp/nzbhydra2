@@ -7,6 +7,7 @@ import org.nzbhydra.searching.db.SearchEntity;
 
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.Random;
 
 
 @Data
@@ -38,6 +39,7 @@ public class IndexerSearchEntity {
     public IndexerSearchEntity(IndexerEntity indexerEntity, SearchEntity searchEntity) {
         this.indexerEntity = indexerEntity;
         this.searchEntity = searchEntity;
+        this.id = new Random().nextInt();
     }
 
     @Override

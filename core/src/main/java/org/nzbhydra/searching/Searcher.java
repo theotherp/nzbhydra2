@@ -146,7 +146,10 @@ public class Searcher {
             searchCacheEntry.setSearchResultItems(new ArrayList<>(searchResultItems));
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
-        searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream().map(x -> Iterables.getLast(x.getIndexerSearchResults())).collect(Collectors.toList()));
+        searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream()
+            .filter(x -> !x.getIndexerSearchResults().isEmpty())
+            .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
+            .collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
         searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 

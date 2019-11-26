@@ -85,7 +85,9 @@ public class BinsearchTest {
         IndexerSearchResult indexerSearchResult = new IndexerSearchResult(testee, "");
         List<SearchResultItem> items = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
-            items.add(new SearchResultItem());
+            SearchResultItem searchResultItem = new SearchResultItem();
+            searchResultItem.setPubDate(Instant.now());
+            items.add(searchResultItem);
         }
         indexerSearchResult.setSearchResultItems(items);
         testee.completeIndexerSearchResult(html, indexerSearchResult, null, searchRequest, 0, 100);

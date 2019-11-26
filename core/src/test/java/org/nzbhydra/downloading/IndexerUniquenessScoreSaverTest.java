@@ -33,6 +33,7 @@ import org.nzbhydra.searching.uniqueness.IndexerUniquenessScoreEntityRepository;
 
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,8 +67,16 @@ public class IndexerUniquenessScoreSaverTest {
         SearchEntity searchEntity = new SearchEntity();
 
         IndexerEntity indexerHasDownloaded = new IndexerEntity("indexerHasDownloaded");
+        indexerHasDownloaded.setName("indexerHasDownloaded");
+        indexerHasDownloaded.setId(1);
+
         IndexerEntity indexerhasToo = new IndexerEntity("indexerhasToo");
+        indexerhasToo.setName("indexerHasDownloaded");
+        indexerhasToo.setId(2);
+
         IndexerEntity indexerHasNot = new IndexerEntity("indexerHasNot");
+        indexerHasNot.setName("indexerHasNot");
+        indexerHasNot.setId(3);
 
         IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity);
         indexerSearchEntityHasDownloaded.setSuccessful(true);
@@ -120,15 +129,21 @@ public class IndexerUniquenessScoreSaverTest {
         SearchEntity searchEntity = new SearchEntity();
 
         IndexerEntity indexerHasDownloaded = new IndexerEntity("indexerHasDownloaded");
+        indexerHasDownloaded.setId(1);
         IndexerEntity indexerHasNot = new IndexerEntity("indexerHasNot");
+        indexerHasNot.setId(2);
         IndexerEntity indexerHasNot2 = new IndexerEntity("indexerHasNot2");
+        indexerHasNot2.setId(3);
 
         IndexerSearchEntity indexerSearchEntityHasDownloaded = new IndexerSearchEntity(indexerHasDownloaded, searchEntity);
         indexerSearchEntityHasDownloaded.setSuccessful(true);
+        indexerSearchEntityHasDownloaded.setId(1);
         IndexerSearchEntity indexerSearchEntityhasNot2 = new IndexerSearchEntity(indexerHasNot2, searchEntity);
         indexerSearchEntityhasNot2.setSuccessful(true);
+        indexerSearchEntityhasNot2.setId(2);
         IndexerSearchEntity indexerSearchEntityHasNot = new IndexerSearchEntity(indexerHasNot, searchEntity);
         indexerSearchEntityHasNot.setSuccessful(true);
+        indexerSearchEntityHasNot.setId(3);
 
         SearchResultEntity searchResultEntityHasDownloaded = new SearchResultEntity(indexerHasDownloaded, Instant.now(), "", "", "", "", null, Instant.now());
         searchResultEntityHasDownloaded.setIndexerSearchEntity(indexerSearchEntityHasDownloaded);
@@ -141,7 +156,8 @@ public class IndexerUniquenessScoreSaverTest {
         FileDownloadEvent downloadEvent = new FileDownloadEvent(fileDownloadEntity);
 
         when(searchResultRepository.findAllByTitleLikeIgnoreCase(anyString())).thenReturn(Sets.newHashSet(searchResultEntityHasDownloaded));
-        when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityHasNot, indexerSearchEntityhasNot2));
+        HashSet<IndexerSearchEntity> involvedIndexers = Sets.newHashSet(indexerSearchEntityHasDownloaded, indexerSearchEntityHasNot, indexerSearchEntityhasNot2);
+        when(indexerSearchRepository.findBySearchEntity(searchEntity)).thenReturn(involvedIndexers);
 
         testee.onNzbDownloadEvent(downloadEvent);
 

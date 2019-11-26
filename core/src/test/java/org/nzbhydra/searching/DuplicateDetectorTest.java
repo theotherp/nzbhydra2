@@ -18,7 +18,9 @@ import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -89,7 +91,8 @@ public class DuplicateDetectorTest {
         setValues(item8, "Indexer2", null, null, Instant.ofEpochSecond(1447928088));
         item8.setSize(11566348892L);
 
-        DuplicateDetectionResult result = testee.detectDuplicates(Sets.newHashSet(item1, item2, item3, item4, item5, item6, item7, item8));
+        HashSet<SearchResultItem> results = Sets.newHashSet(item1, item2, item3, item4, item5, item6, item7, item8);
+        DuplicateDetectionResult result = testee.detectDuplicates(results);
         assertThat(result.getDuplicateGroups().size()).isEqualTo(6);
         assertThat(result.getDuplicateGroups().get(0).size()).isEqualTo(1);
         assertThat(result.getDuplicateGroups().get(1).size()).isEqualTo(1);
@@ -146,6 +149,7 @@ public class DuplicateDetectorTest {
         item.setPoster(poster);
         item.setGroup(group);
         item.setSize(10000L);
+        item.setLink("" + new Random().nextInt());
         Newznab indexer = new Newznab();
         IndexerConfig config = new IndexerConfig();
         config.setName(indexerName);
@@ -153,6 +157,7 @@ public class DuplicateDetectorTest {
         indexerEntity.setName(indexerName);
         indexer.initialize(config, indexerEntity);
         item.setIndexer(indexer);
+
     }
 
 

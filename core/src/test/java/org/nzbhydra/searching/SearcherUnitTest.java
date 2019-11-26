@@ -116,7 +116,7 @@ public class SearcherUnitTest {
         when(duplicateDetector.detectDuplicates(any())).thenAnswer(new Answer<DuplicateDetectionResult>() {
             @Override
             public DuplicateDetectionResult answer(InvocationOnMock invocation) throws Throwable {
-                List<SearchResultItem> items = invocation.getArgument(0);
+                Set<SearchResultItem> items = invocation.getArgument(0);
                 List<LinkedHashSet<SearchResultItem>> sets = items.stream().map(x -> {
                     return Sets.newLinkedHashSet(Arrays.asList(x));
                 }).collect(Collectors.toList());
