@@ -393,6 +393,10 @@ public class Newznab extends Indexer<Xml> {
             indexerSearchResult.setOffset(0);
             indexerSearchResult.setLimit(0);
         }
+        if (indexerSearchResult.getTotalResults() == 0) {
+            //Fallback to make sure the total is not 0 when actually some results were reported
+            indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
+        }
     }
 
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {
