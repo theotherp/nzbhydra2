@@ -98,6 +98,11 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if ("0108052".equals(params.getImdbid())) {
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, -1, itemTitleBase, false, Collections.emptyList(), false, 0);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
         boolean doGenerateDuplicates = "duplicates".equals(params.getQ());
         if (params.getQ() != null && params.getQ().equals("offsettest")) {
             NewznabXmlRoot rssRoot = new NewznabXmlRoot();
