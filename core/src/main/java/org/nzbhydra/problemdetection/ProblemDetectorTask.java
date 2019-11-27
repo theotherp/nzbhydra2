@@ -38,7 +38,7 @@ public class ProblemDetectorTask {
     @HydraTask(configId = "ProblemDetector", name = "Problem detector", interval = HOUR)
     public void detectProblems() {
         for (ProblemDetector problemDetector : problemDetectors) {
-            logger.debug("Exectung problem detector {}", problemDetector.getClass().getName());
+            logger.debug("Executing problem detector {}", problemDetector.getClass().getName());
             problemDetector.executeCheck();
         }
     }
