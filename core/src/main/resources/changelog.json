@@ -1,6 +1,6 @@
 [
     {
-        "version": "v2.9.6",
+        "version": "v2.10.0",
         "changes": [
             {
                 "type": "fix",
@@ -17,6 +17,10 @@
             {
                 "type": "fix",
                 "text": "Make sure \"Keep history for ... weeks\" is either empty or set to a positive value."
+            },
+            {
+                "type": "fix",
+                "text": "The download history didn't load properly when the option to delete old searches from the history was set."
             }
         ]
     },
