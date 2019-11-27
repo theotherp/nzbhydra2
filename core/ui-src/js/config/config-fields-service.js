@@ -1075,6 +1075,7 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'weeks'
                                 },
+                                min: 1,
                                 help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit'
                             }
                         },
