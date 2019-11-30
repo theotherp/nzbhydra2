@@ -54,7 +54,7 @@ public class WebAccess {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
-                logger.error(error);
+                logger.error(error + "\n" + response.body().string());
                 throw new IOException(error);
             }
             String body = response.body().string();

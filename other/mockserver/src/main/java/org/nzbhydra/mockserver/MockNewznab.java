@@ -78,6 +78,10 @@ public class MockNewznab {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
         }
 
+        if ("403".equals(params.getQ())) {
+            return new ResponseEntity<Object>("error body", HttpStatus.FORBIDDEN);
+        }
+
         if (params.getT() == ActionAttribute.GETNFO) {
             NewznabXmlRoot rssRoot = new NewznabXmlRoot();
             rssRoot.getRssChannel().setNewznabResponse(new NewznabXmlResponse(0, 1));
