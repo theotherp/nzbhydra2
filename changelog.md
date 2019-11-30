@@ -1,3 +1,17 @@
+### v2.10.0 (2019-11-30)
+
+**Fix** I've changed (fixed) the way indexers are queried when searches are being made. In essence this will fix paging, allowing Radarr/Sonarr to properly read NZBHydra's results over multiple pages. What does that mean for you? *arr will probably find more results when doing backlog searches and NZBHydra will do more indexer searches, resulting in increased API hits (but not more than if you had configured them directly in *arr). For more (technical) details see <a href="https://github.com/Sonarr/Sonarr/issues/3132">this GitHub issue</a>.
+
+**Fix** Recognize indexers reporting -1 for api or download limit for "unlimited".
+
+**Fix** Fixed a minor layout issue in the config.
+
+**Fix** Make sure "Keep history for ... weeks" is either empty or set to a positive value.
+
+**Fix** The download history didn't load properly when the option to delete old searches from the history was set.
+
+
+
 ### v2.9.5 (2019-11-23)
 
 **Feature** I realised the indexer score is too complex to show in a chart and replaced it with a table, that shows more information. It will now contain the average uniqueness score, the number of unique downloads and the number of searches which resulted in a download and where an indexer was involved. 

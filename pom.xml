@@ -4,7 +4,7 @@
     <groupId>org.nzbhydra</groupId>
     <artifactId>nzbhydra2</artifactId>
     <packaging>pom</packaging>
-    <version>2.9.6-SNAPSHOT</version>
+    <version>2.10.0</version>
 
     <modules>
         <module>shared</module>
