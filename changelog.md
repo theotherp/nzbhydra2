@@ -1,3 +1,9 @@
+### v2.10.1 (2019-12-01)
+
+**Fix** Fix db error when trying to save downloaded NZB.
+
+
+
 ### v2.10.0 (2019-11-30)
 
 **Fix** I've changed (fixed) the way indexers are queried when searches are being made. In essence this will fix paging, allowing Radarr/Sonarr to properly read NZBHydra's results over multiple pages. What does that mean for you? *arr will probably find more results when doing backlog searches and NZBHydra will do more indexer searches, resulting in increased API hits (but not more than if you had configured them directly in *arr). For more (technical) details see <a href="https://github.com/Sonarr/Sonarr/issues/3132">this GitHub issue</a>.
