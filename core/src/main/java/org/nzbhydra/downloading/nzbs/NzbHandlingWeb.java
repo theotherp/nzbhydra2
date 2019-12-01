@@ -19,7 +19,6 @@ package org.nzbhydra.downloading.nzbs;
 import org.nzbhydra.api.WrongApiKeyException;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.FileHandler;
 import org.nzbhydra.downloading.FileZipResponse;
 import org.nzbhydra.downloading.InvalidSearchResultIdException;
@@ -34,7 +33,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -93,31 +91,6 @@ public class NzbHandlingWeb {
     public NfoResult getNfo(@PathVariable("guid") long guid) throws IndexerAccessException {
         return fileHandler.getNfo(guid);
     }
-
-    @Deprecated
-    @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByExternalId(@PathVariable("id") String externalId, @PathVariable("status") FileDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
-        logger.warn("Downloader scripts to update the NZB download status are not needed anymore. Please remove the script from your downloader");
-        return true;
-    }
-
-    @Deprecated
-    @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByNzbName(@PathVariable("title") String title, @PathVariable("status") FileDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
-        logger.warn("Downloader scripts to update the NZB download status are not needed anymore. Please remove the script from your downloader");
-        return true;
-    }
-
-    @Deprecated
-    @CrossOrigin
-    @RequestMapping(value = "/externalapi/nzbstatus/id/{id}/title/{title}/{status}", method = RequestMethod.GET, consumes = MediaType.ALL_VALUE)
-    public boolean updateNzbDownloadStatusByExternalIdOrNzbName(@PathVariable("id") String externalId, @PathVariable("title") String title, @PathVariable("status") FileDownloadStatus status, @RequestParam("apikey") String apikey) throws AuthenticationException {
-        logger.warn("Downloader scripts to update the NZB download status are not needed anymore. Please remove the script from your downloader");
-        return true;
-    }
-
 
     /**
      * Provides an external access to NZBs via GUID for users.

@@ -36,6 +36,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.bind.annotation.RestController;
 import org.yaml.snakeyaml.error.YAMLException;
 
@@ -66,6 +67,7 @@ import java.util.Set;
 @RestController
 @EnableCaching
 @EnableScheduling
+@EnableTransactionManagement
 public class NzbHydra {
 
     private static final Logger logger = LoggerFactory.getLogger(NzbHydra.class);

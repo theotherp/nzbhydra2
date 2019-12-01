@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
@@ -59,6 +60,8 @@ public class FileHandler {
     @Autowired
     protected UrlCalculator urlCalculator;
 
+
+    @Transactional
     public DownloadResult getFileByGuid(long guid, FileDownloadAccessType fileDownloadAccessType, SearchSource accessSource) throws InvalidSearchResultIdException {
         Optional<SearchResultEntity> optionalResult = searchResultRepository.findById(guid);
         if (!optionalResult.isPresent()) {
@@ -81,6 +84,7 @@ public class FileHandler {
         }
     }
 
+    @Transactional
     public DownloadResult handleContentDownload(SearchSource accessSource, SearchResultEntity result, String downloadType) throws MagnetLinkRedirectException {
         if (result.getLink().contains("magnet:")) {
             logger.warn("Unable to download magnet link as file");
@@ -114,12 +118,14 @@ public class FileHandler {
         return DownloadResult.createSuccessfulDownloadResult(result.getTitle(), fileContent, downloadEntity);
     }
 
+    @Transactional
     public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result) {
         logger.debug("Redirecting to " + result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
         downloadRepository.save(downloadEntity);
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
+
         return DownloadResult.createSuccessfulRedirectResult(result.getTitle(), result.getLink(), downloadEntity);
     }
 

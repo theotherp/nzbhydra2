@@ -93,6 +93,7 @@ public class IndexerUniquenessScoreSaver {
         indexerUniquenessScoreEntityRepository.saveAll(scoreEntities);
     }
 
+
     private Set<IndexerSearchEntity> getIndexersInvolved(SearchResultEntity searchResultEntity) {
         IndexerSearchEntity indexerSearchEntity = searchResultEntity.getIndexerSearchEntity();
         return new HashSet<>(indexerSearchRepository.findBySearchEntity(indexerSearchEntity.getSearchEntity())).stream().filter(IndexerSearchEntity::getSuccessful).collect(Collectors.toSet());

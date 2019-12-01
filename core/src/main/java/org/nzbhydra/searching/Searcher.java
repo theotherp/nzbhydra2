@@ -1,6 +1,5 @@
 package org.nzbhydra.searching;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multiset;
@@ -83,14 +82,12 @@ public class Searcher {
                 break;
             }
             if (searchRequest.isLoadAll()) {
-                logger.debug("Going to call {} indexers because {} results were loaded yet but more results are available and all were requested", indexersToSearch.size(), searchCacheEntry.getNumberOfFoundResults());
+                logger.debug("Loading all {} results requested", searchCacheEntry.getNumberOfFoundResults());
                 int maxResultsToLoad = searchCacheEntry.getNumberOfAvailableResults();
                 if (searchResultItems.size() > maxResultsToLoad) {
                     logger.info("Aborting loading all results because more than {} results were already loaded and we don't want to hammer the indexers too much", maxResultsToLoad);
                     break;
                 }
-            } else {
-                logger.debug("Going to call {} because their cache is exhausted", Joiner.on(", ").join(indexersToSearch));
             }
 
             //Do the actual search
@@ -163,9 +160,11 @@ public class Searcher {
     }
 
     private List<IndexerSearchCacheEntry> getIndexersWithCachedResults(SearchCacheEntry searchCacheEntry) {
-        return searchCacheEntry.getIndexerCacheEntries().values().stream()
+        List<IndexerSearchCacheEntry> indexerSearchCacheEntries = searchCacheEntry.getIndexerCacheEntries().values().stream()
             .filter(IndexerSearchCacheEntry::isMoreResultsInCache)
             .collect(Collectors.toList());
+        logger.debug("Loading cached results from: {}", indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", ")));
+        return indexerSearchCacheEntries;
     }
 
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
@@ -298,10 +297,11 @@ public class Searcher {
             }
         }
 
+        logger.debug("Going to call {} because their cache is exhausted", indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", ")));
         return indexerSearchCacheEntries;
     }
 
-    protected Map<Indexer, List<IndexerSearchResult>> callSearchModules(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch, SearchCacheEntry searchCacheEntry) {
+    protected void callSearchModules(SearchRequest searchRequest, List<IndexerSearchCacheEntry> indexersToSearch, SearchCacheEntry searchCacheEntry) {
         Map<Indexer, List<IndexerSearchResult>> indexerSearchResults = new HashMap<>();
         for (IndexerSearchCacheEntry entry : indexersToSearch) {
             indexerSearchResults.put(entry.getIndexer(), entry.getIndexerSearchResults());
@@ -330,7 +330,6 @@ public class Searcher {
         }
         executors.remove(executor);
         handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
-        return indexerSearchResults;
     }
 
 
