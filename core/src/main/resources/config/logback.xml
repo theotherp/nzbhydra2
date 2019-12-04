@@ -80,6 +80,7 @@
     <logger name="org.eclipse" level="WARN"/>
     <logger name="okhttp3.OkHttpClient" level="DEBUG"/>
     <logger name="org.apache.catalina.util" level="ERROR"/>
+    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="DEBUG"/>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>

@@ -106,7 +106,7 @@ public class IndexerUniquenessScoreSaver {
             if (searchResult.getIndexer().equals(searchResultEntity.getIndexer())) {
                 continue;
             }
-            if (!searchResult.getIndexerSearchEntity().getSuccessful()) {
+            if (searchResult.getIndexerSearchEntity() != null && !searchResult.getIndexerSearchEntity().getSuccessful()) {
                 continue;
             }
             indexersContainingSameResult.add(searchResult.getIndexer());

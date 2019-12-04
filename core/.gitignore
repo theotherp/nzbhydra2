@@ -18,3 +18,4 @@ sql notes.sql
 /static
 /cacerts
 /nzbhydra2wrapper.py
+/logback-access.xml

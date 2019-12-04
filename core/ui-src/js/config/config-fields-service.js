@@ -403,6 +403,7 @@ function ConfigFields($injector) {
                                     {label: 'History cleanup', id: 'HISTORY_CLEANUP'},
                                     {label: 'HTTP', id: 'HTTP'},
                                     {label: 'HTTPS', id: 'HTTPS'},
+                                    {label: 'HTTP Server', id: 'SERVER'},
                                     {label: 'Indexer scheduler', id: 'SCHEDULER'},
                                     {label: 'Performance', id: 'PERFORMANCE'},
                                     {label: 'Rejected results', id: 'RESULT_ACCEPTOR'},

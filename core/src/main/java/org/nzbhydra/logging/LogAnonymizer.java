@@ -32,7 +32,6 @@ public class LogAnonymizer {
      * @throws IOException Unable to read log file
      */
     public String getAnonymizedLog() throws IOException {
-        //LATER chunk up so it can handle big files
         String log = logContentProvider.getLog();
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             logger.debug("Removing username from log");
