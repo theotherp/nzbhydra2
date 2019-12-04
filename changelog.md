@@ -1,3 +1,9 @@
+### v2.10.2 (2019-12-04)
+
+**Feature** Add option to log HTTP server requests and their response times. The log messages will be written to a file nzbhydra.serv.log and not contained in the debug infos. They might help debug some performance related problems.
+
+
+
 ### v2.10.1 (2019-12-01)
 
 **Fix** Fix db error when trying to save downloaded NZB.
