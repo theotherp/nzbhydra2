@@ -163,7 +163,6 @@ public class Searcher {
         List<IndexerSearchCacheEntry> indexerSearchCacheEntries = searchCacheEntry.getIndexerCacheEntries().values().stream()
             .filter(IndexerSearchCacheEntry::isMoreResultsInCache)
             .collect(Collectors.toList());
-        logger.debug("Loading cached results from: {}", indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", ")));
         return indexerSearchCacheEntries;
     }
 
