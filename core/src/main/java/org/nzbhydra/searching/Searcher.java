@@ -98,7 +98,7 @@ public class Searcher {
             }
 
             indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-            while ((searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll()) && !indexersWithCachedResults.isEmpty()) {
+            while (searchResultItems.size() < numberOfWantedResults && !indexersWithCachedResults.isEmpty()) {
                 List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
                 SearchResultItem newestResult = newestItemsFromIndexers.get(0);
                 Indexer newestResultIndexer = newestResult.getIndexer();
@@ -296,13 +296,7 @@ public class Searcher {
             }
         }
 
-        if (indexerSearchCacheEntries.isEmpty()) {
-            logger.debug("All indeer caches exhausted");
-        } else {
-            String indexersToCall = indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
-            logger.debug("Going to call {} because their cache is exhausted", indexersToCall);
-        }
-
+        logger.debug("Going to call {} because their cache is exhausted", indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", ")));
         return indexerSearchCacheEntries;
     }
 
