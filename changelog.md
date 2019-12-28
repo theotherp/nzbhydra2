@@ -1,3 +1,9 @@
+### v2.10.4 (2019-12-28)
+
+**Fix** Revert 'load all' change made with last version as it causes some search loops. Will need to take a closer look.
+
+
+
 ### v2.10.3 (2019-12-28)
 
 **Fix** With the option to load all results enabled now all available results will actually be loaded.
