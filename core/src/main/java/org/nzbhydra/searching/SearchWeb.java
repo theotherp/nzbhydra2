@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.dtoseventsenums.*;
@@ -41,6 +42,8 @@ public class SearchWeb {
     private SearchRequestFactory searchRequestFactory;
     @Autowired
     private InternalSearchResultProcessor searchResultProcessor;
+    @Autowired
+    private ConfigProvider configProvider;
 
     private Lock lock = new ReentrantLock();
 
@@ -86,7 +89,7 @@ public class SearchWeb {
             searchType = category.getSearchType() == null ? SearchType.SEARCH : category.getSearchType();
         }
         SearchRequest searchRequest = searchRequestFactory.getSearchRequest(searchType, SearchSource.INTERNAL, category, parameters.getSearchRequestId(), parameters.getOffset(), parameters.getLimit());
-        searchRequest.setLoadAll(parameters.isLoadAll());
+        searchRequest.setLoadAll(parameters.isLoadAll() || configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal());
         searchRequest.setIndexers(parameters.getIndexers());
         searchRequest.setQuery(parameters.getQuery());
         searchRequest.setMinage(parameters.getMinage());
@@ -178,6 +181,10 @@ public class SearchWeb {
             lock.lock();
             SearchState searchState = searchStates.get(event.getSearchRequest().getSearchRequestId());
             searchState.setIndexersFinished(searchState.getIndexersFinished() + 1);
+            if (searchState.getIndexersFinished() > searchState.getIndexersSelected()) {
+                //This happens now regularly with updated search paging implementation. We may call an indexer multiple times to get the number of requested results
+                searchState.setIndexersSelected(searchState.getIndexersFinished());
+            }
             lock.unlock();
         }
     }

@@ -58,11 +58,11 @@ public class Searcher {
      * Maps a search request's hash to its cache entry
      */
     private final Map<Integer, SearchCacheEntry> searchRequestCache = ExpiringMap.builder()
-        .maxSize(20)
-        .expirationPolicy(ExpirationPolicy.ACCESSED)
-        .expiration(5, TimeUnit.MINUTES)
-        .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
-        .build();
+            .maxSize(20)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expiration(5, TimeUnit.MINUTES)
+            .expirationListener((k, v) -> logger.debug("Removing expired search cache entry {}", ((SearchCacheEntry) v).getSearchRequest()))
+            .build();
 
     public SearchResult search(SearchRequest searchRequest) {
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -98,7 +98,7 @@ public class Searcher {
             }
 
             indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-            while (searchResultItems.size() < numberOfWantedResults && !indexersWithCachedResults.isEmpty()) {
+            while ((searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll()) && !indexersWithCachedResults.isEmpty()) {
                 List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
                 SearchResultItem newestResult = newestItemsFromIndexers.get(0);
                 Indexer newestResultIndexer = newestResult.getIndexer();
@@ -144,9 +144,9 @@ public class Searcher {
         }
         searchResult.setNumberOfTotalAvailableResults(searchCacheEntry.getNumberOfTotalAvailableResults());
         searchResult.setIndexerSearchResults(searchCacheEntry.getIndexerCacheEntries().values().stream()
-            .filter(x -> !x.getIndexerSearchResults().isEmpty())
-            .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
-            .collect(Collectors.toList()));
+                .filter(x -> !x.getIndexerSearchResults().isEmpty())
+                .map(x -> Iterables.getLast(x.getIndexerSearchResults()))
+                .collect(Collectors.toList()));
         searchResult.setReasonsForRejection(searchCacheEntry.getReasonsForRejection());
         searchCacheEntry.setNumberOfRemovedDuplicates(searchResult.getNumberOfRemovedDuplicates());
 
@@ -161,8 +161,8 @@ public class Searcher {
 
     private List<IndexerSearchCacheEntry> getIndexersWithCachedResults(SearchCacheEntry searchCacheEntry) {
         List<IndexerSearchCacheEntry> indexerSearchCacheEntries = searchCacheEntry.getIndexerCacheEntries().values().stream()
-            .filter(IndexerSearchCacheEntry::isMoreResultsInCache)
-            .collect(Collectors.toList());
+                .filter(IndexerSearchCacheEntry::isMoreResultsInCache)
+                .collect(Collectors.toList());
         return indexerSearchCacheEntries;
     }
 
@@ -206,17 +206,17 @@ public class Searcher {
     protected List<SearchResultItem> getNewestSearchResultItemFromEachDuplicateGroup(List<LinkedHashSet<SearchResultItem>> duplicateGroups) {
         //Sort duplicate groups internally, map to list, sort the results
         return duplicateGroups.stream().map(x -> x.stream()
-            .sorted(Comparator.comparingInt((SearchResultItem searchResultItem) -> searchResultItem.getIndexerScore() == null ? 0 : searchResultItem.getIndexerScore())
-                .reversed()
-                .thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getBestDate().getEpochSecond())
-                    .reversed())
-            )
-            .iterator().next()
+                .sorted(Comparator.comparingInt((SearchResultItem searchResultItem) -> searchResultItem.getIndexerScore() == null ? 0 : searchResultItem.getIndexerScore())
+                        .reversed()
+                        .thenComparing(Comparator.comparingLong((SearchResultItem y) -> y.getBestDate().getEpochSecond())
+                                .reversed())
+                )
+                .iterator().next()
         ).
-            sorted(Comparator.comparingLong((SearchResultItem x) -> x.getBestDate().getEpochSecond())
-                .reversed()
-            )
-            .collect(Collectors.toList());
+                sorted(Comparator.comparingLong((SearchResultItem x) -> x.getBestDate().getEpochSecond())
+                        .reversed()
+                )
+                .collect(Collectors.toList());
     }
 
     private void createOrUpdateIndexerSearchEnties(SearchCacheEntry searchCacheEntry) {
@@ -296,7 +296,13 @@ public class Searcher {
             }
         }
 
-        logger.debug("Going to call {} because their cache is exhausted", indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", ")));
+        if (indexerSearchCacheEntries.isEmpty()) {
+            logger.debug("All indeer caches exhausted");
+        } else {
+            String indexersToCall = indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
+            logger.debug("Going to call {} because their cache is exhausted", indexersToCall);
+        }
+
         return indexerSearchCacheEntries;
     }
 
