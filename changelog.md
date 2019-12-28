@@ -1,3 +1,11 @@
+### v2.10.3 (2019-12-28)
+
+**Fix** With the option to load all results enabled now all available results will actually be loaded.
+
+**Note** I've removed the feature to migrate from v1 (to reduce the install size and memory usage a bit). It's still possible to migrate in older versions and then update to a current version.
+
+
+
 ### v2.10.2 (2019-12-04)
 
 **Feature** Add option to log HTTP server requests and their response times. The log messages will be written to a file nzbhydra.serv.log and not contained in the debug infos. They might help debug some performance related problems.
