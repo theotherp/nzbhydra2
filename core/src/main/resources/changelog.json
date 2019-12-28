@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "With the option to load all results enabled now all available results will actually be loaded."
+      },
+      {
+        "type": "note",
+        "text": "I've removed the feature to migrate from v1 (to reduce the install size and memory usage a bit). It's still possible to migrate in older versions and then update to a current version."
       }
     ]
   },

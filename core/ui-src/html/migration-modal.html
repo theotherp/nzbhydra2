@@ -3,47 +3,10 @@
 </div>
 <div class="modal-body" style="text-align: left">
     <span ng-show="!foo.isMigrating">
-        <p>You are about to migrate from an installation of NZBHydra 1. This will overwrite your existing settings and database for v2. No automatic backup will be made before.</p>
-
-        <p>The migration can take a couple of minutes for big databases. All enabled newznab indexers will be queried multiple times for a capabilities check.</p>
-        <p>For big databases I recommend temporarily starting NZBHydra with more memory (using the parameter <tt>--xmx 512</tt> (or even more)). Otherwise the migration might fail (in some cases without an error being shown here).</p>
-
-        <p>The migration is easier if the older instance is callable from here and its files are on the same machine as v2 (and not containerized). Please select what applies:</p>
-
-        <uib-accordion close-others="true">
-            <div uib-accordion-group class="panel-default"
-                 heading="NZBHydra 1's files are accessible and its URL callable" is-open="foo.isUrlBasedOpen">
-        The old instance of NZBHydra 1 needs to be running and must be at least version 0.2.220. Please enter its base URL below.
-        If it's auth protected please enter the URL like this: http://user:pass@127.0.0.1:5075. Leave v1 open until the migration is finished.
-
-                <input type="text" data-ng-model="foo.baseUrl" class="form-control input-lg" placeholder="http://127.0.01:5075" style="margin-top: 10px"/>
-            </div>
-            <div uib-accordion-group class="panel-default"
-                 heading="NZBHydra 1 is running on another machine or in a container" is-open="foo.isFileBasedOpen">
-                Please make extra sure that NZBHydra 1 is at least version 0.2.220.<br>
-                You need to copy <code>settings.cfg</code> and <code>nzbhydra.db.*</code> files to this machine. Then paste their full paths:<br>
-                <div class="input-group">
-                    <label>settings.cfg</label><input ng-model="foo.settingsCfgFile" class="form-control" placeholder="/path/to/settings.cfg"
-                                                      size="100"/><br>
-                    <label>nzbhydra.db</label><input ng-model="foo.nzbhydraDbFile" class="form-control"  placeholder="/path/to/nzbhydra.db"/>
-                </div>
-            </div>
-        </uib-accordion>
-        <p>In some cases you might want to skip the migration of the database, e.g. when you don't want to take over the history or if the migration fails and the config is good enough.
-        Please select if the database should be migrated: <input type="checkbox" data-ng-model="doMigrateDatabase">
-        </p>
+        <p>Migration from NZBHydra v1 was removed in version 2.10.3. Please manually download and run <a href="https://github.com/theotherp/nzbhydra2/releases/tag/v2.10.2">the latest version</a> which supports migration, migrate that and then update.</p>
     </span>
-    <span ng-show="foo.isMigrating" style="text-align: left">
-        If nothing happens here for a while check the logs for an error...
-        <ul style="padding-left: 0">ReleaseMojoTest
-            <li ng-repeat="message in foo.messages" style="list-style-type: none">
-                {{message}}
-            </li>
-        </ul>
-        <img src="static/img/spinner.gif"/>
-    </span>
+
 </div>
 <div class="modal-footer">
-    <button class="btn btn-success" type="button" ng-click="yes()" ng-disabled="foo.isMigrating" >Start migration</button>
-    <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-warning" type="button" ng-click="cancel()">Ok</button>
 </div>

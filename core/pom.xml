@@ -157,11 +157,6 @@
             <version>1.12</version>
         </dependency>
         <dependency>
-            <groupId>org.xerial</groupId>
-            <artifactId>sqlite-jdbc</artifactId>
-            <version>3.23.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
             <version>${flyway-core.version}</version>
@@ -315,22 +310,6 @@
             <artifactId>failsafe</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.conscrypt</groupId>
-            <artifactId>conscrypt-openjdk-uber</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.60</version>
-        </dependency>
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.60</version>
-        </dependency>
-
 
         <dependency>
             <!--https://stackoverflow.com/a/47412779-->
