@@ -1,3 +1,9 @@
+### v2.10.6 (2019-12-29)
+
+**Fix** The last changes made a pretty big change in the searching behavior with the option 'Load all' enabled. I'm completely rolling that back until I have an idea how to get what I want without causing excessive search behavior.
+
+
+
 ### v2.10.5 (2019-12-29)
 
 **Fix** Last udate (which reverted 2.10.3) was incomplete. Sorry, still drowsy from too much christmas food ;-)
