@@ -1,3 +1,9 @@
+### v2.10.5 (2019-12-29)
+
+**Fix** Last udate (which reverted 2.10.3) was incomplete. Sorry, still drowsy from too much christmas food ;-)
+
+
+
 ### v2.10.4 (2019-12-28)
 
 **Fix** Revert 'load all' change made with last version as it causes some search loops. Will need to take a closer look.
