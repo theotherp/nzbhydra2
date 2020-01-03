@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+
 import sys
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (2, 7)
+REQUIRED_PYTHON = (3, 5)
 
 # This check and everything above must remain compatible with Python 2.7 and above.
 if CURRENT_PYTHON > REQUIRED_PYTHON:
@@ -20,7 +20,7 @@ import re
 import shutil
 import subprocess
 import zipfile
-from __builtin__ import file
+from builtins import file
 from logging.handlers import RotatingFileHandler
 
 jarFile = None
@@ -29,7 +29,7 @@ args = []
 unknownArgs = []
 terminatedByWrapper = False
 
-LOGGER_DEFAULT_FORMAT = u'%(asctime)s  %(levelname)s - %(message)s'
+LOGGER_DEFAULT_FORMAT = '%(asctime)s  %(levelname)s - %(message)s'
 LOGGER_DEFAULT_LEVEL = 'INFO'
 logger = logging.getLogger('root')
 console_logger = logging.StreamHandler(sys.stdout)
@@ -44,7 +44,7 @@ def getBasePath():
     global basepath
     if basepath is not None:
         return basepath
-    if "HYDRAWORKINGFOLDER" in os.environ.keys():
+    if "HYDRAWORKINGFOLDER" in list(os.environ.keys()):
         return os.environ["HYDRAWORKINGFOLDER"]
     import sys
     if sys.executable:
@@ -113,7 +113,7 @@ def daemonize(pidfile, nopidfile):
         try:
             file(pidfile, 'w').write("%s\n" % pid)
         except IOError as e:
-            sys.stderr.write(u"Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
+            sys.stderr.write("Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
             sys.exit(1)
     else:
         print("no pid file")
