@@ -70,6 +70,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     protected String urlBase = null;
     private boolean updateCheckEnabled = true;
     private boolean updateAutomatically = false;
+    private boolean updateToPrereleases = false;
     @RestartRequired
     private boolean useCsrf = true;
     @RestartRequired

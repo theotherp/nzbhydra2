@@ -78,6 +78,9 @@ public class ChangelogGeneratorMojo extends AbstractMojo {
     static List<String> getMarkdownLinesFromEntry(ChangelogVersionEntry entry) {
         List<String> lines = new ArrayList<>();
         String versionLine = "### " + entry.getVersion();
+        if (!entry.isFinal()) {
+            versionLine += " BETA";
+        }
         if (entry.getDate() != null) {
             versionLine += " (" + entry.getDate() + ")";
         }

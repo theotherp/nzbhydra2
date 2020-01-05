@@ -35,7 +35,6 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -75,8 +74,6 @@ public class UpdateManager implements InitializingBean {
     private ConfigProvider configProvider;
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
-    @Autowired
-    private DataSource dataSource;
 
     @Value("${build.version:0.0.1}")
     protected String currentVersionString;
@@ -102,11 +99,18 @@ public class UpdateManager implements InitializingBean {
 
     public boolean isUpdateAvailable() {
         try {
-            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored() && !latestVersionBlocked();
+            return getLatestVersion().isUpdateFor(currentVersion) && !latestVersionIgnored() && !latestVersionBlocked() && latestVersionFinalOrPreEnabled();
         } catch (UpdateException e) {
             logger.error("Error while checking if new version is available", e);
             return false;
         }
+    }
+
+    public boolean latestVersionFinalOrPreEnabled() {
+        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
+            return true;
+        }
+        return latestReleaseCache.get().getPrerelease() == null || !latestReleaseCache.get().getPrerelease();
     }
 
     public boolean latestVersionIgnored() throws UpdateException {
@@ -189,9 +193,15 @@ public class UpdateManager implements InitializingBean {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
 
-        Collections.sort(changelogVersionEntries);
-        Collections.reverse(changelogVersionEntries);
-        return changelogVersionEntries;
+        return changelogVersionEntries.stream()
+                .sorted(Comparator.reverseOrder())
+                .filter(version -> {
+                    if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
+                        return true;
+                    }
+                    return version.isFinal();
+                })
+                .collect(Collectors.toList());
     }
 
     /**
@@ -278,10 +288,18 @@ public class UpdateManager implements InitializingBean {
 
     private Release getLatestRelease() throws UpdateException {
         try {
-            //LATER support prereleases
-            String url = repositoryBaseUrl + "/releases/latest";
+            String url = repositoryBaseUrl + "/releases";
             logger.debug("Retrieving latest release from GitHub using URL {}", url);
-            return webAccess.callUrl(url, new HashMap<>(), Release.class);
+            List<Release> releases = webAccess.callUrl(url, new TypeReference<List<Release>>() {
+            });
+            return releases.stream()
+                    .sorted(Comparator.comparing(x -> new SemanticVersion(((Release) x).getTagName())).reversed())
+                    .filter(release -> {
+                        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
+                            return true;
+                        }
+                        return release.getPrerelease() == null || !release.getPrerelease();
+                    }).findFirst().orElse(null);
         } catch (IOException e) {
             throw new UpdateException("Error while getting latest version: " + e.getMessage());
         }

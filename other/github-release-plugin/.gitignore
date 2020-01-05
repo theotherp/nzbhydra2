@@ -10,3 +10,4 @@ target/
 /logs
 /config
 /database/
+changelog.json

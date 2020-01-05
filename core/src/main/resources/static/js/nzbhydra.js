@@ -5582,6 +5582,13 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Install updates automatically'
                             }
+                        }, {
+                            key: 'updateToPrereleases',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Install prereleases'
+                            }
                         },
                         {
                             key: 'deleteBackupsAfterWeeks',
