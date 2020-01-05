@@ -21,12 +21,7 @@ import sockslib.common.SocksException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -399,12 +394,12 @@ public class SocksSocket extends Socket {
 
     @Override
     public boolean isInputShutdown() {
-        return proxy.getProxySocket().isInputShutdown();
+        return proxy.getProxySocket() == null || proxy.getProxySocket().isInputShutdown();
     }
 
     @Override
     public boolean isOutputShutdown() {
-        return proxy.getProxySocket().isOutputShutdown();
+        return proxy.getProxySocket() == null || proxy.getProxySocket().isOutputShutdown();
     }
 
     @Override

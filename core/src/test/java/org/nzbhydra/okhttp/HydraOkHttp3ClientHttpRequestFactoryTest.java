@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.downloading.ProxyType;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory.SockProxySocketFactory;
@@ -38,6 +39,7 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
         when(configProviderMock.getBaseConfig()).thenReturn(baseConfig);
         baseConfig.getMain().setProxyIgnoreLocal(true);
         baseConfig.getMain().setProxyIgnoreDomains(Arrays.asList("mydomain.com", "github.com", "*.otherdomain.net"));
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
     }
 
     @Test
@@ -89,6 +91,8 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
     public void shouldUseSocksProxyIfConfigured() throws URISyntaxException {
         baseConfig.getMain().setProxyType(ProxyType.SOCKS);
         baseConfig.getMain().setProxyHost("proxyhost");
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+
         OkHttpClient client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
         assertThat(client.socketFactory() instanceof SockProxySocketFactory, is(true));
         assertThat(((SockProxySocketFactory) client.socketFactory()).host, is("proxyhost"));
@@ -97,6 +101,8 @@ public class HydraOkHttp3ClientHttpRequestFactoryTest {
 
         baseConfig.getMain().setProxyUsername("user");
         baseConfig.getMain().setProxyPassword("pass");
+        testee.handleConfigChangedEvent(new ConfigChangedEvent(this, baseConfig, baseConfig));
+
         client = testee.getOkHttpClientBuilder(new URI("http://www.google.de")).build();
         assertThat(((SockProxySocketFactory) client.socketFactory()).username, is("user"));
         assertThat(((SockProxySocketFactory) client.socketFactory()).password, is("pass"));

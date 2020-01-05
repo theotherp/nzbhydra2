@@ -6,6 +6,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 import org.nzbhydra.Jackson;
@@ -51,15 +52,15 @@ public class WebAccess {
         Request request = builder.build();
 
         OkHttpClient client = requestFactory.getOkHttpClientBuilder(request.url().uri()).readTimeout(timeout, TimeUnit.SECONDS).connectTimeout(timeout, TimeUnit.SECONDS).writeTimeout(timeout, TimeUnit.SECONDS).build();
-        try (Response response = client.newCall(request).execute()) {
+        String bodyAsString;
+        try (Response response = client.newCall(request).execute(); ResponseBody body = response.body()) {
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d: %s", url, response.code(), response.message());
-                logger.error(error + "\n" + response.body().string());
+                logger.error(error + body == null ? "" : ("\n" + body.string()));
                 throw new IOException(error);
             }
-            String body = response.body().string();
-            response.body().close();
-            return body;
+            bodyAsString = body.string();
+            return bodyAsString;
         }
     }
 
@@ -77,18 +78,17 @@ public class WebAccess {
         logger.debug("Downloading file from {} to {}", url, file.getAbsolutePath());
         Stopwatch stopwatch = Stopwatch.createStarted();
         Request request = new Request.Builder().url(url).build();
-        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute()) {
-            long contentLength = response.body().contentLength();
+        try (Response response = requestFactory.getOkHttpClientBuilder(request.url().uri()).build().newCall(request).execute(); ResponseBody body = response.body()) {
+            long contentLength = body.contentLength();
             if (!response.isSuccessful()) {
                 String error = String.format("URL call to %s returned %d:%s", url, response.code(), response.message());
                 logger.error(error);
                 throw new IOException(error);
             }
-            BufferedSink sink = Okio.buffer(Okio.sink(file));
-            sink.writeAll(response.body().source());
-            sink.flush();
-            sink.close();
-            response.body().close();
+            try (BufferedSink sink = Okio.buffer(Okio.sink(file))) {
+                sink.writeAll(body.source());
+                sink.flush();
+            }
             logger.debug(LoggingMarkers.PERFORMANCE, "Took {}ms to download file with {} bytes", stopwatch.elapsed(TimeUnit.MILLISECONDS), contentLength);
         }
     }

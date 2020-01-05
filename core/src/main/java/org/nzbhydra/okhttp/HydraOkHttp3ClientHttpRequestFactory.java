@@ -21,6 +21,7 @@ import joptsimple.internal.Strings;
 import okhttp3.*;
 import okhttp3.OkHttpClient.Builder;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.ProxyType;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.AsyncClientHttpRequest;
@@ -43,6 +45,7 @@ import sockslib.client.Socks5;
 import sockslib.client.SocksProxy;
 import sockslib.client.SocksSocket;
 
+import javax.annotation.PostConstruct;
 import javax.net.SocketFactory;
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -63,8 +66,7 @@ import java.util.regex.Pattern;
 
 @Component
 @Primary
-public class HydraOkHttp3ClientHttpRequestFactory
-        implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory {
+public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFactory, AsyncClientHttpRequestFactory {
 
     @Value("${nzbhydra.connectionTimeout:10}")
     private int timeout;
@@ -72,9 +74,18 @@ public class HydraOkHttp3ClientHttpRequestFactory
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
     private static Pattern HOST_PATTERN = Pattern.compile("((\\w|\\*)+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
 
+    private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
+
+    private SSLSocketFactory whitelistingSocketFactory;
+    private SocketFactory sockProxySocketFactory;
+
     @Autowired
     private ConfigProvider configProvider;
-    private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
+
+    @PostConstruct
+    public void init() {
+        initSocketFactory(configProvider.getBaseConfig().getMain());
+    }
 
     @Override
     public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) {
@@ -86,6 +97,23 @@ public class HydraOkHttp3ClientHttpRequestFactory
         return new OkHttp3AsyncClientHttpRequest(getOkHttpClientBuilder(uri).build(), uri, httpMethod);
     }
 
+    @EventListener
+    public void handleConfigChangedEvent(ConfigChangedEvent event) {
+        initSocketFactory(event.getNewConfig().getMain());
+    }
+
+    private void initSocketFactory(MainConfig mainConfig) {
+        SSLSocketFactory sslSocketFactory;
+        try {
+            sslSocketFactory = getSslSocketFactory(new TrustManager[]{
+                    getDefaultX509TrustManager()
+            });
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new RuntimeException("Unable to create SSLSocketFactory", e);
+        }
+        whitelistingSocketFactory = new SniWhitelistingSocketFactory(sslSocketFactory);
+        sockProxySocketFactory = new SockProxySocketFactory(mainConfig.getProxyHost(), mainConfig.getProxyPort(), mainConfig.getProxyUsername(), mainConfig.getProxyPassword());
+    }
 
     static Request buildRequest(HttpHeaders headers, byte[] content, URI uri, HttpMethod method)
             throws MalformedURLException {
@@ -121,14 +149,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             builder = getUnsafeOkHttpClientBuilder(builder);
         } else {
             logger.debug(LoggingMarkers.HTTPS, "Not ignoring SSL certificates");
-            try {
-                SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
-                        getDefaultX509TrustManager()
-                });
-                builder = builder.sslSocketFactory(new SniWhitelistingSocketFactory(sslSocketFactory), getDefaultX509TrustManager());
-            } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                throw new RuntimeException("Unable to create SSLSocketFactory", e);
-            }
+            builder = builder.sslSocketFactory(whitelistingSocketFactory, getDefaultX509TrustManager());
         }
 
         MainConfig main = configProvider.getBaseConfig().getMain();
@@ -141,9 +162,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return builder;
         }
 
-
         if (main.getProxyType() == ProxyType.SOCKS) {
-            SockProxySocketFactory sockProxySocketFactory = new SockProxySocketFactory(main.getProxyHost(), main.getProxyPort(), main.getProxyUsername(), main.getProxyPassword());
             return builder.socketFactory(sockProxySocketFactory);
         } else if (main.getProxyType() == ProxyType.HTTP) {
             builder = builder.proxy(new Proxy(Type.HTTP, new InetSocketAddress(main.getProxyHost(), main.getProxyPort()))).proxyAuthenticator((Route route, Response response) -> {
@@ -228,10 +247,8 @@ public class HydraOkHttp3ClientHttpRequestFactory
                     getAllTrustingX509TrustManager()
             };
 
-            final SSLSocketFactory sslSocketFactory = new SniWhitelistingSocketFactory(getSslSocketFactory(trustAllCerts));
-
             return builder
-                    .sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0])
+                    .sslSocketFactory(whitelistingSocketFactory, (X509TrustManager) trustAllCerts[0])
                     .hostnameVerifier((hostname, session) -> {
                         logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
                         return true;
@@ -319,7 +336,7 @@ public class HydraOkHttp3ClientHttpRequestFactory
         }
     }
 
-    protected class SockProxySocketFactory extends SocketFactory {
+    protected static class SockProxySocketFactory extends SocketFactory {
 
         protected String host;
         protected int port;
@@ -344,19 +361,19 @@ public class HydraOkHttp3ClientHttpRequestFactory
             return socket;
         }
 
-        public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port) {
             throw new RuntimeException("Would skip the proxy, not supported");
         }
 
-        public Socket createSocket(InetAddress address, int port) throws IOException {
+        public Socket createSocket(InetAddress address, int port) {
             throw new RuntimeException("Would skip the proxy, not supported");
         }
 
-        public Socket createSocket(String host, int port, InetAddress localhost, int localport) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port, InetAddress localhost, int localport) {
             throw new RuntimeException("Would skip the proxy, not supported");
         }
 
-        public Socket createSocket(InetAddress host, int port, InetAddress localhost, int localport) throws IOException {
+        public Socket createSocket(InetAddress host, int port, InetAddress localhost, int localport) {
             throw new RuntimeException("Would skip the proxy, not supported");
         }
     }
