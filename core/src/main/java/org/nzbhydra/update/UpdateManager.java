@@ -187,7 +187,8 @@ public class UpdateManager implements InitializingBean {
     protected List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
-            changelogVersionEntries = webAccess.callUrl(changelogUrl, new TypeReference<List<ChangelogVersionEntry>>() {
+            String response = webAccess.callUrl(changelogUrl);
+            changelogVersionEntries = objectMapper.readValue(response, new TypeReference<List<ChangelogVersionEntry>>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
@@ -310,7 +311,8 @@ public class UpdateManager implements InitializingBean {
         logger.debug("Getting blocked versions from GitHub using URL {}", blockedVersionsUrl);
         List<BlockedVersion> blockedVersions;
         try {
-            blockedVersions = webAccess.callUrl(blockedVersionsUrl, new TypeReference<List<BlockedVersion>>() {
+            String response = webAccess.callUrl(blockedVersionsUrl);
+            blockedVersions = objectMapper.readValue(response, new TypeReference<List<BlockedVersion>>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting blocked versions: " + e.getMessage());

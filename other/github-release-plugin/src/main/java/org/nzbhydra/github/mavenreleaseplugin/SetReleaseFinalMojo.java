@@ -29,6 +29,9 @@ public class SetReleaseFinalMojo extends AbstractMojo {
     @Parameter(property = "changelogJsonFile", required = true)
     protected File changelogJsonFile;
 
+    @Parameter(property = "githubTokenFile", required = false)
+    protected File githubTokenFile;
+
     @Parameter(property = "githubToken", required = false)
     protected String githubToken;
 
@@ -44,6 +47,14 @@ public class SetReleaseFinalMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         if (Strings.isNullOrEmpty(version)) {
             throw new MojoExecutionException("Version property is empty");
+        }
+
+        if (githubTokenFile != null && githubTokenFile.exists()) {
+            try {
+                githubToken = new String(Files.readAllBytes(githubTokenFile.toPath()));
+            } catch (IOException e) {
+                throw new MojoExecutionException("Unable to read token.txt", e);
+            }
         }
 
         client = new OkHttpClient.Builder().readTimeout(25, TimeUnit.SECONDS).connectTimeout(25, TimeUnit.SECONDS).build();
@@ -76,7 +87,9 @@ public class SetReleaseFinalMojo extends AbstractMojo {
 
 
         org.nzbhydra.github.mavenreleaseplugin.Release release;
-        try (Response response = client.newCall(new Request.Builder().url(githubReleasesUrl + "/tags/" + version).build()).execute()) {
+        String url = githubReleasesUrl + "/tags/" + version;
+        getLog().info("Calling URL " + url);
+        try (Response response = client.newCall(new Request.Builder().url(url).build()).execute()) {
             if (!response.isSuccessful()) {
                 throw new MojoExecutionException("Unable to find release with tag name " + version);
             }
@@ -108,6 +121,7 @@ public class SetReleaseFinalMojo extends AbstractMojo {
         getLog().info("Setting release final");
         releaseRequest.setPrerelease(false);
         String url = release.getUrl() + "?access_token=" + githubToken;
+        getLog().info("Calling URL " + url);
         Call call = client.newCall(new Request.Builder().url(url).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
         Response response = call.execute();
         if (!response.isSuccessful()) {

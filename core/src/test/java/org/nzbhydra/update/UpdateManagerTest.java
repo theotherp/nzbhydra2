@@ -82,17 +82,16 @@ public class UpdateManagerTest {
         when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/repos/theotherp/apitests/releases"), any(TypeReference.class))).thenReturn(
                 Arrays.asList(previousRelease, latestRelease, prerelease));
 
-        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"), any(TypeReference.class))).thenReturn(
-                Arrays.asList(
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(
                         new ChangelogVersionEntry("4.0.0", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a prerelease"))),
                         new ChangelogVersionEntry("3.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "a note"))),
                         new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("fix", "a minor fix"))),
                         new ChangelogVersionEntry("0.0.1", null, true, Arrays.asList(new ChangelogChangeEntry("feature", "a new feature")))
+                )));
 
-                ));
-
-        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"), any(TypeReference.class))).thenReturn(
-                Arrays.asList(new BlockedVersion("3.0.0", "comment"))
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/blockedVersions.json"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(new BlockedVersion("3.0.0", "comment")))
         );
     }
 
