@@ -1,3 +1,11 @@
+### v2.10.7 (2020-01-05)
+
+**Note** Happy new year!
+
+**Fix** Fix memory leak when using a proxy.
+
+
+
 ### v2.10.6 (2019-12-29)
 
 **Fix** The last changes made a pretty big change in the searching behavior with the option 'Load all' enabled. I'm completely rolling that back until I have an idea how to get what I want without causing excessive search behavior.
