@@ -1,5 +1,9 @@
 [
     {
+        "showForVersion": "2.10.7",
+        "newsAsMarkdown": "If you're running v2.10.7 or older the display of changes of the latest update will not work. Please just update to fix this. The actual update mechanism should not be affected."
+    },
+    {
         "showForVersion": "2.8.4",
         "newsAsMarkdown": "If you're running v2.8.4 or older and not using docker and have automatic updates disabled: The updates page won't load because I've made changes to the changelog file that's loaded on that page and I forgot to consider that that will affect older instances. If you can't update you'll have to do so manually. Shut down Hydra, download the latest release and extract it into your main Hydra folder. Sorry about that! :-/"
     },
