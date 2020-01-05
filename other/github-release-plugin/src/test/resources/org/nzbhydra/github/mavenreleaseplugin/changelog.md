@@ -1,4 +1,4 @@
-### v1.0.0 (2019-11-16)
+### v1.0.0 BETA (2019-11-16)
 
 **Note** First major release
 

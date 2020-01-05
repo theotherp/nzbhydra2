@@ -302,6 +302,7 @@ main:
   theme: "grey"
   updateCheckEnabled: true
   updateAutomatically: false
+  updateToPrereleases: false
   urlBase: "/"
   useCsrf: true
   usePackagedCaCerts: true

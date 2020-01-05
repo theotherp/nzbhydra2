@@ -29,6 +29,7 @@ public class ReleaseMojo extends AbstractMojo {
 
     private OkHttpClient client;
 
+
     @Parameter(property = "githubToken", required = false)
     protected String githubToken;
 
@@ -89,7 +90,7 @@ public class ReleaseMojo extends AbstractMojo {
             releaseRequest.setTagName(tagName);
             releaseRequest.setName(tagName);
             releaseRequest.setDraft(true);
-            releaseRequest.setPrerelease(false);
+            releaseRequest.setPrerelease(!getChangelogVersionEntry().isFinal());
             releaseRequest.setTargetCommitish(commitish);
             setChangelogBody(releaseRequest);
 

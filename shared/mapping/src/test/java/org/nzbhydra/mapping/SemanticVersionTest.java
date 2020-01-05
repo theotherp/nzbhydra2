@@ -70,6 +70,7 @@ public class SemanticVersionTest {
         assertFalse(new SemanticVersion(1, 1, 1).isUpdateFor(new SemanticVersion(1, 1, 1)));
 
         assertTrue(new SemanticVersion(1, 0, 0).isUpdateFor(new SemanticVersion(1, 0, 0, "SNAPSHOT")));
+        assertTrue(new SemanticVersion(1, 0, 0).isUpdateFor(new SemanticVersion(1, 0, 0, "beta")));
 
         assertFalse(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0, "SNAPSHOT")));
         assertFalse(new SemanticVersion(1, 0, 0, "SNAPSHOT").isUpdateFor(new SemanticVersion(1, 0, 0)));

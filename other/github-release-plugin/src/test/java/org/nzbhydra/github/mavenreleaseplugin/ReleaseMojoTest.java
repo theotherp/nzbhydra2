@@ -11,12 +11,19 @@ import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class ReleaseMojoTest extends AbstractMojoTestCase {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    public void setUp() throws Exception {
+        super.setUp();
+        Files.copy(getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json.orig").toPath(), getTestFile("/src/test/resources/org/nzbhydra/github/mavenreleaseplugin/changelog.json").toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
 
     public void testExecute() throws Exception {
         MockWebServer server = getMockWebServer();
@@ -141,12 +148,12 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
         assertEquals("v1.0.0", bodyJson.getTagName());
-        assertFalse(bodyJson.isPrerelease());
+        assertTrue(bodyJson.isPrerelease());
         assertEquals("commitish", bodyJson.getTargetCommitish());
         assertTrue(bodyJson.isDraft());
         assertEquals("v1.0.0", bodyJson.getName());
-        assertEquals("### v1.0.0 (2019-11-16)\n\n" +
-            "**Note** First major release\n\n", bodyJson.getBody());
+        assertEquals("### v1.0.0 BETA (2019-11-16)\n\n" +
+                "**Note** First major release\n\n", bodyJson.getBody());
     }
 
 
