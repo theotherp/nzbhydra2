@@ -28,8 +28,8 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion = 8;
-    private boolean backupEverySunday = true;
+    private Integer configVersion = 9;
+    private Integer backupEveryXDays = 7;
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;
     private String dereferer = null;
@@ -92,6 +92,10 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     public Optional<String> getDereferer() {
         return Optional.ofNullable(dereferer); //This must be returned as empty string so that the config can overwrite it
+    }
+
+    public Optional<Integer> getBackupEveryXDays() {
+        return Optional.ofNullable(backupEveryXDays);
     }
 
     @Override

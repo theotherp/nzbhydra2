@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2.10.9",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Switched option for backup to an interval of days which allows you to have a finer control over when backups are created (e.g. more often if your system tends to crash...)."
+      }
+    ],
+    "final": false
+  },
+  {
     "version": "v2.10.8",
     "date": "2020-01-05",
     "changes": [

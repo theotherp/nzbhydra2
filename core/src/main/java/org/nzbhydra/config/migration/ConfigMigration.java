@@ -37,7 +37,6 @@ public class ConfigMigration {
     protected List<ConfigMigrationStep> steps;
     protected int expectedConfigVersion;
 
-
     static {
         DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
         defaultPrettyPrinter = new DefaultPrettyPrinter();
