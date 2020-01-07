@@ -1,3 +1,9 @@
+### v2.10.10 BETA (2020-01-07)
+
+**Fix** Add missing UI config entry for backup added in last update.
+
+
+
 ### v2.10.9 BETA (2020-01-06)
 
 **Feature** Switched option for backup to an interval of days which allows you to have a finer control over when backups are created (e.g. more often if your system tends to crash...).
