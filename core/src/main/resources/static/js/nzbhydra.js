@@ -5552,11 +5552,14 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'backupEverySunday',
-                            type: 'horizontalSwitch',
+                            key: 'backupEveryXDays',
+                            type: 'horizontalInput',
                             templateOptions: {
-                                type: 'switch',
-                                label: 'Backup every sunday'
+                                type: 'number',
+                                label: 'Backup every...',
+                                addonRight: {
+                                    text: 'days'
+                                }
                             }
                         },
                         {
