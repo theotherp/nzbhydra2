@@ -2139,13 +2139,13 @@ angular
     .directive('downloaderStatusFooter', downloaderStatusFooter);
 
 function downloaderStatusFooter() {
-    controller.$inject = ["$scope", "$interval", "$http", "RequestsErrorHandler"];
+    controller.$inject = ["$scope", "$interval", "$http", "RequestsErrorHandler", "HydraAuthService"];
     return {
         templateUrl: 'static/html/directives/downloader-status-footer.html',
         controller: controller
     };
 
-    function controller($scope, $interval, $http, RequestsErrorHandler) {
+    function controller($scope, $interval, $http, RequestsErrorHandler, HydraAuthService) {
 
         $scope.$emit("showDownloaderStatus", true);
         var downloadRateCounter = 0;
@@ -2197,6 +2197,11 @@ function downloaderStatusFooter() {
         };
 
         function update() {
+            var userInfos = HydraAuthService.getUserInfos();
+            if (!userInfos.maySeeStats) {
+                return false;
+            }
+
             RequestsErrorHandler.specificallyHandled(function () {
                 $http.get("internalapi/downloader/getStatus", {ignoreLoadingBar: true}).then(function (response) {
                         try {

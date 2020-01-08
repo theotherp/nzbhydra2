@@ -45,7 +45,7 @@ public class DownloaderWeb {
         return downloaderProvider.checkConnection(downloaderConfig);
     }
 
-    @Secured({"ROLE_ADMIN"})
+    @Secured({"ROLE_STATS"})
     @RequestMapping(value = "/internalapi/downloader/getStatus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public DownloaderStatus getStatus() throws DownloaderException {
         Collection<Downloader> allDownloaders = downloaderProvider.getAllDownloaders();
