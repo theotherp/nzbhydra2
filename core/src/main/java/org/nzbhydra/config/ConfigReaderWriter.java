@@ -86,42 +86,18 @@ public class ConfigReaderWriter {
             logger.warn("Empty config string provided");
             throw new IOException("Empty YAML");
         }
-        //Make sure correct YAML was provided
-        try {
-            Jackson.YAML_MAPPER.readValue(configAsYamlString, BaseConfig.class);
-        } catch (IOException e) {
-            logger.warn("Unreadable config string provided", e);
-            throw e;
-        }
 
 
-        //Write to temp file and make sure it can be read correctly
-        File tempFile = new File(targetFile.getCanonicalPath() + ".bak");
-        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Using temporary file {}", tempFile);
-        try (final FileOutputStream fos = new FileOutputStream(tempFile)) {
+        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Writing to file {}", targetFile);
+        try (final FileOutputStream fos = new FileOutputStream(targetFile)) {
             IOUtils.write(configAsYamlString.getBytes(Charsets.UTF_8), fos);
             fos.flush();
             fos.getFD().sync();
         }
 
         try {
-            Jackson.YAML_MAPPER.readValue(tempFile, BaseConfig.class);
-        } catch (IOException e) {
-            logger.warn("Written temporary config file corrupted", e);
-            throw e;
-        }
-
-        //Copy temp file to target file and verify again it's correct
-        logger.debug(LoggingMarkers.CONFIG_READ_WRITE, "Copying temporary file to {}", targetFile);
-        Files.copy(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        try (final FileInputStream fis = new FileInputStream(tempFile); final FileOutputStream fos = new FileOutputStream(targetFile)) {
-            IOUtils.copy(fis, fos);
-            fos.flush();
-            fos.getFD().sync();
-        }
-
-        try {
-            Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
+            BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
+            baseConfig = null;
         } catch (IOException e) {
             logger.warn("Written target config file corrupted", e);
             throw e;

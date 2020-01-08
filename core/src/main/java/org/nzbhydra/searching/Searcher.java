@@ -297,7 +297,7 @@ public class Searcher {
         }
 
         if (indexerSearchCacheEntries.isEmpty()) {
-            logger.debug("All indeer caches exhausted");
+            logger.debug("All indexer caches exhausted");
         } else {
             String indexersToCall = indexerSearchCacheEntries.stream().map(x -> x.getIndexer().getName()).collect(Collectors.joining(", "));
             logger.debug("Going to call {} because their cache is exhausted", indexersToCall);
@@ -332,8 +332,8 @@ public class Searcher {
             logger.error("Unexpected error while searching", e);
         } finally {
             executor.shutdownNow(); //Need to explicitly shutdown executor for threads to be closed
+            executors.remove(executor);
         }
-        executors.remove(executor);
         handleIndexersWithFailedFutureExecutions(indexersToSearch, indexerSearchResults);
     }
 
