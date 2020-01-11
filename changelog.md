@@ -1,8 +1,16 @@
+### v2.10.13 BETA (2020-01-11)
+
+**Feature** Provide wrapper file for Python 3.
+
+
+
 ### v2.10.12 BETA (2020-01-11)
 
-**Fix** Recognize error thrown when search IDs not supported by Animetosho.
-
 **Feature** Add validation to category config that warns users when a category contains a newznab main category (like 2000) and a subcategory already covered by that (like 2020).
+
+**Feature** Provide wrapper file for Python 3.
+
+**Fix** Recognize error thrown when search IDs not supported by Animetosho.
 
 
 
