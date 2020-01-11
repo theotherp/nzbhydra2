@@ -29,7 +29,7 @@ Honest recommendation: If you don't understand what any or most of that means th
 You need [Java Runtime Environment](https://www.java.com/en/download/manual.jsp) or OpenJDK (both at least >=8u101).
 You can also use [OpenJDK with J9](https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=openj9) for lower memory consumption but the installation requires more manual steps and I do not provide any support for it.   
 
-Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases) for your platform ("linux" is any platform but windows). Extract it anywhere and start using the appropriate way:
+Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydra2/releases/latest) for your platform ("linux" is any platform but windows). Extract it anywhere and start using the appropriate way:
 * On Windows (64-bit) you can either start `NZBHydra2.exe` which will add a tray icon (give it some time) or `NZBHydra2 Console.exe` which will open a console window. Note: Do *not* use the folders `C:\Program Files` or `C:\Program Files (x86)`.
 * On Linux start `nzbhydra2` (currently working only on x64)
 * On Mac: No executable yet, see next point
