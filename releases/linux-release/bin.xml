@@ -37,6 +37,7 @@
             <outputDirectory>./</outputDirectory>
             <includes>
                 <include>nzbhydra2wrapper.py</include>
+                <include>nzbhydra2wrapperPy3.py</include>
             </includes>
             <lineEnding>unix</lineEnding>
         </fileSet>

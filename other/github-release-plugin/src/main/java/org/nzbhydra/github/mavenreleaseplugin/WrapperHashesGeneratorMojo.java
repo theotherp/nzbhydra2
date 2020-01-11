@@ -46,6 +46,8 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
     protected File wrapperFile3;
     @Parameter(property = "wrapperFile4", required = true)
     protected File wrapperFile4;
+    @Parameter(property = "wrapperFile5", required = true)
+    protected File wrapperFile5;
     @Parameter(property = "wrapperHashesJsonFile", required = true)
     protected File wrapperHashesJsonFile;
 
@@ -59,6 +61,7 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
         checkWrapperFilesExist(wrapperFile2);
         checkWrapperFilesExist(wrapperFile3);
         checkWrapperFilesExist(wrapperFile4);
+        checkWrapperFilesExist(wrapperFile5);
         getLog().info("Will write hashes to " + wrapperHashesJsonFile.getAbsolutePath());
 
         Map<String, String> filenamesToHashCodes = new HashMap<>();
@@ -67,6 +70,7 @@ public class WrapperHashesGeneratorMojo extends AbstractMojo {
             hashFile(filenamesToHashCodes, wrapperFile2);
             hashFile(filenamesToHashCodes, wrapperFile3);
             hashFile(filenamesToHashCodes, wrapperFile4);
+            hashFile(filenamesToHashCodes, wrapperFile5);
             Files.write(objectMapper.writeValueAsBytes(filenamesToHashCodes), wrapperHashesJsonFile);
         } catch (IOException e) {
             throw new MojoExecutionException("Error while hashing wrapper file", e);

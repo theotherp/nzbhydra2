@@ -34,7 +34,7 @@ Download the [latest release of NZBHydra 2](https://github.com/theotherp/nzbhydr
 * On Linux start `nzbhydra2` (currently working only on x64)
 * On Mac: No executable yet, see next point
 * If you cannot run the executables for some reason, there's another way (the executables are just compiled Java):
-  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7
+  * Download [nzbhydra2wrapper.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapper.py) or [nzbhydra2wrapperPy3.py](https://raw.githubusercontent.com/theotherp/nzbhydra2/master/other/wrapper/nzbhydra2wrapperPy3.py), put it in the NZBHydra folder containing the executables and run it with Python 2.7 or Python 3.5+, respectively.
   * Or you can use...
 * Docker. You might want to use [binhex's container](https://hub.docker.com/r/binhex/arch-nzbhydra2/) or the one by popular maintainers [LinuxServer.io](https://github.com/linuxserver/docker-hydra2).
 
