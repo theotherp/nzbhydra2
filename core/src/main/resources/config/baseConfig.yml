@@ -266,7 +266,7 @@ indexers: []
 main:
   apiKey: null
   configVersion: 6
-  backupEverySunday: true
+  backupEveryXDays: 7
   backupBeforeUpdate: true
   databaseCompactTime: 15000
   deleteBackupsAfterWeeks: 4
