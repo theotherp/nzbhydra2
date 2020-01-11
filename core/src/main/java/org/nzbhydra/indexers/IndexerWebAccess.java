@@ -2,6 +2,8 @@ package org.nzbhydra.indexers;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.BaseEncoding;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.indexers.exceptions.IndexerAccessException;
@@ -69,8 +71,11 @@ public class IndexerWebAccess {
                     T unmarshalled = (T) unmarshaller.unmarshal(new StreamSource(new StringReader(response)));
                     return unmarshalled;
                 } catch (UnmarshallingFailureException e) {
-                    logParseException(response, e);
-                    throw e;
+                    if (!response.toLowerCase().contains("function not available")) {
+                        //Some indexers like Animetosho don't return a proper error code. This error may happen during caps check and we don't want to log it
+                        logParseException(response, e);
+                    }
+                    throw new HydraUnmarshallingFailureException(e, response);
                 }
             });
         } catch (RejectedExecutionException e) {
@@ -85,8 +90,8 @@ public class IndexerWebAccess {
             if (e.getCause() instanceof SocketTimeoutException) {
                 throw new IndexerUnreachableException("Connection with indexer timed out with a time out of " + timeout + " seconds: " + e.getCause().getMessage());
             }
-            if (e.getCause() instanceof UnmarshallingFailureException) {
-                throw new IndexerAccessException("Unable to parse indexer output", e);
+            if (e.getCause() instanceof HydraUnmarshallingFailureException) {
+                throw new IndexerAccessException("Unable to parse indexer output", e.getCause());
             }
 
             throw new IndexerUnreachableException("Error while communicating with indexer " + indexerConfig.getName() + ". Server returned: " + e.getMessage(), e.getCause());
@@ -109,6 +114,13 @@ public class IndexerWebAccess {
             String excerpt = String.join("\r\n", Arrays.asList(lines).subList(from, to));
             logger.error("Unable to parse indexer output at line {} and column {} with error message: {}. Excerpt:\r\n{}", lineNumber, columnNumber, message, excerpt);
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class HydraUnmarshallingFailureException extends Exception {
+        private org.springframework.oxm.UnmarshallingFailureException unmarshallingFailureException;
+        private String response;
     }
 
 

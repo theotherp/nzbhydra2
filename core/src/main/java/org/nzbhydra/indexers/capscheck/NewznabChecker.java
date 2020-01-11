@@ -360,7 +360,17 @@ public class NewznabChecker {
     private SingleCheckCapsResponse singleCheckCaps(CheckCapsRequest request, IndexerConfig indexerConfig) throws IndexerAccessException {
         URI uri = getBaseUri(request.getIndexerConfig()).queryParam("t", request.getTMode()).queryParam(request.getKey(), request.getValue()).build().toUri();
         logger.debug("Calling URL {}", uri);
-        Xml response = indexerWebAccess.get(uri, indexerConfig);
+        Xml response = null;
+        try {
+            response = indexerWebAccess.get(uri, indexerConfig);
+        } catch (IndexerAccessException e) {
+            if (e.getCause() instanceof IndexerWebAccess.HydraUnmarshallingFailureException) {
+                String indexerResponse = ((IndexerWebAccess.HydraUnmarshallingFailureException) e.getCause()).getResponse();
+                if (indexerResponse != null && indexerResponse.toLowerCase().contains("function not available")) {
+                    return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
+                }
+            }
+        }
         searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
         if (response instanceof NewznabXmlError) {

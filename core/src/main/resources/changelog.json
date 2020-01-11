@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2.10.12",
+    "changes": [
+      {
+        "type": "fix",
+        "text": "Recognize error thrown when search IDs not supported by Animetosho"
+      }
+    ],
+    "final": false
+  },
+  {
     "version": "v2.10.11",
     "date": "2020-01-07",
     "changes": [
