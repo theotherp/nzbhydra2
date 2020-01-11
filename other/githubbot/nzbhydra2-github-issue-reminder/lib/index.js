@@ -176,7 +176,7 @@ module.exports = function (app) {
                     case 3:
                         return [3 /*break*/, 6];
                     case 4:
-                        issueComment = context.issue({body: 'Thanks for opening this issue. Unfortunately it looks like you forgot to prefix the issue title either with BUG (for a bug) or REQ (for a feature request). Please change the title of the issue accordingly. If it\'s a bug please also attach your debug infos ZIP which can be retrieved in the [System / Bugreport section](http://127.0.0.1:5076/system/bugreport).'});
+                        issueComment = context.issue({body: 'Thanks for opening this issue. Unfortunately it looks like you forgot to prefix the issue title either with BUG (for a bug) or REQ (for a feature request). Please change the title of the issue accordingly. If it\'s a bug please also attach your debug infos ZIP which can be retrieved in the [System / Bugreport section](http://127.0.0.1:5076/system/bugreport). If that\'s not possible please ignore this stupid bot.'});
                         return [4 /*yield*/, context.github.issues.createComment(issueComment)];
                     case 5:
                         _a.sent();

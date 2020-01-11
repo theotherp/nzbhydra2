@@ -34,9 +34,13 @@ public class ConfigMigrationStep008to009 implements ConfigMigrationStep {
     @Override
     public Map<String, Object> migrate(Map<String, Object> toMigrate) {
         Map<String, Object> mainConfig = getFromMap(toMigrate, "main");
-        boolean backupEverySunday = (boolean) mainConfig.get("backupEverySunday");
-        mainConfig.remove("backupEverySunday");
-        mainConfig.put("backupEveryXDays", backupEverySunday ? 7 : null);
+        if (mainConfig.containsKey("backupEverySunday")) {
+            boolean backupEverySunday = (boolean) mainConfig.get("backupEverySunday");
+            mainConfig.remove("backupEverySunday");
+            mainConfig.put("backupEveryXDays", backupEverySunday ? 7 : null);
+        } else if (!mainConfig.containsKey("backupEveryXDays")) {
+            mainConfig.put("backupEveryXDays", 7);
+        }
         return toMigrate;
     }
 }
