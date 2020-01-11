@@ -1,3 +1,17 @@
+### v2.10.12 BETA (2020-01-11)
+
+**Fix** Recognize error thrown when search IDs not supported by Animetosho.
+
+**Feature** Add validation to category config that warns users when a category contains a newznab main category (like 2000) and a subcategory already covered by that (like 2020).
+
+
+
+### v2.10.11 BETA (2020-01-07)
+
+**Fix** Allow users with access to stats to see the downloader bar. Prevent error message for the others.
+
+
+
 ### v2.10.10 BETA (2020-01-07)
 
 **Fix** Add missing UI config entry for backup added in last update.
