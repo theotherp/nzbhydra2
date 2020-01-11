@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Recognize error thrown when search IDs not supported by Animetosho"
+        "text": "Recognize error thrown when search IDs not supported by Animetosho."
+      },
+      {
+        "type": "feature",
+        "text": "Add validation to category config that warns users when a category contains a newznab main category (like 2000) and a subcategory already covered by that (like 2020)."
       }
     ],
     "final": false

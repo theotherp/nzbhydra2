@@ -188,7 +188,7 @@ public class CategoryProvider implements InitializingBean {
             Category category = categoryMapByNumber.get(foundMainCategories.get(0));
             if (category != null) {
                 if (foundMainCategories.size() > 1) {
-                    logger.warn("Search supplied multiple main categories: {}. Will use ", catsString, category.getName());
+                    logger.warn("Search supplied multiple main categories: {}. Will use {}", catsString, category.getName());
                 } else if (cats.size() > 1) {
                     logger.warn("Search supplied a general category and a subcategory: {}. Will use the subcategory {}", catsString, category.getName());
                 }
@@ -232,7 +232,7 @@ public class CategoryProvider implements InitializingBean {
         return result;
     }
 
-    protected boolean checkCategoryMatchingMainCategory(int cat, int possibleMainCat) {
+    public static boolean checkCategoryMatchingMainCategory(int cat, int possibleMainCat) {
         return possibleMainCat % 1000 == 0 && cat / 1000 == possibleMainCat / 1000;
     }
 

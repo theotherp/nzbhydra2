@@ -23,6 +23,7 @@ import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.category.Category.Subtype;
+import org.nzbhydra.searching.CategoryProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,7 +53,17 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         for (Category category : categories) {
             if (category.getNewznabCategories() == null || category.getNewznabCategories().isEmpty()) {
                 errors.add("Category " + category.getName() + " does not have any newznab categories configured");
+            } else {
+                Optional<Integer> baseNewznabCategory = category.getNewznabCategories().stream().flatMap(Collection::stream).filter(x -> x % 1000 == 0).findFirst();
+                if (baseNewznabCategory.isPresent()) {
+                    boolean nonBaseNewznabCategoryDefined = category.getNewznabCategories().stream().flatMap(Collection::stream).anyMatch(x -> !x.equals(baseNewznabCategory.get()) && CategoryProvider.checkCategoryMatchingMainCategory(x, baseNewznabCategory.get()));
+
+                    if (nonBaseNewznabCategoryDefined) {
+                        warnings.add("Category " + category.getName() + " uses the main category " + baseNewznabCategory.get() + ". It does not make sense to configure sublevel categories already contained by their parent category.");
+                    }
+                }
             }
+
             if (category.getRequiredRegex().isPresent()) {
                 checkRegex(errors, category.getRequiredRegex().get(), "Category " + category.getName() + " uses an invalid required regex");
             }
