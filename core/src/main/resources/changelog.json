@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2.10.13",
+    "date": "2020-01-11",
+    "changes": [
+      {
+        "type": "feature",
+        "text": "Provide wrapper file for Python 3."
+      }
+    ],
+    "final": false
+  },
+  {
     "version": "v2.10.12",
     "date": "2020-01-11",
     "changes": [
