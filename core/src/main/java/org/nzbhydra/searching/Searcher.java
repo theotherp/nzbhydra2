@@ -98,7 +98,7 @@ public class Searcher {
             }
 
             indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
-            while ((searchResultItems.size() < numberOfWantedResults || searchRequest.isLoadAll()) && !indexersWithCachedResults.isEmpty()) {
+            while (!indexersWithCachedResults.isEmpty()) {
                 List<SearchResultItem> newestItemsFromIndexers = indexersWithCachedResults.stream().map(IndexerSearchCacheEntry::peek).sorted(Comparator.comparingLong(x -> ((SearchResultItem) x).getBestDate().getEpochSecond()).reversed()).collect(Collectors.toList());
                 SearchResultItem newestResult = newestItemsFromIndexers.get(0);
                 Indexer newestResultIndexer = newestResult.getIndexer();
@@ -108,7 +108,7 @@ public class Searcher {
                 indexersWithCachedResults = getIndexersWithCachedResults(searchCacheEntry);
                 if (!newestIndexerSearchCacheEntry.isMoreResultsInCache() && newestIndexerSearchCacheEntry.isMoreResultsAvailable()) {
                     indexersToSearch.add(newestIndexerSearchCacheEntry);
-                    //We need to make a new search for that indexer so we can't continue here
+                    //We need to make a new search for that indexer so we need to stop here. If we still haven't enough results the outer loop will cause more results to be loaded
                     break;
                 }
             }

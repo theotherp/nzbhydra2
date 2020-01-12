@@ -298,13 +298,19 @@ public class MockNewznab {
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
         } else {
+            int startIndex = 0;
             if (params.getOffset() != null && params.getLimit() != null) {
                 endIndex = Math.min(params.getOffset() + params.getLimit(), endIndex);
             }
             if ("paging".equalsIgnoreCase(params.getQ())) {
                 endIndex = 100;
+            } else if (params.getQ() != null && params.getQ().startsWith("paging")) {
+
+                NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(params.getOffset(), params.getOffset() + params.getLimit(), params.getApikey(), doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
+                rssRoot.getRssChannel().getNewznabResponse().setTotal(Integer.parseInt(params.getQ().substring(6)));
+                return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
             }
-            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, endIndex, params.getApikey(), doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(startIndex, endIndex, params.getApikey(), doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
             rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
 
             if (params.getQ() != null && params.getQ().startsWith("paging")) {

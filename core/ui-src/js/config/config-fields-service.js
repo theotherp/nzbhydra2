@@ -1039,8 +1039,8 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Load all results',
-                                help: 'Show all results when searching internally. Might make sorting / filtering slower'
+                                label: 'Display all cached results',
+                                help: 'Show all results already retrieved from indexers (instead of just the newest 100). Might make sorting / filtering a bit slower.'
                             }
                         },
                         {
