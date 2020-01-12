@@ -186,7 +186,7 @@ public class NzbGet extends Downloader {
             if (queue.size() > 0) {
                 LinkedHashMap<String, Object> map = queue.get(0);
                 status.setDownloadingTitle((String) map.get("NZBName"));
-                int totalMb = map.get("FileSizeMB") - map.get("PausedSizeMB");
+                int totalMb = (Integer) map.get("FileSizeMB") - (Integer) map.get("PausedSizeMB");
                 int remainingMb = (int) (Integer) map.get("RemainingSizeMB") - (Integer) map.get("PausedSizeMB"); //PausedSizeMB is size of pars
                 if (totalMb == 0) {
                     status.setDownloadingTitlePercentFinished(0);
@@ -211,7 +211,7 @@ public class NzbGet extends Downloader {
         status.setDownloaderName(downloaderConfig.getName());
         status.setDownloaderType(downloaderConfig.getDownloaderType());
 
-        int remainingSizeMB = statusMap.get("RemainingSizeMB") - statusMap.getOrDefault("PausedSizeMB", 0);
+        @SuppressWarnings("RedundantCast") int remainingSizeMB = (Integer) statusMap.get("RemainingSizeMB") - (Integer) statusMap.getOrDefault("PausedSizeMB", 0);
         status.setRemainingSizeFormatted(remainingSizeMB > 0 ? Converters.formatMegabytes(remainingSizeMB, true) : "");
         status.setRemainingSizeInMegaBytes(remainingSizeMB);
 
