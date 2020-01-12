@@ -212,10 +212,15 @@ public class Sabnzbd extends Downloader {
         if (Strings.isNullOrEmpty(timeleft)) {
             return null;
         }
-        if (StringUtils.countMatches(timeleft, ":") == 3) {
-            return Converters.formatTime(PERIOD_FORMATTER_DAYS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+        try {
+            if (StringUtils.countMatches(timeleft, ":") == 3) {
+                return Converters.formatTime(PERIOD_FORMATTER_DAYS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+            }
+            return Converters.formatTime(PERIOD_FORMATTER_HOURS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
+        } catch (Exception e) {
+            logger.error("Unable to parse time left from value '{}'", timeleft);
+            return null;
         }
-        return Converters.formatTime(PERIOD_FORMATTER_HOURS.parsePeriod(timeleft).toStandardSeconds().getSeconds());
     }
 
     @Override
