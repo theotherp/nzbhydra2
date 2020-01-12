@@ -1,6 +1,12 @@
+### v2.11.0 BETA (2020-01-12)
+
+**Feature** Restored old "Load all results" behavior. Now when enabled Hydra will display all already retrieved results from the cache. You still need to click "Load all" on the search results page to load all results available from indexers, resulting in more API hits. I've renamed the setting in the config to "Display all cached results".
+
+
+
 ### v2.10.13 BETA (2020-01-11)
 
-**Feature** Provide wrapper file for Python 3.
+**Feature** Provide wrapper file for Python 3. Would be nice if you could test it and let me know if it works.
 
 
 
