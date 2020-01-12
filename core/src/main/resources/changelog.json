@@ -16,7 +16,7 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Provide wrapper file for Python 3."
+        "text": "Provide wrapper file for Python 3. Would be nice if you could test it and let me know if it works."
       }
     ],
     "final": false
