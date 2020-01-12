@@ -327,7 +327,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                 groupingString = getCleanedTitle(element);
             }
         } else {
-            groupingString = getCleanedTitle(element)
+            groupingString = getCleanedTitle(element);
             if (!$scope.foo.groupTorrentAndNewznabResults) {
                 groupingString = groupingString + element.downloadType;
             }

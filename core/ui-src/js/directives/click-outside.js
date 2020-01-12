@@ -3,7 +3,7 @@
 function childOf(/*child node*/c, /*parent node*/p) { //returns boolean
     while ((c = c.parentNode) && c !== p) ;
     return !!c;
-};
+}
 
 angular
     .module('nzbhydraApp').directive("clickOutside", clickOutside);
@@ -116,7 +116,7 @@ function clickOutside($document, $parse, $timeout) {
                 function _hasTouch() {
                     // works on most browsers, IE10/11 and Surface
                     return 'ontouchstart' in window || navigator.maxTouchPoints;
-                };
+                }
             });
         }
     };

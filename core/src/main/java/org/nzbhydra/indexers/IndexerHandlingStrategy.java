@@ -4,8 +4,8 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 
 public interface IndexerHandlingStrategy {
 
-    public boolean handlesIndexerConfig(IndexerConfig config);
+    boolean handlesIndexerConfig(IndexerConfig config);
 
-    public Class<? extends Indexer> getIndexerClass();
+    Class<? extends Indexer> getIndexerClass();
 
 }

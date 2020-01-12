@@ -107,7 +107,7 @@ public class IndexerWebAccess {
         if (saxParseExceptionOptional.isPresent()) {
             int lineNumber = ((SAXParseException) saxParseExceptionOptional.get()).getLineNumber();
             int columnNumber = ((SAXParseException) saxParseExceptionOptional.get()).getColumnNumber();
-            String message = ((SAXParseException) saxParseExceptionOptional.get()).getMessage();
+            String message = saxParseExceptionOptional.get().getMessage();
             String[] lines = response.split("\\r?\\n");
             int from = Math.max(0, lineNumber - 5);
             int to = Math.min(lines.length, lineNumber + 5);

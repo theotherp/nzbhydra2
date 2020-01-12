@@ -1,7 +1,6 @@
 package org.nzbhydra.migration.configmapping;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.google.common.base.Strings;
@@ -13,7 +12,7 @@ import java.util.List;
 
 public class ListOrStringToStringDeserializer extends JsonDeserializer<List<String>> {
     @Override
-    public List<String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public List<String> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         //Hacky but works
         Object value = p.readValueAs(Object.class);
         if (value instanceof List) {

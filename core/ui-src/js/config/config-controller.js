@@ -294,7 +294,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
                     }
                 });
             }
-        })
+        });
 
     $scope.$watch("$scope.form.$valid", function () {
         console.log($scope.form.$valid);

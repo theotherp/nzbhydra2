@@ -17,7 +17,6 @@
 package org.nzbhydra.config.category;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 public class NewznabCategoriesDeserializer extends JsonDeserializer<List<List<Integer>>> {
 
     @Override
-    public List<List<Integer>> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public List<List<Integer>> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         List<String> list = p.readValueAs(new TypeReference<List<String>>() {
         });
 

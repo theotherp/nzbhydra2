@@ -466,7 +466,7 @@ angular.module('duScroll.scrollContainerAPI', [])
             if (scope.$parent) {
                 return getContainerId(scope.$parent);
             }
-            return;
+
         };
 
         var getContainer = function (scope) {

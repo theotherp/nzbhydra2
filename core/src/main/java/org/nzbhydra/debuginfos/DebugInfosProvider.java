@@ -17,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -63,8 +64,8 @@ public class DebugInfosProvider {
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
                 writeStringToZip(zos, "nzbhy" +
-                        "dra.log", anonymizedLog.getBytes("UTF-8"));
-                writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes("UTF-8"));
+                        "dra.log", anonymizedLog.getBytes(StandardCharsets.UTF_8));
+                writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes(StandardCharsets.UTF_8));
                 File traceFile = new File(new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
                 if (traceFile.exists()) {
                     writeFileToZip(zos, "nzbhydra.trace.db", traceFile);

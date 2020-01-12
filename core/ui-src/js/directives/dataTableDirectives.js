@@ -301,7 +301,7 @@ function numberRangeFilter() {
             if (keyEvent.which === 13) {
                 apply();
             }
-        }
+        };
 
         DebugService.log("filter-number");
     }

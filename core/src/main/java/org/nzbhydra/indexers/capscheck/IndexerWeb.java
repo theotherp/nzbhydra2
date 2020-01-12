@@ -42,7 +42,7 @@ public class IndexerWeb {
     private SimpleConnectionChecker simpleConnectionChecker;
 
     Multimap<String, String> multimap = Multimaps.synchronizedMultimap(
-        HashMultimap.<String, String>create());
+            HashMultimap.create());
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/indexer/checkCaps", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

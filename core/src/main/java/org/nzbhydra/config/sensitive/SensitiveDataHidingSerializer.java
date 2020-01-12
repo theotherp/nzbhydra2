@@ -1,7 +1,6 @@
 package org.nzbhydra.config.sensitive;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.slf4j.Logger;
@@ -15,7 +14,7 @@ public class SensitiveDataHidingSerializer extends JsonSerializer<Object> {
     private static final Logger logger = LoggerFactory.getLogger(SensitiveDataHidingSerializer.class);
 
     @Override
-    public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+    public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         String toWrite = "<REMOVED>";
         if (value instanceof Optional) {
             Optional optional = (Optional) value;

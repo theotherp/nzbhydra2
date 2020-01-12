@@ -208,11 +208,11 @@ public class FileHandler {
         String getName = downloadType == DownloadType.NZB ? "getnzb" : "gettorrent";
         if (internal) {
             builder.path("/" + getName + "/user");
-            builder.path("/" + String.valueOf(searchResultId));
+            builder.path("/" + searchResultId);
         } else {
             MainConfig main = configProvider.getBaseConfig().getMain();
             builder.path("/" + getName + "/api");
-            builder.path("/" + String.valueOf(searchResultId));
+            builder.path("/" + searchResultId);
             builder.queryParam("apikey", main.getApiKey());
         }
         return builder.toUriString();

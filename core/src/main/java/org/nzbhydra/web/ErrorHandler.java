@@ -171,7 +171,7 @@ public class ErrorHandler {
 
         Enumeration<String> headerValueArray = request.getHeaders(HttpHeaders.ACCEPT);
         if (headerValueArray == null) {
-            return Collections.<MediaType>emptyList();
+            return Collections.emptyList();
         }
 
         List<String> headerValues = Collections.list(headerValueArray);
