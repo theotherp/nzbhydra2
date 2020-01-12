@@ -74,13 +74,16 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private static final Logger logger = LoggerFactory.getLogger(HydraOkHttp3ClientHttpRequestFactory.class);
     private static Pattern HOST_PATTERN = Pattern.compile("((\\w|\\*)+\\.)?(\\S+\\.\\S+)", Pattern.CASE_INSENSITIVE);
 
-    private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
-
-    private SSLSocketFactory whitelistingSocketFactory;
-    private SocketFactory sockProxySocketFactory;
-
     @Autowired
     private ConfigProvider configProvider;
+
+    private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
+    private SSLSocketFactory whitelistingSocketFactory;
+    private SocketFactory sockProxySocketFactory;
+    private X509TrustManager allTrustingTrustManager;
+    private TrustManager[] trustAllCertsManager;
+    private HttpLoggingInterceptor httpLoggingInterceptor;
+
 
     @PostConstruct
     public void init() {
@@ -183,12 +186,14 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         Builder builder = new OkHttpClient().newBuilder().connectionPool(connectionPool).readTimeout(timeout, TimeUnit.SECONDS);
         if (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTP.getName())) {
             try {
-                HttpLoggingInterceptor.Logger httpLogger = message -> logger.debug(LoggingMarkers.HTTP, message);
-                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(httpLogger);
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-                loggingInterceptor.redactHeader("Authorization");
-                loggingInterceptor.redactHeader("Cookie");
-                builder.addInterceptor(loggingInterceptor);
+                if (httpLoggingInterceptor == null) {
+                    HttpLoggingInterceptor.Logger httpLogger = message -> logger.debug(LoggingMarkers.HTTP, message);
+                    httpLoggingInterceptor = new HttpLoggingInterceptor(httpLogger);
+                    httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+                    httpLoggingInterceptor.redactHeader("Authorization");
+                    httpLoggingInterceptor.redactHeader("Cookie");
+                }
+                builder.addInterceptor(httpLoggingInterceptor);
             } catch (Exception e) {
                 logger.error("Unable to log HTTP", e);
             }
@@ -243,12 +248,14 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private Builder getUnsafeOkHttpClientBuilder(Builder builder) {
         try {
             // Create a trust manager that does not validate certificate chains
-            final TrustManager[] trustAllCerts = new TrustManager[]{
-                    getAllTrustingX509TrustManager()
-            };
+            if (trustAllCertsManager == null) {
+                trustAllCertsManager = new TrustManager[]{
+                        getAllTrustingX509TrustManager()
+                };
+            }
 
             return builder
-                    .sslSocketFactory(whitelistingSocketFactory, (X509TrustManager) trustAllCerts[0])
+                    .sslSocketFactory(whitelistingSocketFactory, (X509TrustManager) trustAllCertsManager[0])
                     .hostnameVerifier((hostname, session) -> {
                         logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
                         return true;
@@ -282,22 +289,25 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     }
 
     private X509TrustManager getAllTrustingX509TrustManager() {
-        return new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain,
-                                           String authType) {
-            }
+        if (allTrustingTrustManager == null) {
+            allTrustingTrustManager = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain,
+                                               String authType) {
+                }
 
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain,
-                                           String authType) {
-            }
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain,
+                                               String authType) {
+                }
 
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+            };
+        }
+        return allTrustingTrustManager;
     }
 
     protected boolean isSameHost(final String a, final String b) {

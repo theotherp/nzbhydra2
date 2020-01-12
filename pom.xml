@@ -87,7 +87,7 @@
         <logback.version>1.2.3</logback.version>
         <guava.version>23.0</guava.version>
         <junit.version>4.12</junit.version>
-        <okhttp.version>3.11.0</okhttp.version>
+        <okhttp.version>3.14.6</okhttp.version>
         <logstash-logback-encoder.version>5.1</logstash-logback-encoder.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <commons-io.version>2.6</commons-io.version>
