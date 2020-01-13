@@ -12,6 +12,22 @@ if not "%ERRORLEVEL%" == "0" (
     goto error
 )
 
+:commitchangelog
+echo Committing changelog  ***********************************************************************
+call git commit -am "Set %1 final"
+if not "%ERRORLEVEL%" == "0" (
+    echo Error committing changelog
+    goto error
+)
+
+:pushrelease
+echo Pushing ***********************************************************************
+call git push origin master
+if not "%ERRORLEVEL%" == "0" (
+    echo Error pushing to origin
+    goto error
+)
+
 goto eof
 :error
 echo Error, aborted
