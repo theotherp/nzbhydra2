@@ -87,11 +87,11 @@ public class SetReleaseFinalMojo extends AbstractMojo {
 
 
         org.nzbhydra.github.mavenreleaseplugin.Release release;
-        String url = githubReleasesUrl + "/tags/" + version;
+        String url = githubReleasesUrl + "/tags/" + version + "?access_token=" + githubToken;
         getLog().info("Calling URL " + url);
         try (Response response = client.newCall(new Request.Builder().url(url).build()).execute()) {
             if (!response.isSuccessful()) {
-                throw new MojoExecutionException("Unable to find release with tag name " + version);
+                throw new MojoExecutionException("Unable to find release with tag name " + version + ": " + response.message());
             }
             try (ResponseBody body = response.body()) {
                 release = objectMapper.readValue(body.string(), org.nzbhydra.github.mavenreleaseplugin.Release.class);

@@ -6,7 +6,7 @@ if "%1" == "" (
     goto error
 )
 
-call vn org.nzbhydra:github-release-plugin:1.0.0:set-final -DfinalVersion=v%1
+call mvn org.nzbhydra:github-release-plugin:1.0.0:set-final -DfinalVersion=v%1
 if not "%ERRORLEVEL%" == "0" (
     echo Error setting version final
     goto error
