@@ -16,40 +16,168 @@
 
 package org.nzbhydra.discordbot;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DiscordBot extends ListenerAdapter {
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
+
+    private final Set<String> alreadyPublishedVersions = new HashSet<>();
+
+    private static String githubToken;
+
+
     public static void main(String[] args) throws LoginException {
-        JDA jda = new JDABuilder("NTczMTI1OTI4MzIyOTkwMTAy.XMmVHg.M6vm99V1F0tsujNjbP-5d4D2PGw").build();
+        String discordToken = System.getProperty("discordToken");
+        if (discordToken == null) {
+            throw new RuntimeException("Empty discord token");
+        }
+
+        githubToken = System.getProperty("githubToken");
+        if (githubToken == null) {
+            throw new RuntimeException("Empty githubToken token");
+        }
+
+        JDA jda = new JDABuilder(discordToken).build();
         jda.addEventListener(new DiscordBot());
     }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.isFromType(ChannelType.PRIVATE)) {
-            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
-                    event.getMessage().getContentDisplay());
-        } else {
-            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
-                    event.getTextChannel().getName(), event.getMember().getEffectiveName(),
-                    event.getMessage().getContentDisplay());
-        }
+//        if (event.isFromType(ChannelType.PRIVATE)) {
+//            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
+//                    event.getMessage().getContentDisplay());
+//        } else {
+//            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
+//                    event.getTextChannel().getName(), event.getMember().getEffectiveName(),
+//                    event.getMessage().getContentDisplay());
+//        }
     }
 
     @Override
     public void onReady(ReadyEvent event) {
-        for (TextChannel textChannel : event.getJDA().getTextChannels()) {
-            System.out.println(textChannel);
-            textChannel.sendMessage("Hellooooo").complete();
+
+        //Delete old spam
+//      event.getJDA().getTextChannels().forEach(x -> {
+//            x.getIterableHistory().stream().limit(100).forEach(y -> {
+//                if (y.getAuthor().getName().equals("NZBHydraBot")) {
+//                    try {
+//                        y.delete().complete(true);
+//                    } catch (RateLimitedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//        });
+
+
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                if (alreadyPublishedVersions.isEmpty()) {
+                    try {
+                        loadAlreadyPublishedVersions(event);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                while (!Thread.interrupted()) {
+                    try {
+                        List<Release> releases = getReleases();
+                        for (Release release : releases) {
+                            if (alreadyPublishedVersions.contains(release.getTagName())) {
+                                continue;
+                            }
+
+                            System.out.println("Publishing release of " + release.getTagName());
+
+                            TextChannel channel = getReleasesChannel(event);
+                                /*
+                                New release: v2.11.0 BETA
+
+                                Changelog:
+                                **Fix**: Some fix
+                                **Feature**: Some feature
+
+                                Link: https://github.com/theotherp/nzbhydra2/releases/tag/v2.11.0
+                                 */
+
+                            String messageBuilder =
+                                    release.getBody() +
+                                            "\n\n" +
+                                            release.getHtmlUrl();
+                            channel.sendMessage(messageBuilder).complete();
+                            alreadyPublishedVersions.add(release.getTagName());
+                        }
+
+
+                        Thread.sleep(10_000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        });
+    }
+
+    private void loadAlreadyPublishedVersions(ReadyEvent event) throws Exception {
+        List<Release> releases = getReleases();
+        getReleasesChannel(event).getIterableHistory().stream().limit(500).forEach(x -> {
+            for (Release release : releases) {
+                if (LocalDateTime.parse(release.getPublishedAt(), DateTimeFormatter.ISO_DATE_TIME).isBefore(LocalDateTime.now().minus(1, ChronoUnit.DAYS))) {
+                    System.out.println("Ignoring release " + release.getTagName() + " published at " + release.getPublishedAt());
+                    alreadyPublishedVersions.add(release.getTagName());
+                    continue;
+                }
+
+                if (x.getContentRaw().contains(release.getTagName())) {
+                    alreadyPublishedVersions.add(release.getTagName());
+                }
+            }
+
+        });
+
+
+    }
+
+    private TextChannel getReleasesChannel(ReadyEvent event) {
+        return event.getJDA().getTextChannels().stream().filter(x -> x.getName().equals("releases") && x.getGuild().getName().equalsIgnoreCase("NZBHydra")).findFirst().get();
+    }
+
+    private List<Release> getReleases() throws IOException {
+        Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://api.github.com/repos/theotherp/nzbhydra2/releases" + "?access_token=" + githubToken).build()).execute();
+        if (!response.isSuccessful()) {
+            throw new RuntimeException(response.message());
         }
+        List<Release> releases;
+        try (ResponseBody body = response.body()) {
+            String bodyString = body.string();
+            releases = new ObjectMapper().readValue(bodyString, new TypeReference<List<Release>>() {
+            });
+        }
+        return releases;
     }
 }
