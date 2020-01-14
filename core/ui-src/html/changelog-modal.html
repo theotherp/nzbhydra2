@@ -5,7 +5,7 @@
     <div class="list-group">
         <li ng-repeat="entry in versionHistory" class="list-group-item"
             style="padding-top: 20px; padding-bottom: 20px;">
-            <h3 style="margin-top: 0">{{::entry.version}}<span ng-if="!final"> BETA</span> ({{::entry.date}})</h3>
+            <h3 style="margin-top: 0">{{::entry.version}}<span ng-if="!entry.final"> BETA</span> ({{::entry.date}})</h3>
             <div ng-repeat="change in entry.changes" style="margin-bottom: 5px">
                 <span ng-switch="change.type" style="margin-right: 5px">
                     <span class="label label-primary" ng-switch-when="note">Note</span>
