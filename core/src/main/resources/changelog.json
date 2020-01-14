@@ -5,7 +5,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Fix all versions in version history being displayed as beta"
+        "text": "Fix all versions in version history being displayed as beta."
+      },
+      {
+        "type": "fix",
+        "text": "Handle unexpected response when checking caps better."
       }
     ],
     "final": true

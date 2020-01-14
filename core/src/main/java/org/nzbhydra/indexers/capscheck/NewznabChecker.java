@@ -370,6 +370,7 @@ public class NewznabChecker {
                     return new SingleCheckCapsResponse(request.getKey(), request.getIdType(), false, null, null, null);
                 }
             }
+            throw e;
         }
         searchModuleProvider.registerApiHitLimits(indexerConfig.getName(), 1);
 
