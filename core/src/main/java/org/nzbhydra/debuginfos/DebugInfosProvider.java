@@ -83,6 +83,11 @@ public class DebugInfosProvider {
                 if (wrapperLog.exists()) {
                     writeFileToZip(zos, "wrapper.log", wrapperLog);
                 }
+                //Write systemErr log
+                File systemErrLog = new File(logsFolder, "system.err.log");
+                if (systemErrLog.exists()) {
+                    writeFileToZip(zos, "system.err.log", systemErrLog);
+                }
             }
         }
         return Files.readAllBytes(tempFile.toPath());

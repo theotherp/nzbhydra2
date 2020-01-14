@@ -44,8 +44,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -264,6 +263,15 @@ public class NzbHydra {
             System.setProperty("logback.access.enabled", "true");
         } else {
             System.setProperty("logback.access.enabled", "false");
+        }
+
+        if (baseConfig.getMain().getLogging().getMarkersToLog().contains("HTTPS")) {
+            File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
+            logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
+            OutputStream os = new FileOutputStream(systemErrLogFile);
+            PrintStream ps = new PrintStream(os);
+            System.setErr(ps);
+            System.setProperty("javax.net.debug", "ssl:handshake:verbose:keymanager:trustmanager");
         }
     }
 

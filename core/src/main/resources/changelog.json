@@ -3,6 +3,10 @@
     "version": "v2.11.1",
     "changes": [
       {
+        "type": "feature",
+        "text": "Added code to help debug SSL / certificate issues when connecting to indexers."
+      },
+      {
         "type": "fix",
         "text": "Fix all versions in version history being displayed as beta."
       },
