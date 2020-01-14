@@ -1,4 +1,14 @@
-### v2.11.0 BETA (2020-01-12)
+### v2.11.1 (2020-01-14)
+
+**Feature** Added code to help debug SSL / certificate issues when connecting to indexers.
+
+**Fix** Fix all versions in version history being displayed as beta.
+
+**Fix** Handle unexpected response when checking caps better.
+
+
+
+### v2.11.0 (2020-01-12)
 
 **Feature** Restored old "Load all results" behavior. Now when enabled Hydra will display all already retrieved results from the cache. You still need to click "Load all" on the search results page to load all results available from indexers, resulting in more API hits. I've renamed the setting in the config to "Display all cached results".
 
