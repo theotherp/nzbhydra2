@@ -1,3 +1,9 @@
+### v2.11.2 (2020-01-15)
+
+**Fix** Fix SSL logging introduced in v2.11.1 when running in linux.
+
+
+
 ### v2.11.1 (2020-01-14)
 
 **Feature** Added code to help debug SSL / certificate issues when connecting to indexers.
