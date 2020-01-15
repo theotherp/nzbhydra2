@@ -44,7 +44,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -267,10 +270,15 @@ public class NzbHydra {
 
         if (baseConfig.getMain().getLogging().getMarkersToLog().contains("HTTPS")) {
             File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
+            File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
             logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
-            OutputStream os = new FileOutputStream(systemErrLogFile);
-            PrintStream ps = new PrintStream(os);
-            System.setErr(ps);
+            System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
+            String osName = System.getProperty("os.name");
+            boolean isOsWindows = osName.toLowerCase().contains("windows");
+            if (!isOsWindows) {
+                logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
+                System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
+            }
             System.setProperty("javax.net.debug", "ssl:handshake:verbose:keymanager:trustmanager");
         }
     }

@@ -110,6 +110,9 @@ public class DiscordBot extends ListenerAdapter {
                             if (alreadyPublishedVersions.contains(release.getTagName())) {
                                 continue;
                             }
+                            if (release.getDraft()) {
+                                continue;
+                            }
 
                             System.out.println("Publishing release of " + release.getTagName());
 
@@ -133,7 +136,7 @@ public class DiscordBot extends ListenerAdapter {
                         }
 
 
-                        Thread.sleep(10_000);
+                        Thread.sleep(60_000);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

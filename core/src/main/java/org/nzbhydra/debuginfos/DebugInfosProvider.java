@@ -88,6 +88,11 @@ public class DebugInfosProvider {
                 if (systemErrLog.exists()) {
                     writeFileToZip(zos, "system.err.log", systemErrLog);
                 }
+                //Write systemOut log
+                File systemOutLog = new File(logsFolder, "system.out.log");
+                if (systemOutLog.exists()) {
+                    writeFileToZip(zos, "system.out.log", systemOutLog);
+                }
             }
         }
         return Files.readAllBytes(tempFile.toPath());
