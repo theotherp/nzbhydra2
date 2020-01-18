@@ -1,3 +1,11 @@
+### v2.12.0 BETA (2020-01-18)
+
+**Feature** Show API and download limit related values in the indexer statuses page.
+
+**Feature** If an indexer reports API and download limits and current hits in the response (as far as I know only nntmux does this) this will be stored and used to determine if the indexer's limits are reached. This will allow more precise results when any other programs (or you) happen to make API calls or downloads that Hydra is not aware of. As a fallback the logged API hits and downloads from the database are used (as before).
+
+
+
 ### v2.11.2 (2020-01-15)
 
 **Fix** Fix SSL logging introduced in v2.11.1 when running in linux.
