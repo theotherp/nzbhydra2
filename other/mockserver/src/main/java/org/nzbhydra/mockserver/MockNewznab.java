@@ -9,7 +9,12 @@ import org.nzbhydra.mapping.newznab.NewznabParameters;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlApilimits;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,7 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 
 @SuppressWarnings("ALL")
 @RestController
@@ -55,7 +65,7 @@ public class MockNewznab {
         }
         if (nzbId.endsWith("12")) {
             return ResponseEntity.ok("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<error code=\"429\" description=\"Request limit reached\"/>");
+                    "<error code=\"429\" description=\"Request limit reached\"/>");
         }
         return ResponseEntity.ok("Would download NZB with ID" + nzbId);
     }
@@ -346,6 +356,9 @@ public class MockNewznab {
                     item.setPubDate(item.getPubDate().minus(random.nextInt(300) * 24, ChronoUnit.HOURS));
                 }
             }
+            if (params.getQ() != null && params.getQ().equals("limits")) {
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, 100, 2, 200, Instant.now().minus(10, ChronoUnit.HOURS), Instant.now().minus(10, ChronoUnit.HOURS)));
+            }
 
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
@@ -375,6 +388,7 @@ public class MockNewznab {
 
             item.setGrabs(null);
         }
+
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
     }
 

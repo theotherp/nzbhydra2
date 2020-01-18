@@ -6,7 +6,13 @@ import joptsimple.internal.Strings;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.indexers.exceptions.*;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerParsingException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
@@ -19,7 +25,12 @@ import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.db.SearchResultEntity;
 import org.nzbhydra.searching.db.SearchResultRepository;
-import org.nzbhydra.searching.dtoseventsenums.*;
+import org.nzbhydra.searching.dtoseventsenums.FallbackSearchInitiatedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
+import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
+import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.InternalData.FallbackState;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
@@ -38,8 +49,14 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +92,8 @@ public abstract class Indexer<T> {
     protected IndexerApiAccessRepository indexerApiAccessRepository;
     @Autowired
     protected IndexerApiAccessEntityShortRepository indexerApiAccessShortRepository;
+    @Autowired
+    private IndexerLimitRepository indexerStatusRepository;
     @Autowired
     protected IndexerWebAccess indexerWebAccess;
     @Autowired
@@ -250,7 +269,7 @@ public abstract class Indexer<T> {
     }
 
     protected void handleSuccess(IndexerApiAccessType accessType, Long responseTime) {
-        //New state can only be enabled, if the user has disabled the indexer it wouldn't've been called
+        //New state can only be enabled; if the user has disabled the indexer it wouldn't've been called
         if (getConfig().getDisabledLevel() > 0) {
             debug("Indexer was successfully called after {} failed attempts in a row", getConfig().getDisabledLevel());
         }

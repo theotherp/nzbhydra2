@@ -155,6 +155,14 @@ angular
 
 function formatTimestamp() {
     return function (date) {
+        //1579392000
+        //1579374757
+        if (date === null || date === undefined) {
+            return null;
+        }
+        if (date < 1979374757) {
+            date *= 1000;
+        }
         return moment(date).local().format("YYYY-MM-DD HH:mm");
     }
 }

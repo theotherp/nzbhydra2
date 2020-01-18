@@ -221,24 +221,6 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
         fieldset.push(
             {
-                key: 'loadLimitOnRandom',
-                type: 'horizontalInput',
-                templateOptions: {
-                    type: 'number',
-                    label: 'Load limiting',
-                    help: 'If set indexer will only be picked for one out of x API searches (on average).'
-                },
-                validators: {
-                    greaterThanZero: {
-                        expression: function ($viewValue, $modelValue) {
-                            var value = $modelValue || $viewValue;
-                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
-                        },
-                        message: '"Value must be greater than 1"'
-                    }
-                }
-            },
-            {
                 key: 'hitLimitResetTime',
                 type: 'horizontalInput',
                 hideExpression: '!model.hitLimit && !model.downloadLimit',
@@ -256,7 +238,26 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
                         message: '$viewValue + " is not a valid hour of day (0-23)"'
                     }
                 }
-            });
+            },
+            {
+                key: 'loadLimitOnRandom',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Load limiting',
+                    help: 'If set indexer will only be picked for one out of x API searches (on average).'
+                },
+                validators: {
+                    greaterThanZero: {
+                        expression: function ($viewValue, $modelValue) {
+                            var value = $modelValue || $viewValue;
+                            return angular.isUndefined(value) || value === null || value === "" || value > 1;
+                        },
+                        message: '"Value must be greater than 1"'
+                    }
+                }
+            }
+        );
     }
     if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
         fieldset.push(

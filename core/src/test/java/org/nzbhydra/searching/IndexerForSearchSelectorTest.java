@@ -18,6 +18,8 @@ import org.nzbhydra.downloading.FileDownloadRepository;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessRepository;
 import org.nzbhydra.indexers.IndexerEntity;
+import org.nzbhydra.indexers.status.IndexerLimit;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -28,10 +30,20 @@ import org.springframework.context.ApplicationEventPublisher;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static junit.framework.TestCase.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,6 +82,8 @@ public class IndexerForSearchSelectorTest {
     private EntityManager entityManagerMock;
     @Mock
     private Query queryMock;
+    @Mock
+    private IndexerLimitRepository indexerLimitRepositoryMock;
 
     private Map<Indexer, String> count;
 
@@ -89,6 +103,7 @@ public class IndexerForSearchSelectorTest {
         when(category.getName()).thenReturn("category");
         when(category.getSubtype()).thenReturn(Subtype.NONE);
         when(entityManagerMock.createNativeQuery(anyString())).thenReturn(queryMock);
+        when(indexerLimitRepositoryMock.findByIndexer(any())).thenReturn(new IndexerLimit());
     }
 
 

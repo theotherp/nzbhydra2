@@ -1,25 +1,39 @@
 <table class="table indexer-statuses-table">
-    <caption>Indexer statuses sorted by state, then name. Go to to the config to reenable any disabled indexers
-    </caption>
-    <thead>
-    <tr>
-        <th class="col-md-2">Indexer</th>
-        <th class="col-md-3">State</th>
-        <th class="col-md-2">Disabled until</th>
-        <th class="col-md-13">Reason</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr ng-repeat="indexerStatus in statuses">
-        <td>{{ indexerStatus.indexer }}</td>
-        <td>
-            <span class="label"
-                  ng-class="getLabelClass(indexerStatus.state)"> {{ formatState(indexerStatus.state) }}</span>
-        </td>
-        <td>
-            <span ng-if="indexerStatus.state === 'DISABLED_SYSTEM_TEMPORARY'">{{ indexerStatus.disabledUntil | reformatDate}}</span>
-        </td>
-        <td class="indexer-status-reason">{{ indexerStatus.lastError }}</td>
-    </tr>
-    </tbody>
+  <caption>Indexer statuses sorted by state, then name. Go to to the config to reenable any disabled indexers
+  </caption>
+  <thead>
+  <tr>
+    <th class="col-md-2">Indexer</th>
+    <th class="col-md-2">State</th>
+    <th class="col-md-2">Disabled until</th>
+    <th class="col-md-8">Reason</th>
+    <th class="col-md-2">API hits <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                        uib-tooltip="Shows the number of API hits either since the last limit reset time or for the last 24 hours, and the limit if configured"></span></th>
+    <th class="col-md-2">Downloads <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                         uib-tooltip="Shows the number of downloads either since the last limit reset time or for the last 24 hours, and the limit if configured"></span></th>
+    <th class="col-md-2">Next hit allowed <span class="glyphicon glyphicon-question-sign" tooltip-placement="auto top"
+                                                uib-tooltip="Either the next time the API limit is reset (if a certain hour of day is configured) or when the next hit will be allowed by the rolling limit window"></span></th>
+  </tr>
+  </thead>
+  
+  <tbody>
+  <tr ng-repeat="indexerStatus in statuses">
+    <td>{{ indexerStatus.indexer }}</td>
+    <td>
+            <span class="label" ng-class="getLabelClass(indexerStatus.state)">
+            <i ng-if="indexerStatus.state === 'ENABLED'" class="fa fa-check" uib-tooltip="Enabled" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
+            <i ng-if="indexerStatus.state === 'DISABLED_SYSTEM'" class="fa fa-times" uib-tooltip="Disabled by system" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
+            <i ng-if="indexerStatus.state === 'DISABLED_SYSTEM_TEMPORARY'" class="fa fa-times" uib-tooltip="Temporarily disabled by system" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
+            <i ng-if="indexerStatus.state === 'DISABLED_USER'" class="fa fa-times" uib-tooltip="Disabled by user" tooltip-placement="top" tooltip-trigger="mouseenter"></i>
+            </span>
+    </td>
+    <td>
+      <span ng-if="indexerStatus.state === 'DISABLED_SYSTEM_TEMPORARY'">{{ indexerStatus.disabledUntil | reformatDate}}</span>
+    </td>
+    <td class="indexer-status-reason">{{ indexerStatus.lastError }}</td>
+    <td>{{::indexerStatus.apiHits}}<span ng-if="indexerStatus.apiHitLimit">/{{::indexerStatus.apiHitLimit}}</span></td>
+    <td>{{::indexerStatus.downloadHits}}<span ng-if="indexerStatus.downloadHitLimit">/{{::indexerStatus.downloadHitLimit}}</span></td>
+    <td>{{::indexerStatus.apiResetTime | formatTimestamp}}<span ng-if="indexerStatus.downloadResetTime">/{{::indexerStatus.downloadResetTime | formatTimestamp}}</span></td>
+  </tr>
+  </tbody>
 </table>

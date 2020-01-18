@@ -13,6 +13,8 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.indexers.IndexerApiAccessType;
+import org.nzbhydra.indexers.status.IndexerLimit;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
@@ -31,11 +33,21 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +71,8 @@ public class IndexerForSearchSelector {
     private ApplicationEventPublisher eventPublisher;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private IndexerLimitRepository indexerStatusRepository;
 
     protected Clock clock = Clock.systemDefaultZone();
 
@@ -225,7 +239,6 @@ public class IndexerForSearchSelector {
         LocalDateTime comparisonTime;
         LocalDateTime now = LocalDateTime.now(clock);
         if (indexerConfig.getHitLimitResetTime().isPresent()) {
-
             comparisonTime = now.with(ChronoField.HOUR_OF_DAY, indexerConfig.getHitLimitResetTime().get());
             if (comparisonTime.isAfter(now)) {
                 comparisonTime = comparisonTime.minus(1, ChronoUnit.DAYS);
@@ -255,6 +268,30 @@ public class IndexerForSearchSelector {
      */
     private boolean checkIfHitLimitIsExceeded(Indexer indexer, IndexerConfig indexerConfig, LocalDateTime comparisonTime, IndexerApiAccessType accessType, int limit, final String type) {
         Stopwatch stopwatch = Stopwatch.createStarted();
+
+        //First check if there's usable info in the indexer_status table
+        IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer.getIndexerEntity());
+        Instant nextAccess = null;
+        if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHitLimit() != null) {
+            if (indexerStatus.getApiHits() >= indexerStatus.getApiHitLimit()) {
+                nextAccess = indexerStatus.getOldestApiHit().plus(24, ChronoUnit.HOURS);
+            } else {
+                return false;
+            }
+        } else if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloadLimit() != null) {
+            if (indexerStatus.getDownloads() >= indexerStatus.getDownloadLimit()) {
+                nextAccess = indexerStatus.getOldestDownload().plus(24, ChronoUnit.HOURS);
+            } else {
+                return false;
+            }
+        }
+        if (nextAccess != null) {
+            String message = String.format("Not using %s because all %d allowed " + type + "s were already made. The next " + type + " should be possible at %s", indexerConfig.getName(), limit, nextAccess);
+            logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+        }
+
+        //Check from API short term storage for other indexers
         Query query = entityManager.createNativeQuery("SELECT x.TIME FROM INDEXERAPIACCESS_SHORT x WHERE x.INDEXER_ID = (:indexerId) AND x.API_ACCESS_TYPE = (:accessType) ORDER BY TIME DESC LIMIT (:hitLimit)");
         query.setParameter("indexerId", indexer.getIndexerEntity().getId());
         query.setParameter("accessType", accessType.name());

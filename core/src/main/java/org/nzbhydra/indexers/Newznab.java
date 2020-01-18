@@ -10,9 +10,22 @@ import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.exceptions.*;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.status.IndexerLimit;
+import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
 import org.nzbhydra.mediainfo.MediaInfo;
@@ -38,7 +51,16 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,6 +97,8 @@ public class Newznab extends Indexer<Xml> {
 
     @Autowired
     private Unmarshaller unmarshaller;
+    @Autowired
+    private IndexerLimitRepository indexerStatusRepository;
     private ConcurrentHashMap<Integer, Category> idToCategory = new ConcurrentHashMap<>();
 
 
@@ -375,7 +399,8 @@ public class Newznab extends Indexer<Xml> {
     }
 
     protected void completeIndexerSearchResult(Xml response, IndexerSearchResult indexerSearchResult, AcceptorResult acceptorResult, SearchRequest searchRequest, int offset, Integer limit) {
-        NewznabXmlResponse newznabResponse = ((NewznabXmlRoot) response).getRssChannel().getNewznabResponse();
+        NewznabXmlChannel rssChannel = ((NewznabXmlRoot) response).getRssChannel();
+        NewznabXmlResponse newznabResponse = rssChannel.getNewznabResponse();
         if (newznabResponse != null) {
             indexerSearchResult.setTotalResultsKnown(true);
             if (newznabResponse.getTotal() != null) { //Animetosho doesn't provide a total number of results
@@ -397,6 +422,19 @@ public class Newznab extends Indexer<Xml> {
             //Fallback to make sure the total is not 0 when actually some results were reported
             indexerSearchResult.setTotalResults(indexerSearchResult.getSearchResultItems().size());
         }
+
+        if (rssChannel.getApiLimits() != null) {
+            IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer);
+            indexerStatus.setApiHits(rssChannel.getApiLimits().getApiCurrent());
+            indexerStatus.setApiHitLimit(rssChannel.getApiLimits().getApiMax());
+            indexerStatus.setDownloads(rssChannel.getApiLimits().getGrabCurrent());
+            indexerStatus.setDownloadLimit(rssChannel.getApiLimits().getGrabMax());
+            indexerStatus.setOldestApiHit(rssChannel.getApiLimits().getApiOldestTime());
+            indexerStatus.setOldestDownload(rssChannel.getApiLimits().getGrabOldestTime());
+
+            indexerStatusRepository.save(indexerStatus);
+        }
+
     }
 
     protected SearchResultItem createSearchResultItem(NewznabXmlItem item) throws NzbHydraException {

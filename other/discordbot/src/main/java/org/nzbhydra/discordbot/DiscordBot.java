@@ -105,6 +105,7 @@ public class DiscordBot extends ListenerAdapter {
                 }
                 while (!Thread.interrupted()) {
                     try {
+                        System.out.println("LOading releases");
                         List<Release> releases = getReleases();
                         for (Release release : releases) {
                             if (alreadyPublishedVersions.contains(release.getTagName())) {
@@ -129,7 +130,7 @@ public class DiscordBot extends ListenerAdapter {
 
                             String messageBuilder =
                                     release.getBody() +
-                                            "\n\n" +
+                                            "\n" +
                                             release.getHtmlUrl();
                             channel.sendMessage(messageBuilder).complete();
                             alreadyPublishedVersions.add(release.getTagName());

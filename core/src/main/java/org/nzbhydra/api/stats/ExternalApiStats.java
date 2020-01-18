@@ -22,7 +22,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.historystats.History;
 import org.nzbhydra.historystats.StatsResponse;
-import org.nzbhydra.indexers.IndexerStatuses;
+import org.nzbhydra.indexers.status.IndexerStatusesAndLimits;
 import org.nzbhydra.searching.db.SearchEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class ExternalApiStats {
     @Autowired
     private org.nzbhydra.historystats.Stats stats;
     @Autowired
-    private IndexerStatuses indexerStatuses;
+    private IndexerStatusesAndLimits indexerStatuses;
     @Autowired
     private History history;
 
@@ -61,7 +61,7 @@ public class ExternalApiStats {
     }
 
     @RequestMapping(value = "/api/stats/indexers", consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<IndexerStatuses.IndexerStatus> indexerStatuses(ApiHistoryRequest request) throws Exception {
+    public List<IndexerStatusesAndLimits.IndexerStatus> indexerStatuses(ApiHistoryRequest request) throws Exception {
         verifyAccessAllowed(request.getApikey());
 
         return indexerStatuses.getSortedStatuses();
