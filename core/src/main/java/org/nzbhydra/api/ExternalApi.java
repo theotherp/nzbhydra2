@@ -43,9 +43,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -135,12 +141,13 @@ public class ExternalApi {
         cache.entrySet().removeIf(x -> x.getValue().getLastUpdate().isBefore(clock.instant().minus(MAX_CACHE_AGE_HOURS, ChronoUnit.HOURS)));
 
         CacheEntryValue cacheEntryValue;
-        if (cache.containsKey(params.cacheKey(searchType))) {
-            cacheEntryValue = cache.get(params.cacheKey(searchType));
-            Integer cachetime = params.getCachetime() == null ? configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().get() : params.getCachetime();
+        int cacheKey = params.cacheKey(searchType);
+        if (cache.containsKey(cacheKey)) {
+            cacheEntryValue = cache.get(cacheKey);
+            int cachetime = params.getCachetime() == null ? configProvider.getBaseConfig().getSearching().getGlobalCacheTimeMinutes().get() : params.getCachetime();
             if (cacheEntryValue.getLastUpdate().isAfter(clock.instant().minus(cachetime, ChronoUnit.MINUTES))) {
                 Instant nextUpdate = cacheEntryValue.getLastUpdate().plus(cachetime, ChronoUnit.MINUTES);
-                logger.info("Returning cached search result. Next update of search will be done at {}", nextUpdate);
+                logger.info("Returning cached search result. Next update of search will be done at {}", LocalDateTime.ofInstant(nextUpdate, ZoneId.systemDefault()));
                 NewznabResponse searchResult = cacheEntryValue.getSearchResult();
 
                 HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
@@ -159,7 +166,7 @@ public class ExternalApi {
 
         NewznabResponse searchResult = search(params, searchRequestId);
         logger.info("Putting search result into cache");
-        cache.put(params.cacheKey(searchType), new CacheEntryValue(params, clock.instant(), searchResult));
+        cache.put(cacheKey, new CacheEntryValue(params, clock.instant(), searchResult));
         HttpHeaders httpHeaders = setSearchTypeAndGetHeaders(params, searchResult);
         return new ResponseEntity<>(searchResult, httpHeaders, HttpStatus.OK);
     }

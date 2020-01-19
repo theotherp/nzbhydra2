@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Fix error in indexer selection when indexers report their API hits but don't report the expiry timestamp"
+        "text": "Fix error in indexer selection when indexers report their API hits but don't report the expiry timestamp."
+      },
+      {
+        "type": "fix",
+        "text": "Caching results for external API didn't work with some combination of parameters."
       }
     ],
     "final": false
