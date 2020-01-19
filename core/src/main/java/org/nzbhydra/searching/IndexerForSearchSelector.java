@@ -272,13 +272,13 @@ public class IndexerForSearchSelector {
         //First check if there's usable info in the indexer_status table
         IndexerLimit indexerStatus = indexerStatusRepository.findByIndexer(indexer.getIndexerEntity());
         Instant nextAccess = null;
-        if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHitLimit() != null) {
+        if (indexerStatus.getApiHits() != null && accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHitLimit() != null && indexerStatus.getOldestApiHit() != null) {
             if (indexerStatus.getApiHits() >= indexerStatus.getApiHitLimit()) {
                 nextAccess = indexerStatus.getOldestApiHit().plus(24, ChronoUnit.HOURS);
             } else {
                 return false;
             }
-        } else if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloadLimit() != null) {
+        } else if (indexerStatus.getDownloads() != null && accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloadLimit() != null && indexerStatus.getOldestDownload() != null) {
             if (indexerStatus.getDownloads() >= indexerStatus.getDownloadLimit()) {
                 nextAccess = indexerStatus.getOldestDownload().plus(24, ChronoUnit.HOURS);
             } else {
@@ -298,7 +298,16 @@ public class IndexerForSearchSelector {
         query.setParameter("hitLimit", limit);
         List resultList = query.getResultList();
 
-        if (resultList.size() == limit) { //Found as many as we want, so now we must check if they're all in the time window
+        int currentHits;
+        //If possible use the hits from the indexer status
+        if (accessType != IndexerApiAccessType.NZB && indexerStatus.getApiHits() != null) {
+            currentHits = indexerStatus.getApiHits();
+        } else if (accessType == IndexerApiAccessType.NZB && indexerStatus.getDownloads() != null) {
+            currentHits = indexerStatus.getDownloads();
+        } else {
+            currentHits = resultList.size();
+        }
+        if (currentHits >= limit) { //Found as many as we want, so now we must check if they're all in the time window
             Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
             if (earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
                 LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);

@@ -358,8 +358,9 @@ public class MockNewznab {
             }
             if (params.getQ() != null && params.getQ().equals("limits")) {
                 rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, 100, 2, 200, Instant.now().minus(10, ChronoUnit.HOURS), Instant.now().minus(10, ChronoUnit.HOURS)));
+            } else if (params.getQ() != null && params.getQ().equals("limitswithoutdates")) {
+                rssRoot.getRssChannel().setApiLimits(new NewznabXmlApilimits(1, 100, 2, 200, null, null));
             }
-
 
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
