@@ -1,3 +1,11 @@
+### v2.12.1 BETA (2020-01-19)
+
+**Fix** Fix error in indexer selection when indexers report their API hits but don't report the expiry timestamp.
+
+**Fix** Caching results for external API didn't work with some combination of parameters.
+
+
+
 ### v2.12.0 BETA (2020-01-18)
 
 **Feature** Show API and download limit related values in the indexer statuses page.
