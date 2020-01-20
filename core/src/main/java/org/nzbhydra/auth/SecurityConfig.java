@@ -1,6 +1,5 @@
 package org.nzbhydra.auth;
 
-import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
@@ -22,20 +21,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
-import javax.annotation.PostConstruct;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 @Configuration
 @Order
@@ -153,39 +139,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @PostConstruct
-    public void usePackagedCaCerts() {
-        //Use packaged CA certs file because in some cases it might be missing. Also allows to keep this updated
-        try {
-            if (!configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
-                return;
-            }
-            logger.debug("Using packaged cacerts file");
 
-            File cacerts = new File(NzbHydra.getDataFolder(), "cacerts");
-            if (cacerts.exists()) {
-                //Overwrite, might be older
-                boolean deleted = cacerts.delete();
-                if (!deleted) {
-                    logger.warn("Unable to delete old cacerts file {}", cacerts.getAbsolutePath());
-                }
-            }
-            if (!cacerts.exists()) {
-                Files.copy(NzbHydra.class.getResource("/cacerts").openStream(), cacerts.toPath());
-            }
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
-            keystore.load(keystoreStream, null);
-            trustManagerFactory.init(keystore);
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustManagers, null);
-            SSLContext.setDefault(sc);
-        } catch (IOException | KeyStoreException | CertificateException | NoSuchAlgorithmException | KeyManagementException e) {
-            logger.error("Unable to write packaged cacerts file", e);
-        }
-    }
 
 
 }

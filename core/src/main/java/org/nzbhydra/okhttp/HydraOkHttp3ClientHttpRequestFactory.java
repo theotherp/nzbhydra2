@@ -18,9 +18,16 @@ package org.nzbhydra.okhttp;
 
 import com.google.common.net.InetAddresses;
 import joptsimple.internal.Strings;
-import okhttp3.*;
+import okhttp3.ConnectionPool;
+import okhttp3.Credentials;
+import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.Route;
 import okhttp3.logging.HttpLoggingInterceptor;
+import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
@@ -47,14 +54,31 @@ import sockslib.client.SocksSocket;
 
 import javax.annotation.PostConstruct;
 import javax.net.SocketFactory;
-import javax.net.ssl.*;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
-import java.net.*;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.Proxy.Type;
+import java.net.Socket;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,7 +111,30 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
     @PostConstruct
     public void init() {
+        usePackagedCaCerts();
         initSocketFactory(configProvider.getBaseConfig().getMain());
+    }
+
+    private void usePackagedCaCerts() {
+        //Use packaged CA certs file because in some cases it might be missing. Also allows to keep this updated
+        try {
+            if (!configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
+                return;
+            }
+            logger.debug("Using packaged cacerts file");
+
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
+            keystore.load(keystoreStream, null);
+            trustManagerFactory.init(keystore);
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustManagers, null);
+            SSLContext.setDefault(sc);
+        } catch (IOException | KeyStoreException | CertificateException | NoSuchAlgorithmException | KeyManagementException e) {
+            logger.error("Unable to write packaged cacerts file", e);
+        }
     }
 
     @Override
@@ -266,9 +313,27 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         }
     }
 
-    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustManagers) throws NoSuchAlgorithmException, KeyManagementException {
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm());
+
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        if (configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
+            try {
+                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+                InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
+                keystore.load(keystoreStream, null);
+                trustManagerFactory.init(keystore);
+                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+                keyManagerFactory.init(keystore, "changeit".toCharArray());
+                sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            sslContext.init(null, trustManagers, new java.security.SecureRandom());
+        }
         return sslContext.getSocketFactory();
     }
 
@@ -278,6 +343,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
                     TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init((KeyStore) null);
             TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+
             if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
                 throw new IllegalStateException("Unexpected default trust managers:"
                         + Arrays.toString(trustManagers));
