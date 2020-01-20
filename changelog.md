@@ -1,3 +1,9 @@
+### v2.12.2 BETA (2020-01-20)
+
+**Fix** Made some improvements in the way certificates are loaded. This should hopefully improve connectivity with NZBGeek on systems where it previously failed (due to incorrect JDK installations).
+
+
+
 ### v2.12.1 BETA (2020-01-19)
 
 **Fix** Fix error in indexer selection when indexers report their API hits but don't report the expiry timestamp.
