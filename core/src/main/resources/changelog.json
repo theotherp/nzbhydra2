@@ -5,7 +5,7 @@
     "type" : "fix",
     "text" : "Made some improvements in the way certificates are loaded. This should hopefully improve connectivity with NZBGeek on systems where it previously failed (due to incorrect JDK installations)."
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v2.12.1",
   "date" : "2020-01-19",
