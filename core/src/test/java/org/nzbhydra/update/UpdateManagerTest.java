@@ -133,7 +133,7 @@ public class UpdateManagerTest {
 
     @Test
     public void shouldGetAllChangesWithoutPrerelease() throws Exception {
-        List<ChangelogVersionEntry> changesSince = testee.getAllChanges();
+        List<ChangelogVersionEntry> changesSince = testee.getAllChanges(false);
 
         assertEquals(3, changesSince.size());
         assertEquals("3.0.0", changesSince.get(0).getVersion());
@@ -145,7 +145,7 @@ public class UpdateManagerTest {
     public void shouldGetAllChangesWithPrerelease() throws Exception {
         configProviderMock.getBaseConfig().getMain().setUpdateToPrereleases(true);
 
-        List<ChangelogVersionEntry> changesSince = testee.getAllChanges();
+        List<ChangelogVersionEntry> changesSince = testee.getAllChanges(false);
 
         assertEquals(4, changesSince.size());
         assertEquals("4.0.0", changesSince.get(0).getVersion());
