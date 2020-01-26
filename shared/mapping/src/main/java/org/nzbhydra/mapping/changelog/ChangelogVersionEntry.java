@@ -1,5 +1,6 @@
 package org.nzbhydra.mapping.changelog;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,10 @@ public class ChangelogVersionEntry implements Comparable<ChangelogVersionEntry> 
     @Override
     public int compareTo(ChangelogVersionEntry o) {
         return new SemanticVersion(version).compareTo(new SemanticVersion(o.getVersion()));
+    }
+
+    @JsonIgnore
+    public SemanticVersion getSemanticVersion() {
+        return new SemanticVersion(version);
     }
 }

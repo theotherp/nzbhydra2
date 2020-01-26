@@ -39,7 +39,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -166,42 +170,47 @@ public class UpdateManager implements InitializingBean {
         if (latestVersion == null) {
             getLatestVersion();
         }
-        List<ChangelogVersionEntry> allChanges = getAllChanges();
-        List<ChangelogVersionEntry> collectedVersionChanges = new ArrayList<>();
-        for (ChangelogVersionEntry changelogVersionEntry : allChanges) {
-            SemanticVersion version = new SemanticVersion(changelogVersionEntry.getVersion());
-            if (currentVersion.isSameOrNewer(version)) {
-                break;
-            }
-            if (version.isUpdateFor(latestVersion)) { //Don't show changes for version not yet released
-                continue;
-            }
-            collectedVersionChanges.add(changelogVersionEntry);
-        }
-        return collectedVersionChanges;
-    }
-
-    /**
-     * Retrieves the most current changes from the web
-     */
-    protected List<ChangelogVersionEntry> getAllChanges() throws UpdateException {
-        List<ChangelogVersionEntry> changelogVersionEntries;
+        List<ChangelogVersionEntry> allChanges;
         try {
             String response = webAccess.callUrl(changelogUrl);
-            changelogVersionEntries = objectMapper.readValue(response, new TypeReference<List<ChangelogVersionEntry>>() {
+            allChanges = objectMapper.readValue(response, new TypeReference<List<ChangelogVersionEntry>>() {
             });
         } catch (IOException e) {
             throw new UpdateException("Error while getting changelog: " + e.getMessage());
         }
 
-        return changelogVersionEntries.stream()
-                .sorted(Comparator.reverseOrder())
-                .filter(version -> {
-                    if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
-                        return true;
+           /*
+        3.0.1: Beta release
+        3.0.0: Final release
+        2.0.1: Beta release
+        2.0.0: Final release
+        */
+
+        //Current release: 3.0.0, install prereleases: Show changes for 3.0.1
+        //Current release 2.0.0, install prerelases: Show changes 2.0.1 and newer
+        //Current release 2.0.0, dont install prereleases: Show changes 2.0.1 and 3.0.0
+
+        final Optional<ChangelogVersionEntry> newestFinalUpdate = allChanges.stream().filter(x -> x.isFinal() && new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)).sorted(Comparator.reverseOrder()).findFirst();
+
+        List<ChangelogVersionEntry> collectedVersionChanges = allChanges.stream().filter(x -> {
+                    if (!new SemanticVersion(x.getVersion()).isUpdateFor(currentVersion)) {
+                        return false;
                     }
-                    return version.isFinal();
-                })
+                    if (x.isFinal()) {
+                        return true;
+                    } else {
+                        if (configProvider.getBaseConfig().getMain().isUpdateToPrereleases()) {
+                            return true;
+                        } else {
+                            return newestFinalUpdate.isPresent() && newestFinalUpdate.get().getSemanticVersion().isUpdateFor(x.getSemanticVersion());
+                        }
+                    }
+                }
+
+        ).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+
+        return collectedVersionChanges.stream()
+                .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
     }
 
@@ -262,7 +271,7 @@ public class UpdateManager implements InitializingBean {
         }
 
         if (latestRelease.getTagName().equals("v2.7.6")) {
-            applicationEventPublisher.publishEvent(new UpdateEvent(" NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
+            applicationEventPublisher.publishEvent(new UpdateEvent("NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
         }
 
         logger.info("Shutting down to let wrapper execute the update");

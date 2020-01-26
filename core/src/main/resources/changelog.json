@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Updated included SSL certificates."
+      },
+      {
+        "type": "fix",
+        "text": "Include beta releases in changelog when they have been released between the currently installed final version and the newest final version."
       }
     ],
     "final": true

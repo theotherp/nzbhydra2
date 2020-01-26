@@ -43,14 +43,16 @@ public class UpdateManagerTest {
 
     @InjectMocks
     private UpdateManager testee = new UpdateManager();
+    private ObjectMapper objectMapper;
+    private BaseConfig baseConfig;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper();
         objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
-        BaseConfig baseConfig = new BaseConfig();
+        baseConfig = new BaseConfig();
         MainConfig main = new MainConfig();
         main.setUpdateToPrereleases(false);
         baseConfig.setMain(main);
@@ -121,34 +123,58 @@ public class UpdateManagerTest {
     }
 
     @Test
-    public void shouldGetChangesSince() throws Exception {
-        testee.latestVersion = new SemanticVersion(2,0,0);
+    public void shouldGetAllChangesIncludingPrereleaseWhenRunningFinal() throws Exception {
+        //Ensures that when a final version is available the changelog retrieved for the footer also includes the changes from the beta versions before that final version
+
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(
+                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
+                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
+                        new ChangelogVersionEntry("1.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "A betal release"))),
+                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
+                )));
+
+        //Should show changes for 1.01 and 2.0.0
+        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
+
+        assertEquals(2, changesSince.size());
+        assertEquals("2.0.0", changesSince.get(0).getVersion());
+        assertEquals("1.0.1", changesSince.get(1).getVersion());
+    }
+
+    @Test
+    public void shouldGetAllChangesIncludingPrereleaseWhenInstallingPrereleases() throws Exception {
+        baseConfig.getMain().setUpdateToPrereleases(true);
+
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(
+                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
+                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
+                        new ChangelogVersionEntry("1.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "A betal release"))),
+                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
+                )));
 
         List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
 
-        assertEquals(1, changesSince.size());
-        //Skip 1.0.0 because it's older and skip 3.0.0 because it's not yet released
-        assertEquals("2.0.0", changesSince.get(0).getVersion());
+        assertEquals(3, changesSince.size());
+        assertEquals("2.0.1", changesSince.get(0).getVersion());
+        assertEquals("2.0.0", changesSince.get(1).getVersion());
+        assertEquals("1.0.1", changesSince.get(2).getVersion());
     }
 
     @Test
     public void shouldGetAllChangesWithoutPrerelease() throws Exception {
-        List<ChangelogVersionEntry> changesSince = testee.getAllChanges(false);
+        when(webAccessMock.callUrl(eq("http:/127.0.0.1:7070/changelog"))).thenReturn(
+                objectMapper.writeValueAsString(Arrays.asList(
+                        new ChangelogVersionEntry("2.0.1", null, false, Arrays.asList(new ChangelogChangeEntry("note", "this is a newer prerelease"))),
+                        new ChangelogVersionEntry("2.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Next final release"))),
+                        new ChangelogVersionEntry("1.0.0", null, true, Arrays.asList(new ChangelogChangeEntry("note", "Initial final release")))
+                )));
 
-        assertEquals(3, changesSince.size());
-        assertEquals("3.0.0", changesSince.get(0).getVersion());
-        assertEquals("2.0.0", changesSince.get(1).getVersion());
-        assertEquals("0.0.1", changesSince.get(2).getVersion());
-    }
+        List<ChangelogVersionEntry> changesSince = testee.getChangesSinceCurrentVersion();
 
-    @Test
-    public void shouldGetAllChangesWithPrerelease() throws Exception {
-        configProviderMock.getBaseConfig().getMain().setUpdateToPrereleases(true);
-
-        List<ChangelogVersionEntry> changesSince = testee.getAllChanges(false);
-
-        assertEquals(4, changesSince.size());
-        assertEquals("4.0.0", changesSince.get(0).getVersion());
+        assertEquals(1, changesSince.size());
+        assertEquals("2.0.0", changesSince.get(0).getVersion());
     }
 
 

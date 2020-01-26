@@ -58,6 +58,10 @@ public final class SemanticVersion implements Comparable<SemanticVersion>, Seria
         return compareTo(v) >= 0;
     }
 
+    public boolean isSame(SemanticVersion v) {
+        return compareTo(v) == 0;
+    }
+
     /**
      * Convenience method to check if this version is a compatible update.
      *
