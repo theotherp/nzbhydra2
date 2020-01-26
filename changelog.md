@@ -1,4 +1,12 @@
-### v2.12.2 BETA (2020-01-20)
+### v2.12.3 (2020-01-26)
+
+**Fix** Updated included SSL certificates.
+
+**Fix** Include beta releases in changelog when they have been released between the currently installed final version and the newest final version.
+
+
+
+### v2.12.2 (2020-01-20)
 
 **Fix** Made some improvements in the way certificates are loaded. This should hopefully improve connectivity with NZBGeek on systems where it previously failed (due to incorrect JDK installations).
 
