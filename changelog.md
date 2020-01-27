@@ -1,3 +1,9 @@
+### v2.12.4 (2020-01-27)
+
+**Fix** Fix exception that occurs when an indexer's API limit was reached as reported by the indexer but Hydra can't find any of those hits in its database.
+
+
+
 ### v2.12.3 (2020-01-26)
 
 **Fix** Updated included SSL certificates.
