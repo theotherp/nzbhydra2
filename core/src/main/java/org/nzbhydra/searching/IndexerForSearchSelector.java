@@ -308,6 +308,12 @@ public class IndexerForSearchSelector {
             currentHits = resultList.size();
         }
         if (currentHits >= limit) { //Found as many as we want, so now we must check if they're all in the time window
+            if (resultList.isEmpty()) {
+                String message = String.format("Not using %s because all %d allowed " + type + "s were already made.", indexerConfig.getName(), limit);
+                logger.debug(LoggingMarkers.PERFORMANCE, "Detection that " + type + " limit has been reached for indexer {} took {}ms", indexerConfig.getName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                return !handleIndexerNotSelected(indexer, message, type + " limit reached");
+            }
+
             Instant earliestAccess = ((Timestamp) Iterables.getLast(resultList)).toInstant();
             if (earliestAccess.isAfter(comparisonTime.toInstant(ZoneOffset.UTC))) {
                 LocalDateTime nextPossibleHit = calculateNextPossibleHit(indexerConfig, earliestAccess);
