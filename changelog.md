@@ -1,3 +1,9 @@
+### v2.12.5 BETA (2020-01-28)
+
+**Fix** Update database library. Should have no effect on you except hopefully more stability.
+
+
+
 ### v2.12.4 (2020-01-27)
 
 **Fix** Fix exception that occurs when an indexer's API limit was reached as reported by the indexer but Hydra can't find any of those hits in its database.
