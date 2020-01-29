@@ -43,8 +43,8 @@ public class DatabaseRecreation {
     private static Map<String, String> SCHEMA_VERSION_CHANGES = new LinkedHashMap<>();
 
     static {
-        SCHEMA_VERSION_CHANGES.put("'V1.11__REMOVE_INDEXERSTATUSES.sql', -1156306236", "'V1.11__REMOVE_INDEXERSTATUSES.sql', -1237364002");
-        SCHEMA_VERSION_CHANGES.put("'V1.17__SHORTACCESS_AGAIN.sql', 517011709", "'V1.17__SHORTACCESS_AGAIN.sql', -723763655");
+        SCHEMA_VERSION_CHANGES.put("'V1.11__REMOVE_INDEXERSTATUSES.sql', \\-?\\d+", "'V1.11__REMOVE_INDEXERSTATUSES.sql', 898390205");
+        SCHEMA_VERSION_CHANGES.put("'V1.17__SHORTACCESS_AGAIN.sql', \\-?\\d+", "'V1.17__SHORTACCESS_AGAIN.sql', 177884391");
     }
 
     public static void runDatabaseScript() throws ClassNotFoundException, SQLException {
@@ -110,7 +110,7 @@ public class DatabaseRecreation {
         try {
             String sql = FileUtils.readFileToString(databaseScriptFile, Charset.defaultCharset());
             for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
-                sql = sql.replace(entry.getKey(), entry.getValue());
+                sql = sql.replaceAll(entry.getKey(), entry.getValue());
             }
 
             FileUtils.writeStringToFile(databaseScriptFile, sql, Charset.defaultCharset());
