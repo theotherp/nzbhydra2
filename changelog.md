@@ -1,3 +1,9 @@
+### v2.12.6 BETA (2020-01-29)
+
+**Fix** Fix issue with new installations not starting due to updated database library. So much for more stability...
+
+
+
 ### v2.12.5 BETA (2020-01-28)
 
 **Fix** Update database library. Should have no effect on you except hopefully more stability.
