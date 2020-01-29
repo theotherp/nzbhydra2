@@ -20,3 +20,5 @@ sql notes.sql
 /nzbhydra2wrapper.py
 /nzbhydra2wrapperPy3.py
 /logback-access.xml
+*.dmp
+*.trc
