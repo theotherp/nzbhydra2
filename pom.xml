@@ -91,7 +91,7 @@
         <logstash-logback-encoder.version>5.1</logstash-logback-encoder.version>
         <commons-lang3.version>3.7</commons-lang3.version>
         <commons-io.version>2.6</commons-io.version>
-        <flyway-core.version>6.0.8</flyway-core.version>
+        <flyway-core.version>6.2.0</flyway-core.version>
         <jaxb.sun.core.version>2.3.0</jaxb.sun.core.version>
         <jaxb.sun.impl.version>2.3.0</jaxb.sun.impl.version>
         <maven.compiler.plugin.version>3.6.2</maven.compiler.plugin.version>
