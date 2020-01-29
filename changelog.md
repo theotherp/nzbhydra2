@@ -1,3 +1,9 @@
+### v2.12.7 BETA (2020-01-29)
+
+**Fix** Fix another issue with database migration. I'll switch to a different approach soon, this is too fragile.
+
+
+
 ### v2.12.6 BETA (2020-01-29)
 
 **Fix** Fix issue with new installations not starting due to updated database library. So much for more stability...
