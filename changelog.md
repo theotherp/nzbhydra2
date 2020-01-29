@@ -1,3 +1,9 @@
+### v2.12.8 BETA (2020-01-29)
+
+**Fix** Same shit, different release. Thanks to reloxx13 for helping me reproduce this.
+
+
+
 ### v2.12.7 BETA (2020-01-29)
 
 **Fix** Fix another issue with database migration. I'll switch to a different approach soon, this is too fragile.
