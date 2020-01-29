@@ -17,7 +17,11 @@
 package org.nzbhydra.database;
 
 import com.google.common.collect.Sets;
-import org.apache.commons.io.FileUtils;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.apache.commons.io.IOUtils;
+import org.flywaydb.core.internal.resource.StringResource;
 import org.nzbhydra.NzbHydra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +29,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -65,17 +72,24 @@ public class DatabaseRecreation {
         String url = "jdbc:h2:file:" + databaseFile.getAbsolutePath().replace(".mv.db", "");
 
         logger.debug("Determining if database recreation is needed");
-        Set<String> executedScripts = new HashSet<>();
+        Set<ExecutedScript> executedScripts = new HashSet<>();
         try (Connection conn = DriverManager.getConnection(url, "SA", "")) {
-            ResultSet resultSet = conn.createStatement().executeQuery("select \"script\" from \"schema_version\";");
+            ResultSet resultSet = conn.createStatement().executeQuery("select \"script\", \"checksum\" from \"schema_version\";");
             while (resultSet.next()) {
-                executedScripts.add(resultSet.getString(1));
+                executedScripts.add(new ExecutedScript(resultSet.getString(1), resultSet.getInt((2))));
             }
         }
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         try {
             HashSet<Resource> resources = Sets.newHashSet(resolver.getResources("classpath:/migration/*"));
-            if (resources.stream().allMatch(x -> executedScripts.contains(x.getFilename()))) {
+            if (resources.stream().allMatch(x -> {
+                try {
+                    StringResource stringResource = new StringResource(IOUtils.toString(x.getInputStream(), Charset.defaultCharset()));
+                    return executedScripts.contains(new ExecutedScript(x.getFilename(), stringResource.checksum()));
+                } catch (IOException e) {
+                    throw new RuntimeException("Unable to determine checksum for " + x.getFilename());
+                }
+            })) {
                 logger.debug("No migration scripts found to run. Skipping database recreation");
                 return;
             }
@@ -107,14 +121,26 @@ public class DatabaseRecreation {
             throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
         }
 
+        File tempFile;
         try {
-            String sql = FileUtils.readFileToString(databaseScriptFile, Charset.defaultCharset());
-            for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
-                sql = sql.replaceAll(entry.getKey(), entry.getValue());
+            tempFile = File.createTempFile("nbhydra", ".sql");
+            tempFile.deleteOnExit();
+            try (FileWriter fileWriter = new FileWriter(tempFile)) {
+                Files.lines(databaseScriptFile.toPath()).forEach(x -> {
+                    String sql = x;
+                    for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
+                        sql = sql.replaceAll(entry.getKey(), entry.getValue());
+                    }
+                    try {
+                        fileWriter.write(sql);
+                        fileWriter.write(System.getProperty("line.separator"));
+                    } catch (IOException e) {
+                        throw new RuntimeException("Unable to write to temp file " + tempFile, e);
+                    }
+
+                });
             }
-
-            FileUtils.writeStringToFile(databaseScriptFile, sql, Charset.defaultCharset());
-
+            Files.copy(tempFile.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Unable to update database migration versions", e);
         }
@@ -132,5 +158,13 @@ public class DatabaseRecreation {
         if (!deleted) {
             throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually and restart NZBHYdra.");
         }
+    }
+
+    @Data
+    @AllArgsConstructor
+    @EqualsAndHashCode
+    private static class ExecutedScript {
+        private String script;
+        private int checksum;
     }
 }
