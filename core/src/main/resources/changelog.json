@@ -5,7 +5,7 @@
     "type" : "fix",
     "text" : "Don't verify hostnames for hosts for which to ignore SSL certificate checks."
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v2.13.0",
   "date" : "2020-02-01",
