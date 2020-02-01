@@ -203,7 +203,11 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
         } else if (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set for host {}", host);
-            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager)
+                    .hostnameVerifier((hostname, session) -> {
+                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
+                        return true;
+                    });
         } else if (host != null && isLocal(host)) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because host {} is local", host);
             builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
