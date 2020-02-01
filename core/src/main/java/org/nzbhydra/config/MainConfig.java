@@ -74,8 +74,6 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     @RestartRequired
     private boolean useCsrf = true;
     @RestartRequired
-    private boolean usePackagedCaCerts = true;
-    @RestartRequired
     private boolean verifySsl = true;
     private List<String> verifySslDisabledFor = new ArrayList<>();
     private boolean welcomeShown = false;

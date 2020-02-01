@@ -305,7 +305,6 @@ main:
   updateToPrereleases: false
   urlBase: "/"
   useCsrf: true
-  usePackagedCaCerts: true
   verifySsl: true
   verifySslDisabledFor: []
   welcomeShown: false

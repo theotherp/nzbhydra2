@@ -54,6 +54,7 @@ import sockslib.client.SocksSocket;
 
 import javax.annotation.PostConstruct;
 import javax.net.SocketFactory;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -67,20 +68,17 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -102,38 +100,59 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     private ConfigProvider configProvider;
 
     private final ConnectionPool connectionPool = new ConnectionPool(10, 5, TimeUnit.MINUTES);
-    private SSLSocketFactory whitelistingSocketFactory;
     private SocketFactory sockProxySocketFactory;
-    private X509TrustManager allTrustingTrustManager;
-    private TrustManager[] trustAllCertsManager;
+    private SSLSocketFactory defaultSslSocketFactory;
+    private X509TrustManager defaultTrustManager;
+    private SSLSocketFactory allTrustingSslSocketFactory;
+    private X509TrustManager allTrustingDefaultTrustManager = new AllTrustingManager();
     private HttpLoggingInterceptor httpLoggingInterceptor;
-
 
     @PostConstruct
     public void init() {
-        usePackagedCaCerts();
         initSocketFactory(configProvider.getBaseConfig().getMain());
     }
 
-    private void usePackagedCaCerts() {
-        //Use packaged CA certs file because in some cases it might be missing. Also allows to keep this updated
-        try {
-            if (!configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
-                return;
-            }
-            logger.debug("Using packaged cacerts file");
+    private void initSocketFactory(MainConfig mainConfig) {
+        loadCacerts();
+        loadAllTrustingTrustManager();
+        sockProxySocketFactory = new SockProxySocketFactory(mainConfig.getProxyHost(), mainConfig.getProxyPort(), mainConfig.getProxyUsername(), mainConfig.getProxyPassword());
+    }
 
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    private void loadAllTrustingTrustManager() {
+        try {
+            final TrustManager[] trustAllCerts = new TrustManager[]{allTrustingDefaultTrustManager};
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            allTrustingSslSocketFactory = new SniWhitelistingSocketFactory(sslContext.getSocketFactory());
+            allTrustingDefaultTrustManager = (X509TrustManager) trustAllCerts[0];
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            logger.error("Error while creating all-trusting trust manager", e);
+        }
+    }
+
+    private void loadCacerts() {
+        try {
             KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
             InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
             keystore.load(keystoreStream, null);
-            trustManagerFactory.init(keystore);
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            SSLContext sc = SSLContext.getInstance("SSL");
-            sc.init(null, trustManagers, null);
-            SSLContext.setDefault(sc);
-        } catch (IOException | KeyStoreException | CertificateException | NoSuchAlgorithmException | KeyManagementException e) {
-            logger.error("Unable to write packaged cacerts file", e);
+
+            TrustManagerFactory customTrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            customTrustManagerFactory.init(keystore);
+            TrustManager[] trustManagers = customTrustManagerFactory.getTrustManagers();
+
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keystore, null);
+            KeyManager[] keyManagers = keyManagerFactory.getKeyManagers();
+
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(keyManagers, trustManagers, null);
+            SSLContext.setDefault(sslContext);
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            defaultTrustManager = (X509TrustManager) trustManagers[0];
+            defaultSslSocketFactory = new SniWhitelistingSocketFactory(sslSocketFactory);
+        } catch (IOException | GeneralSecurityException e) {
+            logger.error("Unable to load packaged cacerts file", e);
         }
     }
 
@@ -150,19 +169,6 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     @EventListener
     public void handleConfigChangedEvent(ConfigChangedEvent event) {
         initSocketFactory(event.getNewConfig().getMain());
-    }
-
-    private void initSocketFactory(MainConfig mainConfig) {
-        SSLSocketFactory sslSocketFactory;
-        try {
-            sslSocketFactory = getSslSocketFactory(new TrustManager[]{
-                    getDefaultX509TrustManager()
-            });
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new RuntimeException("Unable to create SSLSocketFactory", e);
-        }
-        whitelistingSocketFactory = new SniWhitelistingSocketFactory(sslSocketFactory);
-        sockProxySocketFactory = new SockProxySocketFactory(mainConfig.getProxyHost(), mainConfig.getProxyPort(), mainConfig.getProxyUsername(), mainConfig.getProxyPassword());
     }
 
     static Request buildRequest(HttpHeaders headers, byte[] content, URI uri, HttpMethod method)
@@ -190,16 +196,20 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
 
     public Builder getOkHttpClientBuilder(URI requestUri) {
         Builder builder = getBaseBuilder();
+
         String host = requestUri.getHost();
         if (!configProvider.getBaseConfig().getMain().isVerifySsl()) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set");
-            builder = getUnsafeOkHttpClientBuilder(builder);
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
         } else if (host != null && configProvider.getBaseConfig().getMain().getVerifySslDisabledFor().stream().anyMatch(x -> isSameHost(host, x))) {
             logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because option not to verify SSL is set for host {}", host);
-            builder = getUnsafeOkHttpClientBuilder(builder);
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
+        } else if (host != null && isLocal(host)) {
+            logger.debug(LoggingMarkers.HTTPS, "Ignoring SSL certificates because host {} is local", host);
+            builder.sslSocketFactory(allTrustingSslSocketFactory, allTrustingDefaultTrustManager);
         } else {
             logger.debug(LoggingMarkers.HTTPS, "Not ignoring SSL certificates");
-            builder = builder.sslSocketFactory(whitelistingSocketFactory, getDefaultX509TrustManager());
+            builder.sslSocketFactory(defaultSslSocketFactory, defaultTrustManager);
         }
 
         MainConfig main = configProvider.getBaseConfig().getMain();
@@ -252,25 +262,9 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
     protected boolean isUriToBeIgnoredByProxy(String host) {
         MainConfig mainConfig = configProvider.getBaseConfig().getMain();
         if (mainConfig.isProxyIgnoreLocal()) {
-            if (InetAddresses.isInetAddress(host)) {
-                try {
-                    InetAddress byName = InetAddress.getByName(host);
-                    long ipToLong = ipToLong(byName);
-                    return host.equals("127.0.0.1")
-                            ||
-                            (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
-                            ||
-                            (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
-                            ||
-                            (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
-                            ;
-                } catch (UnknownHostException e) {
-                    logger.error("Unable to parse host " + host, e);
-                    return false;
-                }
-            }
-            if (host.equals("localhost")) {
-                return true;
+            Boolean ipToLong = isHostInLocalNetwork(host);
+            if (ipToLong != null) {
+                return ipToLong;
             }
         }
 
@@ -279,6 +273,30 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         }
 
         return mainConfig.getProxyIgnoreDomains().stream().anyMatch(x -> isSameHost(x, host));
+    }
+
+    private Boolean isHostInLocalNetwork(String host) {
+        if (InetAddresses.isInetAddress(host)) {
+            try {
+                InetAddress byName = InetAddress.getByName(host);
+                long ipToLong = ipToLong(byName);
+                return host.equals("127.0.0.1")
+                        ||
+                        (ipToLong >= ipToLong(InetAddress.getByName("10.0.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("10.255.255.255")))
+                        ||
+                        (ipToLong >= ipToLong(InetAddress.getByName("172.16.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("172.16.255.255")))
+                        ||
+                        (ipToLong >= ipToLong(InetAddress.getByName("192.168.0.0")) && ipToLong <= ipToLong(InetAddress.getByName("192.168.255.255")))
+                        ;
+            } catch (UnknownHostException e) {
+                logger.error("Unable to parse host " + host, e);
+                return false;
+            }
+        }
+        if (host.equals("localhost")) {
+            return true;
+        }
+        return null;
     }
 
     private static long ipToLong(InetAddress ip) {
@@ -291,90 +309,6 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         return result;
     }
 
-    //From https://gist.github.com/mefarazath/c9b588044d6bffd26aac3c520660bf40
-    private Builder getUnsafeOkHttpClientBuilder(Builder builder) {
-        try {
-            // Create a trust manager that does not validate certificate chains
-            if (trustAllCertsManager == null) {
-                trustAllCertsManager = new TrustManager[]{
-                        getAllTrustingX509TrustManager()
-                };
-            }
-
-            return builder
-                    .sslSocketFactory(whitelistingSocketFactory, (X509TrustManager) trustAllCertsManager[0])
-                    .hostnameVerifier((hostname, session) -> {
-                        logger.debug(LoggingMarkers.HTTPS, "Not verifying host name {}", hostname);
-                        return true;
-                    });
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustManagers) throws NoSuchAlgorithmException, KeyManagementException {
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
-                TrustManagerFactory.getDefaultAlgorithm());
-
-        SSLContext sslContext = SSLContext.getInstance("SSL");
-        if (configProvider.getBaseConfig().getMain().isUsePackagedCaCerts()) {
-            try {
-                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                InputStream keystoreStream = NzbHydra.class.getResource("/cacerts").openStream();
-                keystore.load(keystoreStream, null);
-                trustManagerFactory.init(keystore);
-                KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-                keyManagerFactory.init(keystore, "changeit".toCharArray());
-                sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            sslContext.init(null, trustManagers, new java.security.SecureRandom());
-        }
-        return sslContext.getSocketFactory();
-    }
-
-    private X509TrustManager getDefaultX509TrustManager() {
-        try {
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
-                    TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init((KeyStore) null);
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-
-            if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-                throw new IllegalStateException("Unexpected default trust managers:"
-                        + Arrays.toString(trustManagers));
-            }
-            return (X509TrustManager) trustManagers[0];
-        } catch (GeneralSecurityException e) {
-            throw new AssertionError(); // The system has no TLS. Just give up.
-        }
-    }
-
-    private X509TrustManager getAllTrustingX509TrustManager() {
-        if (allTrustingTrustManager == null) {
-            allTrustingTrustManager = new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(X509Certificate[] chain,
-                                               String authType) {
-                }
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] chain,
-                                               String authType) {
-                }
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                }
-            };
-        }
-        return allTrustingTrustManager;
-    }
 
     protected boolean isSameHost(final String a, final String b) {
         if (a == null || b == null) {
@@ -390,6 +324,25 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         }
 
         return aMatcher.group(3).toLowerCase().equals(bMatcher.group(3).toLowerCase());
+    }
+
+    //https://stackoverflow.com/a/2406819/184264
+    private static boolean isLocal(String host) {
+        InetAddress addr;
+        try {
+            addr = InetAddress.getByName(host);
+        } catch (UnknownHostException e) {
+            return false;
+        }
+        if (addr.isAnyLocalAddress() || addr.isLoopbackAddress()) {
+            return true;
+        }
+
+        try {
+            return NetworkInterface.getByInetAddress(addr) != null;
+        } catch (SocketException e) {
+            return false;
+        }
     }
 
 
@@ -411,6 +364,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
             return newSocket;
         }
     }
+
 
     protected static class SockProxySocketFactory extends SocketFactory {
 
@@ -454,4 +408,19 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         }
     }
 
+    private static class AllTrustingManager implements X509TrustManager {
+
+        @Override
+        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+        }
+
+        @Override
+        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return new java.security.cert.X509Certificate[]{};
+        }
+    }
 }
