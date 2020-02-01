@@ -1,3 +1,11 @@
+### v2.13.0 BETA (2020-02-01)
+
+**Note** I've removed the option to use the packaged cacerts file which will now always be loaded by default. A future version will allow to add custom certificates to the chain. Most likely this will not affect many users anyway.
+
+**Fix** Fixed issue where SSL verification was not properly disabled for some hosts. Certificate checks are now also automatically disabled for local hosts.
+
+
+
 ### v2.12.8 BETA (2020-01-29)
 
 **Fix** Same shit, different release. Thanks to reloxx13 for helping me reproduce this.
