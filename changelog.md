@@ -1,3 +1,9 @@
+### v2.13.1 BETA (2020-02-01)
+
+**Fix** Don't verify hostnames for hosts for which to ignore SSL certificate checks.
+
+
+
 ### v2.13.0 BETA (2020-02-01)
 
 **Note** I've removed the option to use the packaged cacerts file which will now always be loaded by default. A future version will allow to add custom certificates to the chain. Most likely this will not affect many users anyway.
