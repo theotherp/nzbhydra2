@@ -1,4 +1,12 @@
-### v2.13.1 BETA (2020-02-01)
+### v2.13.2 (2020-02-02)
+
+**Fix** Uniqueness score was not saved for torrent downloads:
+
+**Fix** Apostrophes were removed from generated queries resulting in less results.
+
+
+
+### v2.13.1 (2020-02-01)
 
 **Fix** Don't verify hostnames for hosts for which to ignore SSL certificate checks.
 
