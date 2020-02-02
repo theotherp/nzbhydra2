@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Uniqueness score was not saved for torrent downloads"
+        "text": "Uniqueness score was not saved for torrent downloads:"
+      },
+      {
+        "type": "fix",
+        "text": "Apostrophes were removed from generated queries resulting in less results."
       }
     ],
     "final": true
