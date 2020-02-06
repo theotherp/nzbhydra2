@@ -62,6 +62,7 @@ public class DatabaseRecreation {
         }
         File databaseFile = new File(NzbHydra.getDataFolder(), "database/nzbhydra.mv.db");
         File databaseScriptFile = new File(NzbHydra.getDataFolder(), "databaseScript.sql");
+        File databaseScriptFileNew = new File(NzbHydra.getDataFolder(), "databaseScriptNew.sql");
 
         if (!databaseFile.exists()) {
             logger.debug("No database file found - no recreation needed");
@@ -85,7 +86,12 @@ public class DatabaseRecreation {
             if (resources.stream().allMatch(x -> {
                 try {
                     StringResource stringResource = new StringResource(IOUtils.toString(x.getInputStream(), Charset.defaultCharset()));
-                    return executedScripts.contains(new ExecutedScript(x.getFilename(), stringResource.checksum()));
+                    ExecutedScript executedScript = new ExecutedScript(x.getFilename(), stringResource.checksum());
+                    boolean scriptExecuted = executedScripts.contains(executedScript);
+                    if (!scriptExecuted) {
+                        logger.info("Database recreation needed because {} was not yet executed or its checksum has changed", executedScript);
+                    }
+                    return scriptExecuted;
                 } catch (IOException e) {
                     throw new RuntimeException("Unable to determine checksum for " + x.getFilename());
                 }
@@ -121,11 +127,8 @@ public class DatabaseRecreation {
             throw new RuntimeException("Unable to delete database file at " + databaseFile.getAbsolutePath() + ". Please move it somewhere else (just to be sure) and restart NZBHYdra.");
         }
 
-        File tempFile;
         try {
-            tempFile = File.createTempFile("nbhydra", ".sql");
-            tempFile.deleteOnExit();
-            try (FileWriter fileWriter = new FileWriter(tempFile)) {
+            try (FileWriter fileWriter = new FileWriter(databaseScriptFileNew)) {
                 Files.lines(databaseScriptFile.toPath()).forEach(x -> {
                     String sql = x;
                     for (Map.Entry<String, String> entry : SCHEMA_VERSION_CHANGES.entrySet()) {
@@ -135,12 +138,12 @@ public class DatabaseRecreation {
                         fileWriter.write(sql);
                         fileWriter.write(System.getProperty("line.separator"));
                     } catch (IOException e) {
-                        throw new RuntimeException("Unable to write to temp file " + tempFile, e);
+                        throw new RuntimeException("Unable to write to temp file " + databaseScriptFileNew, e);
                     }
 
                 });
             }
-            Files.copy(tempFile.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(databaseScriptFileNew.toPath(), databaseScriptFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Unable to update database migration versions", e);
         }
@@ -156,7 +159,7 @@ public class DatabaseRecreation {
         }
         deleted = databaseScriptFile.delete();
         if (!deleted) {
-            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually and restart NZBHYdra.");
+            throw new RuntimeException("Unable to delete database script file at " + databaseScriptFile.getAbsolutePath() + ". Please delete it manually.");
         }
     }
 
