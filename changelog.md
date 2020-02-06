@@ -1,6 +1,12 @@
+### v2.13.3 (2020-02-06)
+
+**Fix** Fixed a very rare issue where a file stored in temp directory could not be read or deleted which prevented successful database migration.
+
+
+
 ### v2.13.2 (2020-02-02)
 
-**Fix** Uniqueness score was not saved for torrent downloads:
+**Fix** Uniqueness score was not saved for torrent downloads.
 
 **Fix** Apostrophes were removed from generated queries resulting in less results.
 
