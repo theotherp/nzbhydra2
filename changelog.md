@@ -1,3 +1,11 @@
+### v2.13.4 (2020-02-08)
+
+**Fix** Improve wording of config description on how to apply newznab categories by pressing enter.
+
+**Fix** Include hidden results from NZBGet history when checking download status. That way entries removed by *arr and other programs will be considered, too.
+
+
+
 ### v2.13.3 (2020-02-06)
 
 **Fix** Fixed a very rare issue where a file stored in temp directory could not be read or deleted which prevented successful database migration.
