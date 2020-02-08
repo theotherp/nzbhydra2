@@ -37,7 +37,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.MalformedURLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -261,7 +265,7 @@ public class NzbGet extends Downloader {
 
 
     public List<DownloaderEntry> getHistory(Instant earliestDownloadTime) throws DownloaderException {
-        ArrayList<LinkedHashMap<String, Object>> history = callNzbget("history", new Object[]{false});
+        ArrayList<LinkedHashMap<String, Object>> history = callNzbget("history", new Object[]{true});
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : history) {
             if (!map.get("Kind").equals("NZB")) {

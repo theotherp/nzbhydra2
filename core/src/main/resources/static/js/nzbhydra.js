@@ -6403,7 +6403,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Newznab categories',
-                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply words with return key. You can combine categories which must be all present by using "&".'
+                                    help: 'Map newznab categories to Hydra categories. Used for parsing and when searching internally. Apply categories with return key. You can combine categories which must be all present by using "&".'
                                 }
                             },
                             {
