@@ -52,6 +52,9 @@ public class LogAnonymizer {
         log = log.replaceAll("(https?):\\/\\/((.+?)(:(.+?)|)@)", "$1://<USERNAME>:<PASSWORD>@");
         logger.debug("Removing cookies from log");
         log = log.replaceAll("Set-Cookie: (\\w+)=(\\w)+;", "Set-Cookie: $1:<HIDDEN>");
+        log = log.replaceAll("remember-me=(\\w)+;", "remember-me=$1:<HIDDEN>");
+        log = log.replaceAll("Auth-Token=(\\w)+;", "Auth-Token=$1:<HIDDEN>");
+        log = log.replaceAll("HYDRA-XSRF-TOKEN=([\\w\\-])+", "HYDRA-XSRF-TOKEN=$1:<HIDDEN>");
 
         logger.debug("Removing base path from log");
         log = log.replace(new File("").getAbsolutePath(), "<BASEPATH>");

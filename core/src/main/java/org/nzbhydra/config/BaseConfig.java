@@ -2,7 +2,12 @@ package org.nzbhydra.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.ShutdownEvent;
 import org.nzbhydra.config.auth.AuthConfig;
@@ -19,7 +24,13 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -233,6 +244,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         getDownloading().prepareForSaving();
         getSearching().prepareForSaving();
         getMain().prepareForSaving();
+        getMain().getLogging().prepareForSaving();
         getAuth().prepareForSaving();
         return this;
     }

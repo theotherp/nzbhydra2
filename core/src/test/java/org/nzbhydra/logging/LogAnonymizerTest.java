@@ -73,5 +73,14 @@ public class LogAnonymizerTest {
         assertThat(anonymized, is("r=<APIKEY>"));
     }
 
+    @Test
+    public void shouldAnonymizeCookiesFromConfig() throws Exception {
+        when(logContentProviderMock.getLog()).thenReturn("Cookies: Parsing b[]: remember-me=MTAI4MjHY0MjcXxMTpjM2U0Zjk3OWQwMjk0; Auth-Type=http; Auth-Token=C8wSA1AXvpFVjXCRGKryWtIIZS2TRqf69aZb; HYDRA-XSRF-TOKEN=1a0f551f-2178-4ad7-a0b5-3af8f77675e2");
+
+        String anonymized = testee.getAnonymizedLog();
+
+        assertThat(anonymized, is("Cookies: Parsing b[]: remember-me=0:<HIDDEN> Auth-Type=http; Auth-Token=b:<HIDDEN> HYDRA-XSRF-TOKEN=2:<HIDDEN>"));
+    }
+
 
 }

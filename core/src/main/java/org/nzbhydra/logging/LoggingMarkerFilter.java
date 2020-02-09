@@ -28,6 +28,12 @@ public class LoggingMarkerFilter extends Filter<ILoggingEvent> {
             Iterator<Appender<ILoggingEvent>> appenderIterator = logger.iteratorForAppenders();
             appenderIterator.forEachRemaining(x -> x.addFilter(this));
         }
+
+        if (configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.SERVER.getName())) {
+            ((Logger) LoggerFactory.getLogger("org.apache.tomcat")).setLevel(Level.DEBUG);
+            ((Logger) LoggerFactory.getLogger("org.apache.catalina")).setLevel(Level.DEBUG);
+
+        }
     }
 
     @Override

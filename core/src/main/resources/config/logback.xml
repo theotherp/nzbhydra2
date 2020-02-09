@@ -1,4 +1,5 @@
 <configuration>
+    <!-- Must be explicitly set in org.nzbhydra.NzbHydra#setApplicationPropertiesFromConfig   -->
     <springProperty scope="context" name="logging.baseFolder" source="nzbhydra.dataFolder" defaultValue="."/>
     <springProperty scope="context" name="logging.level.console" source="main.logging.consolelevel" defaultValue="INFO"/>
     <springProperty scope="context" name="logging.level.file" source="main.logging.logfilelevel" defaultValue="INFO"/>

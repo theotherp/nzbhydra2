@@ -12,6 +12,7 @@ import org.nzbhydra.config.migration.ConfigMigration;
 import org.nzbhydra.database.DatabaseRecreation;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
 import org.nzbhydra.genericstorage.GenericStorage;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.BrowserOpener;
 import org.nzbhydra.update.UpdateManager;
 import org.nzbhydra.web.UrlCalculator;
@@ -185,7 +186,7 @@ public class NzbHydra {
         setApplicationProperty("main.logging.logfilelevel", "MAIN_LOGGING_LOGFILELEVEL", baseConfig.getMain().getLogging().getLogfilelevel());
         setApplicationProperty("main.logging.logMaxHistory", "MAIN_LOGGING_LOG_MAX_HISTORY", String.valueOf(baseConfig.getMain().getLogging().getLogMaxHistory()));
 
-        if (baseConfig.getMain().getLogging().getMarkersToLog().contains("SERVER")) {
+        if (baseConfig.getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.SERVER.getName())) {
             System.setProperty("logback.access.enabled", "true");
         } else {
             System.setProperty("logback.access.enabled", "false");
