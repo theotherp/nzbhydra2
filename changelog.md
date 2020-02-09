@@ -1,3 +1,9 @@
+### v2.13.5 (2020-02-09)
+
+**Feature** Extend logging if logging marker 'HTTP Server' is selected.
+
+
+
 ### v2.13.4 (2020-02-08)
 
 **Fix** Improve wording of config description on how to apply newznab categories by pressing enter.
