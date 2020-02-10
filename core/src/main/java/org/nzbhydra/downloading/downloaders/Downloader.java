@@ -20,11 +20,18 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import net.jodah.expiringmap.ExpirationPolicy;
+import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
 import org.nzbhydra.config.downloading.NzbAddingType;
-import org.nzbhydra.downloading.*;
+import org.nzbhydra.downloading.AddFilesRequest;
+import org.nzbhydra.downloading.DownloadResult;
+import org.nzbhydra.downloading.FileDownloadEntity;
+import org.nzbhydra.downloading.FileDownloadStatus;
+import org.nzbhydra.downloading.FileHandler;
+import org.nzbhydra.downloading.InvalidSearchResultIdException;
 import org.nzbhydra.downloading.exceptions.DownloaderException;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.searching.db.SearchResultEntity;
@@ -39,7 +46,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -48,7 +60,11 @@ public abstract class Downloader {
 
     private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
-    protected long downloadRateCounter = 0;
+    protected final Map<Long, String> guidExternalIds = ExpiringMap.builder()
+            .maxSize(50)
+            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expiration(5, TimeUnit.MINUTES)
+            .build();
 
     public enum StatusCheckType {
         QUEUE,
@@ -105,14 +121,14 @@ public abstract class Downloader {
                     } else {
                         missedNzbs.add(result.getDownloadEntity().getSearchResult());
                     }
-                } else {
+                } else if (addingType == NzbAddingType.SEND_LINK) {
                     SearchResultEntity searchResultEntity = searchResultRepository.getOne(guid);
-                    addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
+                    String externalId = addLink(nzbHandler.getDownloadLink(guid, false, DownloadType.NZB), searchResultEntity.getTitle(), categoryToSend);
+                    guidExternalIds.put(guid, externalId);
                     addedNzbs.add(guid);
                 }
             }
-        } catch (InvalidSearchResultIdException | DownloaderException |
-                EntityNotFoundException e) {
+        } catch (InvalidSearchResultIdException | DownloaderException | EntityNotFoundException e) {
             String message;
             if (e instanceof EntityNotFoundException) {
                 message = "Unable to find the search result in the database. Unable to download";
@@ -123,7 +139,7 @@ public abstract class Downloader {
             if (!addedNzbs.isEmpty()) {
                 message += ".\n" + addedNzbs.size() + " were added successfully";
             }
-            Set<Long> searchResultIds = Sets.newHashSet(searchResults.stream().map(x -> Long.valueOf(x.getSearchResultId())).collect(Collectors.toSet()));
+            Set<Long> searchResultIds = searchResults.stream().map(x -> Long.valueOf(x.getSearchResultId())).collect(Collectors.toSet());
             searchResultIds.removeAll(addedNzbs);
             return new AddNzbsResponse(false, message, addedNzbs, searchResultIds);
         }
@@ -147,7 +163,7 @@ public abstract class Downloader {
      * @param title    Title to tell the downloader
      * @param category Category to file under
      * @return ID returned by the downloader
-     * @throws DownloaderException
+     * @throws DownloaderException Error while downloading
      */
     public abstract String addLink(String link, String title, String category) throws DownloaderException;
 
@@ -156,7 +172,7 @@ public abstract class Downloader {
      * @param title    Title to tell the downloader
      * @param category Category to file under
      * @return ID returned by the downloader
-     * @throws DownloaderException
+     * @throws DownloaderException Error while downloading
      */
     public abstract String addNzb(byte[] content, String title, String category) throws DownloaderException;
 

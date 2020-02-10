@@ -1,7 +1,13 @@
 package org.nzbhydra.downloading.downloaders.sabnzbd;
 
 import com.google.common.base.Strings;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
@@ -278,7 +284,10 @@ public class Sabnzbd extends Downloader {
     protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
         boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
         boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
-        return idMatches || nameMatches;
+        boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
+        boolean isMatch = idMatches || nameMatches || idFromMapMatches;
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Is match: {}", entry, download, isMatch);
+        return isMatch;
     }
 
 

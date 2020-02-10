@@ -57,6 +57,7 @@ public class NzbGet extends Downloader {
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/HEALTH", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/GOOD", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/MARK", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
+        NZBGET_STATUS_TO_HYDRA_STATUS.put("SUCCESS/HIDDEN", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL);
         NZBGET_STATUS_TO_HYDRA_STATUS.put("FAILURE/MOVE", FileDownloadStatus.CONTENT_DOWNLOAD_SUCCESSFUL); //We consider this good enough
 
         NZBGET_STATUS_TO_HYDRA_STATUS.put("WARNING/SCRIPT", FileDownloadStatus.CONTENT_DOWNLOAD_WARNING);
@@ -251,7 +252,10 @@ public class NzbGet extends Downloader {
     protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
         boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(String.valueOf(entry.getNzbId()));
         boolean nameMatches = download.getSearchResult().getTitle().equals(entry.getNzbName());
-        return idMatches || nameMatches;
+        boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
+        boolean isMatch = idMatches || nameMatches || idFromMapMatches;
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Is match: {}", entry, download, isMatch);
+        return isMatch;
     }
 
     @Override
@@ -268,7 +272,7 @@ public class NzbGet extends Downloader {
         ArrayList<LinkedHashMap<String, Object>> history = callNzbget("history", new Object[]{true});
         List<DownloaderEntry> historyEntries = new ArrayList<>();
         for (LinkedHashMap<String, Object> map : history) {
-            if (!map.get("Kind").equals("NZB")) {
+            if (!map.get("Kind").equals("NZB") && !map.get("Kind").equals("DUP")) {
                 continue;
             }
             DownloaderEntry historyEntry = getBasicDownloaderEntry(map);
@@ -310,7 +314,11 @@ public class NzbGet extends Downloader {
     protected DownloaderEntry getBasicDownloaderEntry(LinkedHashMap<String, Object> map) {
         DownloaderEntry entry = new DownloaderEntry();
         entry.setNzbId(String.valueOf(map.get("NZBID")));
-        entry.setNzbName((String) map.get("NZBName"));
+        if (map.get("Kind").equals("DUP")) {
+            entry.setNzbName((String) map.get("Name"));
+        } else {
+            entry.setNzbName((String) map.get("NZBName"));
+        }
         entry.setStatus((String) map.get("Status"));
         return entry;
     }
