@@ -1,3 +1,9 @@
+### v2.13.6 (2020-02-09)
+
+**Fix** Improve matching of hidden download entries from NZBGet history.
+
+
+
 ### v2.13.5 (2020-02-09)
 
 **Feature** Extend logging if logging marker 'HTTP Server' is selected.
