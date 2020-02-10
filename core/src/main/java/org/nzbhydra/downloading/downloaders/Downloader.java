@@ -61,8 +61,7 @@ public abstract class Downloader {
     private static final Logger logger = LoggerFactory.getLogger(Downloader.class);
 
     protected final Map<Long, String> guidExternalIds = ExpiringMap.builder()
-            .maxSize(50)
-            .expirationPolicy(ExpirationPolicy.ACCESSED)
+            .expirationPolicy(ExpirationPolicy.CREATED)
             .expiration(5, TimeUnit.MINUTES)
             .build();
 
