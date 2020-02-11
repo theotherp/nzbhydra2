@@ -1,3 +1,9 @@
+### v2.13.7 (2020-02-11)
+
+**Fix** Ruther extend logging if logging marker 'HTTP Server' is selected. Don't hide local IP addresses in log. Replace other IP files with hashes to hide them but make them comparable.
+
+
+
 ### v2.13.6 (2020-02-09)
 
 **Fix** Improve matching of hidden download entries from NZBGet history.
