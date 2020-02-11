@@ -1,10 +1,12 @@
 package org.nzbhydra.debuginfos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.apache.commons.io.IOUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogAnonymizer;
+import org.nzbhydra.logging.LogContentProvider;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,6 +37,8 @@ public class DebugInfosProvider {
     private ConfigProvider configProvider;
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private LogContentProvider logContentProvider;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -59,17 +64,13 @@ public class DebugInfosProvider {
         }
 
         String anonymizedConfig = getAnonymizedConfig();
-        String anonymizedLog = logAnonymizer.getAnonymizedLog();
+        String anonymizedLog = logAnonymizer.getAnonymizedLog(logContentProvider.getLog());
         File tempFile = File.createTempFile("nzbhydradebuginfos", "zip");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
-                writeStringToZip(zos, "nzbhy" +
-                        "dra.log", anonymizedLog.getBytes(StandardCharsets.UTF_8));
-                writeStringToZip(zos, "nzbhydra-config.yaml", anonymizedConfig.getBytes(StandardCharsets.UTF_8));
-                File traceFile = new File(new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
-                if (traceFile.exists()) {
-                    writeFileToZip(zos, "nzbhydra.trace.db", traceFile);
-                }
+                writeStringToZip(zos, "nzbhydra2.log", anonymizedLog.getBytes(StandardCharsets.UTF_8));
+                writeStringToZip(zos, "nzbhydra2-config.yaml", anonymizedConfig.getBytes(StandardCharsets.UTF_8));
+                writeFileIfExists(zos, new File(NzbHydra.getDataFolder(), "database"), "nzbhydra.trace.db");
                 File logsFolder = new File(NzbHydra.getDataFolder(), "logs");
                 //Write all GC logs
                 File[] files = logsFolder.listFiles((dir, name) -> name.startsWith("gclog"));
@@ -78,24 +79,25 @@ public class DebugInfosProvider {
                         writeFileToZip(zos, file.getName(), file);
                     }
                 }
-                //Write wrapper log
-                File wrapperLog = new File(logsFolder, "wrapper.log");
-                if (wrapperLog.exists()) {
-                    writeFileToZip(zos, "wrapper.log", wrapperLog);
-                }
-                //Write systemErr log
-                File systemErrLog = new File(logsFolder, "system.err.log");
-                if (systemErrLog.exists()) {
-                    writeFileToZip(zos, "system.err.log", systemErrLog);
-                }
-                //Write systemOut log
-                File systemOutLog = new File(logsFolder, "system.out.log");
-                if (systemOutLog.exists()) {
-                    writeFileToZip(zos, "system.out.log", systemOutLog);
+                writeFileIfExists(zos, logsFolder, "wrapper.log");
+                writeFileIfExists(zos, logsFolder, "system.err.log");
+                writeFileIfExists(zos, logsFolder, "system.out.log");
+
+                File servLogFile = new File(logsFolder, "nzbhydra2.serv.log");
+                if (servLogFile.exists()) {
+                    writeStringToZip(zos, "nzbhydra2.serv.log", logAnonymizer.getAnonymizedLog(IOUtils.toString(new FileReader(servLogFile))).getBytes());
                 }
             }
         }
+        logger.debug("Finished creating debug infos ZIP");
         return Files.readAllBytes(tempFile.toPath());
+    }
+
+    private void writeFileIfExists(ZipOutputStream zos, File logsFolder, String filename) throws IOException {
+        File file = new File(logsFolder, filename);
+        if (file.exists()) {
+            writeFileToZip(zos, filename, file);
+        }
     }
 
     protected void logDatabaseFolderSize() {

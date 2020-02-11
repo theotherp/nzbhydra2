@@ -23,14 +23,14 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- URI: %requestURL | status code: %statusCode | bytes: %bytesSent | elapsed ms: %elapsedTime</pattern>
+            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- %-58requestURL : status code: %statusCode | bytes: %-6bytesSent | elapsed ms: %-4elapsedTime | local: %localIP | remote: %remoteIP</pattern>
         </encoder>
     </appender>
 
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
-            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- URI: %requestURL | status code: %statusCode | bytes: %bytesSent | elapsed ms: %elapsedTime</pattern>
+            <pattern>%t{yyyy-MM-dd HH:mm:ss.SSS} SERV --- %requestURL : status code: %statusCode | bytes: %bytesSent | elapsed ms: %elapsedTime | local: %localIP | remote: %remoteIP</pattern>
         </encoder>
         <file>${logging.baseFolder}/logs/nzbhydra2.serv.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">

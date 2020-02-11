@@ -23,6 +23,7 @@ public class ColorConverter extends org.springframework.boot.logging.logback.Col
         elements.put("blue", AnsiColor.BLUE);
         elements.put("magenta", AnsiColor.MAGENTA);
         elements.put("cyan", AnsiColor.CYAN);
+        elements.put("blue", AnsiColor.BLUE);
         ELEMENTS = Collections.unmodifiableMap(elements);
     }
 
