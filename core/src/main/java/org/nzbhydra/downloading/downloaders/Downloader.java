@@ -256,7 +256,22 @@ public abstract class Downloader {
 
     protected abstract FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType);
 
-    protected abstract boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry);
+    boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
+        if (download.getExternalId() != null) {
+            boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id match: {}. ", entry, download, idMatches);
+            return idMatches;
+        }
+        if (guidExternalIds.containsKey(download.getSearchResult().getId())) {
+            boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id map match: {}. ", entry, download, idFromMapMatches);
+            return idFromMapMatches;
+        }
+
+        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Name match: {}. ", entry, download, nameMatches);
+        return nameMatches;
+    }
 
 
 }

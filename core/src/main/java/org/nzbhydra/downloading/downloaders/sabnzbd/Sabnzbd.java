@@ -282,12 +282,20 @@ public class Sabnzbd extends Downloader {
 
     @Override
     protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
-        boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
+        if (download.getExternalId() != null) {
+            boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id match: {}. ", entry, download, idMatches);
+            return idMatches;
+        }
+        if (guidExternalIds.containsKey(download.getSearchResult().getId())) {
+            boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id map match: {}. ", entry, download, idFromMapMatches);
+            return idFromMapMatches;
+        }
+
         boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
-        boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
-        boolean isMatch = idMatches || nameMatches || idFromMapMatches;
-        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Is match: {}", entry, download, isMatch);
-        return isMatch;
+        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Name match: {}. ", entry, download, nameMatches);
+        return nameMatches;
     }
 
 

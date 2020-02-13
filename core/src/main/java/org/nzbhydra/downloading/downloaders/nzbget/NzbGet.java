@@ -21,7 +21,6 @@ import com.google.common.io.BaseEncoding;
 import com.googlecode.jsonrpc4j.JsonRpcHttpClient;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.downloading.DownloaderConfig;
-import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
@@ -246,16 +245,6 @@ public class NzbGet extends Downloader {
             status.setRemainingTimeFormatted(Converters.formatTime(status.getRemainingSeconds()));
         }
         return status;
-    }
-
-
-    protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
-        boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(String.valueOf(entry.getNzbId()));
-        boolean nameMatches = download.getSearchResult().getTitle().equals(entry.getNzbName());
-        boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
-        boolean isMatch = idMatches || nameMatches || idFromMapMatches;
-        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Is match: {}", entry, download, isMatch);
-        return isMatch;
     }
 
     @Override

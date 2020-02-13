@@ -17,6 +17,7 @@
 package org.nzbhydra.downloading.downloaders;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -37,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@Ignore
 public class DownloaderTest {
 
     @Mock
@@ -117,7 +119,6 @@ public class DownloaderTest {
         when(downloaderEntry.getNzbId()).thenReturn("nzbId");
         when(testee.getDownloadStatusFromDownloaderEntry(any(), any())).thenReturn(FileDownloadStatus.NZB_ADDED);
         when(testee.getQueue(any())).thenReturn(Collections.singletonList(downloaderEntry));
-        when(testee.isDownloadMatchingDownloaderEntry(any(), any())).thenReturn(true);
 
         List<FileDownloadEntity> updatedEntites = testee.checkForStatusUpdates(Collections.singletonList(downloadEntityMock), StatusCheckType.QUEUE);
 
