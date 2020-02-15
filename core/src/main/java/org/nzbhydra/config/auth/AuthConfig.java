@@ -47,7 +47,7 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
     private int rememberMeValidityDays;
     @SensitiveData
     private String authHeader;
-    private List<String> authHeaderIpRanges;
+    private List<String> authHeaderIpRanges = new ArrayList<>();
     private boolean restrictAdmin = false;
     private boolean restrictDetailsDl = false;
     private boolean restrictIndexerSelection = false;
