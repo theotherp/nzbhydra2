@@ -1,3 +1,9 @@
+### v2.13.11 BETA (2020-02-15)
+
+**Fix** Fix invalid config created by v2.13.9.
+
+
+
 ### v2.13.10 BETA (2020-02-15)
 
 **Fix** Fix error while saving config.
