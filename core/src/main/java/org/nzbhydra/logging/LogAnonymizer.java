@@ -26,8 +26,8 @@ public class LogAnonymizer {
     private static final String IPV6_PATTERN = "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))(%\\d+)?";
     private static final String IPV4_PATTERN = "\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b";
 
-    @Autowired
-    private LogContentProvider logContentProvider;
+    private static final HashFunction hashFunction = Hashing.goodFastHash(20);
+
     @Autowired
     private ConfigProvider configProvider;
 
@@ -40,15 +40,19 @@ public class LogAnonymizer {
         for (UserAuthConfig userAuthConfig : configProvider.getBaseConfig().getAuth().getUsers()) {
             logger.debug("Removing username from log");
             log = log.replaceAll("(?i)(user|username)([=:])" + userAuthConfig.getUsername(), "$1$2<USERNAME>");
+
+            if (userAuthConfig.getToken() != null) {
+                logger.debug("Removing auth token from log");
+                log = log.replace(userAuthConfig.getToken(), "<Token:" + hashFunction.hashString(userAuthConfig.getToken(), Charset.defaultCharset()).toString() + ">");
+            }
         }
         for (IndexerConfig indexerConfig : configProvider.getBaseConfig().getIndexers()) {
             if (Strings.isNullOrEmpty(indexerConfig.getApiKey()) || indexerConfig.getApiKey().length() < 5) {
                 continue;
             }
             logger.debug("Removing API key for indexer {} from log", indexerConfig.getName());
-            log = log.replaceAll(indexerConfig.getApiKey(), "<APIKEY>");
+            log = log.replace(indexerConfig.getApiKey(), "<APIKEY>");
         }
-
 
         logger.debug("Removing URL username/password from log");
         log = log.replaceAll("(https?):\\/\\/((.+?)(:(.+?)|)@)", "$1://<USERNAME>:<PASSWORD>@");
@@ -76,7 +80,6 @@ public class LogAnonymizer {
     private String replaceWithHashedValues(String log, String regex, final String tag) {
         Pattern ipPattern = Pattern.compile(regex);
         Matcher matcher = ipPattern.matcher(log);
-        HashFunction hashFunction = Hashing.goodFastHash(20);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             if (matcher.group(0).equals("127.0.0.1") || matcher.group(0).startsWith("192.168") || matcher.group(0).startsWith("10.")) {

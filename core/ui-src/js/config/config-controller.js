@@ -90,7 +90,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             var title;
             if (errorMessages.length > 0) { //Actual errors which cannot be ignored
                 title = "Config validation failed";
-                message = '<span class="error">The following errors have been found in your config. They need to be fixed.<ul>';
+                message = '<span class="error-message">The following errors have been found in your config. They need to be fixed.<ul>';
                 message = extendMessageWithList(message, response.data.errorMessages);
                 if (warningMessages.length > 0) {
                     message += '<br><span class="warning">The following warnings were found. You can ignore them if you wish.<ul>';

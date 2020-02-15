@@ -28,9 +28,12 @@ import org.nzbhydra.config.ValidatingConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @ConfigurationProperties
@@ -77,6 +80,13 @@ public class AuthConfig extends ValidatingConfig<AuthConfig> {
         }
         if (!duplicateUsernames.isEmpty()) {
             errors.add("The following user names are not unique: " + Joiner.on(", ").join(duplicateUsernames));
+        }
+
+        Map<String, List<UserAuthConfig>> usersByTokens = users.stream().filter(x -> x.getToken() != null).collect(Collectors.groupingBy(UserAuthConfig::getToken));
+        Set<String> usersWithDuplicateTokens = usersByTokens.values().stream().filter(x -> x.size() > 1).flatMap(Collection::stream).map(UserAuthConfig::getUsername).collect(Collectors.toSet());
+
+        if (!usersWithDuplicateTokens.isEmpty()) {
+            errors.add("The following user names have duplicate tokens: " + Joiner.on(", ").join(usersWithDuplicateTokens));
         }
 
         return new ConfigValidationResult(errors.isEmpty(), isRestartNeeded(oldConfig.getAuth()), errors, warnings);

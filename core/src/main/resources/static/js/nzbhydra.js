@@ -713,6 +713,22 @@ nzbhydraapp.filter('dereferer', ["ConfigService", function (ConfigService) {
     }
 }]);
 
+nzbhydraapp.filter('derefererExtracting', ["ConfigService", function (ConfigService) {
+    return function (aString) {
+        if (!ConfigService.getSafe().dereferer || !aString) {
+            return aString
+        }
+        var matches = aString.match(/(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/);
+        if (matches === null) {
+            return aString;
+        }
+
+        aString = aString.replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+
+        return aString;
+    }
+}]);
+
 nzbhydraapp.filter('binsearch', ["ConfigService", function (ConfigService) {
     return function (url) {
         return "http://binsearch.info/?q=" + encodeURIComponent(url) + "&max=100&adv_age=3000&server=";
@@ -4676,7 +4692,6 @@ angular
         formlyConfigProvider.setType({
             name: 'help',
             template: [
-                //'<div class="panel panel-default" style="margin-top: ' + options.templateOptions.marginTop + 'margin-bottom:' + options.templateOptions.marginBottom + ';">',
                 '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body {{options.templateOptions.class}}">',
                 '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line }}</h5></div>',
@@ -4756,9 +4771,10 @@ angular
                 $scope.generate = function () {
                     var result = "";
                     var length = 24;
-                    var chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+                    var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                     for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
                     $scope.model[$scope.options.key] = result;
+                    $scope.form.$setDirty(true);
                 }
             }
         });
@@ -5215,7 +5231,7 @@ function ConfigFields($injector) {
                                 label: 'Port',
                                 required: true,
                                 placeholder: '5076',
-                                help: 'Requires restart'
+                                help: 'Requires restart.'
                             },
                             validators: {
                                 port: regexValidator(/^\d{1,5}$/, "is no valid port", true)
@@ -5361,7 +5377,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'select',
                                 label: 'Theme',
-                                help: 'Reload page after restart',
+                                help: 'Reload page after restart.',
                                 options: [
                                     {name: 'Grey', value: 'grey'},
                                     {name: 'Bright', value: 'bright'},
@@ -5375,13 +5391,12 @@ function ConfigFields($injector) {
                     wrapper: 'fieldset',
                     templateOptions: {label: 'Security'},
                     fieldGroup: [
-
                         {
                             key: 'apiKey',
                             type: 'horizontalApiKeyInput',
                             templateOptions: {
                                 label: 'API key',
-                                help: 'Alphanumeric only',
+                                help: 'Alphanumeric only.',
                                 required: true
                             },
                             validators: {
@@ -5402,7 +5417,7 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Verify SSL certificates',
-                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
+                                help: 'If enabled only valid/known SSL certificates will be accepted when accessing indexers. Change requires restart. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.'
                             }
                         },
                         {
@@ -5420,7 +5435,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Disable SNI',
-                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>'
+                                help: 'Add a host if you get an "unrecognized_name" error. Apply words with return key. See <a href="https://github.com/theotherp/nzbhydra2/wiki/SSL-verification-errors" target="_blank">wiki</a>.'
                             }
                         },
                         {
@@ -5428,7 +5443,7 @@ function ConfigFields($injector) {
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 label: 'Use CSRF protection',
-                                help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>'
+                                help: 'Use <a href="https://en.wikipedia.org/wiki/Cross-site_request_forgery" target="_blank">CSRF protection</a>.'
                             }
                         }
                     ]
@@ -5460,7 +5475,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'number',
                                 label: 'Max log history',
-                                help: 'How many daily log files will be kept'
+                                help: 'How many daily log files will be kept.'
                             }
                         },
                         {
@@ -5492,7 +5507,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Map hosts',
-                                help: 'Try to map logged IP addresses to host names'
+                                help: 'Try to map logged IP addresses to host names.'
                             }
                         },
                         {
@@ -5515,7 +5530,7 @@ function ConfigFields($injector) {
                                     {name: 'Username', value: 'USERNAME'},
                                     {name: 'None', value: 'NONE'}
                                 ],
-                                help: 'Only affects if value is displayed in the search/download history'
+                                help: 'Only affects if value is displayed in the search/download history.'
                             }
                         },
                         {
@@ -5523,7 +5538,7 @@ function ConfigFields($injector) {
                             type: 'horizontalMultiselect',
                             templateOptions: {
                                 label: 'Log markers',
-                                help: 'Select certain sections for more output on debug level',
+                                help: 'Select certain sections for more output on debug level.',
                                 options: [
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
@@ -5712,7 +5727,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Transform newznab categories',
-                                help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches'
+                                help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches.'
                             }
                         },
                         {
@@ -5954,7 +5969,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'User agent',
-                                help: 'Used when accessing indexers',
+                                help: 'Used when accessing indexers.',
                                 required: true
                             }
                         },
@@ -6103,7 +6118,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'text',
                                 label: 'Wrap API errors in empty results page',
-                                help: 'When enabled accessing tools will think the search was completed successfully but without results'
+                                help: 'When enabled accessing tools will think the search was completed successfully but without results.'
                             }
                         },
                         {
@@ -6146,7 +6161,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Use original categories',
-                                help: 'Enable to use the category descriptions provided by the indexer'
+                                help: 'Enable to use the category descriptions provided by the indexer.'
                             }
                         },
                         {
@@ -6215,7 +6230,7 @@ function ConfigFields($injector) {
                                     text: 'weeks'
                                 },
                                 min: 1,
-                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit'
+                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit.'
                             }
                         },
                         {
@@ -6224,7 +6239,7 @@ function ConfigFields($injector) {
                             templateOptions: {
                                 type: 'switch',
                                 label: 'Show quick filter',
-                                help: 'Show quick filter buttons for movie and TV results'
+                                help: 'Show quick filter buttons for movie and TV results.'
                             }
                         },
                         {
@@ -6278,7 +6293,7 @@ function ConfigFields($injector) {
                                 templateOptions: {
                                     type: 'text',
                                     label: 'Name',
-                                    help: 'Renaming categories might cause problems with repeating searches from the history',
+                                    help: 'Renaming categories might cause problems with repeating searches from the history.',
                                     required: true
                                 }
                             },
@@ -6526,7 +6541,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Restrict searching',
-                        help: 'Restrict access to searching'
+                        help: 'Restrict access to searching.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6538,7 +6553,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Restrict stats',
-                        help: 'Restrict access to stats'
+                        help: 'Restrict access to stats.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6550,7 +6565,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Restrict admin',
-                        help: 'Restrict access to admin functions'
+                        help: 'Restrict access to admin functions.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6562,7 +6577,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Restrict NZB details & DL',
-                        help: 'Restrict NZB details, comments and download links'
+                        help: 'Restrict NZB details, comments and download links.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6574,7 +6589,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Restrict indexer selection box',
-                        help: 'Restrict visibility of indexer selection box in search. Affects only GUI'
+                        help: 'Restrict visibility of indexer selection box in search. Affects only GUI.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6586,7 +6601,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Remember users',
-                        help: 'Remember users with cookie for 14 days'
+                        help: 'Remember users with cookie for 14 days.'
                     },
                     hideExpression: function () {
                         return rootModel.auth.authType === "NONE";
@@ -6598,7 +6613,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'number',
                         label: 'Cookie expiry',
-                        help: 'How long users are remembered',
+                        help: 'How long users are remembered.',
                         addonRight: {
                             text: 'days'
                         }
@@ -6610,7 +6625,7 @@ function ConfigFields($injector) {
                     templateOptions: {
                         type: 'switch',
                         label: 'Allow stats access',
-                        help: 'Allow access to stats via external API'
+                        help: 'Allow access to stats via external API.'
                     }
                 },
                 {
@@ -6621,7 +6636,6 @@ function ConfigFields($injector) {
                         return rootModel.auth.authType === "NONE";
                     },
                     templateOptions: {
-
                         btnText: 'Add new user',
                         altLegendText: 'Authless',
                         fields: [
@@ -6633,15 +6647,31 @@ function ConfigFields($injector) {
                                     label: 'Username',
                                     required: true
                                 }
-
                             },
                             {
                                 key: 'password',
                                 type: 'passwordSwitch',
                                 templateOptions: {
                                     type: 'password',
-                                    label: 'Password',
-                                    required: true
+                                    label: 'Password'
+                                },
+                                expressionProperties: {
+                                    'templateOptions.required': 'model.token === null || model.token === undefined || model.token === ""'
+                                }
+                            },
+                            {
+                                key: 'token',
+                                type: 'horizontalApiKeyInput',
+                                templateOptions: {
+                                    type: 'text',
+                                    label: 'Token',
+                                    help: 'Send with <a href="https://www.oauth.com/oauth2-servers/making-authenticated-requests/" target="_blank">(X-)Authorization header</a>. Must be alphanumeric.'
+                                },
+                                expressionProperties: {
+                                    'templateOptions.required': 'model.password === null || model.password === undefined || model.password === ""'
+                                },
+                                validators: {
+                                    token: regexValidator(/^[a-zA-Z0-9]*$/, "Token must only contain numbers and digits", false)
                                 }
                             },
                             {
@@ -6683,6 +6713,7 @@ function ConfigFields($injector) {
                         defaultModel: {
                             username: null,
                             password: null,
+                            token: null,
                             maySeeStats: true,
                             maySeeAdmin: true,
                             maySeeDetailsDl: true,
@@ -6727,7 +6758,6 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
         }
     });
 }
-
 
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl", "$window"];angular
     .module('nzbhydraApp')
@@ -6821,7 +6851,7 @@ function ConfigController($scope, $http, activeTab, ConfigService, config, Downl
             var title;
             if (errorMessages.length > 0) { //Actual errors which cannot be ignored
                 title = "Config validation failed";
-                message = '<span class="error">The following errors have been found in your config. They need to be fixed.<ul>';
+                message = '<span class="error-message">The following errors have been found in your config. They need to be fixed.<ul>';
                 message = extendMessageWithList(message, response.data.errorMessages);
                 if (warningMessages.length > 0) {
                     message += '<br><span class="warning">The following warnings were found. You can ignore them if you wish.<ul>';

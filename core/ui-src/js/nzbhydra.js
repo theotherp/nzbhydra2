@@ -713,6 +713,22 @@ nzbhydraapp.filter('dereferer', function (ConfigService) {
     }
 });
 
+nzbhydraapp.filter('derefererExtracting', function (ConfigService) {
+    return function (aString) {
+        if (!ConfigService.getSafe().dereferer || !aString) {
+            return aString
+        }
+        var matches = aString.match(/(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?/);
+        if (matches === null) {
+            return aString;
+        }
+
+        aString = aString.replace(matches[0], ConfigService.getSafe().dereferer.replace("$s", escape(matches[0])))
+
+        return aString;
+    }
+});
+
 nzbhydraapp.filter('binsearch', function (ConfigService) {
     return function (url) {
         return "http://binsearch.info/?q=" + encodeURIComponent(url) + "&max=100&adv_age=3000&server=";

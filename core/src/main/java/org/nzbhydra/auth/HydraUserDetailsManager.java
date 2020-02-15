@@ -28,16 +28,15 @@ public class HydraUserDetailsManager implements UserDetailsManager {
     private static final Logger logger = LoggerFactory.getLogger(HydraUserDetailsManager.class);
 
     private final Map<String, UserDetails> users = new HashMap<>();
+    private final Map<String, UserDetails> usersByToken = new HashMap<>();
 
     @Autowired
     private LoginAndAccessAttemptService attemptService;
-    @Autowired
-    private AuthAndAccessEventHandler authAndAccessEventHandler;
-
 
     public HydraUserDetailsManager(@Autowired BaseConfig baseConfig) {
         updateUsers(baseConfig.getAuth());
     }
+
 
     private void updateUsers(AuthConfig authConfig) {
         users.clear();
@@ -63,7 +62,8 @@ public class HydraUserDetailsManager implements UserDetailsManager {
             }
             userRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
             User user = new User(userAuthConfig.getUsername(), userAuthConfig.getPassword(), userRoles);
-            users.put(userAuthConfig.getUsername().toLowerCase(), user);
+            users.put(userAuthConfig.getUsername(), user);
+            usersByToken.put(userAuthConfig.getToken(), user);
         }
     }
 
@@ -98,10 +98,27 @@ public class HydraUserDetailsManager implements UserDetailsManager {
             logger.warn("Blocking access from IP {} because the maximum amount of attempts was reached", SessionStorage.IP.get());
             throw new RuntimeException("IP " + SessionStorage.IP.get() + " is currently blocked");
         }
-        UserDetails user = users.get(username.toLowerCase());
+        UserDetails user = users.get(username);
 
         if (user == null) {
             throw new UsernameNotFoundException(username);
+        }
+
+        //Copied from super method, no idea why we do this
+        return new User(user.getUsername(), user.getPassword(), user.isEnabled(),
+                user.isAccountNonExpired(), user.isCredentialsNonExpired(),
+                user.isAccountNonLocked(), user.getAuthorities());
+    }
+
+    public UserDetails loadUserByToken(String token) {
+        if (SessionStorage.IP.get() != null && attemptService.isBlocked(SessionStorage.IP.get())) { //In some rare cases the IP might've not yet been set
+            logger.warn("Blocking access from IP {} because the maximum amount of attempts was reached", SessionStorage.IP.get());
+            throw new RuntimeException("IP " + SessionStorage.IP.get() + " is currently blocked");
+        }
+        UserDetails user = usersByToken.get(token);
+
+        if (user == null) {
+            throw new UsernameNotFoundException("<token>");
         }
 
         //Copied from super method, no idea why we do this

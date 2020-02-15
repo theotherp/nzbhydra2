@@ -55,7 +55,6 @@ angular
         formlyConfigProvider.setType({
             name: 'help',
             template: [
-                //'<div class="panel panel-default" style="margin-top: ' + options.templateOptions.marginTop + 'margin-bottom:' + options.templateOptions.marginBottom + ';">',
                 '<div class="panel panel-default" style="margin-top: {{options.templateOptions.marginTop}}; margin-bottom: {{options.templateOptions.marginBottom}} ;">',
                 '<div class="panel-body {{options.templateOptions.class}}">',
                 '<div ng-repeat="line in options.templateOptions.lines"><h5>{{ line }}</h5></div>',
@@ -135,9 +134,10 @@ angular
                 $scope.generate = function () {
                     var result = "";
                     var length = 24;
-                    var chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+                    var chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
                     for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
                     $scope.model[$scope.options.key] = result;
+                    $scope.form.$setDirty(true);
                 }
             }
         });

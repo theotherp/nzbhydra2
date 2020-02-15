@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
@@ -97,8 +98,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .and();
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
-
         }
+        http.addFilterAfter(new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager), BasicAuthenticationFilter.class);
+
+
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
     }
 

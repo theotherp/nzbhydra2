@@ -35,6 +35,8 @@ public class UserAuthConfig extends ValidatingConfig<UserAuthConfig> {
     private String username;
     @SensitiveData
     private String password;
+    @SensitiveData
+    private String token;
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, UserAuthConfig newConfig, BaseConfig newBaseConfig) {

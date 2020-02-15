@@ -73,7 +73,7 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
         if (!anonymousUserRoles.isEmpty()) {
             anonymousUserRoles.add("ROLE_ANONYMOUS");
         }
-        authorities = AuthorityUtils.createAuthorityList(anonymousUserRoles.toArray(new String[anonymousUserRoles.size()]));
+        authorities = AuthorityUtils.createAuthorityList(anonymousUserRoles.toArray(new String[0]));
     }
 
 

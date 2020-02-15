@@ -3,11 +3,23 @@
     "version": "v2.13.8",
     "changes": [
       {
+        "type": "feature",
+        "text": "Allow authorization via predefined OAuth2 / (X-)Authorization header. The token must be unique for each user in order to identify him."
+      },
+      {
         "type": "fix",
         "text": "Improve matching of downloader history entries."
+      },
+      {
+        "type": "fix",
+        "text": "Use dereferer for links in config help texts."
+      },
+      {
+        "type": "fix",
+        "text": "Improve readability of error messages in dark and grey themes."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.13.7",
