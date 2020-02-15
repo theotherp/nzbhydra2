@@ -4,7 +4,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -87,9 +93,11 @@ public class SetReleaseFinalMojo extends AbstractMojo {
 
 
         org.nzbhydra.github.mavenreleaseplugin.Release release;
-        String url = githubReleasesUrl + "/tags/" + version + "?access_token=" + githubToken;
+        String url = githubReleasesUrl + "/tags/" + version;
         getLog().info("Calling URL " + url);
-        try (Response response = client.newCall(new Request.Builder().url(url).build()).execute()) {
+        Request.Builder callBuilder = new Request.Builder().url(url);
+        callBuilder.header("Authorization", "token " + githubToken);
+        try (Response response = client.newCall(callBuilder.build()).execute()) {
             if (!response.isSuccessful()) {
                 throw new MojoExecutionException("Unable to find release with tag name " + version + ": " + response.message());
             }
@@ -120,9 +128,10 @@ public class SetReleaseFinalMojo extends AbstractMojo {
     private void setReleaseFinal(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest, org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
         getLog().info("Setting release final");
         releaseRequest.setPrerelease(false);
-        String url = release.getUrl() + "?access_token=" + githubToken;
-        getLog().info("Calling URL " + url);
-        Call call = client.newCall(new Request.Builder().url(url).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
+        getLog().info("Calling URL " + release.getUrl());
+        Request.Builder requestBuilder = new Request.Builder().url(release.getUrl()).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest)));
+        requestBuilder.header("Authorization", "token " + githubToken);
+        Call call = client.newCall(requestBuilder.build());
         Response response = call.execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to set release final Github returned code " + response.code() + " and message: " + response.message());

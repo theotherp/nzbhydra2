@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
 import okhttp3.Request.Builder;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -142,12 +146,13 @@ public class ReleaseMojo extends AbstractMojo {
 
     private org.nzbhydra.github.mavenreleaseplugin.Release createRelease(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest) throws IOException, MojoExecutionException {
         getLog().info("Creating release in draft mode using base URL " + githubReleasesUrl);
-        String url = githubReleasesUrl + "?access_token=" + githubToken;
         String requestBody = objectMapper.writeValueAsString(releaseRequest);
-        Call call = client.newCall(new Builder().url(url).post(RequestBody.create(MediaType.parse("application/json"), requestBody)).build());
+        Builder callBuilder = new Builder().url(githubReleasesUrl).post(RequestBody.create(MediaType.parse("application/json"), requestBody));
+        callBuilder.header("Authorization", "token " + githubToken);
+        Call call = client.newCall(callBuilder.build());
         Response response = call.execute();
         if (!response.isSuccessful() || response.body() == null) {
-            throw new MojoExecutionException("When trying to create release with URL " + url + " Github returned code " + response.code() + " and message: " + response.message());
+            throw new MojoExecutionException("When trying to create release with URL " + githubReleasesUrl + " Github returned code " + response.code() + " and message: " + response.message());
         }
         String body = response.body().string();
         response.body().close();
@@ -169,7 +174,9 @@ public class ReleaseMojo extends AbstractMojo {
 
         Response response = null;
         try {
-            response = client.newCall(new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
+            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(windowsAsset.length())).url(uploadUrl + "?name=" + name);
+            callBuilder.header("Authorization", "token " + githubToken);
+            response = client.newCall(callBuilder
                     .post(
                             RequestBody.create(MediaType.parse("application/zip"), windowsAsset))
                     .build()).execute();
@@ -186,14 +193,16 @@ public class ReleaseMojo extends AbstractMojo {
         getLog().info("Uploading linux asset to " + uploadUrl);
         name = linuxAsset.getName();
         try {
-            response = client.newCall(new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name + "&access_token=" + githubToken)
+            Builder callBuilder = new Builder().header("Content-Length", String.valueOf(linuxAsset.length())).url(uploadUrl + "?name=" + name);
+            callBuilder.header("Authorization", "token " + githubToken);
+            response = client.newCall(callBuilder
                     .post(
                             RequestBody.create(MediaType.parse("application/gzip"), linuxAsset))
                     .build()).execute();
-        if (!response.isSuccessful()) {
-            throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
-        }
-        getLog().info("Successfully uploaded linux asset");
+            if (!response.isSuccessful()) {
+                throw new MojoExecutionException("When trying to upload linux asset Github returned code " + response.code() + " and message: " + response.message());
+            }
+            getLog().info("Successfully uploaded linux asset");
         } catch (IOException e) {
             getLog().error("Error while uploading linux asset", e);
             throw new MojoExecutionException("When trying to upload linux asset the following error occurred: " + e.getMessage());
@@ -204,8 +213,9 @@ public class ReleaseMojo extends AbstractMojo {
     private void setReleaseEffective(org.nzbhydra.github.mavenreleaseplugin.ReleaseRequest releaseRequest, org.nzbhydra.github.mavenreleaseplugin.Release release) throws IOException, MojoExecutionException {
         getLog().info("Setting release effective");
         releaseRequest.setDraft(false);
-        String url = release.getUrl() + "?access_token=" + githubToken;
-        Call call = client.newCall(new Builder().url(url).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest))).build());
+        Builder callBuilder = new Builder().url(release.getUrl()).patch(RequestBody.create(MediaType.parse("application/json"), objectMapper.writeValueAsString(releaseRequest)));
+        callBuilder.header("Authorization", "token " + githubToken);
+        Call call = client.newCall(callBuilder.build());
         Response response = call.execute();
         if (!response.isSuccessful()) {
             throw new MojoExecutionException("When trying to set release effective Github returned code " + response.code() + " and message: " + response.message());

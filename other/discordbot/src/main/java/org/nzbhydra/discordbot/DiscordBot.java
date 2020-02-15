@@ -172,7 +172,9 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     private List<Release> getReleases() throws IOException {
-        Response response = new OkHttpClient.Builder().build().newCall(new Request.Builder().url("https://api.github.com/repos/theotherp/nzbhydra2/releases" + "?access_token=" + githubToken).build()).execute();
+        Request.Builder requestBuilder = new Request.Builder().url("https://api.github.com/repos/theotherp/nzbhydra2/releases");
+        requestBuilder.header("Authorization", "token " + githubToken);
+        Response response = new OkHttpClient.Builder().build().newCall(requestBuilder.build()).execute();
         if (!response.isSuccessful()) {
             throw new RuntimeException(response.message());
         }

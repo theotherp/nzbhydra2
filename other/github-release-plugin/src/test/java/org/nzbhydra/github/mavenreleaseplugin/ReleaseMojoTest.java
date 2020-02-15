@@ -104,12 +104,15 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
         //Uploading the assets
         RecordedRequest windowsAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(windowsAssetUploadRequest.getPath(), windowsAssetUploadRequest.getPath().contains("releases/1/assets?name=windowsAsset.txt"));
+        assertEquals(windowsAssetUploadRequest.getHeader("Authorization"), "token token");
         RecordedRequest linuxAssetUploadRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(linuxAssetUploadRequest.getPath(), linuxAssetUploadRequest.getPath().contains("releases/1/assets?name=linuxAsset.txt"));
+        assertEquals(linuxAssetUploadRequest.getHeader("Authorization"), "token token");
 
         //Setting it effective
         RecordedRequest setEffectiveRequest = server.takeRequest(2, TimeUnit.SECONDS);
         assertTrue(setEffectiveRequest.getPath(), setEffectiveRequest.getPath().contains("releases/1"));
+        assertEquals(setEffectiveRequest.getHeader("Authorization"), "token token");
         String body = new String(setEffectiveRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
         assertFalse(bodyJson.isDraft());
@@ -143,7 +146,8 @@ public class ReleaseMojoTest extends AbstractMojoTestCase {
 
     protected void verifyDraftReleaseIsCreated(MockWebServer server) throws InterruptedException, IOException {
         RecordedRequest releaseRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(releaseRequest.getRequestLine(), releaseRequest.getPath().endsWith("access_token=token"));
+        assertFalse(releaseRequest.getRequestLine(), releaseRequest.getPath().contains("access_token"));
+        assertEquals(releaseRequest.getHeader("Authorization"), "token token");
 
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
