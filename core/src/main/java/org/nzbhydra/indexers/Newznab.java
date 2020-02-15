@@ -37,6 +37,7 @@ import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.HasNfo;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
+import org.nzbhydra.searching.searchrequests.InternalData;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,7 +127,10 @@ public class Newznab extends Indexer<Xml> {
 
         String query = "";
 
-        componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
+        if (searchRequest.getInternalData().getFallbackState() != InternalData.FallbackState.REQUESTED) {
+            //Don't provide search IDs when a fallback to query generation was requested
+            componentsBuilder = extendQueryUrlWithSearchIds(searchRequest, componentsBuilder);
+        }
         query = generateQueryIfApplicable(searchRequest, query);
         verifyIdentifiersNotUnhandled(searchRequest, componentsBuilder, query);
         query = addRequiredAndforbiddenWordsToQuery(searchRequest, query);
