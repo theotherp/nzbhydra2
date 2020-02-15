@@ -1,3 +1,11 @@
+### v2.13.12 BETA (2020-02-15)
+
+**Fix** Don't use value of X-Forwarded-For when recognizing secure IPs.
+
+**Fix** Don't use search IDs in fallback queries. The indexer already returned 0 results for the last search and providing them may prevent the query from returning results.
+
+
+
 ### v2.13.11 BETA (2020-02-15)
 
 **Fix** Fix invalid config created by v2.13.9.
