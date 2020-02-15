@@ -1,3 +1,9 @@
+### v2.13.9 BETA (2020-02-15)
+
+**Feature** Replace auth token implementation with auth header. You may define an header that provides a username and a range of IP addresses from which this header will be accepted. The user will automatically be logged in.
+
+
+
 ### v2.13.8 BETA (2020-02-15)
 
 **Feature** Allow authorization via predefined OAuth2 / (X-)Authorization header. The token must be unique for each user in order to identify him.
