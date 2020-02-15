@@ -19,6 +19,7 @@ package org.nzbhydra.auth;
 import com.google.common.net.InetAddresses;
 import org.nzbhydra.config.auth.AuthConfig;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
+import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,19 +61,20 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
             return;
         }
 
-        long ip = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(request.getRemoteAddr()));
+        String ip = SessionStorage.originalIp.get();
+        long ipAsLong = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(ip));
         boolean isInSecureRange = authConfig.getAuthHeaderIpRanges().stream().anyMatch(x -> {
             if (!x.contains("-")) {
-                return x.equals(request.getRemoteAddr());
+                return x.equals(ip);
             }
             String[] split = x.split("-");
             long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
             long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
-            return ipLow <= ip && ip <= ipHigh;
+            return ipLow <= ipAsLong && ipAsLong <= ipHigh;
         });
 
         if (!isInSecureRange) {
-            handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + request.getRemoteAddr());
+            handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + ip);
             return;
         }
 

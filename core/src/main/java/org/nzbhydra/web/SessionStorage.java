@@ -11,6 +11,8 @@ public class SessionStorage {
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> IP =
             ThreadLocal.withInitial(() -> null);
+    public static final ThreadLocal<String> originalIp =
+            ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> userAgent =
             ThreadLocal.withInitial(() -> null);
     public static final ThreadLocal<String> requestUrl =

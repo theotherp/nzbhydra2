@@ -18,11 +18,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -103,6 +105,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
         }
         headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
+        http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
+        http.addFilterAfter(new ForwardedHeaderFilter(), ForwardedForRecognizingFilter.class);
         http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
 
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
@@ -112,7 +116,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) {
         web.ignoring().antMatchers("/static/**");
-
     }
 
     private void enableAnonymousAccessIfConfigured(HttpSecurity http) {

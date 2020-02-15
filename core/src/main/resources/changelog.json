@@ -5,6 +5,10 @@
     "changes": [
       {
         "type": "fix",
+        "text": "Don't use value of X-Forwarded-For when recognizing secure IPs."
+      },
+      {
+        "type": "fix",
         "text": "Don't use search IDs in fallback queries. The indexer already returned 0 results for the last search and providing them may prevent the query from returning results."
       }
     ],
