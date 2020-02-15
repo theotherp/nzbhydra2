@@ -14,7 +14,6 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.config.downloading.DownloaderType;
-import org.nzbhydra.downloading.FileDownloadEntity;
 import org.nzbhydra.downloading.FileDownloadStatus;
 import org.nzbhydra.downloading.downloaders.Converters;
 import org.nzbhydra.downloading.downloaders.Downloader;
@@ -279,25 +278,6 @@ public class Sabnzbd extends Downloader {
     protected FileDownloadStatus getDownloadStatusFromDownloaderEntry(DownloaderEntry entry, StatusCheckType statusCheckType) {
         return SABNZBD_STATUS_TO_HYDRA_STATUS.get(entry.getStatus());
     }
-
-    @Override
-    protected boolean isDownloadMatchingDownloaderEntry(FileDownloadEntity download, DownloaderEntry entry) {
-        if (download.getExternalId() != null) {
-            boolean idMatches = download.getExternalId() != null && download.getExternalId().equals(entry.getNzbId());
-            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id match: {}. ", entry, download, idMatches);
-            return idMatches;
-        }
-        if (guidExternalIds.containsKey(download.getSearchResult().getId())) {
-            boolean idFromMapMatches = guidExternalIds.containsKey(download.getSearchResult().getId()) && guidExternalIds.get(download.getSearchResult().getId()).equals(entry.getNzbId());
-            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Id map match: {}. ", entry, download, idFromMapMatches);
-            return idFromMapMatches;
-        }
-
-        boolean nameMatches = download.getSearchResult().getTitle() != null && download.getSearchResult().getTitle().equals(entry.getNzbName());
-        logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Trying to match downloader entry {} with download {}. Name match: {}. ", entry, download, nameMatches);
-        return nameMatches;
-    }
-
 
     @Override
     public GenericResponse checkConnection() {
