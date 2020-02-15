@@ -41,10 +41,6 @@ public class LogAnonymizer {
             logger.debug("Removing username from log");
             log = log.replaceAll("(?i)(user|username)([=:])" + userAuthConfig.getUsername(), "$1$2<USERNAME>");
 
-            if (userAuthConfig.getToken() != null) {
-                logger.debug("Removing auth token from log");
-                log = log.replace(userAuthConfig.getToken(), "<Token:" + hashFunction.hashString(userAuthConfig.getToken(), Charset.defaultCharset()).toString() + ">");
-            }
         }
         for (IndexerConfig indexerConfig : configProvider.getBaseConfig().getIndexers()) {
             if (Strings.isNullOrEmpty(indexerConfig.getApiKey()) || indexerConfig.getApiKey().length() < 5) {

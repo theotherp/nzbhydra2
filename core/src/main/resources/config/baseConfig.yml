@@ -1,5 +1,7 @@
 ---
 auth:
+  authToken: null
+  authTokenIpRanges: []
   authType: "NONE"
   rememberUsers: true
   rememberMeValidityDays: 14

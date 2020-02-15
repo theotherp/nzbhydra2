@@ -1,6 +1,7 @@
 package org.nzbhydra.auth;
 
 import org.nzbhydra.config.BaseConfig;
+import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.auth.AuthType;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
@@ -41,6 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private HydraUserDetailsManager hydraUserDetailsManager;
     @Autowired
     private AuthAndAccessEventHandler authAndAccessEventHandler;
+    private HeaderAuthenticationFilter headerAuthenticationFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -99,8 +102,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
         }
-        http.addFilterAfter(new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager), BasicAuthenticationFilter.class);
-
+        headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
+        http.addFilterAfter(headerAuthenticationFilter, BasicAuthenticationFilter.class);
 
         http.exceptionHandling().accessDeniedHandler(authAndAccessEventHandler);
     }
@@ -121,6 +124,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             }
         } catch (Exception e) {
             logger.error("Unable to configure anonymous access", e);
+        }
+    }
+
+    @EventListener
+    public void handleNewConfig(ConfigChangedEvent configChangedEvent) {
+        if (headerAuthenticationFilter != null) {
+            headerAuthenticationFilter.loadNewConfig(configChangedEvent.getNewConfig().getAuth());
         }
     }
 

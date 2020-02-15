@@ -303,7 +303,7 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         return null;
     }
 
-    private static long ipToLong(InetAddress ip) {
+    public static long ipToLong(InetAddress ip) {
         byte[] octets = ip.getAddress();
         long result = 0;
         for (byte octet : octets) {

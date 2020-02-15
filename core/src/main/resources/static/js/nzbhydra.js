@@ -5194,7 +5194,16 @@ function ConfigFields($injector) {
             expression: function ($viewValue, $modelValue) {
                 var value = $modelValue || $viewValue;
                 if (value) {
-                    return regex.test(value);
+                    if (Array.isArray(value)) {
+                        for (var i = 0; i < value.length; i++) {
+                            if (!regex.test(value[i])) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else {
+                        return regex.test(value);
+                    }
                 }
                 return !preventEmpty;
             },
@@ -6536,6 +6545,30 @@ function ConfigFields($injector) {
                     }
                 },
                 {
+                    key: 'authHeader',
+                    type: 'horizontalInput',
+                    templateOptions: {
+                        type: 'string',
+                        label: 'Auth header',
+                        help: 'Name of header that provides the username in requests from secure sources.'
+                    },
+                    hideExpression: function () {
+                        return rootModel.auth.authType === "NONE";
+                    }
+                },
+                {
+                    key: 'authHeaderIpRanges',
+                    type: 'horizontalChips',
+                    templateOptions: {
+                        type: 'text',
+                        label: 'Secure IP ranges',
+                        help: 'IP ranges from which the auth header will be accepted. Apply with return key. Use values like "192.168.0.1-192.168.0.100" or single IP addresses like "127.0.0.1"'
+                    },
+                    hideExpression: function () {
+                        return rootModel.auth.authType === "NONE" || rootModel.auth.authHeader === null || rootModel.auth.authHeader === undefined || rootModel.auth.authHeader === "";
+                    }
+                },
+                {
                     key: 'restrictSearch',
                     type: 'horizontalSwitch',
                     templateOptions: {
@@ -6653,25 +6686,8 @@ function ConfigFields($injector) {
                                 type: 'passwordSwitch',
                                 templateOptions: {
                                     type: 'password',
-                                    label: 'Password'
-                                },
-                                expressionProperties: {
-                                    'templateOptions.required': 'model.token === null || model.token === undefined || model.token === ""'
-                                }
-                            },
-                            {
-                                key: 'token',
-                                type: 'horizontalApiKeyInput',
-                                templateOptions: {
-                                    type: 'text',
-                                    label: 'Token',
-                                    help: 'Send with <a href="https://www.oauth.com/oauth2-servers/making-authenticated-requests/" target="_blank">(X-)Authorization header</a>. Must be alphanumeric.'
-                                },
-                                expressionProperties: {
-                                    'templateOptions.required': 'model.password === null || model.password === undefined || model.password === ""'
-                                },
-                                validators: {
-                                    token: regexValidator(/^[a-zA-Z0-9]*$/, "Token must only contain numbers and digits", false)
+                                    label: 'Password',
+                                    required: true
                                 }
                             },
                             {

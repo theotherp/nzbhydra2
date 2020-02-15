@@ -16,7 +16,9 @@
 
 package org.nzbhydra.auth;
 
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.net.InetAddresses;
+import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,50 +39,66 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(HeaderAuthenticationFilter.class);
 
-
     private HydraUserDetailsManager userDetailsManager;
+    private AuthConfig authConfig;
 
-    public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager) {
+    public HeaderAuthenticationFilter(AuthenticationManager authenticationManager, HydraUserDetailsManager userDetailsManager, AuthConfig authConfig) {
         super(authenticationManager);
         this.userDetailsManager = userDetailsManager;
+        this.authConfig = authConfig;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String header = request.getHeader("X-Authorization");
+        if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
+            chain.doFilter(request, response);
+            return;
+        }
+        String header = request.getHeader(authConfig.getAuthHeader());
         if (header == null) {
-            header = request.getHeader("Authorization");
-        }
-        if (header == null) {
             chain.doFilter(request, response);
             return;
         }
-        if (header.startsWith("Basic")) {
-            chain.doFilter(request, response);
-            return;
-        }
-        if (!header.startsWith("Bearer")) {
-            logger.warn("X-Authorization header provided without leading \"Bearer\"");
-            chain.doFilter(request, response);
-            return;
-        }
-        String token = StringUtils.removeStart(header, "Bearer").trim();
 
+        long ip = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(request.getRemoteAddr()));
+        boolean isInSecureRange = authConfig.getAuthHeaderIpRanges().stream().anyMatch(x -> {
+            if (!x.contains("-")) {
+                return x.equals(request.getRemoteAddr());
+            }
+            String[] split = x.split("-");
+            long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
+            long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
+            return ipLow <= ip && ip <= ipHigh;
+        });
+
+        if (!isInSecureRange) {
+            handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + request.getRemoteAddr());
+            return;
+        }
+
+        String username = header.trim();
         try {
-            UserDetails userDetails = userDetailsManager.loadUserByToken(token);
+            UserDetails userDetails = userDetailsManager.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             auth.setDetails(new HydraWebAuthenticationDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
             onSuccessfulAuthentication(request, response, auth);
         } catch (UsernameNotFoundException e) {
-            SecurityContextHolder.clearContext();
-            String msg = "Invalid token supplied with (X-)Authorization header";
-            BadCredentialsException badCredentialsException = new BadCredentialsException(msg);
-            onUnsuccessfulAuthentication(request, response, badCredentialsException);
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, msg);
+            handleInvalidAuth(request, response, "Invalid username provided with auth header");
             return;
         }
         chain.doFilter(request, response);
+    }
 
+    public void loadNewConfig(AuthConfig authConfig) {
+        this.authConfig = authConfig;
+    }
+
+    private void handleInvalidAuth(HttpServletRequest request, HttpServletResponse response, String msg) throws IOException {
+        SecurityContextHolder.clearContext();
+        BadCredentialsException badCredentialsException = new BadCredentialsException(msg);
+        onUnsuccessfulAuthentication(request, response, badCredentialsException);
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, msg);
+        logger.warn(msg);
     }
 }
