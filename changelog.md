@@ -1,6 +1,18 @@
+### v2.13.8 BETA (2020-02-15)
+
+**Feature** Allow authorization via predefined OAuth2 / (X-)Authorization header. The token must be unique for each user in order to identify him.
+
+**Fix** Improve matching of downloader history entries.
+
+**Fix** Use dereferer for links in config help texts.
+
+**Fix** Improve readability of error messages in dark and grey themes.
+
+
+
 ### v2.13.7 (2020-02-11)
 
-**Fix** Ruther extend logging if logging marker 'HTTP Server' is selected. Don't hide local IP addresses in log. Replace other IP files with hashes to hide them but make them comparable.
+**Fix** Further extend logging if logging marker 'HTTP Server' is selected. Don't hide local IP addresses in log. Replace other IP files with hashes to hide them but make them comparable.
 
 
 
