@@ -28,7 +28,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
 
     @SensitiveData
     private String apiKey = null;
-    private Integer configVersion = 9;
+    private Integer configVersion = 10;
     private Integer backupEveryXDays = 7;
     private boolean backupBeforeUpdate = true;
     private Integer deleteBackupsAfterWeeks = 4;
