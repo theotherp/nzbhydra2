@@ -1,3 +1,9 @@
+### v2.13.13 BETA (2020-02-17)
+
+**Fix** Redirect system.out to log file for SSL debug infos even on windows
+
+
+
 ### v2.13.12 BETA (2020-02-15)
 
 **Fix** Don't use value of X-Forwarded-For when recognizing secure IPs.
