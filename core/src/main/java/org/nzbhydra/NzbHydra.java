@@ -169,7 +169,6 @@ public class NzbHydra {
     }
 
 
-
     /**
      * Sets all properties referenced in application.properties so that they can be resolved
      */
@@ -192,17 +191,13 @@ public class NzbHydra {
             System.setProperty("logback.access.enabled", "false");
         }
 
-        if (baseConfig.getMain().getLogging().getMarkersToLog().contains("HTTPS")) {
+        if (baseConfig.getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTPS.getName())) {
             File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
             File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
             logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
             System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
-            String osName = System.getProperty("os.name");
-            boolean isOsWindows = osName.toLowerCase().contains("windows");
-            if (!isOsWindows) {
-                logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
-                System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
-            }
+            logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
+            System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
             System.setProperty("javax.net.debug", "ssl:handshake:verbose:keymanager:trustmanager");
         }
     }

@@ -75,7 +75,8 @@ public class SetReleaseFinalMojoTest extends AbstractMojoTestCase {
         server.takeRequest(2, TimeUnit.SECONDS);
 
         RecordedRequest releaseRequest = server.takeRequest(2, TimeUnit.SECONDS);
-        assertTrue(releaseRequest.getRequestLine(), releaseRequest.getPath().endsWith("access_token=token"));
+        assertFalse(releaseRequest.getRequestLine(), releaseRequest.getPath().contains("access_token=token"));
+        assertEquals(releaseRequest.getHeader("Authorization"), "token token");
 
         String body = new String(releaseRequest.getBody().readByteArray());
         Release bodyJson = objectMapper.readValue(body, Release.class);
