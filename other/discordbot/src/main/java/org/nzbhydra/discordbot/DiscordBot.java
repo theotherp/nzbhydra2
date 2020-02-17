@@ -71,53 +71,13 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-
-
         executorService.submit(new Runnable() {
             @Override
             public void run() {
                 if (alreadyPublishedVersions.isEmpty()) {
                     try {
                         loadAlreadyPublishedVersions(event);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                while (!Thread.interrupted()) {
-                    try {
-                        System.out.println("LOading releases");
-                        List<Release> releases = getReleases();
-                        for (Release release : releases) {
-                            if (alreadyPublishedVersions.contains(release.getTagName())) {
-                                continue;
-                            }
-                            if (release.getDraft()) {
-                                continue;
-                            }
-
-                            System.out.println("Publishing release of " + release.getTagName());
-
-                            TextChannel channel = getReleasesChannel(event);
-                                /*
-                                New release: v2.11.0 BETA
-
-                                Changelog:
-                                **Fix**: Some fix
-                                **Feature**: Some feature
-
-                                Link: https://github.com/theotherp/nzbhydra2/releases/tag/v2.11.0
-                                 */
-
-                            String messageBuilder =
-                                    release.getBody() +
-                                            "\n" +
-                                            release.getHtmlUrl();
-                            channel.sendMessage(messageBuilder).complete();
-                            alreadyPublishedVersions.add(release.getTagName());
-                        }
-
-
-                        Thread.sleep(60_000);
+                        runInLoop(event);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -125,6 +85,48 @@ public class DiscordBot extends ListenerAdapter {
 
             }
         });
+    }
+
+    private void runInLoop(ReadyEvent event) {
+        while (!Thread.interrupted()) {
+            try {
+                System.out.println("LOading releases");
+                List<Release> releases = getReleases();
+                for (Release release : releases) {
+                    if (alreadyPublishedVersions.contains(release.getTagName())) {
+                        continue;
+                    }
+                    if (release.getDraft()) {
+                        continue;
+                    }
+
+                    System.out.println("Publishing release of " + release.getTagName());
+
+                    TextChannel channel = getReleasesChannel(event);
+                        /*
+                        New release: v2.11.0 BETA
+
+                        Changelog:
+                        **Fix**: Some fix
+                        **Feature**: Some feature
+
+                        Link: https://github.com/theotherp/nzbhydra2/releases/tag/v2.11.0
+                         */
+
+                    String messageBuilder =
+                            release.getBody() +
+                                    "\n" +
+                                    release.getHtmlUrl();
+                    channel.sendMessage(messageBuilder).complete();
+                    alreadyPublishedVersions.add(release.getTagName());
+                }
+
+
+                Thread.sleep(60_000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void loadAlreadyPublishedVersions(ReadyEvent event) throws Exception {
