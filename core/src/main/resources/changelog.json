@@ -5,7 +5,7 @@
     "type" : "fix",
     "text" : "Redirect system.out to log file for SSL debug infos even on windows"
   } ],
-  "final" : false
+  "final" : true
 }, {
   "version" : "v2.13.12",
   "date" : "2020-02-15",
