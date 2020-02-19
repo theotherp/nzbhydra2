@@ -74,12 +74,11 @@ public class UrlCalculator {
     protected UriComponentsBuilder buildLocalBaseUriBuilder(HttpServletRequest request) {
         String scheme;
         String host;
-         int port = -1;
+        int port = -1;
         String path;
 
-        //Reverse proxies send the x-forwarded-proto header when HTTPS is enabled
-        if ("https".equalsIgnoreCase(request.getHeader("x-forwarded-proto"))) {
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme HTTPS because header x-forwarded-proto is set");
+        if (request.isSecure()) {
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme HTTPS because request is deemed secure");
             scheme = "https";
         } else if (Boolean.parseBoolean(environment.getProperty("server.ssl.enabled"))) {
             logger.debug(LoggingMarkers.URL_CALCULATION, "Using scheme HTTPS because header x-forwarded-proto is not set and built-in SSL is enabled");
@@ -89,46 +88,24 @@ public class UrlCalculator {
             scheme = "http";
         }
 
-        String forwardedHost = request.getHeader("x-forwarded-host"); //May look like this: mydomain.com:4000 or like this: mydomain.com
-        if (forwardedHost != null) {
-            String[] split = forwardedHost.split(":");
+        String hostHeader = request.getHeader("host"); //May look like this: mydomain.com:4000 or like this: mydomain.com
+        if (hostHeader == null) {
+            host = request.getServerName();
+            logger.warn("Header host not set. Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
+        } else {
+            String[] split = hostHeader.split(":");
             host = split[0];
             if (split.length > 1) {
-                port = Integer.valueOf(split[1]);
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from header x-forwarded-host {}", host, port, forwardedHost);
+                port = Integer.parseInt(split[1]);
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from host header {}", host, port, hostHeader);
             } else {
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from header x-forwarded-host {}", host, forwardedHost);
-            }
-        } else {
-            String hostHeader = request.getHeader("host");
-            if (hostHeader == null) {
-                host = request.getServerName();
-                logger.warn("Header host not set. Using {}. Please change your reverse proxy configuration. See https://github.com/theotherp/nzbhydra2/wiki/Exposing-Hydra-to-the-internet-and-using-reverse-proxies for more information", host);
-            } else {
-                String[] split = hostHeader.split(":");
-                host = split[0];
-                if (split.length > 1) {
-                    port = Integer.valueOf(split[1]);
-                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} and port {} from host header {}", host, port, hostHeader);
-                } else {
-                    logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", hostHeader);
-                }
+                logger.debug(LoggingMarkers.URL_CALCULATION, "Using host {} from host header", hostHeader);
             }
         }
+
         if (port == -1) {
-            String forwardedPort = request.getHeader("x-forwarded-port");
-            if (forwardedPort != null) {
-                port = Integer.valueOf(forwardedPort);
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} from header x-forwarded-port ", port);
-            }
-        }
-        if (port == -1) { //No x-forwarded-host or x-forwarded-port header found, use server port
-            if (request.getServerPort() != 80 && request.getServerPort() != 443) {
-                port = request.getServerPort();
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Using port {} from server", port);
-            } else {
-                logger.debug(LoggingMarkers.URL_CALCULATION, "Neither header x-forwarded-host nor x-forwarded-port set. Not explicitly setting port because it's {}", request.getServerPort());
-            }
+            port = request.getServerPort();
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using port {} ", port);
         }
 
         path = request.getContextPath();
@@ -168,7 +145,7 @@ public class UrlCalculator {
             }
 
             int port = serverPort;
-            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port", port);
+            logger.debug(LoggingMarkers.URL_CALCULATION, "Using configured port {}", port);
 
             boolean isSsl = environment.getProperty("server.ssl.enabled", Boolean.class);
             baseBuilder = UriComponentsBuilder.newInstance()
