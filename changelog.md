@@ -1,4 +1,10 @@
-### v2.13.13 BETA (2020-02-17)
+### v2.13.14 (2020-02-19)
+
+**Fix** Fix error in URL calculation, resulting in failing API downloads when other programs access Hydra via a reverse proxy with SSL.
+
+
+
+### v2.13.13 (2020-02-17)
 
 **Fix** Redirect system.out to log file for SSL debug infos even on windows
 
