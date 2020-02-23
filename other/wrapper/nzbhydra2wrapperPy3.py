@@ -38,6 +38,7 @@ file_logger = None
 logger.setLevel(LOGGER_DEFAULT_LEVEL)
 consoleLines = []
 
+
 def getBasePath():
     global basepath
     if basepath is not None:
@@ -109,7 +110,7 @@ def daemonize(pidfile, nopidfile):
     if not nopidfile:
         pid = str(os.getpid())
         try:
-            file(pidfile, 'w').write("%s\n" % pid)
+            open(pidfile, 'w').write("%s\n" % pid)
         except IOError as e:
             sys.stderr.write("Unable to write PID file: " + pidfile + ". Error: " + str(e.strerror) + " [" + str(e.errno) + "]")
             sys.exit(1)
@@ -121,9 +122,9 @@ def daemonize(pidfile, nopidfile):
     sys.stderr.flush()
 
     devnull = getattr(os, 'devnull', '/dev/null')
-    stdin = file(devnull, 'r')
-    stdout = file(devnull, 'a+')
-    stderr = file(devnull, 'a+')
+    stdin = open(devnull, 'r')
+    stdout = open(devnull, 'a+')
+    stderr = open(devnull, 'a+')
     os.dup2(stdin.fileno(), sys.stdin.fileno())
     os.dup2(stdout.fileno(), sys.stdout.fileno())
     os.dup2(stderr.fileno(), sys.stderr.fileno())
@@ -215,8 +216,8 @@ def restore():
         oldDatabaseFile = os.path.join(dataFolder, "database", "nzbhydra.mv.db")
         logger.info("Deleting old database file " + oldDatabaseFile)
         os.remove(oldDatabaseFile)
-    except Exception as e:
-        logger.critical("Error while deleting old data folder: %r", e)
+    except Exception as ex:
+        logger.critical("Error while deleting old data folder: %r", ex)
         sys.exit(-1)
     for f in os.listdir(restoreFolder):
         source = os.path.join(restoreFolder, f)
@@ -352,7 +353,7 @@ def startup():
                     xmx = line[index + 5:].rstrip("\n\r ")
                     break
             else:
-                logger.warn("Didn't find XMX in YAML file, using default of 256")
+                logger.warning("Didn't find XMX in YAML file, using default of 256")
                 xmx = 256
     else:
         logger.info("No file nzbhydra.yml found. Using 256M XMX")
@@ -443,7 +444,7 @@ def escape_parameter(is_windows, parameter):
 def list_files(startpath):
     for root, dirs, files in os.walk(startpath):
         level = root.replace(startpath, '').count(os.sep)
-        indent = ' ' * 4 * (level)
+        indent = ' ' * 4 * level
         logger.info('{}{}/'.format(indent, os.path.basename(root)))
         subindent = ' ' * 4 * (level + 1)
         for f in files:
@@ -476,19 +477,19 @@ def getJavaVersion(javaExecutable):
     # shell=true: pass string, shell=false: pass arguments
     try:
         lines = []
-        process = subprocess.Popen([javaExecutable, "-version"], shell=False, bufsize=-1, **subprocess_args())
+        javaProcess = subprocess.Popen([javaExecutable, "-version"], shell=False, bufsize=-1, **subprocess_args())
 
         # atexit.register(killProcess)
         while True:
             # Handle error first in case startup of main process returned only an error (on stderror)
-            nextline = process.stdout.readline().decode("ascii")
-            if nextline == '' and process.poll() is not None:
+            nextline = javaProcess.stdout.readline().decode("ascii")
+            if nextline == '' and javaProcess.poll() is not None:
                 break
             if nextline != "" and nextline != b'':
                 lines.append(nextline)
             else:
                 break
-        process.wait()
+        javaProcess.wait()
         if len(lines) == 0:
             raise Exception("Unable to get output from call to java -version")
         versionLine = lines[0].replace("\n", "").replace("\r", "")
@@ -498,7 +499,7 @@ def getJavaVersion(javaExecutable):
         javaMajor = int(match.group("major"))
         javaMinor = int(match.group("minor")) if match.group("minor") is not None else 0
         javaVersion = 0
-        if (javaMajor == 1 and javaMinor < 8) or (javaMajor > 1 and javaMajor < 8):
+        if (javaMajor == 1 and javaMinor < 8) or (1 < javaMajor < 8):
             logger.error("Found incompatible java version '" + versionLine + "'")
             sys.exit(-1)
         if javaMajor == 1 and javaMinor == 8:
@@ -507,8 +508,8 @@ def getJavaVersion(javaExecutable):
             javaVersion = javaMajor
         logger.info("Determined java version as '%d' from version string '%s'", javaVersion, versionLine)
         return javaVersion
-    except Exception as e:
-        logger.error("Unable to determine java version; make sure Java is installed and callable. Error message: " + str(e))
+    except Exception as ex:
+        logger.error("Unable to determine java version; make sure Java is installed and callable. Error message: " + str(ex))
         sys.exit(-1)
 
 
@@ -599,7 +600,7 @@ if __name__ == '__main__':
             except Exception as e:
                 controlCode = process.returncode
                 if not (args.version or args.repairdb):
-                    logger.warn("Unable to read control ID from %s: %s. Falling back to process return code %d", controlIdFilePath, e, controlCode)
+                    logger.warning("Unable to read control ID from %s: %s. Falling back to process return code %d", controlIdFilePath, e, controlCode)
             if os.path.exists(controlIdFilePath):
                 try:
                     logger.debug("Deleting old control ID file %s", controlIdFilePath)
@@ -618,7 +619,6 @@ if __name__ == '__main__':
                 logger.info("NZBHydra main process has terminated for restoration")
                 doStart = restore()
                 logger.info("Restoration successful")
-                doStart = True
             elif args.version or args.repairdb:
                 # Just quit without further ado, help was printed by main process
                 doStart = False
