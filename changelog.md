@@ -1,3 +1,9 @@
+### v2.14.1 (2020-02-23)
+
+**Fix** Fix failing startup of fresh instance on Linux. Thanks, hotio.
+
+
+
 ### v2.14.0 (2020-02-23)
 
 **Feature** Allow setting a default category to be preselected.
