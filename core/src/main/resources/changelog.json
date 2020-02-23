@@ -11,6 +11,10 @@
         "text": "Add supported SSL ciphers to debug infos output."
       },
       {
+        "type": "feature",
+        "text": "Update indexer presets."
+      },
+      {
         "type": "fix",
         "text": "Fix errors in py3 wrapper."
       }

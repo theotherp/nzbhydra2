@@ -127,7 +127,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -578,12 +578,8 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
 
     $scope.newznabPresets = [
         {
-            name: "6box",
-            host: "https://6box.me"
-        },
-        {
-            name: "6box spotweb",
-            host: "https://spotweb.6box.me"
+            name: "abNZB",
+            host: "https://abnzb.com/"
         },
         {
             name: "altHUB",
@@ -619,10 +615,6 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://www.miatrix.com"
         },
         {
-            name: "newz69.keagaming",
-            host: "https://newz69.keagaming.com"
-        },
-        {
             name: "NZB Finder",
             host: "https://nzbfinder.ws"
         },
@@ -647,46 +639,24 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             host: "https://www.nzbnoob.com"
         },
         {
+            name: "NzbNation",
+            host: "http://www.nzbnation.com/"
+        },
+        {
             name: "nzbplanet",
             host: "https://nzbplanet.net"
-        },
-        {
-            name: "NZBs.io",
-            host: "https://www.nzbs.io"
-        },
-        {
-            name: "oznzb",
-            host: "https://api.oznzb.com"
         },
         {
             name: "omgwtfnzbs",
             host: "https://api.omgwtfnzbs.me"
         },
         {
-            name: "Tabula-Rasa",
-            host: "https://www.tabula-rasa.pw/api/v1/"
+            name: "spotweb.com",
+            host: "https://spotweb.me"
         },
         {
-            allCapsChecked: true,
-            enabledForSearchSource: "BOTH",
-            categories: ["Anime"],
-            configComplete: true,
-            downloadLimit: null,
-            hitLimit: null,
-            hitLimitResetTime: null,
-            host: "https://anizb.org",
-            loadLimitOnRandom: null,
-            name: "anizb",
-            password: null,
-            preselect: true,
-            score: 0,
-            showOnSearch: true,
-            state: "ENABLED",
-            supportedSearchIds: [],
-            supportedSearchTypes: [],
-            timeout: null,
-            searchModuleType: "ANIZB",
-            username: null
+            name: "Tabula-Rasa",
+            host: "https://www.tabula-rasa.pw/api/v1/"
         },
         {
             allCapsChecked: true,
@@ -1011,6 +981,5 @@ function IndexerCheckBeforeCloseService($q, ModalService, IndexerConfigBoxServic
             deferred.resolve();
         }
         return deferred.promise;
-
     }
 }
