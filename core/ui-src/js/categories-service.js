@@ -31,7 +31,7 @@ function CategoriesService(ConfigService) {
     }
 
     function getDefault() {
-        return getAllCategories()[0];
+        return getByName(ConfigService.getSafe().categoriesConfig.defaultCategory);
     }
 
 }

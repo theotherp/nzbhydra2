@@ -1127,6 +1127,23 @@ function ConfigFields($injector) {
                     }
                 },
                 {
+                    key: 'defaultCategory',
+                    type: 'horizontalSelect',
+                    templateOptions: {
+                        label: 'Default category',
+                        options: [],
+                        help: "Set a default category. Reload page to set a category you just added."
+                    },
+                    controller: function ($scope) {
+                        var options = [];
+                        options.push({name: 'All', value: 'All'});
+                        _.each($scope.model.categories, function (cat) {
+                            options.push({name: cat.name, value: cat.name});
+                        });
+                        $scope.to.options = options;
+                    }
+                },
+                {
                     type: 'help',
                     templateOptions: {
                         type: 'help',

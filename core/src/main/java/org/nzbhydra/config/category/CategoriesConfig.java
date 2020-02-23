@@ -25,7 +25,12 @@ import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.category.Category.Subtype;
 import org.nzbhydra.searching.CategoryProvider;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.nzbhydra.searching.dtoseventsenums.SearchType.SEARCH;
@@ -45,6 +50,7 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
 
     private boolean enableCategorySizes = true;
     private List<Category> categories = new ArrayList<>();
+    private String defaultCategory = "All";
 
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, CategoriesConfig newConfig, BaseConfig newBaseConfig) {
@@ -83,6 +89,10 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         List<Integer> duplicateNewznabCategories = allNewznabCategories.stream().filter(x -> Collections.frequency(allNewznabCategories, 1) > 1).collect(Collectors.toList());
         if (!duplicateNewznabCategories.isEmpty()) {
             errors.add("The following newznab categories are assigned to multiple indexers: " + Joiner.on(", ").join(duplicateNewznabCategories));
+        }
+
+        if (!"All".equals(newConfig.getDefaultCategory()) && categories.stream().noneMatch(x -> x.getName().equals(newConfig.getDefaultCategory()))) {
+            errors.add("Category " + newConfig.getDefaultCategory() + " set as default category but no such category exists");
         }
 
         return new ConfigValidationResult(errors.isEmpty(), false, errors, warnings);

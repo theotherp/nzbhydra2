@@ -3,12 +3,16 @@
     "version": "v2.13.15",
     "changes": [
       {
-        "type": "fix",
-        "text": "Fix errors in py3 wrapper."
+        "type": "feature",
+        "text": "Allow setting a default category to be preselected."
       },
       {
         "type": "feature",
         "text": "Add supported SSL ciphers to debug infos output."
+      },
+      {
+        "type": "fix",
+        "text": "Fix errors in py3 wrapper."
       }
     ],
     "final": true
