@@ -7,6 +7,7 @@ import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
+import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,8 @@ public class DebugInfosProvider {
     private UpdateManager updateManager;
     @Autowired
     private LogContentProvider logContentProvider;
+    @Autowired
+    private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -52,6 +55,8 @@ public class DebugInfosProvider {
         logger.info("OS architecture: {}", System.getProperty("os.arch"));
         logger.info("User country: {}", System.getProperty("user.country"));
         logger.info("File encoding: {}", System.getProperty("file.encoding"));
+        logger.info("Ciphers:");
+        logger.info(requestFactory.getSupportedCiphers());
         logNumberOfTableRows("SEARCH");
         logNumberOfTableRows("SEARCHRESULT");
         logNumberOfTableRows("INDEXERSEARCH");

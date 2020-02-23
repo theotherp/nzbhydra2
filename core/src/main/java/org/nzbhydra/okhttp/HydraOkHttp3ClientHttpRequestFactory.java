@@ -112,6 +112,24 @@ public class HydraOkHttp3ClientHttpRequestFactory implements ClientHttpRequestFa
         initSocketFactory(configProvider.getBaseConfig().getMain());
     }
 
+    public String getSupportedCiphers() {
+        StringBuilder supportedCiphers = new StringBuilder();
+        String[] defaultCiphers = defaultSslSocketFactory.getDefaultCipherSuites();
+        String[] availableCiphers = defaultSslSocketFactory.getSupportedCipherSuites();
+
+        supportedCiphers.append("Available").append("\n");
+        for (String availableCipher : availableCiphers) {
+            supportedCiphers.append(availableCipher).append("\n");
+        }
+
+        supportedCiphers.append("Default").append("\n");
+        for (String defaultCipher : defaultCiphers) {
+            supportedCiphers.append(defaultCipher).append("\n");
+        }
+
+        return supportedCiphers.toString();
+    }
+
     private void initSocketFactory(MainConfig mainConfig) {
         loadCacerts();
         loadAllTrustingTrustManager();

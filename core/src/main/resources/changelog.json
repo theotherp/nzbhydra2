@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "fix",
-        "text": "Fix errors in p3 wrapper.."
+        "text": "Fix errors in py3 wrapper."
+      },
+      {
+        "type": "feature",
+        "text": "Add supported SSL ciphers to debug infos output."
       }
     ],
     "final": true

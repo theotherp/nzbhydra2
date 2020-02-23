@@ -192,13 +192,15 @@ public class NzbHydra {
         }
 
         if (baseConfig.getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.HTTPS.getName())) {
-            File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
-            File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
-            logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
-            System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
-            logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
-            System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
             System.setProperty("javax.net.debug", "ssl:handshake:verbose:keymanager:trustmanager");
+            if (System.getProperty("dontRedirectConsole") == null) {
+                File systemErrLogFile = new File(NzbHydra.getDataFolder(), "logs/system.err.log");
+                File systemOutLogFile = new File(NzbHydra.getDataFolder(), "logs/system.out.log");
+                logger.info("Enabling SSL debugging. Will write to {}", systemErrLogFile);
+                System.setErr(new PrintStream(new FileOutputStream(systemErrLogFile)));
+                logger.info("Redirecting console output to system.out.log. You will not see any more log output in the console until you disable the HTTPS marker and restart NZBHydra");
+                System.setOut(new PrintStream(new FileOutputStream(systemOutLogFile)));
+            }
         }
     }
 
