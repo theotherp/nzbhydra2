@@ -1,3 +1,15 @@
+### v2.14.0 (2020-02-23)
+
+**Feature** Allow setting a default category to be preselected.
+
+**Feature** Add supported SSL ciphers to debug infos output.
+
+**Feature** Update indexer presets.
+
+**Fix** Fix errors in py3 wrapper.
+
+
+
 ### v2.13.14 (2020-02-19)
 
 **Fix** Fix error in URL calculation, resulting in failing API downloads when other programs access Hydra via a reverse proxy with SSL.
