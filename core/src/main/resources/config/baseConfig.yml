@@ -13,258 +13,258 @@ auth:
   allowApiStats: true
   users: []
 categoriesConfig:
-    enableCategorySizes: true
-    defaultCategory: "All"
-      categories:
-        - name: Anime
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 3000
-          minSizePreset: 50
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "5070"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: SEARCH
-          subtype: ANIME
-        - name: Audio
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 2000
-          minSizePreset: 1
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "3000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MUSIC
-          subtype: NONE
-        - name: Audiobook
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 1000
-          minSizePreset: 50
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "3030"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MUSIC
-          subtype: AUDIOBOOK
-        - name: Comic
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 250
-          minSizePreset: 1
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "7030"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: SEARCH
-          subtype: COMIC
-        - name: Console
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 40000
-          minSizePreset: 100
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "1000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: SEARCH
-          subtype: NONE
-        - name: Ebook
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 100
-          minSizePreset:
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "7020"
-            - "8010"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: BOOK
-          subtype: EBOOK
-        - name: FLAC
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 2000
-          minSizePreset: 10
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "3040"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MUSIC
-          subtype: NONE
-        - name: Movies
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 20000
-          minSizePreset: 500
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "2000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MOVIE
-          subtype: NONE
-        - name: Movies HD
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 20000
-          minSizePreset: 3000
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "2040"
-            - "2050"
-            - "2060"
-            - "2070"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MOVIE
-          subtype: NONE
-        - name: Movies SD
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 3000
-          minSizePreset: 500
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "2030"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MOVIE
-        - name: MP3
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 500
-          minSizePreset: 1
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "3010"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: MUSIC
-          subtype: NONE
-        - name: PC
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 50000
-          minSizePreset: 100
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "4000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: SEARCH
-          subtype: NONE
-        - name: TV
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 5000
-          minSizePreset: 50
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "5000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: TVSEARCH
-          subtype: NONE
-        - name: TV HD
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 4500
-          minSizePreset: 300
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "5040"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: TVSEARCH
-          subtype: NONE
-        - name: TV SD
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 1000
-          minSizePreset: 50
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "5030"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: TVSEARCH
-          subtype: NONE
-        - name: XXX
-          applyRestrictionsType: BOTH
-          forbiddenRegex: null
-          forbiddenWords: []
-          ignoreResultsFrom: NONE
-          maxSizePreset: 10000
-          minSizePreset: 100
-          applySizeLimitsToApi: false
-          newznabCategories:
-            - "6000"
-          requiredRegex: null
-          requiredWords: []
-          preselect: true
-          searchType: SEARCH
-          subtype: NONE
+  enableCategorySizes: true
+  defaultCategory: "All"
+  categories:
+    - name: Anime
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 3000
+      minSizePreset: 50
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "5070"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: SEARCH
+      subtype: ANIME
+    - name: Audio
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 2000
+      minSizePreset: 1
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "3000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MUSIC
+      subtype: NONE
+    - name: Audiobook
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 1000
+      minSizePreset: 50
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "3030"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MUSIC
+      subtype: AUDIOBOOK
+    - name: Comic
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 250
+      minSizePreset: 1
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "7030"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: SEARCH
+      subtype: COMIC
+    - name: Console
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 40000
+      minSizePreset: 100
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "1000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: SEARCH
+      subtype: NONE
+    - name: Ebook
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 100
+      minSizePreset:
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "7020"
+        - "8010"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: BOOK
+      subtype: EBOOK
+    - name: FLAC
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 2000
+      minSizePreset: 10
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "3040"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MUSIC
+      subtype: NONE
+    - name: Movies
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 20000
+      minSizePreset: 500
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "2000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MOVIE
+      subtype: NONE
+    - name: Movies HD
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 20000
+      minSizePreset: 3000
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "2040"
+        - "2050"
+        - "2060"
+        - "2070"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MOVIE
+      subtype: NONE
+    - name: Movies SD
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 3000
+      minSizePreset: 500
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "2030"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MOVIE
+    - name: MP3
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 500
+      minSizePreset: 1
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "3010"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: MUSIC
+      subtype: NONE
+    - name: PC
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 50000
+      minSizePreset: 100
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "4000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: SEARCH
+      subtype: NONE
+    - name: TV
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 5000
+      minSizePreset: 50
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "5000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: TVSEARCH
+      subtype: NONE
+    - name: TV HD
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 4500
+      minSizePreset: 300
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "5040"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: TVSEARCH
+      subtype: NONE
+    - name: TV SD
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 1000
+      minSizePreset: 50
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "5030"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: TVSEARCH
+      subtype: NONE
+    - name: XXX
+      applyRestrictionsType: BOTH
+      forbiddenRegex: null
+      forbiddenWords: []
+      ignoreResultsFrom: NONE
+      maxSizePreset: 10000
+      minSizePreset: 100
+      applySizeLimitsToApi: false
+      newznabCategories:
+        - "6000"
+      requiredRegex: null
+      requiredWords: []
+      preselect: true
+      searchType: SEARCH
+      subtype: NONE
 downloading:
-    downloaders: []
-    saveTorrentsTo: null
-    sendMagnetLinks: true
-    updateStatuses: true
-    showDownloaderStatus: true
+  downloaders: []
+  saveTorrentsTo: null
+  sendMagnetLinks: true
+  updateStatuses: true
+  showDownloaderStatus: true
 indexers: []
 main:
   apiKey: null
