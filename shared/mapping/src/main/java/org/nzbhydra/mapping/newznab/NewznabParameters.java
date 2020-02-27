@@ -54,6 +54,8 @@ public class NewznabParameters {
 
     private Integer cachetime;
 
+    private Integer password;
+
     //Not (yet) supported
     private String genre;
     @Builder.Default
@@ -90,6 +92,7 @@ public class NewznabParameters {
                 .add("attrs", attrs)
                 .add("extended", extended)
                 .add("cachetime", cachetime)
+                .add("password", password)
                 .omitNullValues()
                 .toString();
     }
@@ -132,12 +135,13 @@ public class NewznabParameters {
                 o == that.o &&
                 Objects.equal(cachetime, that.cachetime) &&
                 Objects.equal(genre, that.genre) &&
+                Objects.equal(password, that.password) &&
                 Objects.equal(attrs, that.attrs);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(apikey, t, q, cat, rid, tvdbid, tvmazeid, traktId, imdbid, tmdbid, season, ep, author, title, offset, limit, minage, maxage, minsize, maxsize, id, raw, o, cachetime, genre, attrs, extended);
+        return Objects.hashCode(apikey, t, q, cat, rid, tvdbid, tvmazeid, traktId, imdbid, tmdbid, season, ep, author, title, offset, limit, minage, maxage, minsize, maxsize, id, raw, o, cachetime, genre, attrs, extended, password);
     }
 
     public int cacheKey(NewznabResponse.SearchType searchType) {

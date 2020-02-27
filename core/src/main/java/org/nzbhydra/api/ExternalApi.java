@@ -291,6 +291,9 @@ public class ExternalApi {
         if (!Strings.isNullOrEmpty(params.getTmdbid())) {
             searchRequest.getIdentifiers().put(IdType.TMDB, params.getTmdbid());
         }
+        if (params.getPassword() != null && params.getPassword() == 1) {
+            searchRequest.getInternalData().setIncludePasswords(true);
+        }
         searchRequest = searchRequestFactory.extendWithSavedIdentifiers(searchRequest);
 
         return searchRequest;

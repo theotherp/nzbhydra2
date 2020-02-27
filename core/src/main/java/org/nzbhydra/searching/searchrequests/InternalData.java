@@ -20,6 +20,7 @@ public class InternalData {
     private List<String> forbiddenWords = new ArrayList<>();
     private List<String> requiredWords = new ArrayList<>();
     private List<Integer> newznabCategories = new ArrayList<>();
+    private boolean includePasswords = false;
 
     public Optional<String> getTitle() {
         return Optional.ofNullable(title);
