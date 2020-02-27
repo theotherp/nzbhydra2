@@ -187,6 +187,10 @@ public class Newznab extends Indexer<Xml> {
 
         if (configProvider.getBaseConfig().getSearching().isIgnorePassworded()) {
             componentsBuilder.queryParam("password", "0");
+        } else if (config.getHost().toLowerCase().contains("omgwtf")) {
+            componentsBuilder.queryParam("pw", "1");
+        } else {
+            componentsBuilder.queryParam("password", "1");
         }
 
 
