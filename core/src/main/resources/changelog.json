@@ -5,6 +5,10 @@
       {
         "type": "fix",
         "text": "Ensure passworded results are included for certain indexers when configured not to ignore them."
+      },
+      {
+        "type": "fix",
+        "text": "Fix link to downloading help."
       }
     ],
     "final": true
