@@ -1,3 +1,11 @@
+### v2.14.2 (2020-03-09)
+
+**Fix** Ensure passworded results are included for certain indexers when configured not to ignore them.
+
+**Fix** Fix link to downloading help.
+
+
+
 ### v2.14.1 (2020-02-23)
 
 **Fix** Fix failing startup of fresh instance on Linux. Thanks, hotio.
