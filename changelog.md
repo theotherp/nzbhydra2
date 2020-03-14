@@ -4,7 +4,7 @@
 
 **Feature** Option to configure folder for backups.
 
-**Feature** Option to not send newznab categories for torznab indexers (trackers). See<a href="https://github.com/theotherp/nzbhydra2/issues/516">#516</a>.
+**Feature** Option to not send newznab categories for torznab indexers (trackers). See <a href="https://github.com/theotherp/nzbhydra2/issues/516">#516</a>.
 
 **Note** Previously a couple of settings (Time of last backup, time of first start, latest news shown, etc.) were stored in the database. That meant they were lost when starting with a new database. I've moved the settings to the config file wherey they belong.
 

@@ -29,7 +29,12 @@ import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
@@ -97,7 +102,6 @@ public class ConfigReaderWriter {
 
         try {
             BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(targetFile, BaseConfig.class);
-            baseConfig = null;
         } catch (IOException e) {
             logger.warn("Written target config file corrupted", e);
             throw e;
@@ -177,7 +181,8 @@ public class ConfigReaderWriter {
     public BaseConfig loadSavedConfig() throws IOException {
         File configFile = buildConfigFileFile();
         if (configFile.exists()) {
-            return Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
+            BaseConfig baseConfig = Jackson.YAML_MAPPER.readValue(configFile, BaseConfig.class);
+            return baseConfig;
         }
         return originalConfig();
     }

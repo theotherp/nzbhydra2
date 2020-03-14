@@ -301,6 +301,9 @@ public class NzbHydra {
     @EventListener
     public void startupDone(ApplicationReadyEvent event) {
         try {
+            //I don't know why I have to do this but otherwise genericStorage is always empty
+            configProvider.getBaseConfig().setGenericStorage(new ConfigReaderWriter().loadSavedConfig().getGenericStorage());
+
             if (!genericStorage.get("FirstStart", LocalDateTime.class).isPresent()) {
                 logger.info("First start of NZBHydra detected");
                 genericStorage.save("FirstStart", LocalDateTime.now());
