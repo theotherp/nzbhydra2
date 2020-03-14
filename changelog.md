@@ -1,3 +1,23 @@
+### v2.15.0 BETA (2020-03-14)
+
+**Feature** Option to disable history of searches and downloads.
+
+**Feature** Option to configure folder for backups.
+
+**Feature** Option to not send newznab categories for torznab indexers (trackers). See<a href="https://github.com/theotherp/nzbhydra2/issues/516">#516</a>.
+
+**Note** Previously a couple of settings (Time of last backup, time of first start, latest news shown, etc.) were stored in the database. That meant they were lost when starting with a new database. I've moved the settings to the config file wherey they belong.
+
+**Feature** Show a notification footer when an automatic update was installed.
+
+**Fix** Don't crash py3 wrapper when trying to log unicode characters.
+
+**Fix** Keep result selection when changing pages. (To be precise, the result selection was actually already kept but upon page change "selected" results' checkboxes would not be checked.)
+
+**Fix** Fix download of results as ZIP (which apparently nobody uses as it seems to have been broken forever...).
+
+
+
 ### v2.14.2 (2020-03-09)
 
 **Fix** Ensure passworded results are included for certain indexers when configured not to ignore them.
