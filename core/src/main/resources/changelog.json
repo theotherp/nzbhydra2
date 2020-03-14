@@ -1,7 +1,11 @@
 [
   {
-    "version": "v2.14.3",
+    "version": "v2.15",
     "changes": [
+      {
+        "type": "feature",
+        "text": "Add option to disable history of searches and downloads."
+      },
       {
         "type": "feature",
         "text": "Add option to configure folder for backups."

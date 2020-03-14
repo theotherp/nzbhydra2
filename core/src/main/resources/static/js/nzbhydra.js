@@ -33,7 +33,12 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
             views: {
                 'header': {
                     templateUrl: 'static/html/states/header.html',
-                    controller: 'HeaderController'
+                    controller: 'HeaderController',
+                    resolve: {
+                        bootstrapped: function() {
+                            return bootstrapped;
+                        }
+                    }
                 }
             }
         })
@@ -207,6 +212,8 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     templateUrl: "static/html/states/stats.html",
                     controller: ["$scope", "$state", function ($scope, $state) {
                         $scope.$state = $state;
+                        $scope.bootstrapped = bootstrapped;
+                        console.log(bootstrapped);
                     }],
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {
@@ -5497,26 +5504,12 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'historyUserInfoType',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'History user info',
-                                options: [
-                                    {name: 'IP and username', value: 'BOTH'},
-                                    {name: 'IP address', value: 'IP'},
-                                    {name: 'Username', value: 'USERNAME'},
-                                    {name: 'None', value: 'NONE'}
-                                ],
-                                help: 'Only affects if value is displayed in the search/download history.'
-                            }
-                        },
-                        {
                             key: 'markersToLog',
                             type: 'horizontalMultiselect',
                             templateOptions: {
                                 label: 'Log markers',
                                 help: 'Select certain sections for more output on debug level.',
+                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 options: [
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
@@ -5532,8 +5525,23 @@ function ConfigFields($injector) {
                                     {label: 'URL calculation', id: 'URL_CALCULATION'},
                                     {label: 'User agent mapping', id: 'USER_AGENT'}
                                 ],
-                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"
+                            }
+                        },
+                        {
+                            key: 'historyUserInfoType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'select',
+                                label: 'History user info',
+                                options: [
+                                    {name: 'IP and username', value: 'BOTH'},
+                                    {name: 'IP address', value: 'IP'},
+                                    {name: 'Username', value: 'USERNAME'},
+                                    {name: 'None', value: 'NONE'}
+                                ],
+                                help: 'Only affects if value is displayed in the search/download history.',
+                                hideExpression: '!model.keepHistory'
                             }
                         }
                     ]
@@ -5547,7 +5555,7 @@ function ConfigFields($injector) {
                             type: 'horizontalInput',
                             templateOptions: {
                                 label: 'Backup folder',
-                            help: 'Either relative to the NZBHydra main folder or an absolute folder'
+                                help: 'Either relative to the NZBHydra main folder or an absolute folder'
                             }
                         },
                         {
@@ -5643,6 +5651,15 @@ function ConfigFields($injector) {
                                 },
                                 min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
+                            }
+                        },
+                        {
+                            key: 'keepHistory',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Keep history',
+                                help: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
                             }
                         },
                         {
@@ -10154,15 +10171,16 @@ function HydraAuthService($q, $rootScope, $http, bootstrapped, $httpParamSeriali
 
 }
 
-HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService"];angular
+HeaderController.$inject = ["$scope", "$state", "growl", "HydraAuthService", "bootstrapped"];angular
     .module('nzbhydraApp')
     .controller('HeaderController', HeaderController);
 
-function HeaderController($scope, $state, growl, HydraAuthService) {
+function HeaderController($scope, $state, growl, HydraAuthService, bootstrapped) {
 
 
     $scope.showLoginout = false;
     $scope.oldUserName = null;
+    $scope.bootstrapped = bootstrapped;
 
     function update(event) {
 

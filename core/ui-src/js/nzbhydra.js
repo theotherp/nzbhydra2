@@ -33,7 +33,12 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
             views: {
                 'header': {
                     templateUrl: 'static/html/states/header.html',
-                    controller: 'HeaderController'
+                    controller: 'HeaderController',
+                    resolve: {
+                        bootstrapped: function () {
+                            return bootstrapped;
+                        }
+                    }
                 }
             }
         })
@@ -207,6 +212,8 @@ angular.module('nzbhydraApp').config(function ($stateProvider, $urlRouterProvide
                     templateUrl: "static/html/states/stats.html",
                     controller: function ($scope, $state) {
                         $scope.$state = $state;
+                        $scope.bootstrapped = bootstrapped;
+                        console.log(bootstrapped);
                     },
                     resolve: {
                         loginRequired: ['$q', '$timeout', '$state', 'HydraAuthService', function ($q, $timeout, $state, HydraAuthService) {

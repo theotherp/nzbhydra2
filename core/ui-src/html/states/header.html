@@ -1,16 +1,13 @@
 <nav class="navbar navbar-default navbar-static-top">
     <div class="container">
         <div class="navbar-collapse" id="bs-example-navbar-collapse-1">
+    
             <ul class="nav navbar-nav">
-                <li ui-sref-active="active" ng-if="showSearch"><a ui-sref="root.search"
-                                                                  ui-sref-opts="{inherit: false, reload: true}">Search</a>
-                </li>
-                <li ui-sref-active="{'active':'root.stats'}" ng-if="showStats"><a ui-sref="root.stats.searches">History
-                    & Stats</a></li>
-                <li ui-sref-active="{'active':'root.config'}" ng-if="showAdmin"><a ui-sref="root.config.main">Config</a>
-                </li>
-                <li ui-sref-active="{'active':'root.system'}" ng-if="showAdmin"><a
-                        ui-sref="root.system.control">System</a></li>
+                <li ui-sref-active="active" ng-if="showSearch"><a ui-sref="root.search" ui-sref-opts="{inherit: false, reload: true}">Search</a></li>
+                <li ui-sref-active="{'active':'root.stats'}" ng-if="showStats && bootstrapped.safeConfig.keepHistory"><a ui-sref="root.stats.indexers">History & Stats</a></li>
+                <li ui-sref-active="{'active':'root.stats'}" ng-if="showStats && !bootstrapped.safeConfig.keepHistory"><a ui-sref="root.stats.indexers">Indexer statuses</a></li>
+                <li ui-sref-active="{'active':'root.config'}" ng-if="showAdmin"><a ui-sref="root.config.main">Config</a></li>
+                <li ui-sref-active="{'active':'root.system'}" ng-if="showAdmin"><a ui-sref="root.system.control">System</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right" ng-if="showLoginout">
                 <li><a href="" ng-click="loginout()"

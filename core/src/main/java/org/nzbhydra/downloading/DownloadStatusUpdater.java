@@ -67,6 +67,10 @@ public class DownloadStatusUpdater {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping history status update because it's disabled");
             return;
         }
+        if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping history status update because no history is kept");
+            return;
+        }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED, FileDownloadStatus.NZB_ADDED, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
         checkStatus(statusesToCheck, DAY_SECONDS, StatusCheckType.HISTORY);
     }
@@ -78,6 +82,10 @@ public class DownloadStatusUpdater {
             logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping queue status update because it's disabled");
             return;
         }
+        if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            logger.debug(LoggingMarkers.DOWNLOAD_STATUS_UPDATE, "Skipping history status update because no history is kept");
+            return;
+        }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED);
         checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
     }
@@ -85,6 +93,9 @@ public class DownloadStatusUpdater {
 
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
+        if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            return;
+        }
         lastDownload = Instant.now();
         queueCheckEnabled = true;
         historyCheckEnabled = true;

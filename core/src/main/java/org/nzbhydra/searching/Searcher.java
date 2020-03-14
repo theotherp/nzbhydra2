@@ -14,7 +14,11 @@ import org.nzbhydra.indexers.IndexerSearchRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.logging.MdcThreadPoolExecutor;
 import org.nzbhydra.searching.IndexerForSearchSelector.IndexerForSearchSelection;
-import org.nzbhydra.searching.db.*;
+import org.nzbhydra.searching.db.IdentifierKeyValuePair;
+import org.nzbhydra.searching.db.SearchEntity;
+import org.nzbhydra.searching.db.SearchRepository;
+import org.nzbhydra.searching.db.SearchResultEntity;
+import org.nzbhydra.searching.db.SearchResultRepository;
 import org.nzbhydra.searching.dtoseventsenums.DuplicateDetectionResult;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
@@ -28,8 +32,20 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -236,7 +252,9 @@ public class Searcher {
                 for (SearchResultEntity x : indexerSearchResult.getSearchResultEntities()) {
                     x.setIndexerSearchEntity(entity);
                 }
-                entity = indexerSearchRepository.save(entity);
+                if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+                    entity = indexerSearchRepository.save(entity);
+                }
                 searchResultRepository.saveAll(indexerSearchResult.getSearchResultEntities());
                 searchCacheEntry.getIndexerCacheEntries().get(indexerSearchResult.getIndexer()).setIndexerSearchEntity(entity);
                 countEntities++;
@@ -264,7 +282,9 @@ public class Searcher {
             //Extend search request
             searchRequest.extractForbiddenWords();
 
-            searchRepository.save(searchEntity);
+            if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+                searchRepository.save(searchEntity);
+            }
 
             IndexerForSearchSelection pickingResult = indexerSelector.pickIndexers(searchRequest);
             searchCacheEntry = new SearchCacheEntry(searchRequest, pickingResult, searchEntity);

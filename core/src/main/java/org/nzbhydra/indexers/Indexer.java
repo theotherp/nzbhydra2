@@ -306,7 +306,9 @@ public abstract class Indexer<T> {
         apiAccess.setResponseTime(responseTime);
         apiAccess.setResult(accessResult);
         apiAccess.setTime(Instant.now());
-        indexerApiAccessRepository.save(apiAccess);
+        if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            indexerApiAccessRepository.save(apiAccess);
+        }
 
         indexerApiAccessShortRepository.save(new IndexerApiAccessEntityShort(indexer, successful, accessType));
     }

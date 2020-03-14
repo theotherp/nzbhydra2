@@ -7,7 +7,11 @@ import okhttp3.ResponseBody;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.MainConfig;
 import org.nzbhydra.config.downloading.FileDownloadAccessType;
-import org.nzbhydra.indexers.*;
+import org.nzbhydra.indexers.Indexer;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShort;
+import org.nzbhydra.indexers.IndexerApiAccessEntityShortRepository;
+import org.nzbhydra.indexers.IndexerApiAccessType;
+import org.nzbhydra.indexers.NfoResult;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.nzbhydra.searching.db.SearchResultEntity;
@@ -99,7 +103,9 @@ public class FileHandler {
             logger.error("Error while downloading NZB from URL {}: Status code: {}. Message: {}", result.getLink(), e.getStatus(), e.getMessage());
             FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_ERROR, e.getMessage());
 
-            downloadRepository.save(downloadEntity);
+            if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+                downloadRepository.save(downloadEntity);
+            }
             shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), false, IndexerApiAccessType.NZB));
 
             eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
@@ -111,7 +117,9 @@ public class FileHandler {
         logger.info("{} download from indexer successfully completed in {}ms", downloadType, responseTime);
 
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.PROXY, accessSource, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL, null);
-        downloadRepository.save(downloadEntity);
+        if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            downloadRepository.save(downloadEntity);
+        }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
 
@@ -122,7 +130,9 @@ public class FileHandler {
     public DownloadResult handleRedirect(SearchSource accessSource, SearchResultEntity result) {
         logger.debug("Redirecting to " + result.getLink());
         FileDownloadEntity downloadEntity = new FileDownloadEntity(result, FileDownloadAccessType.REDIRECT, accessSource, FileDownloadStatus.REQUESTED, null);
-        downloadRepository.save(downloadEntity);
+        if (configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            downloadRepository.save(downloadEntity);
+        }
         shortRepository.save(new IndexerApiAccessEntityShort(result.getIndexer(), true, IndexerApiAccessType.NZB));
         eventPublisher.publishEvent(new FileDownloadEvent(downloadEntity));
 

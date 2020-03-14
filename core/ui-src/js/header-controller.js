@@ -2,11 +2,12 @@ angular
     .module('nzbhydraApp')
     .controller('HeaderController', HeaderController);
 
-function HeaderController($scope, $state, growl, HydraAuthService) {
+function HeaderController($scope, $state, growl, HydraAuthService, bootstrapped) {
 
 
     $scope.showLoginout = false;
     $scope.oldUserName = null;
+    $scope.bootstrapped = bootstrapped;
 
     function update(event) {
 

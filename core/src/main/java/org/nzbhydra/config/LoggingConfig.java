@@ -20,7 +20,6 @@ public class LoggingConfig extends ValidatingConfig<LoggingConfig> {
     private boolean logUsername;
     private List<String> markersToLog = new ArrayList<>();
 
-
     @Override
     public ConfigValidationResult validateConfig(BaseConfig oldConfig, LoggingConfig newLoggingConfig, BaseConfig newBaseConfig) {
         ConfigValidationResult result = new ConfigValidationResult();

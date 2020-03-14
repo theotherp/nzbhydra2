@@ -277,6 +277,7 @@ main:
   dereferer: "http://www.dereferer.org/?$s"
   host: "0.0.0.0"
   instanceCounterDownloaded: false
+  keepHistory: true
   logging:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"

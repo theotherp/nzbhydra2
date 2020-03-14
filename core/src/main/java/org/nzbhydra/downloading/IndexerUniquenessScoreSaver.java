@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading;
 
+import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.IndexerSearchEntity;
 import org.nzbhydra.indexers.IndexerSearchRepository;
@@ -41,6 +42,8 @@ public class IndexerUniquenessScoreSaver {
     protected static final Logger logger = LoggerFactory.getLogger(IndexerUniquenessScoreSaver.class);
 
     @Autowired
+    private ConfigProvider configProvider;
+    @Autowired
     private SearchResultRepository searchResultRepository;
     @Autowired
     private IndexerSearchRepository indexerSearchRepository;
@@ -49,6 +52,10 @@ public class IndexerUniquenessScoreSaver {
 
     @EventListener
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
+        if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
+            logger.debug("Not saving uniqueness score because no history is kept");
+            return;
+        }
         try {
             SearchResultEntity searchResultEntity = downloadEvent.getDownloadEntity().getSearchResult();
 

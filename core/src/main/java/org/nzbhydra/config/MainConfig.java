@@ -37,6 +37,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     @RestartRequired
     private int databaseCompactTime = 15_000;
     private boolean instanceCounterDownloaded = false;
+    private boolean keepHistory = true;
     @RestartRequired
     private String host = "0.0.0.0";
     private LoggingConfig logging = new LoggingConfig();

@@ -376,26 +376,12 @@ function ConfigFields($injector) {
                             }
                         },
                         {
-                            key: 'historyUserInfoType',
-                            type: 'horizontalSelect',
-                            templateOptions: {
-                                type: 'select',
-                                label: 'History user info',
-                                options: [
-                                    {name: 'IP and username', value: 'BOTH'},
-                                    {name: 'IP address', value: 'IP'},
-                                    {name: 'Username', value: 'USERNAME'},
-                                    {name: 'None', value: 'NONE'}
-                                ],
-                                help: 'Only affects if value is displayed in the search/download history.'
-                            }
-                        },
-                        {
                             key: 'markersToLog',
                             type: 'horizontalMultiselect',
                             templateOptions: {
                                 label: 'Log markers',
                                 help: 'Select certain sections for more output on debug level.',
+                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 options: [
                                     {label: 'Config file handling', id: 'CONFIG_READ_WRITE'},
                                     {label: 'Download status updating', id: 'DOWNLOAD_STATUS_UPDATE'},
@@ -411,8 +397,23 @@ function ConfigFields($injector) {
                                     {label: 'URL calculation', id: 'URL_CALCULATION'},
                                     {label: 'User agent mapping', id: 'USER_AGENT'}
                                 ],
-                                hideExpression: 'model.consolelevel !== "DEBUG" && model.logfilelevel !== "DEBUG"', //Doesn't work...
                                 buttonText: "None"
+                            }
+                        },
+                        {
+                            key: 'historyUserInfoType',
+                            type: 'horizontalSelect',
+                            templateOptions: {
+                                type: 'select',
+                                label: 'History user info',
+                                options: [
+                                    {name: 'IP and username', value: 'BOTH'},
+                                    {name: 'IP address', value: 'IP'},
+                                    {name: 'Username', value: 'USERNAME'},
+                                    {name: 'None', value: 'NONE'}
+                                ],
+                                help: 'Only affects if value is displayed in the search/download history.',
+                                hideExpression: '!model.keepHistory'
                             }
                         }
                     ]
@@ -522,6 +523,15 @@ function ConfigFields($injector) {
                                 },
                                 min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
+                            }
+                        },
+                        {
+                            key: 'keepHistory',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Keep history',
+                                help: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
                             }
                         },
                         {
