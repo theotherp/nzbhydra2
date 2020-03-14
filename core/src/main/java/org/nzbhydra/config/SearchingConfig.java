@@ -46,6 +46,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private List<String> removeTrailing = new ArrayList<>();
     private String requiredRegex;
     private List<String> requiredWords = new ArrayList<>();
+    private boolean sendTorznabCategories = true;
     private boolean showQuickFilterButtons = true;
     private Integer timeout = 30;
     private boolean transformNewznabCategories = true;

@@ -6,7 +6,11 @@ import org.nzbhydra.NzbHydraException;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
 import org.nzbhydra.searching.dtoseventsenums.IndexerSearchResult;
@@ -107,6 +111,15 @@ public class Torznab extends Newznab {
     protected UriComponentsBuilder buildSearchUrl(SearchRequest searchRequest, Integer offset, Integer limit) throws IndexerSearchAbortedException {
         //Jackett doesn't support or require paging, so we overwrite offset and limit
         return super.buildSearchUrl(searchRequest, null, null);
+    }
+
+    @Override
+    protected void calculateAndAddCategories(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
+        if (!configProvider.getBaseConfig().getSearching().isSendTorznabCategories()) {
+            logger.debug("Not adding categories to query");
+            return;
+        }
+        super.calculateAndAddCategories(searchRequest, componentsBuilder);
     }
 
     @Override

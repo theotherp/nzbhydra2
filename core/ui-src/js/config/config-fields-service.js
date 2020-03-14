@@ -618,6 +618,15 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'sendTorznabCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Send categories to trackers',
+                                help: 'If disabled no categories will be included in queries to torznab indexers (trackers).'
+                            }
+                        },
+                        {
                             key: 'language',
                             type: 'horizontalSelect',
                             templateOptions: {

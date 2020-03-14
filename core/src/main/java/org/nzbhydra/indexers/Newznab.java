@@ -194,6 +194,11 @@ public class Newznab extends Indexer<Xml> {
         }
 
 
+        calculateAndAddCategories(searchRequest, componentsBuilder);
+
+    }
+
+    protected void calculateAndAddCategories(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
         List<Integer> categoryIds = new ArrayList<>();
         if (searchRequest.getInternalData().getNewznabCategories().isEmpty() || configProvider.getBaseConfig().getSearching().isTransformNewznabCategories()) {
             if (searchRequest.getCategory().getSubtype() == Subtype.ANIME && config.getCategoryMapping().getAnime().isPresent()) {
@@ -225,7 +230,6 @@ public class Newznab extends Indexer<Xml> {
             Collections.sort(categoryIds);
             componentsBuilder.queryParam("cat", Joiner.on(",").join(categoryIds));
         }
-
     }
 
     private boolean isIndexerNotSupportingEmptyTypeSearch() {

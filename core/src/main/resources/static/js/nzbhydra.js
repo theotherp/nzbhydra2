@@ -35,7 +35,7 @@ angular.module('nzbhydraApp').config(["$stateProvider", "$urlRouterProvider", "$
                     templateUrl: 'static/html/states/header.html',
                     controller: 'HeaderController',
                     resolve: {
-                        bootstrapped: function() {
+                        bootstrapped: function () {
                             return bootstrapped;
                         }
                     }
@@ -5743,6 +5743,15 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Transform newznab categories',
                                 help: 'Map newznab categories from API searches to configured categories and use all configured newznab categories in searches.'
+                            }
+                        },
+                        {
+                            key: 'sendTorznabCategories',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Send categories to trackers',
+                                help: 'If disabled no categories will be included in queries to torznab indexers (trackers).'
                             }
                         },
                         {

@@ -4,18 +4,22 @@
     "changes": [
       {
         "type": "feature",
-        "text": "Add option to disable history of searches and downloads."
+        "text": "Option to disable history of searches and downloads."
       },
       {
         "type": "feature",
-        "text": "Add option to configure folder for backups."
+        "text": "Option to configure folder for backups."
+      },
+      {
+        "type": "feature",
+        "text": "Option to not send newznab categories for torznab indexers (trackers). See<a href=\"https://github.com/theotherp/nzbhydra2/issues/516\">#516</a>."
       },
       {
         "type": "fix",
         "text": "Don't crash py3 wrapper when trying to log unicode characters."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.14.2",
