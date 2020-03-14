@@ -1737,8 +1737,10 @@ function hydraUpdatesFooter() {
                     if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                         $scope.updateAvailable = false;
                     }
+                    $scope.automaticUpdateToNotice = response.data.automaticUpdateToNotice;
 
                     $scope.$emit("showUpdateFooter", $scope.updateAvailable);
+                    $scope.$emit("showAutomaticUpdateFooter", $scope.automaticUpdateToNotice);
                 } else {
                     $scope.$emit("showUpdateFooter", false);
                 }
@@ -1757,6 +1759,12 @@ function hydraUpdatesFooter() {
 
         $scope.showChangelog = function () {
             UpdateService.showChanges();
+        };
+
+        $scope.showChangesFromAutomaticUpdate = function () {
+            UpdateService.showChangesFromAutomaticUpdate();
+            $scope.automaticUpdateToNotice = null;
+            $scope.$emit("showAutomaticUpdateFooter", false);
         };
 
         function checkAndShowNews() {
@@ -2103,9 +2111,23 @@ function footer() {
             updateFooterBottom();
             updatePaddingBottom();
         });
+        $scope.$on("showAutomaticUpdateFooter", function (event, doShow) {
+            $scope.showAutomaticUpdateFooter = doShow;
+            updateFooterBottom();
+            updatePaddingBottom();
+        });
 
         function updateFooterBottom() {
-            $scope.updateFooterBottom = $scope.showDownloaderStatus ? 35 : 0;
+
+            if ($scope.showDownloaderStatus) {
+                if ($scope.showAutomaticUpdateFooter) {
+                    $scope.updateFooterBottom = 50;
+                } else {
+                    $scope.updateFooterBottom = 35;
+                }
+            } else {
+                $scope.updateFooterBottom = 0;
+            }
         }
 
         function updatePaddingBottom() {
@@ -7142,7 +7164,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         showChanges: showChanges,
         getInfos: getInfos,
         getVersionHistory: getVersionHistory,
-        ignore: ignore
+        ignore: ignore,
+        showChangesFromAutomaticUpdate: showChangesFromAutomaticUpdate
     };
 
     function getInfos() {
@@ -7154,6 +7177,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     updateAvailable = response.data.updateAvailable;
                     latestVersionIgnored = response.data.latestVersionIgnored;
                     runInDocker = response.data.runInDocker;
+                    automaticUpdateToNotice = response.data.automaticUpdateToNotice;
                     return response;
                 }, function () {
 
@@ -7196,6 +7220,33 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
             var modalInstance = $uibModal.open(params);
             modalInstance.result.then();
+        });
+    }
+
+    function showChangesFromAutomaticUpdate() {
+        return $http.get("internalapi/updates/automaticUpdateVersionHistory").then(function (response) {
+            var params = {
+                size: "lg",
+                templateUrl: "static/html/changelog-modal.html",
+                resolve: {
+                    versionHistory: function () {
+                        return response.data;
+                    }
+                },
+                controller: function ($scope, $sce, $uibModalInstance, versionHistory) {
+                    $scope.versionHistory = versionHistory;
+
+                    $scope.ok = function () {
+                        $uibModalInstance.dismiss();
+                    };
+                }
+            };
+
+            var modalInstance = $uibModal.open(params);
+            modalInstance.result.then();
+            return $http.get("internalapi/updates/ackAutomaticUpdateVersionHistory").then(function (response) {
+
+            });
         });
     }
 

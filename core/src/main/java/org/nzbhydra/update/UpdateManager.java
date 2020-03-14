@@ -77,6 +77,8 @@ public class UpdateManager implements InitializingBean {
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
+    private GenericStorage genericStorage;
+    @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Value("${build.version:0.0.1}")
@@ -215,9 +217,9 @@ public class UpdateManager implements InitializingBean {
     }
 
     /**
-     * Retrieves the changes from the changelog that came with the currently running version
+     * Retrieves all the changes from the changelog that came with the currently running version (from first version to the current).
      */
-    public List<ChangelogVersionEntry> getCurrentVersionChanges() throws UpdateException {
+    public List<ChangelogVersionEntry> getAllVersionChangesUpToCurrentVersion() throws UpdateException {
         List<ChangelogVersionEntry> changelogVersionEntries;
         try {
             String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
@@ -229,6 +231,34 @@ public class UpdateManager implements InitializingBean {
         Collections.sort(changelogVersionEntries);
         Collections.reverse(changelogVersionEntries);
         return changelogVersionEntries;
+    }
+
+
+    /**
+     * Retrieves the changes made by the installation of an automatic update.
+     */
+    public List<ChangelogVersionEntry> getAutomaticUpdateVersionHistory() throws UpdateException {
+        Optional<String> previousVersion = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class);
+        if (!previousVersion.isPresent()) {
+            logger.error("Unable to find the version from which the automatic update was instaled");
+            return Collections.emptyList();
+        }
+
+        List<ChangelogVersionEntry> changelogVersionEntries;
+        try {
+            String changelogJsonString = Resources.toString(Resources.getResource(UpdateManager.class, "/changelog.json"), Charsets.UTF_8);
+            changelogVersionEntries = objectMapper.readValue(changelogJsonString, changelogEntryListTypeReference);
+        } catch (IOException e) {
+            throw new UpdateException("Error while getting changelog: " + e.getMessage());
+        }
+
+        Collections.sort(changelogVersionEntries);
+        Collections.reverse(changelogVersionEntries);
+
+        SemanticVersion previousSemanticVersion = new SemanticVersion(previousVersion.get());
+        return changelogVersionEntries.stream()
+                .filter(x -> x.getSemanticVersion().isUpdateFor(previousSemanticVersion))
+                .collect(Collectors.toList());
     }
 
 
@@ -253,7 +283,7 @@ public class UpdateManager implements InitializingBean {
 
             updateZip = new File(updateFolder, asset.getName());
             logger.debug("Saving update file as {}", updateZip.getAbsolutePath());
-            applicationEventPublisher.publishEvent(new UpdateEvent("Downloading update file."));
+            applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.DOWNLOADING, "Downloading update file."));
             webAccess.downloadToFile(url, updateZip);
         } catch (RestClientException | IOException e) {
             logger.error("Error while download or saving ZIP", e);
@@ -263,7 +293,7 @@ public class UpdateManager implements InitializingBean {
         if (configProvider.getBaseConfig().getMain().isBackupBeforeUpdate()) {
             try {
                 logger.info("Creating backup before shutting down");
-                applicationEventPublisher.publishEvent(new UpdateEvent("Creating backup before update."));
+                applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.CREATING_BACKUP, "Creating backup before update."));
                 backupAndRestore.backup();
             } catch (Exception e) {
                 throw new UpdateException("Unable to create backup before update", e);
@@ -271,11 +301,11 @@ public class UpdateManager implements InitializingBean {
         }
 
         if (latestRelease.getTagName().equals("v2.7.6")) {
-            applicationEventPublisher.publishEvent(new UpdateEvent("NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
+            applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.MIGRATION_NEEDED, "NZBHydra's restart after the update will take longer than usual because the database needs to be migrated."));
         }
 
         logger.info("Shutting down to let wrapper execute the update");
-        applicationEventPublisher.publishEvent(new UpdateEvent("Shutting down to let wrapper execute update."));
+        applicationEventPublisher.publishEvent(new UpdateEvent(UpdateEvent.State.SHUTDOWN, "Shutting down to let wrapper execute update."));
         exitWithReturnCode(UPDATE_RETURN_CODE);
     }
 
@@ -370,6 +400,15 @@ public class UpdateManager implements InitializingBean {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class UpdateEvent {
+
+        enum State {
+            DOWNLOADING,
+            CREATING_BACKUP,
+            MIGRATION_NEEDED,
+            SHUTDOWN
+        }
+
+        private State state;
         private String message;
     }
 

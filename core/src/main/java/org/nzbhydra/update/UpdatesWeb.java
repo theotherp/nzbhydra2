@@ -9,6 +9,7 @@ import org.nzbhydra.ExceptionInfo;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.debuginfos.DebugInfosProvider;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.update.UpdateManager.UpdateEvent;
@@ -22,7 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +48,8 @@ public class UpdatesWeb {
     private ConfigurableEnvironment environment;
     @Autowired
     private OutdatedWrapperDetector outdatedWrapperDetector;
+    @Autowired
+    private GenericStorage genericStorage;
 
     protected Supplier<VersionsInfo> versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
 
@@ -60,7 +67,7 @@ public class UpdatesWeb {
             try {
                 if (!configProvider.getBaseConfig().getMain().isUpdateCheckEnabled()) {
                     //Just for development
-                    return new VersionsInfo("", "", false, false, false, false, false);
+                    return new VersionsInfo("", "", false, false, false, false, false, "false");
                 }
                 String currentVersion = updateManager.getCurrentVersionString();
                 String latestVersion = updateManager.getLatestVersionString();
@@ -69,7 +76,8 @@ public class UpdatesWeb {
                 boolean isRunInDocker = DebugInfosProvider.isRunInDocker();
                 boolean isShowUpdateBannerOnDocker = configProvider.getBaseConfig().getMain().isShowUpdateBannerOnDocker();
                 boolean outdatedWrapperDetected = outdatedWrapperDetector.isOutdatedWrapperDetected();
-                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected);
+                String automaticUpdateToNotice = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class).orElse(null);
+                return new VersionsInfo(currentVersion, latestVersion, isUpdateAvailable, latestVersionIgnored, isRunInDocker, isShowUpdateBannerOnDocker, outdatedWrapperDetected, automaticUpdateToNotice);
             } catch (UpdateException e) {
                 logger.error("An error occured while getting version information", e);
                 throw new RuntimeException("Unable to get update information");
@@ -87,7 +95,19 @@ public class UpdatesWeb {
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/versionHistory", method = RequestMethod.GET)
     public List<ChangelogVersionEntry> getVersionHistory() throws Exception {
-        return updateManager.getCurrentVersionChanges();
+        return updateManager.getAllVersionChangesUpToCurrentVersion();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/automaticUpdateVersionHistory", method = RequestMethod.GET)
+    public List<ChangelogVersionEntry> getVersionHistoryForAutomaticUpdate() throws Exception {
+        return updateManager.getAutomaticUpdateVersionHistory();
+    }
+
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/updates/ackAutomaticUpdateVersionHistory", method = RequestMethod.GET)
+    public void ackHistoryForAutomaticUpdateShown() {
+        genericStorage.remove(AutomaticUpdater.TO_NOTICE_KEY);
     }
 
     @Secured({"ROLE_ADMIN"})
@@ -146,6 +166,7 @@ public class UpdatesWeb {
         private boolean runInDocker;
         private boolean showUpdateBannerOnDocker;
         private boolean wrapperOutdated;
+        private String automaticUpdateToNotice;
     }
 
 

@@ -17,20 +17,26 @@
 package org.nzbhydra.update;
 
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.genericstorage.GenericStorage;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class AutomaticUpdater {
 
+    public static String TO_NOTICE_KEY = "automaticUpdateToNotice";
+
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
     private UpdateManager updateManager;
+    @Autowired
+    private GenericStorage genericStorage;
 
     private static final Logger logger = LoggerFactory.getLogger(AutomaticUpdater.class);
 
@@ -42,11 +48,21 @@ public class AutomaticUpdater {
         if (configProvider.getBaseConfig().getMain().isUpdateAutomatically() && updateManager.isUpdateAvailable()) {
             try {
                 logger.info("Automatic updater found update");
+
                 updateManager.installUpdate();
             } catch (UpdateException e) {
                 logger.error("Error while installing update", e);
             }
         }
     }
+
+    @EventListener
+    public void handleUpdateEvent(UpdateManager.UpdateEvent updateEvent) {
+        if (updateEvent.getState() == UpdateManager.UpdateEvent.State.SHUTDOWN) {
+            //Will be found be UI and displayed, then deleted.
+            genericStorage.save(TO_NOTICE_KEY, updateManager.getCurrentVersionString());
+        }
+    }
+
 
 }

@@ -44,9 +44,23 @@ function footer() {
             updateFooterBottom();
             updatePaddingBottom();
         });
+        $scope.$on("showAutomaticUpdateFooter", function (event, doShow) {
+            $scope.showAutomaticUpdateFooter = doShow;
+            updateFooterBottom();
+            updatePaddingBottom();
+        });
 
         function updateFooterBottom() {
-            $scope.updateFooterBottom = $scope.showDownloaderStatus ? 35 : 0;
+
+            if ($scope.showDownloaderStatus) {
+                if ($scope.showAutomaticUpdateFooter) {
+                    $scope.updateFooterBottom = 50;
+                } else {
+                    $scope.updateFooterBottom = 35;
+                }
+            } else {
+                $scope.updateFooterBottom = 0;
+            }
         }
 
         function updatePaddingBottom() {

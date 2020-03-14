@@ -5,9 +5,7 @@ import org.nzbhydra.Jackson;
 import org.nzbhydra.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
@@ -18,7 +16,6 @@ public class GenericStorage {
     @Autowired
     private ConfigProvider configProvider;
 
-    @Transactional
     public <T extends Serializable> void save(String key, T value) {
         Map<String, String> genericStorage = configProvider.getBaseConfig().getGenericStorage();
         try {
@@ -29,12 +26,18 @@ public class GenericStorage {
         }
     }
 
+    public <T extends Serializable> void remove(String key) {
+        Map<String, String> genericStorage = configProvider.getBaseConfig().getGenericStorage();
+        genericStorage.remove(key);
+        configProvider.getBaseConfig().save(true);
+    }
+
     public <T> Optional<T> get(String key, Class<T> clazz) {
         if (configProvider.getBaseConfig().getGenericStorage().containsKey(key)) {
             String json = configProvider.getBaseConfig().getGenericStorage().get(key);
             try {
                 return Optional.of(Jackson.JSON_MAPPER.readValue(json, clazz));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException("Error reading data from " + json, e);
             }
         }

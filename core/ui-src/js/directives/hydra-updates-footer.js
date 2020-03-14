@@ -91,8 +91,10 @@ function hydraUpdatesFooter() {
                     if ($scope.runInDocker && !$scope.showUpdateBannerOnDocker) {
                         $scope.updateAvailable = false;
                     }
+                    $scope.automaticUpdateToNotice = response.data.automaticUpdateToNotice;
 
                     $scope.$emit("showUpdateFooter", $scope.updateAvailable);
+                    $scope.$emit("showAutomaticUpdateFooter", $scope.automaticUpdateToNotice);
                 } else {
                     $scope.$emit("showUpdateFooter", false);
                 }
@@ -111,6 +113,12 @@ function hydraUpdatesFooter() {
 
         $scope.showChangelog = function () {
             UpdateService.showChanges();
+        };
+
+        $scope.showChangesFromAutomaticUpdate = function () {
+            UpdateService.showChangesFromAutomaticUpdate();
+            $scope.automaticUpdateToNotice = null;
+            $scope.$emit("showAutomaticUpdateFooter", false);
         };
 
         function checkAndShowNews() {

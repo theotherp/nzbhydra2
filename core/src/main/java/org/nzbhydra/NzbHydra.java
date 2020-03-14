@@ -111,7 +111,7 @@ public class NzbHydra {
         } else if (options.has("help")) {
             parser.printHelpOn(System.out);
         } else if (options.has("version")) {
-            String version = new UpdateManager().getCurrentVersionChanges().get(0).getVersion();
+            String version = new UpdateManager().getAllVersionChangesUpToCurrentVersion().get(0).getVersion();
             logger.info("NZBHydra 2 version: " + version);
         } else {
             startup(args, options);

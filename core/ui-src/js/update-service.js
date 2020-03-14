@@ -17,7 +17,8 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
         showChanges: showChanges,
         getInfos: getInfos,
         getVersionHistory: getVersionHistory,
-        ignore: ignore
+        ignore: ignore,
+        showChangesFromAutomaticUpdate: showChangesFromAutomaticUpdate
     };
 
     function getInfos() {
@@ -29,6 +30,7 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
                     updateAvailable = response.data.updateAvailable;
                     latestVersionIgnored = response.data.latestVersionIgnored;
                     runInDocker = response.data.runInDocker;
+                    automaticUpdateToNotice = response.data.automaticUpdateToNotice;
                     return response;
                 }, function () {
 
@@ -71,6 +73,33 @@ function UpdateService($http, growl, blockUI, RestartService, RequestsErrorHandl
 
             var modalInstance = $uibModal.open(params);
             modalInstance.result.then();
+        });
+    }
+
+    function showChangesFromAutomaticUpdate() {
+        return $http.get("internalapi/updates/automaticUpdateVersionHistory").then(function (response) {
+            var params = {
+                size: "lg",
+                templateUrl: "static/html/changelog-modal.html",
+                resolve: {
+                    versionHistory: function () {
+                        return response.data;
+                    }
+                },
+                controller: function ($scope, $sce, $uibModalInstance, versionHistory) {
+                    $scope.versionHistory = versionHistory;
+
+                    $scope.ok = function () {
+                        $uibModalInstance.dismiss();
+                    };
+                }
+            };
+
+            var modalInstance = $uibModal.open(params);
+            modalInstance.result.then();
+            return $http.get("internalapi/updates/ackAutomaticUpdateVersionHistory").then(function (response) {
+
+            });
         });
     }
 
