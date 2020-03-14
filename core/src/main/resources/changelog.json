@@ -17,6 +17,14 @@
       {
         "type": "fix",
         "text": "Don't crash py3 wrapper when trying to log unicode characters."
+      },
+      {
+        "type": "fix",
+        "text": "Keep result selection when changing pages. (To be precise, the result selection was actually already kept but upon page change \"selected\" results' checkboxes would not be checked.)"
+      },
+      {
+        "type": "fix",
+        "text": "Fix download of results as ZIP (which apparently nobody uses as it seems to have been broken forever...)."
       }
     ],
     "final": false

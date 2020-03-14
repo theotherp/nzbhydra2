@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -51,6 +52,7 @@ public class IndexerUniquenessScoreSaver {
     private IndexerUniquenessScoreEntityRepository indexerUniquenessScoreEntityRepository;
 
     @EventListener
+    @Transactional
     public void onNzbDownloadEvent(FileDownloadEvent downloadEvent) {
         if (!configProvider.getBaseConfig().getMain().isKeepHistory()) {
             logger.debug("Not saving uniqueness score because no history is kept");

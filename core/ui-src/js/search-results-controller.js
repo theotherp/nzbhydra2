@@ -732,6 +732,12 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
         }
     };
 
+    $scope.onPageChange = function (newPageNumber, oldPageNumber) {
+        _.each($scope.selected, function (x) {
+            $scope.$broadcast("toggleSelection", x, true);
+        })
+    };
+
     $scope.$on("onFinishRender", function () {
         $scope.doShowResults = true;
         $timeout(function () {

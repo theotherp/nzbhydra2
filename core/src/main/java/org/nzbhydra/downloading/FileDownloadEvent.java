@@ -25,4 +25,5 @@ public class FileDownloadEvent {
     public FileDownloadEvent(FileDownloadEntity downloadEntity) {
         this.downloadEntity = downloadEntity;
     }
+
 }
