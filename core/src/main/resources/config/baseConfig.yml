@@ -268,9 +268,10 @@ downloading:
 indexers: []
 main:
   apiKey: null
-  configVersion: 6
+  backupFolder: "data/backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
+  configVersion: 11
   databaseCompactTime: 15000
   deleteBackupsAfterWeeks: 4
   dereferer: "http://www.dereferer.org/?$s"

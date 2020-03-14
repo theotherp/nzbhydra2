@@ -419,14 +419,14 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
-                    templateOptions: {label: 'Other'},
+                    templateOptions: {label: 'Backup'},
                     fieldGroup: [
                         {
-                            key: 'startupBrowser',
-                            type: 'horizontalSwitch',
+                            key: 'backupFolder',
+                            type: 'horizontalInput',
                             templateOptions: {
-                                type: 'switch',
-                                label: 'Open browser on startup'
+                                label: 'Backup folder',
+                                help: 'Either relative to the NZBHydra main folder or an absolute folder'
                             }
                         },
                         {
@@ -447,15 +447,13 @@ function ConfigFields($injector) {
                                 type: 'switch',
                                 label: 'Backup before update'
                             }
-                        },
-                        {
-                            key: 'showUpdateBannerOnDocker',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Show update banner when running docker'
-                            }
-                        },
+                        }
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'Updates'},
+                    fieldGroup: [
                         {
                             key: 'updateAutomatically',
                             type: 'horizontalSwitch',
@@ -480,6 +478,28 @@ function ConfigFields($injector) {
                                 addonRight: {
                                     text: 'weeks'
                                 }
+                            }
+                        },
+                        {
+                            key: 'showUpdateBannerOnDocker',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Show update banner when running docker'
+                            }
+                        }
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
+                    templateOptions: {label: 'Other'},
+                    fieldGroup: [
+                        {
+                            key: 'startupBrowser',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Open browser on startup'
                             }
                         },
                         {

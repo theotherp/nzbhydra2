@@ -23,12 +23,20 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,17 +90,17 @@ public class BackupAndRestore {
         if (configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().isPresent()) {
             logger.info("Deleting old backups if any exist");
             Integer backupMaxAgeInWeeks = configProvider.getBaseConfig().getMain().getDeleteBackupsAfterWeeks().get();
-            File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.toLowerCase().endsWith("zip"));
+            File[] zips = backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"));
 
             if (zips != null) {
                 for (File zip : zips) {
                     Matcher matcher = FILE_PATTERN.matcher(zip.getName());
                     if (!matcher.matches()) {
-                        logger.warn("Backup ZIP file name {} does not match expected pattern");
+                        logger.warn("Backup ZIP file name {} does not match expected pattern", zip.getName());
                         continue;
                     }
                     LocalDateTime backupDate = LocalDateTime.from(DATE_PATTERN.parse(matcher.group(1)));
-                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60*60*24*7 * backupMaxAgeInWeeks))) {
+                    if (backupDate.isBefore(LocalDateTime.now().minusSeconds(60 * 60 * 24 * 7 * backupMaxAgeInWeeks))) {
                         logger.info("Deleting backup file {} because it's older than {} weeks", zip, backupMaxAgeInWeeks);
                         boolean deleted = zip.delete();
                         if (!deleted) {
@@ -105,7 +113,7 @@ public class BackupAndRestore {
     }
 
     protected File getBackupFolder() {
-        return new File(NzbHydra.getDataFolder(), "backup");
+        return new File(configProvider.getBaseConfig().getMain().getBackupFolder());
     }
 
     public List<BackupEntry> getExistingBackups() {
@@ -114,7 +122,7 @@ public class BackupAndRestore {
         if (backupFolder == null || !backupFolder.exists() || backupFolder.listFiles() == null) {
             return Collections.emptyList();
         }
-        for (File file : backupFolder.listFiles()) {
+        for (File file : backupFolder.listFiles((dir, name) -> name != null && name.startsWith("nzbhydra") && name.endsWith(".zip"))) {
             try {
                 entries.add(new BackupEntry(file.getName(), Files.readAttributes(file.toPath(), BasicFileAttributes.class).creationTime().toInstant()));
             } catch (IOException e) {
@@ -178,15 +186,13 @@ public class BackupAndRestore {
     }
 
     private static void extractZip(File zipFile, File targetFolder) throws IOException {
-        logger.info("Extracting from file {} to folder ", zipFile.getCanonicalPath(), targetFolder.getCanonicalPath());
+        logger.info("Extracting from file {} to folder {}", zipFile.getCanonicalPath(), targetFolder.getCanonicalPath());
         Path dest = targetFolder.toPath().toAbsolutePath().normalize();
 
         Map<String, String> env = new HashMap<>();
         try (FileSystem zipFileSystem = FileSystems.newFileSystem(URI.create("jar:" + zipFile.toPath().toUri()), env)) {
             Path root = zipFileSystem.getPath("/");
             Files.walkFileTree(root, new ExtractZipFileVisitor(dest));
-        } catch (IOException ex) {
-            throw ex;
         }
     }
 

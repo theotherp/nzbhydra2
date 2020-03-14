@@ -3,6 +3,10 @@
     "version": "v2.14.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add option to configure folder for backups."
+      },
+      {
         "type": "fix",
         "text": "Don't crash py3 wrapper when trying to log unicode characters."
       }
