@@ -15,3 +15,6 @@ target/
 token.txt
 pom.xml.versionsBackup
 *.bak
+*.phd
+javacore*
+heapdump*

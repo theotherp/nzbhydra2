@@ -21,7 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import lombok.Data;
-import okhttp3.*;
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.nzbhydra.config.BaseConfig;
@@ -29,19 +33,15 @@ import org.nzbhydra.config.indexer.IndexerCategoryConfig;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.mapping.changelog.ChangelogVersionEntry;
 import org.nzbhydra.mapping.github.Release;
-import org.nzbhydra.misc.DelegatingSSLSocketFactory;
 
-import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
-import java.security.GeneralSecurityException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
-
-import static junit.framework.TestCase.assertTrue;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Experiments {
 
@@ -127,62 +127,27 @@ public class Experiments {
     @Test
     @Ignore
     public void connectToNzbGeek() throws Exception {
-
-        SSLSocketFactory sslSocketFactory = getSslSocketFactory(new TrustManager[]{
-                getDefaultX509TrustManager()
-        });
         OkHttpClient client = new OkHttpClient.Builder()
-                .sslSocketFactory(new SniWhitelistingSocketFactory(sslSocketFactory), getDefaultX509TrustManager())
                 .build();
 
-        Request request = new Request.Builder()
-                .url("https://api.nzbgeek.info")
-                .build();
-
-        Response response = client.newCall(request).execute();
-        System.out.println(response.body().string());
-        assertTrue(response.isSuccessful());
-
-    }
-
-    private X509TrustManager getDefaultX509TrustManager() {
-        try {
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
-                    TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init((KeyStore) null);
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-                throw new IllegalStateException("Unexpected default trust managers:"
-                        + Arrays.toString(trustManagers));
-            }
-            return (X509TrustManager) trustManagers[0];
-        } catch (GeneralSecurityException e) {
-            throw new AssertionError(); // The system has no TLS. Just give up.
-        }
-    }
-
-
-    private SSLSocketFactory getSslSocketFactory(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-        return sslContext.getSocketFactory();
-    }
-
-
-    protected class SniWhitelistingSocketFactory extends DelegatingSSLSocketFactory {
-
-        public SniWhitelistingSocketFactory(SSLSocketFactory delegate) {
-            super(delegate);
+        for (int i = 0; i < 100; i++) {
+            Request request = new Request.Builder()
+                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=blub" + i)
+                    .build();
+            System.out.println("a: " + i + "/100");
+            Response response = client.newCall(request).execute();
         }
 
-        @Override
-        public SSLSocket createSocket(Socket socket, final String host, int port, boolean autoClose) throws IOException {
-            SSLSocket newSocket = super.createSocket(socket, host, port, autoClose);
-            SSLParameters sslParameters = newSocket.getSSLParameters();
-            sslParameters.setServerNames(Collections.emptyList());
-            newSocket.setSSLParameters(sslParameters);
-            return newSocket;
+        for (int i = 0; i < 1000; i++) {
+            Request request = new Request.Builder()
+                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=bla" + i)
+                    .build();
+
+            System.out.println("b: " + i + "/1000");
+            Response response = client.newCall(request).execute();
         }
+
+
     }
 
     @Data
