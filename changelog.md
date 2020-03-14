@@ -1,3 +1,9 @@
+### v2.15.1 BETA (2020-03-14)
+
+**Fix** Contents of the generic storage were not properly migrated.
+
+
+
 ### v2.15.0 BETA (2020-03-14)
 
 **Feature** Option to disable history of searches and downloads.
