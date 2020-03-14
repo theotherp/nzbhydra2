@@ -15,6 +15,10 @@
         "text": "Option to not send newznab categories for torznab indexers (trackers). See<a href=\"https://github.com/theotherp/nzbhydra2/issues/516\">#516</a>."
       },
       {
+        "type": "feature",
+        "text": "Previously a couple of settings (Time of last backup, time of first start, latest news shown, etc.) were stored in the database. That meant they were lost when starting with a new database. I've moved the settings to the config file wherey they belong."
+      },
+      {
         "type": "fix",
         "text": "Don't crash py3 wrapper when trying to log unicode characters."
       },

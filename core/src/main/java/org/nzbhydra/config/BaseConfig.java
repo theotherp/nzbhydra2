@@ -26,8 +26,10 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,6 +61,9 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
     private List<IndexerConfig> indexers = new ArrayList<>();
     private MainConfig main = new MainConfig();
     private SearchingConfig searching = new SearchingConfig();
+
+    private Map<String, String> genericStorage = new HashMap<>();
+
     @JsonIgnore
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
@@ -87,6 +92,7 @@ public class BaseConfig extends ValidatingConfig<BaseConfig> {
         downloading = newConfig.getDownloading();
         searching = newConfig.getSearching();
         auth = newConfig.getAuth();
+        genericStorage = newConfig.genericStorage;
         if (fireConfigChangedEvent) {
             ConfigChangedEvent configChangedEvent = new ConfigChangedEvent(this, oldBaseConfig, this);
             applicationEventPublisher.publishEvent(configChangedEvent);
