@@ -260,10 +260,19 @@ function SearchController($scope, $http, $stateParams, $state, $uibModal, $timeo
         focus('searchfield');
     };
 
+    function calculateWidth(text) {
+        var canvas = calculateWidth.canvas || (calculateWidth.canvas = document.createElement("canvas"));
+        var context = canvas.getContext("2d");
+        context.font = "13px Roboto";
+        return context.measureText(text).width;
+    }
+
     $scope.selectAutocompleteItem = function ($item) {
         $scope.selectedItem = $item;
         $scope.query = "";
         epochEnter = (new Date).getTime();
+        var width = calculateWidth($item.title) + 30;
+        $scope.selectedItemWidth = width + "px";
     };
 
     $scope.initiateSearch = function () {

@@ -5,6 +5,10 @@
       {
         "type": "feature",
         "text": "Increased the number of entries in the search history dropdown to 25."
+      },
+      {
+        "type": "fix",
+        "text": "Properly display full width of selected titles from the search autocomplete."
       }
     ],
     "final": false
