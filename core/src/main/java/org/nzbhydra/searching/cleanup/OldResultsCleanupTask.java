@@ -33,14 +33,14 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 @Component
-public class OldResultsCleanup {
+public class OldResultsCleanupTask {
 
     @Autowired
     private ConfigProvider configProvider;
     @Autowired
     private EntityManager entityManager;
 
-    private static final Logger logger = LoggerFactory.getLogger(OldResultsCleanup.class);
+    private static final Logger logger = LoggerFactory.getLogger(OldResultsCleanupTask.class);
 
     private static final long HOUR = 1000 * 60 * 60;
 
@@ -54,7 +54,6 @@ public class OldResultsCleanup {
         sqlString = sqlString.replace(":epochSecond", String.valueOf(Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond()));
         int deletedResults = entityManager.createNativeQuery(
                 sqlString)
-//                .setParameter("epochSecond", Instant.now().minus(keepSearchResultsForDays, ChronoUnit.DAYS).getEpochSecond())
                 .executeUpdate();
         if (deletedResults > 0) {
             logger.debug("Deleted {} unused search results from database that were older than {} days", deletedResults, keepSearchResultsForDays);

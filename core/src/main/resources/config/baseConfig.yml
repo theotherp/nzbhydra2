@@ -271,7 +271,7 @@ main:
   backupFolder: "data/backup"
   backupEveryXDays: 7
   backupBeforeUpdate: true
-  configVersion: 11
+  configVersion: 12
   databaseCompactTime: 15000
   deleteBackupsAfterWeeks: 4
   dereferer: "http://www.dereferer.org/?$s"
