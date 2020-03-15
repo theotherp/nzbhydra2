@@ -515,7 +515,20 @@ function ConfigFields($injector) {
                                     text: 'weeks'
                                 },
                                 min: 1,
-                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit.'
+                                help: 'Only keep history (searches, downloads) for a certain time. Will decrease database size and may improve performance a bit. Rather reduce how long stats are kept.'
+                            }
+                        },
+                        {
+                            key: 'keepStatsForWeeks',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Keep stats for...',
+                                addonRight: {
+                                    text: 'weeks'
+                                },
+                                min: 1,
+                                help: 'Only keep stats for a certain time. Will decrease database size.'
                             }
                         }
                     ]

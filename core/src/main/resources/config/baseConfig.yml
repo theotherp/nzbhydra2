@@ -279,6 +279,7 @@ main:
   instanceCounterDownloaded: false
   keepHistory: true
   keepHistoryForWeeks: null
+  keepStatsForWeeks: null
   logging:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"

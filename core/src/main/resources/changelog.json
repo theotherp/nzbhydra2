@@ -3,6 +3,10 @@
     "version": "v2.15.3",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add an extra option for how long stats data is kept. Set this to 4 weeks or so. I've also updated the wiki's memory page to explain which settings impact the database size which is usually the reason for high memory usage."
+      },
+      {
         "type": "note",
         "text": "I've reduced the default for how long search results are kept in the database to mitigate some memory issues with large databases. Only very few users should be affected by this negatively."
       },

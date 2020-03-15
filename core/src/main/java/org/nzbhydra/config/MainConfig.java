@@ -38,6 +38,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
     private int databaseCompactTime = 15_000;
     private boolean instanceCounterDownloaded = false;
     private boolean keepHistory = true;
+    private Integer keepStatsForWeeks = null;
     private Integer keepHistoryForWeeks = null;
     @RestartRequired
     private String host = "0.0.0.0";
@@ -113,7 +114,7 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
             result.getWarningMessages().add("You've made changes that affect Hydra's URL and require a restart. Hydra will try and reload using the new URL when it's back.");
         }
         if (DebugInfosProvider.isRunInDocker() && !"0.0.0.0".equals(host)) {
-            result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'");
+            result.getWarningMessages().add("You've changed the host but NZBHydra seems to be run in docker. It's recommended to use the host '0.0.0.0'.");
         }
         if (!"0.0.0.0".equals(host)) {
             try {
@@ -128,6 +129,18 @@ public class MainConfig extends ValidatingConfig<MainConfig> {
         if (oldConfig.getMain().getXmx() < 128) {
             result.getErrorMessages().add("The JVM memory must be set to at least 128");
         }
+
+        MainConfig newMain = newBaseConfig.getMain();
+        if (newMain.getKeepHistoryForWeeks() != null && newMain.getKeepHistoryForWeeks() <= 0) {
+            result.getErrorMessages().add("Please either delete the value for \"Keep history for\" or set it to a positive value.");
+        }
+        if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepStatsForWeeks() <= 0) {
+            result.getErrorMessages().add("Please either delete the value for \"Keep stats for\" or set it to a positive value.");
+        }
+        if (newMain.getKeepStatsForWeeks() != null && newMain.getKeepHistoryForWeeks() != null && newMain.getKeepStatsForWeeks() > newMain.getKeepHistoryForWeeks()) {
+            result.getErrorMessages().add("Please set the time to keep stats to a value not higher than the time to keep history.");
+        }
+
 
         ConfigValidationResult loggingResult = getLogging().validateConfig(oldConfig, getLogging(), newBaseConfig);
         result.getWarningMessages().addAll(loggingResult.getWarningMessages());

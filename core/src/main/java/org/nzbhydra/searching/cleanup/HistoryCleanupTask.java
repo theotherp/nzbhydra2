@@ -36,7 +36,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Component
-public class HistoryCleanup {
+public class HistoryCleanupTask {
 
     private enum ASC_DESC {
         ASC,
@@ -48,29 +48,31 @@ public class HistoryCleanup {
     @Autowired
     private DataSource dataSource;
 
-    private static final Logger logger = LoggerFactory.getLogger(HistoryCleanup.class);
+    private static final Logger logger = LoggerFactory.getLogger(HistoryCleanupTask.class);
 
     private static final long HOUR = 1000 * 60 * 60;
 
     @HydraTask(configId = "deleteOldHistory", name = "Delete old history entries", interval = HOUR)
     public void deleteOldResults() {
         Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getMain().getKeepHistoryForWeeks();
+        Integer keepStatsForWeeks = configProvider.getBaseConfig().getMain().getKeepStatsForWeeks();
         boolean keepHistory = configProvider.getBaseConfig().getMain().isKeepHistory();
-        if (keepSearchResultsForWeeks == null && keepHistory) {
+        boolean doDelete = keepSearchResultsForWeeks != null || keepStatsForWeeks != null || !keepHistory;
+        if (!doDelete) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No value set to determine how long history entries should be kept");
             return;
         }
-        logger.info("Starting deletion of old history entries");
 
         try (Connection connection = dataSource.getConnection()) {
             Optional<Integer> optionalHighestId;
-            Instant deleteOlderThan;
+            Instant deleteOlderThanHistory;
             if (keepHistory) {
-                deleteOlderThan = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
-                optionalHighestId = getIdBefore(deleteOlderThan, "SEARCH", ASC_DESC.DESC, connection);
+                logger.info("Starting deletion of old history entries");
+                deleteOlderThanHistory = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
+                optionalHighestId = getIdBefore(deleteOlderThanHistory, "SEARCH", ASC_DESC.DESC, connection);
             } else {
                 optionalHighestId = Optional.of(Integer.MAX_VALUE);
-                deleteOlderThan = Instant.now();
+                deleteOlderThanHistory = Instant.now();
             }
 
             if (optionalHighestId.isPresent()) {
@@ -81,13 +83,19 @@ public class HistoryCleanup {
                 deleteOldIndexerSearches(highestId, connection);
             }
 
-            deleteOldIndexerApiAccesses(deleteOlderThan, connection);
+            Instant deleteOlderThanStats;
+            if (keepStatsForWeeks != null) {
+                deleteOlderThanStats = Instant.now().minus(keepStatsForWeeks * 7, ChronoUnit.DAYS);
+            } else {
+                deleteOlderThanStats = deleteOlderThanHistory;
+            }
+            deleteOldIndexerApiAccesses(deleteOlderThanStats, connection);
 
             if (optionalHighestId.isPresent()) {
                 deleteOldSearches(optionalHighestId.get(), connection);
             }
 
-            optionalHighestId = getIdBefore(deleteOlderThan, "INDEXERNZBDOWNLOAD", ASC_DESC.DESC, connection);
+            optionalHighestId = getIdBefore(deleteOlderThanHistory, "INDEXERNZBDOWNLOAD", ASC_DESC.DESC, connection);
             if (optionalHighestId.isPresent()) {
                 deleteOldDownloads(optionalHighestId.get(), connection);
             }
@@ -150,6 +158,7 @@ public class HistoryCleanup {
         }
     }
 
+    @SuppressWarnings("SqlResolve")
     private Optional<Integer> getIdBefore(Instant deleteOlderThan, final String tableName, ASC_DESC ascDesc, Connection connection) {
         try (PreparedStatement statement = connection.prepareStatement("select t.id from " + tableName + " t where t.time < ? order by id " + ascDesc + " limit 1")) {
             statement.setTimestamp(1, new Timestamp(deleteOlderThan.toEpochMilli()));
