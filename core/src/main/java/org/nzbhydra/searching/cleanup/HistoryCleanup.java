@@ -54,7 +54,7 @@ public class HistoryCleanup {
 
     @HydraTask(configId = "deleteOldHistory", name = "Delete old history entries", interval = HOUR)
     public void deleteOldResults() {
-        Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getSearching().getKeepHistoryForWeeks();
+        Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getMain().getKeepHistoryForWeeks();
         boolean keepHistory = configProvider.getBaseConfig().getMain().isKeepHistory();
         if (keepSearchResultsForWeeks == null && keepHistory) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No value set to determine how long history entries should be kept");

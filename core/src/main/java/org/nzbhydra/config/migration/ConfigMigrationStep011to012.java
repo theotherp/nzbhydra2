@@ -33,8 +33,8 @@ public class ConfigMigrationStep011to012 implements ConfigMigrationStep {
 
     @Override
     public Map<String, Object> migrate(Map<String, Object> toMigrate) {
+        Map<String, Object> searching = getFromMap(toMigrate, "searching");
         try {
-            Map<String, Object> searching = getFromMap(toMigrate, "searching");
             int keepSearchResultsForDays = (int) searching.get("keepSearchResultsForDays");
             if (keepSearchResultsForDays == 14) {
                 logger.info("Setting keepSearchResultsForDays to 3");
@@ -45,6 +45,16 @@ public class ConfigMigrationStep011to012 implements ConfigMigrationStep {
         } catch (Exception e) {
             logger.error("Error while trying to reduce keepSearchResultsForDays", e);
         }
+
+        try {
+            Map<String, Object> main = getFromMap(toMigrate, "main");
+            main.put("keepHistoryForWeeks", searching.get("keepHistoryForWeeks"));
+            searching.remove("keepHistoryForWeeks");
+            logger.info("Moved setting keepHistoryForWeeks from searching to main");
+        } catch (Exception e) {
+            logger.error("Error while trying to move keepHistoryForWeeks to main config", e);
+        }
+
         return toMigrate;
     }
 }

@@ -4,7 +4,11 @@
     "changes": [
       {
         "type": "note",
-        "text": "I've reduced the default for how long search results are kept in the database to mitigate some memory issues with large databases. Only very few users should be affected by this negatively. "
+        "text": "I've reduced the default for how long search results are kept in the database to mitigate some memory issues with large databases. Only very few users should be affected by this negatively."
+      },
+      {
+        "type": "note",
+        "text": "I've moved the settings for the history to the main config section."
       }
     ],
     "final": false

@@ -278,6 +278,7 @@ main:
   host: "0.0.0.0"
   instanceCounterDownloaded: false
   keepHistory: true
+  keepHistoryForWeeks: null
   logging:
     consolelevel: "INFO"
     historyUserInfoType: "NONE"
@@ -330,7 +331,6 @@ searching:
   ignoreTemporarilyDisabled: false
   ignoreLoadLimitingForInternalSearches: false
   keepSearchResultsForDays: 14
-  keepHistoryForWeeks: null
   language: "en"
   loadAllCachedOnInternal: true
   loadLimitInternal: 100

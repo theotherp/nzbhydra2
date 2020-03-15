@@ -5643,6 +5643,35 @@ function ConfigFields($injector) {
                 },
                 {
                     wrapper: 'fieldset',
+                    templateOptions: {label: 'History'},
+                    fieldGroup: [
+                        {
+                            key: 'keepHistory',
+                            type: 'horizontalSwitch',
+                            templateOptions: {
+                                type: 'switch',
+                                label: 'Keep history',
+                                help: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
+                            }
+                        },
+                        {
+                            key: 'keepHistoryForWeeks',
+                            type: 'horizontalInput',
+                            hideExpression: '!model.keepHistory',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Keep history for...',
+                                addonRight: {
+                                    text: 'weeks'
+                                },
+                                min: 1,
+                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit.'
+                            }
+                        }
+                    ]
+                },
+                {
+                    wrapper: 'fieldset',
                     templateOptions: {label: 'Other'},
                     fieldGroup: [
                         {
@@ -5673,15 +5702,6 @@ function ConfigFields($injector) {
                                 },
                                 min: 128,
                                 help: '256 should suffice except when working with big databases / many indexers. See <a href="https://github.com/theotherp/nzbhydra2/wiki/Memory-requirements" target="_blank">wiki</a>'
-                            }
-                        },
-                        {
-                            key: 'keepHistory',
-                            type: 'horizontalSwitch',
-                            templateOptions: {
-                                type: 'switch',
-                                label: 'Keep history',
-                                help: 'If disabled no search or download history will be kept. These sections will be hidden in the GUI. You won\'t be able to see stats. The database will still contain a short-lived history of transactions that are kept for 24 hours.'
                             }
                         },
                         {
@@ -6278,19 +6298,6 @@ function ConfigFields($injector) {
                                 },
                                 required: true,
                                 help: 'Meta data from searches is stored in the database. When they\'re deleted existing links to Hydra become invalid.'
-                            }
-                        },
-                        {
-                            key: 'keepHistoryForWeeks',
-                            type: 'horizontalInput',
-                            templateOptions: {
-                                type: 'number',
-                                label: 'Keep history for...',
-                                addonRight: {
-                                    text: 'weeks'
-                                },
-                                min: 1,
-                                help: 'Only keep history (searches, downloads, stats) for a certain time. Will decrease database size and may improve performance a bit.'
                             }
                         },
                         {

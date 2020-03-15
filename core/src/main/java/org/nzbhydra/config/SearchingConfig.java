@@ -36,7 +36,6 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private boolean ignoreTemporarilyDisabled = false;
     private boolean ignoreLoadLimitingForInternalSearches = false;
     private int keepSearchResultsForDays = 3;
-    private Integer keepHistoryForWeeks = null;
     private String language = "en";
     private boolean loadAllCachedOnInternal;
     private int loadLimitInternal = 100;
@@ -104,7 +103,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
             warnings.add("nzbs.in requires special configurations to be made or your API account will be disabled. You should set the NZB access type in the searching config to \"Redirect to indexer\".");
         }
 
-        if (newBaseConfig.getSearching().getKeepHistoryForWeeks() != null && newBaseConfig.getSearching().getKeepHistoryForWeeks() <= 0) {
+        if (newBaseConfig.getMain().getKeepHistoryForWeeks() != null && newBaseConfig.getMain().getKeepHistoryForWeeks() <= 0) {
             errors.add("Please either delete the value for \"Keep history for\" or set it to a positive value");
         }
 
