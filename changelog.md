@@ -1,3 +1,9 @@
+### v2.16.1 BETA (2020-03-15)
+
+**Fix** Fix display of version history.
+
+
+
 ### v2.16.0 BETA (2020-03-15)
 
 **Feature** Add an extra option for how long stats data is kept. Set this to 4 weeks or so. I've also updated the wiki's memory page to explain which settings impact the database size which is usually the reason for high memory usage.
