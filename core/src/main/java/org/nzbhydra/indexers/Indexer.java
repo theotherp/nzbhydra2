@@ -490,7 +490,7 @@ public abstract class Indexer<T> {
         if (query == null) {
             return null;
         }
-        String sanitizedQuery = query.replaceAll("[\\(\\)=@#\\$%\\^,\\?<>{}\\|!:]", "");
+        String sanitizedQuery = query.replaceAll("[\\(\\)=@#\\$%\\^,\\?<>{}\\|!':]", "");
         if (!sanitizedQuery.equals(query)) {
             logger.debug("Removed illegal characters from title '{}'. Title that will be used for query is '{}'", query, sanitizedQuery);
         }

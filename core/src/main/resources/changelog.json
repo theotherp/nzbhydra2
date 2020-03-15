@@ -9,9 +9,13 @@
       {
         "type": "fix",
         "text": "Properly display full width of selected titles from the search autocomplete."
+      },
+      {
+        "type": "fix",
+        "text": "Remove apostrophe (') from generated queries again. Seems like there is no right way to do this as some trackers return more results with and some without; but it also seems that more indexers prefer it to be removed. If you know a tracker / indexer that works better with apostrophes in the query please tell me and I will make an exclusion for them."
       }
     ],
-    "final": false
+    "final": true
   },
   {
     "version": "v2.15.1",
