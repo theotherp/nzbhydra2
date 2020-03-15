@@ -39,6 +39,7 @@ public class SearchingConfig extends ValidatingConfig<SearchingConfig> {
     private Integer keepHistoryForWeeks = null;
     private String language = "en";
     private boolean loadAllCachedOnInternal;
+    private int loadLimitInternal = 100;
     private Integer maxAge;
     @JsonFormat(shape = Shape.STRING)
     private FileDownloadAccessType nzbAccessType = FileDownloadAccessType.REDIRECT;

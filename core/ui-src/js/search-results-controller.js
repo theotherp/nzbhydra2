@@ -6,7 +6,7 @@ angular
 function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService) {
     // console.time("Presenting");
     DebugService.log("foobar");
-    $scope.limitTo = 100;
+    $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
     //Handle incoming data
 
@@ -554,7 +554,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     result.titlesLength = titleGroup.length;
                     filteredResults.push(result);
                     duplicateIndex += 1;
-                    if (countTitleGroups <= 100) {
+                    if (countTitleGroups <= $scope.limitTo) {
                         countResultsUntilTitleGroupLimitReached++;
                     }
                 });
@@ -562,7 +562,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
             });
         });
-        $scope.limitTo = Math.max(100, countResultsUntilTitleGroupLimitReached);
+        $scope.limitTo = Math.max($scope.limitTo, countResultsUntilTitleGroupLimitReached);
 
         $scope.$broadcast("calculateDisplayState");
 
@@ -795,7 +795,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return getElemWatchers(root, ids);
         }
 
-    }, 100);
+    }, $scope.limitTo);
 
 }
 

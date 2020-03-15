@@ -7,6 +7,7 @@ import org.nzbhydra.mediainfo.InfoProvider;
 import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.mediainfo.TvInfo;
+import org.nzbhydra.searching.Searcher;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.slf4j.MDC;
@@ -23,6 +24,12 @@ public class SearchRequestFactory {
 
 
     public SearchRequest getSearchRequest(SearchType searchType, SearchSource source, Category category, long searchRequestId, Integer offset, Integer limit) {
+        if (limit == null) {
+            limit = source == SearchSource.INTERNAL ? configProvider.getBaseConfig().getSearching().getLoadLimitInternal() : Searcher.LOAD_LIMIT_API;
+        }
+        if (offset == null) {
+            offset = 0;
+        }
         SearchRequest searchRequest = new SearchRequest(source, searchType, offset, limit);
         searchRequest.setSource(source);
         searchRequest.setCategory(category);

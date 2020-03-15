@@ -11,7 +11,12 @@ import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +36,8 @@ public class SearchRequest {
     protected SearchSource source;
     protected SearchType searchType = SearchType.SEARCH;
     protected Category category = new Category();
-    protected Integer offset = 0;
-    protected Integer limit = 100;
+    protected int offset = 0;
+    protected int limit;
     protected boolean loadAll;
     protected Integer minsize = null;
     protected Integer maxsize = null;
@@ -53,20 +58,20 @@ public class SearchRequest {
     public SearchRequest(SearchSource source, SearchType searchType, Integer offset, Integer limit) {
         this.source = source;
         this.searchType = searchType;
-        this.offset = offset == null ? 0 : offset;
-        this.limit = limit == null ? 100 : limit; //LATER Set to 100 or, better, make configurable for internal/external searches
+        this.offset = offset;
+        this.limit = limit;
     }
 
     public Optional<Set<String>> getIndexers() {
         return Optional.ofNullable(indexers);
     }
 
-    public Optional<Integer> getOffset() {
-        return Optional.ofNullable(offset);
+    public int getOffset() {
+        return offset;
     }
 
-    public Optional<Integer> getLimit() {
-        return Optional.ofNullable(limit);
+    public int getLimit() {
+        return limit;
     }
 
     public Optional<Integer> getMinsize() {

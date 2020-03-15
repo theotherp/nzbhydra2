@@ -6224,12 +6224,26 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'loadLimitInternal',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Display...',
+                                addonRight: {
+                                    text: 'results per page'
+                                },
+                                max: 500,
+                                required: true,
+                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.'
+                            }
+                        },
+                        {
                             key: 'loadAllCachedOnInternal',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Display all cached results',
-                                help: 'Show all results already retrieved from indexers (instead of just the newest 100). Might make sorting / filtering a bit slower.'
+                                label: 'Display all retrieved results',
+                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
                             }
                         },
                         {
@@ -6828,7 +6842,6 @@ function handleConnectionCheckFail(ModalService, data, model, whatFailed, deferr
         }
     });
 }
-
 
 ConfigController.$inject = ["$scope", "$http", "activeTab", "ConfigService", "config", "DownloaderCategoriesService", "ConfigFields", "ConfigModel", "ModalService", "RestartService", "localStorageService", "$state", "growl", "$window"];angular
     .module('nzbhydraApp')
@@ -7943,7 +7956,7 @@ SearchResultsController.$inject = ["$stateParams", "$scope", "$q", "$timeout", "
 function SearchResultsController($stateParams, $scope, $q, $timeout, $document, blockUI, growl, localStorageService, SearchService, ConfigService, CategoriesService, DebugService, GenericStorageService, ModalService) {
     // console.time("Presenting");
     DebugService.log("foobar");
-    $scope.limitTo = 100;
+    $scope.limitTo = ConfigService.getSafe().searching.loadLimitInternal;
     $scope.offset = 0;
     //Handle incoming data
 
@@ -8491,7 +8504,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
                     result.titlesLength = titleGroup.length;
                     filteredResults.push(result);
                     duplicateIndex += 1;
-                    if (countTitleGroups <= 100) {
+                    if (countTitleGroups <= $scope.limitTo) {
                         countResultsUntilTitleGroupLimitReached++;
                     }
                 });
@@ -8499,7 +8512,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
 
             });
         });
-        $scope.limitTo = Math.max(100, countResultsUntilTitleGroupLimitReached);
+        $scope.limitTo = Math.max($scope.limitTo, countResultsUntilTitleGroupLimitReached);
 
         $scope.$broadcast("calculateDisplayState");
 
@@ -8732,7 +8745,7 @@ function SearchResultsController($stateParams, $scope, $q, $timeout, $document, 
             return getElemWatchers(root, ids);
         }
 
-    }, 100);
+    }, $scope.limitTo);
 
 }
 

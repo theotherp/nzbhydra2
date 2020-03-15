@@ -7,6 +7,10 @@
         "text": "Increased the number of entries in the search history dropdown to 25."
       },
       {
+        "type": "feature",
+        "text": "Added option to configure the number of results shown per page. Default is 100. Max is 500."
+      },
+      {
         "type": "fix",
         "text": "Properly display full width of selected titles from the search autocomplete."
       },
@@ -15,7 +19,7 @@
         "text": "Remove apostrophe (') from generated queries again. Seems like there is no right way to do this as some trackers return more results with and some without; but it also seems that more indexers prefer it to be removed. If you know a tracker / indexer that works better with apostrophes in the query please tell me and I will make an exclusion for them."
       }
     ],
-    "final": true
+    "final": false
   },
   {
     "version": "v2.15.1",

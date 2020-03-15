@@ -304,6 +304,13 @@ public class MockNewznab {
             endIndex = 0;
         }
 
+        if (params.getQ() != null && params.getQ().startsWith("show")) {
+            endIndex = Integer.parseInt(params.getQ().substring(4));
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(params.getOffset() == null ? 0 : params.getOffset(), endIndex, params.getApikey(), doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
 
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);

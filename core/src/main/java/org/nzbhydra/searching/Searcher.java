@@ -51,6 +51,8 @@ import java.util.stream.Collectors;
 @Component
 public class Searcher {
 
+    public static int LOAD_LIMIT_API = 100;
+
     private static final Logger logger = LoggerFactory.getLogger(Searcher.class);
 
     @Autowired
@@ -86,7 +88,7 @@ public class Searcher {
         SearchCacheEntry searchCacheEntry = getSearchCacheEntry(searchRequest);
 
         SearchResult searchResult = new SearchResult();
-        int numberOfWantedResults = searchRequest.getOffset().orElse(0) + searchRequest.getLimit().orElse(100); //LATER default for limit
+        int numberOfWantedResults = searchRequest.getOffset() + searchRequest.getLimit();
         searchResult.setIndexerSelectionResult(searchCacheEntry.getIndexerSelectionResult());
         searchResult.setNumberOfRemovedDuplicates(searchCacheEntry.getNumberOfRemovedDuplicates());
 
@@ -183,10 +185,18 @@ public class Searcher {
     }
 
     private void spliceSearchResultItemsAccordingToOffsetAndLimit(SearchRequest searchRequest, SearchResult searchResult, List<SearchResultItem> searchResultItems) {
-        int offset = searchRequest.getOffset().orElse(0);
-        int limit = searchRequest.getLimit().orElse(100); //LATER configurable
+        int offset = searchRequest.getOffset();
+        int limit;
+        if (searchRequest.getSource() == SearchSource.INTERNAL) {
+            limit = configProvider.getBaseConfig().getSearching().getLoadLimitInternal();
+        } else {
+            limit = searchRequest.getLimit();
+        }
 
-        if (searchRequest.getSource() == SearchSource.INTERNAL && offset == 0 && limit == 100 && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
+        if (searchRequest.getSource() == SearchSource.INTERNAL
+                && offset == 0
+                && limit == configProvider.getBaseConfig().getSearching().getLoadLimitInternal()
+                && configProvider.getBaseConfig().getSearching().isLoadAllCachedOnInternal()) {
             logger.debug("Will load all cached results");
             limit = searchResultItems.size();
         }
@@ -266,7 +276,7 @@ public class Searcher {
     protected SearchCacheEntry getSearchCacheEntry(SearchRequest searchRequest) {
         SearchCacheEntry searchCacheEntry;
 
-        if (searchRequest.getOffset().orElse(0) == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
+        if (searchRequest.getOffset() == 0 || !searchRequestCache.containsKey(searchRequest.hashCode())) {
             //New search
             SearchEntity searchEntity = new SearchEntity();
             searchEntity.setSource(searchRequest.getSource());
@@ -385,16 +395,13 @@ public class Searcher {
 
     private Callable<IndexerSearchResult> getIndexerCallable(SearchRequest searchRequest, IndexerSearchCacheEntry indexerSearchCacheEntry) {
         int offset;
-        int limit;
         if (indexerSearchCacheEntry.getIndexerSearchResults().isEmpty()) {
             offset = 0;
-            limit = 100; //LATER Set either global default or get from indexerName or implement possibility to keep this unset and let indexer implementation decide
         } else {
             IndexerSearchResult indexerToSearch = Iterables.getLast(indexerSearchCacheEntry.getIndexerSearchResults());
             offset = indexerToSearch.getOffset() + indexerToSearch.getLimit();
-            limit = indexerToSearch.getLimit();
         }
-        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, limit);
+        return () -> indexerSearchCacheEntry.getIndexer().search(searchRequest, offset, LOAD_LIMIT_API);
     }
 
     @SuppressWarnings("unused")

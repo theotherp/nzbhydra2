@@ -1074,12 +1074,26 @@ function ConfigFields($injector) {
                             }
                         },
                         {
+                            key: 'loadLimitInternal',
+                            type: 'horizontalInput',
+                            templateOptions: {
+                                type: 'number',
+                                label: 'Display...',
+                                addonRight: {
+                                    text: 'results per page'
+                                },
+                                max: 500,
+                                required: true,
+                                help: 'Determines the number of results shown on one page. This might also cause more API hits because indexers are queried until the number of results is matched or all indexers are exhausted. Limit is 500.'
+                            }
+                        },
+                        {
                             key: 'loadAllCachedOnInternal',
                             type: 'horizontalSwitch',
                             templateOptions: {
                                 type: 'switch',
-                                label: 'Display all cached results',
-                                help: 'Show all results already retrieved from indexers (instead of just the newest 100). Might make sorting / filtering a bit slower.'
+                                label: 'Display all retrieved results',
+                                help: 'Load all results already retrieved from indexers. Might make sorting / filtering a bit slower. Will still be paged according to the limit set above.'
                             }
                         },
                         {

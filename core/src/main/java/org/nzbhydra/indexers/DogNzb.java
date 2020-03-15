@@ -30,7 +30,7 @@ public class DogNzb extends Newznab {
             } else {
                 indexerSearchResult.setTotalResultsKnown(true);
                 indexerSearchResult.setHasMoreResults(false);
-                indexerSearchResult.setTotalResults(searchRequest.getOffset().orElse(0) + newznabResponse.getTotal());
+                indexerSearchResult.setTotalResults(searchRequest.getOffset() + newznabResponse.getTotal());
             }
             indexerSearchResult.setOffset(newznabResponse.getOffset());
             indexerSearchResult.setLimit(100);

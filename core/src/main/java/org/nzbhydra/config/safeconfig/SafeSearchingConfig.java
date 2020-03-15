@@ -11,12 +11,14 @@ public class SafeSearchingConfig {
     private Integer coverSize;
     private Integer maxAge;
     private boolean showQuickFilterButtons;
+    private int loadLimitInternal;
 
     public SafeSearchingConfig(SearchingConfig searchingConfig) {
         coverSize = searchingConfig.getCoverSize();
         showQuickFilterButtons = searchingConfig.isShowQuickFilterButtons();
         maxAge = searchingConfig.getMaxAge().orElse(null);
         ignoreTemporarilyDisabled = searchingConfig.isIgnoreTemporarilyDisabled();
+        loadLimitInternal = searchingConfig.getLoadLimitInternal();
     }
 
 

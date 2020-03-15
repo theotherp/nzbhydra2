@@ -68,15 +68,15 @@ public class Binsearch extends Indexer<String> {
             Elements pageLinks = navigationTable.select("a");
             boolean hasMore = !pageLinks.isEmpty() && pageLinks.last().text().equals(">");
             boolean totalKnown = false;
-            indexerSearchResult.setOffset(searchRequest.getOffset().orElse(0));
-            int total = searchRequest.getOffset().orElse(0) + 100; //Must be at least as many as already loaded
+            indexerSearchResult.setOffset(searchRequest.getOffset());
+            int total = searchRequest.getOffset() + 100; //Must be at least as many as already loaded
             if (!hasMore) { //Parsed page contains all the available results
-                total = searchRequest.getOffset().orElse(0) + indexerSearchResult.getSearchResultItems().size();
+                total = searchRequest.getOffset() + indexerSearchResult.getSearchResultItems().size();
                 totalKnown = true;
             }
-        indexerSearchResult.setHasMoreResults(hasMore);
-        indexerSearchResult.setTotalResults(total);
-        indexerSearchResult.setTotalResultsKnown(totalKnown);
+            indexerSearchResult.setHasMoreResults(hasMore);
+            indexerSearchResult.setTotalResults(total);
+            indexerSearchResult.setTotalResultsKnown(totalKnown);
         } else {
             indexerSearchResult.setHasMoreResults(false);
             indexerSearchResult.setTotalResults(0);
