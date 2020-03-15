@@ -1,3 +1,13 @@
+### v2.16.0 BETA (2020-03-15)
+
+**Feature** Add an extra option for how long stats data is kept. Set this to 4 weeks or so. I've also updated the wiki's memory page to explain which settings impact the database size which is usually the reason for high memory usage.
+
+**Note** I've reduced the default for how long search results are kept in the database to mitigate some memory issues with large databases. Only very few users should be affected by this negatively.
+
+**Note** I've moved the settings for the history to the main config section.
+
+
+
 ### v2.15.2 BETA (2020-03-15)
 
 **Feature** Increased the number of entries in the search history dropdown to 25.
