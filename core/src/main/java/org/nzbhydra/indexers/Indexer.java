@@ -256,6 +256,7 @@ public abstract class Indexer<T> {
                 item.setGuid(guid);
                 item.setSearchResultId(guid);
             }
+            logger.debug("Found {} results which were already in the database and {} new ones", alreadySavedIds.size(), searchResultEntities.size());
             try {
                 searchResultRepository.saveAll(searchResultEntities);
                 indexerSearchResult.setSearchResultEntities(new HashSet<>(searchResultEntities));

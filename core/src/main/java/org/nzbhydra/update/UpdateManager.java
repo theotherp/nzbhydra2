@@ -240,7 +240,7 @@ public class UpdateManager implements InitializingBean {
     public List<ChangelogVersionEntry> getAutomaticUpdateVersionHistory() throws UpdateException {
         Optional<String> previousVersion = genericStorage.get(AutomaticUpdater.TO_NOTICE_KEY, String.class);
         if (!previousVersion.isPresent()) {
-            logger.error("Unable to find the version from which the automatic update was instaled");
+            logger.error("Unable to find the version from which the automatic update was installed");
             return Collections.emptyList();
         }
 

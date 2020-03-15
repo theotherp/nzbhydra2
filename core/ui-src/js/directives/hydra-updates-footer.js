@@ -93,6 +93,7 @@ function hydraUpdatesFooter() {
                     }
                     $scope.automaticUpdateToNotice = response.data.automaticUpdateToNotice;
 
+
                     $scope.$emit("showUpdateFooter", $scope.updateAvailable);
                     $scope.$emit("showAutomaticUpdateFooter", $scope.automaticUpdateToNotice);
                 } else {
