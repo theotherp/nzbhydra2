@@ -1,3 +1,15 @@
+### v2.15.2 BETA (2020-03-15)
+
+**Feature** Increased the number of entries in the search history dropdown to 25.
+
+**Feature** Added option to configure the number of results shown per page. Default is 100. Max is 500.
+
+**Fix** Properly display full width of selected titles from the search autocomplete.
+
+**Fix** Remove apostrophe (') from generated queries again. Seems like there is no right way to do this as some trackers return more results with and some without; but it also seems that more indexers prefer it to be removed. If you know a tracker / indexer that works better with apostrophes in the query please tell me and I will make an exclusion for them.
+
+
+
 ### v2.15.1 BETA (2020-03-14)
 
 **Fix** Contents of the generic storage were not properly migrated.
