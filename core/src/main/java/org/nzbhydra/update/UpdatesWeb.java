@@ -55,7 +55,7 @@ public class UpdatesWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/infos", method = RequestMethod.GET)
-    public VersionsInfo getVersions() throws Exception {
+    public VersionsInfo getVersions() {
         if (Boolean.parseBoolean(environment.getProperty("alwayscheckforupdates", "false"))) {
             versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
         }
@@ -108,11 +108,13 @@ public class UpdatesWeb {
     @RequestMapping(value = "/internalapi/updates/ackAutomaticUpdateVersionHistory", method = RequestMethod.GET)
     public void ackHistoryForAutomaticUpdateShown() {
         genericStorage.remove(AutomaticUpdater.TO_NOTICE_KEY);
+        //Reset cache
+        versionsInfoCache = Suppliers.memoizeWithExpiration(versionsInfoSupplier(), 15, TimeUnit.MINUTES);
     }
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/ignore", method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
-    public void ignore(@RequestParam("version") String version) throws Exception {
+    public void ignore(@RequestParam("version") String version) {
         updateManager.ignore(version);
     }
 
@@ -127,7 +129,7 @@ public class UpdatesWeb {
 
     @Secured({"ROLE_ADMIN"})
     @RequestMapping(value = "/internalapi/updates/messages", method = RequestMethod.GET)
-    public List<String> getUpdateMessages() throws Exception {
+    public List<String> getUpdateMessages() {
         return updateMessages;
     }
 

@@ -27,8 +27,7 @@ public class GenericStorage {
     }
 
     public <T extends Serializable> void remove(String key) {
-        Map<String, String> genericStorage = configProvider.getBaseConfig().getGenericStorage();
-        genericStorage.remove(key);
+        configProvider.getBaseConfig().getGenericStorage().remove(key);
         configProvider.getBaseConfig().save(true);
     }
 
