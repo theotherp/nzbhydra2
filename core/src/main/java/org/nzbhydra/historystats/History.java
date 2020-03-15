@@ -10,15 +10,26 @@ import org.nzbhydra.searching.db.SearchEntity;
 import org.nzbhydra.searching.db.SearchRepository;
 import org.nzbhydra.web.SessionStorage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 
 @SuppressWarnings("unchecked")
 @Component
@@ -125,7 +136,7 @@ public class History {
             }
             contained.add(hash);
             entities.add(searchEntity);
-            if (entities.size() == 15) {
+            if (entities.size() == 25) {
                 break;
             }
         }
