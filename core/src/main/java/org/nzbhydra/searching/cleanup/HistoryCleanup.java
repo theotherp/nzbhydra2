@@ -26,7 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -51,15 +55,24 @@ public class HistoryCleanup {
     @HydraTask(configId = "deleteOldHistory", name = "Delete old history entries", interval = HOUR)
     public void deleteOldResults() {
         Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getSearching().getKeepHistoryForWeeks();
-        if (keepSearchResultsForWeeks == null) {
+        boolean keepHistory = configProvider.getBaseConfig().getMain().isKeepHistory();
+        if (keepSearchResultsForWeeks == null && keepHistory) {
             logger.debug(LoggingMarkers.HISTORY_CLEANUP, "No value set to determine how long history entries should be kept");
             return;
         }
         logger.info("Starting deletion of old history entries");
 
         try (Connection connection = dataSource.getConnection()) {
-            Instant deleteOlderThan = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
-            Optional<Integer> optionalHighestId = getIdBefore(deleteOlderThan, "SEARCH", ASC_DESC.DESC, connection);
+            Optional<Integer> optionalHighestId;
+            Instant deleteOlderThan;
+            if (keepHistory) {
+                deleteOlderThan = Instant.now().minus(keepSearchResultsForWeeks * 7, ChronoUnit.DAYS);
+                optionalHighestId = getIdBefore(deleteOlderThan, "SEARCH", ASC_DESC.DESC, connection);
+            } else {
+                optionalHighestId = Optional.of(Integer.MAX_VALUE);
+                deleteOlderThan = Instant.now();
+            }
+
             if (optionalHighestId.isPresent()) {
                 int highestId = optionalHighestId.get();
                 logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Will delete all entries for search IDs lower than {}", highestId);
@@ -127,9 +140,9 @@ public class HistoryCleanup {
         deleteOldEntries(searchId, "delete from SEARCH where ID < ? and rownum() < 10000", "Deleted {} searches from database", connection);
     }
 
-    public void deleteOldDownloads(Integer searchId, Connection connection) {
+    public void deleteOldDownloads(Integer downloadId, Connection connection) {
         logger.debug(LoggingMarkers.HISTORY_CLEANUP, "Deleting old downloads");
-        deleteOldEntries(searchId, "delete from indexernzbdownload where search_result_id < ? ", "Deleted {} downloads from database", connection);
+        deleteOldEntries(downloadId, "delete from indexernzbdownload where id < ? ", "Deleted {} downloads from database", connection);
         try (PreparedStatement statement = connection.prepareStatement("delete from INDEXERNZBDOWNLOAD where SEARCH_RESULT_ID is null")) {
             statement.executeUpdate();
         } catch (SQLException e) {
