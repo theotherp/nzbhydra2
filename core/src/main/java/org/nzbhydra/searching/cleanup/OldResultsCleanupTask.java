@@ -16,8 +16,10 @@
 
 package org.nzbhydra.searching.cleanup;
 
+import com.google.common.base.Stopwatch;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Component
@@ -47,6 +50,7 @@ public class OldResultsCleanupTask {
     @HydraTask(configId = "deleteOldSearchResults", name = "Delete old search results", interval = HOUR)
     @Transactional
     public void deleteOldResults() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         int keepSearchResultsForDays = configProvider.getBaseConfig().getSearching().getKeepSearchResultsForDays();
         String sqlString = "delete from SEARCHRESULT where FIRST_FOUND "
                 + " < DATEADD('SECOND', :epochSecond, DATE '1970-01-01') " +
@@ -62,6 +66,7 @@ public class OldResultsCleanupTask {
         }
 
         cleanupGcLogs();
+        logger.debug(LoggingMarkers.PERFORMANCE, "Cleanup of old results took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     protected void cleanupGcLogs() {

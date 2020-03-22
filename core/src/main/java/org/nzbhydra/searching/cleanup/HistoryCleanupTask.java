@@ -16,6 +16,7 @@
 
 package org.nzbhydra.searching.cleanup;
 
+import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.Sleep;
@@ -34,6 +35,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class HistoryCleanupTask {
@@ -54,6 +56,7 @@ public class HistoryCleanupTask {
 
     @HydraTask(configId = "deleteOldHistory", name = "Delete old history entries", interval = HOUR)
     public void deleteOldResults() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         Integer keepSearchResultsForWeeks = configProvider.getBaseConfig().getMain().getKeepHistoryForWeeks();
         Integer keepStatsForWeeks = configProvider.getBaseConfig().getMain().getKeepStatsForWeeks();
         boolean keepHistory = configProvider.getBaseConfig().getMain().isKeepHistory();
@@ -103,6 +106,7 @@ public class HistoryCleanupTask {
             logger.error("Error while executing SQL", e);
         }
         logger.info("Deletion of old history entries finished");
+        logger.debug(LoggingMarkers.PERFORMANCE, "Cleanup of history took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
     public void deleteOldIndexerSearches(Integer searchId, Connection connection) {

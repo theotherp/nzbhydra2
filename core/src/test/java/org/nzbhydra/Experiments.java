@@ -42,6 +42,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Experiments {
 
@@ -130,24 +135,38 @@ public class Experiments {
         OkHttpClient client = new OkHttpClient.Builder()
                 .build();
 
-        for (int i = 0; i < 100; i++) {
+        ExecutorService executorService = Executors.newFixedThreadPool(8);
+        executeCalls(client, executorService, "api", 1000);
+        executeCalls(client, executorService, "torznab/api", 1000);
+
+//        for (int i = 0; i < 1000; i++) {
+//            Request request = new Request.Builder()
+//                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=bla" + i)
+//                    .build();
+//
+//            System.out.println("b: " + i + "/1000");
+//            Response response = client.newCall(request).execute();
+//        }
+
+
+    }
+
+    private void executeCalls(OkHttpClient client, ExecutorService executorService, String endpoint, int numberOfRuns) throws InterruptedException {
+        executorService.invokeAll(IntStream.range(0, numberOfRuns).mapToObj(i -> (Callable<Object>) () -> {
+            Thread.sleep(10_000);
             Request request = new Request.Builder()
-                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=blub" + i)
+                    .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000")
                     .build();
-            System.out.println("a: " + i + "/100");
-            Response response = client.newCall(request).execute();
-        }
-
-        for (int i = 0; i < 1000; i++) {
-            Request request = new Request.Builder()
-                    .url("http://127.0.0.1:5076/api?apikey=apikey&t=search&q=bla" + i)
-                    .build();
-
-            System.out.println("b: " + i + "/1000");
-            Response response = client.newCall(request).execute();
-        }
-
-
+            System.out.println("a: " + i + "/" + numberOfRuns);
+            try {
+                try (Response response = client.newCall(request).execute()) {
+                    return response.isSuccessful();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }).collect(Collectors.toList()));
     }
 
     @Data

@@ -16,6 +16,8 @@
 
 package org.nzbhydra.problemdetection;
 
+import com.google.common.base.Stopwatch;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.tasks.HydraTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class ProblemDetectorTask {
@@ -37,10 +40,12 @@ public class ProblemDetectorTask {
 
     @HydraTask(configId = "ProblemDetector", name = "Problem detector", interval = HOUR)
     public void detectProblems() {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         for (ProblemDetector problemDetector : problemDetectors) {
             logger.debug("Executing problem detector {}", problemDetector.getClass().getName());
             problemDetector.executeCheck();
         }
+        logger.debug(LoggingMarkers.PERFORMANCE, "Check for problems took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
 

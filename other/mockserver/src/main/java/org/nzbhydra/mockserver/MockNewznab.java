@@ -311,6 +311,17 @@ public class MockNewznab {
             return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
         }
 
+        if (params.getQ() != null && params.getQ().startsWith("blub")) {
+            endIndex = 100;
+            String titleBase = params.getQ() + "_" + params.getApikey();
+            if (!params.getCat().isEmpty()) {
+                titleBase += params.getCat().get(0);
+            }
+            NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(params.getOffset() == null ? 0 : params.getOffset(), endIndex, titleBase, doGenerateDuplicates, Collections.emptyList(), false, params.getOffset());
+            rssRoot.getRssChannel().getNewznabResponse().setTotal(endIndex);
+            return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);
+        }
+
 
         if (responsesPerApikey.containsKey(endIndex)) {
             return new ResponseEntity<Object>(responsesPerApikey.get(endIndex), HttpStatus.OK);
@@ -383,7 +394,11 @@ public class MockNewznab {
         if (params.getT() == ActionAttribute.CAPS) {
             return new ResponseEntity<Object>(NewznabMockBuilder.getCaps(), HttpStatus.OK);
         }
-        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 10, params.getApikey(), false, Collections.emptyList(), true, 0);
+        String titleBase = params.getQ() + "_" + params.getApikey();
+        if (!params.getCat().isEmpty()) {
+            titleBase += params.getCat().get(0);
+        }
+        NewznabXmlRoot rssRoot = NewznabMockBuilder.generateResponse(0, 100, titleBase, false, Collections.emptyList(), true, 0);
         Random random = new Random();
         for (NewznabXmlItem item : rssRoot.getRssChannel().getItems()) {
             item.setNewznabAttributes(new ArrayList<>());
@@ -395,6 +410,7 @@ public class MockNewznab {
             item.setCategory("5000");
 
             item.setGrabs(null);
+//            item.getNewznabAttributes().clear();
         }
 
         return new ResponseEntity<Object>(rssRoot, HttpStatus.OK);

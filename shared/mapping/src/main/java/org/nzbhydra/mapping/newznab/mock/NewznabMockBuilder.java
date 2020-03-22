@@ -1,7 +1,19 @@
 package org.nzbhydra.mapping.newznab.mock;
 
-import org.nzbhydra.mapping.newznab.xml.*;
-import org.nzbhydra.mapping.newznab.xml.caps.*;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategories;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRetention;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -24,9 +36,9 @@ public class NewznabMockBuilder {
         searching.setTvSearch(new CapsXmlSearch("yes", "q,tmdb,tvmazeid"));
         capsRoot.setSearching(searching);
         CapsXmlCategories capsCategories = new CapsXmlCategories(Arrays.asList(
-            new CapsXmlCategory(2000, "Movies", Arrays.asList(new CapsXmlCategory(2030, "Movies HD"))),
-            new CapsXmlCategory(7000, "Other", Arrays.asList(new CapsXmlCategory(7020, "EBook"))),
-            new CapsXmlCategory(9000, "Misc", Arrays.asList(new CapsXmlCategory(9090, "Anime")))
+                new CapsXmlCategory(2000, "Movies", Arrays.asList(new CapsXmlCategory(2030, "Movies HD"))),
+                new CapsXmlCategory(7000, "Other", Arrays.asList(new CapsXmlCategory(7020, "EBook"))),
+                new CapsXmlCategory(9000, "Misc", Arrays.asList(new CapsXmlCategory(9090, "Anime")))
         ));
         capsRoot.setCategories(capsCategories);
         return capsRoot;
@@ -59,8 +71,8 @@ public class NewznabMockBuilder {
             item.setTitle(title);
             item.setPubDate(pubDate);
             String guid = "http://127.0.0.1:5080/nzb/" + request.getTitleBase() + i;
-            item.setEnclosure(new NewznabXmlEnclosure(guid, Long.valueOf(size), "application/x-nzb"));
-            item.setComments("http://127.0.0.1:5080/comments/" + i);
+            item.setEnclosure(new NewznabXmlEnclosure(guid, Long.valueOf(size), request.isTorznab() ? "application/x-bittorrent" : "application/x-nzb"));
+            item.setComments("http://127.0.0.1:5080/comments/" + request.getTitleBase() + i);
             item.setLink(guid);
             item.setCategory("TV > HD");
             item.setRssGuid(new NewznabXmlGuid(guid, true));
@@ -112,14 +124,14 @@ public class NewznabMockBuilder {
 
     public static NewznabXmlRoot generateResponse(int startIndex, int endIndex, String itemTitleBase, boolean generateDuplicates, List<String> titleWords, boolean torznab, int offset) {
         return generateResponse(
-            NewznabMockRequest.builder()
-                .numberOfResults(endIndex - startIndex)
-                .titleBase(itemTitleBase)
-                .generateDuplicates(generateDuplicates)
-                .titleWords(titleWords)
-                .torznab(torznab)
-                .offset(offset)
-                .build()
+                NewznabMockRequest.builder()
+                        .numberOfResults(endIndex - startIndex)
+                        .titleBase(itemTitleBase)
+                        .generateDuplicates(generateDuplicates)
+                        .titleWords(titleWords)
+                        .torznab(torznab)
+                        .offset(offset)
+                        .build()
         );
     }
 

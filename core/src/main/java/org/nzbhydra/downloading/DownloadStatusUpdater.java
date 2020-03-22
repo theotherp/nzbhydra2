@@ -16,6 +16,7 @@
 
 package org.nzbhydra.downloading;
 
+import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.downloading.downloaders.Downloader;
 import org.nzbhydra.downloading.downloaders.Downloader.StatusCheckType;
@@ -33,6 +34,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DownloadStatusUpdater {
@@ -72,7 +74,12 @@ public class DownloadStatusUpdater {
             return;
         }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED, FileDownloadStatus.NZB_ADDED, FileDownloadStatus.NZB_DOWNLOAD_SUCCESSFUL);
-        checkStatus(statusesToCheck, DAY_SECONDS, StatusCheckType.HISTORY);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        try {
+            checkStatus(statusesToCheck, DAY_SECONDS, StatusCheckType.HISTORY);
+        } finally {
+            logger.debug(LoggingMarkers.PERFORMANCE, "Check of history took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        }
     }
 
     @HydraTask(configId = "downloadQueueCheck", name = "Download queue check", interval = TEN_SECONDS_MS)
@@ -87,7 +94,12 @@ public class DownloadStatusUpdater {
             return;
         }
         List<FileDownloadStatus> statusesToCheck = Arrays.asList(FileDownloadStatus.REQUESTED);
-        checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        try {
+            checkStatus(statusesToCheck, HOUR_SECONDS, StatusCheckType.QUEUE);
+        } finally {
+            logger.debug(LoggingMarkers.PERFORMANCE, "Check of download queue took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        }
     }
 
 

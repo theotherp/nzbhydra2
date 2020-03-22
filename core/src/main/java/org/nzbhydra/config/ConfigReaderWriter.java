@@ -19,6 +19,7 @@ package org.nzbhydra.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Charsets;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -60,10 +61,13 @@ public class ConfigReaderWriter {
     }
 
     public void save(BaseConfig baseConfig, File targetFile) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             save(targetFile, Jackson.YAML_MAPPER.writeValueAsString(baseConfig));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Unable to save config", e);
+        } finally {
+            logger.debug(LoggingMarkers.PERFORMANCE, "Writing config took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
     }
 

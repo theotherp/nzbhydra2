@@ -1,5 +1,6 @@
 package org.nzbhydra.backup;
 
+import com.google.common.base.Stopwatch;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import org.nzbhydra.GenericResponse;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.ConfigReaderWriter;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +60,7 @@ public class BackupAndRestore {
 
     @Transactional
     public File backup() throws Exception {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         File backupFolder = getBackupFolder();
         if (!backupFolder.exists()) {
             boolean created = backupFolder.mkdirs();
@@ -83,6 +87,7 @@ public class BackupAndRestore {
         }
 
         logger.info("Successfully wrote backup to file {}", backupZip.getAbsolutePath());
+        logger.debug(LoggingMarkers.PERFORMANCE, "Creation of backup took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return backupZip;
     }
 

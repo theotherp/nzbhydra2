@@ -24,7 +24,7 @@ public class NewznabParameters {
 
     private String q;
 
-    private List<Integer> cat;
+    private List<Integer> cat = new ArrayList<>();
 
     private String rid;
     private String tvdbid;
