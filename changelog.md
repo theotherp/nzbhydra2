@@ -1,3 +1,9 @@
+### v2.16.2 (2020-03-22)
+
+**Feature** Extend performance logging.
+
+
+
 ### v2.16.1 BETA (2020-03-15)
 
 **Fix** Fix display of version history.
