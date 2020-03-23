@@ -1,3 +1,9 @@
+### v2.16.4 (2020-03-23)
+
+**Feature** Enable some more logging to debug slow server responses.
+
+
+
 ### v2.16.3 (2020-03-23)
 
 **Feature** Fancy new graph for CPU usage per thread in the debug infos section. Enable the logging marker 'Performance' for the graph to show data. In this case NZBHydra will also log memory usage and any threads using more than 5% CPU. This might have an overhead on some systems so I don't recommend running it by default.
