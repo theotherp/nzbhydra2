@@ -131,7 +131,7 @@ public class Experiments {
 
     @Test
     @Ignore
-    public void connectToNzbGeek() throws Exception {
+    public void stressTest() throws Exception {
         OkHttpClient client = new OkHttpClient.Builder()
                 .build();
 
@@ -153,7 +153,7 @@ public class Experiments {
 
     private void executeCalls(OkHttpClient client, ExecutorService executorService, String endpoint, int numberOfRuns) throws InterruptedException {
         executorService.invokeAll(IntStream.range(0, numberOfRuns).mapToObj(i -> (Callable<Object>) () -> {
-            Thread.sleep(10_000);
+            Thread.sleep(1_000);
             Request request = new Request.Builder()
                     .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000")
                     .build();

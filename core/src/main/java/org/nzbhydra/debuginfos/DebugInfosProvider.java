@@ -1,29 +1,49 @@
 package org.nzbhydra.debuginfos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.apache.commons.io.IOUtils;
 import org.nzbhydra.Jackson;
 import org.nzbhydra.NzbHydra;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.logging.LogAnonymizer;
 import org.nzbhydra.logging.LogContentProvider;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.problemdetection.OutdatedWrapperDetector;
 import org.nzbhydra.update.UpdateManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
+import org.springframework.boot.actuate.metrics.MetricsEndpoint;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.text.DecimalFormat;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,6 +52,7 @@ import java.util.zip.ZipOutputStream;
 public class DebugInfosProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DebugInfosProvider.class);
+    private static final int LOG_METRICS_EVERY_SECONDS = 5;
 
     @Autowired
     private LogAnonymizer logAnonymizer;
@@ -45,8 +66,101 @@ public class DebugInfosProvider {
     private HydraOkHttp3ClientHttpRequestFactory requestFactory;
     @Autowired
     private OutdatedWrapperDetector outdatedWrapperDetector;
+    @Autowired
+    private MetricsEndpoint metricsEndpoint;
+    @Autowired
+    private ThreadDumpEndpoint threadDumpEndpoint;
     @PersistenceContext
     private EntityManager entityManager;
+
+    private List<TimeAndThreadCpuUsages> timeAndThreadCpuUsagesList = new ArrayList<>();
+    private Map<String, Long> lastThreadCpuTimes = new HashMap<>();
+
+    @PostConstruct
+    public void logMetrics() {
+        if (!configProvider.getBaseConfig().getMain().getLogging().getMarkersToLog().contains(LoggingMarkers.PERFORMANCE.getName())) {
+            return;
+        }
+        logger.debug(LoggingMarkers.PERFORMANCE, "Will log performance metrics every {} seconds", LOG_METRICS_EVERY_SECONDS);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final String cpuMetric = "process.cpu.usage";
+                    String message = "Process CPU usage: " + formatSample(cpuMetric, metricsEndpoint.metric(cpuMetric, null).getMeasurements().get(0).getValue());
+                    logger.debug(LoggingMarkers.PERFORMANCE, message);
+                } catch (Exception e) {
+                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging CPU usage", e);
+                }
+                try {
+                    final String memoryMetric = "jvm.memory.used";
+                    String message = "Process memory usage: " + formatSample(memoryMetric, metricsEndpoint.metric(memoryMetric, null).getMeasurements().get(0).getValue());
+                    logger.debug(LoggingMarkers.PERFORMANCE, message);
+                } catch (Exception e) {
+                    logger.debug(LoggingMarkers.PERFORMANCE, "Error while logging memory usage", e);
+                }
+                ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+                final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+
+            }
+        }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
+
+        int cpuCount = metricsEndpoint.metric("system.cpu.count", null).getMeasurements().get(0).getValue().intValue();
+        ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
+        final double[] previousUptime = {getUpTimeInMiliseconds()};
+        ScheduledExecutorService executor2 = Executors.newScheduledThreadPool(1);
+
+        executor2.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                final double upTime = getUpTimeInMiliseconds();
+                double elapsedTime = upTime - previousUptime[0];
+
+                final ThreadInfo[] threadInfos = threadMxBean.dumpAllThreads(true, true);
+                TimeAndThreadCpuUsages timeAndThreadCpuUsages = new TimeAndThreadCpuUsages(Instant.now());
+                for (ThreadInfo threadInfo : threadInfos) {
+                    final String threadName = threadInfo.getThreadName();
+                    final long threadCpuTime = threadMxBean.getThreadCpuTime(threadInfo.getThreadId());
+                    if (!lastThreadCpuTimes.containsKey(threadName)) {
+                        lastThreadCpuTimes.put(threadName, threadCpuTime);
+                        continue;
+                    }
+                    final Long lastThreadCpuTime = lastThreadCpuTimes.get(threadName);
+                    long elapsedThreadCpuTime = threadCpuTime - lastThreadCpuTime;
+                    if (elapsedThreadCpuTime < 0) {
+                        //Not sure why but this happens with some threads
+                        continue;
+                    }
+                    float cpuUsage = Math.min(99F, elapsedThreadCpuTime / (float) (elapsedTime * 1000 * cpuCount));
+                    if (cpuUsage < 0) {
+                        cpuUsage = 0;
+                    }
+                    if (cpuUsage > 5F) {
+                        logger.debug(LoggingMarkers.PERFORMANCE, "CPU usage of thread {}: {}", threadName, cpuUsage);
+                    }
+                    timeAndThreadCpuUsages.getThreadCpuUsages().add(new ThreadCpuUsage(threadName, (long) cpuUsage));
+
+                    lastThreadCpuTimes.put(threadName, threadCpuTime);
+                }
+                timeAndThreadCpuUsagesList.add(timeAndThreadCpuUsages);
+                previousUptime[0] = upTime;
+                if (timeAndThreadCpuUsagesList.size() == 50) {
+                    timeAndThreadCpuUsagesList.remove(0);
+                }
+            }
+
+        }, 0, LOG_METRICS_EVERY_SECONDS, TimeUnit.SECONDS);
+
+    }
+
+    public List<TimeAndThreadCpuUsages> getThreadCpuUsageChartData() {
+        return timeAndThreadCpuUsagesList;
+    }
+
+    private double getUpTimeInMiliseconds() {
+        return metricsEndpoint.metric("process.uptime", null).getMeasurements().get(0).getValue() * 1000;
+    }
 
     public byte[] getDebugInfosAsZip() throws IOException {
         logger.info("Creating debug infos");
@@ -72,6 +186,15 @@ public class DebugInfosProvider {
         logDatabaseFolderSize();
         if (isRunInDocker()) {
             logger.info("Apparently run in docker");
+        }
+
+        logger.info("Metrics:");
+        final Set<String> metricsNames = metricsEndpoint.listNames().getNames();
+        for (String metric : metricsNames) {
+            final MetricsEndpoint.MetricResponse response = metricsEndpoint.metric(metric, null);
+            logger.info(metric + ": " + response.getMeasurements().stream()
+                    .map(x -> x.getStatistic().name() + ": " + formatSample(metric, x.getValue()))
+                    .collect(Collectors.joining(", ")));
         }
 
         String anonymizedConfig = getAnonymizedConfig();
@@ -102,6 +225,34 @@ public class DebugInfosProvider {
         }
         logger.debug("Finished creating debug infos ZIP");
         return Files.readAllBytes(tempFile.toPath());
+    }
+
+    public void logThreadDump() {
+        logger.debug(threadDumpEndpoint.textThreadDump());
+    }
+
+    private String formatSample(String name, Double value) {
+        String suffix = "";
+        if (value == 0) {
+            return "0";
+        }
+        if (name.contains("memory")) {
+            value = value / (1024 * 1024);
+            suffix = "MB";
+        }
+        String pattern;
+        if (value % 1 == 0) {
+            pattern = "#,###";
+        } else {
+            pattern = "#,###.00";
+        }
+        if (name.contains("cpu")) {
+            value = 100 * value;
+            suffix = "%";
+            pattern = "##";
+        }
+
+        return new DecimalFormat(pattern).format(value) + suffix;
     }
 
     private void writeFileIfExists(ZipOutputStream zos, File logsFolder, String filename) throws IOException {
@@ -172,5 +323,23 @@ public class DebugInfosProvider {
     private String getAnonymizedConfig() throws JsonProcessingException {
         return Jackson.SENSITIVE_YAML_MAPPER.writeValueAsString(configProvider.getBaseConfig());
     }
+
+    @Data
+    public static class TimeAndThreadCpuUsages {
+        private final Instant time;
+        private final List<ThreadCpuUsage> threadCpuUsages = new ArrayList<>();
+
+        public TimeAndThreadCpuUsages(Instant time) {
+            this.time = time;
+        }
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ThreadCpuUsage {
+        private final String threadName;
+        private final long cpuUsage;
+    }
+
 
 }

@@ -103,6 +103,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         .and();
             }
             http.logout().logoutUrl("/logout").logoutSuccessUrl("/").deleteCookies("remember-me");
+            http.authorizeRequests()
+                    .antMatchers("/actuator/**")
+                    .hasRole("ADMIN")
+                    .anyRequest().permitAll();
         }
         headerAuthenticationFilter = new HeaderAuthenticationFilter(authenticationManager(), hydraUserDetailsManager, configProvider.getBaseConfig().getAuth());
         http.addFilterBefore(new ForwardedForRecognizingFilter(), ChannelProcessingFilter.class);
@@ -153,9 +157,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(hydraUserDetailsManager);
     }
-
-
-
 
 
 }

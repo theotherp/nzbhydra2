@@ -7335,11 +7335,11 @@ function UpdateModalInstanceCtrl($scope, $http, $interval, RequestsErrorHandler)
 
 }
 
-SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService"];angular
+SystemController.$inject = ["$scope", "$state", "activeTab", "$http", "growl", "RestartService", "MigrationService", "ConfigService", "NzbHydraControlService", "RequestsErrorHandler"];angular
     .module('nzbhydraApp')
     .controller('SystemController', SystemController);
 
-function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService) {
+function SystemController($scope, $state, activeTab, $http, growl, RestartService, MigrationService, ConfigService, NzbHydraControlService, RequestsErrorHandler) {
 
     $scope.activeTab = activeTab;
     $scope.foo = {
@@ -7439,6 +7439,13 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         });
     };
 
+    $scope.logThreadDump = function () {
+        $http({
+            method: 'GET',
+            url: 'internalapi/debuginfos/logThreadDump'
+        });
+    };
+
     $scope.executeSqlQuery = function () {
         $http.post('internalapi/debuginfos/executesqlquery', $scope.foo.sql).then(function (response) {
             if (response.data.successful) {
@@ -7459,6 +7466,71 @@ function SystemController($scope, $state, activeTab, $http, growl, RestartServic
         });
     };
 
+
+    $scope.cpuChart = {
+        options: {
+            chart:
+                {
+                    type: 'lineChart',
+                    height: 450,
+                    margin: {
+                        top: 20,
+                        right: 20,
+                        bottom: 60,
+                        left: 65
+                    },
+                    x: function (d) {
+                        return d.time;
+                    },
+                    y: function (d) {
+                        return d.value;
+                    },
+                    xAxis: {
+                        axisLabel: 'Time',
+                        tickFormat: function (d) {
+                            return moment.unix(d).local().format("HH:mm:ss");
+                        },
+                        showMaxMin: true
+                    },
+
+                    yAxis: {
+                        axisLabel: 'CPU %'
+                    },
+                    interactive: true
+                }
+        },
+        data: []
+    };
+
+    function update() {
+        RequestsErrorHandler.specificallyHandled(function () {
+            $http.get("internalapi/debuginfos/threadCpuUsage", {ignoreLoadingBar: true}).then(function (response) {
+                    try {
+                        if (!response) {
+                            console.error("No CPU usage data from server");
+                            return;
+                        }
+                        $scope.cpuChart.data = response.data;
+
+                    } catch (e) {
+                        console.error(e);
+                        clearInterval(timer);
+                    }
+                },
+                function () {
+                    console.error("Error while loading CPU usage data status");
+                    clearInterval(timer);
+                }
+            );
+        });
+    }
+
+    $scope.cpuChart.data = [];
+
+    update();
+    var timer = setInterval(function () {
+        update();
+    }, 5000);
 
 }
 
