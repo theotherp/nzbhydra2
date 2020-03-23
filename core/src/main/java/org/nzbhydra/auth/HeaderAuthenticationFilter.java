@@ -16,8 +16,11 @@
 
 package org.nzbhydra.auth;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.net.InetAddresses;
 import org.nzbhydra.config.auth.AuthConfig;
+import org.nzbhydra.logging.LoggingMarkerFilter;
+import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.okhttp.HydraOkHttp3ClientHttpRequestFactory;
 import org.nzbhydra.web.SessionStorage;
 import org.slf4j.Logger;
@@ -35,6 +38,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
@@ -51,45 +55,55 @@ public class HeaderAuthenticationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
-            chain.doFilter(request, response);
-            return;
+        Stopwatch stopwatch = null;
+        if (LoggingMarkerFilter.isEnabled(LoggingMarkers.SERVER)) {
+            stopwatch = Stopwatch.createStarted();
         }
-        String header = request.getHeader(authConfig.getAuthHeader());
-        if (header == null) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        String ip = SessionStorage.originalIp.get();
-        long ipAsLong = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(ip));
-        boolean isInSecureRange = authConfig.getAuthHeaderIpRanges().stream().anyMatch(x -> {
-            if (!x.contains("-")) {
-                return x.equals(ip);
-            }
-            String[] split = x.split("-");
-            long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
-            long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
-            return ipLow <= ipAsLong && ipAsLong <= ipHigh;
-        });
-
-        if (!isInSecureRange) {
-            handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + ip);
-            return;
-        }
-
-        String username = header.trim();
         try {
-            UserDetails userDetails = userDetailsManager.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            auth.setDetails(new HydraWebAuthenticationDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            onSuccessfulAuthentication(request, response, auth);
-        } catch (UsernameNotFoundException e) {
-            handleInvalidAuth(request, response, "Invalid username provided with auth header");
-            return;
+            if (authConfig.getAuthHeader() == null || authConfig.getAuthHeaderIpRanges().isEmpty()) {
+                chain.doFilter(request, response);
+                return;
+            }
+            String header = request.getHeader(authConfig.getAuthHeader());
+            if (header == null) {
+                chain.doFilter(request, response);
+                return;
+            }
+
+            String ip = SessionStorage.originalIp.get();
+            long ipAsLong = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(ip));
+            boolean isInSecureRange = authConfig.getAuthHeaderIpRanges().stream().anyMatch(x -> {
+                if (!x.contains("-")) {
+                    return x.equals(ip);
+                }
+                String[] split = x.split("-");
+                long ipLow = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[0]));
+                long ipHigh = HydraOkHttp3ClientHttpRequestFactory.ipToLong(InetAddresses.forString(split[1]));
+                return ipLow <= ipAsLong && ipAsLong <= ipHigh;
+            });
+
+            if (!isInSecureRange) {
+                handleInvalidAuth(request, response, "Auth header sent in request from insecure IP " + ip);
+                return;
+            }
+
+            String username = header.trim();
+            try {
+                UserDetails userDetails = userDetailsManager.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                auth.setDetails(new HydraWebAuthenticationDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                onSuccessfulAuthentication(request, response, auth);
+            } catch (UsernameNotFoundException e) {
+                handleInvalidAuth(request, response, "Invalid username provided with auth header");
+                return;
+            }
+            chain.doFilter(request, response);
+        } finally {
+            if (stopwatch != null) {
+                logger.debug(LoggingMarkers.SERVER, "HeaderAuthenticationFilter took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            }
         }
-        chain.doFilter(request, response);
     }
 
     public void loadNewConfig(AuthConfig authConfig) {
