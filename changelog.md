@@ -1,3 +1,13 @@
+### v2.16.3 (2020-03-23)
+
+**Feature** Fancy new graph for CPU usage per thread in the debug infos section. Enable the logging marker 'Performance' for the graph to show data. In this case NZBHydra will also log memory usage and any threads using more than 5% CPU. This might have an overhead on some systems so I don't recommend running it by default.
+
+**Feature** Add option to create and log a thread dump directly from the GUI. You can also create a heap dump for me to analyze but this will only work with non-J9 JREs.
+
+**Feature** Log more data in the debug report. If you're curious you can visit http://127.0.0.1:5076/actuator (or whatever your IP and port are) and take a look. There's a lot of data you could display in a dashboard.
+
+
+
 ### v2.16.2 (2020-03-22)
 
 **Feature** Extend performance logging.
