@@ -1,11 +1,8 @@
 package org.nzbhydra.auth;
 
-import com.google.common.base.Stopwatch;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigChangedEvent;
 import org.nzbhydra.config.auth.AuthConfig;
-import org.nzbhydra.logging.LoggingMarkerFilter;
-import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -96,20 +92,11 @@ public class HydraAnonymousAuthenticationFilter extends AnonymousAuthenticationF
 
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
 
-        Stopwatch stopwatch = null;
-        if (LoggingMarkerFilter.isEnabled(LoggingMarkers.SERVER)) {
-            stopwatch = Stopwatch.createStarted();
+        if (enabled && SecurityContextHolder.getContext().getAuthentication() == null & !authorities.isEmpty()) {
+            SecurityContextHolder.getContext().setAuthentication(
+                    createAuthentication((HttpServletRequest) req));
         }
-        try {
-            if (enabled && SecurityContextHolder.getContext().getAuthentication() == null & !authorities.isEmpty()) {
-                SecurityContextHolder.getContext().setAuthentication(
-                        createAuthentication((HttpServletRequest) req));
-            }
-        } finally {
-            if (stopwatch != null) {
-                logger.debug(LoggingMarkers.SERVER, "Filter took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            }
-        }
+
 
         chain.doFilter(req, res);
     }

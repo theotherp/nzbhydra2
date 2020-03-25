@@ -1,10 +1,7 @@
 package org.nzbhydra.web;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.logging.LoggingMarkerFilter;
-import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.misc.UserAgentMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 
 @Component
 public class Interceptor extends HandlerInterceptorAdapter {
@@ -30,10 +26,6 @@ public class Interceptor extends HandlerInterceptorAdapter {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Stopwatch stopwatch = null;
-        if (LoggingMarkerFilter.isEnabled(LoggingMarkers.SERVER)) {
-            stopwatch = Stopwatch.createStarted();
-        }
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null) {
             ip = request.getHeader("X-Real-IP");
@@ -62,9 +54,7 @@ public class Interceptor extends HandlerInterceptorAdapter {
         SessionStorage.userAgent.set(userAgentMapper.getUserAgent(request.getHeader("User-Agent")));
         SessionStorage.requestUrl.set(request.getRequestURI());
 
-        if (stopwatch != null) {
-            logger.debug(LoggingMarkers.SERVER, "SesstionStorage Interceptor took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        }
+
         return true;
     }
 }

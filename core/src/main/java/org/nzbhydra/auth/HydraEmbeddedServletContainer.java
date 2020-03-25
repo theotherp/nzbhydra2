@@ -16,13 +16,10 @@
 
 package org.nzbhydra.auth;
 
-import com.google.common.base.Stopwatch;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
-import org.nzbhydra.logging.LoggingMarkerFilter;
-import org.nzbhydra.logging.LoggingMarkers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -32,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Sets the correct scheme when behind a reverse proxy. According to https://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/#howto-use-tomcat-behind-a-proxy-server this
@@ -52,10 +48,6 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
         containerFactory.addContextValves(new ValveBase() {
             @Override
             public void invoke(Request request, Response response) throws IOException, ServletException {
-                Stopwatch stopwatch = null;
-                if (LoggingMarkerFilter.isEnabled(LoggingMarkers.SERVER)) {
-                    stopwatch = Stopwatch.createStarted();
-                }
                 int originalPort = -1;
                 final String forwardedPort = request.getHeader("X-Forwarded-Port");
                 if (forwardedPort != null) {
@@ -107,9 +99,7 @@ public class HydraEmbeddedServletContainer implements WebServerFactoryCustomizer
                     }
 
                 }
-                if (stopwatch != null) {
-                    logger.debug(LoggingMarkers.SERVER, "Valve took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                }
+
             }
         });
         containerFactory.addContextCustomizers(context -> context.setMapperContextRootRedirectEnabled(true));
