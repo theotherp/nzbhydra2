@@ -155,11 +155,13 @@ public class Experiments {
         executorService.invokeAll(IntStream.range(0, numberOfRuns).mapToObj(i -> (Callable<Object>) () -> {
             Thread.sleep(1_000);
             Request request = new Request.Builder()
-                    .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000")
+//                    .url("http://127.0.0.1:5076/" + endpoint + "?apikey=apikey&t=search&q=blub" + i + "&cat=2000&cachetime=20")
+                    .url("http://127.0.0.1:5076/?category=All&mode=search&indexers=mock1%252Cmock100%252Cmock2%252Cmocktorz1%252Cmocktorz2%252Cmocktorz3%252Cmockx&query=" + i)
                     .build();
             System.out.println("a: " + i + "/" + numberOfRuns);
             try {
                 try (Response response = client.newCall(request).execute()) {
+                    System.out.println(response.body().string());
                     return response.isSuccessful();
                 }
             } catch (IOException e) {

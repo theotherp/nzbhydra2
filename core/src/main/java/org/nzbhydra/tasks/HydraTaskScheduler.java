@@ -39,7 +39,14 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
@@ -74,7 +81,10 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         if (!taskSchedules.containsKey(task.name())) { //On startup
             logger.info("Scheduling task \"{}\" to be run every {}", task.name(), DurationFormatUtils.formatDurationWords(getIntervalForTask(task), true, true));
         }
-        Runnable runnable = new ScheduledMethodRunnable(runtimeInformation.getBean(), runtimeInformation.getMethod());
+        Runnable runnable = () -> {
+            Thread.currentThread().setName("HydraTask - " + task.name());
+            new ScheduledMethodRunnable(runtimeInformation.getBean(), runtimeInformation.getMethod()).run();
+        };
         if (runNow) {
             scheduler.execute(runnable);
         }
@@ -96,7 +106,7 @@ public class HydraTaskScheduler implements BeanPostProcessor, SmartInitializingS
         String configuredInterval = environment.getProperty("hydraTasks." + task.configId());
         if (configuredInterval != null) {
             logger.debug("Using configured interval of {}ms instead of hardcoded {}ms for task \"{}\"", configuredInterval, task.interval(), task.name());
-            return Long.valueOf(configuredInterval);
+            return Long.parseLong(configuredInterval);
         }
         return task.interval();
     }
