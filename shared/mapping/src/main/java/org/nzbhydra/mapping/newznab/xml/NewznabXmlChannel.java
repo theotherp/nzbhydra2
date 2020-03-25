@@ -17,6 +17,7 @@
 package org.nzbhydra.mapping.newznab.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -47,4 +48,23 @@ public class NewznabXmlChannel {
     @XmlElement(name = "item")
     private List<NewznabXmlItem> items = new ArrayList<>();
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NewznabXmlChannel that = (NewznabXmlChannel) o;
+        return Objects.equal(title, that.title) &&
+                Objects.equal(link, that.link) &&
+                Objects.equal(newznabResponse, that.newznabResponse) &&
+                Objects.equal(items, that.items);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(title, link, newznabResponse, items);
+    }
 }

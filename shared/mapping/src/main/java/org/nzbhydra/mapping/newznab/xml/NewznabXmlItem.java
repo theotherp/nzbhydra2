@@ -16,9 +16,14 @@
 
 package org.nzbhydra.mapping.newznab.xml;
 
+import com.google.common.base.Objects;
 import lombok.Data;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -80,5 +85,21 @@ public class NewznabXmlItem {
         this.enclosures = new ArrayList<>(Collections.singletonList(enclosure));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NewznabXmlItem that = (NewznabXmlItem) o;
+        return Objects.equal(title, that.title) &&
+                Objects.equal(link, that.link);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(title, link);
+    }
 }

@@ -17,9 +17,14 @@
 package org.nzbhydra.mapping.newznab.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import lombok.Data;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "rss")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -37,4 +42,21 @@ public class NewznabXmlRoot extends Xml {
     @JsonProperty("error")
     private NewznabXmlError error;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NewznabXmlRoot that = (NewznabXmlRoot) o;
+        return Objects.equal(rssChannel, that.rssChannel) &&
+                Objects.equal(error, that.error);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(rssChannel, error);
+    }
 }
