@@ -8,8 +8,13 @@ import lombok.NoArgsConstructor;
 import net.jodah.expiringmap.ExpirationPolicy;
 import net.jodah.expiringmap.ExpiringMap;
 import org.nzbhydra.config.category.Category;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
-import org.nzbhydra.searching.dtoseventsenums.*;
+import org.nzbhydra.mediainfo.MediaIdType;
+import org.nzbhydra.searching.dtoseventsenums.FallbackSearchInitiatedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSearchFinishedEvent;
+import org.nzbhydra.searching.dtoseventsenums.IndexerSelectionEvent;
+import org.nzbhydra.searching.dtoseventsenums.SearchMessageEvent;
+import org.nzbhydra.searching.dtoseventsenums.SearchRequestParameters;
+import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
 import org.nzbhydra.searching.searchrequests.SearchRequestFactory;
@@ -19,7 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,20 +108,20 @@ public class SearchWeb {
         }
 
         if (!Strings.isNullOrEmpty(parameters.getImdbId())) {
-            searchRequest.getIdentifiers().put(IdType.IMDB, parameters.getImdbId());
+            searchRequest.getIdentifiers().put(MediaIdType.IMDB, parameters.getImdbId());
         }
         if (!Strings.isNullOrEmpty(parameters.getTmdbId())) {
-            searchRequest.getIdentifiers().put(IdType.TMDB, parameters.getTmdbId());
+            searchRequest.getIdentifiers().put(MediaIdType.TMDB, parameters.getTmdbId());
         }
 
         if (!Strings.isNullOrEmpty(parameters.getTvrageId())) {
-            searchRequest.getIdentifiers().put(IdType.TVRAGE, parameters.getTvrageId());
+            searchRequest.getIdentifiers().put(MediaIdType.TVRAGE, parameters.getTvrageId());
         }
         if (!Strings.isNullOrEmpty(parameters.getTvdbId())) {
-            searchRequest.getIdentifiers().put(IdType.TVDB, parameters.getTvdbId());
+            searchRequest.getIdentifiers().put(MediaIdType.TVDB, parameters.getTvdbId());
         }
         if (!Strings.isNullOrEmpty(parameters.getTvmazeId())) {
-            searchRequest.getIdentifiers().put(IdType.TVMAZE, parameters.getTvmazeId());
+            searchRequest.getIdentifiers().put(MediaIdType.TVMAZE, parameters.getTvmazeId());
         }
 
         if (parameters.getSeason() != null) {

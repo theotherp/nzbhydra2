@@ -8,12 +8,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.nzbhydra.config.ConfigProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -45,9 +48,9 @@ public class MediaInfoWeb {
                             try {
                                 List<MediaInfo> infos;
                                 if (key.getType() == AutocompleteType.TV) {
-                                    infos = infoProvider.search(key.getInput(), IdType.TVTITLE);
+                                    infos = infoProvider.search(key.getInput(), MediaIdType.TVTITLE);
                                 } else {
-                                    infos = infoProvider.search(key.getInput(), IdType.MOVIETITLE);
+                                    infos = infoProvider.search(key.getInput(), MediaIdType.MOVIETITLE);
                                 }
 
                                 return infos.stream().map(MediaInfoTO::new).collect(Collectors.toList());
@@ -74,7 +77,7 @@ public class MediaInfoWeb {
 
         String url = null;
         try {
-            MediaInfo mediaInfo = infoProvider.convert(tvRageId, IdType.TVRAGE);
+            MediaInfo mediaInfo = infoProvider.convert(tvRageId, MediaIdType.TVRAGE);
             if (mediaInfo != null && mediaInfo.getTvMazeId().isPresent()) {
                 url = "https://www.tvmaze.com/shows/" + mediaInfo.getTvMazeId().get();
                 Optional<String> derefererOptional = configProvider.getBaseConfig().getMain().getDereferer();

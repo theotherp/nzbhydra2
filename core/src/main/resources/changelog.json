@@ -4,6 +4,10 @@
     "changes": [
       {
         "type": "feature",
+        "text": "Add option to read Jackett config and automatically add all configured trackers. Already configured trackers will be updated. Thanks for Davide Campagna for the tip."
+      },
+      {
+        "type": "feature",
         "text": "Add option to configure downloader to never send a category."
       },
       {

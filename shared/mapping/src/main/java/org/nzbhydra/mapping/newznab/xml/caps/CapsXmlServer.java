@@ -29,7 +29,6 @@ public class CapsXmlServer {
     public CapsXmlServer() {
     }
 
-
     @XmlAttribute
     private String version;
 

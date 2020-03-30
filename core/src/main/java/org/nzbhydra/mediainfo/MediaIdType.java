@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *  (C) Copyright 2020 TheOtherP (theotherp@gmx.de)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.config.indexer;
+package org.nzbhydra.mediainfo;
 
-public enum SearchModuleType {
-    ANIZB,
-    BINSEARCH,
-    NEWZNAB,
-    NZBINDEX,
-    TORZNAB,
-    DEVONLY,
-    JACKETT_CONFIG
+public enum MediaIdType {
+    TVDB,
+    TVRAGE,
+    TVMAZE,
+    TRAKT,
+    IMDB,
+    TVIMDB,
+    TMDB,
+    TVTITLE,
+    MOVIETITLE
+
 }

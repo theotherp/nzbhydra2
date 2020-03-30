@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
+import static org.nzbhydra.mediainfo.MediaIdType.*;
 
 @SuppressWarnings("ALL")
 
@@ -74,7 +74,7 @@ public class NewznabCheckerTest {
     @Mock
     private SearchModuleProvider searchModuleProviderMock;
     @InjectMocks
-    private NewznabChecker testee = new NewznabChecker();
+    private IndexerChecker testee = new IndexerChecker();
     private Unmarshaller unmarshaller = new WebConfiguration().marshaller();
 
 
@@ -147,7 +147,8 @@ public class NewznabCheckerTest {
         capsRoot = (CapsXmlRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
-        IndexerCategoryConfig categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
+        testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
+        IndexerCategoryConfig categoryConfig = indexerConfig.getCategoryMapping();
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
         assertThat(categoryConfig.getAnime().get(), is(7040));
         assertThat(categoryConfig.getNameFromId(7040), is("Other Anime"));
@@ -158,7 +159,8 @@ public class NewznabCheckerTest {
         capsRoot = (CapsXmlRoot) unmarshaller.unmarshal(new StreamSource(new StringReader(xml)));
         when(indexerWebAccess.get(any(), eq(indexerConfig))).thenReturn(capsRoot);
 
-        categoryConfig = testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
+        testee.setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, 100);
+        categoryConfig = indexerConfig.getCategoryMapping();
         assertThat(categoryConfig.getAnime().isPresent(), is(true));
         assertThat(categoryConfig.getAnime().get(), is(5070));
         assertThat(categoryConfig.getComic().isPresent(), is(true));

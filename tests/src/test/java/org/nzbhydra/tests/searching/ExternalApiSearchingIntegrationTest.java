@@ -22,7 +22,7 @@ import org.nzbhydra.mapping.newznab.mock.NewznabMockBuilder;
 import org.nzbhydra.mapping.newznab.mock.NewznabMockRequest;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.searching.SearchModuleProvider;
@@ -166,7 +166,7 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     @Test
     public void shouldUseProvidedIdentifiers() throws Exception{
         prepareIndexerWithOneResponse();
-        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(IdType.IMDB, IdType.TMDB));
+        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(MediaIdType.IMDB, MediaIdType.TMDB));
 
         NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").imdbid("1234").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();
         RecordedRequest request = webServer.takeRequest(2, TimeUnit.SECONDS);
@@ -180,8 +180,8 @@ public class ExternalApiSearchingIntegrationTest extends AbstractConfigReplacing
     @Test
     public void shouldConvertProvidedIdentifier() throws Exception{
         prepareIndexerWithOneResponse();
-        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(IdType.IMDB));
-        when(infoProvider.convert(anyMap())).thenReturn(new MediaInfo(new MovieInfo("tt1234", null,null, 0, null)));
+        searchModuleProvider.getIndexers().get(0).getConfig().setSupportedSearchIds(Arrays.asList(MediaIdType.IMDB));
+        when(infoProvider.convert(anyMap())).thenReturn(new MediaInfo(new MovieInfo("tt1234", null, null, 0, null)));
         when(infoProvider.canConvertAny(anySet(), anySet())).thenReturn(true);
 
         NewznabXmlRoot root = (NewznabXmlRoot) externalApi.api(NewznabParameters.builder().tmdbid("abcd").t(ActionAttribute.MOVIE).apikey("apikey").build()).getBody();

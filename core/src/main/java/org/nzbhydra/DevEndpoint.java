@@ -16,48 +16,35 @@
 
 package org.nzbhydra;
 
-import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.config.indexer.IndexerConfig;
+import org.nzbhydra.indexers.capscheck.JacketConfigRetriever;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class DevEndpoint {
 
     @Autowired
-    private InfoProvider infoProvider;
+    private JacketConfigRetriever jacketConfigRetriever;
 
     private static final Logger logger = LoggerFactory.getLogger(DevEndpoint.class);
 
     @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/dev", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public String convertMovie(@RequestParam(value = "imdb", required = false) String imdb, @RequestParam(value = "tmdb", required = false) String tmdb) throws InfoProviderException {
-        if (imdb != null) {
-            return infoProvider.convert(imdb, InfoProvider.IdType.IMDB).toString();
-        } else if (tmdb != null) {
-            return infoProvider.convert(tmdb, InfoProvider.IdType.TMDB).toString();
-        } else {
-            return "neither tmdb nor imdb set";
-        }
+    @RequestMapping(value = "/dev", method = RequestMethod.GET)
+    public String convertMovie() throws Exception {
+        IndexerConfig config = new IndexerConfig();
+        config.setHost("http://127.0.0.1:9117");
+        config.setApiKey("mu7z3w65puy4b6i9rac1lt796xw4o21b");
+
+        jacketConfigRetriever.retrieveIndexers(config);
+
+        return "";
     }
 
-    @Secured({"ROLE_ADMIN"})
-    @RequestMapping(value = "/dev2", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
-    public String convertTv(@RequestParam(value = "tvdb", required = false) String tvdb, @RequestParam(value = "tvmaze", required = false) String tvmaze) throws InfoProviderException {
-        if (tvdb != null) {
-            return infoProvider.convert(tvdb, InfoProvider.IdType.TVDB).toString();
-        } else if (tvmaze != null) {
-            return infoProvider.convert(tvmaze, InfoProvider.IdType.TVMAZE).toString();
-        } else {
-            return "neither tvdb nor tvmaze set";
-        }
-    }
 
 }

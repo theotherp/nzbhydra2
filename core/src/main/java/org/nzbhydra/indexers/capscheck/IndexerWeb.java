@@ -19,27 +19,36 @@ package org.nzbhydra.indexers.capscheck;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import lombok.Data;
 import org.nzbhydra.GenericResponse;
 import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
-import org.nzbhydra.indexers.capscheck.NewznabChecker.CheckerEvent;
+import org.nzbhydra.indexers.capscheck.IndexerChecker.CheckerEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class IndexerWeb {
 
     @Autowired
-    private NewznabChecker newznabChecker;
+    private IndexerChecker newznabChecker;
     @Autowired
     private SimpleConnectionChecker simpleConnectionChecker;
+    @Autowired
+    private JacketConfigRetriever jacketConfigRetriever;
 
     Multimap<String, String> multimap = Multimaps.synchronizedMultimap(
             HashMultimap.create());
@@ -73,11 +82,35 @@ public class IndexerWeb {
         }
     }
 
+    @Secured({"ROLE_ADMIN"})
+    @RequestMapping(value = "/internalapi/indexer/readJackettConfig", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public List<IndexerConfig> readJackettConfig(@RequestBody JacketConfigReadRequest configReadRequest) throws Exception {
+        List<IndexerConfig> newConfigs = new ArrayList<>(configReadRequest.existingIndexers);
+        List<IndexerConfig> foundJackettConfigs = jacketConfigRetriever.retrieveIndexers(configReadRequest.jackettConfig);
+
+        //Update existing configs, add new onex
+        for (IndexerConfig foundJackettConfig : foundJackettConfigs) {
+            final Optional<IndexerConfig> updatedIndexer = configReadRequest.existingIndexers.stream().filter(x -> x.getHost().equals(foundJackettConfig.getHost())).findFirst();
+            if (updatedIndexer.isPresent()) {
+                newConfigs.remove(updatedIndexer.get());
+            }
+            newConfigs.add(foundJackettConfig);
+        }
+
+        return newConfigs;
+    }
+
     @EventListener
     public void handleCheckerEvent(CheckerEvent event) {
         if (!multimap.get(event.getIndexerName()).contains(event.getMessage())) {
             multimap.put(event.getIndexerName(), event.getMessage());
         }
+    }
+
+    @Data
+    private static class JacketConfigReadRequest {
+        private List<IndexerConfig> existingIndexers;
+        private IndexerConfig jackettConfig;
     }
 
 }

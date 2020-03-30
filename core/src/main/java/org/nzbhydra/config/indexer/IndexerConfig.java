@@ -28,7 +28,7 @@ import org.nzbhydra.config.ValidatingConfig;
 import org.nzbhydra.config.sensitive.SensitiveData;
 import org.nzbhydra.indexers.Indexer.BackendType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.IndexerForSearchSelector;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -80,7 +80,7 @@ public class IndexerConfig extends ValidatingConfig<IndexerConfig> {
     private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
     private boolean showOnSearch = true;
     @JsonFormat(shape = Shape.STRING)
-    private List<IdType> supportedSearchIds = new ArrayList<>();
+    private List<MediaIdType> supportedSearchIds = new ArrayList<>();
     private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
     private Integer timeout = null;
     @SensitiveData

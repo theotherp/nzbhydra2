@@ -16,8 +16,8 @@ import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.logging.LoggingMarkers;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -402,7 +402,7 @@ public abstract class Indexer<T> {
             query = searchRequest.getInternalData().getTitle().get();
             debug("Using internally provided title {}", query);
         } else {
-            Optional<Entry<IdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
+            Optional<Entry<MediaIdType, String>> firstIdentifierEntry = searchRequest.getIdentifiers().entrySet().stream().filter(java.util.Objects::nonNull).findFirst();
             if (!firstIdentifierEntry.isPresent()) {
                 throw new IndexerSearchAbortedException("Unable to generate query because no identifier is known");
             }

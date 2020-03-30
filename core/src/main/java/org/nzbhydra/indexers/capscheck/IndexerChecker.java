@@ -40,7 +40,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
 import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.SearchModuleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +68,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Component
-public class NewznabChecker {
+public class IndexerChecker {
 
-    private static final Logger logger = LoggerFactory.getLogger(NewznabChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(IndexerChecker.class);
     static int PAUSE_BETWEEN_CALLS = 1000;
     public static final int MAX_CONNECTIONS = 2;
     /**
@@ -136,7 +136,15 @@ public class NewznabChecker {
         }
     }
 
-    protected UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
+
+    public List<IndexerConfig> retrieveJackettIndexers() {
+        List<IndexerConfig> configs = new ArrayList<>();
+
+
+        return null;
+    }
+
+    static UriComponentsBuilder getBaseUri(IndexerConfig indexerConfig) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(indexerConfig.getHost()).path("/api");
         if (!Strings.isNullOrEmpty(indexerConfig.getApiKey())) {
             builder.queryParam("apikey", indexerConfig.getApiKey());
@@ -161,13 +169,13 @@ public class NewznabChecker {
      */
     public CheckCapsResponse checkCaps(IndexerConfig indexerConfig) {
         List<CheckCapsRequest> requests = Arrays.asList(
-            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
-            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
-            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVMAZE, "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
-            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TRAKT, "traktid", "1390", Arrays.asList("Thrones", "GOT")),
-            new CheckCapsRequest(indexerConfig, "tvsearch", IdType.TVIMDB, "imdbid", "0944947", Arrays.asList("Thrones", "GOT")),
-            new CheckCapsRequest(indexerConfig, "movie", IdType.TMDB, "tmdbid", "24428", Arrays.asList("Avengers", "Vengadores")),
-            new CheckCapsRequest(indexerConfig, "movie", IdType.IMDB, "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
+                new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVDB, "tvdbid", "121361", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVRAGE, "rid", "24493", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVMAZE, "tvmazeid", "82", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TRAKT, "traktid", "1390", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "tvsearch", MediaIdType.TVIMDB, "imdbid", "0944947", Arrays.asList("Thrones", "GOT")),
+                new CheckCapsRequest(indexerConfig, "movie", MediaIdType.TMDB, "tmdbid", "24428", Arrays.asList("Avengers", "Vengadores")),
+                new CheckCapsRequest(indexerConfig, "movie", MediaIdType.IMDB, "imdbid", "0848228", Arrays.asList("Avengers", "Vengadores"))
         );
 
         boolean allChecked = true;
@@ -183,7 +191,7 @@ public class NewznabChecker {
         }
 
         Set<SingleCheckCapsResponse> responses = new HashSet<>();
-        Set<IdType> supportedIds;
+        Set<MediaIdType> supportedIds;
         String backend = null;
         ExecutorService executor = MdcThreadPoolExecutor.newWithInheritedMdc(capsCheckLimit.maxConnections);
         try {
@@ -234,7 +242,7 @@ public class NewznabChecker {
         }
 
         try {
-            indexerConfig.setCategoryMapping(setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, timeout));
+            setSupportedSearchTypesAndIndexerCategoryMapping(indexerConfig, timeout);
             if (indexerConfig.getSupportedSearchTypes().isEmpty()) {
                 logger.info("Indexer {} does not support any special search types", indexerConfig.getName());
             } else {
@@ -299,15 +307,7 @@ public class NewznabChecker {
         return responses;
     }
 
-    public IndexerCategoryConfig setSupportedSearchTypesAndIndexerCategoryMapping(IndexerConfig indexerConfig, int timeout) throws IndexerAccessException {
-        List<IdType> supportedSearchIds = indexerConfig.getSupportedSearchIds();
-        List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
-        if (supportedSearchIds.contains(IdType.TVDB) || supportedSearchIds.contains(IdType.TVRAGE) || supportedSearchIds.contains(IdType.TVMAZE) || supportedSearchIds.contains(IdType.TRAKT) || supportedSearchIds.contains(IdType.TVIMDB)) {
-            supportedSearchTypes.add(ActionAttribute.TVSEARCH);
-        }
-        if (supportedSearchIds.contains(IdType.IMDB) || supportedSearchIds.contains(IdType.TMDB)) {
-            supportedSearchTypes.add(ActionAttribute.MOVIE);
-        }
+    public void setSupportedSearchTypesAndIndexerCategoryMapping(IndexerConfig indexerConfig, int timeout) throws IndexerAccessException {
         URI uri = getBaseUri(indexerConfig).queryParam("t", "caps").build().toUri();
         Object response = indexerWebAccess.get(uri, indexerConfig);
         if (!(response instanceof CapsXmlRoot)) {
@@ -319,22 +319,35 @@ public class NewznabChecker {
             }
             throw new IndexerAccessException("Unexpected indexer response");
         }
-        CapsXmlRoot capsRoot = (CapsXmlRoot) response;
-        if (capsRoot.getSearching().getAudioSearch() != null) {
+        fillIndexerConfigFromXmlCapsResponse(indexerConfig, (CapsXmlRoot) response);
+    }
+
+    static void fillIndexerConfigFromXmlCapsResponse(IndexerConfig indexerConfig, CapsXmlRoot response) {
+        List<MediaIdType> supportedSearchIds = indexerConfig.getSupportedSearchIds();
+        List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
+        if (supportedSearchIds.contains(MediaIdType.TVDB) || supportedSearchIds.contains(MediaIdType.TVRAGE) || supportedSearchIds.contains(MediaIdType.TVMAZE) || supportedSearchIds.contains(MediaIdType.TRAKT) || supportedSearchIds.contains(MediaIdType.TVIMDB)) {
+            supportedSearchTypes.add(ActionAttribute.TVSEARCH);
+        }
+        if (supportedSearchIds.contains(MediaIdType.IMDB) || supportedSearchIds.contains(MediaIdType.TMDB)) {
+            supportedSearchTypes.add(ActionAttribute.MOVIE);
+        }
+        CapsXmlRoot capsRoot = response;
+        if (capsRoot.getSearching().getAudioSearch() != null && "yes".equals(capsRoot.getSearching().getAudioSearch().getAvailable())) {
             supportedSearchTypes.add(ActionAttribute.AUDIO);
         }
-        if (capsRoot.getSearching().getBookSearch() != null) {
+        if (capsRoot.getSearching().getBookSearch() != null && "yes".equals(capsRoot.getSearching().getBookSearch().getAvailable())) {
             supportedSearchTypes.add(ActionAttribute.BOOK);
         }
         indexerConfig.setSupportedSearchTypes(supportedSearchTypes);
 
         IndexerCategoryConfig categoryConfig = new IndexerCategoryConfig();
-        List<CapsXmlCategory> categories = readAndConvertCategories(capsRoot, categoryConfig);
+        List<CapsXmlCategory> categories = readAndConvertCategories(categoryConfig, capsRoot.getCategories().getCategories());
         setCategorySpecificMappings(categoryConfig, categories);
-        return categoryConfig;
+
+        indexerConfig.setCategoryMapping(categoryConfig);
     }
 
-    private void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsXmlCategory> categories) {
+    private static void setCategorySpecificMappings(IndexerCategoryConfig categoryConfig, List<CapsXmlCategory> categories) {
         Optional<CapsXmlCategory> anime = categories.stream().filter(x -> x.getName().toLowerCase().contains("anime") && x.getId() / 1000 != 6).findFirst(); //Sometimes 6070 is anime as subcategory of porn, don't use that
         anime.ifPresent(capsCategory -> categoryConfig.setAnime(capsCategory.getId()));
 
@@ -352,10 +365,10 @@ public class NewznabChecker {
 
     }
 
-    private List<CapsXmlCategory> readAndConvertCategories(CapsXmlRoot capsRoot, IndexerCategoryConfig categoryConfig) {
-        List<CapsXmlCategory> categories = new ArrayList<>(capsRoot.getCategories().getCategories());
+    private static List<CapsXmlCategory> readAndConvertCategories(IndexerCategoryConfig categoryConfig, List<CapsXmlCategory> capsXmlCategories) {
+        List<CapsXmlCategory> categories = new ArrayList<>(capsXmlCategories);
         List<MainCategory> configMainCategories = new ArrayList<>();
-        for (CapsXmlCategory category : capsRoot.getCategories().getCategories()) {
+        for (CapsXmlCategory category : capsXmlCategories) {
             List<SubCategory> configSubcats = new ArrayList<>();
             if (category.getSubCategories() != null) {
                 categories.addAll(category.getSubCategories());
@@ -449,7 +462,7 @@ public class NewznabChecker {
     private static class CheckCapsRequest {
         private IndexerConfig indexerConfig;
         private String tMode;
-        private IdType idType;
+        private MediaIdType idType;
         private String key;
         private String value;
         private List<String> titleExpectedToContain;
@@ -460,7 +473,7 @@ public class NewznabChecker {
     @NoArgsConstructor
     private static class SingleCheckCapsResponse {
         private String key;
-        private IdType idType;
+        private MediaIdType idType;
         private boolean supported;
         private String backend;
         private Integer apiMax;

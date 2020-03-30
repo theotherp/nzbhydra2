@@ -21,7 +21,7 @@ import org.nzbhydra.config.indexer.IndexerConfig;
 import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.indexers.Indexer;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
-import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.MediaIdType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public final class IndexerConfigBuilder {
     private Integer score = null;
     private SearchModuleType searchModuleType = SearchModuleType.NEWZNAB;
     private boolean showOnSearch = true;
-    private List<InfoProvider.IdType> supportedSearchIds = new ArrayList<>();
+    private List<MediaIdType> supportedSearchIds = new ArrayList<>();
     private List<ActionAttribute> supportedSearchTypes = new ArrayList<>();
     private Integer timeout = null;
     private String username = null;
@@ -166,7 +166,7 @@ public final class IndexerConfigBuilder {
         return this;
     }
 
-    public IndexerConfigBuilder supportedSearchIds(List<InfoProvider.IdType> supportedSearchIds) {
+    public IndexerConfigBuilder supportedSearchIds(List<MediaIdType> supportedSearchIds) {
         this.supportedSearchIds = supportedSearchIds;
         return this;
     }

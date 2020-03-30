@@ -25,9 +25,29 @@ import org.nzbhydra.config.indexer.SearchModuleType;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
-import org.nzbhydra.mapping.newznab.json.caps.*;
-import org.nzbhydra.mapping.newznab.xml.caps.*;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonCategoriesHolder;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonCategory;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonCategoryAttributes;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonIdAttributes;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonLimits;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonLimitsAttributes;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonRegistration;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonRegistrationAttributes;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonRoot;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonSearchIdAttributesHolder;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonSearching;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonServer;
+import org.nzbhydra.mapping.newznab.json.caps.CapsJsonServerAttributes;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategories;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlCategory;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlLimits;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRetention;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearch;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlSearching;
+import org.nzbhydra.mapping.newznab.xml.caps.CapsXmlServer;
 import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.update.UpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +57,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -115,16 +143,16 @@ public class CapsGenerator {
         capsSearching.setSearch(new CapsXmlSearch("yes", "q,cat,limit,offset,minage,maxage,minsize,maxsize"));
 
         String tvSupportedParams = "q,season,ep,cat,limit,offset,minage,maxage,minsize,maxsize";
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVRAGE, "rid", torznabCall);
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVDB, "tvdbid", torznabCall);
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVMAZE, "tvmazeid", torznabCall);
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TVIMDB, "imdbid", torznabCall);
-        tvSupportedParams = addIdIfSupported(tvSupportedParams, InfoProvider.IdType.TRAKT, "traktid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, MediaIdType.TVRAGE, "rid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, MediaIdType.TVDB, "tvdbid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, MediaIdType.TVMAZE, "tvmazeid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, MediaIdType.TVIMDB, "imdbid", torznabCall);
+        tvSupportedParams = addIdIfSupported(tvSupportedParams, MediaIdType.TRAKT, "traktid", torznabCall);
         capsSearching.setTvSearch(new CapsXmlSearch("yes", tvSupportedParams));
 
         String supportedMovieParams = "q,cat,limit,offset,minage,maxage,minsize,maxsize";
-        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.IMDB, "imdbid", torznabCall);
-        supportedMovieParams = addIdIfSupported(supportedMovieParams, InfoProvider.IdType.TMDB, "tmdbid", torznabCall);
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, MediaIdType.IMDB, "imdbid", torznabCall);
+        supportedMovieParams = addIdIfSupported(supportedMovieParams, MediaIdType.TMDB, "tmdbid", torznabCall);
         capsSearching.setMovieSearch(new CapsXmlSearch("yes", supportedMovieParams));
 
         capsSearching.setBookSearch(new CapsXmlSearch("yes", "q,author,title,cat,limit,offset,minage,maxage,minsize,maxsize"));
@@ -135,7 +163,7 @@ public class CapsGenerator {
         return capsRoot;
     }
 
-    private String addIdIfSupported(String tvSupportedParams, InfoProvider.IdType idType, String id, boolean torznabCall) {
+    private String addIdIfSupported(String tvSupportedParams, MediaIdType idType, String id, boolean torznabCall) {
         boolean anyQueryGenerationPossible = configProvider.getBaseConfig().getSearching().getGenerateQueries() != SearchSourceRestriction.NONE || configProvider.getBaseConfig().getSearching().getIdFallbackToQueryGeneration() == SearchSourceRestriction.API;
         if (anyQueryGenerationPossible) {
             tvSupportedParams += "," + id;

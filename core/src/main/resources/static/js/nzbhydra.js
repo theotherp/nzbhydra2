@@ -3279,7 +3279,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         });
     }
-    if ((indexerModel.searchModuleType === "NEWZNAB" || indexerModel.searchModuleType === "TORZNAB") && !isInitial) {
+    if ((indexerModel.searchModuleType === "NEWZNAB" || indexerModel.searchModuleType === "TORZNAB") && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         var message;
         var cssClass;
         if (!indexerModel.configComplete) {
@@ -3345,17 +3345,19 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             })
     }
 
-    fieldset.push({
-        key: 'state',
-        type: 'horizontalIndexerStateSwitch',
-        templateOptions: {
-            type: 'switch',
-            label: 'State',
-            help: stateHelp
-        }
-    });
+    if (indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+        fieldset.push({
+            key: 'state',
+            type: 'horizontalIndexerStateSwitch',
+            templateOptions: {
+                type: 'switch',
+                label: 'State',
+                help: stateHelp
+            }
+        });
+    }
 
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
         var hostField = {
             key: 'host',
             type: 'horizontalInput',
@@ -3381,7 +3383,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && indexerModel.host !== 'https://feed.animetosho.org') {
+    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') && indexerModel.host !== 'https://feed.animetosho.org') {
         fieldset.push(
             {
                 key: 'apiKey',
@@ -3401,17 +3403,19 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         )
     }
 
-    fieldset.push(
-        {
-            key: 'score',
-            type: 'horizontalInput',
-            templateOptions: {
-                type: 'number',
-                label: 'Priority',
-                required: true,
-                help: 'When duplicate search results are found the result from the indexer with the highest number will be selected.'
-            }
-        });
+    if (indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
+        fieldset.push(
+            {
+                key: 'score',
+                type: 'horizontalInput',
+                templateOptions: {
+                    type: 'number',
+                    label: 'Priority',
+                    required: true,
+                    help: 'When duplicate search results are found the result from the indexer with the highest number will be selected.'
+                }
+            });
+    }
 
     fieldset.push(
         {
@@ -3513,7 +3517,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
             }
         );
     }
-    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') {
+    if (indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB' || indexerModel.searchModuleType === 'JACKETT_CONFIG') {
         fieldset.push(
             {
                 key: 'username',
@@ -3594,7 +3598,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         }
     );
 
-    if (indexerModel.searchModuleType !== "ANIZB") {
+    if (indexerModel.searchModuleType !== "ANIZB" && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         var cats = CategoriesService.getWithoutAll();
         var options = _.map(cats, function (x) {
             return {id: x.name, label: x.name}
@@ -3616,7 +3620,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
         );
     }
 
-    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && !isInitial) {
+    if ((indexerModel.searchModuleType === 'NEWZNAB' || indexerModel.searchModuleType === 'TORZNAB') && !isInitial && indexerModel.searchModuleType !== 'JACKETT_CONFIG') {
         fieldset.push(
             {
                 key: 'supportedSearchIds',
@@ -3682,7 +3686,7 @@ function getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesSer
 }
 
 
-function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesService, form, callback) {
+function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesService, mode, form, callback) {
     var modalInstance = $uibModal.open({
         templateUrl: 'static/html/config/indexer-config-box.html',
         controller: 'IndexerConfigBoxInstanceController',
@@ -3692,7 +3696,7 @@ function _showBox(indexerModel, parentModel, isInitial, $uibModal, CategoriesSer
                 return indexerModel;
             },
             fields: function () {
-                return getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService);
+                return getIndexerBoxFields(indexerModel, parentModel, isInitial, CategoriesService, mode);
             },
             form: function () {
                 return form;
@@ -3749,7 +3753,7 @@ angular
 
                 //Called when clicking the box of an existing indexer
                 function showBox(indexerModel, model) {
-                    _showBox(indexerModel, model, false, $uibModal, CategoriesService, $scope.form)
+                    _showBox(indexerModel, model, false, $uibModal, CategoriesService, "indexer", $scope.form)
                 }
 
             }
@@ -3763,6 +3767,7 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
     $scope.isInitial = false;
 
     $scope.select = function (modelPreset) {
+
         addEntry(modelPreset);
         $timeout(function () {
                 $uibModalInstance.close();
@@ -3770,46 +3775,87 @@ angular.module('nzbhydraApp').controller('IndexerConfigSelectionBoxInstanceContr
             200);
     };
 
+    $scope.readJackettConfig = function () {
+
+        var indexerModel = createIndexerModel();
+        indexerModel.searchModuleType = "JACKETT_CONFIG";
+        indexerModel.isInitial = false;
+        indexerModel.host = "http://127.0.0.1:9117";
+        indexerModel.name = "Jackett config";
+        _showBox(indexerModel, model, true, $uibModal, CategoriesService, "jackettConfig", form, function (isSubmitted, returnedModel) {
+            if (isSubmitted) {
+                //User pushed button, now we read the config
+                $http.post("internalapi/indexer/readJackettConfig", {existingIndexers: model, jackettConfig: returnedModel}, {
+                    headers: {
+                        "Accept": "application/json;charset=utf-8",
+                        "Accept-Charset": "charset=utf-8"
+                    }
+                }).then(function (response) {
+                    //Replace model with new result
+                    var lengthBefore = model.length;
+                    model.splice(0, model.length);
+                    _.each(response.data, function (x) {
+                        model.push(x);
+                    });
+                    var addedIndexers = model.length - lengthBefore;
+                    growl.info("Added " + addedIndexers + " new trackers from Jackett");
+
+                }, function (response) {
+                    ModalService.open("Error reading jackett config", response.data, {}, "md", "left");
+                });
+            }
+        });
+
+        $timeout(function () {
+                $uibModalInstance.close();
+            },
+            200);
+    };
+
     function showBox(indexerModel, model) {
-        _showBox(indexerModel, model, false, $uibModal, CategoriesService, form)
+        _showBox(indexerModel, model, false, $uibModal, CategoriesService, "indexer", form)
+    }
+
+    function createIndexerModel() {
+        return angular.copy({
+            allCapsChecked: false,
+            apiKey: null,
+            backend: 'NEWZNAB',
+            configComplete: false,
+            categoryMapping: null,
+            downloadLimit: null,
+            enabledCategories: [],
+            enabledForSearchSource: "BOTH",
+            generalMinSize: null,
+            hitLimit: null,
+            hitLimitResetTime: 0,
+            host: null,
+            loadLimitOnRandom: null,
+            name: null,
+            password: null,
+            preselect: true,
+            score: 0,
+            searchModuleType: 'NEWZNAB',
+            showOnSearch: true,
+            state: "ENABLED",
+            supportedSearchIds: undefined,
+            supportedSearchTypes: undefined,
+            timeout: null,
+            username: null,
+            userAgent: null
+        });
     }
 
     function addEntry(preset) {
         if (checkAddingAllowed(model, preset)) {
-            var indexerModel = angular.copy({
-                allCapsChecked: false,
-                apiKey: null,
-                backend: 'NEWZNAB',
-                configComplete: false,
-                categoryMapping: null,
-                downloadLimit: null,
-                enabledCategories: [],
-                enabledForSearchSource: "BOTH",
-                generalMinSize: null,
-                hitLimit: null,
-                hitLimitResetTime: 0,
-                host: null,
-                loadLimitOnRandom: null,
-                name: null,
-                password: null,
-                preselect: true,
-                score: 0,
-                searchModuleType: 'NEWZNAB',
-                showOnSearch: true,
-                state: "ENABLED",
-                supportedSearchIds: undefined,
-                supportedSearchTypes: undefined,
-                timeout: null,
-                username: null,
-                userAgent: null
-            });
+            var indexerModel = createIndexerModel();
             if (angular.isDefined(preset)) {
                 _.extend(indexerModel, preset);
             }
 
             $scope.isInitial = true;
 
-            _showBox(indexerModel, model, true, $uibModal, CategoriesService, form, function (isSubmitted, returnedModel) {
+            _showBox(indexerModel, model, true, $uibModal, CategoriesService, "indexer", form, function (isSubmitted, returnedModel) {
                 if (isSubmitted) {
                     //Here is where the entry is actually added to the model
                     model.push(angular.isDefined(returnedModel) ? returnedModel : indexerModel);
@@ -4012,7 +4058,9 @@ angular.module('nzbhydraApp').controller('IndexerConfigBoxInstanceController', [
     $scope.needsConnectionTest = false;
 
     $scope.obSubmit = function () {
-        if (form.$valid) {
+        if (model.searchModuleType === 'JACKETT_CONFIG') {
+            $uibModalInstance.close(model);
+        } else if (form.$valid) {
             var a = IndexerCheckBeforeCloseService.checkBeforeClose($scope, model).then(function (data) {
                 if (angular.isDefined(data)) {
                     $scope.model = data;
@@ -4168,7 +4216,9 @@ function IndexerCheckBeforeCloseService($q, ModalService, IndexerConfigBoxServic
 
     function checkBeforeClose(scope, model) {
         var deferred = $q.defer();
-        if (!scope.isInitial && (!scope.needsConnectionTest || scope.form.capsChecked)) {
+        if (model.searchModuleType !== 'JACKETT_CONFIG') {
+            deferred.resolve(model);
+        } else if (!scope.isInitial && (!scope.needsConnectionTest || scope.form.capsChecked)) {
             checkCapsWhenClosing(scope, model).then(function () {
                 deferred.resolve(model);
             }, function () {

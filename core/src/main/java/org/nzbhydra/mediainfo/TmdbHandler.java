@@ -30,14 +30,14 @@ public class TmdbHandler {
     private ConfigProvider configProvider;
 
 
-    public TmdbSearchResult getInfos(String value, InfoProvider.IdType idType) throws InfoProviderException {
-        if (idType == InfoProvider.IdType.MOVIETITLE) {
+    public TmdbSearchResult getInfos(String value, MediaIdType idType) throws InfoProviderException {
+        if (idType == MediaIdType.MOVIETITLE) {
             return fromTitle(value, null);
         }
-        if (idType == InfoProvider.IdType.IMDB) {
+        if (idType == MediaIdType.IMDB) {
             return fromImdb(value);
         }
-        if (idType == InfoProvider.IdType.TMDB) {
+        if (idType == MediaIdType.TMDB) {
             return fromTmdb(value);
         }
         throw new IllegalArgumentException("Unable to get infos from " + idType);

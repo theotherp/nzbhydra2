@@ -18,7 +18,7 @@ import org.nzbhydra.mapping.newznab.NewznabResponse;
 import org.nzbhydra.mapping.newznab.OutputType;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.Imdb;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResult;
 import org.nzbhydra.searching.Searcher;
@@ -274,22 +274,22 @@ public class ExternalApi {
         }
 
         if (!Strings.isNullOrEmpty(params.getTvdbid())) {
-            searchRequest.getIdentifiers().put(IdType.TVDB, params.getTvdbid());
+            searchRequest.getIdentifiers().put(MediaIdType.TVDB, params.getTvdbid());
         }
         if (!Strings.isNullOrEmpty(params.getTvmazeid())) {
-            searchRequest.getIdentifiers().put(IdType.TVMAZE, params.getTvmazeid());
+            searchRequest.getIdentifiers().put(MediaIdType.TVMAZE, params.getTvmazeid());
         }
         if (!Strings.isNullOrEmpty(params.getRid())) {
-            searchRequest.getIdentifiers().put(IdType.TVRAGE, params.getRid());
+            searchRequest.getIdentifiers().put(MediaIdType.TVRAGE, params.getRid());
         }
         if (!Strings.isNullOrEmpty(params.getImdbid()) && searchType == SearchType.MOVIE) {
-            searchRequest.getIdentifiers().put(IdType.IMDB, Imdb.withTt(params.getImdbid()));
+            searchRequest.getIdentifiers().put(MediaIdType.IMDB, Imdb.withTt(params.getImdbid()));
         }
         if (!Strings.isNullOrEmpty(params.getImdbid()) && searchType == SearchType.TVSEARCH) {
-            searchRequest.getIdentifiers().put(IdType.TVIMDB, Imdb.withTt(params.getImdbid()));
+            searchRequest.getIdentifiers().put(MediaIdType.TVIMDB, Imdb.withTt(params.getImdbid()));
         }
         if (!Strings.isNullOrEmpty(params.getTmdbid())) {
-            searchRequest.getIdentifiers().put(IdType.TMDB, params.getTmdbid());
+            searchRequest.getIdentifiers().put(MediaIdType.TMDB, params.getTmdbid());
         }
         if (params.getPassword() != null && params.getPassword() == 1) {
             searchRequest.getInternalData().setIncludePasswords(true);

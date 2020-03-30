@@ -52,7 +52,7 @@ public class MediaInfo {
     }
 
     @JsonIgnore
-    public Optional<String> getByIdType(InfoProvider.IdType idType) {
+    public Optional<String> getByIdType(MediaIdType idType) {
         switch (idType) {
             case IMDB:
             case TVIMDB:
@@ -73,7 +73,7 @@ public class MediaInfo {
     }
 
     @JsonIgnore
-    public boolean isInfoContained(Collection<InfoProvider.IdType> types) {
+    public boolean isInfoContained(Collection<MediaIdType> types) {
         return types.stream().anyMatch(x -> getByIdType(x).isPresent());
     }
 

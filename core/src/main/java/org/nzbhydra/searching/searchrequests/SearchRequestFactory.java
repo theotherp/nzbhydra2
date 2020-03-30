@@ -4,7 +4,7 @@ import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.category.Category;
 import org.nzbhydra.mediainfo.Imdb;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MovieInfo;
 import org.nzbhydra.mediainfo.TvInfo;
 import org.nzbhydra.searching.Searcher;
@@ -47,17 +47,17 @@ public class SearchRequestFactory {
             if (request.getIdentifiers().keySet().stream().anyMatch(x -> InfoProvider.TV_ID_TYPES.contains(x))) {
                 TvInfo tvInfo = infoProvider.findTvInfoInDatabase(request.getIdentifiers());
                 if (tvInfo != null) {
-                    tvInfo.getTvmazeId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.TVMAZE, x));
-                    tvInfo.getTvdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.TVDB, x));
-                    tvInfo.getTvrageId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.TVRAGE, x));
-                    tvInfo.getImdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.TVIMDB, Imdb.withTt(x)));
+                    tvInfo.getTvmazeId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.TVMAZE, x));
+                    tvInfo.getTvdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.TVDB, x));
+                    tvInfo.getTvrageId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.TVRAGE, x));
+                    tvInfo.getImdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.TVIMDB, Imdb.withTt(x)));
                 }
             }
             if (request.getIdentifiers().keySet().stream().anyMatch(x -> InfoProvider.MOVIE_ID_TYPES.contains(x))) {
                 MovieInfo movieInfo = infoProvider.findMovieInfoInDatabase(request.getIdentifiers());
                 if (movieInfo != null) {
-                    movieInfo.getTmdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.TMDB, x));
-                    movieInfo.getImdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(IdType.IMDB, Imdb.withTt(x)));
+                    movieInfo.getTmdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.TMDB, x));
+                    movieInfo.getImdbId().ifPresent(x -> request.getIdentifiers().putIfAbsent(MediaIdType.IMDB, Imdb.withTt(x)));
                 }
             }
         }

@@ -5,7 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import lombok.Data;
 import org.nzbhydra.config.category.Category;
-import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.slf4j.Logger;
@@ -45,7 +45,7 @@ public class SearchRequest {
     protected Integer maxage = null;
 
     protected String query;
-    protected Map<InfoProvider.IdType, String> identifiers = new HashMap<>();
+    protected Map<MediaIdType, String> identifiers = new HashMap<>();
     protected String title;
     protected Integer season;
     protected String episode;

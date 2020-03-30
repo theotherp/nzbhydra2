@@ -21,7 +21,7 @@ import org.nzbhydra.indexers.IndexerEntity;
 import org.nzbhydra.indexers.status.IndexerLimit;
 import org.nzbhydra.indexers.status.IndexerLimitRepository;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.DownloadType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 import org.nzbhydra.searching.searchrequests.SearchRequest.SearchSource;
@@ -189,8 +189,8 @@ public class IndexerForSearchSelectorTest {
 
     @Test
     public void shouldCheckIdConversion() {
-        Set<IdType> supported = Sets.newSet(IdType.TVMAZE, IdType.TVDB);
-        Set<IdType> provided = Sets.newSet(IdType.TVMAZE);
+        Set<MediaIdType> supported = Sets.newSet(MediaIdType.TVMAZE, MediaIdType.TVDB);
+        Set<MediaIdType> provided = Sets.newSet(MediaIdType.TVMAZE);
 
         when(searchRequest.getQuery()).thenReturn(Optional.empty());
         when(infoProviderMock.canConvertAny(provided, supported)).thenReturn(true);

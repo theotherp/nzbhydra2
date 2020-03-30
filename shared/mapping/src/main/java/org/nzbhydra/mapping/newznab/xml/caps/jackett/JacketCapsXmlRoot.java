@@ -1,5 +1,5 @@
 /*
- *  (C) Copyright 2017 TheOtherP (theotherp@gmx.de)
+ *  (C) Copyright 2020 TheOtherP (theotherp@gmx.de)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,35 +14,25 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.mapping.newznab.xml.caps;
+package org.nzbhydra.mapping.newznab.xml.caps.jackett;
 
 import lombok.Data;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "indexers")
 @Data
-public class CapsXmlSearch {
+public class JacketCapsXmlRoot {
 
-    public CapsXmlSearch() {
+    public JacketCapsXmlRoot() {
     }
 
-    public CapsXmlSearch(String available, String supportedParams) {
-        this.available = available;
-        this.supportedParams = supportedParams;
-    }
-
-    @XmlAttribute
-    private String available;
-
-    @XmlAttribute
-    private String supportedParams;
-
-    public boolean isAvailable() {
-        return "yes".equals(available);
-    }
-
+    @XmlElement(name = "indexer")
+    private List<JacketCapsXmlIndexer> indexers;
 
 }

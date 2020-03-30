@@ -8,31 +8,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.nzbhydra.mediainfo.InfoProvider.IdType.*;
+import static org.nzbhydra.mediainfo.MediaIdType.*;
 
 @Component
 public class InfoProvider {
 
-    public enum IdType {
-        TVDB,
-        TVRAGE,
-        TVMAZE,
-        TRAKT,
-        IMDB,
-        TVIMDB,
-        TMDB,
-        TVTITLE,
-        MOVIETITLE
-    }
+    public static Set<MediaIdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE, TVIMDB);
+    public static Set<MediaIdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
+    public static Set<MediaIdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
 
-    public static Set<IdType> TV_ID_TYPES = Sets.newHashSet(TVDB, TVRAGE, TVMAZE, TVIMDB);
-    public static Set<IdType> MOVIE_ID_TYPES = Sets.newHashSet(TMDB, IMDB);
-    public static Set<IdType> REAL_ID_TYPES = Sets.union(TV_ID_TYPES, MOVIE_ID_TYPES);
-
-    private static Map<IdType, Set<IdType>> canConvertMap = new HashMap<>();
+    private static Map<MediaIdType, Set<MediaIdType>> canConvertMap = new HashMap<>();
 
     static {
         canConvertMap.put(TVDB, Sets.newHashSet(TVDB, TVMAZE, TVRAGE, TVIMDB, TVTITLE));
@@ -59,20 +51,20 @@ public class InfoProvider {
     @Autowired
     private TvInfoRepository tvInfoRepository;
 
-    public boolean canConvert(IdType from, IdType to) {
+    public boolean canConvert(MediaIdType from, MediaIdType to) {
         return canConvertMap.get(from).contains(to);
     }
 
-    public static Set<IdType> getConvertibleFrom(IdType from) {
+    public static Set<MediaIdType> getConvertibleFrom(MediaIdType from) {
         return canConvertMap.get(from);
     }
 
-    public boolean canConvertAny(Set<IdType> from, Set<IdType> to) {
+    public boolean canConvertAny(Set<MediaIdType> from, Set<MediaIdType> to) {
         return from.stream().anyMatch(x -> canConvertMap.containsKey(x) && canConvertMap.get(x).stream().anyMatch(to::contains));
     }
 
-    public MediaInfo convert(Map<IdType, String> identifiers) throws InfoProviderException {
-        for (IdType idType : REAL_ID_TYPES) {
+    public MediaInfo convert(Map<MediaIdType, String> identifiers) throws InfoProviderException {
+        for (MediaIdType idType : REAL_ID_TYPES) {
             if (identifiers.containsKey(idType) && identifiers.get(idType) != null) {
                 return convert(identifiers.get(idType), idType);
             }
@@ -84,7 +76,7 @@ public class InfoProvider {
 
     @Cacheable(cacheNames = "infos", sync = true)
     //sync=true is currently apparently not supported by Caffeine. synchronizing by method is good enough because we'll likely rarely hit this method concurrently with different parameters
-    public synchronized MediaInfo convert(String value, IdType fromType) throws InfoProviderException {
+    public synchronized MediaInfo convert(String value, MediaIdType fromType) throws InfoProviderException {
         if (value == null) {
             throw new InfoProviderException("Unable to convert IDType " + fromType + " with null value");
         }
@@ -159,18 +151,18 @@ public class InfoProvider {
         }
     }
 
-    public TvInfo findTvInfoInDatabase(Map<IdType, String> ids) {
+    public TvInfo findTvInfoInDatabase(Map<MediaIdType, String> ids) {
         Collection<TvInfo> matchingInfos = tvInfoRepository.findByTvrageIdOrTvmazeIdOrTvdbIdOrImdbId(ids.getOrDefault(TVRAGE, "-1"), ids.getOrDefault(TVMAZE, "-1"), ids.getOrDefault(TVDB, "-1"), ids.getOrDefault(IMDB, "-1"));
         return matchingInfos.stream().max(TvInfo::compareTo).orElse(null);
     }
 
-    public MovieInfo findMovieInfoInDatabase(Map<IdType, String> ids) {
+    public MovieInfo findMovieInfoInDatabase(Map<MediaIdType, String> ids) {
         Collection<MovieInfo> matchingInfos = movieInfoRepository.findByImdbIdOrTmdbId(ids.getOrDefault(IMDB, "-1"), ids.getOrDefault(TMDB, "-1"));
         return matchingInfos.stream().max(MovieInfo::compareTo).orElse(null);
     }
 
     @Cacheable(cacheNames = "titles", sync = true)
-    public List<MediaInfo> search(String title, IdType titleType) throws InfoProviderException {
+    public List<MediaInfo> search(String title, MediaIdType titleType) throws InfoProviderException {
         try {
             List<MediaInfo> infos;
             //Always do a search and don't rely on the database, otherwise results might be outdated

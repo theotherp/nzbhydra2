@@ -4,7 +4,11 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
@@ -24,9 +28,18 @@ import org.nzbhydra.indexers.exceptions.IndexerProgramErrorException;
 import org.nzbhydra.mapping.newznab.ActionAttribute;
 import org.nzbhydra.mapping.newznab.builder.RssBuilder;
 import org.nzbhydra.mapping.newznab.builder.RssItemBuilder;
-import org.nzbhydra.mapping.newznab.xml.*;
+import org.nzbhydra.mapping.newznab.xml.JaxbPubdateAdapter;
+import org.nzbhydra.mapping.newznab.xml.NewznabAttribute;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlChannel;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
+import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
+import org.nzbhydra.mapping.newznab.xml.Xml;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -46,7 +59,11 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -107,21 +124,21 @@ public class NewznabTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         testee = spy(testee);
-        when(infoProviderMock.canConvert(IdType.IMDB, IdType.TMDB)).thenReturn(true);
+        when(infoProviderMock.canConvert(MediaIdType.IMDB, MediaIdType.TMDB)).thenReturn(true);
         MediaInfo info = new MediaInfo();
         info.setImdbId("imdbId");
         info.setTmdbId("tmdbId");
         info.setTvmazeId("tvmazeId");
         info.setTvrageId("tvrageId");
         info.setTvdbId("tvdbId");
-        when(infoProviderMock.convert("imdbId", IdType.IMDB)).thenReturn(info);
+        when(infoProviderMock.convert("imdbId", MediaIdType.IMDB)).thenReturn(info);
 
         when(infoProviderMock.convert(anyMap())).thenReturn(info);
-        when(infoProviderMock.convert("tvmazeId", IdType.TVMAZE)).thenReturn(info);
+        when(infoProviderMock.convert("tvmazeId", MediaIdType.TVMAZE)).thenReturn(info);
         //when(indexerEntityMock.getStatus()).thenReturn(indexerStatusEntityMock);
 
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
+        testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.TMDB, MediaIdType.TVRAGE));
         testee.config.setHost("http://127.0.0.1:1234");
 
         baseConfig = new BaseConfig();
@@ -190,10 +207,10 @@ public class NewznabTest {
         when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
 
-        searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
-        searchRequest.getIdentifiers().put(IdType.TVMAZE, "tvmazeId");
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
+        searchRequest.getIdentifiers().put(MediaIdType.TVMAZE, "tvmazeId");
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
-        testee.config.getSupportedSearchIds().addAll(Arrays.asList(IdType.TMDB, IdType.TVRAGE, IdType.TVMAZE));
+        testee.config.getSupportedSearchIds().addAll(Arrays.asList(MediaIdType.TMDB, MediaIdType.TVRAGE, MediaIdType.TVMAZE));
 
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
 
@@ -207,24 +224,24 @@ public class NewznabTest {
     @Test
     public void shouldNotGetInfosIfAtLeastOneProvidedIsSupported() throws Exception {
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.IMDB));
+        testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
         MultiValueMap<String, String> params = builder.build().getQueryParams();
         assertTrue(params.containsKey("imdbid"));
         assertEquals(1, params.size());
-        verify(infoProviderMock, never()).convert(anyString(), any(IdType.class));
+        verify(infoProviderMock, never()).convert(anyString(), any(MediaIdType.class));
     }
 
     @Test
     public void shouldRemoveTrailingTtFromImdbId() throws Exception {
         testee.config = new IndexerConfig();
-        testee.config.setSupportedSearchIds(Lists.newArrayList(IdType.IMDB));
+        testee.config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(IdType.IMDB, "12345");
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "12345");
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("http://www.indexerName.com/api");
         builder = testee.extendQueryUrlWithSearchIds(searchRequest, builder);
@@ -232,7 +249,7 @@ public class NewznabTest {
         assertTrue(params.containsKey("imdbid"));
         assertEquals(1, params.size());
         assertEquals("12345", params.get("imdbid").get(0));
-        verify(infoProviderMock, never()).convert(anyString(), any(IdType.class));
+        verify(infoProviderMock, never()).convert(anyString(), any(MediaIdType.class));
     }
 
     @Test
@@ -240,13 +257,13 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Collections.singletonList(IdType.IMDB));
+        testee.config.setSupportedSearchIds(Collections.singletonList(MediaIdType.IMDB));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
         when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
         MediaInfo mediaInfo = new MediaInfo();
         mediaInfo.setTitle("someMovie");
-        when(infoProviderMock.convert("imdbId", IdType.IMDB)).thenReturn(mediaInfo);
+        when(infoProviderMock.convert("imdbId", MediaIdType.IMDB)).thenReturn(mediaInfo);
 
         assertEquals(UriComponentsBuilder.fromHttpUrl("http://www.indexer.com/api?t=search&extended=1&imdbid=imdbId&q=someMovie").build(), testee.buildSearchUrl(searchRequest, null, null).build());
 
@@ -262,15 +279,15 @@ public class NewznabTest {
         testee.config = new IndexerConfig();
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
         testee.config.setHost("http://www.indexer.com");
-        testee.config.setSupportedSearchIds(Arrays.asList(IdType.TVDB));
+        testee.config.setSupportedSearchIds(Arrays.asList(MediaIdType.TVDB));
         testee.config.setSupportedSearchTypes(Arrays.asList(ActionAttribute.TVSEARCH, ActionAttribute.SEARCH));
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.TVSEARCH, 0, 100);
         searchRequest.getInternalData().setFallbackState(FallbackState.REQUESTED);
-        searchRequest.getIdentifiers().put(IdType.TVDB, "tvdbId");
+        searchRequest.getIdentifiers().put(MediaIdType.TVDB, "tvdbId");
         when(infoProviderMock.canConvert(any(), any())).thenReturn(false);
         MediaInfo mediaInfo = new MediaInfo();
         mediaInfo.setTitle("someShow");
-        when(infoProviderMock.convert("tvdbId", IdType.TVDB)).thenReturn(mediaInfo);
+        when(infoProviderMock.convert("tvdbId", MediaIdType.TVDB)).thenReturn(mediaInfo);
 
         assertEquals("someShow", testee.generateQueryIfApplicable(searchRequest, ""));
 
@@ -344,8 +361,8 @@ public class NewznabTest {
     @Test
     public void shouldConvertIdIfNecessary() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(IdType.IMDB, "imdbId");
-        testee.config.getSupportedSearchIds().add(IdType.TMDB);
+        searchRequest.getIdentifiers().put(MediaIdType.IMDB, "imdbId");
+        testee.config.getSupportedSearchIds().add(MediaIdType.TMDB);
         when(infoProviderMock.canConvertAny(anySet(), anySet())).thenReturn(true);
 
         testee.extendQueryUrlWithSearchIds(searchRequest, uriComponentsBuilderMock);
@@ -356,11 +373,11 @@ public class NewznabTest {
     @Test
     public void shouldNotConvertIdIfNotNecessary() throws Exception {
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        searchRequest.getIdentifiers().put(IdType.TMDB, "tmdbId");
+        searchRequest.getIdentifiers().put(MediaIdType.TMDB, "tmdbId");
 
         testee.extendQueryUrlWithSearchIds(searchRequest, uriComponentsBuilderMock);
 
-        verify(infoProviderMock, never()).convert(anyString(), eq(IdType.TMDB));
+        verify(infoProviderMock, never()).convert(anyString(), eq(MediaIdType.TMDB));
     }
 
     @Test
@@ -662,8 +679,8 @@ public class NewznabTest {
         assertThat(uri, containsString("t=search"));
 
         request = new SearchRequest(SearchSource.INTERNAL, SearchType.MOVIE, 0, 100);
-        request.getIdentifiers().put(IdType.IMDB, "123");
-        testee.config.getSupportedSearchIds().add(IdType.IMDB);
+        request.getIdentifiers().put(MediaIdType.IMDB, "123");
+        testee.config.getSupportedSearchIds().add(MediaIdType.IMDB);
         testee.config.getSupportedSearchTypes().add(ActionAttribute.MOVIE);
         uri = testee.buildSearchUrl(request, 0, 100).toUriString();
         assertThat(uri, containsString("t=movie"));

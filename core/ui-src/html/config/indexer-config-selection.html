@@ -61,6 +61,10 @@
                 <li ng-repeat="preset in torznabPresets">
                   <a ng-click="select(preset)">{{ preset.name }}</a>
                 </li>
+                <li><a href="#">---</a></li>
+                <li>
+                  <a ng-click="readJackettConfig()">Read from jackett config</a>
+                </li>
               </ul>
             </div>
             <button class="btn btn-info" ng-click="select(emptyTorznabPreset)">

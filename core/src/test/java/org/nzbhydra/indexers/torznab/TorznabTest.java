@@ -43,7 +43,7 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlEnclosure;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlGuid;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.CategoryProvider;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem;
 import org.nzbhydra.searching.dtoseventsenums.SearchResultItem.DownloadType;
@@ -107,7 +107,7 @@ public class TorznabTest {
         testee = spy(testee);
         final IndexerConfig config = new IndexerConfig();
         testee.initialize(config, indexerEntityMock);
-        config.setSupportedSearchIds(Lists.newArrayList(IdType.TMDB, IdType.TVRAGE));
+        config.setSupportedSearchIds(Lists.newArrayList(MediaIdType.TMDB, MediaIdType.TVRAGE));
         config.setHost("http://127.0.0.1:1234");
 
         baseConfig = new BaseConfig();

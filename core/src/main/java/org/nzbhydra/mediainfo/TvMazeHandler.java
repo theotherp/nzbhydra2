@@ -26,8 +26,8 @@ public class TvMazeHandler {
     protected RestTemplate restTemplate;
 
 
-    public TvMazeSearchResult getInfos(String id, InfoProvider.IdType idType) throws InfoProviderException {
-        if (idType == InfoProvider.IdType.TVTITLE) {
+    public TvMazeSearchResult getInfos(String id, MediaIdType idType) throws InfoProviderException {
+        if (idType == MediaIdType.TVTITLE) {
             return fromTitle(id);
         }
         logger.info("Searching TVMaze for show with {} {}", idType, id);

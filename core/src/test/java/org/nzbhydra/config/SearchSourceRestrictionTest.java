@@ -17,7 +17,7 @@
 package org.nzbhydra.config;
 
 import org.junit.Test;
-import org.nzbhydra.mediainfo.InfoProvider;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.searching.dtoseventsenums.SearchType;
 import org.nzbhydra.searching.searchrequests.SearchRequest;
 
@@ -30,8 +30,8 @@ public class SearchSourceRestrictionTest {
 
     @Test
     public void shouldMeetCorrectlyForApiSearches() {
-        Map<InfoProvider.IdType, String> identifiers = new HashMap<>();
-        identifiers.put(InfoProvider.IdType.IMDB, "imdbId");
+        Map<MediaIdType, String> identifiers = new HashMap<>();
+        identifiers.put(MediaIdType.IMDB, "imdbId");
 
         SearchRequest apiSearchRequest = new SearchRequest(SearchRequest.SearchSource.API, SearchType.SEARCH, 0, 0);
         apiSearchRequest.setQuery("query");
@@ -61,8 +61,8 @@ public class SearchSourceRestrictionTest {
 
     @Test
     public void shouldMeetCorrectlyForInternalSearches() {
-        Map<InfoProvider.IdType, String> identifiers = new HashMap<>();
-        identifiers.put(InfoProvider.IdType.IMDB, "imdbId");
+        Map<MediaIdType, String> identifiers = new HashMap<>();
+        identifiers.put(MediaIdType.IMDB, "imdbId");
 
         SearchRequest internalSearchRequest = new SearchRequest(SearchRequest.SearchSource.INTERNAL, SearchType.SEARCH, 0, 0);
         internalSearchRequest.setQuery("query");

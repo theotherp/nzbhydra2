@@ -18,6 +18,7 @@ package org.nzbhydra.config.category;
 
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import lombok.Data;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.SearchSourceRestriction;
@@ -122,5 +123,12 @@ public class CategoriesConfig extends ValidatingConfig<CategoriesConfig> {
         return this;
     }
 
-
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("enableCategorySizes", enableCategorySizes)
+                .add("categories", categories)
+                .add("defaultCategory", defaultCategory)
+                .toString();
+    }
 }

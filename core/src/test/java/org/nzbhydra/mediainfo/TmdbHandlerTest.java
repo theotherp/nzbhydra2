@@ -21,21 +21,21 @@ public class TmdbHandlerTest {
 
     @Test
     public void imdbToTmdb() throws Exception {
-        TmdbSearchResult result = testee.getInfos("tt5895028", InfoProvider.IdType.IMDB);
+        TmdbSearchResult result = testee.getInfos("tt5895028", MediaIdType.IMDB);
         assertThat(result.getTmdbId(), is("407806"));
         assertThat(result.getTitle(), is("13th"));
     }
 
     @Test
     public void tmdbToImdb() throws Exception {
-        TmdbSearchResult result = testee.getInfos("407806", InfoProvider.IdType.TMDB);
+        TmdbSearchResult result = testee.getInfos("407806", MediaIdType.TMDB);
         assertThat(result.getImdbId(), is("tt5895028"));
         assertThat(result.getTitle(), is("13th"));
     }
 
     @Test
     public void fromTitle() throws Exception {
-        TmdbSearchResult result = testee.getInfos("gladiator", InfoProvider.IdType.MOVIETITLE);
+        TmdbSearchResult result = testee.getInfos("gladiator", MediaIdType.MOVIETITLE);
         assertThat(result.getImdbId(), is("tt0172495"));
 
         result = testee.fromTitle("gladiator", 1992);

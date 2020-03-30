@@ -5,18 +5,26 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.nzbhydra.config.BaseConfig;
 import org.nzbhydra.config.ConfigProvider;
 import org.nzbhydra.config.SearchSourceRestriction;
 import org.nzbhydra.config.indexer.IndexerConfig;
-import org.nzbhydra.indexers.exceptions.*;
+import org.nzbhydra.indexers.exceptions.IndexerAccessException;
+import org.nzbhydra.indexers.exceptions.IndexerAuthException;
+import org.nzbhydra.indexers.exceptions.IndexerErrorCodeException;
+import org.nzbhydra.indexers.exceptions.IndexerSearchAbortedException;
+import org.nzbhydra.indexers.exceptions.IndexerUnreachableException;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlError;
 import org.nzbhydra.mediainfo.InfoProvider;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.mediainfo.TvInfo;
 import org.nzbhydra.searching.SearchResultAcceptor;
@@ -35,7 +43,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -265,8 +278,8 @@ public class IndexerTest {
     public void shouldUseFallback() throws Exception {
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        Map<IdType, String> identifiers = new HashMap<>();
-        identifiers.put(IdType.IMDB, "123");
+        Map<MediaIdType, String> identifiers = new HashMap<>();
+        identifiers.put(MediaIdType.IMDB, "123");
         searchRequest.setIdentifiers(identifiers);
         SearchResultItem item = new SearchResultItem();
         item.setIndexer(indexerMock);
@@ -282,8 +295,8 @@ public class IndexerTest {
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        Map<IdType, String> identifiers = new HashMap<>();
-        identifiers.put(IdType.IMDB, "123");
+        Map<MediaIdType, String> identifiers = new HashMap<>();
+        identifiers.put(MediaIdType.IMDB, "123");
         searchRequest.setIdentifiers(identifiers);
         String query = testee.generateQueryIfApplicable(searchRequest, "query");
         assertThat(query, is("title"));
@@ -295,8 +308,8 @@ public class IndexerTest {
         baseConfig.getSearching().setGenerateQueries(SearchSourceRestriction.BOTH);
 
         SearchRequest searchRequest = new SearchRequest(SearchSource.INTERNAL, SearchType.SEARCH, 0, 100);
-        Map<IdType, String> identifiers = new HashMap<>();
-        identifiers.put(IdType.IMDB, "123");
+        Map<MediaIdType, String> identifiers = new HashMap<>();
+        identifiers.put(MediaIdType.IMDB, "123");
         searchRequest.setIdentifiers(identifiers);
         String query = testee.generateQueryIfApplicable(searchRequest, "query");
         assertThat(query, is("title"));

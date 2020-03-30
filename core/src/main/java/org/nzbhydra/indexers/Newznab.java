@@ -26,8 +26,8 @@ import org.nzbhydra.mapping.newznab.xml.NewznabXmlItem;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlResponse;
 import org.nzbhydra.mapping.newznab.xml.NewznabXmlRoot;
 import org.nzbhydra.mapping.newznab.xml.Xml;
-import org.nzbhydra.mediainfo.InfoProvider.IdType;
 import org.nzbhydra.mediainfo.InfoProviderException;
+import org.nzbhydra.mediainfo.MediaIdType;
 import org.nzbhydra.mediainfo.MediaInfo;
 import org.nzbhydra.searching.SearchResultAcceptor.AcceptorResult;
 import org.nzbhydra.searching.SearchResultIdCalculator;
@@ -75,7 +75,7 @@ public class Newznab extends Indexer<Xml> {
 
     private static final Logger logger = LoggerFactory.getLogger(Newznab.class);
 
-    static Map<IdType, String> idTypeToParamValueMap = new HashMap<>();
+    static Map<MediaIdType, String> idTypeToParamValueMap = new HashMap<>();
 
     private static final List<String> LANGUAGES = Arrays.asList(" English", " Korean", " Spanish", " French", " German", " Italian", " Danish", " Dutch", " Japanese", " Cantonese", " Mandarin", " Russian", " Polish", " Vietnamese", " Swedish", " Norwegian", " Finnish", " Turkish", " Portuguese", " Flemish", " Greek", " Hungarian");
     private static Pattern GROUP_PATTERN = Pattern.compile(".*Group:<\\/b> ?([\\w\\.]+)<br ?\\/>.*");
@@ -87,13 +87,13 @@ public class Newznab extends Indexer<Xml> {
 
 
     static {
-        idTypeToParamValueMap.put(IdType.IMDB, "imdbid");
-        idTypeToParamValueMap.put(IdType.TVIMDB, "imdbid");
-        idTypeToParamValueMap.put(IdType.TMDB, "tmdbid");
-        idTypeToParamValueMap.put(IdType.TVRAGE, "rid");
-        idTypeToParamValueMap.put(IdType.TVDB, "tvdbid");
-        idTypeToParamValueMap.put(IdType.TVMAZE, "tvmazeid");
-        idTypeToParamValueMap.put(IdType.TRAKT, "traktid");
+        idTypeToParamValueMap.put(MediaIdType.IMDB, "imdbid");
+        idTypeToParamValueMap.put(MediaIdType.TVIMDB, "imdbid");
+        idTypeToParamValueMap.put(MediaIdType.TMDB, "tmdbid");
+        idTypeToParamValueMap.put(MediaIdType.TVRAGE, "rid");
+        idTypeToParamValueMap.put(MediaIdType.TVDB, "tvdbid");
+        idTypeToParamValueMap.put(MediaIdType.TVMAZE, "tvmazeid");
+        idTypeToParamValueMap.put(MediaIdType.TRAKT, "traktid");
     }
 
     @Autowired
@@ -280,7 +280,7 @@ public class Newznab extends Indexer<Xml> {
 
     protected UriComponentsBuilder extendQueryUrlWithSearchIds(SearchRequest searchRequest, UriComponentsBuilder componentsBuilder) {
         if (!searchRequest.getIdentifiers().isEmpty()) {
-            Map<IdType, String> params = new HashMap<>();
+            Map<MediaIdType, String> params = new HashMap<>();
             boolean indexerSupportsAnyOfTheProvidedIds = searchRequest.getIdentifiers().keySet().stream().anyMatch(x -> searchRequest.getIdentifiers().get(x) != null && config.getSupportedSearchIds().contains(x));
             if (!indexerSupportsAnyOfTheProvidedIds) {
                 debug("Indexer doesn't support any of the provided search IDs: {}", Joiner.on(", ").join(searchRequest.getIdentifiers().keySet()));
@@ -290,25 +290,25 @@ public class Newznab extends Indexer<Xml> {
                         MediaInfo info = infoProvider.convert(searchRequest.getIdentifiers());
 
                         if (info.getImdbId().isPresent()) {
-                            if (searchRequest.getSearchType() == SearchType.MOVIE && config.getSupportedSearchIds().contains(IdType.IMDB)) {
-                                params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                            if (searchRequest.getSearchType() == SearchType.MOVIE && config.getSupportedSearchIds().contains(MediaIdType.IMDB)) {
+                                params.put(MediaIdType.IMDB, info.getImdbId().get().replace("tt", ""));
                             }
                             //Most indexers don't actually support IMDB IDs for tv searches and would return unrelevant results
-                            if (searchRequest.getSearchType() == SearchType.TVSEARCH && config.getSupportedSearchIds().contains(IdType.TVIMDB)) {
-                                params.put(IdType.IMDB, info.getImdbId().get().replace("tt", ""));
+                            if (searchRequest.getSearchType() == SearchType.TVSEARCH && config.getSupportedSearchIds().contains(MediaIdType.TVIMDB)) {
+                                params.put(MediaIdType.IMDB, info.getImdbId().get().replace("tt", ""));
                             }
                         }
                         if (info.getTmdbId().isPresent()) {
-                            params.put(IdType.TMDB, info.getTmdbId().get());
+                            params.put(MediaIdType.TMDB, info.getTmdbId().get());
                         }
                         if (info.getTvRageId().isPresent()) {
-                            params.put(IdType.TVRAGE, info.getTvRageId().get());
+                            params.put(MediaIdType.TVRAGE, info.getTvRageId().get());
                         }
                         if (info.getTvMazeId().isPresent()) {
-                            params.put(IdType.TVMAZE, info.getTvMazeId().get());
+                            params.put(MediaIdType.TVMAZE, info.getTvMazeId().get());
                         }
                         if (info.getTvDbId().isPresent()) {
-                            params.put(IdType.TVDB, info.getTvDbId().get());
+                            params.put(MediaIdType.TVDB, info.getTvDbId().get());
                         }
                     } catch (InfoProviderException e) {
                         error("Error while converting search ID", e);
@@ -324,7 +324,7 @@ public class Newznab extends Indexer<Xml> {
             //Don't overwrite IDs provided by the calling instance, only add missing ones
             params.forEach((key, value) -> searchRequest.getIdentifiers().putIfAbsent(key, value));
 
-            for (Map.Entry<IdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
+            for (Map.Entry<MediaIdType, String> entry : searchRequest.getIdentifiers().entrySet()) {
                 //We just add all IDs that we have (if the indexer supports them). Some indexers will find results under one ID but not the other
                 if (entry.getValue() == null) {
                     continue;
