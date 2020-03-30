@@ -14,26 +14,20 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd;
+package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class History {
+public class AddNzbResponse {
 
-    private Integer noofslots;
-    private String day_size;
-    private String week_size;
-    private String month_size;
-    private String total_size;
-    private Long last_history_update;
-    private List<HistoryEntry> slots = new ArrayList<>();
+    private boolean status;
+    @JsonProperty("nzo_ids")
+    private List<String> nzoIds = new ArrayList<>();
+    private String error;
 
 }

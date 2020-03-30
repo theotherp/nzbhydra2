@@ -14,34 +14,26 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd;
+package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class QueueEntry {
+import java.util.ArrayList;
+import java.util.List;
 
-    private String status;
-    private Integer index;
-    private String password;
-    private String avg_age;
-    private String script;
-    private Boolean has_rating;
-    private String mb;
-    private String mbleft;
-    private String mbmissing;
-    private String size;
-    private String sizeleft;
-    private String filename;
-    private String priority;
-    private String cat;
-    private String eta;
-    private String timeleft;
-    private String percentage;
-    private String nzo_id;
-    private String unpackopts;
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class History {
+
+    private Integer noofslots;
+    private String day_size;
+    private String week_size;
+    private String month_size;
+    private String total_size;
+    private Long last_history_update;
+    private List<HistoryEntry> slots = new ArrayList<>();
+
 }

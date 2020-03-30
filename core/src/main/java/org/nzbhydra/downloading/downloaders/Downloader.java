@@ -106,6 +106,8 @@ public abstract class Downloader {
                     }
                 } else if ("Use mapped category".equals(category)) {
                     categoryToSend = entry.getMappedCategory();
+                } else if ("Use no category".equals(category)) {
+                    categoryToSend = null;
                 } else {
                     categoryToSend = category;
                 }

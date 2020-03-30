@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd;
+package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -4456,7 +4456,7 @@ angular
                             templateOptions: {
                                 type: 'text',
                                 label: 'Default category',
-                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category" or "Use mapped category" to not be asked.',
+                                help: 'When adding NZBs this category will be used instead of asking for the category. Write "Use original category", "Use no category" or "Use mapped category" to not be asked.',
                                 placeholder: 'Ask when downloading'
                             }
                         },
@@ -4489,7 +4489,6 @@ angular
                 }
             }
         });
-
     }]);
 
 
@@ -9768,7 +9767,7 @@ function NzbDownloadService($http, ConfigService, DownloaderCategoriesService) {
 
     function download(downloader, searchResults, alwaysAsk) {
         var category = downloader.defaultCategory;
-        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "Use original category") && category !== "Use mapped category") {
+        if (alwaysAsk || ((_.isUndefined(category) || category === "" || category === null) && category !== "Use original category") && category !== "Use mapped category" && category !== "Use no category") {
             return DownloaderCategoriesService.openCategorySelection(downloader).then(function (category) {
                 return sendNzbAddCommand(downloader, searchResults, category);
             }, function (result) {

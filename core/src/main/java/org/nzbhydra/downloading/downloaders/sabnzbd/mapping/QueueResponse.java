@@ -14,20 +14,13 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd;
+package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class StageLogEntry {
+public class QueueResponse {
 
-    private String name;
-    private List<String> actions = null;
+    private Queue queue;
 
 }

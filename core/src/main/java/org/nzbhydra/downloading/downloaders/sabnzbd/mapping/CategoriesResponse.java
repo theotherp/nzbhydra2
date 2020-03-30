@@ -14,11 +14,15 @@
  *  limitations under the License.
  */
 
-package org.nzbhydra.downloading.downloaders.sabnzbd;
+package org.nzbhydra.downloading.downloaders.sabnzbd.mapping;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class HistoryResponse {
-    private History history;
+public class CategoriesResponse {
+
+    private List<String> categories;
+
 }

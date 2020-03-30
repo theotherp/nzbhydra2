@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Test;
+import org.nzbhydra.downloading.downloaders.sabnzbd.mapping.QueueResponse;
 
 import java.io.IOException;
 

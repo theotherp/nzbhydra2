@@ -3,8 +3,12 @@
     "version": "v2.16.5",
     "changes": [
       {
+        "type": "feature",
+        "text": "Add option to configure downloader to never send a category."
+      },
+      {
         "type": "fix",
-        "text": "Some time ago I implemented a feature that recognized OutOfMemory errors in the log which might've been not recognized by the user because the program automatically restarts after such a crash. Ironically this check caused OutOfMemory errors with huge log files...."
+        "text": "Some time ago I implemented a feature that recognized OutOfMemory errors in the log which might've been not recognized by the user because the program automatically restarts after such a crash. Ironically this check caused OutOfMemory errors with huge log files..."
       }
     ],
     "final": true
