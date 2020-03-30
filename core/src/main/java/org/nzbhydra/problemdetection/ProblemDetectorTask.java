@@ -41,11 +41,15 @@ public class ProblemDetectorTask {
     @HydraTask(configId = "ProblemDetector", name = "Problem detector", interval = HOUR)
     public void detectProblems() {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        for (ProblemDetector problemDetector : problemDetectors) {
-            logger.debug("Executing problem detector {}", problemDetector.getClass().getName());
-            problemDetector.executeCheck();
+        try {
+            for (ProblemDetector problemDetector : problemDetectors) {
+                logger.debug("Executing problem detector {}", problemDetector.getClass().getName());
+                problemDetector.executeCheck();
+                logger.debug("Finished executing problem detector {}", problemDetector.getClass().getName());
+            }
+        } finally {
+            logger.debug(LoggingMarkers.PERFORMANCE, "Check for problems took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         }
-        logger.debug(LoggingMarkers.PERFORMANCE, "Check for problems took {}ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
     }
 
 

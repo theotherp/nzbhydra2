@@ -25,11 +25,16 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class OutOfMemoryDetector implements ProblemDetector {
+
+    private enum State {
+        LOOKING_FOR_OOM,
+        FOUND_OOM,
+        LOOKING_FOR_OOM_END
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(OutOfMemoryDetector.class);
 
@@ -41,24 +46,35 @@ public class OutOfMemoryDetector implements ProblemDetector {
     @Override
     public void executeCheck() {
         try {
-            List<String> logLines = Files.readAllLines(logContentProvider.getCurrentLogfile(false).toPath());
-            for (int i = logLines.size() - 1; i >= 0; i--) {
-                String logLine = logLines.get(i);
-                if (logLine.contains("java.lang.OutOfMemoryError")) {
-                    Optional<String> timestampLine = logLines.subList(i, logLines.size() - 1).stream().filter(x -> x.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.*")).findFirst();
-                    String key = "outOfMemoryDetected-";
-                    if (timestampLine.isPresent()) {
-                        key += timestampLine.get().substring(0, 25);
+            AtomicReference<State> state = new AtomicReference<>();
+            state.set(State.LOOKING_FOR_OOM);
+            AtomicReference<String> lastTimeStampLine = new AtomicReference<>();
+
+            Files.lines(logContentProvider.getCurrentLogfile(false).toPath()).forEach(line -> {
+                if (line.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.*")) {
+                    if (state.get() == State.LOOKING_FOR_OOM) {
+                        lastTimeStampLine.set(line);
                     }
-                    boolean alreadyDetected = genericStorage.get(key, String.class).isPresent();
-                    if (!alreadyDetected) {
-                        logger.warn("The log indicates that the process ran out of memory. Please increase the XMX value in the main config and restart.");
-                        genericStorage.save(key, true);
-                        genericStorage.save("outOfMemoryDetected", true);
+                    if (state.get() == State.LOOKING_FOR_OOM_END) {
+                        state.set(State.LOOKING_FOR_OOM);
                     }
-                    break;
+                    return;
                 }
-            }
+
+                if (line.contains("java.lang.OutOfMemoryError")) {
+                    if (state.get() == State.LOOKING_FOR_OOM) {
+                        String key = "outOfMemoryDetected-" + lastTimeStampLine.get();
+                        boolean alreadyDetected = genericStorage.get(key, String.class).isPresent();
+                        if (!alreadyDetected) {
+                            logger.warn("The log indicates that the process ran out of memory. Please increase the XMX value in the main config and restart.");
+                            genericStorage.save(key, true);
+                            genericStorage.save("outOfMemoryDetected", true);
+                        }
+                        state.set(State.LOOKING_FOR_OOM_END);
+                    }
+                }
+            });
+
         } catch (IOException e) {
             logger.warn("Unable to read log file: " + e.getMessage());
         } catch (Exception e) {
