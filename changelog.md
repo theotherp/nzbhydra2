@@ -1,4 +1,14 @@
-### v2.16.4 (2020-03-23)
+### v2.17.0 (2020-03-30)
+
+**Feature** Add option to read Jackett config and automatically add all configured trackers. Already configured trackers will be updated. Thanks for Davide Campagna for the tip.
+
+**Feature** Add option to configure downloader to never send a category.
+
+**Fix** Some time ago I implemented a feature that recognized OutOfMemory errors in the log which might've been not recognized by the user because the program automatically restarts after such a crash. Ironically this check caused OutOfMemory errors with huge log files...
+
+
+
+### v2.16.5 (2020-03-23)
 
 **Feature** Enable some more logging to debug slow server responses.
 
